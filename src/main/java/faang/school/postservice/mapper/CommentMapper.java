@@ -5,6 +5,7 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,6 +14,7 @@ import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,6 +22,8 @@ import java.util.List;
 public abstract class CommentMapper {
     @Autowired
     protected PostRepository postRepository;
+    @Autowired
+    protected LikeRepository likeRepository;
 
     @Mapping(source = "post.id", target = "postId")
     @Mapping(source = "likes", target = "likesIds", qualifiedByName = "mapLikesToIdList")
@@ -38,11 +42,20 @@ public abstract class CommentMapper {
         return likes.stream().map(Like::getId).toList();
     }
 
-    public void convertPostToEntity(CommentDto commentDto, Comment comment) {
+    public void convertDependenciesToEntity(CommentDto commentDto, Comment comment) {
         if (commentDto.getPostId() != null) {
             Post post = postRepository.findById(commentDto.getPostId())
                     .orElseThrow(() -> new NotFoundException("Post with id " + commentDto.getPostId() + " was not found!"));
             comment.setPost(post);
+        }
+        if (commentDto.getLikesIds() != null && !commentDto.getLikesIds().isEmpty()) {
+            List<Like> likes = new ArrayList<>();
+            commentDto.getLikesIds().forEach(likeId -> {
+                Like like = likeRepository.findById(likeId)
+                        .orElseThrow(() -> new NotFoundException("Like with id " + likeId + " was not found!"));
+                likes.add(like);
+            });
+            comment.setLikes(likes);
         }
     }
 }
