@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
+import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import org.junit.Assert;
@@ -177,5 +178,48 @@ class PostServiceValidatorTest {
                 .thenReturn(Optional.of(post));
 
         Assertions.assertDoesNotThrow(() -> validator.validateToUpdate(1L, "new content"));
+    }
+
+    @Test
+    void validateToDelete_PostNotFound_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        DeletePostException e = Assert.assertThrows(DeletePostException.class, () -> {
+            validator.validateToDelete(1L);
+        });
+        Assertions.assertEquals("Post not found", e.getMessage());
+    }
+
+    @Test
+    void validateToDelete_PostIsNotPublished_ShouldThrowException() {
+        Post post = Post.builder().published(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        DeletePostException e = Assert.assertThrows(DeletePostException.class, () -> {
+            validator.validateToDelete(1L);
+        });
+        Assertions.assertEquals("Post is in draft state. It can't be deleted", e.getMessage());
+    }
+
+    @Test
+    void validateToDelete_PostIsDeleted_ShouldThrowException() {
+        Post post = Post.builder().deleted(true).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        DeletePostException e = Assert.assertThrows(DeletePostException.class, () -> {
+            validator.validateToDelete(1L);
+        });
+        Assertions.assertEquals("Post is already deleted", e.getMessage());
+    }
+
+    @Test
+    void validateToDelete_InputsAreCorrect_ShouldNotThrowException() {
+        Post post = Post.builder().published(true).deleted(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        Assertions.assertDoesNotThrow(() -> validator.validateToDelete(1L));
     }
 }

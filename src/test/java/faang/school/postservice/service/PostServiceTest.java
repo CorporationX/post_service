@@ -100,6 +100,27 @@ public class PostServiceTest {
         Mockito.verify(postRepository, Mockito.times(1)).save(post);
     }
 
+    @Test
+    void deletePost_FieldsShouldBeSet() {
+        Post post = buildPost();
+        Mockito.when(validator.validateToDelete(1L)).thenReturn(post);
+
+        postService.deletePost(1L);
+
+        Assertions.assertTrue(post.isDeleted());
+        Assertions.assertTrue(post.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(2))); // тут не уверен, что стоит так делать
+    }
+
+    @Test
+    void deletePost_ShouldDelete() {
+        Post post = buildPost();
+        Mockito.when(validator.validateToDelete(1L)).thenReturn(post);
+
+        postService.deletePost(1L);
+
+        Mockito.verify(postRepository, Mockito.times(1)).save(post);
+    }
+
     private PostDto buildPostDto() {
         return PostDto.builder()
                 .content("content")

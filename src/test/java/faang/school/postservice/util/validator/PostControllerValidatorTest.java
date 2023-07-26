@@ -1,6 +1,7 @@
 package faang.school.postservice.util.validator;
 
 import faang.school.postservice.util.exception.DataValidationException;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,5 +67,21 @@ class PostControllerValidatorTest {
         String content = "content";
 
         Assertions.assertDoesNotThrow(() -> validator.validateToUpdate(id, content));
+    }
+
+    @Test
+    void validateToDelete_IdIsGreaterThanZero_ShouldNotThrowException() {
+        Long id = 1L;
+
+        Assertions.assertDoesNotThrow(() -> validator.validateToDelete(id));
+    }
+
+    @Test
+    void validateToDelete_IdIsLowerThanZero_ShouldThrowException() {
+        Long id = 0L;
+
+        DataValidationException e = Assert.assertThrows(DataValidationException.class,
+                () -> validator.validateToDelete(id));
+        Assertions.assertEquals("Id should be greater than 0", e.getMessage());
     }
 }
