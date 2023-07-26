@@ -62,4 +62,10 @@ public class PostService {
 
         return postMapper.toDto(post);
     }
+
+    public PostDto getPost(Long id){
+        Post post = validator.validateToGet(id);
+
+        return postMapper.toDto(post);
+    }
 }
