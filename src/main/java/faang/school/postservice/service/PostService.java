@@ -51,4 +51,15 @@ public class PostService {
 
         return postMapper.toDto(post);
     }
+
+    @Transactional
+    public PostDto deletePost(Long id) {
+        Post post = validator.validateToDelete(id);
+        post.setDeleted(true);
+        post.setUpdatedAt(LocalDateTime.now());
+
+        postRepository.save(post);
+
+        return postMapper.toDto(post);
+    }
 }

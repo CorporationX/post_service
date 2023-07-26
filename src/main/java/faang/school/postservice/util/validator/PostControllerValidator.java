@@ -42,6 +42,10 @@ public class PostControllerValidator {
         validateContent(content);
     }
 
+    public void validateToDelete(Long id) {
+        validateId(id);
+    }
+
     private void validateId(Long id) {
         if (id <= 0) {
             throw new DataValidationException("Id should be greater than 0");

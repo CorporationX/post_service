@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
+import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import lombok.RequiredArgsConstructor;
@@ -65,4 +66,18 @@ public class PostServiceValidator {
 
         return postById;
     }
+
+    public Post validateToDelete(Long id) {
+        Post postById = postRepository.findById(id)
+                .orElseThrow(() -> new DeletePostException("Post not found"));
+
+        if (postById.isDeleted()) {
+            throw new DeletePostException("Post is already deleted");
+        }
+        if (!postById.isPublished()) {
+            throw new DeletePostException("Post is in draft state. It can't be deleted");
+        }
+
+        return postById;
+     }
 }
