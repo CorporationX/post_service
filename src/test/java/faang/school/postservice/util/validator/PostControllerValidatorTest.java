@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class PostControllerValidatorTest {
+class PostControllerValidatorTest {
 
     private PostControllerValidator validator;
 
@@ -15,18 +15,56 @@ public class PostControllerValidatorTest {
     }
 
     @Test
-    void validateId_IdIsGreaterThanZero_ShouldNotThrow() {
+    void validateToPublish_IdIsGreaterThanZero_ShouldNotThrowException() {
         Long id = 1L;
 
-        Assertions.assertDoesNotThrow(() -> validator.validateId(id));
+        Assertions.assertDoesNotThrow(() -> validator.validateToPublish(id));
     }
 
     @Test
-    void validateId_IdIsLowerThanOne_ShouldThrow() {
+    void validateToPublish_IdIsLowerThanOne_ShouldThrowException() {
         Long id = 0L;
 
         DataValidationException e = Assertions.assertThrows(DataValidationException.class,
-                () -> validator.validateId(id));
+                () -> validator.validateToPublish(id));
         Assertions.assertEquals("Id should be greater than 0", e.getMessage());
+    }
+
+    @Test
+    void validateToUpdate_IdIsLowerThanOne_ShouldThrowException() {
+        Long id = 0L;
+        String content = "content";
+
+        DataValidationException e = Assertions.assertThrows(DataValidationException.class,
+                () -> validator.validateToUpdate(id, content));
+        Assertions.assertEquals("Id should be greater than 0", e.getMessage());
+    }
+
+    @Test
+    void validateToUpdate_ContentIsNull_ShouldThrowException() {
+        Long id = 1L;
+        String content = null;
+
+        DataValidationException e = Assertions.assertThrows(DataValidationException.class,
+                () -> validator.validateToUpdate(id, content));
+        Assertions.assertEquals("Content should not be empty", e.getMessage());
+    }
+
+    @Test
+    void validateToUpdate_ContentIsBlank_ShouldThrowException() {
+        Long id = 1L;
+        String content = "  ";
+
+        DataValidationException e = Assertions.assertThrows(DataValidationException.class,
+                () -> validator.validateToUpdate(id, content));
+        Assertions.assertEquals("Content should not be empty", e.getMessage());
+    }
+
+    @Test
+    void validateToPublish_IdIsGreaterThanZeroAndContentIsSet_ShouldNotThrowException() {
+        Long id = 1L;
+        String content = "content";
+
+        Assertions.assertDoesNotThrow(() -> validator.validateToUpdate(id, content));
     }
 }

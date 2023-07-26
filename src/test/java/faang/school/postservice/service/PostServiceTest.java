@@ -50,7 +50,7 @@ public class PostServiceTest {
 //    }
 
     @Test
-    void addPost_InputsAreIncorrect_ShouldThrowException() {
+    void addPost_ShouldSave() {
         PostDto postDto = buildPostDto();
 
         postService.addPost(postDto);
@@ -59,7 +59,7 @@ public class PostServiceTest {
     }
 
     @Test
-    void publishPost_InputsAreCorrect_FieldsShouldBeSet() {
+    void publishPost_FieldsShouldBeSet() {
         Post post = buildPost();
         Mockito.when(validator.validateToPublish(1L)).thenReturn(post);
 
@@ -70,11 +70,32 @@ public class PostServiceTest {
     }
 
     @Test
-    void publishPost_InputsAreCorrect_ShouldPublish() {
+    void publishPost_ShouldPublish() {
         Post post = buildPost();
         Mockito.when(validator.validateToPublish(1L)).thenReturn(post);
 
         postService.publishPost(1L);
+
+        Mockito.verify(postRepository, Mockito.times(1)).save(post);
+    }
+
+    @Test
+    void updatePost_FieldsShouldBeSet() {
+        Post post = buildPost();
+        Mockito.when(validator.validateToUpdate(1L, "content")).thenReturn(post);
+
+        postService.updatePost(1L, "content");
+
+        Assertions.assertEquals("content", post.getContent());
+        Assertions.assertTrue(post.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(2))); // тут не уверен, что стоит так делать
+    }
+
+    @Test
+    void updatePost_ShouldPublish() {
+        Post post = buildPost();
+        Mockito.when(validator.validateToUpdate(1L, "content")).thenReturn(post);
+
+        postService.updatePost(1L, "content");
 
         Mockito.verify(postRepository, Mockito.times(1)).save(post);
     }

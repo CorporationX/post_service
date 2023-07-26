@@ -7,6 +7,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.PublishPostException;
+import faang.school.postservice.util.exception.UpdatePostException;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-public class PostServiceValidatorTest {
+class PostServiceValidatorTest {
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -121,5 +122,60 @@ public class PostServiceValidatorTest {
                 .thenReturn(Optional.of(post));
 
         Assertions.assertEquals(post, validator.validateToPublish(1L));
+    }
+
+    @Test
+    void validateToUpdate_PostNotFound_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            validator.validateToUpdate(1L, "content");
+        });
+        Assertions.assertEquals("Post not found", e.getMessage());
+    }
+
+    @Test
+    void validateToUpdate_PostIsDeleted_ShouldThrowException() {
+        Post post = Post.builder().deleted(true).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            validator.validateToUpdate(1L, "content");
+        });
+        Assertions.assertEquals("Post is already deleted", e.getMessage());
+    }
+
+    @Test
+    void validateToUpdate_PostIsNotPublished_ShouldThrowException() {
+        Post post = Post.builder().published(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            validator.validateToUpdate(1L, "content");
+        });
+        Assertions.assertEquals("Post is in draft state. It can't be updated", e.getMessage());
+    }
+
+    @Test
+    void validateToUpdate_ContentIsTheSame_ShouldThrowException() {
+        Post post = Post.builder().published(true).content("content").build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            validator.validateToUpdate(1L, "content");
+        });
+        Assertions.assertEquals("There is no changes to update", e.getMessage());
+    }
+
+    @Test
+    void validateToUpdate_InputsAreCorrect_ShouldNotThrowException() {
+        Post post = Post.builder().published(true).content("old content").build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        Assertions.assertDoesNotThrow(() -> validator.validateToUpdate(1L, "new content"));
     }
 }
