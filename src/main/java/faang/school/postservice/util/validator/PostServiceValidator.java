@@ -7,6 +7,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.PublishPostException;
+import faang.school.postservice.util.exception.UpdatePostException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -43,6 +44,23 @@ public class PostServiceValidator {
 
         if (postById.isDeleted()) {
             throw new PublishPostException("Post is already deleted");
+        }
+
+        return postById;
+    }
+
+    public Post validateToUpdate(Long id, String content) {
+        Post postById = postRepository.findById(id)
+                .orElseThrow(() -> new UpdatePostException("Post not found"));
+
+        if (postById.isDeleted()) {
+            throw new UpdatePostException("Post is already deleted");
+        }
+        if (!postById.isPublished()) {
+            throw new UpdatePostException("Post is in draft state. It can't be updated");
+        }
+        if (postById.getContent().equals(content)) {
+            throw new UpdatePostException("There is no changes to update");
         }
 
         return postById;

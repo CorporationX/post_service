@@ -15,7 +15,7 @@ import java.util.List;
 public class PostControllerValidator {
 
     @SneakyThrows
-    public void validatePost(PostDto postDto) {
+    public void validateToAdd(PostDto postDto) {
         BindingResult bindingResult = new BeanPropertyBindingResult(postDto, "postDto");
 
         if (bindingResult.hasErrors()) {
@@ -33,9 +33,24 @@ public class PostControllerValidator {
         }
     }
 
-    public void validateId(Long id) {
+    public void validateToPublish(Long id) {
+        validateId(id);
+    }
+
+    public void validateToUpdate(Long id, String content) {
+        validateId(id);
+        validateContent(content);
+    }
+
+    private void validateId(Long id) {
         if (id <= 0) {
             throw new DataValidationException("Id should be greater than 0");
+        }
+    }
+
+    private void validateContent(String content) {
+        if (content == null || content.isBlank()) {
+            throw new DataValidationException("Content should not be empty");
         }
     }
 }

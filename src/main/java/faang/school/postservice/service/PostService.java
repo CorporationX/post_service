@@ -37,6 +37,18 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         postRepository.save(post);
+
+        return postMapper.toDto(post);
+    }
+
+    @Transactional
+    public PostDto updatePost(Long id, String content) {
+        Post post = validator.validateToUpdate(id, content);
+        post.setContent(content);
+        post.setUpdatedAt(LocalDateTime.now());
+
+        postRepository.save(post);
+
         return postMapper.toDto(post);
     }
 }

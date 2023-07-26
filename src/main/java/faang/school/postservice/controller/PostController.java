@@ -22,16 +22,23 @@ public class PostController {
 
     @PostMapping("/add")
     ResponseEntity<PostDto> addPost(@RequestBody PostDto dto) {
-        validator.validatePost(dto);
+        validator.validateToAdd(dto);
 
         return ResponseEntity.ok(postService.addPost(dto));
     }
 
     @PutMapping("/publish/{id}")
     ResponseEntity<PostDto> publishPost(@PathVariable Long id) {
-        validator.validateId(id);
+        validator.validateToPublish(id);
 
         return ResponseEntity.ok(postService.publishPost(id));
+    }
+
+    @PutMapping("/update/{id}")
+    ResponseEntity<PostDto> updatePost(@PathVariable Long id, @RequestBody String content) {
+        validator.validateToUpdate(id, content);
+
+        return ResponseEntity.ok(postService.updatePost(id, content));
     }
 }
 
