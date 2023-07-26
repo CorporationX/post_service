@@ -7,6 +7,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
+import faang.school.postservice.util.exception.GetPostException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import org.junit.Assert;
@@ -221,5 +222,48 @@ class PostServiceValidatorTest {
                 .thenReturn(Optional.of(post));
 
         Assertions.assertDoesNotThrow(() -> validator.validateToDelete(1L));
+    }
+
+    @Test
+    void validateToGet_PostNotFound_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        GetPostException e = Assert.assertThrows(GetPostException.class, () -> {
+            validator.validateToGet(1L);
+        });
+        Assertions.assertEquals("Post not found", e.getMessage());
+    }
+
+    @Test
+    void validateToGet_PostIsDeleted_ShouldThrowException() {
+        Post post = Post.builder().deleted(true).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        GetPostException e = Assert.assertThrows(GetPostException.class, () -> {
+            validator.validateToGet(1L);
+        });
+        Assertions.assertEquals("Post is already deleted", e.getMessage());
+    }
+
+    @Test
+    void validateToGet_PostIsNotPublished_ShouldThrowException() {
+        Post post = Post.builder().published(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        GetPostException e = Assert.assertThrows(GetPostException.class, () -> {
+            validator.validateToGet(1L);
+        });
+        Assertions.assertEquals("Post is in draft state. It can't be gotten", e.getMessage());
+    }
+
+    @Test
+    void validateToGet_InputsAreCorrect_ShouldNotThrowException() {
+        Post post = Post.builder().published(true).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        Assertions.assertDoesNotThrow(() -> validator.validateToGet(1L));
     }
 }
