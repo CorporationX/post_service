@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 
 @Service
 @Transactional(readOnly = true)
@@ -21,10 +23,20 @@ public class PostService {
 
     @Transactional
     public PostDto addPost(PostDto dto) {
-        validator.validatePost(dto);
+        validator.validateToAdd(dto);
         Post post = postMapper.toEntity(dto);
         postRepository.save(post);
 
+        return postMapper.toDto(post);
+    }
+
+    @Transactional
+    public PostDto publishPost(Long id) {
+        Post post = validator.validateToPublish(id);
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+
+        postRepository.save(post);
         return postMapper.toDto(post);
     }
 }
