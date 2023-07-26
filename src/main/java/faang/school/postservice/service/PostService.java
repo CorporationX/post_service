@@ -1,15 +1,22 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.ProjectServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.util.exception.DeletePostException;
+import faang.school.postservice.util.exception.GetPostException;
+import faang.school.postservice.util.exception.PublishPostException;
+import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 
 @Service
@@ -20,10 +27,20 @@ public class PostService {
     private final PostServiceValidator validator;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final UserServiceClient userServiceClient;
+    private final ProjectServiceClient projectServiceClient;
 
     @Transactional
     public PostDto addPost(PostDto dto) {
         validator.validateToAdd(dto);
+
+        if (dto.getAuthorId() != null) {
+            userServiceClient.getUser(dto.getAuthorId()); // если такого пользователя или эндпоинта нет, то выбросит FeignException, я его поймаю в ExceptionHandler
+        }
+        if (dto.getProjectId() != null) {
+            projectServiceClient.getProject(dto.getProjectId());
+        }
+
         Post post = postMapper.toEntity(dto);
         postRepository.save(post);
 
@@ -32,40 +49,55 @@ public class PostService {
 
     @Transactional
     public PostDto publishPost(Long id) {
-        Post post = validator.validateToPublish(id);
-        post.setPublished(true);
-        post.setPublishedAt(LocalDateTime.now());
+        Post postById = postRepository.findById(id)
+                .orElseThrow(() -> new PublishPostException("Post not found"));
 
-        postRepository.save(post);
+        validator.validateToPublish(postById);
 
-        return postMapper.toDto(post);
+        postById.setPublished(true);
+        postById.setPublishedAt(LocalDateTime.now());
+
+        postRepository.save(postById);
+
+        return postMapper.toDto(postById);
     }
 
     @Transactional
     public PostDto updatePost(Long id, String content) {
-        Post post = validator.validateToUpdate(id, content);
-        post.setContent(content);
-        post.setUpdatedAt(LocalDateTime.now());
+        Post postById = postRepository.findById(id)
+                .orElseThrow(() -> new UpdatePostException("Post not found"));
 
-        postRepository.save(post);
+        validator.validateToUpdate(postById, content);
 
-        return postMapper.toDto(post);
+        postById.setContent(content);
+        postById.setUpdatedAt(LocalDateTime.now());
+
+        postRepository.save(postById);
+
+        return postMapper.toDto(postById);
     }
 
     @Transactional
     public PostDto deletePost(Long id) {
-        Post post = validator.validateToDelete(id);
-        post.setDeleted(true);
-        post.setUpdatedAt(LocalDateTime.now());
+        Post postById = postRepository.findById(id)
+                .orElseThrow(() -> new DeletePostException("Post not found"));
 
-        postRepository.save(post);
+        validator.validateToDelete(postById);
 
-        return postMapper.toDto(post);
+        postById.setDeleted(true);
+        postById.setUpdatedAt(LocalDateTime.now());
+
+        postRepository.save(postById);
+
+        return postMapper.toDto(postById);
     }
 
     public PostDto getPost(Long id){
-        Post post = validator.validateToGet(id);
+        Post postById = postRepository.findById(id)
+                .orElseThrow(() -> new GetPostException("Post not found"));
 
-        return postMapper.toDto(post);
+        validator.validateToGet(postById);
+
+        return postMapper.toDto(postById);
     }
 }

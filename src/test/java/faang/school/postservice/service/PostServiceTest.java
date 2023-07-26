@@ -1,10 +1,17 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.ProjectServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.util.exception.CreatePostException;
+import faang.school.postservice.util.exception.DeletePostException;
+import faang.school.postservice.util.exception.GetPostException;
+import faang.school.postservice.util.exception.PublishPostException;
+import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
@@ -24,7 +31,7 @@ import java.util.Optional;
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
 
-    @Mock
+    @Spy
     private PostServiceValidator validator;
 
     @Mock
@@ -33,22 +40,62 @@ public class PostServiceTest {
     @Spy
     private PostMapper postMapper;
 
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private ProjectServiceClient projectServiceClient;
+
     @InjectMocks
     private PostService postService;
 
+    private PostDto postDto;
+
     @BeforeEach
     void setUp() {
-        Mockito.lenient().doNothing().when(validator).validateToAdd(Mockito.any());
+        postDto = PostDto.builder()
+                .id(1L)
+                .authorId(1L)
+                .build();
     }
 
-//    @Test
-//    void addPost_InputsAreCorrect_ShouldGetCorrectPost() {
-//        PostDto postDto = buildPostDto();
-//
-//        postService.addPost(postDto);
-//
-//        Assert.assertEquals(buildPost(), );
-//    }
+    @Test
+    void addPost_BothProjectAndAuthorExist_ShouldThrowException() {
+        postDto.setProjectId(1L);
+
+        CreatePostException e = Assert.assertThrows(CreatePostException.class, () -> {
+            postService.addPost(postDto);
+        });
+        Assertions.assertEquals("There is should be only one author", e.getMessage());
+    }
+
+    @Test
+    void addPost_BothProjectAndAuthorAreNull_ShouldThrowException() {
+        postDto.setAuthorId(null);
+        postDto.setProjectId(null);
+
+        CreatePostException e = Assert.assertThrows(CreatePostException.class, () -> {
+            postService.addPost(postDto);
+        });
+        Assertions.assertEquals("There is should be only one author", e.getMessage());
+    }
+
+    @Test
+    void addPost_ByAuthor_ShouldSave() {
+        postService.addPost(postDto);
+
+        Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());
+    }
+
+    @Test
+    void addPost_ByProject_ShouldSave() {
+        postDto.setAuthorId(null);
+        postDto.setProjectId(1L);
+
+        postService.addPost(postDto);
+
+        Mockito.verify(projectServiceClient, Mockito.times(1)).getProject(postDto.getProjectId());
+    }
 
     @Test
     void addPost_ShouldSave() {
@@ -56,13 +103,56 @@ public class PostServiceTest {
 
         postService.addPost(postDto);
 
-        Mockito.verify(postMapper, Mockito.times(1)).toDto(Mockito.any());
+        Mockito.verify(postRepository, Mockito.times(1)).save(Mockito.any());
+    }
+
+    @Test
+    void publishPost_PostNotFound_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.empty());
+
+        PublishPostException e = Assert.assertThrows(PublishPostException.class, () -> {
+            postService.publishPost(1L);
+        });
+        Assertions.assertEquals("Post not found", e.getMessage());
+    }
+
+    @Test
+    void publishPost_PostIsPublished_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(Post.builder().published(true).build()));
+
+        PublishPostException e = Assert.assertThrows(PublishPostException.class, () -> {
+            postService.publishPost(1L);
+        });
+        Assertions.assertEquals("Post is already published", e.getMessage());
+    }
+
+    @Test
+    void publishPost_PostIsDeleted_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(Post.builder().deleted(true).build()));
+
+        PublishPostException e = Assert.assertThrows(PublishPostException.class, () -> {
+            postService.publishPost(1L);
+        });
+        Assertions.assertEquals("Post is already deleted", e.getMessage());
+    }
+
+    @Test
+    void publishPost_PostIsNotPublishedOrDeleted_ShouldNotThrowException() {
+        Post post = Post.builder().published(false).deleted(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        Assertions.assertDoesNotThrow(() -> postService.publishPost(1L));
     }
 
     @Test
     void publishPost_FieldsShouldBeSet() {
         Post post = buildPost();
-        Mockito.when(validator.validateToPublish(1L)).thenReturn(post);
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
 
         postService.publishPost(1L);
 
@@ -73,7 +163,7 @@ public class PostServiceTest {
     @Test
     void publishPost_ShouldPublish() {
         Post post = buildPost();
-        Mockito.when(validator.validateToPublish(1L)).thenReturn(post);
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
         postService.publishPost(1L);
 
@@ -81,31 +171,133 @@ public class PostServiceTest {
     }
 
     @Test
+    void updatePost_PostNotFound_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            postService.updatePost(1L, "content");
+        });
+        Assertions.assertEquals("Post not found", e.getMessage());
+    }
+
+    @Test
+    void updatePost_PostIsDeleted_ShouldThrowException() {
+        Post post = Post.builder().deleted(true).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            postService.updatePost(1L, "content");
+        });
+        Assertions.assertEquals("Post is already deleted", e.getMessage());
+    }
+
+    @Test
+    void updatePost_PostIsNotPublished_ShouldThrowException() {
+        Post post = Post.builder().published(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            postService.updatePost(1L, "content");
+        });
+        Assertions.assertEquals("Post is in draft state. It can't be updated", e.getMessage());
+    }
+
+    @Test
+    void updatePost_ContentIsTheSame_ShouldThrowException() {
+        Post post = Post.builder().published(true).content("content").build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            postService.updatePost(1L, "content");
+        });
+        Assertions.assertEquals("There is no changes to update", e.getMessage());
+    }
+
+    @Test
+    void updatePost_InputsAreCorrect_ShouldNotThrowException() {
+        Post post = Post.builder().published(true).content("old content").build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        Assertions.assertDoesNotThrow(() -> postService.updatePost(1L, "new content"));
+    }
+
+    @Test
     void updatePost_FieldsShouldBeSet() {
         Post post = buildPost();
-        Mockito.when(validator.validateToUpdate(1L, "content")).thenReturn(post);
+        post.setPublished(true);
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
 
-        postService.updatePost(1L, "content");
+        postService.updatePost(1L, "cont");
 
-        Assertions.assertEquals("content", post.getContent());
+        Assertions.assertEquals("cont", post.getContent());
         Assertions.assertTrue(post.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(2))); // тут не уверен, что стоит так делать
     }
 
     @Test
     void updatePost_ShouldPublish() {
         Post post = buildPost();
-        Mockito.when(validator.validateToUpdate(1L, "content")).thenReturn(post);
+        post.setPublished(true);
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
 
-        postService.updatePost(1L, "content");
+        postService.updatePost(1L, "cont");
 
         Mockito.verify(postRepository, Mockito.times(1)).save(post);
     }
 
     @Test
-    void deletePost_FieldsShouldBeSet() {
-        Post post = buildPost();
-        Mockito.when(validator.validateToDelete(1L)).thenReturn(post);
+    void deletePost_PostNotFound_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
+        DeletePostException e = Assert.assertThrows(DeletePostException.class, () -> {
+            postService.deletePost(1L);
+        });
+        Assertions.assertEquals("Post not found", e.getMessage());
+    }
+
+    @Test
+    void deletePost_PostIsNotPublished_ShouldThrowException() {
+        Post post = Post.builder().published(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        DeletePostException e = Assert.assertThrows(DeletePostException.class, () -> {
+            postService.deletePost(1L);
+        });
+        Assertions.assertEquals("Post is in draft state. It can't be deleted", e.getMessage());
+    }
+
+    @Test
+    void deletePost_PostIsDeleted_ShouldThrowException() {
+        Post post = Post.builder().deleted(true).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        DeletePostException e = Assert.assertThrows(DeletePostException.class, () -> {
+            postService.deletePost(1L);
+        });
+        Assertions.assertEquals("Post is already deleted", e.getMessage());
+    }
+
+    @Test
+    void deletePost_InputsAreCorrect_ShouldNotThrowException() {
+        Post post = Post.builder().published(true).deleted(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        Assertions.assertDoesNotThrow(() -> postService.deletePost(1L));
+    }
+
+    @Test
+    void deletePost_FieldsShouldBeSet() {
+        Post post = Post.builder().published(true).deleted(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
         postService.deletePost(1L);
 
         Assertions.assertTrue(post.isDeleted());
@@ -114,12 +306,57 @@ public class PostServiceTest {
 
     @Test
     void deletePost_ShouldDelete() {
-        Post post = buildPost();
-        Mockito.when(validator.validateToDelete(1L)).thenReturn(post);
+        Post post = Post.builder().published(true).deleted(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
 
         postService.deletePost(1L);
 
         Mockito.verify(postRepository, Mockito.times(1)).save(post);
+    }
+
+    @Test
+    void getPost_PostNotFound_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        GetPostException e = Assert.assertThrows(GetPostException.class, () -> {
+            postService.getPost(1L);
+        });
+
+        Assertions.assertEquals("Post not found", e.getMessage());
+    }
+
+    @Test
+    void getPost_PostIsDeleted_ShouldThrowException() {
+        Post post = Post.builder().deleted(true).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        GetPostException e = Assert.assertThrows(GetPostException.class, () -> {
+            postService.getPost(1L);
+        });
+        Assertions.assertEquals("Post is already deleted", e.getMessage());
+    }
+
+    @Test
+    void validateToGet_PostIsNotPublished_ShouldThrowException() {
+        Post post = Post.builder().published(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        GetPostException e = Assert.assertThrows(GetPostException.class, () -> {
+            postService.getPost(1L);
+        });
+        Assertions.assertEquals("Post is in draft state. It can't be gotten", e.getMessage());
+    }
+
+    @Test
+    void validateToGet_InputsAreCorrect_ShouldNotThrowException() {
+        Post post = Post.builder().published(true).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        Assertions.assertDoesNotThrow(() -> postService.getPost(1L));
     }
 
     private PostDto buildPostDto() {
