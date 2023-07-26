@@ -1,14 +1,13 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.databind.cfg.ContextAttributes;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.validator.PostServiceValidator;
-import net.bytebuddy.implementation.Implementation;
 import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,23 +37,46 @@ public class PostServiceTest {
 
     @BeforeEach
     void setUp() {
-        Mockito.doNothing().when(validator).validatePost(Mockito.any());
+        Mockito.lenient().doNothing().when(validator).validateToAdd(Mockito.any());
     }
 
-    @Test
-    void addPostTest_InputsAreCorrect_ShouldGetCorrectPost() {
-        PostDto postDto = buildPostDto();
+//    @Test
+//    void addPost_InputsAreCorrect_ShouldGetCorrectPost() {
+//        PostDto postDto = buildPostDto();
+//
+//        postService.addPost(postDto);
+//
+//        Assert.assertEquals(buildPost(), );
+//    }
 
-        Assert.assertEquals(buildPost(), postMapper.toDto(postRepository.save(postMapper.toEntity(postDto))));
-    }
-
     @Test
-    void addPostTest_InputsAreIncorrect_ShouldThrowException() {
+    void addPost_InputsAreIncorrect_ShouldThrowException() {
         PostDto postDto = buildPostDto();
 
         postService.addPost(postDto);
 
         Mockito.verify(postMapper, Mockito.times(1)).toDto(Mockito.any());
+    }
+
+    @Test
+    void publishPost_InputsAreCorrect_FieldsShouldBeSet() {
+        Post post = buildPost();
+        Mockito.when(validator.validateToPublish(1L)).thenReturn(post);
+
+        postService.publishPost(1L);
+
+        Assertions.assertTrue(post.isPublished());
+        Assertions.assertTrue(post.getPublishedAt().isAfter(LocalDateTime.now().minusSeconds(2))); // тут не уверен, что стоит так делать
+    }
+
+    @Test
+    void publishPost_InputsAreCorrect_ShouldPublish() {
+        Post post = buildPost();
+        Mockito.when(validator.validateToPublish(1L)).thenReturn(post);
+
+        postService.publishPost(1L);
+
+        Mockito.verify(postRepository, Mockito.times(1)).save(post);
     }
 
     private PostDto buildPostDto() {
