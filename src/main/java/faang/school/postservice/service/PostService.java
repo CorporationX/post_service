@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.PublishPostException;
+import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,21 @@ public class PostService {
 
         postById.setPublished(true);
         postById.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+
+        postRepository.save(postById);
+
+        return postMapper.toDto(postById);
+    }
+
+    @Transactional
+    public PostDto updatePost(Long id, String content) {
+        Post postById = postRepository.findById(id)
+                .orElseThrow(() -> new UpdatePostException("Post not found"));
+
+        validator.validateToUpdate(postById, content);
+
+        postById.setContent(content);
+        postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
 

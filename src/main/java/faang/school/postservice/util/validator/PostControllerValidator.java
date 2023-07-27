@@ -37,9 +37,20 @@ public class PostControllerValidator {
         validateId(id);
     }
 
+    public void validateToUpdate(Long id, String content) {
+        validateId(id);
+        validateContent(content);
+    }
+
     private void validateId(Long id) {
         if (id <= 0) {
             throw new DataValidationException("Id should be greater than 0");
+        }
+    }
+
+    private void validateContent(String content) {
+        if (content == null || content.isBlank()) {
+            throw new DataValidationException("Content should not be empty");
         }
     }
 }

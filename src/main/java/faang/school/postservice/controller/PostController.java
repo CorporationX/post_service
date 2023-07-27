@@ -33,5 +33,12 @@ public class PostController {
 
         return ResponseEntity.ok(postService.publishPost(id));
     }
+
+    @PutMapping("/update/{id}")
+    ResponseEntity<PostDto> updatePost(@PathVariable Long id, @RequestBody String content) {
+        validator.validateToUpdate(id, content);
+
+        return ResponseEntity.ok(postService.updatePost(id, content));
+    }
 }
 
