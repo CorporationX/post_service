@@ -1,14 +1,16 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.databind.cfg.ContextAttributes;
+import faang.school.postservice.client.ProjectServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
-import net.bytebuddy.implementation.Implementation;
 import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,42 +21,103 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 
 @ExtendWith(MockitoExtension.class)
-public class PostServiceTest {
+class PostServiceTest {
 
-    @Mock
+    @Spy
     private PostServiceValidator validator;
 
     @Mock
     private PostRepository postRepository;
 
     @Spy
-    private PostMapper postMapper;
+    private PostMapperImpl postMapper;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private ProjectServiceClient projectServiceClient;
 
     @InjectMocks
     private PostService postService;
 
+    private PostDto postDto;
+
     @BeforeEach
     void setUp() {
-        Mockito.doNothing().when(validator).validatePost(Mockito.any());
+        postDto = PostDto.builder()
+                .id(1L)
+                .authorId(1L)
+                .build();
     }
 
     @Test
-    void addPostTest_InputsAreCorrect_ShouldGetCorrectPost() {
-        PostDto postDto = buildPostDto();
+    void addPost_BothProjectAndAuthorExist_ShouldThrowException() {
+        postDto.setProjectId(1L);
 
-        Assert.assertEquals(buildPost(), postMapper.toDto(postRepository.save(postMapper.toEntity(postDto))));
+        CreatePostException e = Assert.assertThrows(CreatePostException.class, () -> {
+            postService.addPost(postDto);
+        });
+        Assertions.assertEquals("There is should be only one author", e.getMessage());
     }
 
     @Test
-    void addPostTest_InputsAreIncorrect_ShouldThrowException() {
+    void addPost_BothProjectAndAuthorAreNull_ShouldThrowException() {
+        postDto.setAuthorId(null);
+        postDto.setProjectId(null);
+
+        CreatePostException e = Assert.assertThrows(CreatePostException.class, () -> {
+            postService.addPost(postDto);
+        });
+        Assertions.assertEquals("There is should be only one author", e.getMessage());
+    }
+
+    @Test
+    void addPost_ShouldMapCorrectlyToEntity() {
+        PostDto dto = buildPostDto();
+
+        Post actual = postMapper.toEntity(dto);
+
+        Assertions.assertEquals(buildPost(), actual);
+    }
+
+    @Test
+    void addPost_ShouldMapCorrectlyToDto() {
+        Post post = buildPost();
+
+        PostDto actual = postMapper.toDto(post);
+
+        Assertions.assertEquals(buildExpectedPostDto(), actual);
+    }
+
+    @Test
+    void addPost_ByAuthor_ShouldSave() {
+        postService.addPost(postDto);
+
+        Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());
+    }
+
+    @Test
+    void addPost_ByProject_ShouldSave() {
+        postDto.setAuthorId(null);
+        postDto.setProjectId(1L);
+
+        postService.addPost(postDto);
+
+        Mockito.verify(projectServiceClient, Mockito.times(1)).getProject(postDto.getProjectId());
+    }
+
+    @Test
+    void addPost_ShouldSave() {
         PostDto postDto = buildPostDto();
 
         postService.addPost(postDto);
 
-        Mockito.verify(postMapper, Mockito.times(1)).toDto(Mockito.any());
+        Mockito.verify(postRepository, Mockito.times(1)).save(Mockito.any());
     }
 
     private PostDto buildPostDto() {
@@ -76,7 +139,22 @@ public class PostServiceTest {
                 .albums(new ArrayList<>())
                 .published(false)
                 .deleted(false)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .build();
+    }
+
+    private PostDto buildExpectedPostDto() {
+        return PostDto.builder()
+                .id(0L)
+                .content("content")
+                .authorId(1L)
+                .adId(1L)
+                .likes(new ArrayList<>())
+                .comments(new ArrayList<>())
+                .albums(new ArrayList<>())
+                .published(false)
+                .deleted(false)
+                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
                 .build();
     }
 }

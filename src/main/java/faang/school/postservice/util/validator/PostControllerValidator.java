@@ -14,7 +14,7 @@ import java.util.List;
 public class PostControllerValidator {
 
     @SneakyThrows
-    public void validatePost(PostDto postDto) {
+    public void validateToAdd(PostDto postDto) {
         BindingResult bindingResult = new BeanPropertyBindingResult(postDto, "postDto");
 
         if (bindingResult.hasErrors()) {
