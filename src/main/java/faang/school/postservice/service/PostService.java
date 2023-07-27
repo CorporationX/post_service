@@ -112,7 +112,7 @@ public class PostService {
 
         return postMapper.toDtos(draftsByProjectId);
     }
-// это уже следующий таск
+
     public List<PostDto> getPostsByAuthorId(Long authorId){
         List<Post> postsByAuthorId = postRepository.findPublishedPostsByAuthorId(authorId);
 
