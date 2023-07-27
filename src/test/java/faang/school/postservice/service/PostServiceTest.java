@@ -28,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -381,6 +382,21 @@ class PostServiceTest {
         Assertions.assertDoesNotThrow(() -> postService.getPost(1L));
     }
 
+    @Test
+    void getDrafts_ShouldMapCorrectlyToDtos() {
+        List<Post> posts = buildListOfPosts();
+
+        List<PostDto> actual = postMapper.toDtos(posts);
+
+        Assertions.assertIterableEquals(buildListOfPostDtos(), actual);
+    }
+
+    @Test
+    void getDraftsByAuthorId_ShouldNotThrowException() {
+        Assertions.assertDoesNotThrow(() -> postService.getDraftsByAuthorId(1L));
+        Mockito.verify(postRepository, Mockito.times(1)).findReadyToPublishByAuthorId(1L);
+    }
+
     private PostDto buildPostDto() {
         return PostDto.builder()
                 .content("content")
@@ -417,5 +433,21 @@ class PostServiceTest {
                 .deleted(false)
                 .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
                 .build();
+    }
+
+    private List<Post> buildListOfPosts() {
+        return List.of(
+                buildPost(),
+                buildPost(),
+                buildPost()
+        );
+    }
+
+    private List<PostDto> buildListOfPostDtos() {
+        return List.of(
+                buildExpectedPostDto(),
+                buildExpectedPostDto(),
+                buildExpectedPostDto()
+        );
     }
 }
