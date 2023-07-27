@@ -403,6 +403,12 @@ class PostServiceTest {
         Mockito.verify(postRepository, Mockito.times(1)).findReadyToPublishByProjectId(1L);
     }
 
+    @Test
+    void getPostsByAuthorId_ShouldNotThrowException() {
+        Assertions.assertDoesNotThrow(() -> postService.getPostsByAuthorId(1L));
+        Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByAuthorId(1L);
+    }
+
     private PostDto buildPostDto() {
         return PostDto.builder()
                 .content("content")
