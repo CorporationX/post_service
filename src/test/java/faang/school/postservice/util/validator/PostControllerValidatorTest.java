@@ -108,4 +108,20 @@ class PostControllerValidatorTest {
                 () -> validator.validateToGetByAuthorId(id));
         Assertions.assertEquals("Id should be greater than 0", e.getMessage());
     }
+
+    @Test
+    void validateToGetByProjectId_IdIsGreaterThanZero_ShouldNotThrowException() {
+        Long id = 1L;
+
+        Assertions.assertDoesNotThrow(() -> validator.validateToGetByProjectId(id));
+    }
+
+    @Test
+    void validateToGetByProjectId_IdIsLowerThanZero_ShouldThrowException() {
+        Long id = 0L;
+
+        DataValidationException e = Assert.assertThrows(DataValidationException.class,
+                () -> validator.validateToGetByProjectId(id));
+        Assertions.assertEquals("Id should be greater than 0", e.getMessage());
+    }
 }

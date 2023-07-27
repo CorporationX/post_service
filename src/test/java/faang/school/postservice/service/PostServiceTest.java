@@ -397,6 +397,12 @@ class PostServiceTest {
         Mockito.verify(postRepository, Mockito.times(1)).findReadyToPublishByAuthorId(1L);
     }
 
+    @Test
+    void getDraftsByProjectId_ShouldNotThrowException() {
+        Assertions.assertDoesNotThrow(() -> postService.getDraftsByProjectId(1L));
+        Mockito.verify(postRepository, Mockito.times(1)).findReadyToPublishByProjectId(1L);
+    }
+
     private PostDto buildPostDto() {
         return PostDto.builder()
                 .content("content")
