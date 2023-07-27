@@ -339,7 +339,7 @@ public class PostServiceTest {
     }
 
     @Test
-    void validateToGet_PostIsNotPublished_ShouldThrowException() {
+    void getPost_PostIsNotPublished_ShouldThrowException() {
         Post post = Post.builder().published(false).build();
         Mockito.when(postRepository.findById(1L))
                 .thenReturn(Optional.of(post));
@@ -351,12 +351,18 @@ public class PostServiceTest {
     }
 
     @Test
-    void validateToGet_InputsAreCorrect_ShouldNotThrowException() {
+    void getPost_InputsAreCorrect_ShouldNotThrowException() {
         Post post = Post.builder().published(true).build();
         Mockito.when(postRepository.findById(1L))
                 .thenReturn(Optional.of(post));
 
         Assertions.assertDoesNotThrow(() -> postService.getPost(1L));
+    }
+
+    @Test
+    void getPostsByAuthorId_ShouldNotThrowException() {
+        Assertions.assertDoesNotThrow(() -> postService.getPostsByAuthorId(1L));
+        Mockito.verify(postRepository, Mockito.times(1)).findReadyToPublishByAuthorId(1L);
     }
 
     private PostDto buildPostDto() {
