@@ -58,7 +58,21 @@ public class PostController {
         return ResponseEntity.ok(postService.getPost(id));
     }
 
-    @GetMapping("/author/{id}")
+    @GetMapping("/author/drafts/{id}")
+    ResponseEntity<DtosResponse> getDraftsByAuthorId(@PathVariable Long authorId){
+        validator.validateToGetByAuthorId(authorId);
+
+        return ResponseEntity.ok(new DtosResponse(postService.getDraftsByAuthorId(authorId)));
+    }
+
+    @GetMapping("/project/drafts/{id}")
+    ResponseEntity<DtosResponse> getDraftsByProjectId(@PathVariable Long projectId){
+        validator.validateToGetByProjectId(projectId);
+
+        return ResponseEntity.ok(new DtosResponse(postService.getDraftsByProjectId(projectId)));
+    }
+    // это уже следующий таск
+    @GetMapping("/author/posts/{id}")
     ResponseEntity<DtosResponse> getPostsByAuthorId(@PathVariable Long authorId){
         validator.validateToGetByAuthorId(authorId);
 

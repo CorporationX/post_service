@@ -2,7 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.post.DtosResponse;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -103,9 +101,21 @@ public class PostService {
         return postMapper.toDto(postById);
     }
 
-    public List<PostDto> getPostsByAuthorId(Long authorId){
-        List<Post> postsById = postRepository.findReadyToPublishByAuthorId(authorId);
+    public List<PostDto> getDraftsByAuthorId(Long authorId){
+        List<Post> draftsByAuthorId = postRepository.findReadyToPublishByAuthorId(authorId);
 
-        return postMapper.toDtos(postsById);
+        return postMapper.toDtos(draftsByAuthorId);
+    }
+
+    public List<PostDto> getDraftsByProjectId(Long projectId) {
+        List<Post> draftsByProjectId = postRepository.findReadyToPublishByProjectId(projectId);
+
+        return postMapper.toDtos(draftsByProjectId);
+    }
+// это уже следующий таск
+    public List<PostDto> getPostsByAuthorId(Long authorId){
+        List<Post> postsByAuthorId = postRepository.findPublishedPostsByAuthorId(authorId);
+
+        return postMapper.toDtos(postsByAuthorId);
     }
 }
