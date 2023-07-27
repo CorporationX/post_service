@@ -78,5 +78,12 @@ public class PostController {
 
         return ResponseEntity.ok(new DtosResponse(postService.getPostsByAuthorId(authorId)));
     }
+
+    @GetMapping("/project/posts/{id}")
+    ResponseEntity<DtosResponse> getPostsByProjectId(@PathVariable Long projectId){
+        validator.validateToGetByProjectId(projectId);
+
+        return ResponseEntity.ok(new DtosResponse(postService.getPostsByProjectId(projectId)));
+    }
 }
 

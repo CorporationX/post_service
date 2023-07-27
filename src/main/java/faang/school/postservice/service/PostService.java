@@ -119,4 +119,10 @@ public class PostService {
 
         return postMapper.toDtos(postsByAuthorId);
     }
+
+    public List<PostDto> getPostsByProjectId(Long projectId) {
+        List<Post> postsByProjectId = postRepository.findPublishedPostsByProjectId(projectId);
+
+        return postMapper.toDtos(postsByProjectId);
+    }
 }
