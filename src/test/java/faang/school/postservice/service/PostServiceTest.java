@@ -377,6 +377,12 @@ public class PostServiceTest {
         Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByAuthorId(1L);
     }
 
+    @Test
+    void getPostsByProjectId_ShouldNotThrowException() {
+        Assertions.assertDoesNotThrow(() -> postService.getPostsByProjectId(1L));
+        Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByProjectId(1L);
+    }
+
 
     private PostDto buildPostDto() {
         return PostDto.builder()
