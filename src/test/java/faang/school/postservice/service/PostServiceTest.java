@@ -360,10 +360,23 @@ public class PostServiceTest {
     }
 
     @Test
-    void getPostsByAuthorId_ShouldNotThrowException() {
-        Assertions.assertDoesNotThrow(() -> postService.getPostsByAuthorId(1L));
+    void getDraftsByAuthorId_ShouldNotThrowException() {
+        Assertions.assertDoesNotThrow(() -> postService.getDraftsByAuthorId(1L));
         Mockito.verify(postRepository, Mockito.times(1)).findReadyToPublishByAuthorId(1L);
     }
+
+    @Test
+    void getDraftsByProjectId_ShouldNotThrowException() {
+        Assertions.assertDoesNotThrow(() -> postService.getDraftsByProjectId(1L));
+        Mockito.verify(postRepository, Mockito.times(1)).findReadyToPublishByProjectId(1L);
+    }
+    // это уже следующий таск
+    @Test
+    void getPostsByAuthorId_ShouldNotThrowException() {
+        Assertions.assertDoesNotThrow(() -> postService.getPostsByAuthorId(1L));
+        Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByAuthorId(1L);
+    }
+
 
     private PostDto buildPostDto() {
         return PostDto.builder()
