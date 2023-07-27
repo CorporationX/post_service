@@ -113,4 +113,10 @@ public class PostService {
 
         return postMapper.toDtos(draftsByProjectId);
     }
+
+    public List<PostDto> getPostsByAuthorId(Long authorId){
+        List<Post> postsByAuthorId = postRepository.findPublishedPostsByAuthorId(authorId);
+
+        return postMapper.toDtos(postsByAuthorId);
+    }
 }
