@@ -9,6 +9,7 @@ import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.PublishPostException;
+import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
@@ -183,6 +184,87 @@ class PostServiceTest {
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
         postService.publishPost(1L);
+
+        Mockito.verify(postRepository, Mockito.times(1)).save(post);
+    }
+
+    @Test
+    void updatePost_PostNotFound_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            postService.updatePost(1L, "content");
+        });
+        Assertions.assertEquals("Post not found", e.getMessage());
+    }
+
+    @Test
+    void updatePost_PostIsDeleted_ShouldThrowException() {
+        Post post = Post.builder().deleted(true).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            postService.updatePost(1L, "content");
+        });
+        Assertions.assertEquals("Post is already deleted", e.getMessage());
+    }
+
+    @Test
+    void updatePost_PostIsNotPublished_ShouldThrowException() {
+        Post post = Post.builder().published(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            postService.updatePost(1L, "content");
+        });
+        Assertions.assertEquals("Post is in draft state. It can't be updated", e.getMessage());
+    }
+
+    @Test
+    void updatePost_ContentIsTheSame_ShouldThrowException() {
+        Post post = Post.builder().published(true).content("content").build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+            postService.updatePost(1L, "content");
+        });
+        Assertions.assertEquals("There is no changes to update", e.getMessage());
+    }
+
+    @Test
+    void updatePost_InputsAreCorrect_ShouldNotThrowException() {
+        Post post = Post.builder().published(true).content("old content").build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        Assertions.assertDoesNotThrow(() -> postService.updatePost(1L, "new content"));
+    }
+
+    @Test
+    void updatePost_FieldsShouldBeSet() {
+        Post post = buildPost();
+        post.setPublished(true);
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        postService.updatePost(1L, "cont");
+
+        Assertions.assertEquals("cont", post.getContent());
+        Assertions.assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
+                post.getUpdatedAt());
+    }
+
+    @Test
+    void updatePost_ShouldPublish() {
+        Post post = buildPost();
+        post.setPublished(true);
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        postService.updatePost(1L, "cont");
 
         Mockito.verify(postRepository, Mockito.times(1)).save(post);
     }

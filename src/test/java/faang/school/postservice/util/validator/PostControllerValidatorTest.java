@@ -29,4 +29,35 @@ class PostControllerValidatorTest {
                 () -> validator.validateToPublish(id));
         Assertions.assertEquals("Id should be greater than 0", e.getMessage());
     }
+
+    @Test
+    void validateToUpdate_IdIsLowerThanOne_ShouldThrowException() {
+        Long id = 0L;
+        String content = "content";
+
+        DataValidationException e = Assertions.assertThrows(DataValidationException.class,
+                () -> validator.validateToUpdate(id, content));
+        Assertions.assertEquals("Id should be greater than 0", e.getMessage());
+    }
+
+    @Test
+    void validateToUpdate_ContentIsNull_ShouldThrowException() {
+        Long id = 1L;
+        String content = null;
+
+        DataValidationException e = Assertions.assertThrows(DataValidationException.class,
+                () -> validator.validateToUpdate(id, content));
+        Assertions.assertEquals("Content should not be empty", e.getMessage());
+    }
+
+    @Test
+    void validateToUpdate_ContentIsBlank_ShouldThrowException() {
+        Long id = 1L;
+        String content = "  ";
+
+        DataValidationException e = Assertions.assertThrows(DataValidationException.class,
+                () -> validator.validateToUpdate(id, content));
+        Assertions.assertEquals("Content should not be empty", e.getMessage());
+    }
+
 }
