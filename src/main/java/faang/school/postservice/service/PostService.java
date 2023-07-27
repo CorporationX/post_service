@@ -61,7 +61,7 @@ public class PostService {
 
     @Transactional
     public PostDto updatePost(Long id, String content) {
-        Post postById = getPostById(id)
+        Post postById = getPostById(id);
 
         validator.validateToUpdate(postById, content);
 
