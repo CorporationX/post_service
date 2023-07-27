@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
@@ -68,6 +69,21 @@ public class PostService {
         validator.validateToUpdate(postById, content);
 
         postById.setContent(content);
+        postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+
+        postRepository.save(postById);
+
+        return postMapper.toDto(postById);
+    }
+
+    @Transactional
+    public PostDto deletePost(Long id) {
+        Post postById = postRepository.findById(id)
+                .orElseThrow(() -> new DeletePostException("Post not found"));
+
+        validator.validateToDelete(postById);
+
+        postById.setDeleted(true);
         postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
