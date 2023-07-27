@@ -8,6 +8,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
+import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
@@ -265,6 +266,72 @@ class PostServiceTest {
                 .thenReturn(Optional.of(post));
 
         postService.updatePost(1L, "cont");
+
+        Mockito.verify(postRepository, Mockito.times(1)).save(post);
+    }
+
+    @Test
+    void deletePost_PostNotFound_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        DeletePostException e = Assert.assertThrows(DeletePostException.class, () -> {
+            postService.deletePost(1L);
+        });
+        Assertions.assertEquals("Post not found", e.getMessage());
+    }
+
+    @Test
+    void deletePost_PostIsNotPublished_ShouldThrowException() {
+        Post post = Post.builder().published(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        DeletePostException e = Assert.assertThrows(DeletePostException.class, () -> {
+            postService.deletePost(1L);
+        });
+        Assertions.assertEquals("Post is in draft state. It can't be deleted", e.getMessage());
+    }
+
+    @Test
+    void deletePost_PostIsDeleted_ShouldThrowException() {
+        Post post = Post.builder().deleted(true).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        DeletePostException e = Assert.assertThrows(DeletePostException.class, () -> {
+            postService.deletePost(1L);
+        });
+        Assertions.assertEquals("Post is already deleted", e.getMessage());
+    }
+
+    @Test
+    void deletePost_InputsAreCorrect_ShouldNotThrowException() {
+        Post post = Post.builder().published(true).deleted(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        Assertions.assertDoesNotThrow(() -> postService.deletePost(1L));
+    }
+
+    @Test
+    void deletePost_FieldsShouldBeSet() {
+        Post post = Post.builder().published(true).deleted(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+        postService.deletePost(1L);
+
+        Assertions.assertTrue(post.isDeleted());
+        Assertions.assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
+                post.getUpdatedAt());
+    }
+
+    @Test
+    void deletePost_ShouldDelete() {
+        Post post = Post.builder().published(true).deleted(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        postService.deletePost(1L);
 
         Mockito.verify(postRepository, Mockito.times(1)).save(post);
     }
