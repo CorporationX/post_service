@@ -370,7 +370,7 @@ public class PostServiceTest {
         Assertions.assertDoesNotThrow(() -> postService.getDraftsByProjectId(1L));
         Mockito.verify(postRepository, Mockito.times(1)).findReadyToPublishByProjectId(1L);
     }
-    // это уже следующий таск
+
     @Test
     void getPostsByAuthorId_ShouldNotThrowException() {
         Assertions.assertDoesNotThrow(() -> postService.getPostsByAuthorId(1L));
