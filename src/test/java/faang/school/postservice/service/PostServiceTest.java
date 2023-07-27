@@ -8,6 +8,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
+import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
@@ -23,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -119,6 +121,72 @@ class PostServiceTest {
 
         Mockito.verify(postRepository, Mockito.times(1)).save(Mockito.any());
     }
+
+    @Test
+    void publishPost_PostNotFound_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.empty());
+
+        PublishPostException e = Assert.assertThrows(PublishPostException.class, () -> {
+            postService.publishPost(1L);
+        });
+        Assertions.assertEquals("Post not found", e.getMessage());
+    }
+
+    @Test
+    void publishPost_PostIsPublished_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(Post.builder().published(true).build()));
+
+        PublishPostException e = Assert.assertThrows(PublishPostException.class, () -> {
+            postService.publishPost(1L);
+        });
+        Assertions.assertEquals("Post is already published", e.getMessage());
+    }
+
+    @Test
+    void publishPost_PostIsDeleted_ShouldThrowException() {
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(Post.builder().deleted(true).build()));
+
+        PublishPostException e = Assert.assertThrows(PublishPostException.class, () -> {
+            postService.publishPost(1L);
+        });
+        Assertions.assertEquals("Post is already deleted", e.getMessage());
+    }
+
+    @Test
+    void publishPost_PostIsNotPublishedOrDeleted_ShouldNotThrowException() {
+        Post post = Post.builder().published(false).deleted(false).build();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        Assertions.assertDoesNotThrow(() -> postService.publishPost(1L));
+    }
+
+    @Test
+    void publishPost_FieldsShouldBeSet() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findById(1L))
+                .thenReturn(Optional.of(post));
+
+        postService.publishPost(1L);
+
+        Assertions.assertTrue(post.isPublished());
+        Assertions.assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
+                post.getPublishedAt());
+    }
+
+    @Test
+    void publishPost_ShouldPublish() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        postService.publishPost(1L);
+
+        Mockito.verify(postRepository, Mockito.times(1)).save(post);
+    }
+
 
     private PostDto buildPostDto() {
         return PostDto.builder()
