@@ -19,6 +19,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.authorId = :authorId AND p.published = true AND p.deleted = false ORDER BY p.publishedAt DESC")
     List<Post> findPublishedPostsByAuthorId(long authorId);
 
+    @Query("SELECT p FROM Post p WHERE p.projectId = :projectId AND p.published = true AND p.deleted = false ORDER BY p.publishedAt DESC")
+    List<Post> findPublishedPostsByProjectId(long projectId);
+
     List<Post> findByAuthorId(long authorId);
 
     List<Post> findByProjectId(long projectId);

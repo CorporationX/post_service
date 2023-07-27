@@ -6,7 +6,10 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.util.exception.PostNotFoundException;
+import faang.school.postservice.util.exception.DeletePostException;
+import faang.school.postservice.util.exception.GetPostException;
+import faang.school.postservice.util.exception.PublishPostException;
+import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+
 
 @Service
 @Transactional(readOnly = true)
@@ -110,6 +114,12 @@ public class PostService {
         List<Post> postsByAuthorId = postRepository.findPublishedPostsByAuthorId(authorId);
 
         return postMapper.toDtos(postsByAuthorId);
+    }
+
+    public List<PostDto> getPostsByProjectId(Long projectId) {
+        List<Post> postsByProjectId = postRepository.findPublishedPostsByProjectId(projectId);
+
+        return postMapper.toDtos(postsByProjectId);
     }
 
     private Post getPostById(Long id) {
