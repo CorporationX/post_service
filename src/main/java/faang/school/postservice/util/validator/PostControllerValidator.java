@@ -2,6 +2,7 @@ package faang.school.postservice.util.validator;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.util.exception.CreatePostException;
+import faang.school.postservice.util.exception.DataValidationException;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -29,6 +30,16 @@ public class PostControllerValidator {
             });
 
             throw new CreatePostException(message.toString());
+        }
+    }
+
+    public void validateToPublish(Long id) {
+        validateId(id);
+    }
+
+    private void validateId(Long id) {
+        if (id <= 0) {
+            throw new DataValidationException("Id should be greater than 0");
         }
     }
 }

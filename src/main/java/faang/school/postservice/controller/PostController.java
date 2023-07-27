@@ -5,7 +5,9 @@ import faang.school.postservice.service.PostService;
 import faang.school.postservice.util.validator.PostControllerValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +25,13 @@ public class PostController {
         validator.validateToAdd(dto);
 
         return ResponseEntity.ok(postService.addPost(dto));
+    }
+
+    @PutMapping("/publish/{id}")
+    ResponseEntity<PostDto> publishPost(@PathVariable Long id) {
+        validator.validateToPublish(id);
+
+        return ResponseEntity.ok(postService.publishPost(id));
     }
 }
 
