@@ -46,6 +46,16 @@ public class LikeService {
         return likeMapper.toDto(byCommentIdAndUserId.get());
     }
 
+    public void deleteLikeOnPost(LikeDto likeDto) {
+        isUserExist(likeDto);
+        likeRepository.deleteByPostIdAndUserId(likeDto.getPost().getId(), likeDto.getUserId());
+    }
+
+    public void deleteLikeOnComment(LikeDto likeDto) {
+        isUserExist(likeDto);
+        likeRepository.deleteByCommentIdAndUserId(likeDto.getComment().getId(), likeDto.getUserId());
+    }
+
     private void isUserExist(LikeDto likeDto) {
         try {
             userServiceClient.getUser(likeDto.getUserId());

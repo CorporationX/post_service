@@ -97,4 +97,18 @@ class LikeServiceTest {
         List<Like> actual = likeOnComment.getComment().getLikes();
         assertEquals(1, actual.size());
     }
+
+    @Test
+    void deleteLikeOnPost() {
+        likeService.deleteLikeOnPost(likeDto);
+        Mockito.verify(likeRepository, Mockito.times(1))
+                .deleteByPostIdAndUserId(likeDto.getPost().getId(), likeDto.getUserId());
+    }
+
+    @Test
+    void deleteLikeOnComment() {
+        likeService.deleteLikeOnComment(likeDto);
+        Mockito.verify(likeRepository, Mockito.times(1))
+                .deleteByCommentIdAndUserId(likeDto.getComment().getId(), likeDto.getUserId());
+    }
 }
