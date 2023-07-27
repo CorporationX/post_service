@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.dto.post.DtosResponse;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.util.validator.PostControllerValidator;
@@ -55,6 +56,13 @@ public class PostController {
         validator.validateToGet(id);
 
         return ResponseEntity.ok(postService.getPost(id));
+    }
+
+    @GetMapping("/author/{id}")
+    ResponseEntity<DtosResponse> getPostsByAuthorId(@PathVariable Long authorId){
+        validator.validateToGetByAuthorId(authorId);
+
+        return ResponseEntity.ok(new DtosResponse(postService.getPostsByAuthorId(authorId)));
     }
 }
 

@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.post.DtosResponse;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -99,5 +101,11 @@ public class PostService {
         validator.validateToGet(postById);
 
         return postMapper.toDto(postById);
+    }
+
+    public List<PostDto> getPostsByAuthorId(Long authorId){
+        List<Post> postsById = postRepository.findReadyToPublishByAuthorId(authorId);
+
+        return postMapper.toDtos(postsById);
     }
 }
