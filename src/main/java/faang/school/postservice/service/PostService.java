@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 
@@ -55,7 +56,7 @@ public class PostService {
         validator.validateToPublish(postById);
 
         postById.setPublished(true);
-        postById.setPublishedAt(LocalDateTime.now());
+        postById.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
 
@@ -70,7 +71,7 @@ public class PostService {
         validator.validateToUpdate(postById, content);
 
         postById.setContent(content);
-        postById.setUpdatedAt(LocalDateTime.now());
+        postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
 
@@ -85,7 +86,7 @@ public class PostService {
         validator.validateToDelete(postById);
 
         postById.setDeleted(true);
-        postById.setUpdatedAt(LocalDateTime.now());
+        postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
 
