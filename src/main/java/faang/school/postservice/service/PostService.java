@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.DeletePostException;
+import faang.school.postservice.util.exception.GetPostException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
@@ -87,6 +88,15 @@ public class PostService {
         postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
+
+        return postMapper.toDto(postById);
+    }
+
+    public PostDto getPost(Long id){
+        Post postById = postRepository.findById(id)
+                .orElseThrow(() -> new GetPostException("Post not found"));
+
+        validator.validateToGet(postById);
 
         return postMapper.toDto(postById);
     }

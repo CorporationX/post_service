@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
+import faang.school.postservice.util.exception.GetPostException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,15 @@ public class PostServiceValidator {
         }
         if (!postById.isPublished()) {
             throw new DeletePostException("Post is in draft state. It can't be deleted");
+        }
+    }
+
+    public void validateToGet(Post postById) {
+        if (postById.isDeleted()) {
+            throw new GetPostException("Post is already deleted");
+        }
+        if (!postById.isPublished()) {
+            throw new GetPostException("Post is in draft state. It can't be gotten");
         }
     }
 }
