@@ -1,10 +1,10 @@
-package faang.school.postservice.util.comment.handler;
+package faang.school.postservice.util.exceptionHandler;
 
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-public class CommentExceptionHandler {
+public class GlobalExceptionHandler {
     @ExceptionHandler(DataValidationException.class)
     public String handleDataValidationException(DataValidationException ex) {
         return ex.getMessage();
