@@ -20,7 +20,7 @@ public class PostController {
 
     @PostMapping("/add")
     ResponseEntity<PostDto> addPost(@RequestBody PostDto dto) {
-        validator.validatePost(dto);
+        validator.validateToAdd(dto);
 
         return ResponseEntity.ok(postService.addPost(dto));
     }
