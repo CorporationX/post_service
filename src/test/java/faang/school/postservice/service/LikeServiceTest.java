@@ -111,4 +111,27 @@ class LikeServiceTest {
         Mockito.verify(likeRepository, Mockito.times(1))
                 .deleteByCommentIdAndUserId(likeDto.getComment().getId(), likeDto.getUserId());
     }
+
+    @Test
+    void getAllPostLikes() {
+        Mockito.when(userServiceClient.getUser(likeDto.getUserId()))
+                .thenReturn(userDto);
+
+        List<Like> likes = List.of(likeMapper.toEntity(likeDto));
+        Mockito.when(likeRepository.findByPostId(likeDto.getPost().getId()))
+                .thenReturn(likes);
+
+        long postId = likeDto.getPost().getId();
+        Mockito.when(likeRepository.findByPostIdAndUserId(postId, likeDto.getUserId()))
+                .thenReturn(Optional.of(Like.builder().build()));
+
+        Mockito.when(postRepository.findById(postId))
+                .thenReturn(Optional.of(post));
+
+        LikeDto likeOnPost = likeService.createLikeOnPost(likeDto);
+        List<LikeDto> actual = likeService.getAllPostLikes(likeDto);
+        List<LikeDto> expected = List.of(likeOnPost);
+
+        assertEquals(expected, actual);
+    }
 }

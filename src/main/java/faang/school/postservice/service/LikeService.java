@@ -11,7 +11,9 @@ import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +56,13 @@ public class LikeService {
     public void deleteLikeOnComment(LikeDto likeDto) {
         isUserExist(likeDto);
         likeRepository.deleteByCommentIdAndUserId(likeDto.getComment().getId(), likeDto.getUserId());
+    }
+
+    public List<LikeDto> getAllPostLikes(LikeDto likeDto) {
+        isUserExist(likeDto);
+        return likeRepository.findByPostId(likeDto.getPost().getId()).stream()
+                .map(likeMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     private void isUserExist(LikeDto likeDto) {
