@@ -7,6 +7,7 @@ import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.exception.NoPostInDataBaseException;
 import faang.school.postservice.exception.SamePostAuthorException;
+import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -44,10 +46,12 @@ public class PostServiceTest {
     private Post alreadyPublishedPost;
     private Post correctPost;
     private final Long CORRECT_ID = 1L;
+    private final long INCORRECT_ID = 0;
 
     @BeforeEach
     void initData() {
         incorrectPostDto = PostDto.builder()
+                .id(INCORRECT_ID)
                 .content("content")
                 .projectId(CORRECT_ID)
                 .authorId(CORRECT_ID)
@@ -118,6 +122,31 @@ public class PostServiceTest {
 
         PostDto actualPostDto = postService.publishPost(CORRECT_ID);
         actualPostDto.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
+        assertEquals(correctPostDto, actualPostDto);
+    }
+
+    @Test
+    void testUpdatePostWithoutPostInDB() {
+        when(postRepository.existsById(INCORRECT_ID)).thenReturn(false);
+        assertThrows(NoPostInDataBaseException.class, () -> postService.updatePost(incorrectPostDto));
+    }
+
+    @Test
+    void testUpdatePostWithIncorrectAuthor() {
+        correctPostDto.setAuthorId(2L);
+        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
+        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
+
+        assertThrows(UpdatePostException.class, () -> postService.updatePost(correctPostDto));
+    }
+
+    @Test
+    void testUpdatePost() {
+        correctPostDto.setContent("other content");
+        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
+        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
+
+        PostDto actualPostDto = postService.updatePost(correctPostDto);
         assertEquals(correctPostDto, actualPostDto);
     }
 }

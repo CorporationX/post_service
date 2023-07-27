@@ -72,4 +72,23 @@ public class PostControllerTest {
         postController.publishPost(CORRECT_ID);
         verify(postService, times(1)).publishPost(CORRECT_ID);
     }
+
+    @Test
+    void testUpdatePostWithIncorrectId() {
+        incorrectPostDto.setId(INCORRECT_ID);
+        assertThrows(IncorrectIdException.class, () -> postController.updatePost(incorrectPostDto));
+    }
+
+    @Test
+    void testUpdatePostWithEmptyContent() {
+        incorrectPostDto.setId(CORRECT_ID);
+        assertThrows(EmptyContentInPostException.class, () -> postController.updatePost(incorrectPostDto));
+    }
+
+    @Test
+    void testUpdatePost() {
+        correctPostDto.setId(CORRECT_ID);
+        postController.updatePost(correctPostDto);
+        verify(postService, times(1)).updatePost(correctPostDto);
+    }
 }

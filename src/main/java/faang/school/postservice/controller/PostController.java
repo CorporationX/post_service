@@ -6,6 +6,7 @@ import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,10 +28,22 @@ public class PostController {
 
     @GetMapping("/post/{postId}")
     public PostDto publishPost(@PathVariable("postId") long postId) {
+        validatePostId(postId);
+        return postService.publishPost(postId);
+    }
+
+    @PatchMapping("/post")
+    public PostDto updatePost(@RequestBody PostDto updatePost) {
+        validatePostId(updatePost.getId());
+        validateData(updatePost);
+
+        return postService.updatePost(updatePost);
+    }
+
+    private void validatePostId(long postId) {
         if (postId < 1) {
             throw new IncorrectIdException("Некорректрый id поста");
         }
-        return postService.publishPost(postId);
     }
 
     private void validateData(PostDto postDto) {
