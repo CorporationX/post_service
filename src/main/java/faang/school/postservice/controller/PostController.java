@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.response.DtosResponse;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,13 @@ public class PostController {
         PostDto resultDto = postService.getPost(id);
 
         return resultDto;
+    }
+
+    @GetMapping("/author/drafts/{id}")
+    ResponseEntity<DtosResponse> getDraftsByAuthorId(@PathVariable Long authorId){
+        validator.validateToGetByAuthorId(authorId);
+
+        return ResponseEntity.ok(new DtosResponse(postService.getDraftsByAuthorId(authorId)));
     }
 }
 

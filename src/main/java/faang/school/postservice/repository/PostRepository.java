@@ -11,6 +11,9 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
+    @Query("SELECT p FROM Post p WHERE p.authorId = :authorId AND p.published = false AND p.deleted = false ORDER BY p.createdAt DESC")
+    List<Post> findReadyToPublishByAuthorId(long authorId);
+
     List<Post> findByAuthorId(long authorId);
 
     List<Post> findByProjectId(long projectId);
