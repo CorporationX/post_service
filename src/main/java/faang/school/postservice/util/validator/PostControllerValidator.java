@@ -50,6 +50,10 @@ public class PostControllerValidator {
         validateId(id);
     }
 
+    public void validateToGetByAuthorId(Long authorId) {
+        validateId(authorId);
+    }
+
     private void validateId(Long id) {
         if (id <= 0) {
             throw new DataValidationException("Id should be greater than 0");

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 
 @Service
@@ -99,5 +100,11 @@ public class PostService {
         validator.validateToGet(postById);
 
         return postMapper.toDto(postById);
+    }
+
+    public List<PostDto> getDraftsByAuthorId(Long authorId){
+        List<Post> draftsByAuthorId = postRepository.findReadyToPublishByAuthorId(authorId);
+
+        return postMapper.toDtos(draftsByAuthorId);
     }
 }
