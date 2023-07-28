@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -23,5 +25,13 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(commentDto);
 
         return commentMapper.toDto(commentRepository.save(comment));
+    }
+
+    public List<CommentDto> getCommentsByPostId(long postId) {
+        List<Comment> comments = commentRepository.findAllByPostId(postId);
+        return comments.stream()
+                .sorted((comment1, comment2) -> comment1.getCreatedAt().compareTo(comment2.getCreatedAt()))
+                .map(commentMapper::toDto)
+                .toList();
     }
 }
