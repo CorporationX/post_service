@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -61,6 +62,9 @@ class CommentServiceTest {
                 .thenReturn(CommentDto.builder().id(commentEntity.getId()).createdAt(commentEntity.getCreatedAt()).build()));
 
         List<CommentDto> sortedComments = commentService.getCommentsByPostId(1);
+        Mockito.verify(commentRepository, Mockito.times(1)).findAllByPostId(Mockito.anyLong());
+        Mockito.verify(commentMapper, Mockito.times(comments.size())).toDto(Mockito.any());
+
         List<CommentDto> expected = List.of(
                 CommentDto.builder().id(3L).createdAt(LocalDateTime.of(2023, 7, 26, 1, 20)).build(),
                 CommentDto.builder().id(2L).createdAt(LocalDateTime.of(2023, 7, 28, 14, 30)).build(),
@@ -68,5 +72,30 @@ class CommentServiceTest {
         );
 
         assertIterableEquals(expected, sortedComments);
+    }
+
+    @Test
+    public void testDeleteCommentInvalidId() {
+        long commentId = 1L;
+        Mockito.when(commentRepository.existsById(Mockito.anyLong()))
+                .thenReturn(false);
+
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> commentService.deleteCommentById(commentId));
+        Mockito.verify(commentRepository, Mockito.times(0)).deleteById(Mockito.anyLong());
+        assertEquals("Comment with id " + commentId + "was not found!", exception.getMessage());
+    }
+
+    @Test
+    public void testDeleteCommentValid() {
+        long commentId = 1L;
+        Mockito.when(commentRepository.existsById(Mockito.anyLong()))
+                .thenReturn(true);
+
+        boolean result = commentService.deleteCommentById(commentId);
+        Mockito.verify(commentRepository, Mockito.times(1)).existsById(commentId);
+        Mockito.verify(commentRepository, Mockito.times(1)).deleteById(commentId);
+
+        assertTrue(result);
     }
 }
