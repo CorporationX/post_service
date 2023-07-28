@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.mapper;
+package faang.school.postservice.dto.post;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
