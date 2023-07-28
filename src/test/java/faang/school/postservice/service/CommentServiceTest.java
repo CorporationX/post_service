@@ -16,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -97,5 +98,34 @@ class CommentServiceTest {
         Mockito.verify(commentRepository, Mockito.times(1)).deleteById(commentId);
 
         assertTrue(result);
+    }
+
+    @Test
+    public void testUpdateCommentInvalidId() {
+        long commentId = 1L;
+        Mockito.when(commentRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.empty());
+
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> commentService.updateComment(commentId, commentDto));
+
+        Mockito.verify(commentRepository, Mockito.times(1)).findById(commentId);
+        Mockito.verify(commentRepository, Mockito.times(0)).save(Mockito.any());
+        assertEquals("Comment with id " + commentId + " was not found!", exception.getMessage());
+    }
+
+    @Test
+    public void testUpdateCommentValid() {
+        long commentId = 1L;
+        comment.setId(commentId);
+        Mockito.when(commentRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(comment));
+        Mockito.when(commentMapper.toDto(Mockito.any()))
+                .thenReturn(commentDto);
+
+        commentService.updateComment(commentId, commentDto);
+
+        Mockito.verify(commentRepository, Mockito.times(1)).findById(commentId);
+        Mockito.verify(commentRepository, Mockito.times(1)).save(Mockito.any());
     }
 }
