@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
@@ -33,5 +34,13 @@ public class CommentService {
                 .sorted((comment1, comment2) -> comment1.getCreatedAt().compareTo(comment2.getCreatedAt()))
                 .map(commentMapper::toDto)
                 .toList();
+    }
+
+    @Transactional
+    public boolean deleteCommentById(long commentId) {
+        if (!commentRepository.existsById(commentId))
+            throw new NotFoundException("Comment with id " + commentId + "was not found!");
+        commentRepository.deleteById(commentId);
+        return true;
     }
 }

@@ -6,6 +6,7 @@ import faang.school.postservice.util.validator.comment.CommentControllerValidato
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,5 +33,10 @@ public class CommentController {
     @GetMapping("/post/{postId}")
     public List<CommentDto> getCommentsByPostId(@PathVariable("postId") long postId) {
         return commentService.getCommentsByPostId(postId);
+    }
+
+    @DeleteMapping("/delete/{commentId}")
+    public boolean deleteComment(@PathVariable("commentId") long commentId) {
+        return commentService.deleteCommentById(commentId);
     }
 }
