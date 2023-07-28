@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +34,14 @@ public class CommentController {
     @GetMapping("/post/{postId}")
     public List<CommentDto> getCommentsByPostId(@PathVariable("postId") long postId) {
         return commentService.getCommentsByPostId(postId);
+    }
+
+    @PutMapping("/comment/{commentId}")
+    public CommentDto updateComment(@PathVariable("commentId") long commentId,
+                                    @RequestBody @Valid CommentDto commentDto,
+                                    BindingResult bindingResult) {
+        validator.checkBindingResult(bindingResult);
+        return commentService.updateComment(commentId, commentDto);
     }
 
     @DeleteMapping("/delete/{commentId}")

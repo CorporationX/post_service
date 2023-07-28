@@ -37,6 +37,18 @@ public class CommentService {
     }
 
     @Transactional
+    public CommentDto updateComment(long commentId, CommentDto commentDto) {
+        Comment commentToUpdate = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Comment with id " + commentId + " was not found!"));
+
+        validator.validateUpdateComment(commentToUpdate, commentDto);
+        commentDto.setContent(commentDto.getContent());
+
+        Comment updated = commentRepository.save(commentToUpdate);
+        return commentMapper.toDto(updated);
+    }
+
+    @Transactional
     public boolean deleteCommentById(long commentId) {
         if (!commentRepository.existsById(commentId))
             throw new NotFoundException("Comment with id " + commentId + "was not found!");
