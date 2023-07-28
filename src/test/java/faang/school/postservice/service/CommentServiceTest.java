@@ -13,6 +13,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class CommentServiceTest {
@@ -43,5 +46,27 @@ class CommentServiceTest {
         Mockito.verify(commentRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(commentMapper, Mockito.times(1)).toEntity(commentDto);
         Mockito.verify(commentMapper, Mockito.times(1)).toDto(Mockito.any());
+    }
+
+    @Test
+    public void testGetAllCommentsByPostId() {
+        List<Comment> comments = List.of(
+                Comment.builder().id(1L).createdAt(LocalDateTime.of(2023, 7, 28, 18, 50)).build(),
+                Comment.builder().id(2L).createdAt(LocalDateTime.of(2023, 7, 28, 14, 30)).build(),
+                Comment.builder().id(3L).createdAt(LocalDateTime.of(2023, 7, 26, 1, 20)).build()
+        );
+        Mockito.when(commentRepository.findAllByPostId(Mockito.anyLong()))
+                .thenReturn(comments);
+        comments.forEach(commentEntity -> Mockito.when(commentMapper.toDto(commentEntity))
+                .thenReturn(CommentDto.builder().id(commentEntity.getId()).createdAt(commentEntity.getCreatedAt()).build()));
+
+        List<CommentDto> sortedComments = commentService.getCommentsByPostId(1);
+        List<CommentDto> expected = List.of(
+                CommentDto.builder().id(3L).createdAt(LocalDateTime.of(2023, 7, 26, 1, 20)).build(),
+                CommentDto.builder().id(2L).createdAt(LocalDateTime.of(2023, 7, 28, 14, 30)).build(),
+                CommentDto.builder().id(1L).createdAt(LocalDateTime.of(2023, 7, 28, 18, 50)).build()
+        );
+
+        assertIterableEquals(expected, sortedComments);
     }
 }
