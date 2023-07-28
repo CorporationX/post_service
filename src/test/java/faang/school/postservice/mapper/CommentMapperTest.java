@@ -6,7 +6,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CommentMapperTest {
     @Mock
-    private PostRepository postRepository;
+    private PostService postService;
 
     @Mock
     private LikeRepository likeRepository;
@@ -54,23 +54,22 @@ class CommentMapperTest {
 
     @Test
     public void testToEntityMethodValid() {
-        Mockito.when(postRepository.findById(POST.getId()))
-                .thenReturn(Optional.of(POST));
+        Mockito.when(postService.getPostById(POST.getId()))
+                .thenReturn(POST);
         LIKES.forEach(like -> {
             Mockito.when(likeRepository.findById(like.getId()))
                     .thenReturn(Optional.of(like));
         });
 
         Comment commentFromMapper = commentMapper.toEntity(commentDto);
-        commentMapper.convertDependenciesToEntity(commentDto, commentFromMapper);
 
         assertEquals(comment, commentFromMapper);
     }
 
     @Test
     public void testUpdateMethodValid() {
-        Mockito.when(postRepository.findById(POST.getId()))
-                .thenReturn(Optional.of(POST));
+        Mockito.when(postService.getPostById(POST.getId()))
+                .thenReturn(POST);
         LIKES.forEach(like -> {
             Mockito.when(likeRepository.findById(like.getId()))
                     .thenReturn(Optional.of(like));
@@ -78,28 +77,27 @@ class CommentMapperTest {
         Comment commentToUpdate = Comment.builder().id(11L).authorId(11L).post(new Post()).content("Other...").build();
 
         commentMapper.update(commentDto, commentToUpdate);
-        commentMapper.convertDependenciesToEntity(commentDto, commentToUpdate);
 
         assertEquals(comment, commentToUpdate);
     }
 
     @Test
     public void testConvertMethodInvalidPost() {
-        Mockito.when(postRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.empty());
+        Mockito.when(postService.getPostById(POST.getId()))
+                .thenThrow(new NotFoundException("Post with id " + POST.getId() + " was not found!"));
         NotFoundException exception = assertThrows(NotFoundException.class,
-                () -> commentMapper.convertDependenciesToEntity(commentDto, comment));
+                () -> commentMapper.toEntity(commentDto));
         assertEquals("Post with id " + POST.getId() + " was not found!", exception.getMessage());
     }
 
     @Test
     public void testConvertMethodInvalidLikes() {
-        Mockito.when(postRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(POST));
+        Mockito.when(postService.getPostById(Mockito.anyLong()))
+                .thenReturn(POST);
         Mockito.when(likeRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
         NotFoundException exception = assertThrows(NotFoundException.class,
-                () -> commentMapper.convertDependenciesToEntity(commentDto, comment));
+                () -> commentMapper.toEntity(commentDto));
         assertEquals("Like with id " + LIKES.get(0).getId() + " was not found!", exception.getMessage());
     }
 }

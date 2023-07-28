@@ -6,7 +6,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.PostService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -21,7 +21,7 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class CommentMapper {
     @Autowired
-    protected PostRepository postRepository;
+    protected PostService postService;
     @Autowired
     protected LikeRepository likeRepository;
 
@@ -29,10 +29,12 @@ public abstract class CommentMapper {
     @Mapping(source = "likes", target = "likesIds", qualifiedByName = "mapLikesToIdList")
     public abstract CommentDto toDto(Comment comment);
 
-    @Mapping(target = "post", ignore = true)
-    @Mapping(target = "likes", ignore = true)
+    @Mapping(source = "postId", target = "post", qualifiedByName = "mapPostIdToPost")
+    @Mapping(source = "likesIds", target = "likes", qualifiedByName = "mapLikesIdsToList")
     public abstract Comment toEntity(CommentDto commentDto);
 
+    @Mapping(source = "postId", target = "post", qualifiedByName = "mapPostIdToPost")
+    @Mapping(source = "likesIds", target = "likes", qualifiedByName = "mapLikesIdsToList")
     public abstract void update(CommentDto commentDto, @MappingTarget Comment comment);
 
     @Named("mapLikesToIdList")
@@ -42,20 +44,25 @@ public abstract class CommentMapper {
         return likes.stream().map(Like::getId).toList();
     }
 
-    public void convertDependenciesToEntity(CommentDto commentDto, Comment comment) {
-        if (commentDto.getPostId() != null) {
-            Post post = postRepository.findById(commentDto.getPostId())
-                    .orElseThrow(() -> new NotFoundException("Post with id " + commentDto.getPostId() + " was not found!"));
-            comment.setPost(post);
+    @Named("mapPostIdToPost")
+    protected Post mapPostIdToPost(Long postId) {
+        if (postId == null)
+            throw new NotFoundException("Comment must be related to the post! But given nothing in field postId");
+        return postService.getPostById(postId);
+    }
+
+    @Named("mapLikesIdsToList")
+    protected List<Like> mapLikesIdsToList(List<Long> likesIds) {
+        if (likesIds == null || likesIds.isEmpty()) {
+            return Collections.emptyList();
         }
-        if (commentDto.getLikesIds() != null && !commentDto.getLikesIds().isEmpty()) {
-            List<Like> likes = new ArrayList<>();
-            commentDto.getLikesIds().forEach(likeId -> {
-                Like like = likeRepository.findById(likeId)
-                        .orElseThrow(() -> new NotFoundException("Like with id " + likeId + " was not found!"));
-                likes.add(like);
-            });
-            comment.setLikes(likes);
-        }
+
+        List<Like> likes = new ArrayList<>();
+        likesIds.forEach(likeId -> {
+            Like like = likeRepository.findById(likeId)
+                    .orElseThrow(() -> new NotFoundException("Like with id " + likeId + " was not found!"));
+            likes.add(like);
+        });
+        return likes;
     }
 }
