@@ -28,7 +28,6 @@ public class CommentService {
         Post post = postService.getPostById(commentDto.getPostId());
 
         commentValidator.updateCommentValidator(post,comment);
-
         comment.setContent(commentDto.getContent());
     }
 
