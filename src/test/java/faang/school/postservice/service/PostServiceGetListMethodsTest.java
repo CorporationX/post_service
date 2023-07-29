@@ -1,10 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.client.ProjectDto;
 import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.exception.IncorrectIdException;
-import faang.school.postservice.exception.NoUserDraftsException;
+import faang.school.postservice.exception.NoDraftsException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -33,11 +35,14 @@ public class PostServiceGetListMethodsTest {
     private PostRepository postRepository;
     @Mock
     private UserServiceClient userService;
+    @Mock
+    private ProjectServiceClient projectService;
     @InjectMocks
     private PostService postService;
 
     private final long CORRECT_ID = 1L;
     private UserDto correctUserDto = UserDto.builder().build();
+    private ProjectDto correctProjectDto = ProjectDto.builder().build();
 
     @Test
     void testGetUserDraftsWithoutUserInDB() {
@@ -50,7 +55,7 @@ public class PostServiceGetListMethodsTest {
         when(userService.getUser(CORRECT_ID)).thenReturn(correctUserDto);
         when(postRepository.findByAuthorId(CORRECT_ID)).thenReturn(new ArrayList<>());
 
-        assertThrows(NoUserDraftsException.class, () -> postService.getUserDrafts(CORRECT_ID));
+        assertThrows(NoDraftsException.class, () -> postService.getUserDrafts(CORRECT_ID));
     }
 
     @Test
@@ -61,6 +66,30 @@ public class PostServiceGetListMethodsTest {
         List<PostDto> actualUserDrafts = postService.getUserDrafts(CORRECT_ID);
         List<PostDto> expectedUserDrafts = getCorrectListOfPostDto();
         assertEquals(expectedUserDrafts, actualUserDrafts);
+    }
+
+    @Test
+    void testGetProjectDraftsWithoutProjectInDB() {
+        when(projectService.getProject(CORRECT_ID)).thenThrow(FeignException.class);
+        assertThrows(IncorrectIdException.class, () -> postService.getProjectDrafts(CORRECT_ID));
+    }
+
+    @Test
+    void testGetProjectDraftsWithEmptyList() {
+        when(projectService.getProject(CORRECT_ID)).thenReturn(correctProjectDto);
+        when(postRepository.findByProjectId(CORRECT_ID)).thenReturn(new ArrayList<>());
+
+        assertThrows(NoDraftsException.class, () -> postService.getProjectDrafts(CORRECT_ID));
+    }
+
+    @Test
+    void testGetProjectDrafts() {
+        when(projectService.getProject(CORRECT_ID)).thenReturn(correctProjectDto);
+        when(postRepository.findByProjectId(CORRECT_ID)).thenReturn(getListOfPost());
+
+        List<PostDto> actualProjectDrafts = postService.getProjectDrafts(CORRECT_ID);
+        List<PostDto> expectedProjectDrafts = getCorrectListOfPostDto();
+        assertEquals(expectedProjectDrafts, actualProjectDrafts);
     }
 
     private List<PostDto> getCorrectListOfPostDto() {

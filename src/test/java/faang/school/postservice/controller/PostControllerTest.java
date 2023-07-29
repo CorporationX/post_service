@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 public class PostControllerTest {
+
     @Mock
     private PostService postService;
     @InjectMocks
@@ -123,5 +124,16 @@ public class PostControllerTest {
     void testGetUserDrafts() {
         postController.getUserDrafts(CORRECT_ID);
         verify(postService, times(1)).getUserDrafts(CORRECT_ID);
+    }
+
+    @Test
+    void testGetProjectDraftsWithIncorrectId() {
+        assertThrows(IncorrectIdException.class, () -> postController.getProjectDrafts(INCORRECT_ID));
+    }
+
+    @Test
+    void testGetProjectDrafts() {
+        postController.getProjectDrafts(CORRECT_ID);
+        verify(postService, times(1)).getProjectDrafts(CORRECT_ID);
     }
 }

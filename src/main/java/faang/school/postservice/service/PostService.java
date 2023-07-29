@@ -8,7 +8,7 @@ import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.exception.NoPostInDataBaseException;
 import faang.school.postservice.exception.NoPublishedPostException;
-import faang.school.postservice.exception.NoUserDraftsException;
+import faang.school.postservice.exception.NoDraftsException;
 import faang.school.postservice.exception.SamePostAuthorException;
 import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapper;
@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -104,9 +103,24 @@ public class PostService {
                 .toList();
 
         if (userDrafts.isEmpty()) {
-            throw new NoUserDraftsException("У данного пользователя нет черновиков");
+            throw new NoDraftsException("У данного пользователя нет черновиков постов");
         }
         return userDrafts;
+    }
+
+    public List<PostDto> getProjectDrafts(long projectId) {
+        validateProjectId(projectId);
+
+        List<PostDto> projectDrafts = postRepository.findByProjectId(projectId).stream()
+                .filter(post -> !post.isPublished() && !post.isDeleted())
+                .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
+                .map(postMapper::toDto)
+                .toList();
+
+        if (projectDrafts.isEmpty()) {
+            throw new NoDraftsException("У данного проекта нет черновиков постов");
+        }
+        return projectDrafts;
     }
 
     private void validatePostId(long postId) {
@@ -125,11 +139,7 @@ public class PostService {
         if (userId != null) {
            validateUserId(userId);
         } else {
-            try {
-                projectService.getProject(projectId);
-            } catch (FeignException e) {
-                throw new IncorrectIdException("Данный проект не найден");
-            }
+           validateProjectId(projectId);
         }
     }
 
@@ -155,6 +165,14 @@ public class PostService {
             userService.getUser(id);
         } catch (FeignException e) {
             throw new IncorrectIdException("Данный пользователь не найден");
+        }
+    }
+
+    private void validateProjectId(long id) {
+        try {
+            projectService.getProject(id);
+        } catch (FeignException e) {
+            throw new IncorrectIdException("Данный проект не найден");
         }
     }
 }

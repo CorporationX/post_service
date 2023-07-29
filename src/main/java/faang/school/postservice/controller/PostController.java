@@ -62,6 +62,12 @@ public class PostController {
         return postService.getUserDrafts(userId);
     }
 
+    @GetMapping("/drafts/projects/{id}")
+    public List<PostDto> getProjectDrafts(@PathVariable("id") long projectId) {
+        validatePostId(projectId);
+        return postService.getProjectDrafts(projectId);
+    }
+
     private void validatePostId(long postId) {
         if (postId < 1) {
             throw new IncorrectIdException("Некорректрый id поста");
