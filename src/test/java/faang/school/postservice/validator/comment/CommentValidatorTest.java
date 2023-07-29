@@ -5,7 +5,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exeption.DataValidationException;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,15 +14,15 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CommentValidatorTest {
     @Mock
     private UserServiceClient userServiceClient;
     @Mock
-    private PostRepository postRepository;
+    private PostService postService;
 
     @InjectMocks
     private CommentValidator commentValidator;
@@ -39,8 +39,8 @@ class CommentValidatorTest {
         wrongId = -2L;
         userDto = new UserDto(rightId, "any", "any");
 
-        Mockito.when(postRepository.findById(rightId))
-                .thenReturn(Optional.of(new Post()));
+        Mockito.when(postService.getPostById(rightId))
+                .thenReturn(new Post());
         Mockito.when(userServiceClient.getUser(rightId))
                 .thenReturn(userDto);
     }
@@ -63,14 +63,14 @@ class CommentValidatorTest {
     }
 
     @Test
-    void testPostExistValidator() { //uses or overrides a deprecated API.
-        assertDoesNotThrow(() -> commentValidator.postExistValidator(rightId));
-        assertThrows(DataValidationException.class,
-                () -> commentValidator.postExistValidator(wrongId));
+    void testPostExistValidator() {
+        postService.getPostById(rightId);
+        Mockito.verify(postService, Mockito.times(1))
+                .getPostById(rightId);
     }
 
     @Test
-    void authorExistValidator() {
+    void testAuthorExistValidator() {
         assertDoesNotThrow(() -> commentValidator.authorExistValidator(rightId));
         assertThrows(DataValidationException.class,
                 () -> commentValidator.authorExistValidator(wrongId));
