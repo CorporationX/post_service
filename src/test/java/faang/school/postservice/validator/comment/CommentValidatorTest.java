@@ -64,7 +64,7 @@ class CommentValidatorTest {
     @Test
     void testPostExistValidator() {
         postService.getPostById(rightId);
-        Mockito.verify(postService,Mockito.times(1))
+        Mockito.verify(postService, Mockito.times(1))
                 .getPostById(rightId);
     }
 

@@ -10,8 +10,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
-    public Post getPostById(long postId){
+
+    public Post getPostById(long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(()->new DataValidationException("This post was not found"));
+                .orElseThrow(() -> new DataValidationException("This post was not found"));
     }
 }
