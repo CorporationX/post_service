@@ -33,7 +33,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
 
-
     @Spy
     private PostMapperImpl postMapper;
     @Mock
@@ -44,6 +43,7 @@ public class PostServiceTest {
     private ProjectServiceClient projectService;
     @InjectMocks
     private PostService postService;
+
     private PostDto incorrectPostDto;
     private PostDto correctPostDto;
     private Post alreadyPublishedPost;

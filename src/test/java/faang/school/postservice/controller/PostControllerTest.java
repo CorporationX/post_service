@@ -41,7 +41,7 @@ public class PostControllerTest {
         correctPostDto = PostDto.builder()
                 .content(POST_CONTENT)
                 .authorId(CORRECT_ID)
-                .cratedAt(LocalDateTime.now().truncatedTo(ChronoUnit.HOURS))
+                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.HOURS))
                 .build();
     }
 
@@ -112,5 +112,16 @@ public class PostControllerTest {
     void testGetPost() {
         postController.getPost(CORRECT_ID);
         verify(postService, times(1)).getPost(CORRECT_ID);
+    }
+
+    @Test
+    void testGetUserDraftsWithIncorrectId() {
+        assertThrows(IncorrectIdException.class, () -> postController.getUserDrafts(INCORRECT_ID));
+    }
+
+    @Test
+    void testGetUserDrafts() {
+        postController.getUserDrafts(CORRECT_ID);
+        verify(postService, times(1)).getUserDrafts(CORRECT_ID);
     }
 }

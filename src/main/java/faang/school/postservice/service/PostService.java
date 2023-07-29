@@ -8,6 +8,7 @@ import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.exception.NoPostInDataBaseException;
 import faang.school.postservice.exception.NoPublishedPostException;
+import faang.school.postservice.exception.NoUserDraftsException;
 import faang.school.postservice.exception.SamePostAuthorException;
 import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapper;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -92,6 +94,21 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    public List<PostDto> getUserDrafts(long userId) {
+        validateUserId(userId);
+
+        List<PostDto> userDrafts = postRepository.findByAuthorId(userId).stream()
+                .filter(post -> !post.isPublished() && !post.isDeleted())
+                .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
+                .map(postMapper::toDto)
+                .toList();
+
+        if (userDrafts.isEmpty()) {
+            throw new NoUserDraftsException("У данного пользователя нет черновиков");
+        }
+        return userDrafts;
+    }
+
     private void validatePostId(long postId) {
         if (!postRepository.existsById(postId)) {
             throw new NoPostInDataBaseException("Данного поста не существует");
@@ -99,18 +116,14 @@ public class PostService {
     }
 
     private void validateData(PostDto postDto) {
-        Long authorId = postDto.getAuthorId();
+        Long userId = postDto.getAuthorId();
         Long projectId = postDto.getProjectId();
 
-        if (authorId != null && projectId != null) {
+        if (userId != null && projectId != null) {
             throw new SamePostAuthorException("Автором поста не может быть одновременно пользователь и проект");
         }
-        if (authorId != null) {
-            try {
-                userService.getUser(authorId);
-            } catch (FeignException e) {
-                throw new IncorrectIdException("Данный пользователь не найден");
-            }
+        if (userId != null) {
+           validateUserId(userId);
         } else {
             try {
                 projectService.getProject(projectId);
@@ -134,6 +147,14 @@ public class PostService {
             if (updateProjectId == null || updateProjectId != projectId) {
                 throw new UpdatePostException("Автор поста не может быть удален или изменен");
             }
+        }
+    }
+
+    private void validateUserId(long id) {
+        try {
+            userService.getUser(id);
+        } catch (FeignException e) {
+            throw new IncorrectIdException("Данный пользователь не найден");
         }
     }
 }

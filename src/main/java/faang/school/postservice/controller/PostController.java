@@ -6,13 +6,14 @@ import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
@@ -21,7 +22,7 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("/draft")
+    @PostMapping("/drafts")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
         validateData(postDto);
 
@@ -53,6 +54,12 @@ public class PostController {
     public PostDto getPost(@PathVariable("id") long postId) {
         validatePostId(postId);
         return postService.getPost(postId);
+    }
+
+    @GetMapping("drafts/users/{id}")
+    public List<PostDto> getUserDrafts(@PathVariable("id") long userId) {
+        validatePostId(userId);
+        return postService.getUserDrafts(userId);
     }
 
     private void validatePostId(long postId) {

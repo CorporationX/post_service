@@ -17,7 +17,7 @@ public class PostDto {
     private String content;
     private Long authorId;
     private Long projectId;
-    private LocalDateTime cratedAt;
+    private LocalDateTime createdAt;
     private LocalDateTime publishedAt;
     private boolean published;
     private boolean deleted;
