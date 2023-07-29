@@ -8,16 +8,18 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.LikeValidator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -45,11 +47,17 @@ class LikeServiceTest {
         likeDto = LikeDto.builder().userId(1L).postId(1L).build();
 
         Post post = Post.builder().id(1L).build();
-        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.ofNullable(post));
+        when(postRepository.findById(1L)).thenReturn(Optional.ofNullable(post));
 
         Like like = Like.builder().id(0L).userId(1L).post(post).build();
 
-        Assertions.assertEquals(likeMapper.toDto(like), likeService.likePost(1L, likeDto));
-        Mockito.verify(likeRepository).save(like);
+        assertEquals(likeMapper.toDto(like), likeService.likePost(1L, likeDto));
+        verify(likeRepository).save(like);
+    }
+
+    @Test
+    void testUnlikePost() {
+        likeRepository.deleteByPostIdAndUserId(1L, 1L);
+        verify(likeRepository).deleteByPostIdAndUserId(1L, 1L);
     }
 }

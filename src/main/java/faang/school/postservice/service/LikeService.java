@@ -22,14 +22,20 @@ public class LikeService {
     private final LikeRepository likeRepository;
 
     public LikeDto likePost(long postId, LikeDto likeDto) {
+
         likeValidator.validateLike(likeDto);
         Optional<Post> post = postRepository.findById(postId);
         Like like = likeMapper.toModel(likeDto);
+
         post.map(p -> {
             like.setPost(p);
             likeRepository.save(like);
             return p;
         });
         return likeMapper.toDto(like);
+    }
+
+    public void unlikePost(long postId, long userId) {
+        likeRepository.deleteByPostIdAndUserId(postId, userId);
     }
 }
