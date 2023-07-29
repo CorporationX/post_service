@@ -10,6 +10,7 @@ import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -28,6 +29,7 @@ public class CommentService {
         Post post = postService.getPostById(commentDto.getPostId());
 
         commentValidator.updateCommentValidator(post, comment);
+        comment.setUpdatedAt(LocalDateTime.now());
         comment.setContent(commentDto.getContent());
     }
 

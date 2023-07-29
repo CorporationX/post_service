@@ -56,7 +56,7 @@ class CommentValidatorTest {
 
     @Test
     void testCommentDtoValidator() {
-        CommentDto commentDto = new CommentDto(rightId, rightId, rightId, "any content", LocalDateTime.now());
+        CommentDto commentDto = new CommentDto(rightId, rightId, rightId, "any content", LocalDateTime.now(),LocalDateTime.now());
         assertDoesNotThrow(() -> commentValidator.commentDtoValidator(commentDto));
 
         commentDto.setContent("");
