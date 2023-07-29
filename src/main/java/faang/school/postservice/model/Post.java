@@ -19,12 +19,13 @@ import java.util.List;
 @Entity
 @Table(name = "post")
 public class Post {
+    public static final Integer POST_LENGTH_MAX = 4096;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "content", nullable = false, length = 4096)
+    @Column(name = "content", nullable = false, length = POST_LENGTH_MAX)
     private String content;
 
     @Column(name = "author_id")
