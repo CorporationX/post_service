@@ -19,6 +19,7 @@ public class CommentService {
     public CommentDto createComment(CommentDto commentDto) {
         if (commentDto.getCreatedAt()==null){
             commentDto.setCreatedAt(LocalDateTime.now());
+            commentDto.setUpdatedAt(LocalDateTime.now());
         }
         commentRepository.save(commentMapper.toEntity(commentDto));
         return commentDto;
