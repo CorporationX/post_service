@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -47,4 +49,12 @@ public class CommentService {
 
         commentRepository.delete(comment);
     }
+
+    public List<CommentDto> getCommentsForPost(Long postId){
+        return commentRepository.findAllByPostId(postId).stream()
+                .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
+                .map(commentMapper::commentToDto)
+                .toList();
+    }
+
 }
