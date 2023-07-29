@@ -16,11 +16,12 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
 
-    public void createComment(CommentDto commentDto) {
+    public CommentDto createComment(CommentDto commentDto) {
         if (commentDto.getCreatedAt()==null){
             commentDto.setCreatedAt(LocalDateTime.now());
         }
         commentRepository.save(commentMapper.toEntity(commentDto));
+        return commentDto;
     }
 
     public void updateComment(CommentDto commentDto) {

@@ -15,9 +15,9 @@ public class CommentController {
     private final CommentService commentService;
     private final CommentValidator commentValidator;
     @PostMapping("/create")
-    public void createComment(@RequestBody CommentDto commentDto) {
+    public CommentDto createComment(@RequestBody CommentDto commentDto) {
         commentValidator.commentDtoValidator(commentDto);
-        commentService.createComment(commentDto);
+        return commentService.createComment(commentDto);
     }
 
     @PutMapping("/update")
