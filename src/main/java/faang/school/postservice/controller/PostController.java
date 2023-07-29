@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@RestController("/post")
 @RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("/post")
+    @PostMapping("/create")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
         validateData(postDto);
 
@@ -26,13 +26,13 @@ public class PostController {
         return createdPostDto;
     }
 
-    @GetMapping("/post/{postId}")
-    public PostDto publishPost(@PathVariable("postId") long postId) {
+    @GetMapping("/publish/{id}")
+    public PostDto publishPost(@PathVariable("id") long postId) {
         validatePostId(postId);
         return postService.publishPost(postId);
     }
 
-    @PatchMapping("/post")
+    @PatchMapping("/update")
     public PostDto updatePost(@RequestBody PostDto updatePost) {
         validatePostId(updatePost.getId());
         validateData(updatePost);

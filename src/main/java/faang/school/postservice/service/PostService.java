@@ -48,6 +48,7 @@ public class PostService {
         }
 
         Post post = readyToPublishPost.get(0);
+        post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         return postMapper.toDto(post);
     }
