@@ -1,14 +1,20 @@
 package faang.school.postservice.dto;
 
+import faang.school.postservice.model.Like;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
+@Component
 @AllArgsConstructor
+@NoArgsConstructor
 public class PostDto {
     private Long id;
 
@@ -17,7 +23,7 @@ public class PostDto {
     private String content;
     private Long authorId;
     private Long projectId;
-    private Integer likes;
+    private List<Like> likes;
     private LocalDateTime scheduledAt;
     private LocalDateTime createdAt;
 }
