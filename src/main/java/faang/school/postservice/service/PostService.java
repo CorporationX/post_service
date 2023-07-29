@@ -7,6 +7,7 @@ import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.exception.NoPostInDataBaseException;
+import faang.school.postservice.exception.NoPublishedPostException;
 import faang.school.postservice.exception.SamePostAuthorException;
 import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapper;
@@ -74,6 +75,20 @@ public class PostService {
             throw new AlreadyDeletedException("Пост уже был удален");
         }
         post.setDeleted(true);
+        return postMapper.toDto(post);
+    }
+
+    public PostDto getPost(long postId) {
+        validatePostId(postId);
+
+        Post post = postRepository.findById(postId).get();
+        if (post.isDeleted()) {
+            throw new AlreadyDeletedException("Данный пост был удален");
+        }
+        if (!post.isPublished()) {
+            throw new NoPublishedPostException("Данный пост еще не был опубликован");
+        }
+
         return postMapper.toDto(post);
     }
 

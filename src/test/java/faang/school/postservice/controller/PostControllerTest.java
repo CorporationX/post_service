@@ -102,4 +102,15 @@ public class PostControllerTest {
         postController.softDelete(CORRECT_ID);
         verify(postService, times(1)).softDelete(CORRECT_ID);
     }
+
+    @Test
+    void testGetPostWithIncorrectId() {
+        assertThrows(IncorrectIdException.class, () -> postController.getPost(INCORRECT_ID));
+    }
+
+    @Test
+    void testGetPost() {
+        postController.getPost(CORRECT_ID);
+        verify(postService, times(1)).getPost(CORRECT_ID);
+    }
 }

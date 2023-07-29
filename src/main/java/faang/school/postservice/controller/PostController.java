@@ -5,6 +5,7 @@ import faang.school.postservice.exception.EmptyContentInPostException;
 import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,6 +44,12 @@ public class PostController {
     public PostDto softDelete(@PathVariable("id") long postId) {
         validatePostId(postId);
         return postService.softDelete(postId);
+    }
+
+    @GetMapping("/{id}")
+    public PostDto getPost(@PathVariable("id") long postId) {
+        validatePostId(postId);
+        return postService.getPost(postId);
     }
 
     private void validatePostId(long postId) {

@@ -7,6 +7,7 @@ import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.exception.NoPostInDataBaseException;
+import faang.school.postservice.exception.NoPublishedPostException;
 import faang.school.postservice.exception.SamePostAuthorException;
 import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapperImpl;
@@ -81,24 +82,24 @@ public class PostServiceTest {
     @Test
     void testCreateDaftPostWithNonExistentUser() {
         incorrectPostDto.setProjectId(null);
-
         when(userService.getUser(CORRECT_ID)).thenThrow(FeignException.class);
+
         assertThrows(IncorrectIdException.class, () -> postService.crateDraftPost(incorrectPostDto));
     }
 
     @Test
     void testCreateDaftPostWithNonExistentProject() {
         incorrectPostDto.setAuthorId(null);
-
         when(projectService.getProject(CORRECT_ID)).thenThrow(FeignException.class);
+
         assertThrows(IncorrectIdException.class, () -> postService.crateDraftPost(incorrectPostDto));
     }
 
     @Test
     void testCreateDaftPost() {
         Post post = postMapper.toPost(correctPostDto);
-
         when(postRepository.save(post)).thenReturn(post);
+
         PostDto actualPostDto = postService.crateDraftPost(correctPostDto);
         assertEquals(correctPostDto, actualPostDto);
     }
@@ -137,8 +138,7 @@ public class PostServiceTest {
     @Test
     void testUpdatePostWithIncorrectAuthor() {
         correctPostDto.setAuthorId(2L);
-        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
-        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
+        returnCorrectPostForPostRepository();
 
         assertThrows(UpdatePostException.class, () -> postService.updatePost(correctPostDto));
     }
@@ -146,8 +146,7 @@ public class PostServiceTest {
     @Test
     void testUpdatePost() {
         correctPostDto.setContent("other content");
-        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
-        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
+        returnCorrectPostForPostRepository();
 
         PostDto actualPostDto = postService.updatePost(correctPostDto);
         assertEquals(correctPostDto, actualPostDto);
@@ -162,8 +161,7 @@ public class PostServiceTest {
     @Test
     void testSoftDeleteWithAlreadyDeletedPost() {
         correctPost.setDeleted(true);
-        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
-        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
+        returnCorrectPostForPostRepository();
 
         assertThrows(AlreadyDeletedException.class, () -> postService.softDelete(CORRECT_ID));
     }
@@ -171,10 +169,44 @@ public class PostServiceTest {
     @Test
     void testSoftDelete() {
         correctPostDto.setDeleted(true);
-        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
-        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
+        returnCorrectPostForPostRepository();
 
         PostDto actualPostDto = postService.softDelete(CORRECT_ID);
         assertEquals(correctPostDto, actualPostDto);
+    }
+
+    @Test
+    void testGetPostWithoutPostInDB() {
+        when(postRepository.existsById(CORRECT_ID)).thenReturn(false);
+        assertThrows(NoPostInDataBaseException.class, () -> postService.getPost(CORRECT_ID));
+    }
+
+    @Test
+    void testGetPostAlreadyDeleted() {
+        correctPost.setDeleted(true);
+        returnCorrectPostForPostRepository();
+
+        assertThrows(AlreadyDeletedException.class, () -> postService.getPost(CORRECT_ID));
+    }
+
+    @Test
+    void testGetPostWhichNoPublished() {
+        returnCorrectPostForPostRepository();
+        assertThrows(NoPublishedPostException.class, () -> postService.getPost(CORRECT_ID));
+    }
+
+    @Test
+    void testGetPost() {
+        correctPost.setPublished(true);
+        correctPostDto.setPublished(true);
+        returnCorrectPostForPostRepository();
+
+        PostDto actualPostDto = postService.getPost(CORRECT_ID);
+        assertEquals(correctPostDto, actualPostDto);
+    }
+
+    private void returnCorrectPostForPostRepository() {
+        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
+        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
     }
 }
