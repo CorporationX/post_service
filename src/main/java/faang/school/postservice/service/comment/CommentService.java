@@ -19,28 +19,28 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final PostService postService;
 
-    public void createComment(CommentDto commentDto){
+    public void createComment(CommentDto commentDto) {
 
     }
 
-    public void updateComment(CommentDto commentDto){
+    public void updateComment(CommentDto commentDto) {
         Comment comment = getCommentById(commentDto.getId());
         Post post = postService.getPostById(commentDto.getPostId());
 
-        commentValidator.updateCommentValidator(post,comment);
+        commentValidator.updateCommentValidator(post, comment);
         comment.setContent(commentDto.getContent());
     }
 
-    public List<CommentDto> getAllComments(long postId){
+    public List<CommentDto> getAllComments(long postId) {
         return null;
     }
 
-    public void deleteComment(long commentId, long authorId){
+    public void deleteComment(long commentId, long authorId) {
 
     }
 
-    public Comment getCommentById(long commentId){
+    public Comment getCommentById(long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(()->new DataValidationException("Comment was not found"));
+                .orElseThrow(() -> new DataValidationException("Comment was not found"));
     }
 }

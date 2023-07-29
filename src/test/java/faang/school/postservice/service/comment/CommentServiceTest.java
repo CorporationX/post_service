@@ -66,7 +66,7 @@ class CommentServiceTest {
                 .getPostById(rightId);
         Mockito.verify(commentValidator, Mockito.times(1))
                 .updateCommentValidator(post, comment);
-        assertEquals(content,comment.getContent());
+        assertEquals(content, comment.getContent());
 
         CommentDto commentDtoFalse = CommentDto.builder()
                 .id(wrongId)

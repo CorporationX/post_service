@@ -79,17 +79,17 @@ class CommentValidatorTest {
     }
 
     @Test
-    void testUpdateCommentValidator(){
+    void testUpdateCommentValidator() {
         Post post = new Post();
         Comment comment = new Comment();
         List<Comment> comments = new ArrayList<>();
         post.setComments(comments);
 
         assertThrows(DataValidationException.class,
-                ()->commentValidator.updateCommentValidator(post,comment));
+                () -> commentValidator.updateCommentValidator(post, comment));
 
         comments.add(comment);
         post.setComments(comments);
-        assertDoesNotThrow(()->commentValidator.updateCommentValidator(post,comment));
+        assertDoesNotThrow(() -> commentValidator.updateCommentValidator(post, comment));
     }
 }
