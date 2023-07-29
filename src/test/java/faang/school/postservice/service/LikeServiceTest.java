@@ -57,7 +57,7 @@ class LikeServiceTest {
 
     @Test
     void testUnlikePost() {
-        likeRepository.deleteByPostIdAndUserId(1L, 1L);
+        likeService.unlikePost(1L, 1L);
         verify(likeRepository).deleteByPostIdAndUserId(1L, 1L);
     }
 }
