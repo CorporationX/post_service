@@ -3,8 +3,10 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.LikeMapperImpl;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.LikeValidator;
@@ -34,6 +36,9 @@ class LikeServiceTest {
     @Mock
     private PostRepository postRepository;
 
+    @Mock
+    private CommentRepository commentRepository;
+
     @Spy
     LikeMapper likeMapper = new LikeMapperImpl();
 
@@ -57,7 +62,26 @@ class LikeServiceTest {
 
     @Test
     void testUnlikePost() {
-        likeRepository.deleteByPostIdAndUserId(1L, 1L);
+        likeService.unlikePost(1L, 1L);
         verify(likeRepository).deleteByPostIdAndUserId(1L, 1L);
+    }
+
+    @Test
+    void testLikeComment() {
+        likeDto = LikeDto.builder().userId(1L).commentId(1L).build();
+
+        Comment comment = Comment.builder().id(1L).build();
+        when(commentRepository.findById(1L)).thenReturn(Optional.ofNullable(comment));
+
+        Like like = Like.builder().id(0L).userId(1L).comment(comment).build();
+
+        assertEquals(likeMapper.toDto(like), likeService.likeComment(1L, likeDto));
+        verify(likeRepository).save(like);
+    }
+
+    @Test
+    void testUnlikeComment() {
+        likeService.unlikeComment(1L, 1L);
+        verify(likeRepository).deleteByCommentIdAndUserId(1L, 1L);
     }
 }

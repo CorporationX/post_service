@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class LikeController {
 
@@ -28,6 +30,19 @@ public class LikeController {
         validateId(postId);
         validateId(userId);
         likeService.unlikePost(postId, userId);
+    }
+
+    @PostMapping("/comment/{commentId}/like")
+    public LikeDto likeComment(@PathVariable long commentId, @RequestBody @Valid LikeDto likeDto) {
+        validateId(commentId);
+        return likeService.likeComment(commentId, likeDto);
+    }
+
+    @GetMapping("/comment/{commentId}/user/{userId}")
+    public void unlikeComment(@PathVariable long commentId, @PathVariable long userId) {
+        validateId(commentId);
+        validateId(userId);
+        likeService.unlikeComment(commentId, userId);
     }
 
     private void validateId (long id){
