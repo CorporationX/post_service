@@ -22,6 +22,7 @@ public class CommentService {
     public CommentDto create(CommentDto commentDto){
         Comment comment = commentMapper.commentToEntity(commentDto);
         commentRepository.save(comment);
+
         return commentMapper.commentToDto(comment);
     }
 
@@ -37,5 +38,13 @@ public class CommentService {
         commentRepository.save(comment.get());
 
         return commentMapper.commentToDto(comment.get());
+    }
+
+    public void delete(Long id){
+        Comment comment = commentRepository.findById(id)
+                        .orElseThrow(()-> new DataValidationException(
+                                MessageFormat.format(ErrorMessage.COMMENT_NOT_FOUND_FORMAT, id)));
+
+        commentRepository.delete(comment);
     }
 }

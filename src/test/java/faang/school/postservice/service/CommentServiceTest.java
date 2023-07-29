@@ -65,7 +65,7 @@ public class CommentServiceTest {
     }
 
     @Test
-    public void testUpdateCommentNotFound() {
+    public void UpdateCommentNotFoundTest() {
 
         Mockito.lenient().when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
@@ -73,6 +73,27 @@ public class CommentServiceTest {
                 () -> commentService.update(commentDto));
 
         String expectedMessage = MessageFormat.format(ErrorMessage.COMMENT_NOT_FOUND_FORMAT, commentId);
+        assertEquals(expectedMessage, exception.getMessage());
+    }
+
+    @Test
+    public void deleteCommentSuccessfulTest(){
+        Comment comment = Comment.builder().id(commentId).build();
+
+        Mockito.when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+        commentService.delete(commentId);
+
+        Mockito.verify(commentRepository, Mockito.times(1)).delete(comment);
+    }
+
+    @Test
+    public void deleteCommentNotFoundTest(){
+        Mockito.when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
+
+        String expectedMessage = MessageFormat.format(ErrorMessage.COMMENT_NOT_FOUND_FORMAT, commentId);
+
+        DataValidationException exception = assertThrows(DataValidationException.class,
+                () -> commentService.delete(commentId));
         assertEquals(expectedMessage, exception.getMessage());
     }
 }
