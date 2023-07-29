@@ -3,19 +3,15 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 
 class CommentServiceTest {
@@ -27,14 +23,16 @@ class CommentServiceTest {
     private CommentRepository commentRepository;
     private long rightId;
     private List<Comment> comments = new ArrayList<>();
+
     @BeforeEach
-    void setUp(){
+    void setUp() {
         MockitoAnnotations.openMocks(this);
-        rightId=1L;
+        rightId = 1L;
 
         Mockito.when(commentRepository.findAllByPostId(rightId))
                 .thenReturn(comments);
     }
+
     @Test
     void createComment() {
     }
@@ -47,9 +45,9 @@ class CommentServiceTest {
     void getAllComments() {
         commentService.getAllComments(rightId);
 
-        Mockito.verify(commentMapper,Mockito.times(1))
+        Mockito.verify(commentMapper, Mockito.times(1))
                 .toDto(comments);
-        Mockito.verify(commentRepository,Mockito.times(1))
+        Mockito.verify(commentRepository, Mockito.times(1))
                 .findAllByPostId(rightId);
     }
 

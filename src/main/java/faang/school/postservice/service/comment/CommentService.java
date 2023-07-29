@@ -14,22 +14,22 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
 
-    public void createComment(CommentDto commentDto){
+    public void createComment(CommentDto commentDto) {
 
     }
 
-    public void updateComment(CommentDto commentDto){
+    public void updateComment(CommentDto commentDto) {
 
     }
 
-    public List<CommentDto> getAllComments(long postId){
+    public List<CommentDto> getAllComments(long postId) {
         return commentMapper.toDto(
-                        commentRepository
+                commentRepository
                         .findAllByPostId(postId)
-                );
+        );
     }
 
-    public void deleteComment(long commentId, long authorId){
+    public void deleteComment(long commentId, long authorId) {
 
     }
 }
