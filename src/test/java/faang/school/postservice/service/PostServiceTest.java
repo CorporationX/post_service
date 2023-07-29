@@ -112,6 +112,7 @@ public class PostServiceTest {
 
     @Test
     void testPublishPost() {
+        correctPostDto.setPublished(true);
         correctPostDto.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
         when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
         when(postRepository.findReadyToPublish()).thenReturn(Arrays.asList(alreadyPublishedPost, correctPost));
