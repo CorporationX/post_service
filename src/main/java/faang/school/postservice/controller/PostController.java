@@ -6,19 +6,21 @@ import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController("/post")
+@RestController
+@RequestMapping("/posts")
 @RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("/create")
+    @PostMapping("/draft")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
         validateData(postDto);
 
@@ -32,7 +34,7 @@ public class PostController {
         return postService.publishPost(postId);
     }
 
-    @PatchMapping("/update")
+    @PutMapping("/change")
     public PostDto updatePost(@RequestBody PostDto updatePost) {
         validatePostId(updatePost.getId());
         validateData(updatePost);
@@ -40,7 +42,7 @@ public class PostController {
         return postService.updatePost(updatePost);
     }
 
-    @PatchMapping("/delete/{id}")
+    @PutMapping("/soft-delete/{id}")
     public PostDto softDelete(@PathVariable("id") long postId) {
         validatePostId(postId);
         return postService.softDelete(postId);
