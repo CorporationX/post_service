@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.exception.NoPostInDataBaseException;
@@ -36,7 +37,6 @@ public class PostService {
         return postMapper.toDto(savedPost);
     }
 
-
     public PostDto publishPost(long postId) {
         validatePostId(postId);
 
@@ -48,6 +48,7 @@ public class PostService {
         }
 
         Post post = readyToPublishPost.get(0);
+        post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         return postMapper.toDto(post);
     }
@@ -61,6 +62,18 @@ public class PostService {
 
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
+        return postMapper.toDto(post);
+    }
+
+    public PostDto softDelete(long postId) {
+        validatePostId(postId);
+
+        Post post = postRepository.findById(postId).get();
+
+        if (post.isDeleted()) {
+            throw new AlreadyDeletedException("Пост уже был удален");
+        }
+        post.setDeleted(true);
         return postMapper.toDto(post);
     }
 

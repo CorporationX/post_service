@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.exception.NoPostInDataBaseException;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
+
 
     @Spy
     private PostMapperImpl postMapper;
@@ -117,6 +119,7 @@ public class PostServiceTest {
     @Test
     void testPublishPost() {
         correctPostDto.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
+        correctPostDto.setPublished(true);
         when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
         when(postRepository.findReadyToPublish()).thenReturn(Arrays.asList(alreadyPublishedPost, correctPost));
 
@@ -147,6 +150,31 @@ public class PostServiceTest {
         when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
 
         PostDto actualPostDto = postService.updatePost(correctPostDto);
+        assertEquals(correctPostDto, actualPostDto);
+    }
+
+    @Test
+    void testSoftDeleteWithoutPostInDB() {
+        when(postRepository.existsById(CORRECT_ID)).thenReturn(false);
+        assertThrows(NoPostInDataBaseException.class, () -> postService.softDelete(CORRECT_ID));
+    }
+
+    @Test
+    void testSoftDeleteWithAlreadyDeletedPost() {
+        correctPost.setDeleted(true);
+        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
+        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
+
+        assertThrows(AlreadyDeletedException.class, () -> postService.softDelete(CORRECT_ID));
+    }
+
+    @Test
+    void testSoftDelete() {
+        correctPostDto.setDeleted(true);
+        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
+        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
+
+        PostDto actualPostDto = postService.softDelete(CORRECT_ID);
         assertEquals(correctPostDto, actualPostDto);
     }
 }

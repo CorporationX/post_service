@@ -5,20 +5,19 @@ import faang.school.postservice.exception.EmptyContentInPostException;
 import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@RestController("/post")
 @RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("/post")
+    @PostMapping("/create")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
         validateData(postDto);
 
@@ -26,18 +25,24 @@ public class PostController {
         return createdPostDto;
     }
 
-    @GetMapping("/post/{postId}")
-    public PostDto publishPost(@PathVariable("postId") long postId) {
+    @PostMapping ("/publish/{id}")
+    public PostDto publishPost(@PathVariable("id") long postId) {
         validatePostId(postId);
         return postService.publishPost(postId);
     }
 
-    @PatchMapping("/post")
+    @PatchMapping("/update")
     public PostDto updatePost(@RequestBody PostDto updatePost) {
         validatePostId(updatePost.getId());
         validateData(updatePost);
 
         return postService.updatePost(updatePost);
+    }
+
+    @PatchMapping("/delete/{id}")
+    public PostDto softDelete(@PathVariable("id") long postId) {
+        validatePostId(postId);
+        return postService.softDelete(postId);
     }
 
     private void validatePostId(long postId) {
