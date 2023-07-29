@@ -6,6 +6,7 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.IncorrectIdException;
+import faang.school.postservice.exception.NoPostException;
 import faang.school.postservice.exception.NoPostInDataBaseException;
 import faang.school.postservice.exception.NoPublishedPostException;
 import faang.school.postservice.exception.NoDraftsException;
@@ -121,6 +122,21 @@ public class PostService {
             throw new NoDraftsException("У данного проекта нет черновиков постов");
         }
         return projectDrafts;
+    }
+
+    public List<PostDto> getUserPosts(long userId) {
+        validateUserId(userId);
+
+        List<PostDto> userPosts = postRepository.findByAuthorId(userId).stream()
+                .filter(post -> post.isPublished() && !post.isDeleted())
+                .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
+                .map(postMapper::toDto)
+                .toList();
+
+        if (userPosts.isEmpty()) {
+            throw new NoPostException("У данного пользователя нет опубликованных постов");
+        }
+        return userPosts;
     }
 
     private void validatePostId(long postId) {
