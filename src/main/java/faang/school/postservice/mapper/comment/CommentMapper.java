@@ -10,6 +10,6 @@ public interface CommentMapper {
     @Mapping(source = "post.id", target = "postId")
     CommentDto toDto(Comment comment);
 
-    @Mapping(source = "post", target = "post.id")
+    @Mapping(source = "postId", target = "post.id")
     Comment toEntity(CommentDto commentDto);
 }

@@ -4,7 +4,11 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exeption.DataValidationException;
 import faang.school.postservice.repository.PostRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+@Component
+@RequiredArgsConstructor
 public class CommentValidator {
     private PostRepository postRepository;
     private UserServiceClient userServiceClient;
@@ -20,9 +24,8 @@ public class CommentValidator {
         postExistValidator(commentDto.getPostId());
         authorExistValidator(commentDto.getAuthorId());
 
-
         int lenComment = commentDto.getContent().length();
-        if (lenComment >= 4096 || lenComment == 0) {
+        if (lenComment > 4096 || lenComment == 0) {
             throw new DataValidationException("Length of comment is not correct");
         }
     }
@@ -31,7 +34,8 @@ public class CommentValidator {
         postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("Post is not exist"));
     }
-    public void authorExistValidator(long authorId){
+
+    public void authorExistValidator(long authorId) {
         if (userServiceClient.getUser(authorId) == null) {
             throw new DataValidationException("User is not exist");
         }
