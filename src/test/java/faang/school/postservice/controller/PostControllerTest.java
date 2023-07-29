@@ -147,4 +147,15 @@ public class PostControllerTest {
         postController.getUserPosts(CORRECT_ID);
         verify(postService, times(1)).getUserPosts(CORRECT_ID);
     }
+
+    @Test
+    void testGetProjectPostsWithIncorrectId() {
+        assertThrows(IncorrectIdException.class, () -> postController.getProjectPosts(INCORRECT_ID));
+    }
+
+    @Test
+    void testGetProjectPosts() {
+        postController.getProjectPosts(CORRECT_ID);
+        verify(postService, times(1)).getProjectPosts(CORRECT_ID);
+    }
 }

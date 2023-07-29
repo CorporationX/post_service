@@ -139,6 +139,21 @@ public class PostService {
         return userPosts;
     }
 
+    public List<PostDto> getProjectPosts(long projectId) {
+        validateProjectId(projectId);
+
+        List<PostDto> projectPosts = postRepository.findByProjectId(projectId).stream()
+                .filter(post -> post.isPublished() && !post.isDeleted())
+                .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
+                .map(postMapper::toDto)
+                .toList();
+
+        if (projectPosts.isEmpty()) {
+            throw new NoPostException("У данного проекта нет опубликованных постов");
+        }
+        return projectPosts;
+    }
+
     private void validatePostId(long postId) {
         if (!postRepository.existsById(postId)) {
             throw new NoPostInDataBaseException("Данного поста не существует");

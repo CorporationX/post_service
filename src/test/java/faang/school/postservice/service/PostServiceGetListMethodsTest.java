@@ -118,6 +118,30 @@ public class PostServiceGetListMethodsTest {
         assertEquals(expectedUserPost, actualUserPosts);
     }
 
+    @Test
+    void testGetProjectPostsWithoutProjectInDB() {
+        when(projectService.getProject(CORRECT_ID)).thenThrow(FeignException.class);
+        assertThrows(IncorrectIdException.class, () -> postService.getProjectPosts(CORRECT_ID));
+    }
+
+    @Test
+    void testGetProjectPostsWithEmptyList() {
+        when(projectService.getProject(CORRECT_ID)).thenReturn(correctProjectDto);
+        when(postRepository.findByProjectId(CORRECT_ID)).thenReturn(new ArrayList<>());
+
+        assertThrows(NoPostException.class, () -> postService.getProjectPosts(CORRECT_ID));
+    }
+
+    @Test
+    void testGetProjectPosts() {
+        when(projectService.getProject(CORRECT_ID)).thenReturn(correctProjectDto);
+        when(postRepository.findByProjectId(CORRECT_ID)).thenReturn(getListOfPost());
+
+        List<PostDto> actualProjectPosts = postService.getProjectPosts(CORRECT_ID);
+        List<PostDto> expectedProjectPosts = getCorrectListOfPostDto();
+        assertEquals(expectedProjectPosts, actualProjectPosts);
+    }
+
     private List<PostDto> getCorrectListOfDraftPostDto() {
         PostDto dto1 = PostDto.builder()
                 .createdAt(TEST_TIME.minusMonths(3))
