@@ -30,6 +30,8 @@ public class CommentController {
     @GetMapping("/{postId}/post")
     public List<CommentDto> getAllComments(@PathVariable long postId) {
         commentValidator.idValidator(postId);
+        commentValidator.postExistValidator(postId);
+
         return commentService.getAllComments(postId);
     }
 
