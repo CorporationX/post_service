@@ -49,19 +49,19 @@ class CommentValidatorTest {
 
     @Test
     void testIdValidator() {
-        assertDoesNotThrow(() -> commentValidator.idValidator(rightId));
+        assertDoesNotThrow(() -> commentValidator.validatorId(rightId));
         assertThrows(DataValidationException.class,
-                () -> commentValidator.idValidator(wrongId));
+                () -> commentValidator.validatorId(wrongId));
     }
 
     @Test
     void testCommentDtoValidator() {
         CommentDto commentDto = new CommentDto(rightId, rightId, rightId, "any content", LocalDateTime.now(),LocalDateTime.now());
-        assertDoesNotThrow(() -> commentValidator.commentDtoValidator(commentDto));
+        assertDoesNotThrow(() -> commentValidator.validatorCommentDto(commentDto));
 
         commentDto.setContent("");
         assertThrows(DataValidationException.class,
-                () -> commentValidator.commentDtoValidator(commentDto));
+                () -> commentValidator.validatorCommentDto(commentDto));
     }
 
     @Test
@@ -73,9 +73,9 @@ class CommentValidatorTest {
 
     @Test
     void testAuthorExistValidator() {
-        assertDoesNotThrow(() -> commentValidator.authorExistValidator(rightId));
+        assertDoesNotThrow(() -> commentValidator.validatorAuthorExist(rightId));
         assertThrows(DataValidationException.class,
-                () -> commentValidator.authorExistValidator(wrongId));
+                () -> commentValidator.validatorAuthorExist(wrongId));
     }
 
     @Test
@@ -86,10 +86,10 @@ class CommentValidatorTest {
         post.setComments(comments);
 
         assertThrows(DataValidationException.class,
-                () -> commentValidator.updateCommentValidator(post, comment));
+                () -> commentValidator.validatorUpdateComment(post, comment));
 
         comments.add(comment);
         post.setComments(comments);
-        assertDoesNotThrow(() -> commentValidator.updateCommentValidator(post, comment));
+        assertDoesNotThrow(() -> commentValidator.validatorUpdateComment(post, comment));
     }
 }

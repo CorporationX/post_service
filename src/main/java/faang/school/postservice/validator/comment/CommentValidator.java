@@ -15,16 +15,16 @@ public class CommentValidator {
     private PostService postService;
     private UserServiceClient userServiceClient;
 
-    public void idValidator(long id) {
+    public void validatorId(long id) {
         if (id < 1) {
             throw new DataValidationException("Id mast be more 1, your isn't");
         }
     }
 
-    public void commentDtoValidator(CommentDto commentDto) {
-        idValidator(commentDto.getId());
-        postExistValidator(commentDto.getPostId());
-        authorExistValidator(commentDto.getAuthorId());
+    public void validatorCommentDto(CommentDto commentDto) {
+        validatorId(commentDto.getId());
+        validatorPostExist(commentDto.getPostId());
+        validatorAuthorExist(commentDto.getAuthorId());
 
         int lenComment = commentDto.getContent().length();
         if (lenComment >= 4096 || lenComment == 0) {
@@ -32,17 +32,17 @@ public class CommentValidator {
         }
     }
 
-    public void postExistValidator(long postId) {
+    public void validatorPostExist(long postId) {
         postService.getPostById(postId);
     }
 
-    public void authorExistValidator(long authorId) {
+    public void validatorAuthorExist(long authorId) {
         if (userServiceClient.getUser(authorId) == null) {
             throw new DataValidationException("User is not exist");
         }
     }
 
-    public void updateCommentValidator(Post post, Comment comment) {
+    public void validatorUpdateComment(Post post, Comment comment) {
         if (!post.getComments().contains(comment)) {
             throw new DataValidationException("Comment from another post");
         }
