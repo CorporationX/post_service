@@ -5,6 +5,7 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.util.exceptionHandler.ErrorCommentMessage;
 import faang.school.postservice.util.validator.comment.CommentServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentServiceValidator validator;
@@ -29,9 +31,8 @@ public class CommentService {
     }
 
     public List<CommentDto> getCommentsByPostId(long postId) {
-        List<Comment> comments = commentRepository.findAllByPostId(postId);
-        return comments.stream()
-                .sorted((comment1, comment2) -> comment1.getCreatedAt().compareTo(comment2.getCreatedAt()))
+        return commentRepository.findAllByPostIdSortedByCreated(postId)
+                .stream()
                 .map(commentMapper::toDto)
                 .toList();
     }
@@ -39,7 +40,7 @@ public class CommentService {
     @Transactional
     public CommentDto updateComment(long commentId, CommentDto commentDto) {
         Comment commentToUpdate = commentRepository.findById(commentId)
-                .orElseThrow(() -> new NotFoundException("Comment with id " + commentId + " was not found!"));
+                .orElseThrow(() -> new NotFoundException(ErrorCommentMessage.getCommentWasNotFound(commentId)));
 
         validator.validateUpdateComment(commentToUpdate, commentDto);
         commentDto.setContent(commentDto.getContent());
@@ -49,10 +50,9 @@ public class CommentService {
     }
 
     @Transactional
-    public boolean deleteCommentById(long commentId) {
+    public void deleteCommentById(long commentId) {
         if (!commentRepository.existsById(commentId))
-            throw new NotFoundException("Comment with id " + commentId + "was not found!");
+            throw new NotFoundException(ErrorCommentMessage.getCommentWasNotFound(commentId));
         commentRepository.deleteById(commentId);
-        return true;
     }
 }

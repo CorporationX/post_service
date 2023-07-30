@@ -6,6 +6,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.util.exceptionHandler.ErrorCommentMessage;
 import faang.school.postservice.util.validator.comment.CommentServiceValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,19 +58,19 @@ class CommentServiceTest {
                 Comment.builder().id(2L).createdAt(LocalDateTime.of(2023, 7, 28, 14, 30)).build(),
                 Comment.builder().id(3L).createdAt(LocalDateTime.of(2023, 7, 26, 1, 20)).build()
         );
-        Mockito.when(commentRepository.findAllByPostId(Mockito.anyLong()))
+        Mockito.when(commentRepository.findAllByPostIdSortedByCreated(Mockito.anyLong()))
                 .thenReturn(comments);
         comments.forEach(commentEntity -> Mockito.when(commentMapper.toDto(commentEntity))
                 .thenReturn(CommentDto.builder().id(commentEntity.getId()).createdAt(commentEntity.getCreatedAt()).build()));
 
         List<CommentDto> sortedComments = commentService.getCommentsByPostId(1);
-        Mockito.verify(commentRepository, Mockito.times(1)).findAllByPostId(Mockito.anyLong());
+        Mockito.verify(commentRepository, Mockito.times(1)).findAllByPostIdSortedByCreated(Mockito.anyLong());
         Mockito.verify(commentMapper, Mockito.times(comments.size())).toDto(Mockito.any());
 
         List<CommentDto> expected = List.of(
-                CommentDto.builder().id(3L).createdAt(LocalDateTime.of(2023, 7, 26, 1, 20)).build(),
+                CommentDto.builder().id(1L).createdAt(LocalDateTime.of(2023, 7, 28, 18, 50)).build(),
                 CommentDto.builder().id(2L).createdAt(LocalDateTime.of(2023, 7, 28, 14, 30)).build(),
-                CommentDto.builder().id(1L).createdAt(LocalDateTime.of(2023, 7, 28, 18, 50)).build()
+                CommentDto.builder().id(3L).createdAt(LocalDateTime.of(2023, 7, 26, 1, 20)).build()
         );
 
         assertIterableEquals(expected, sortedComments);
@@ -84,7 +85,7 @@ class CommentServiceTest {
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> commentService.deleteCommentById(commentId));
         Mockito.verify(commentRepository, Mockito.times(0)).deleteById(Mockito.anyLong());
-        assertEquals("Comment with id " + commentId + "was not found!", exception.getMessage());
+        assertEquals(ErrorCommentMessage.getCommentWasNotFound(commentId), exception.getMessage());
     }
 
     @Test
@@ -93,11 +94,9 @@ class CommentServiceTest {
         Mockito.when(commentRepository.existsById(Mockito.anyLong()))
                 .thenReturn(true);
 
-        boolean result = commentService.deleteCommentById(commentId);
+        commentService.deleteCommentById(commentId);
         Mockito.verify(commentRepository, Mockito.times(1)).existsById(commentId);
         Mockito.verify(commentRepository, Mockito.times(1)).deleteById(commentId);
-
-        assertTrue(result);
     }
 
     @Test
@@ -111,7 +110,7 @@ class CommentServiceTest {
 
         Mockito.verify(commentRepository, Mockito.times(1)).findById(commentId);
         Mockito.verify(commentRepository, Mockito.times(0)).save(Mockito.any());
-        assertEquals("Comment with id " + commentId + " was not found!", exception.getMessage());
+        assertEquals(ErrorCommentMessage.getCommentWasNotFound(commentId), exception.getMessage());
     }
 
     @Test
