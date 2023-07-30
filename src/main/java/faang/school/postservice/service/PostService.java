@@ -5,10 +5,12 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,18 +19,31 @@ import org.springframework.stereotype.Service;
 public class PostService {
     private final PostMapper postMapper;
     private final PostRepository postRepository;
+    private final PostValidator postValidator;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
-    private final PostValidator postValidator;
 
     public PostDto createPost(PostDto post) {
-        UserDto user = userServiceClient.getUser(post.getAuthorId());
-        ProjectDto project = projectServiceClient.getProject(post.getProjectId());
+        if (post.getAuthorId() != null && post.getProjectId() != null) {
+            throw new DataValidationException("Author and project cannot be specified at the same time");
+        }
 
-        postValidator.validateCreate(post, user, project);
+        if (post.getAuthorId() != null) {
+            UserDto user = userServiceClient.getUser(post.getAuthorId());
+            if (user == null) {
+                throw new EntityNotFoundException("User not found");
+            }
+        } else if (post.getProjectId() != null) {
+            ProjectDto project = projectServiceClient.getProject(post.getProjectId());
+            if (project == null) {
+                throw new EntityNotFoundException("Project not found");
+            }
+        }
+
+        postValidator.validateCreate(post);
         Post postEntity = postMapper.toPost(post);
         postRepository.save(postEntity);
 
-        return post;
+        return postMapper.toDto(postRepository.save(postMapper.toPost(post)));
     }
 }
