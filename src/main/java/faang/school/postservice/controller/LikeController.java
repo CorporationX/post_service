@@ -27,11 +27,13 @@ public class LikeController {
     }
 
     @DeleteMapping("/deletelikepost")
+    @ResponseStatus(HttpStatus.OK)
     public void deleteLikeOnPost(LikeDto likeDto) {
         likeService.deleteLikeOnPost(likeDto);
     }
 
     @DeleteMapping("/deletelikecomment")
+    @ResponseStatus(HttpStatus.OK)
     public void deleteLikeOnComment(LikeDto likeDto) {
         likeService.deleteLikeOnComment(likeDto);
     }
