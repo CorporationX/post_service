@@ -53,3 +53,5 @@ out/
 
 ### VS Code ###
 .vscode/
+/src/main/java/faang/school/postservice/config/context/UserContext.java
+/src/main/java/faang/school/postservice/config/context/UserHeaderFilter.java
