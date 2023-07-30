@@ -26,11 +26,9 @@ public class CommentService {
     }
 
     public CommentDto update(CommentDto commentDto){
-        Optional<Comment> comment = commentRepository.findById(commentDto.getId());
-        if (comment.isEmpty()){
-            throw new DataValidationException(
-                    MessageFormat.format(ErrorMessage.COMMENT_NOT_FOUND_FORMAT, commentDto.getId()));
-        }
+        Optional<Comment> comment = Optional.ofNullable(commentRepository.findById(commentDto.getId())
+                .orElseThrow(() -> new DataValidationException(
+                        MessageFormat.format(ErrorMessage.COMMENT_NOT_FOUND_FORMAT, commentDto.getId()))));
 
         comment.get().setContent(commentDto.getContent());
         comment.get().setUpdatedAt(LocalDateTime.now());
