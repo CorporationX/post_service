@@ -6,6 +6,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.util.ErrorMessage;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,7 +69,7 @@ public class CommentServiceTest {
     }
 
     @Test
-    public void UpdateCommentNotFoundTest() {
+    public void updateCommentNotFoundTest() {
 
         Mockito.lenient().when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
@@ -95,7 +96,7 @@ public class CommentServiceTest {
 
         String expectedMessage = MessageFormat.format(ErrorMessage.COMMENT_NOT_FOUND_FORMAT, commentId);
 
-        DataValidationException exception = assertThrows(DataValidationException.class,
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> commentService.delete(commentId));
         assertEquals(expectedMessage, exception.getMessage());
     }
