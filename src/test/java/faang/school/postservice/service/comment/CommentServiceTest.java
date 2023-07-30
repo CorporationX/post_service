@@ -1,9 +1,9 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.exeption.DataValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -13,7 +13,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CommentServiceTest {
     @InjectMocks
@@ -62,7 +63,7 @@ class CommentServiceTest {
         commentService.getCommentById(rightId);
 
         assertDoesNotThrow(() -> commentService.getCommentById(rightId));
-        assertThrows(DataValidationException.class,
+        assertThrows(EntityNotFoundException.class,
                 () -> commentService.getCommentById(wrongId));
     }
 }

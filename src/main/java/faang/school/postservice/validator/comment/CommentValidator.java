@@ -6,22 +6,26 @@ import faang.school.postservice.exeption.DataValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+@Component
+@RequiredArgsConstructor
 public class CommentValidator {
     private CommentService commentService;
     private PostService postService;
     private UserServiceClient userServiceClient;
 
-    public void idValidator(long id) {
+    public void validatorId(long id) {
         if (id < 1) {
             throw new DataValidationException("Id mast be more 1, your isn't");
         }
     }
 
-    public void commentDtoValidator(CommentDto commentDto) {
-        idValidator(commentDto.getId());
-        postExistValidator(commentDto.getPostId());
-        authorExistValidator(commentDto.getAuthorId());
+    public void validatorCommentDto(CommentDto commentDto) {
+        validatorId(commentDto.getId());
+        validatorPostExist(commentDto.getPostId());
+        validatorAuthorExist(commentDto.getAuthorId());
 
         int lenComment = commentDto.getContent().length();
         if (lenComment >= 4096 || lenComment == 0) {
@@ -29,19 +33,19 @@ public class CommentValidator {
         }
     }
 
-    public void postExistValidator(long postId) {
+    public void validatorPostExist(long postId) {
         postService.getPostById(postId);
     }
 
-    public void authorExistValidator(long authorId) {
+    public void validatorAuthorExist(long authorId) {
         if (userServiceClient.getUser(authorId) == null) {
             throw new DataValidationException("User is not exist");
         }
     }
 
-    public void deleteCommentValidator(long commentId, long authorId) {
-        idValidator(commentId);
-        idValidator(authorId);
+    public void ValidatorDeleteComment(long commentId, long authorId) {
+        validatorId(commentId);
+        validatorId(authorId);
         Comment comment = commentService.getCommentById(commentId);
         if (comment.getAuthorId() != authorId) {
             throw new DataValidationException("It's comment another author");

@@ -17,25 +17,25 @@ public class CommentController {
 
     @PostMapping("/create")
     public void createComment(@RequestBody CommentDto commentDto) {
-        commentValidator.commentDtoValidator(commentDto);
+        commentValidator.validatorCommentDto(commentDto);
         commentService.createComment(commentDto);
     }
 
     @PutMapping("/update")
     public void updateComment(@RequestBody CommentDto commentDto) {
-        commentValidator.commentDtoValidator(commentDto);
+        commentValidator.validatorCommentDto(commentDto);
         commentService.updateComment(commentDto);
     }
 
     @GetMapping("/{postId}/post")
     public List<CommentDto> getAllComments(@PathVariable long postId) {
-        commentValidator.idValidator(postId);
+        commentValidator.validatorId(postId);
         return commentService.getAllComments(postId);
     }
 
     @DeleteMapping("{/commentId}/comment/{authorId}/author")
     public void deleteComment(@PathVariable long commentId, @PathVariable long authorId) {
-        commentValidator.deleteCommentValidator(commentId,authorId);
+        commentValidator.ValidatorDeleteComment(commentId, authorId);
         commentService.deleteComment(commentId);
     }
 }
