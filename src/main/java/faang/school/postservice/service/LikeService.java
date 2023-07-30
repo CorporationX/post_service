@@ -26,7 +26,7 @@ public class LikeService {
         isUserExist(likeDto);
         long postId = likeDto.getPost().getId();
         Optional<Like> byPostIdAndUserId = likeRepository.findByPostIdAndUserId(postId, likeDto.getUserId());
-        if (byPostIdAndUserId.isPresent()) {
+        if (byPostIdAndUserId.isEmpty()) {
             Like postLike = likeMapper.toEntity(likeDto);
             postRepository.findById(postId).ifPresent(post -> post.getLikes().add(postLike));
             return likeMapper.toDto(postLike);
@@ -38,7 +38,7 @@ public class LikeService {
         isUserExist(likeDto);
         long commentId = likeDto.getComment().getId();
         Optional<Like> byCommentIdAndUserId = likeRepository.findByCommentIdAndUserId(commentId, likeDto.getUserId());
-        if (byCommentIdAndUserId.isPresent()) {
+        if (byCommentIdAndUserId.isEmpty()) {
             Like commentLike = likeMapper.toEntity(likeDto);
             commentRepository.findById(commentId).ifPresent(comment -> comment.getLikes().add(commentLike));
             return likeMapper.toDto(commentLike);
