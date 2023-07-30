@@ -3,9 +3,12 @@ package faang.school.postservice.validator.comment;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exeption.DataValidationException;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
 
 public class CommentValidator {
+    private CommentService commentService;
     private PostService postService;
     private UserServiceClient userServiceClient;
 
@@ -33,6 +36,13 @@ public class CommentValidator {
     public void authorExistValidator(long authorId) {
         if (userServiceClient.getUser(authorId) == null) {
             throw new DataValidationException("User is not exist");
+        }
+    }
+
+    public void deleteCommentValidator(long commentId, long authorId) {
+        Comment comment = commentService.getCommentById(commentId);
+        if (comment.getAuthorId() != authorId) {
+            throw new DataValidationException("It's comment another author");
         }
     }
 }

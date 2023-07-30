@@ -5,6 +5,8 @@ import faang.school.postservice.model.Comment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper
 public interface CommentMapper {
     @Mapping(source = "post.id", target = "postId")

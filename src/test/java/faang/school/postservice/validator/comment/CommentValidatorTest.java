@@ -4,7 +4,9 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exeption.DataValidationException;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,13 +24,15 @@ class CommentValidatorTest {
     private UserServiceClient userServiceClient;
     @Mock
     private PostService postService;
-
+    @Mock
+    private CommentService commentService;
     @InjectMocks
     private CommentValidator commentValidator;
 
     private long rightId;
     private long wrongId;
     private UserDto userDto;
+    private Comment comment = new Comment();
 
     @BeforeEach
     public void setUp() {
@@ -36,12 +40,16 @@ class CommentValidatorTest {
 
         rightId = 1L;
         wrongId = -2L;
+        comment.setAuthorId(rightId);
+        comment.setId(rightId);
         userDto = new UserDto(rightId, "any", "any");
 
         Mockito.when(postService.getPostById(rightId))
                 .thenReturn(new Post());
         Mockito.when(userServiceClient.getUser(rightId))
                 .thenReturn(userDto);
+        Mockito.when(commentService.getCommentById(rightId))
+                .thenReturn(comment);
     }
 
     @Test
@@ -53,7 +61,7 @@ class CommentValidatorTest {
 
     @Test
     void testCommentDtoValidator() {
-        CommentDto commentDto = new CommentDto(rightId, rightId, rightId, "any content", LocalDateTime.now());
+        CommentDto commentDto = new CommentDto(rightId, rightId, rightId, "any content", LocalDateTime.now(), LocalDateTime.now());
         assertDoesNotThrow(() -> commentValidator.commentDtoValidator(commentDto));
 
         commentDto.setContent("");
@@ -69,9 +77,18 @@ class CommentValidatorTest {
     }
 
     @Test
-    void authorExistValidator() {
+    void testAuthorExistValidator() {
         assertDoesNotThrow(() -> commentValidator.authorExistValidator(rightId));
         assertThrows(DataValidationException.class,
                 () -> commentValidator.authorExistValidator(wrongId));
+    }
+
+    @Test
+    void testDeleteCommentValidator() {
+        assertDoesNotThrow(() -> commentValidator.deleteCommentValidator(rightId, rightId));
+        assertThrows(DataValidationException.class,
+                () -> commentValidator.deleteCommentValidator(rightId, wrongId));
+        assertThrows(NullPointerException.class,
+                () -> commentValidator.deleteCommentValidator(wrongId, wrongId));
     }
 }
