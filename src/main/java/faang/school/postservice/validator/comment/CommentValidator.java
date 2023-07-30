@@ -27,6 +27,7 @@ public class CommentValidator {
     }
 
     public void postExistValidator(long postId) {
+        idValidator(postId);
         postService.getPostById(postId);
     }
 
