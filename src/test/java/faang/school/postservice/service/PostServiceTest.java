@@ -57,18 +57,17 @@ public class PostServiceTest {
 
     @Test
     void testCreateDaftPostWithNonExistentUser() {
-        incorrectPostDto.setProjectId(null);
-
         when(userService.getUser(CORRECT_ID)).thenThrow(FeignException.class);
-        assertThrows(IncorrectIdException.class, () -> postService.crateDraftPost(incorrectPostDto));
+        assertThrows(IncorrectIdException.class, () -> postService.crateDraftPost(correctPostDto));
     }
 
     @Test
     void testCreateDaftPostWithNonExistentProject() {
-        incorrectPostDto.setAuthorId(null);
+        correctPostDto.setProjectId(CORRECT_ID);
+        correctPostDto.setAuthorId(null);
 
         when(projectService.getProject(CORRECT_ID)).thenThrow(FeignException.class);
-        assertThrows(IncorrectIdException.class, () -> postService.crateDraftPost(incorrectPostDto));
+        assertThrows(IncorrectIdException.class, () -> postService.crateDraftPost(correctPostDto));
     }
 
     @Test
