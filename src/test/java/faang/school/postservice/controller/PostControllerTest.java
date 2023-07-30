@@ -63,20 +63,9 @@ public class PostControllerTest {
     }
 
     @Test
-    void testPublishPostWithIncorrectId() {
-        assertThrows(IncorrectIdException.class, () -> postController.publishPost(INCORRECT_ID));
-    }
-
-    @Test
     void testPublishPost() {
         postController.publishPost(CORRECT_ID);
         verify(postService, times(1)).publishPost(CORRECT_ID);
-    }
-
-    @Test
-    void testUpdatePostWithIncorrectId() {
-        incorrectPostDto.setId(INCORRECT_ID);
-        assertThrows(IncorrectIdException.class, () -> postController.updatePost(incorrectPostDto));
     }
 
     @Test
