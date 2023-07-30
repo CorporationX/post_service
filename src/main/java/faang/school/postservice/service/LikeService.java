@@ -15,7 +15,7 @@ import java.util.List;
 public class LikeService {
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
-    private static int BATCH_SIZE = 100;
+    private static final int BATCH_SIZE = 100;
 
     public List<UserDto> getPostLikes(long id) {
         List<Like> likes = likeRepository.findByPostId(id);
