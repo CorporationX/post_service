@@ -85,6 +85,7 @@ class CommentValidatorTest {
 
     @Test
     void testDeleteCommentValidator() {
+        wrongId=3L;
         assertDoesNotThrow(() -> commentValidator.deleteCommentValidator(rightId, rightId));
         assertThrows(DataValidationException.class,
                 () -> commentValidator.deleteCommentValidator(rightId, wrongId));

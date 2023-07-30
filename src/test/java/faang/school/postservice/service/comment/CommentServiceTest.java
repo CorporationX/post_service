@@ -48,10 +48,8 @@ class CommentServiceTest {
 
     @Test
     void testDeleteComment() {
-        commentService.deleteComment(rightId, rightId);
+        commentService.deleteComment(rightId);
 
-        Mockito.verify(commentValidator, Mockito.times(1))
-                .deleteCommentValidator(rightId, rightId);
         Mockito.verify(commentRepository, Mockito.times(1))
                 .deleteById(rightId);
     }

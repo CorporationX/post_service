@@ -35,8 +35,7 @@ public class CommentController {
 
     @DeleteMapping("{/commentId}/comment/{authorId}/author")
     public void deleteComment(@PathVariable long commentId, @PathVariable long authorId) {
-        commentValidator.idValidator(commentId);
-        commentValidator.idValidator(commentId);
-        commentService.deleteComment(commentId, authorId);
+        commentValidator.deleteCommentValidator(commentId,authorId);
+        commentService.deleteComment(commentId);
     }
 }

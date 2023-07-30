@@ -40,6 +40,8 @@ public class CommentValidator {
     }
 
     public void deleteCommentValidator(long commentId, long authorId) {
+        idValidator(commentId);
+        idValidator(authorId);
         Comment comment = commentService.getCommentById(commentId);
         if (comment.getAuthorId() != authorId) {
             throw new DataValidationException("It's comment another author");

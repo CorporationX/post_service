@@ -28,8 +28,7 @@ public class CommentService {
         return null;
     }
 
-    public void deleteComment(long commentId, long authorId) {
-        commentValidator.deleteCommentValidator(commentId, authorId);
+    public void deleteComment(long commentId) {
         commentRepository.deleteById(commentId);
     }
 
