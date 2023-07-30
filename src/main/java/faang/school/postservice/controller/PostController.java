@@ -27,9 +27,6 @@ public class PostController {
 
     @GetMapping("/publish/{id}")
     public PostDto publishPost(@PathVariable("id") long postId) {
-        if (postId < 1) {
-            throw new IncorrectIdException("Некорректрый id поста");
-        }
         return postService.publishPost(postId);
     }
 

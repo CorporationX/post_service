@@ -21,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -104,8 +104,10 @@ public class PostServiceTest {
 
     @Test
     void testPublishPostWithAlreadyPublishedPost() {
+        correctPost.setPublished(true);
         when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
-        when(postRepository.findReadyToPublish()).thenReturn(Arrays.asList(alreadyPublishedPost));
+        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
+
         assertThrows(AlreadyPostedException.class, () -> postService.publishPost(CORRECT_ID));
     }
 
@@ -114,7 +116,7 @@ public class PostServiceTest {
         correctPostDto.setPublished(true);
         correctPostDto.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
         when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
-        when(postRepository.findReadyToPublish()).thenReturn(Arrays.asList(alreadyPublishedPost, correctPost));
+        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
 
         PostDto actualPostDto = postService.publishPost(CORRECT_ID);
         actualPostDto.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));

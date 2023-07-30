@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,14 +38,12 @@ public class PostService {
     public PostDto publishPost(long postId) {
         validatePostId(postId);
 
-        List<Post> readyToPublishPost = postRepository.findReadyToPublish().stream()
-                .filter(post -> post.getId() == postId)
-                .toList();
-        if (readyToPublishPost.isEmpty()) {
+        Post post = postRepository.findById(postId).get();
+        if (post.isPublished() || post.isDeleted() || (post.getScheduledAt() != null
+                && post.getScheduledAt().isAfter(LocalDateTime.now()))) {
             throw new AlreadyPostedException("Нельзя опубликовать пост, который уже был опубликован или удален");
         }
 
-        Post post = readyToPublishPost.get(0);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         return postMapper.toDto(post);
