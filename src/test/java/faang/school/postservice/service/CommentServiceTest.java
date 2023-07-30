@@ -17,6 +17,9 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -95,5 +98,27 @@ public class CommentServiceTest {
         DataValidationException exception = assertThrows(DataValidationException.class,
                 () -> commentService.delete(commentId));
         assertEquals(expectedMessage, exception.getMessage());
+    }
+
+    @Test
+    public void getCommentsForPostSortedByCreationDateTest(){
+        Long postId = 1L;
+        Comment comment1 = Comment.builder().createdAt(
+                LocalDateTime.of(2023, Month.JULY, 28, 0, 0, 0)).build();
+        Comment comment2 = Comment.builder().createdAt(
+                LocalDateTime.of(2023, Month.JULY, 25, 0, 0, 0)).build();
+        Comment comment3 = Comment.builder().createdAt(
+                LocalDateTime.of(2023, Month.JULY, 15, 0, 0, 0)).build();
+
+        List<Comment> commentList = List.of(comment3, comment2, comment1);
+        List<CommentDto> expectedList = List.of(
+                commentMapper.commentToDto(comment1),
+                commentMapper.commentToDto(comment2),
+                commentMapper.commentToDto(comment3));
+
+        Mockito.when(commentRepository.findAllByPostId(postId)).thenReturn(commentList);
+        List<CommentDto> result = commentService.getCommentsForPost(postId);
+
+        assertEquals(expectedList, result);
     }
 }
