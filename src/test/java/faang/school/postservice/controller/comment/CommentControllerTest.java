@@ -9,8 +9,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class CommentControllerTest {
 
     @InjectMocks
@@ -30,7 +28,7 @@ class CommentControllerTest {
     void testDeleteComment() {
         commentController.getAllComments(rightId);
         Mockito.verify(commentValidator, Mockito.times(1))
-                .postExistValidator(rightId);
+                .validatorPostExist(rightId);
         Mockito.verify(commentService, Mockito.times(1))
                 .getAllComments(rightId);
     }
