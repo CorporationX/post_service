@@ -9,7 +9,7 @@ public class PostValidator {
 
     private static final int POST_LENGTH_MAX = 4096;
 
-    public void validateCreate(PostDto post) {
+    public void validationOfPostCreation(PostDto post) {
 
         if (post.getContent().length() > POST_LENGTH_MAX) {
             throw new DataValidationException("Content is too long");

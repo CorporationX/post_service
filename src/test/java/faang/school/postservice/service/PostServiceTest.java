@@ -65,7 +65,7 @@ class PostServiceTest {
         Post post = postMapperImpl.toPost(postWithAuthorIdDto);
         when(postRepository.save(post)).thenReturn(post);
         PostDto postDto = postService.createPost(postWithAuthorIdDto);
-        verify(postValidator, Mockito.times(1)).validateCreate(postWithAuthorIdDto);
+        verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithAuthorIdDto);
         assertEquals(postDto, postWithAuthorIdDto);
     }
 
@@ -81,7 +81,7 @@ class PostServiceTest {
         Post post = postMapperImpl.toPost(postWithProjectIdDto);
         when(postRepository.save(post)).thenReturn(post);
         PostDto postDto = postService.createPost(postWithProjectIdDto);
-        verify(postValidator, Mockito.times(1)).validateCreate(postWithProjectIdDto);
+        verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithProjectIdDto);
         assertEquals(postDto, postWithProjectIdDto);
     }
 

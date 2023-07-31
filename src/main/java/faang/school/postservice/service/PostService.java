@@ -29,21 +29,29 @@ public class PostService {
         }
 
         if (post.getAuthorId() != null) {
-            UserDto user = userServiceClient.getUser(post.getAuthorId());
-            if (user == null) {
-                throw new EntityNotFoundException("User not found");
-            }
+            validateAuthor(post);
         } else if (post.getProjectId() != null) {
-            ProjectDto project = projectServiceClient.getProject(post.getProjectId());
-            if (project == null) {
-                throw new EntityNotFoundException("Project not found");
-            }
+            validateProject(post);
         }
 
-        postValidator.validateCreate(post);
-        Post postEntity = postMapper.toPost(post);
-        postRepository.save(postEntity);
+        postValidator.validationOfPostCreation(post);
 
-        return postMapper.toDto(postRepository.save(postMapper.toPost(post)));
+        Post postEntity = postMapper.toPost(post);
+
+        return postMapper.toDto(postRepository.save(postEntity));
+    }
+
+    private void validateProject(PostDto post) {
+        ProjectDto project = projectServiceClient.getProject(post.getProjectId());
+        if (project == null) {
+            throw new EntityNotFoundException("Project not found");
+        }
+    }
+
+    private void validateAuthor(PostDto post) {
+        UserDto user = userServiceClient.getUser(post.getAuthorId());
+        if (user == null) {
+            throw new EntityNotFoundException("User not found");
+        }
     }
 }
