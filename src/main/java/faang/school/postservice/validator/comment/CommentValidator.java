@@ -6,6 +6,8 @@ import faang.school.postservice.exeption.DataValidationException;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 
 @Component
 @RequiredArgsConstructor
@@ -39,6 +41,12 @@ public class CommentValidator {
         validatorId(authorId);
         if (userServiceClient.getUser(authorId) == null) {
             throw new DataValidationException("User is not exist");
+        }
+    }
+
+    public void validatorUpdateComment(Post post, Comment comment) {
+        if (!post.getComments().contains(comment)) {
+            throw new DataValidationException("Comment from another post");
         }
     }
 }

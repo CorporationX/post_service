@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exeption.DataValidationException;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,8 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.ArrayList;
+import java.util.List;
 
 class CommentValidatorTest {
     @Mock
@@ -74,5 +77,20 @@ class CommentValidatorTest {
         assertDoesNotThrow(() -> commentValidator.validatorAuthorExist(rightId));
         assertThrows(DataValidationException.class,
                 () -> commentValidator.validatorAuthorExist(wrongId));
+    }
+
+    @Test
+    void testUpdateCommentValidator() {
+        Post post = new Post();
+        Comment comment = new Comment();
+        List<Comment> comments = new ArrayList<>();
+        post.setComments(comments);
+
+        assertThrows(DataValidationException.class,
+                () -> commentValidator.validatorUpdateComment(post, comment));
+
+        comments.add(comment);
+        post.setComments(comments);
+        assertDoesNotThrow(() -> commentValidator.validatorUpdateComment(post, comment));
     }
 }
