@@ -6,6 +6,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/{postId}/comment")
@@ -13,8 +15,18 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/new")
+    @PostMapping
     public CommentDto createComment(@PathVariable Long postId, @Valid @RequestBody CommentDto commentDto) {
         return commentService.createComment(postId, commentDto);
+    }
+
+    @PatchMapping("comment/{commentId}")
+    public CommentDto updateComment(@PathVariable Long commentId, @Valid @RequestBody CommentDto commentDto) {
+        return commentService.updateComment(commentId, commentDto);
+    }
+
+    @GetMapping("/comment")
+    public List<CommentDto> getCommentsByPostId(@PathVariable Long postId) {
+        return commentService.getCommentsByPostId(postId);
     }
 }
