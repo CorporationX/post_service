@@ -15,7 +15,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CommentValidatorTest {
     @Mock
@@ -46,19 +47,19 @@ class CommentValidatorTest {
 
     @Test
     void testIdValidator() {
-        assertDoesNotThrow(() -> commentValidator.idValidator(rightId));
+        assertDoesNotThrow(() -> commentValidator.validatorId(rightId));
         assertThrows(DataValidationException.class,
-                () -> commentValidator.idValidator(wrongId));
+                () -> commentValidator.validatorId(wrongId));
     }
 
     @Test
     void testCommentDtoValidator() {
-        CommentDto commentDto = new CommentDto(rightId, rightId, rightId, "any content", LocalDateTime.now());
-        assertDoesNotThrow(() -> commentValidator.commentDtoValidator(commentDto));
+        CommentDto commentDto = new CommentDto(rightId, rightId, rightId, "any content", LocalDateTime.now(),LocalDateTime.now());
+        assertDoesNotThrow(() -> commentValidator.validatorCommentDto(commentDto));
 
         commentDto.setContent("");
         assertThrows(DataValidationException.class,
-                () -> commentValidator.commentDtoValidator(commentDto));
+                () -> commentValidator.validatorCommentDto(commentDto));
     }
 
     @Test
@@ -69,9 +70,9 @@ class CommentValidatorTest {
     }
 
     @Test
-    void authorExistValidator() {
-        assertDoesNotThrow(() -> commentValidator.authorExistValidator(rightId));
+    void testAuthorExistValidator() {
+        assertDoesNotThrow(() -> commentValidator.validatorAuthorExist(rightId));
         assertThrows(DataValidationException.class,
-                () -> commentValidator.authorExistValidator(wrongId));
+                () -> commentValidator.validatorAuthorExist(wrongId));
     }
 }
