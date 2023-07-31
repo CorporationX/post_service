@@ -28,7 +28,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             JOIN post_hashtag ph
             ON p.id = ph.post_id
             WHERE ph.hashtag = :hashtag
-            ORDERED BY p.published_at
+            ORDERED BY p.published_at DESC
             """)
     List<Post> findByHashtag(String hashtag);
 }
