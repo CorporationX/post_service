@@ -16,19 +16,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 class CommentServiceTest {
-    @InjectMocks
-    private CommentService commentService;
-    @Mock
-    private CommentRepository commentRepository;
-    @Mock
-    private CommentMapper commentMapper;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
     @InjectMocks
     private CommentService commentService;
     @Mock
@@ -72,7 +63,7 @@ class CommentServiceTest {
     }
 
     @Test
-    void getAllComments() {
+    void testGetAllComments() {
         commentService.getAllComments(rightId);
 
         Mockito.verify(commentMapper, Mockito.times(1))

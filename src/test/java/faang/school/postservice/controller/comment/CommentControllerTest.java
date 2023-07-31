@@ -1,9 +1,5 @@
 package faang.school.postservice.controller.comment;
 
-<<<<<<< HEAD
-import faang.school.postservice.dto.comment.CommentDto;
-=======
->>>>>>> werewolf-master_BC-4326_get_all_comments
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
