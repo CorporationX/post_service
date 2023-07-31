@@ -17,6 +17,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class PostService {
 
     private final PostRepository postRepository;
@@ -37,6 +39,7 @@ public class PostService {
         validateData(postDto);
 
         Post savedPost = postRepository.save(postMapper.toPost(postDto));
+        log.info("Draft post was created successfully, draftId={}", savedPost.getId());
         return postMapper.toDto(savedPost);
     }
 
@@ -47,12 +50,13 @@ public class PostService {
                 .filter(post -> post.getId() == postId)
                 .toList();
         if (readyToPublishPost.isEmpty()) {
-            throw new AlreadyPostedException("Нельзя опубликовать пост, который уже был опубликован или удален");
+            throw new AlreadyPostedException("You cannot publish a post that has already been published or deleted");
         }
 
         Post post = readyToPublishPost.get(0);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        log.info("Post was published successfully, postId={}", post.getId());
         return postMapper.toDto(post);
     }
 
@@ -65,6 +69,7 @@ public class PostService {
 
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
+        log.info("Post was updated successfully, postId={}", post.getId());
         return postMapper.toDto(post);
     }
 
@@ -74,9 +79,10 @@ public class PostService {
         Post post = postRepository.findById(postId).get();
 
         if (post.isDeleted()) {
-            throw new AlreadyDeletedException("Пост уже был удален");
+            throw new AlreadyDeletedException("Post has been already deleted");
         }
         post.setDeleted(true);
+        log.info("Post was soft-deleted successfully, postId={}", postId);
         return postMapper.toDto(post);
     }
 
@@ -85,12 +91,13 @@ public class PostService {
 
         Post post = postRepository.findById(postId).get();
         if (post.isDeleted()) {
-            throw new AlreadyDeletedException("Данный пост был удален");
+            throw new AlreadyDeletedException("This post has been already deleted");
         }
         if (!post.isPublished()) {
-            throw new NoPublishedPostException("Данный пост еще не был опубликован");
+            throw new NoPublishedPostException("This post hasn't been published yet");
         }
 
+        log.info("Post has taken from DB successfully, postId={}", postId);
         return postMapper.toDto(post);
     }
 
@@ -104,8 +111,9 @@ public class PostService {
                 .toList();
 
         if (userDrafts.isEmpty()) {
-            throw new NoDraftsException("У данного пользователя нет черновиков постов");
+            throw new NoDraftsException("This user has no any drafts");
         }
+        log.info("User's drafts have taken from DB successfully, userId={}", userId);
         return userDrafts;
     }
 
@@ -119,8 +127,9 @@ public class PostService {
                 .toList();
 
         if (projectDrafts.isEmpty()) {
-            throw new NoDraftsException("У данного проекта нет черновиков постов");
+            throw new NoDraftsException("This project has no any drafts");
         }
+        log.info("Drafts of project have taken from DB successfully, projectId={}", projectId);
         return projectDrafts;
     }
 
@@ -134,8 +143,9 @@ public class PostService {
                 .toList();
 
         if (userPosts.isEmpty()) {
-            throw new NoPostException("У данного пользователя нет опубликованных постов");
+            throw new NoPostException("This user has no any published posts");
         }
+        log.info("User's posts have taken from DB successfully, userId={}", userId);
         return userPosts;
     }
 
@@ -149,14 +159,15 @@ public class PostService {
                 .toList();
 
         if (projectPosts.isEmpty()) {
-            throw new NoPostException("У данного проекта нет опубликованных постов");
+            throw new NoPostException("This project has no any published posts");
         }
+        log.info("Posts of project have taken from DB successfully, projectId={}", projectId);
         return projectPosts;
     }
 
     private void validatePostId(long postId) {
         if (!postRepository.existsById(postId)) {
-            throw new NoPostInDataBaseException("Данного поста не существует");
+            throw new NoPostInDataBaseException("This post does not exist");
         }
     }
 
@@ -165,7 +176,7 @@ public class PostService {
         Long projectId = postDto.getProjectId();
 
         if (userId != null && projectId != null) {
-            throw new SamePostAuthorException("Автором поста не может быть одновременно пользователь и проект");
+            throw new SamePostAuthorException("The author of the post cannot be both a user and a project");
         }
         if (userId != null) {
            validateUserId(userId);
@@ -182,11 +193,11 @@ public class PostService {
 
         if (authorId != null) {
             if (updateAuthorId == null || updateAuthorId != authorId) {
-                throw new UpdatePostException("Автор поста не может быть удален или изменен");
+                throw new UpdatePostException("Author of the post cannot be deleted or changed");
             }
         } else {
             if (updateProjectId == null || updateProjectId != projectId) {
-                throw new UpdatePostException("Автор поста не может быть удален или изменен");
+                throw new UpdatePostException("Author of the post cannot be deleted or changed");
             }
         }
     }
@@ -195,7 +206,7 @@ public class PostService {
         try {
             userService.getUser(id);
         } catch (FeignException e) {
-            throw new IncorrectIdException("Данный пользователь не найден");
+            throw new IncorrectIdException("This user is not found");
         }
     }
 
@@ -203,7 +214,7 @@ public class PostService {
         try {
             projectService.getProject(id);
         } catch (FeignException e) {
-            throw new IncorrectIdException("Данный проект не найден");
+            throw new IncorrectIdException("This project is not found");
         }
     }
 }
