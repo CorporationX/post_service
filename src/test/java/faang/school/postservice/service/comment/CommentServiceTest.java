@@ -32,6 +32,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CommentServiceTest {
     @InjectMocks
@@ -124,6 +128,22 @@ class CommentServiceTest {
     }
 
     @Test
-    void deleteComment() {
+    void testDeleteComment() {
+        commentService.deleteComment(rightId);
+
+        Mockito.verify(commentRepository, Mockito.times(1))
+                .deleteById(rightId);
+    }
+
+    @Test
+    void testGetCommentById() {
+        Mockito.when(commentRepository.findById(rightId))
+                .thenReturn(Optional.ofNullable(comment));
+
+        commentService.getCommentById(rightId);
+
+        assertDoesNotThrow(() -> commentService.getCommentById(rightId));
+        assertThrows(DataValidationException.class,
+                () -> commentService.getCommentById(wrongId));
     }
 }

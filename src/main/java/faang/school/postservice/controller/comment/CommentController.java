@@ -16,9 +16,9 @@ public class CommentController {
     private final CommentValidator commentValidator;
 
     @PostMapping("/create")
-    public CommentDto createComment(@RequestBody CommentDto commentDto) {
-        commentValidator.validatorCommentDto(commentDto);
-        return commentService.createComment(commentDto);
+    public void createComment(@RequestBody CommentDto commentDto) {
+        commentValidator.commentDtoValidator(commentDto);
+        commentService.createComment(commentDto);
     }
 
     @PutMapping("/update")
@@ -35,8 +35,7 @@ public class CommentController {
 
     @DeleteMapping("{/commentId}/comment/{authorId}/author")
     public void deleteComment(@PathVariable long commentId, @PathVariable long authorId) {
-        commentValidator.validatorId(commentId);
-        commentValidator.validatorId(commentId);
-        commentService.deleteComment(commentId, authorId);
+        commentValidator.validatorDeleteComment(commentId, authorId);
+        commentService.deleteComment(commentId);
     }
 }

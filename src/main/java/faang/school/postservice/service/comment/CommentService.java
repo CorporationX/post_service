@@ -23,7 +23,6 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final PostService postService;
 
-
     public CommentDto createComment(CommentDto commentDto) {
         if (commentDto.getCreatedAt()==null){
             commentDto.setCreatedAt(LocalDateTime.now());
@@ -49,8 +48,8 @@ public class CommentService {
         );
     }
 
-    public void deleteComment(long commentId, long authorId) {
-
+    public void deleteComment(long commentId) {
+        commentRepository.deleteById(commentId);
     }
 
     public Comment getCommentById(long commentId) {

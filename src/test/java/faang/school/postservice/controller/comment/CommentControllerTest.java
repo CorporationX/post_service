@@ -36,11 +36,20 @@ class CommentControllerTest {
     }
 
     @Test
-    void testDeleteComment() {
+    void testGetAllComments() {
         commentController.getAllComments(rightId);
         Mockito.verify(commentValidator, Mockito.times(1))
                 .validatorPostExist(rightId);
         Mockito.verify(commentService, Mockito.times(1))
                 .getAllComments(rightId);
+    }
+
+    @Test
+    void testDeleteComment() {
+        commentController.deleteComment(rightId, rightId);
+        Mockito.verify(commentValidator, Mockito.times(1))
+                .validatorDeleteComment(rightId, rightId);
+        Mockito.verify(commentService, Mockito.times(1))
+                .deleteComment(rightId);
     }
 }

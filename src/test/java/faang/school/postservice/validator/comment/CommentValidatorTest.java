@@ -6,6 +6,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exeption.DataValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,13 +27,15 @@ class CommentValidatorTest {
     private UserServiceClient userServiceClient;
     @Mock
     private PostService postService;
-
+    @Mock
+    private CommentService commentService;
     @InjectMocks
     private CommentValidator commentValidator;
 
     private long rightId;
     private long wrongId;
     private UserDto userDto;
+    private Comment comment = new Comment();
 
     @BeforeEach
     public void setUp() {
@@ -40,12 +43,16 @@ class CommentValidatorTest {
 
         rightId = 1L;
         wrongId = -2L;
+        comment.setAuthorId(rightId);
+        comment.setId(rightId);
         userDto = new UserDto(rightId, "any", "any");
 
         Mockito.when(postService.getPostById(rightId))
                 .thenReturn(new Post());
         Mockito.when(userServiceClient.getUser(rightId))
                 .thenReturn(userDto);
+        Mockito.when(commentService.getCommentById(rightId))
+                .thenReturn(comment);
     }
 
     @Test
@@ -92,5 +99,15 @@ class CommentValidatorTest {
         comments.add(comment);
         post.setComments(comments);
         assertDoesNotThrow(() -> commentValidator.validatorUpdateComment(post, comment));
+    }
+
+    @Test
+    void testDeleteCommentValidator() {
+        wrongId=3L;
+        assertDoesNotThrow(() -> commentValidator.ValidatorDeleteComment(rightId, rightId));
+        assertThrows(DataValidationException.class,
+                () -> commentValidator.validatorDeleteComment(rightId, wrongId));
+        assertThrows(NullPointerException.class,
+                () -> commentValidator.validatorDeleteComment(wrongId, wrongId));
     }
 }
