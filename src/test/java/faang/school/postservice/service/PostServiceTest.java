@@ -1,9 +1,13 @@
 package faang.school.postservice.service;
 
+
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
+import faang.school.postservice.dto.post.ResponsePostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +16,13 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -27,22 +37,32 @@ class PostServiceTest {
     @InjectMocks
     private PostService postService;
 
-//    @Test
-//    void createTest() {
-//        CreatePostDto blankContent = CreatePostDto.builder().authorId(1L).content("").build();
-//        CreatePostDto correct = CreatePostDto.builder().authorId(1L).content("Content").build();
-//
-//        List<CreatePostDto> createPostDtoList = List.of(bothNotNull, blankContent, correct);
-//
-//        List<>
-//        createPostDtoList.forEach(postDto -> );
-//    }
+    @Test
+    void createTest() {
+        CreatePostDto correct = CreatePostDto.builder().authorId(1L).content("Content").build();
+        UserDto userDto = new UserDto(1L, "username", "email@com");
+        LocalDateTime now = LocalDateTime.now();
+        Post post = Post.builder().authorId(1L).content("Content").createdAt(now).published(false).deleted(false).build();
+
+        when(userServiceClient.getUser(1L)).thenReturn(userDto);
+        when(postRepository.save(any(Post.class))).thenReturn(post);
+
+        ResponsePostDto result = postService.createDraft(correct);
+
+        assertEquals(1, result.getAuthorId());
+        assertEquals("Content", result.getContent());
+        assertEquals(now, result.getCreatedAt());
+        assertFalse(result.isPublished());
+        assertFalse(result.isDeleted());
+    }
 
     @Test
-    void createBothNotNull(){}
-    CreatePostDto bothNotNull = CreatePostDto.builder().authorId(1L).projectId(1L).build();
+    void createThrowsExceptions() {
+        CreatePostDto bothNotNull = CreatePostDto.builder().authorId(1L).projectId(1L).build();
+        CreatePostDto blankContent = CreatePostDto.builder().authorId(1L).content("").build();
 
-    IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class, () -> postService.createDraft(bothNotNull));
-
-    assertEquals()
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> postService.createDraft(bothNotNull));
+        assertThrows(NullPointerException.class, () -> postService.createDraft(blankContent));
+        assertEquals("Both AuthorId and ProjectId can't be not null", exception.getMessage());
+    }
 }

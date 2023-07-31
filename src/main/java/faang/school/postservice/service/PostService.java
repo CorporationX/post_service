@@ -46,7 +46,7 @@ public class PostService {
         }
         if (dto.getProjectId() != null) {
             ProjectDto projectDto = Objects.requireNonNull(projectServiceClient.getProject(dto.getProjectId()));
-            post.setAuthorId(projectDto.getId());
+            post.setProjectId(projectDto.getId());
         }
     }
 }
