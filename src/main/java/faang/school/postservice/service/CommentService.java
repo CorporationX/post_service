@@ -36,15 +36,22 @@ public class CommentService {
     @Transactional
     public CommentDto updateComment(Long commentId, CommentDto commentDto) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new EntityNotFoundException("Comment with id " + commentId + "not found"));
+        commentValidator.validateBeforeUpdate(comment, commentDto);
         commentMapper.partialUpdate(commentDto, comment);
         return commentMapper.toDto(comment);
     }
 
+    @Transactional
     public List<CommentDto> getCommentsByPostId(Long postId) {
         List<Comment> comments = commentRepository.findAllByPostId(postId);
         return comments.stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
                 .map(commentMapper::toDto)
                 .toList();
+    }
+
+    @Transactional
+    public void deleteComment(Long commentId) {
+        commentRepository.deleteById(commentId);
     }
 }

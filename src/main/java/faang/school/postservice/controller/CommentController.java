@@ -20,13 +20,18 @@ public class CommentController {
         return commentService.createComment(postId, commentDto);
     }
 
-    @PatchMapping("comment/{commentId}")
+    @PatchMapping("/{commentId}")
     public CommentDto updateComment(@PathVariable Long commentId, @Valid @RequestBody CommentDto commentDto) {
         return commentService.updateComment(commentId, commentDto);
     }
 
-    @GetMapping("/comment")
+    @GetMapping
     public List<CommentDto> getCommentsByPostId(@PathVariable Long postId) {
         return commentService.getCommentsByPostId(postId);
+    }
+
+    @DeleteMapping("/{commentId}")
+    public void deleteComment(@PathVariable Long commentId) {
+        commentService.deleteComment(commentId);
     }
 }
