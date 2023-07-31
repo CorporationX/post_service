@@ -25,16 +25,18 @@ public class CommentValidator {
         validatorAuthorExist(commentDto.getAuthorId());
 
         int lenComment = commentDto.getContent().length();
-        if(lenComment>=4096 || lenComment==0){
+        if (lenComment > 4096 || lenComment == 0) {
             throw new DataValidationException("Length of comment is not correct");
         }
     }
 
     public void validatorPostExist(long postId) {
+        validatorId(postId);
         postService.getPostById(postId);
     }
 
     public void validatorAuthorExist(long authorId) {
+        validatorId(authorId);
         if (userServiceClient.getUser(authorId) == null) {
             throw new DataValidationException("User is not exist");
         }

@@ -13,7 +13,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.List;
+
 
 class CommentServiceTest {
     @InjectMocks
@@ -26,6 +28,23 @@ class CommentServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+    }
+    @InjectMocks
+    private CommentService commentService;
+    @Mock
+    private CommentMapper commentMapper;
+    @Mock
+    private CommentRepository commentRepository;
+    private long rightId;
+    private List<Comment> comments = new ArrayList<>();
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        rightId = 1L;
+
+        Mockito.when(commentRepository.findAllByPostId(rightId))
+                .thenReturn(comments);
     }
 
     @Test
@@ -54,6 +73,12 @@ class CommentServiceTest {
 
     @Test
     void getAllComments() {
+        commentService.getAllComments(rightId);
+
+        Mockito.verify(commentMapper, Mockito.times(1))
+                .toDto(comments);
+        Mockito.verify(commentRepository, Mockito.times(1))
+                .findAllByPostId(rightId);
     }
 
     @Test

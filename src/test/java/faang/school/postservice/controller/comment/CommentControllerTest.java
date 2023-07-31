@@ -1,6 +1,9 @@
 package faang.school.postservice.controller.comment;
 
+<<<<<<< HEAD
 import faang.school.postservice.dto.comment.CommentDto;
+=======
+>>>>>>> werewolf-master_BC-4326_get_all_comments
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,12 +14,15 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 class CommentControllerTest {
+
     @InjectMocks
     private CommentController commentController;
     @Mock
     private CommentValidator commentValidator;
     @Mock
     private CommentService commentService;
+    private long rightId = 1L;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -24,11 +30,10 @@ class CommentControllerTest {
 
     @Test
     void testDeleteComment() {
-        CommentDto commentDto = CommentDto.builder().build();
-        commentController.createComment(commentDto);
+        commentController.getAllComments(rightId);
         Mockito.verify(commentValidator, Mockito.times(1))
-                .validatorCommentDto(commentDto);
+                .validatorPostExist(rightId);
         Mockito.verify(commentService, Mockito.times(1))
-                .createComment(commentDto);
+                .getAllComments(rightId);
     }
 }

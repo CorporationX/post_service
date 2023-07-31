@@ -30,7 +30,10 @@ public class CommentService {
     }
 
     public List<CommentDto> getAllComments(long postId) {
-        return null;
+        return commentMapper.toDto(
+                commentRepository
+                        .findAllByPostId(postId)
+        );
     }
 
     public void deleteComment(long commentId, long authorId) {

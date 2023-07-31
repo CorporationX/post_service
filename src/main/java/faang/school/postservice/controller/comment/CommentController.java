@@ -14,6 +14,7 @@ import java.util.List;
 public class CommentController {
     private final CommentService commentService;
     private final CommentValidator commentValidator;
+
     @PostMapping("/create")
     public CommentDto createComment(@RequestBody CommentDto commentDto) {
         commentValidator.validatorCommentDto(commentDto);
@@ -28,7 +29,7 @@ public class CommentController {
 
     @GetMapping("/{postId}/post")
     public List<CommentDto> getAllComments(@PathVariable long postId) {
-        commentValidator.validatorId(postId);
+        commentValidator.validatorPostExist(postId);
         return commentService.getAllComments(postId);
     }
 
