@@ -16,7 +16,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,7 +31,7 @@ public class AlbumService {
         var album = mapper.toEntity(dto);
         album.setAllowedUsersIds(objectMapper.writeValueAsString(dto.getAllowedUsersIds()));
         var alDto = mapper.toDto(repository.save(album));
-        alDto.setAllowedUsersIds(objectMapper.readValue(album.getAllowedUsersIds(), new TypeReference<List<Long>>() {}));
+        alDto.setAllowedUsersIds(objectMapper.readValue(album.getAllowedUsersIds(), new TypeReference<>() {}));
         return alDto;
     }
 
@@ -42,7 +41,7 @@ public class AlbumService {
         validateAccess(album, userId);
 
         var res = mapper.toDto(album);
-        res.setAllowedUsersIds(objectMapper.readValue(album.getAllowedUsersIds(), new TypeReference<List<Long>>() {}));
+        res.setAllowedUsersIds(objectMapper.readValue(album.getAllowedUsersIds(), new TypeReference<>() {}));
         return res;
     }
 
@@ -50,7 +49,7 @@ public class AlbumService {
         if (album.getVisibility() == Visibility.EVERYONE) return;
         if (album.getVisibility() == Visibility.ONLY_ME && userId == album.getAuthorId()) return;
 
-        var users = userService.getUsersByIds(objectMapper.readValue(album.getAllowedUsersIds(), new TypeReference<List<Long>>() {
+        var users = userService.getUsersByIds(objectMapper.readValue(album.getAllowedUsersIds(), new TypeReference<>() {
                 }))
                 .stream()
                 .map(UserDto::id)

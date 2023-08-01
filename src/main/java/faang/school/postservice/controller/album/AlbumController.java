@@ -10,17 +10,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/albums")
-public class albumController {
+public class AlbumController {
     private final AlbumService service;
 
     @PostMapping()
     public ResponseEntity<AlbumDto> createAlbum(@RequestBody AlbumDto dto) throws JsonProcessingException {
         return ResponseEntity.ok().body(service.createAlbum(dto));
-
     }
 
     @GetMapping("/{albumId}")
-    public ResponseEntity<AlbumDto> getAlbum(@RequestHeader(value = "x-user-id", required = true) long userId, @PathVariable long albumId) throws JsonProcessingException {
+    public ResponseEntity<AlbumDto> getAlbum(@RequestHeader(value = "x-user-id") long userId, @PathVariable long albumId) throws JsonProcessingException {
         System.out.println(userId);
         var dto = service.getAlbum(albumId, userId);
         return ResponseEntity.ok().body(dto);
