@@ -27,7 +27,7 @@ class CommentControllerTest {
         CommentDto commentDto = CommentDto.builder().build();
         commentController.createComment(commentDto);
         Mockito.verify(commentValidator, Mockito.times(1))
-                .validatorCommentDto(commentDto);
+                .validateCommentDto(commentDto);
         Mockito.verify(commentService, Mockito.times(1))
                 .createComment(commentDto);
     }
