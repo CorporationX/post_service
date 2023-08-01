@@ -24,7 +24,7 @@ public class CommentService {
     private final PostService postService;
 
     public CommentDto createComment(CommentDto commentDto) {
-        if (commentDto.getCreatedAt()==null){
+        if (commentDto.getCreatedAt() == null) {
             commentDto.setCreatedAt(LocalDateTime.now());
             commentDto.setUpdatedAt(LocalDateTime.now());
         }
@@ -36,7 +36,7 @@ public class CommentService {
         Comment comment = getCommentById(commentDto.getId());
         Post post = postService.getPostById(commentDto.getPostId());
 
-        commentValidator.validatorUpdateComment(post, comment);
+        commentValidator.validateUpdateComment(post, comment);
         comment.setUpdatedAt(LocalDateTime.now());
         comment.setContent(commentDto.getContent());
     }

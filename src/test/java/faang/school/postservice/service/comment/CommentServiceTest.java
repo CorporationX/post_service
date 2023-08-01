@@ -8,11 +8,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
-import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.repository.CommentRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -20,10 +16,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
 
@@ -31,8 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -51,7 +41,7 @@ class CommentServiceTest {
     private long rightId;
     private long wrongId;
     private Comment comment;
-    private Post post;
+    private Post post = new Post();
     private List<Comment> comments = new ArrayList<>();
 
     @BeforeEach
@@ -105,7 +95,7 @@ class CommentServiceTest {
         Mockito.verify(postService, Mockito.times(1))
                 .getPostById(rightId);
         Mockito.verify(commentValidator, Mockito.times(1))
-                .validatorUpdateComment(post, comment);
+                .validateUpdateComment(post, comment);
         assertEquals(content, comment.getContent());
 
         CommentDto commentDtoFalse = CommentDto.builder()
