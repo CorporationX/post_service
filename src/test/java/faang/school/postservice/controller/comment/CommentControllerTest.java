@@ -27,7 +27,7 @@ class CommentControllerTest {
     void testDeleteComment() {
         commentController.deleteComment(rightId, rightId);
         Mockito.verify(commentValidator, Mockito.times(1))
-                .ValidatorDeleteComment(rightId, rightId);
+                .validateDeleteComment(rightId, rightId);
         Mockito.verify(commentService, Mockito.times(1))
                 .deleteComment(rightId);
     }

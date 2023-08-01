@@ -54,19 +54,19 @@ class CommentValidatorTest {
 
     @Test
     void testIdValidator() {
-        assertDoesNotThrow(() -> commentValidator.validatorId(rightId));
+        assertDoesNotThrow(() -> commentValidator.validateId(rightId));
         assertThrows(DataValidationException.class,
-                () -> commentValidator.validatorId(wrongId));
+                () -> commentValidator.validateId(wrongId));
     }
 
     @Test
     void testCommentDtoValidator() {
         CommentDto commentDto = new CommentDto(rightId, rightId, rightId, "any content", LocalDateTime.now(), LocalDateTime.now());
-        assertDoesNotThrow(() -> commentValidator.validatorCommentDto(commentDto));
+        assertDoesNotThrow(() -> commentValidator.validateCommentDto(commentDto));
 
         commentDto.setContent("");
         assertThrows(DataValidationException.class,
-                () -> commentValidator.validatorCommentDto(commentDto));
+                () -> commentValidator.validateCommentDto(commentDto));
     }
 
     @Test
@@ -78,18 +78,18 @@ class CommentValidatorTest {
 
     @Test
     void testAuthorExistValidator() {
-        assertDoesNotThrow(() -> commentValidator.validatorAuthorExist(rightId));
+        assertDoesNotThrow(() -> commentValidator.validateAuthorExist(rightId));
         assertThrows(DataValidationException.class,
-                () -> commentValidator.validatorAuthorExist(wrongId));
+                () -> commentValidator.validateAuthorExist(wrongId));
     }
 
     @Test
     void testDeleteCommentValidator() {
         wrongId=3L;
-        assertDoesNotThrow(() -> commentValidator.ValidatorDeleteComment(rightId, rightId));
+        assertDoesNotThrow(() -> commentValidator.validateDeleteComment(rightId, rightId));
         assertThrows(DataValidationException.class,
-                () -> commentValidator.ValidatorDeleteComment(rightId, wrongId));
+                () -> commentValidator.validateDeleteComment(rightId, wrongId));
         assertThrows(NullPointerException.class,
-                () -> commentValidator.ValidatorDeleteComment(wrongId, wrongId));
+                () -> commentValidator.validateDeleteComment(wrongId, wrongId));
     }
 }
