@@ -60,7 +60,7 @@ public class PostControllerTest {
     @Test
     void testCreateDaftPost() {
         postController.createDraftPost(correctPostDto);
-        verify(postService, times(1)).crateDraftPost(correctPostDto);
+        verify(postService).crateDraftPost(correctPostDto);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class PostControllerTest {
     @Test
     void testPublishPost() {
         postController.publishPost(CORRECT_ID);
-        verify(postService, times(1)).publishPost(CORRECT_ID);
+        verify(postService).publishPost(CORRECT_ID);
     }
 
     @Test
@@ -90,7 +90,7 @@ public class PostControllerTest {
     void testUpdatePost() {
         correctPostDto.setId(CORRECT_ID);
         postController.updatePost(correctPostDto);
-        verify(postService, times(1)).updatePost(correctPostDto);
+        verify(postService).updatePost(correctPostDto);
     }
 
     @Test
@@ -101,7 +101,7 @@ public class PostControllerTest {
     @Test
     void testSoftDelete() {
         postController.softDelete(CORRECT_ID);
-        verify(postService, times(1)).softDelete(CORRECT_ID);
+        verify(postService).softDelete(CORRECT_ID);
     }
 
     @Test
@@ -112,7 +112,7 @@ public class PostControllerTest {
     @Test
     void testGetPost() {
         postController.getPost(CORRECT_ID);
-        verify(postService, times(1)).getPost(CORRECT_ID);
+        verify(postService).getPost(CORRECT_ID);
     }
 
     @Test
@@ -123,7 +123,7 @@ public class PostControllerTest {
     @Test
     void testGetUserDrafts() {
         postController.getUserDrafts(CORRECT_ID);
-        verify(postService, times(1)).getUserDrafts(CORRECT_ID);
+        verify(postService).getUserDrafts(CORRECT_ID);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class PostControllerTest {
     @Test
     void testGetProjectDrafts() {
         postController.getProjectDrafts(CORRECT_ID);
-        verify(postService, times(1)).getProjectDrafts(CORRECT_ID);
+        verify(postService).getProjectDrafts(CORRECT_ID);
     }
 
     @Test
@@ -145,7 +145,7 @@ public class PostControllerTest {
     @Test
     void testGetUserPosts() {
         postController.getUserPosts(CORRECT_ID);
-        verify(postService, times(1)).getUserPosts(CORRECT_ID);
+        verify(postService).getUserPosts(CORRECT_ID);
     }
 
     @Test
@@ -156,6 +156,6 @@ public class PostControllerTest {
     @Test
     void testGetProjectPosts() {
         postController.getProjectPosts(CORRECT_ID);
-        verify(postService, times(1)).getProjectPosts(CORRECT_ID);
+        verify(postService).getProjectPosts(CORRECT_ID);
     }
 }
