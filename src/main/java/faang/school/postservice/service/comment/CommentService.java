@@ -28,7 +28,7 @@ public class CommentService {
         Comment comment = getCommentById(commentDto.getId());
         Post post = postService.getPostById(commentDto.getPostId());
 
-        commentValidator.validatorUpdateComment(post, comment);
+        commentValidator.validateUpdateComment(post, comment);
         comment.setUpdatedAt(LocalDateTime.now());
         comment.setContent(commentDto.getContent());
     }
