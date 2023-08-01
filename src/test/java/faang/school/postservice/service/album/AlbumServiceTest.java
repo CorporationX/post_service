@@ -1,5 +1,6 @@
 package faang.school.postservice.service.album;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.album.AlbumException;
 import faang.school.postservice.mapper.album.AlbumMapper;
@@ -25,11 +26,14 @@ public class AlbumServiceTest {
     private AlbumMapper albumMapper;
     @Mock
     private AlbumValidator albumValidator;
+    @Mock
+    private UserContext userContext;
     @InjectMocks
     private AlbumService albumService;
 
     @Test
     public void addPostToAlbum_PostAlreadyExist_Test() {
+        Mockito.when(userContext.getUserId()).thenReturn(1L);
         Mockito.when(albumValidator.addPostToAlbumValidateService(1, 1, 1)).thenReturn(Album.builder()
                 .build());
 
@@ -39,13 +43,14 @@ public class AlbumServiceTest {
                 .build());
 
         AlbumException albumException = Assertions.assertThrows(AlbumException.class,
-                () -> albumService.addPostToAlbum(1, 1, 1));
+                () -> albumService.addPostToAlbum(1, 1));
 
         Assertions.assertEquals(albumException.getMessage(), "this post already exist in album");
     }
 
     @Test
     public void addPostToAlbum_Test() {
+        Mockito.when(userContext.getUserId()).thenReturn(1L);
         Album album = Album.builder().build();
 
         AlbumDto albumDto = AlbumDto.builder()
@@ -57,7 +62,7 @@ public class AlbumServiceTest {
 
         Mockito.when(albumMapper.toDto(album)).thenReturn(albumDto);
 
-        albumService.addPostToAlbum(1,1,4);
+        albumService.addPostToAlbum(1, 4);
 
         Mockito.verify(albumMapper).toDto(album);
     }

@@ -1,5 +1,6 @@
 package faang.school.postservice.service.album;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.album.AlbumException;
 import faang.school.postservice.mapper.album.AlbumMapper;
@@ -18,8 +19,11 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
     private final AlbumValidator albumValidator;
+    private final UserContext userContext;
 
-    public AlbumDto addPostToAlbum(long userId, long albumId, long postId) {
+
+    public AlbumDto addPostToAlbum(long albumId, long postId) {
+        long userId = userContext.getUserId();
         Album album = albumValidator.addPostToAlbumValidateService(userId, albumId, postId);
         AlbumDto albumDto = albumMapper.toDto(album);
 
