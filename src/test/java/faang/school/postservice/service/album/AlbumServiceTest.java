@@ -5,6 +5,7 @@ import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.album.AlbumException;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.validator.album.AlbumValidator;
 import org.junit.jupiter.api.Assertions;
@@ -67,4 +68,24 @@ public class AlbumServiceTest {
         Mockito.verify(albumMapper).toDto(album);
     }
 
+    @Test
+    public void deleteUnexistingPost_Test() {
+        Album album = Album.builder()
+                .posts(new ArrayList<>(List.of(Post.builder()
+                                .id(4)
+                        .build())))
+                .build();
+        Mockito.when(userContext.getUserId()).thenReturn(1L);
+        Mockito.when(albumValidator.addPostToAlbumValidateService(1, 1, 1))
+                .thenReturn(album);
+
+        List<Post> posts = album.getPosts();
+        List<Long> postsIds = posts.stream().map(Post::getId).toList();
+        int id = 1;
+
+        AlbumException albumException = Assertions.assertThrows(AlbumException.class,
+                () -> albumService.deletePostFromAlbum(1L, id));
+
+        Assertions.assertEquals(albumException.getMessage(),"Undefined post");
+    }
 }

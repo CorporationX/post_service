@@ -5,6 +5,7 @@ import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.album.AlbumException;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.album.AlbumValidator;
@@ -35,5 +36,24 @@ public class AlbumService {
 
         albumDto.setPostsIds(postsIds);
         return albumMapper.toDto(albumRepository.save(albumMapper.toEntity(albumDto)));
+    }
+
+    public void deletePostFromAlbum(long albumId, long postIdToDelete) {
+        long userId = userContext.getUserId();
+        Album album = albumValidator.addPostToAlbumValidateService(userId, albumId, postIdToDelete);
+
+        List<Post> posts = album.getPosts();
+        List<Long> postsIds = posts.stream().map(Post::getId).toList();
+
+        int id = postsIds.indexOf(postIdToDelete);
+
+        if (id == -1) {
+            throw new AlbumException("Undefined post");
+        }
+
+        posts.remove(id);
+        album.setPosts(posts);
+
+        albumRepository.save(album);
     }
 }
