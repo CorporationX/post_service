@@ -12,9 +12,10 @@ import java.time.LocalDateTime;
 @Value
 @Builder
 public class CommentDto implements Serializable {
+
     long id;
 
-    @Size(max = 4096, message = "Comment content cannot exceed 4096 characters")
+    @Size(min = 1, max = 4096, message = "Comment content cannot exceed 4096 characters")
     @NotBlank(message = "Comment content cannot be empty")
     String content;
 

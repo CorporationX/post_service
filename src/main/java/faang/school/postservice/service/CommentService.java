@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -35,23 +34,23 @@ public class CommentService {
 
     @Transactional
     public CommentDto updateComment(Long commentId, CommentDto commentDto) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new EntityNotFoundException("Comment with id " + commentId + "not found"));
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new EntityNotFoundException("Comment with id " + commentId + " not found"));
         commentValidator.validateBeforeUpdate(comment, commentDto);
         commentMapper.partialUpdate(commentDto, comment);
         return commentMapper.toDto(comment);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<CommentDto> getCommentsByPostId(Long postId) {
-        List<Comment> comments = commentRepository.findAllByPostId(postId);
-        return comments.stream()
-                .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
+        return commentRepository.findAllByPostIdOrderByCreatedAtDesc(postId)
+                .stream()
                 .map(commentMapper::toDto)
                 .toList();
     }
 
     @Transactional
     public void deleteComment(Long commentId) {
+        commentRepository.findById(commentId).orElseThrow(() -> new EntityNotFoundException("Comment with id " + commentId + " not found"));
         commentRepository.deleteById(commentId);
     }
 }

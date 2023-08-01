@@ -20,7 +20,7 @@ public class CommentValidator {
 
     private final UserServiceClient userServiceClient;
 
-    public void validateUserBeforeCreate(CommentDto commentDto) {
+    public void validateUserBeforeCreate(@Valid CommentDto commentDto) {
         validateUserExists(commentDto);
         validatePostIdNotNull(commentDto.getPostId());
     }
