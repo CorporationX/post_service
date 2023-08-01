@@ -9,15 +9,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.testcontainers.shaded.com.github.dockerjava.core.MediaType;
-
-import java.time.LocalDateTime;
-
-import static org.springframework.mock.http.server.reactive.MockServerHttpRequest.post;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class CommentControllerTest {
 
@@ -29,7 +20,6 @@ class CommentControllerTest {
     private CommentService commentService;
 
     private long rightId = 1L;
-    //private MockMvc mockMvc;
     CommentDto commentDto = CommentDto
             .builder()
             .id(rightId)
@@ -41,7 +31,6 @@ class CommentControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        //mockMvc = MockMvcBuilders.standaloneSetup(commentController).build();
     }
 
     @Test
@@ -51,8 +40,6 @@ class CommentControllerTest {
                 .validateCommentDto(commentDto);
         Mockito.verify(commentService, Mockito.times(1))
                 .createComment(commentDto);
-
-
     }
 
     @Test
