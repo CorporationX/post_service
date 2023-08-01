@@ -28,7 +28,7 @@ class CommentControllerTest {
     void testDeleteComment() {
         commentController.getAllComments(rightId);
         Mockito.verify(commentValidator, Mockito.times(1))
-                .validatorPostExist(rightId);
+                .validatePostExist(rightId);
         Mockito.verify(commentService, Mockito.times(1))
                 .getAllComments(rightId);
     }

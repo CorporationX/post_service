@@ -46,19 +46,19 @@ class CommentValidatorTest {
 
     @Test
     void testIdValidator() {
-        assertDoesNotThrow(() -> commentValidator.validatorId(rightId));
+        assertDoesNotThrow(() -> commentValidator.validateId(rightId));
         assertThrows(DataValidationException.class,
-                () -> commentValidator.validatorId(wrongId));
+                () -> commentValidator.validateId(wrongId));
     }
 
     @Test
     void testCommentDtoValidator() {
         CommentDto commentDto = new CommentDto(rightId, rightId, rightId, "any content", LocalDateTime.now(), LocalDateTime.now());
-        assertDoesNotThrow(() -> commentValidator.ValidatorCommentDto(commentDto));
+        assertDoesNotThrow(() -> commentValidator.validateCommentDto(commentDto));
 
         commentDto.setContent("");
         assertThrows(DataValidationException.class,
-                () -> commentValidator.ValidatorCommentDto(commentDto));
+                () -> commentValidator.validateCommentDto(commentDto));
     }
 
     @Test
@@ -70,8 +70,8 @@ class CommentValidatorTest {
 
     @Test
     void authorExistValidator() {
-        assertDoesNotThrow(() -> commentValidator.validatorAuthorExist(rightId));
+        assertDoesNotThrow(() -> commentValidator.validateAuthorExist(rightId));
         assertThrows(DataValidationException.class,
-                () -> commentValidator.validatorAuthorExist(wrongId));
+                () -> commentValidator.validateAuthorExist(wrongId));
     }
 }
