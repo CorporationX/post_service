@@ -24,6 +24,7 @@ public class PostDto {
     private Long authorId;
     private Long projectId;
     private List<Like> likes;
+    private boolean isPublished;
     private LocalDateTime scheduledAt;
     private LocalDateTime createdAt;
 }

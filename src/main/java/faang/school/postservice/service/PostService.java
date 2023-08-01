@@ -14,6 +14,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -39,6 +41,17 @@ public class PostService {
         Post postEntity = postMapper.toPost(post);
 
         return postMapper.toDto(postRepository.save(postEntity));
+    }
+
+    public PostDto publishPost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        if (post.isPublished()) {
+            throw new DataValidationException("Post is already published");
+        }
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+        return postMapper.toDto(postRepository.save(post));
     }
 
     private void validateProject(PostDto post) {
