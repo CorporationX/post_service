@@ -37,5 +37,4 @@ public class LikeController {
     public LikeDto removeLikeFromComment(@Valid LikeDto likeDto){
         return service.removeLikeFromComment(likeDto, userContext.getUserId());
     }
-
 }

@@ -8,7 +8,7 @@ import org.springframework.lang.NonNull;
 @Data
 @Builder
 public class LikeDto {
-    @Min(0)
+    @Min(1)
     private long id;
     @NonNull
     private Long userId;

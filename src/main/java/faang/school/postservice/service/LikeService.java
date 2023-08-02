@@ -35,7 +35,6 @@ public class LikeService {
                 .getLikes().stream()
                 .filter(like -> like.getId() == likeDto.getId())
                 .toList().get(0));
-
     }
 
     public LikeDto removeLikeFromPost(LikeDto likeDto, Long currentUserId){
