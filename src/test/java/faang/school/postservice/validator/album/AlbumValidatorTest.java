@@ -3,7 +3,7 @@ package faang.school.postservice.validator.album;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.AlbumDataValidationException;
+import faang.school.postservice.exception.album.AlbumDataValidationException;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.repository.AlbumRepository;
 import org.junit.jupiter.api.Assertions;
