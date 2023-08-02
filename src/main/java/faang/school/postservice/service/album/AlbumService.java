@@ -7,11 +7,11 @@ import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.album.AlbumValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,7 +28,7 @@ public class AlbumService {
         Album album = albumValidator.addPostToAlbumValidateService(userId, albumId, postId);
         AlbumDto albumDto = albumMapper.toDto(album);
 
-        List<Long> postsIds = albumDto.getPostsIds();
+        ArrayList<Long> postsIds = new ArrayList<>(albumDto.getPostsIds());
         if (postsIds.contains(postId)) {
             throw new AlbumException("this post already exist in album");
         }
