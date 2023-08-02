@@ -5,7 +5,6 @@ import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.album.AlbumService;
 import lombok.RequiredArgsConstructor;
-import org.bouncycastle.cert.dane.DANEException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,5 +30,11 @@ public class AlbumController {
         if (dto.getId() == null) throw new DataValidationException("U cannot update an album without id");
         var responseDto = service.update(dto, userId);
         return ResponseEntity.ok().body(responseDto);
+    }
+
+    @DeleteMapping("/{albumId}")
+    public ResponseEntity<Void> deleteAlbum(@RequestHeader(value = "x-user-id") long userId, @PathVariable long albumId) {
+        service.delete(albumId, userId);
+        return ResponseEntity.ok().build();
     }
 }

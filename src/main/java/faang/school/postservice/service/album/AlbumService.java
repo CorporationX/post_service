@@ -31,7 +31,7 @@ public class AlbumService {
     }
 
     @Transactional
-    public AlbumDto getAlbum(Long albumId, long userId) throws JsonProcessingException {
+    public AlbumDto getAlbum(Long albumId, Long userId) throws JsonProcessingException {
         var album = repository.findById(albumId).orElseThrow(() -> new EntityNotFoundException("Entity wasn`t found"));
         accessValidator.validateAccess(album, userId);
         var responseDto = mapper.toDto(album);
@@ -40,13 +40,20 @@ public class AlbumService {
     }
 
     @Transactional
-    public AlbumDto update(AlbumDto albumDto, long userId) throws JsonProcessingException {
+    public AlbumDto update(AlbumDto albumDto, Long userId) throws JsonProcessingException {
         accessValidator.validateUpdateAccess(albumDto, userId);
         var album = mapper.toEntity(albumDto);
         setAllowedUsers(albumDto, album);
         var responseDto = mapper.toDto(repository.save(album));
         setAllowedUsers(album, responseDto);
         return responseDto;
+    }
+
+    @Transactional
+    public void delete(Long albumId, Long userId) {
+        var album = repository.findById(albumId).orElseThrow(() -> new EntityNotFoundException("Entity wasn`t found"));
+        accessValidator.validateUpdateAccess(album, userId);
+        repository.delete(album);
     }
 
 

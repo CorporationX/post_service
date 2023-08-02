@@ -23,6 +23,9 @@ public class AccessValidator {
     public void validateUpdateAccess(AlbumDto dto, long userId) {
         if (userId != dto.getAuthorId()) throw new NotAllowedException("Only author can change the album");
     }
+    public void validateUpdateAccess(Album album, long userId) {
+        if (userId != album.getAuthorId()) throw new NotAllowedException("Only author can change the album");
+    }
 
     public void validateAccess(Album album, long userId) throws JsonProcessingException {
         if (album.getVisibility() == Visibility.EVERYONE) return;
