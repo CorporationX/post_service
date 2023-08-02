@@ -20,7 +20,6 @@ public class AlbumController {
 
     @GetMapping("/{albumId}")
     public ResponseEntity<AlbumDto> getAlbum(@RequestHeader(value = "x-user-id") long userId, @PathVariable long albumId) throws JsonProcessingException {
-        System.out.println(userId);
         var dto = service.getAlbum(albumId, userId);
         return ResponseEntity.ok().body(dto);
     }
