@@ -21,12 +21,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import javax.xml.crypto.Data;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 
 import static org.mockito.Mockito.when;
@@ -108,4 +108,16 @@ public class AlbumControllerTest {
 //                        .header("x-user-id", albumDto.getAuthorId())
 //                        .content(albumDtoJson)));
 //    }
+
+    @Test
+    public void testDeleteAlbum() throws Exception {
+        long albumId = 1L;
+        long userId = 2L;
+
+        mockMvc.perform(delete("/api/v1/albums/{albumId}", albumId)
+                        .header("x-user-id", userId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        verify(service).delete(albumId, userId);
+    }
 }

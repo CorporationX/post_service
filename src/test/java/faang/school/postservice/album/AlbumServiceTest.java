@@ -107,5 +107,26 @@ public class AlbumServiceTest {
         verify(accessValidator, times(1)).validateUpdateAccess(albumDto, albumDto.getAuthorId());
     }
 
+    @Test
+    public void testDeleteAlbum_Success() {
+        long albumId = 1L;
+        long userId = 2L;
+
+        when(repository.findById(albumId)).thenReturn(Optional.of(album));
+        doNothing().when(accessValidator).validateUpdateAccess(album, userId);
+
+        albumService.delete(albumId, userId);
+
+        verify(repository).delete(album);
+    }
+    @Test
+    public void testDeleteAlbum_EntityNotFoundException() {
+        long albumId = 1L;
+        long userId = 2L;
+        when(repository.findById(albumId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> albumService.delete(albumId, userId));
+        verify(repository, never()).delete(any());
+    }
 
 }
