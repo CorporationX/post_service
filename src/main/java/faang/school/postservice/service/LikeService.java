@@ -13,6 +13,8 @@ import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+
 @Service
 @RequiredArgsConstructor
 public class LikeService {
@@ -22,75 +24,78 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeMapper likeMapper;
 
-    public LikeDto likePost(LikeDto likeDto, Long currentUserId){
+    public LikeDto likePost(LikeDto likeDto, Long currentUserId) {
         validateCurrentUserInSystem(currentUserId);
         Post currentPost = validatePost(likeDto.getPostId());
-        if(currentPost.getLikes().stream()
+        if (currentPost.getLikes().stream()
                 .map(Like::getUserId)
-                .anyMatch(userId -> userId.equals(currentUserId))){
+                .anyMatch(userId -> userId.equals(currentUserId))) {
             removeLikeFromPost(likeDto, currentUserId);
         }
-        currentPost.getLikes().add(likeMapper.dtoToLike(likeDto));
-        return likeMapper.likeToDto(postRepository.save(currentPost)
-                .getLikes().stream()
-                .filter(like -> like.getId() == likeDto.getId())
-                .toList().get(0));
-
+        Like like = likeMapper.dtoToLike(likeDto);
+        like.setPost(currentPost);
+        Like DBLike = likeRepository.save(like);
+        LikeDto resultFromDB = likeMapper.likeToDto(DBLike);
+        resultFromDB.setPostId(DBLike.getPost().getId());
+        return resultFromDB;
     }
 
-    public LikeDto removeLikeFromPost(LikeDto likeDto, Long currentUserId){
+    public LikeDto removeLikeFromPost(LikeDto likeDto, Long currentUserId) {
         validateCurrentUserInSystem(currentUserId);
         Post currentPost = validatePost(likeDto.getPostId());
-        if(currentPost.getLikes().stream()
+        if (currentPost.getLikes().stream()
                 .map(Like::getUserId)
                 .noneMatch(userId -> userId.equals(currentUserId))) {
             likePost(likeDto, currentUserId);
         }
         Like requiredLike = likeRepository.findById(likeDto.getId()).orElseThrow();
-        currentPost.getLikes().remove(requiredLike);
-        postRepository.save(currentPost);
-        return likeMapper.likeToDto(requiredLike);
+        likeRepository.deleteByPostIdAndUserId(currentPost.getId(), currentUserId);
+        LikeDto result = likeMapper.likeToDto(requiredLike);
+        result.setPostId(currentPost.getId());
+        return result;
     }
 
-    public LikeDto likeComment(LikeDto likeDto, Long currentUserId){
+    public LikeDto likeComment(LikeDto likeDto, Long currentUserId) {
         validateCurrentUserInSystem(currentUserId);
         Comment currentComment = validateComment(likeDto.getCommentId());
-        if(currentComment.getLikes().stream()
+        if (currentComment.getLikes().stream()
                 .map(Like::getUserId)
-                .anyMatch(userId -> userId.equals(currentUserId))){
+                .anyMatch(userId -> userId.equals(currentUserId))) {
             removeLikeFromComment(likeDto, currentUserId);
         }
-        currentComment.getLikes().add(likeMapper.dtoToLike(likeDto));
-        return likeMapper.likeToDto(commentRepository.save(currentComment)
-                .getLikes().stream()
-                .filter(like -> like.getId() == likeDto.getId())
-                .toList().get(0));
+        Like like = likeMapper.dtoToLike(likeDto);
+        like.setComment(currentComment);
+        Like DBLike = likeRepository.save(like);
+        LikeDto resultFromDB = likeMapper.likeToDto(DBLike);
+        resultFromDB.setCommentId(DBLike.getComment().getId());
+        return resultFromDB;
     }
 
-    public LikeDto removeLikeFromComment(LikeDto likeDto, Long currentUserId){
+    public LikeDto removeLikeFromComment(LikeDto likeDto, Long currentUserId) {
         validateCurrentUserInSystem(currentUserId);
         Comment currentComment = validateComment(likeDto.getCommentId());
-        if(currentComment.getLikes().stream()
+        if (currentComment.getLikes().stream()
                 .map(Like::getUserId)
-                .noneMatch(userId -> userId.equals(currentUserId))){
+                .noneMatch(userId -> userId.equals(currentUserId))) {
             likeComment(likeDto, currentUserId);
         }
         Like requiredLike = likeRepository.findById(likeDto.getId()).orElseThrow();
-        currentComment.getLikes().remove(requiredLike);
-        commentRepository.save(currentComment);
-        return likeMapper.likeToDto(requiredLike);
+        likeRepository.deleteByCommentIdAndUserId(currentComment.getId(), currentUserId);
+        LikeDto result = likeMapper.likeToDto(requiredLike);
+        result.setCommentId(currentComment.getId());
+        return result;
     }
 
-    private void validateCurrentUserInSystem(Long currentUserId){
+    private void validateCurrentUserInSystem(Long currentUserId) {
         userServiceClient.getUser(currentUserId);
     }
 
-    private Post validatePost(Long postId){
+    private Post validatePost(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
                 new DataValidationException(String.format("The post with ID %d doesn't exist", postId)));
     }
 
-    private Comment validateComment(Long commentId){
+    private Comment validateComment(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(() ->
                 new DataValidationException(String.format("The comment with ID %d doesn't exist", commentId)));
     }
