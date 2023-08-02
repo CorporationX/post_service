@@ -24,7 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AlbumServiceTest {
@@ -93,4 +93,19 @@ public class AlbumServiceTest {
         assertThrows(EntityNotFoundException.class,
                 () -> albumService.getAlbum(albumDto.getId(), albumDto.getAuthorId()));
     }
+
+    @Test
+    public void UpdateAlbumTest() throws JsonProcessingException {
+        albumDto.setAuthorId(12L);
+        when(mapper.toEntity(albumDto)).thenReturn(album);
+        when(repository.save(album)).thenReturn(album);
+        when(mapper.toDto(album)).thenReturn(albumDto);
+
+        AlbumDto result = albumService.update(albumDto, albumDto.getAuthorId());
+
+        assertEquals(albumDto, result);
+        verify(accessValidator, times(1)).validateUpdateAccess(albumDto, albumDto.getAuthorId());
+    }
+
+
 }
