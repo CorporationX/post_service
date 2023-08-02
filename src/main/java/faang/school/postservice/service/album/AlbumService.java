@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.album.AlbumMapper;
+import faang.school.postservice.model.Album;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.validator.album.AccessValidator;
 import jakarta.transaction.Transactional;
@@ -23,10 +24,9 @@ public class AlbumService {
     @Transactional
     public AlbumDto createAlbum(AlbumDto dto) throws JsonProcessingException {
         var album = mapper.toEntity(dto);
-        album.setAllowedUsersIds(objectMapper.writeValueAsString(dto.getAllowedUsersIds()));
+        setAllowedUsers(dto, album);
         var alDto = mapper.toDto(repository.save(album));
-        alDto.setAllowedUsersIds(objectMapper.readValue(album.getAllowedUsersIds(), new TypeReference<>() {
-        }));
+        setAllowedUsers(album, alDto);
         return alDto;
     }
 
@@ -34,9 +34,28 @@ public class AlbumService {
     public AlbumDto getAlbum(Long albumId, long userId) throws JsonProcessingException {
         var album = repository.findById(albumId).orElseThrow(() -> new EntityNotFoundException("Entity wasn`t found"));
         accessValidator.validateAccess(album, userId);
-        var res = mapper.toDto(album);
-        res.setAllowedUsersIds(objectMapper.readValue(album.getAllowedUsersIds(), new TypeReference<>() {
+        var responseDto = mapper.toDto(album);
+        setAllowedUsers(album, responseDto);
+        return responseDto;
+    }
+
+    @Transactional
+    public AlbumDto update(AlbumDto albumDto, long userId) throws JsonProcessingException {
+        accessValidator.validateUpdateAccess(albumDto, userId);
+        var album = mapper.toEntity(albumDto);
+        setAllowedUsers(albumDto, album);
+        var responseDto = mapper.toDto(repository.save(album));
+        setAllowedUsers(album, responseDto);
+        return responseDto;
+    }
+
+
+    private void setAllowedUsers(Album album, AlbumDto dto) throws JsonProcessingException {
+        dto.setAllowedUsersIds(objectMapper.readValue(album.getAllowedUsersIds(), new TypeReference<>() {
         }));
-        return res;
+    }
+
+    private void setAllowedUsers(AlbumDto dto, Album album) throws JsonProcessingException {
+        album.setAllowedUsersIds(objectMapper.writeValueAsString(dto.getAllowedUsersIds()));
     }
 }

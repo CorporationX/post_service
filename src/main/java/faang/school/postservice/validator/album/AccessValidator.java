@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotAllowedException;
 import faang.school.postservice.model.Album;
@@ -18,6 +19,10 @@ import java.util.stream.Collectors;
 public class AccessValidator {
     private final ObjectMapper objectMapper;
     private final UserServiceClient userService;
+
+    public void validateUpdateAccess(AlbumDto dto, long userId) {
+        if (userId != dto.getAuthorId()) throw new NotAllowedException("Only author can change the album");
+    }
 
     public void validateAccess(Album album, long userId) throws JsonProcessingException {
         if (album.getVisibility() == Visibility.EVERYONE) return;
