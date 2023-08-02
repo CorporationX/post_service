@@ -6,7 +6,6 @@ import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Visibility;
 import faang.school.postservice.service.album.AlbumService;
-import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import javax.xml.crypto.Data;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,17 +93,12 @@ public class AlbumControllerTest {
         ;
     }
 
-//    пока не понял, как написать тест на выкидывание ошибки
-//    @Test
-//    public void testUpdateAlbumWithoutId() throws Exception {
-//        albumDto.setId(null);
-//        String albumDtoJson = objectMapper.writeValueAsString(albumDto);
-//        when(service.update(Mockito.any(), Mockito.anyLong())).thenReturn(albumDto);
-//
-//        assertThrows(ServletException.class,
-//                () -> mockMvc.perform(put("/api/v1/albums")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .header("x-user-id", albumDto.getAuthorId())
-//                        .content(albumDtoJson)));
-//    }
+    @Test
+    public void testUpdateAlbumWithoutId() throws Exception {
+        albumDto.setId(null);
+        when(service.update(Mockito.any(), Mockito.anyLong())).thenReturn(albumDto);
+
+        assertThrows(DataValidationException.class,
+                () -> controller.updateAlbum(2, albumDto));
+    }
 }
