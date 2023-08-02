@@ -26,12 +26,12 @@ public class LikeController {
     }
 
     @DeleteMapping("/user/{userId}/post/{postId}/like")
-    public void deleteLikeFromPost(long userId, long postId) {
-
+    public void deleteLikeFromPost(long postId, long userId) {
+        likeService.deleteLikeFromPost(postId, userId);
     }
 
     @DeleteMapping("/user/{userId}/comment/{commentId}/like")
-    public void deleteLikeFromComment(long userId, long postId) {
-
+    public void deleteLikeFromComment(long commentId, long userId) {
+        likeService.deleteLikeFromComment(commentId, userId);
     }
 }
