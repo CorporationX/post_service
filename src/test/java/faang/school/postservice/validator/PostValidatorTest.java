@@ -2,6 +2,7 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,6 +36,16 @@ class PostValidatorTest {
             postValidator.validationOfPostCreation(postDtoWithEmptyContent);
         } catch (DataValidationException e) {
             assertEquals("Content is empty", e.getMessage());
+        }
+    }
+
+    @Test
+    void testValidatePublishPost() {
+        try {
+            Post publishedPost = Post.builder().content("content").authorId(1L).published(true).build();
+            postValidator.validatePublishPost(publishedPost);
+        } catch (DataValidationException e) {
+            assertEquals("Post is already published", e.getMessage());
         }
     }
 
