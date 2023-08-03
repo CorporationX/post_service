@@ -1,0 +1,6 @@
+CREATE TABLE hashtags (
+    id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY UNIQUE,
+    post_id BIGINT,
+    hashtag VARCHAR NOT NULL,
+    FOREIGN KEY (post_id) REFERENCES post (id) ON DELETE CASCADE
+);
