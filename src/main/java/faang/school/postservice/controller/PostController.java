@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +31,13 @@ public class PostController {
             return postService.createPost(post);
         }
         throw new DataValidationException("AuthorId or ProjectId cannot be null");
+    }
+
+    @DeleteMapping("/{postId}")
+    @Operation(summary = "Delete Post")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public boolean deletePost(@PathVariable Long postId) {
+        return postService.softDeletePost(postId);
     }
 
     private boolean validate(PostDto post) {

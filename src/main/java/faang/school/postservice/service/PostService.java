@@ -11,6 +11,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,5 +38,16 @@ public class PostService {
         Post postEntity = postMapper.toPost(post);
 
         return postMapper.toDto(postRepository.save(postEntity));
+    }
+
+    @Transactional
+    public boolean softDeletePost(Long postId) {
+        Post post = postRepository.findById(postId).orElse(null);
+
+        postValidator.validationOfPostDelete(post);
+
+        post.setDeleted(true);
+        postRepository.save(post);
+        return true;
     }
 }

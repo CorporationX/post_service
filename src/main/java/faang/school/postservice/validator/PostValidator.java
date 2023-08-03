@@ -4,6 +4,7 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.model.Post;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +40,16 @@ public class PostValidator {
 
         if (post.getContent().isBlank() || post.getContent().isEmpty()) {
             throw new DataValidationException("Content is empty");
+        }
+    }
+
+    public void validationOfPostDelete(Post post) {
+        if (post == null) {
+            throw new DataValidationException("Post not found");
+        }
+
+        if (post.isDeleted()) {
+            throw new DataValidationException("Post already deleted");
         }
     }
 }

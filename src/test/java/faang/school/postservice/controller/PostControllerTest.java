@@ -61,4 +61,10 @@ class PostControllerTest {
         }
         verifyNoInteractions(postService);
     }
+
+    @Test
+    void deletePost() {
+        postController.deletePost(postDtoWithAuthorId.getId());
+        verify(postService, Mockito.times(1)).softDeletePost(postDtoWithAuthorId.getId());
+    }
 }

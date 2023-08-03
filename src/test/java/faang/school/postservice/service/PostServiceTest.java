@@ -20,7 +20,10 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -100,6 +103,40 @@ class PostServiceTest {
             when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
         } catch (DataValidationException e) {
             assertEquals("Author and project cannot be specified at the same time", e.getMessage());
+        }
+    }
+
+    @Test
+    void testSoftDeletePostSuccess() {
+        Post post = postMapperImpl.toPost(postWithAuthorIdDto);
+        when(postRepository.findById(postWithAuthorIdDto.getId())).thenReturn(Optional.of(post));
+        boolean result = postService.softDeletePost(postWithAuthorIdDto.getId());
+
+        assertTrue(post.isDeleted());
+        assertTrue(result);
+    }
+
+    @Test
+    void testSoftDeletePostFailIfPostNotFound() {
+        try {
+            Long postId = postWithAuthorIdDto.getId();
+            postService.softDeletePost(postId);
+            when(postRepository.findById(postId)).thenReturn(Optional.empty());
+        } catch (DataValidationException e) {
+            assertEquals("Post not found", e.getMessage());
+        }
+    }
+
+    @Test
+    void testSoftDeletePostFailIfPostIsAlreadyDeleted() {
+        try {
+            Post post = postMapperImpl.toPost(postWithAuthorIdDto);
+            post.setDeleted(true);
+            Long postId = postWithAuthorIdDto.getId();
+            when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+            postService.softDeletePost(postId);
+        } catch (DataValidationException e) {
+            assertEquals("Post already deleted", e.getMessage());
         }
     }
 }
