@@ -1,7 +1,5 @@
 name: Test Java app
-
 on: push
-
 jobs:
   build:
 
