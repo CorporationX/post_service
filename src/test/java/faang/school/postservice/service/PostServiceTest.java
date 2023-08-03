@@ -22,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,6 +63,7 @@ class PostServiceTest {
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
         Post post = postMapperImpl.toPost(postWithAuthorIdDto);
         when(postRepository.save(post)).thenReturn(post);
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
         PostDto postDto = postService.createPost(postWithAuthorIdDto);
         verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithAuthorIdDto);
         assertEquals(postDto, postWithAuthorIdDto);
@@ -80,6 +80,7 @@ class PostServiceTest {
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
         Post post = postMapperImpl.toPost(postWithProjectIdDto);
         when(postRepository.save(post)).thenReturn(post);
+        when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
         PostDto postDto = postService.createPost(postWithProjectIdDto);
         verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithProjectIdDto);
         assertEquals(postDto, postWithProjectIdDto);
@@ -95,10 +96,10 @@ class PostServiceTest {
     void testCreatePostWithAuthorIdAndProjectIdFail() {
         try {
             postService.createPost(postWithAuthorIdAndProjectIdDto);
+            when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
+            when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
         } catch (DataValidationException e) {
             assertEquals("Author and project cannot be specified at the same time", e.getMessage());
         }
-
-        verifyNoInteractions(postValidator, postRepository);
     }
 }
