@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +56,29 @@ class PostControllerTest {
         assertThrows(DataValidationException.class, () -> postController.createPost(postDtoWithEmptyAuthorIdAndProjectId));
         try {
             postController.createPost(postDtoWithEmptyAuthorIdAndProjectId);
+        } catch (DataValidationException e) {
+            assertEquals("AuthorId or ProjectId cannot be null", e.getMessage());
+        }
+        verifyNoInteractions(postService);
+    }
+
+    @Test
+    void updatePostWithAuthorIdSuccess() {
+        postController.updatePost(postDtoWithAuthorId);
+        verify(postService, Mockito.times(1)).updatePost(postDtoWithAuthorId);
+    }
+
+    @Test
+    void updatePostWithProjectIdSuccess() {
+        postController.updatePost(postDtoWithProjectId);
+        verify(postService, Mockito.times(1)).updatePost(postDtoWithProjectId);
+    }
+
+    @Test
+    void testThrowExceptionWhenUpdatePostWithoutAuthorIdOrProjectId() {
+        assertThrows(DataValidationException.class, () -> postController.updatePost(postDtoWithEmptyAuthorIdAndProjectId));
+        try {
+            postController.updatePost(postDtoWithEmptyAuthorIdAndProjectId);
         } catch (DataValidationException e) {
             assertEquals("AuthorId or ProjectId cannot be null", e.getMessage());
         }

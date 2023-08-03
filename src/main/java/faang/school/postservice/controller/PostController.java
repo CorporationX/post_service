@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,13 +26,23 @@ public class PostController {
     @Operation(summary = "Create Post")
     @ResponseStatus(HttpStatus.CREATED)
     public PostDto createPost(@RequestBody @Valid PostDto post) {
-        if (validate(post)) {
-            return postService.createPost(post);
-        }
-        throw new DataValidationException("AuthorId or ProjectId cannot be null");
+        validate(post);
+
+        return postService.createPost(post);
     }
 
-    private boolean validate(PostDto post) {
-        return post.getAuthorId() != null || post.getProjectId() != null;
+    @PutMapping("/update")
+    @Operation(summary = "Update Post")
+    @ResponseStatus(HttpStatus.OK)
+    public PostDto updatePost(@RequestBody @Valid PostDto post) {
+        validate(post);
+
+        return postService.updatePost(post);
+    }
+
+    private void validate(PostDto post) {
+        if (post.getAuthorId() == null && post.getProjectId() == null) {
+            throw new DataValidationException("AuthorId or ProjectId cannot be null");
+        }
     }
 }

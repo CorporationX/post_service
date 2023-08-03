@@ -1,6 +1,6 @@
 package faang.school.postservice.validator;
 
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ class PostValidatorTest {
     @Test
     void testValidateCreateLongPost() {
         try {
-            postValidator.validationOfPostCreation(postDtoWithLongContent);
+            postValidator.validatePostContent(postDtoWithLongContent);
         } catch (DataValidationException e) {
             assertEquals("Content is too long", e.getMessage());
         }
@@ -32,7 +32,7 @@ class PostValidatorTest {
     @Test
     void testValidateCreateEmptyPost() {
         try {
-            postValidator.validationOfPostCreation(postDtoWithEmptyContent);
+            postValidator.validatePostContent(postDtoWithEmptyContent);
         } catch (DataValidationException e) {
             assertEquals("Content is empty", e.getMessage());
         }

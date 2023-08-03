@@ -2,15 +2,17 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
+    @Transactional
     public PostDto createPost(PostDto post) {
         ProjectDto project = null;
         UserDto user = null;
@@ -32,10 +35,20 @@ public class PostService {
         }
 
         postValidator.validatePostCreator(post, project, user);
-        postValidator.validationOfPostCreation(post);
+        postValidator.validatePostContent(post);
 
         Post postEntity = postMapper.toPost(post);
 
         return postMapper.toDto(postRepository.save(postEntity));
+    }
+
+    @Transactional
+    public PostDto updatePost(PostDto postUpdateDto) {
+        Post post = postRepository.findById(postUpdateDto.getId()).orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        postValidator.validationOfPostUpdate(postUpdateDto, post);
+
+        postMapper.update(postUpdateDto, post);
+
+        return postMapper.toDto(postRepository.save(post));
     }
 }

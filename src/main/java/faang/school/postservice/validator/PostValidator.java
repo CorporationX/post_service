@@ -1,9 +1,10 @@
 package faang.school.postservice.validator;
 
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.model.Post;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Component;
 
@@ -31,8 +32,7 @@ public class PostValidator {
         }
     }
 
-    public void validationOfPostCreation(PostDto post) {
-
+    public void validatePostContent(PostDto post) {
         if (post.getContent().length() > POST_LENGTH_MAX) {
             throw new DataValidationException("Content is too long");
         }
@@ -40,5 +40,17 @@ public class PostValidator {
         if (post.getContent().isBlank() || post.getContent().isEmpty()) {
             throw new DataValidationException("Content is empty");
         }
+    }
+
+    public void validationOfPostUpdate(PostDto postDto, Post post) {
+        if (post == null) {
+            throw new EntityNotFoundException("Post not found");
+        }
+
+        if (!postDto.getAuthorId().equals(post.getAuthorId()) || !postDto.getProjectId().equals(post.getProjectId())) {
+            throw new DataValidationException("You cannot change the author or the project of the post");
+        }
+
+        validatePostContent(postDto);
     }
 }

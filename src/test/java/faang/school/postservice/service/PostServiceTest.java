@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -19,6 +19,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -65,7 +67,7 @@ class PostServiceTest {
         when(postRepository.save(post)).thenReturn(post);
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
         PostDto postDto = postService.createPost(postWithAuthorIdDto);
-        verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithAuthorIdDto);
+        verify(postValidator, Mockito.times(1)).validatePostContent(postWithAuthorIdDto);
         assertEquals(postDto, postWithAuthorIdDto);
     }
 
@@ -82,7 +84,7 @@ class PostServiceTest {
         when(postRepository.save(post)).thenReturn(post);
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
         PostDto postDto = postService.createPost(postWithProjectIdDto);
-        verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithProjectIdDto);
+        verify(postValidator, Mockito.times(1)).validatePostContent(postWithProjectIdDto);
         assertEquals(postDto, postWithProjectIdDto);
     }
 
@@ -100,6 +102,31 @@ class PostServiceTest {
             when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
         } catch (DataValidationException e) {
             assertEquals("Author and project cannot be specified at the same time", e.getMessage());
+        }
+    }
+
+    @Test
+    void testUpdatePostWithAuthorIdSuccess() {
+        postWithAuthorIdDto.setContent("updated content");
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+        Post post = postMapperImpl.toPost(postWithAuthorIdDto);
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+        PostDto postDto = postService.updatePost(postWithAuthorIdDto);
+        when(postRepository.findById(postWithAuthorIdDto.getId())).thenReturn(Optional.of(post));
+        verify(postMapperImpl, Mockito.times(1)).update(postWithAuthorIdDto, post);
+        assertEquals(postDto, postWithAuthorIdDto);
+    }
+
+    @Test
+    void testUpdatePostWithAuthorIdFail() {
+        try {
+            postWithAuthorIdDto.setContent("updated content");
+            Post post = postMapperImpl.toPost(postWithAuthorIdDto);
+            postService.updatePost(postWithAuthorIdDto);
+            when(postRepository.findById(postWithAuthorIdDto.getId())).thenReturn(Optional.of(post));
+            when(userServiceClient.getUser(USER_ID)).thenThrow(NullPointerException.class);
+        } catch (NullPointerException e) {
+            assertEquals("Post not found", e.getMessage());
         }
     }
 }
