@@ -32,13 +32,11 @@ public class PostController {
 
     @PostMapping ("/publish/{id}")
     public PostDto publishPost(@PathVariable("id") long postId) {
-        validatePostId(postId);
         return postService.publishPost(postId);
     }
 
     @PutMapping("/change")
     public PostDto updatePost(@RequestBody PostDto updatePost) {
-        validatePostId(updatePost.getId());
         validateData(updatePost);
 
         return postService.updatePost(updatePost);
@@ -46,26 +44,17 @@ public class PostController {
 
     @PutMapping("/soft-delete/{id}")
     public PostDto softDelete(@PathVariable("id") long postId) {
-        validatePostId(postId);
         return postService.softDelete(postId);
     }
 
     @GetMapping("/{id}")
     public PostDto getPost(@PathVariable("id") long postId) {
-        validatePostId(postId);
         return postService.getPost(postId);
     }
 
     @GetMapping("drafts/users/{id}")
     public List<PostDto> getUserDrafts(@PathVariable("id") long userId) {
-        validatePostId(userId);
         return postService.getUserDrafts(userId);
-    }
-
-    private void validatePostId(long postId) {
-        if (postId < 1) {
-            throw new IncorrectIdException("Некорректрый id поста");
-        }
     }
 
     private void validateData(PostDto postDto) {

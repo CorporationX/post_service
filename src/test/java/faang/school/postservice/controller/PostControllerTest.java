@@ -51,32 +51,15 @@ public class PostControllerTest {
     }
 
     @Test
-    void testCreateDaftPostWithoutAuthor() {
-        incorrectPostDto.setContent("post");
-        assertThrows(IncorrectIdException.class, () -> postController.createDraftPost(incorrectPostDto));
-    }
-
-    @Test
     void testCreateDaftPost() {
         postController.createDraftPost(correctPostDto);
         verify(postService, times(1)).crateDraftPost(correctPostDto);
     }
 
     @Test
-    void testPublishPostWithIncorrectId() {
-        assertThrows(IncorrectIdException.class, () -> postController.publishPost(INCORRECT_ID));
-    }
-
-    @Test
     void testPublishPost() {
         postController.publishPost(CORRECT_ID);
         verify(postService, times(1)).publishPost(CORRECT_ID);
-    }
-
-    @Test
-    void testUpdatePostWithIncorrectId() {
-        incorrectPostDto.setId(INCORRECT_ID);
-        assertThrows(IncorrectIdException.class, () -> postController.updatePost(incorrectPostDto));
     }
 
     @Test
@@ -93,30 +76,15 @@ public class PostControllerTest {
     }
 
     @Test
-    void testSoftDeleteWithIncorrectId() {
-        assertThrows(IncorrectIdException.class, () -> postController.softDelete(INCORRECT_ID));
-    }
-
-    @Test
     void testSoftDelete() {
         postController.softDelete(CORRECT_ID);
         verify(postService, times(1)).softDelete(CORRECT_ID);
     }
 
     @Test
-    void testGetPostWithIncorrectId() {
-        assertThrows(IncorrectIdException.class, () -> postController.getPost(INCORRECT_ID));
-    }
-
-    @Test
     void testGetPost() {
         postController.getPost(CORRECT_ID);
         verify(postService, times(1)).getPost(CORRECT_ID);
-    }
-
-    @Test
-    void testGetUserDraftsWithIncorrectId() {
-        assertThrows(IncorrectIdException.class, () -> postController.getUserDrafts(INCORRECT_ID));
     }
 
     @Test

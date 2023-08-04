@@ -103,9 +103,6 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
 
-        if (userDrafts.isEmpty()) {
-            throw new NoUserDraftsException("У данного пользователя нет черновиков");
-        }
         return userDrafts;
     }
 
