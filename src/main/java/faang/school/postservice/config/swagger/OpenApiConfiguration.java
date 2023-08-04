@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfiguration {
     @Bean
-    public OpenAPI usersMicroserviceOpenAPI() {
+    public OpenAPI postMicroserviceOpenAPI() {
         return new OpenAPI()
                 .info(new Info().title("Post service API")
                         .description("Description of the methods for Post service")
