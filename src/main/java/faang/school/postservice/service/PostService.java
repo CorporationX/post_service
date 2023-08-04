@@ -103,9 +103,7 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
 
-        if (userDrafts.isEmpty()) {
-            throw new NoDraftsException("У данного пользователя нет черновиков постов");
-        }
+       
         return userDrafts;
     }
 
@@ -118,9 +116,7 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
 
-        if (projectDrafts.isEmpty()) {
-            throw new NoDraftsException("У данного проекта нет черновиков постов");
-        }
+
         return projectDrafts;
     }
 
@@ -133,9 +129,6 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
 
-        if (userPosts.isEmpty()) {
-            throw new NoPostException("У данного пользователя нет опубликованных постов");
-        }
         return userPosts;
     }
 
