@@ -24,4 +24,9 @@ public class Hashtag {
 
     @Column(name = "hashtag", nullable = false)
     private String hashtag;
+
+    @Override
+    public String toString(){
+        return hashtag;
+    }
 }
