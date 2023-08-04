@@ -12,12 +12,17 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/hashtags")
+@RequestMapping("/api/v1/posts")
 public class PostController {
     private final PostService postService;
 
-    @GetMapping("/{hashtag}")
-    public List<PostDto> getByHashtag(@PathVariable String hashtag){
-        return postService.getPostsByHashtag(hashtag);
+    @GetMapping("/hashtags/{hashtag}/firstNew")
+    public List<PostDto> getPostsByHashtagOrderByDate(@PathVariable String hashtag) {
+        return postService.getPostsByHashtagOrderByDate(hashtag);
+    }
+
+    @GetMapping("/hashtags/{hashtag}/firstPopular")
+    public List<PostDto> getPostsByHashtagOrderByPopularity(@PathVariable String hashtag) {
+        return postService.getPostsByHashtagOrderByPopularity(hashtag);
     }
 }

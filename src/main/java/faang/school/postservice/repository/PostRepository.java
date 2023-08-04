@@ -27,8 +27,20 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             SELECT p FROM Post p
             JOIN post_hashtag ph
             ON p.id = ph.post_id
-            WHERE ph.hashtag = :hashtag
-            ORDERED BY p.published_at DESC
+            WHERE ph.hashtag = :hashtag AND p.published = TRUE AND p.deleted = FALSE
+            ORDER BY p.published_at DESC
             """)
-    List<Post> findByHashtag(String hashtag);
+    List<Post> findByHashtagOrderByDate(String hashtag);
+
+    @Query(nativeQuery = true, value = """
+            SELECT p.id, p.content, p.author_id, p.project_id, p.published_at
+            FROM Post p
+            JOIN post_hashtag ph ON p.id = ph.post_id
+            JOIN likes l ON p.id = l.post_id
+            JOIN comment c ON p.id = c.post_id
+            WHERE ph.hashtag = :hashtag AND p.published = TRUE AND p.deleted = FALSE
+            GROUP BY p.id, p.content, p.author_id, p.project_id, p.published_at
+            ORDER BY COUNT(l.id) + COUNT(c.id) DESC;
+            """)
+    List<Post> findByHashtagOrderByPopularity(String hashtag);
 }
