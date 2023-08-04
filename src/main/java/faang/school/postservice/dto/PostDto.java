@@ -1,6 +1,5 @@
 package faang.school.postservice.dto;
 
-import faang.school.postservice.model.Like;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -23,7 +22,7 @@ public class PostDto {
     private String content;
     private Long authorId;
     private Long projectId;
-    private List<Like> likes;
+    private List<Integer> likeIds;
     private LocalDateTime scheduledAt;
     private LocalDateTime createdAt;
 }

@@ -61,4 +61,10 @@ class PostControllerTest {
         }
         verifyNoInteractions(postService);
     }
+
+    @Test
+    void testGetNotDeletedDraftsByAuthorId() {
+        postController.getNotDeletedDraftsByAuthorId(authorId);
+        verify(postService, Mockito.times(1)).getNotDeletedDraftsByAuthorId(authorId);
+    }
 }

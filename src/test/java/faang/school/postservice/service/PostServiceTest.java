@@ -20,7 +20,10 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -101,5 +104,27 @@ class PostServiceTest {
         } catch (DataValidationException e) {
             assertEquals("Author and project cannot be specified at the same time", e.getMessage());
         }
+    }
+
+    @Test
+    void testGetNotDeletedDraftsByAuthorIdSuccess() {
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+        when(postRepository.findByAuthorId(userDto.getId())).thenReturn(List.of(Post.builder().authorId(userDto.getId()).build()));
+        List<PostDto> posts = postService.getNotDeletedDraftsByAuthorId(userDto.getId());
+
+        assertEquals(1, posts.size());
+    }
+
+    @Test
+    void testGetNotDeletedDraftsByAuthorIdFailIfUserNotFound() {
+        when(userServiceClient.getUser(USER_ID)).thenThrow(NullPointerException.class);
+        assertThrows((NullPointerException.class), () -> postService.getNotDeletedDraftsByAuthorId(USER_ID));
+    }
+
+    @Test
+    void testGetNotDeletedDraftsByAuthorIdFailIfNoDraftsFound() {
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+        when(postRepository.findByAuthorId(USER_ID)).thenReturn(List.of());
+        assertEquals(0, postService.getNotDeletedDraftsByAuthorId(USER_ID).size());
     }
 }

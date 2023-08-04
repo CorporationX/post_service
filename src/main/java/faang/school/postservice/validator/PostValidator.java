@@ -21,13 +21,9 @@ public class PostValidator {
         }
 
         if (authorId != null) {
-            if (user == null) {
-                throw new EntityNotFoundException("User not found");
-            }
+            validateAuthor(user);
         } else if (projectId != null) {
-            if (project == null) {
-                throw new EntityNotFoundException("Project not found");
-            }
+            validateProject(project);
         }
     }
 
@@ -39,6 +35,18 @@ public class PostValidator {
 
         if (post.getContent().isBlank() || post.getContent().isEmpty()) {
             throw new DataValidationException("Content is empty");
+        }
+    }
+
+    public void validateAuthor(UserDto user) {
+        if (user == null) {
+            throw new DataValidationException("User not found");
+        }
+    }
+
+    public void validateProject(ProjectDto project) {
+        if (project == null) {
+            throw new EntityNotFoundException("Project not found");
         }
     }
 }

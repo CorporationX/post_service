@@ -12,6 +12,8 @@ import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -37,5 +39,12 @@ public class PostService {
         Post postEntity = postMapper.toPost(post);
 
         return postMapper.toDto(postRepository.save(postEntity));
+    }
+
+    public List<PostDto> getNotDeletedDraftsByAuthorId(Long authorId) {
+        UserDto user = userServiceClient.getUser(authorId);
+        postValidator.validateAuthor(user);
+        List<Post> postByAuthorId = postRepository.findByAuthorId(user.getId());
+        return postByAuthorId.stream().filter(post -> !post.isDeleted() && !post.isPublished()).map(postMapper::toDto).toList();
     }
 }
