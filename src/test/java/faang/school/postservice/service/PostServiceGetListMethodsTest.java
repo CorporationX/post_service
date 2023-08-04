@@ -6,8 +6,6 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.client.ProjectDto;
 import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.exception.IncorrectIdException;
-import faang.school.postservice.exception.NoDraftsException;
-import faang.school.postservice.exception.NoPostException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -57,7 +55,8 @@ public class PostServiceGetListMethodsTest {
         when(userService.getUser(CORRECT_ID)).thenReturn(correctUserDto);
         when(postRepository.findByAuthorId(CORRECT_ID)).thenReturn(new ArrayList<>());
 
-        assertThrows(NoDraftsException.class, () -> postService.getUserDrafts(CORRECT_ID));
+        List<PostDto> actualList = postService.getUserDrafts(CORRECT_ID);
+        assertEquals(new ArrayList<>(), actualList);
     }
 
     @Test
@@ -81,7 +80,8 @@ public class PostServiceGetListMethodsTest {
         when(projectService.getProject(CORRECT_ID)).thenReturn(correctProjectDto);
         when(postRepository.findByProjectId(CORRECT_ID)).thenReturn(new ArrayList<>());
 
-        assertThrows(NoDraftsException.class, () -> postService.getProjectDrafts(CORRECT_ID));
+        List<PostDto> actualList = postService.getProjectDrafts(CORRECT_ID);
+        assertEquals(new ArrayList<>(), actualList);
     }
 
     @Test
@@ -105,7 +105,8 @@ public class PostServiceGetListMethodsTest {
         when(userService.getUser(CORRECT_ID)).thenReturn(correctUserDto);
         when(postRepository.findByAuthorId(CORRECT_ID)).thenReturn(new ArrayList<>());
 
-        assertThrows(NoPostException.class, () -> postService.getUserPosts(CORRECT_ID));
+        List<PostDto> actualList = postService.getUserPosts(CORRECT_ID);
+        assertEquals(new ArrayList<>(), actualList);
     }
 
     @Test
@@ -129,7 +130,8 @@ public class PostServiceGetListMethodsTest {
         when(projectService.getProject(CORRECT_ID)).thenReturn(correctProjectDto);
         when(postRepository.findByProjectId(CORRECT_ID)).thenReturn(new ArrayList<>());
 
-        assertThrows(NoPostException.class, () -> postService.getProjectPosts(CORRECT_ID));
+        List<PostDto> actualList = postService.getProjectPosts(CORRECT_ID);
+        assertEquals(new ArrayList<>(), actualList);
     }
 
     @Test

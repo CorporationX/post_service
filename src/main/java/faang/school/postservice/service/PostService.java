@@ -6,10 +6,8 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.IncorrectIdException;
-import faang.school.postservice.exception.NoPostException;
 import faang.school.postservice.exception.NoPostInDataBaseException;
 import faang.school.postservice.exception.NoPublishedPostException;
-import faang.school.postservice.exception.NoDraftsException;
 import faang.school.postservice.exception.SamePostAuthorException;
 import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapper;
@@ -110,9 +108,6 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
 
-        if (userDrafts.isEmpty()) {
-            throw new NoDraftsException("This user has no any drafts");
-        }
         log.info("User's drafts have taken from DB successfully, userId={}", userId);
         return userDrafts;
     }
@@ -126,9 +121,6 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
 
-        if (projectDrafts.isEmpty()) {
-            throw new NoDraftsException("This project has no any drafts");
-        }
         log.info("Drafts of project have taken from DB successfully, projectId={}", projectId);
         return projectDrafts;
     }
@@ -142,9 +134,6 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
 
-        if (userPosts.isEmpty()) {
-            throw new NoPostException("This user has no any published posts");
-        }
         log.info("User's posts have taken from DB successfully, userId={}", userId);
         return userPosts;
     }
@@ -158,9 +147,6 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
 
-        if (projectPosts.isEmpty()) {
-            throw new NoPostException("This project has no any published posts");
-        }
         log.info("Posts of project have taken from DB successfully, projectId={}", projectId);
         return projectPosts;
     }

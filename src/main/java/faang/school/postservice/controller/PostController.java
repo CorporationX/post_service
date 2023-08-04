@@ -30,68 +30,54 @@ public class PostController {
         return createdPostDto;
     }
 
-    @PostMapping ("/publish/{id}")
+    @PostMapping ("/{id}/publish")
     public PostDto publishPost(@PathVariable("id") long postId) {
-        validatePostId(postId);
         return postService.publishPost(postId);
     }
 
     @PutMapping("/change")
     public PostDto updatePost(@RequestBody PostDto updatePost) {
-        validatePostId(updatePost.getId());
         validateData(updatePost);
 
         return postService.updatePost(updatePost);
     }
 
-    @PutMapping("/soft-delete/{id}")
+    @PutMapping("{id}/soft-delete")
     public PostDto softDelete(@PathVariable("id") long postId) {
-        validatePostId(postId);
         return postService.softDelete(postId);
     }
 
     @GetMapping("/{id}")
     public PostDto getPost(@PathVariable("id") long postId) {
-        validatePostId(postId);
         return postService.getPost(postId);
     }
 
     @GetMapping("drafts/users/{id}")
     public List<PostDto> getUserDrafts(@PathVariable("id") long userId) {
-        validatePostId(userId);
         return postService.getUserDrafts(userId);
     }
 
     @GetMapping("/drafts/projects/{id}")
     public List<PostDto> getProjectDrafts(@PathVariable("id") long projectId) {
-        validatePostId(projectId);
         return postService.getProjectDrafts(projectId);
     }
 
     @GetMapping("/users/{id}")
     public List<PostDto> getUserPosts(@PathVariable("id") long userId) {
-        validatePostId(userId);
         return postService.getUserPosts(userId);
     }
 
     @GetMapping("/projects/{id}")
     public List<PostDto> getProjectPosts(@PathVariable("id") long projectId) {
-        validatePostId(projectId);
         return postService.getProjectPosts(projectId);
-    }
-
-    private void validatePostId(long postId) {
-        if (postId < 1) {
-            throw new IncorrectIdException("Некорректрый id поста");
-        }
     }
 
     private void validateData(PostDto postDto) {
         if (postDto.getContent() == null || postDto.getContent().isBlank()) {
-            throw new EmptyContentInPostException("Содержание поста не может быть пустым");
+            throw new EmptyContentInPostException("Post content cannot be empty");
         }
         if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
-            throw new IncorrectIdException("Нет автора поста");
+            throw new IncorrectIdException("There is not author of the post");
         }
     }
 }
