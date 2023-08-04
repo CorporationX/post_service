@@ -1,10 +1,12 @@
 package faang.school.postservice.dto;
 
-import faang.school.postservice.model.Like;
+import lombok.Data;
 
 import java.util.List;
 
+
+@Data
 public class PostDto {
     private long id;
-    List<Like> likes;
+    private List<Long> likes;
 }
