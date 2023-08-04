@@ -117,9 +117,6 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
 
-        if (projectDrafts.isEmpty()) {
-            throw new NoDraftsException("У данного проекта нет черновиков постов");
-        }
         return projectDrafts;
     }
 
