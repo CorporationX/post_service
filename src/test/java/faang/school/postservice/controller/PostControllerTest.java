@@ -61,4 +61,10 @@ class PostControllerTest {
         }
         verifyNoInteractions(postService);
     }
+
+    @Test
+    void testGetPost() {
+        postController.getPost(1L);
+        verify(postService, Mockito.times(1)).getPost(1L);
+    }
 }

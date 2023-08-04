@@ -10,6 +10,7 @@ import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -101,5 +104,19 @@ class PostServiceTest {
         } catch (DataValidationException e) {
             assertEquals("Author and project cannot be specified at the same time", e.getMessage());
         }
+    }
+
+    @Test
+    void testGetPostSuccess() {
+        Post post = Post.builder().id(1L).build();
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        PostDto postDto = postService.getPost(post.getId());
+        assertEquals(postDto, postMapperImpl.toDto(post));
+    }
+
+    @Test
+    void testGetPostFail() {
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+        Assertions.assertThrows(EntityNotFoundException.class, () -> postService.getPost(1L));
     }
 }
