@@ -65,13 +65,3 @@ CREATE TABLE favorite_albums (
 
     CONSTRAINT fk_album_id FOREIGN KEY (album_id) REFERENCES album (id) ON DELETE CASCADE
 );
-
-CREATE TABLE hashtags (
-    hashtag VARCHAR(140) PRIMARY KEY,
-);
-
-CREATE TABLE post_hashtag (
-    post_id BIGINT REFERENCES post (id) ON DELETE CASCADE,
-    hashtag VARCHAR(140) REFERENCES hashtags (hashtag) ON DELETE CASCADE,
-    PRIMARY KEY (post_id, hashtag)
-);

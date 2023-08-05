@@ -35,9 +35,6 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
-    //TODO add migration
-    @ManyToMany(mappedBy = "comment")
-    private List<Hashtag> hashtags;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

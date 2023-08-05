@@ -32,7 +32,7 @@ public class PostService {
         return postMapper.toListDto(postRepository.findByHashtagOrderByPopularity(hashtag));
     }
 
-    private boolean isPopular(String hashtag) {
+    boolean isPopular(String hashtag) {
         return hashtagRepository.getTop10Popular().stream()
                 .map(Hashtag::getHashtag)
                 .anyMatch(tag -> tag.equals(hashtag));

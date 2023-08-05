@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,11 +32,12 @@ public class Hashtag {
     private String hashtag;
 
     @ManyToMany
-    @JoinTable(name = "post_hashtag", joinColumns = @JoinColumn(name = "hashtag"), inverseJoinColumns = @JoinColumn(name = "post_id"))
+    @JoinTable(name = "post_hashtag", joinColumns = @JoinColumn(name = "hashtag_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
+    @Pattern(regexp = "#[A-Za-z0-9]+")
     private List<Post> posts;
 
-    //TODO add migration
-    @ManyToMany
-    @JoinTable(name = "comment_hashtag", joinColumns = @JoinColumn(name = "comment"), inverseJoinColumns = @JoinColumn(name = "comment_id"))
-    private List<Comment> comments;
+    @Override
+    public String toString() {
+        return String.format("Hashtag id: %s (%s)\nPosts: %s\n", id, hashtag, posts);
+    }
 }
