@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
@@ -19,6 +20,10 @@ import java.util.List;
 @Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.FIELD,
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
+
+    List<PostDto> toDtoList(List<Post> posts);
+
+    Post toEntity(CreatePostDto createPostDto);
 
     @Mapping(target = "likesId", source = "likes", qualifiedByName = "toLikesId")
     @Mapping(target = "commentsId", source = "comments", qualifiedByName = "toCommentsId")

@@ -1,7 +1,9 @@
 package faang.school.postservice.controller;
 
 
+import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -21,43 +23,27 @@ public class PostController {
     // Автором может быть либо пользователь, либо проект.
     // Наполнение поста не может быть пустым.
     // Автор должен быть существующим в системе пользователем или проектом.
-    public PostDto createPost(PostDto postDto) {
-        validatePost(postDto);
+    public PostDto createPost(CreatePostDto postDto) {
+        validateCreatePost(postDto);
         return postService.createPost(postDto);
     }
-
-    private void validatePost(PostDto postDto) {
-        if (postDto == null) {
-            throw new DataValidationException("PostDto is null");
-        }
-        if (postDto.getContent() == null || postDto.getContent().isEmpty()) {
-            throw new DataValidationException("Content is null");
-        }
-        if (postDto.getAdId() == null || postDto.getAdId() < 1) {
-            throw new DataValidationException("AdId is null");
-        }
-        if (postDto.getAuthorId() == null || postDto.getAuthorId() < 1) {
-            throw new DataValidationException("AuthorId is null");
-        }
-    }
-
 
     //Публикация поста.
     //Опубликовать можно любой существующий пост.
     // Нельзя ещё раз опубликовать пост, который уже был опубликован ранее.
     // Запомнить дату публикации.
 
-    public PostDto publishPost(Long postId) {
-        return postService.publishPost(postId);
+    public List<PostDto> publishPost() {
+        return postService.publishPost();
     }
 
 
     //Обновление поста (например, можно изменить текст).
     // Нельзя изменить автора поста.
     // Нельзя удалить автора поста.
-    public PostDto updatePost(Long postId, PostDto postDto) {
-        validatePost(postDto);
-        return postService.updatePost(postId, postDto);
+    public PostDto updatePost(UpdatePostDto postDto) {
+        validateUpdatePost(postDto);
+        return postService.updatePost(postDto);
     }
 
 
@@ -99,5 +85,27 @@ public class PostController {
     // Посты должны быть отсортированы по дате публикации от новых к старым.
     public List<PostDto> getAllPostsByProjectIdAndPublished(Long projectId) {
         return postService.getAllPostsByProjectIdAndPublished(projectId);
+    }
+    private void validateCreatePost(CreatePostDto postDto) {
+        if (postDto == null) {
+            throw new DataValidationException("PostDto is null");
+        }
+        if (postDto.getContent() == null || postDto.getContent().isEmpty()) {
+            throw new DataValidationException("Content is null");
+        }
+        if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
+            throw new DataValidationException("AuthorId and ProjectId is null");
+        }
+    }
+    private void validateUpdatePost(UpdatePostDto postDto) {
+        if (postDto == null) {
+            throw new DataValidationException("PostDto is null");
+        }
+        if (postDto.getContent() == null || postDto.getContent().isEmpty()) {
+            throw new DataValidationException("Content is null");
+        }
+        if (postDto.getAdId() == null || postDto.getAdId() < 1) {
+            throw new DataValidationException("AdId is null");
+        }
     }
 }
