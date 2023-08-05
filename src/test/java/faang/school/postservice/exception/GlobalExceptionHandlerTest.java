@@ -1,11 +1,12 @@
 package faang.school.postservice.exception;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,16 +31,15 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 @WebAppConfiguration
-@RequiredArgsConstructor
 class GlobalExceptionHandlerTest {
+    @InjectMocks
     private GlobalExceptionHandler handler;
     @Mock
     HttpServletRequest webRequest;
 
     @BeforeEach
     void setUp() {
-        handler = new GlobalExceptionHandler();
-        when(webRequest.getRequestURI()).thenReturn("/someUri");
+        when(webRequest.getRequestURI()).thenReturn("/testUrl");
     }
 
     @Test
@@ -77,7 +77,7 @@ class GlobalExceptionHandlerTest {
         ErrorResponse response = handler.handleConstraintViolationException(exception, webRequest);
 
         assertAll(() -> {
-            assertEquals("/someUri", response.getUrl());
+            assertEquals("/testUrl", response.getUrl());
             assertEquals("Constraint violation exception", response.getError());
             assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
         });
@@ -91,7 +91,7 @@ class GlobalExceptionHandlerTest {
         ErrorResponse response = handler.handleDataValidationException(exception, webRequest);
 
         assertAll(() -> {
-            assertEquals("/someUri", response.getUrl());
+            assertEquals("/testUrl", response.getUrl());
             assertEquals("Data validation exception", response.getError());
             assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
         });
@@ -99,13 +99,13 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleEntityNotFoundException() {
-        jakarta.persistence.EntityNotFoundException exception = mock(jakarta.persistence.EntityNotFoundException.class);
+        EntityNotFoundException exception = mock(EntityNotFoundException.class);
         when(exception.getMessage()).thenReturn("Entity not found exception");
 
         ErrorResponse response = handler.handleEntityNotFoundException(exception, webRequest);
 
         assertAll(() -> {
-            assertEquals("/someUri", response.getUrl());
+            assertEquals("/testUrl", response.getUrl());
             assertEquals("Entity not found exception", response.getError());
             assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatus());
         });
@@ -119,7 +119,7 @@ class GlobalExceptionHandlerTest {
         ErrorResponse response = handler.handleRuntimeException(exception, webRequest);
 
         assertAll(() -> {
-            assertEquals("/someUri", response.getUrl());
+            assertEquals("/testUrl", response.getUrl());
             assertEquals("Internal server error", response.getError());
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), response.getStatus());
         });
@@ -133,7 +133,7 @@ class GlobalExceptionHandlerTest {
         ErrorResponse response = handler.handleException(exception, webRequest);
 
         assertAll(() -> {
-            assertEquals("/someUri", response.getUrl());
+            assertEquals("/testUrl", response.getUrl());
             assertEquals("Internal server error", response.getError());
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), response.getStatus());
         });
