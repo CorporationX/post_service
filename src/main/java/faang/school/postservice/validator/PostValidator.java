@@ -47,8 +47,12 @@ public class PostValidator {
             throw new EntityNotFoundException("Post not found");
         }
 
-        if (!postDto.getAuthorId().equals(post.getAuthorId()) || !postDto.getProjectId().equals(post.getProjectId())) {
-            throw new DataValidationException("You cannot change the author or the project of the post");
+        if (postDto.getAuthorId() != null && !postDto.getAuthorId().equals(post.getAuthorId())) {
+            throw new DataValidationException("You cannot change the author of the post");
+        }
+
+        if (postDto.getProjectId() != null && !postDto.getProjectId().equals(post.getProjectId())) {
+            throw new DataValidationException("You cannot change the project of the post");
         }
 
         validatePostContent(postDto);

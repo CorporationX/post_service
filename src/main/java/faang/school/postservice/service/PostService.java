@@ -44,7 +44,7 @@ public class PostService {
 
     @Transactional
     public PostDto updatePost(PostDto postUpdateDto) {
-        Post post = postRepository.findById(postUpdateDto.getId()).orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        Post post = postRepository.findById(postUpdateDto.getId()).orElse(null);
         postValidator.validationOfPostUpdate(postUpdateDto, post);
 
         postMapper.update(postUpdateDto, post);
