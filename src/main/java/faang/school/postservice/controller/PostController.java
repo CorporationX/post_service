@@ -59,6 +59,14 @@ public class PostController {
         return postService.getNotDeletedPublishedPostsByAuthorId(authorId);
     }
 
+    @GetMapping("/{projectId}/posts")
+    @Operation(summary = "Get not deleted published posts by project id")
+    @ResponseStatus(HttpStatus.OK)
+    public List<PostDto> getNotDeletedPublishedPostsByProjectId(@RequestParam @Valid Long projectId) {
+        validateId(projectId);
+        return postService.getNotDeletedPublishedPostsByProjectId(projectId);
+    }
+
     private void validateId(Long id) {
         if (id < 0) {
             throw new DataValidationException("Id cannot be negative");

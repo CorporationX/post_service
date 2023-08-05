@@ -11,6 +11,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
+    @Transactional
     public PostDto createPost(PostDto post) {
         ProjectDto project = null;
         UserDto user = null;
@@ -40,7 +42,7 @@ public class PostService {
 
         return postMapper.toDto(postRepository.save(postEntity));
     }
-
+    @Transactional
     public List<PostDto> getNotDeletedDraftsByAuthorId(Long authorId) {
         UserDto user = userServiceClient.getUser(authorId);
         postValidator.validateAuthor(user);
@@ -48,6 +50,7 @@ public class PostService {
         return postByAuthorId.stream().filter(post -> !post.isDeleted() && !post.isPublished()).map(postMapper::toDto).toList();
     }
 
+    @Transactional
     public List<PostDto> getNotDeletedDraftsByProjectId(Long projectId) {
         ProjectDto project = projectServiceClient.getProject(projectId);
         postValidator.validateProject(project);
@@ -55,10 +58,19 @@ public class PostService {
         return postByProjectId.stream().filter(post -> !post.isDeleted() && !post.isPublished()).map(postMapper::toDto).toList();
     }
 
+    @Transactional
     public List<PostDto> getNotDeletedPublishedPostsByAuthorId(Long authorId) {
         UserDto user = userServiceClient.getUser(authorId);
         postValidator.validateAuthor(user);
         List<Post> postByAuthorId = postRepository.findByAuthorId(user.getId());
         return postByAuthorId.stream().filter(post -> !post.isDeleted() && post.isPublished()).map(postMapper::toDto).toList();
+    }
+
+    @Transactional
+    public List<PostDto> getNotDeletedPublishedPostsByProjectId(Long projectId) {
+        ProjectDto project = projectServiceClient.getProject(projectId);
+        postValidator.validateProject(project);
+        List<Post> postByProjectId = postRepository.findByProjectId(project.getId());
+        return postByProjectId.stream().filter(post -> !post.isDeleted() && post.isPublished()).map(postMapper::toDto).toList();
     }
 }
