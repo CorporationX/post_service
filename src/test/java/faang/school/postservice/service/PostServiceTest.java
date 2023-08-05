@@ -127,4 +127,26 @@ class PostServiceTest {
         when(postRepository.findByAuthorId(USER_ID)).thenReturn(List.of());
         assertEquals(0, postService.getNotDeletedDraftsByAuthorId(USER_ID).size());
     }
+
+    @Test
+    void testGetNotDeletedDraftsByProjectIdSuccess() {
+        when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
+        when(postRepository.findByProjectId(projectDto.getId())).thenReturn(List.of(Post.builder().projectId(projectDto.getId()).build()));
+        List<PostDto> posts = postService.getNotDeletedDraftsByProjectId(projectDto.getId());
+
+        assertEquals(1, posts.size());
+    }
+
+    @Test
+    void testGetNotDeletedDraftsByProjectIdFailIfProjectNotFound() {
+        when(projectServiceClient.getProject(PROJECT_ID)).thenThrow(NullPointerException.class);
+        assertThrows((NullPointerException.class), () -> postService.getNotDeletedDraftsByProjectId(PROJECT_ID));
+    }
+
+    @Test
+    void testGetNotDeletedDraftsByProjectIdFailIfNoDraftsFound() {
+        when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
+        when(postRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of());
+        assertEquals(0, postService.getNotDeletedDraftsByProjectId(PROJECT_ID).size());
+    }
 }
