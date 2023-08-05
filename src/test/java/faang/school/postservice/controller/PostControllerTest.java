@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.EmptyContentInPostException;
 import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.service.PostService;
