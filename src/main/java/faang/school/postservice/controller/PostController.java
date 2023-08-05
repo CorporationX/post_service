@@ -2,7 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.EmptyContentInPostException;
-import faang.school.postservice.exception.IncorrectIdException;
+import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,9 +25,7 @@ public class PostController {
     @PostMapping("/drafts")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
         validateData(postDto);
-
-        PostDto createdPostDto = postService.crateDraftPost(postDto);
-        return createdPostDto;
+        return postService.crateDraftPost(postDto);
     }
 
     @PostMapping ("/{id}/publish")
@@ -38,7 +36,6 @@ public class PostController {
     @PutMapping("/change")
     public PostDto updatePost(@RequestBody PostDto updatePost) {
         validateData(updatePost);
-
         return postService.updatePost(updatePost);
     }
 
@@ -77,7 +74,7 @@ public class PostController {
             throw new EmptyContentInPostException("Post content cannot be empty");
         }
         if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
-            throw new IncorrectIdException("There is not author of the post");
+            throw new UpdatePostException("There is not author of the post");
         }
     }
 }

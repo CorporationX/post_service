@@ -5,8 +5,6 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
-import faang.school.postservice.exception.IncorrectIdException;
-import faang.school.postservice.exception.NoPostInDataBaseException;
 import faang.school.postservice.exception.NoPublishedPostException;
 import faang.school.postservice.exception.SamePostAuthorException;
 import faang.school.postservice.exception.UpdatePostException;
@@ -14,6 +12,7 @@ import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,7 +83,7 @@ public class PostServiceTest {
         incorrectPostDto.setProjectId(null);
         when(userService.getUser(CORRECT_ID)).thenThrow(FeignException.class);
 
-        assertThrows(IncorrectIdException.class, () -> postService.crateDraftPost(incorrectPostDto));
+        assertThrows(EntityNotFoundException.class, () -> postService.crateDraftPost(incorrectPostDto));
     }
 
     @Test
@@ -92,7 +91,7 @@ public class PostServiceTest {
         incorrectPostDto.setAuthorId(null);
         when(projectService.getProject(CORRECT_ID)).thenThrow(FeignException.class);
 
-        assertThrows(IncorrectIdException.class, () -> postService.crateDraftPost(incorrectPostDto));
+        assertThrows(EntityNotFoundException.class, () -> postService.crateDraftPost(incorrectPostDto));
     }
 
     @Test
@@ -107,7 +106,7 @@ public class PostServiceTest {
     @Test
     void testPublishPostWithoutPostInDB() {
         when(postRepository.existsById(CORRECT_ID)).thenReturn(false);
-        assertThrows(NoPostInDataBaseException.class, () -> postService.publishPost(CORRECT_ID));
+        assertThrows(EntityNotFoundException.class, () -> postService.publishPost(CORRECT_ID));
     }
 
     @Test
@@ -132,7 +131,7 @@ public class PostServiceTest {
     @Test
     void testUpdatePostWithoutPostInDB() {
         when(postRepository.existsById(INCORRECT_ID)).thenReturn(false);
-        assertThrows(NoPostInDataBaseException.class, () -> postService.updatePost(incorrectPostDto));
+        assertThrows(EntityNotFoundException.class, () -> postService.updatePost(incorrectPostDto));
     }
 
     @Test
@@ -155,7 +154,7 @@ public class PostServiceTest {
     @Test
     void testSoftDeleteWithoutPostInDB() {
         when(postRepository.existsById(CORRECT_ID)).thenReturn(false);
-        assertThrows(NoPostInDataBaseException.class, () -> postService.softDelete(CORRECT_ID));
+        assertThrows(EntityNotFoundException.class, () -> postService.softDelete(CORRECT_ID));
     }
 
     @Test
@@ -178,7 +177,7 @@ public class PostServiceTest {
     @Test
     void testGetPostWithoutPostInDB() {
         when(postRepository.existsById(CORRECT_ID)).thenReturn(false);
-        assertThrows(NoPostInDataBaseException.class, () -> postService.getPost(CORRECT_ID));
+        assertThrows(EntityNotFoundException.class, () -> postService.getPost(CORRECT_ID));
     }
 
     @Test

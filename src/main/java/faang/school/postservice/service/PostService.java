@@ -5,8 +5,6 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
-import faang.school.postservice.exception.IncorrectIdException;
-import faang.school.postservice.exception.NoPostInDataBaseException;
 import faang.school.postservice.exception.NoPublishedPostException;
 import faang.school.postservice.exception.SamePostAuthorException;
 import faang.school.postservice.exception.UpdatePostException;
@@ -14,6 +12,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -153,7 +152,7 @@ public class PostService {
 
     private void validatePostId(long postId) {
         if (!postRepository.existsById(postId)) {
-            throw new NoPostInDataBaseException("This post does not exist");
+            throw new EntityNotFoundException("This post does not exist");
         }
     }
 
@@ -192,7 +191,7 @@ public class PostService {
         try {
             userService.getUser(id);
         } catch (FeignException e) {
-            throw new IncorrectIdException("This user is not found");
+            throw new EntityNotFoundException("This user is not found");
         }
     }
 
@@ -200,7 +199,7 @@ public class PostService {
         try {
             projectService.getProject(id);
         } catch (FeignException e) {
-            throw new IncorrectIdException("This project is not found");
+            throw new EntityNotFoundException("This project is not found");
         }
     }
 }

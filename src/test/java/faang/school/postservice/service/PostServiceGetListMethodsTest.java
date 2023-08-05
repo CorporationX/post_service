@@ -5,11 +5,11 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.client.ProjectDto;
 import faang.school.postservice.dto.client.UserDto;
-import faang.school.postservice.exception.IncorrectIdException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,7 +47,7 @@ public class PostServiceGetListMethodsTest {
     @Test
     void testGetUserDraftsWithoutUserInDB() {
         when(userService.getUser(CORRECT_ID)).thenThrow(FeignException.class);
-        assertThrows(IncorrectIdException.class, () -> postService.getUserDrafts(CORRECT_ID));
+        assertThrows(EntityNotFoundException.class, () -> postService.getUserDrafts(CORRECT_ID));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class PostServiceGetListMethodsTest {
     @Test
     void testGetProjectDraftsWithoutProjectInDB() {
         when(projectService.getProject(CORRECT_ID)).thenThrow(FeignException.class);
-        assertThrows(IncorrectIdException.class, () -> postService.getProjectDrafts(CORRECT_ID));
+        assertThrows(EntityNotFoundException.class, () -> postService.getProjectDrafts(CORRECT_ID));
     }
 
     @Test
@@ -97,7 +97,7 @@ public class PostServiceGetListMethodsTest {
     @Test
     void testGetUserPostsWithoutUserInDB() {
         when(userService.getUser(CORRECT_ID)).thenThrow(FeignException.class);
-        assertThrows(IncorrectIdException.class, () -> postService.getUserPosts(CORRECT_ID));
+        assertThrows(EntityNotFoundException.class, () -> postService.getUserPosts(CORRECT_ID));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class PostServiceGetListMethodsTest {
     @Test
     void testGetProjectPostsWithoutProjectInDB() {
         when(projectService.getProject(CORRECT_ID)).thenThrow(FeignException.class);
-        assertThrows(IncorrectIdException.class, () -> postService.getProjectPosts(CORRECT_ID));
+        assertThrows(EntityNotFoundException.class, () -> postService.getProjectPosts(CORRECT_ID));
     }
 
     @Test

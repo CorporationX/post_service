@@ -2,6 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.EmptyContentInPostException;
+import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,12 @@ public class PostControllerTest {
     }
 
     @Test
+    void testCreateDaftPostWithoutAuthor() {
+        incorrectPostDto.setContent("some content");
+        assertThrows(UpdatePostException.class, () -> postController.createDraftPost(incorrectPostDto));
+    }
+
+    @Test
     void testCreateDaftPost() {
         postController.createDraftPost(correctPostDto);
         verify(postService).crateDraftPost(correctPostDto);
@@ -65,6 +72,12 @@ public class PostControllerTest {
     void testUpdatePostWithEmptyContent() {
         incorrectPostDto.setId(CORRECT_ID);
         assertThrows(EmptyContentInPostException.class, () -> postController.updatePost(incorrectPostDto));
+    }
+
+    @Test
+    void testUpdatePostWithoutAuthor() {
+        incorrectPostDto.setContent("some content");
+        assertThrows(UpdatePostException.class, () -> postController.updatePost(incorrectPostDto));
     }
 
     @Test
