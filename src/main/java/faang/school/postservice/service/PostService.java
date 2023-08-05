@@ -28,11 +28,6 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
-    //Создание черновика поста.
-    // Ровно один автор.
-    // Автором может быть либо пользователь, либо проект.
-    // Наполнение поста не может быть пустым.
-    // Автор должен быть существующим в системе пользователем или проектом.
     @Transactional
     public PostDto createPost(CreatePostDto postDto) {
         Post post = postMapper.toEntity(postDto);
@@ -52,10 +47,6 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    //Публикация поста.
-    //Опубликовать можно любой существующий пост.
-    // Нельзя ещё раз опубликовать пост, который уже был опубликован ранее.
-    // Запомнить дату публикации.
     @Transactional
     public List<PostDto> publishPost() {
         List<Post> readyToPublish = postRepository.findReadyToPublish();
@@ -73,9 +64,6 @@ public class PostService {
         return postMapper.toDtoList(readyToPublish);
     }
 
-    //Обновление поста (например, можно изменить текст).
-    // Нельзя изменить автора поста.
-    // Нельзя удалить автора поста.
     @Transactional
     public PostDto updatePost(UpdatePostDto postDto) {
         Post postInTheDatabase = postRepository.findById(postDto.getId())
@@ -90,8 +78,6 @@ public class PostService {
         return postMapper.toDto(postRepository.save(postInTheDatabase));
     }
 
-    //Мягкое удаление поста по id.
-    // Не удаляем из БД, а помечаем, как удаленный и продолжаем хранить.
     @Transactional
     public PostDto softDeletePost(Long postId) {
         Post post = postRepository.findById(postId)
@@ -101,7 +87,6 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
-    //Получение поста по id.
     @Transactional(readOnly = true)
     public PostDto getPostById(Long id) {
         Optional<Post> postById = postRepository.findById(id);
@@ -112,8 +97,6 @@ public class PostService {
                 .orElseThrow(() -> new DataValidationException("Post not found")));
     }
 
-    //Получение всех черновиков не удаленных постов за авторством пользователя с данным id.
-    // Посты должны быть отсортированы по дате создания от новых к старым.
     @Transactional
     public List<PostDto> getAllPostsByAuthorId(Long authorId) {
         return postRepository.findByAuthorId(authorId).stream()
@@ -123,8 +106,6 @@ public class PostService {
                 .toList();
     }
 
-    //Получение всех черновиков не удаленных постов за авторством проекта с данным id.
-    // Посты должны быть отсортированы по дате создания от новых к старым.
     @Transactional
     public List<PostDto> getAllPostsByProjectId(Long projectId) {
         return postRepository.findByProjectId(projectId).stream()
@@ -134,8 +115,6 @@ public class PostService {
                 .toList();
     }
 
-    //Получение всех опубликованных не удаленных постов за авторством пользователя с данным id.
-    // Посты должны быть отсортированы по дате публикации от новых к старым.
     @Transactional
     public List<PostDto> getAllPostsByAuthorIdAndPublished(Long authorId) {
         return postRepository.findByAuthorId(authorId).stream()
@@ -145,8 +124,6 @@ public class PostService {
                 .toList();
     }
 
-    //Получение всех опубликованных не удаленных постов за авторством проекта с данным id.
-    // Посты должны быть отсортированы по дате публикации от новых к старым.
     @Transactional
     public List<PostDto> getAllPostsByProjectIdAndPublished(Long projectId) {
         return postRepository.findByProjectId(projectId).stream()

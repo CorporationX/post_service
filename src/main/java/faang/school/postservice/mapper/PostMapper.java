@@ -10,7 +10,6 @@ import faang.school.postservice.model.ad.Ad;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
@@ -36,12 +35,6 @@ public interface PostMapper {
     @Mapping(target = "albums", source = "albumsId", qualifiedByName = "toAlbums")
     @Mapping(target = "ad", source = "adId", qualifiedByName = "toAd")
     Post toEntity(PostDto postDto);
-
-    @Mapping(target = "likes", source = "likesId", qualifiedByName = "toLikes")
-    @Mapping(target = "comments", source = "commentsId", qualifiedByName = "toComments")
-    @Mapping(target = "albums", source = "albumsId", qualifiedByName = "toAlbums")
-    @Mapping(target = "ad", source = "adId", qualifiedByName = "toAd")
-    void update(PostDto postDto,@MappingTarget Post post);
 
     @Named(value = "toAd")
     default Ad toAd(Long ad) {
