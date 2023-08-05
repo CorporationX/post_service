@@ -37,7 +37,6 @@ public class PostController {
         return postService.publishPost();
     }
 
-
     //Обновление поста (например, можно изменить текст).
     // Нельзя изменить автора поста.
     // Нельзя удалить автора поста.
@@ -46,19 +45,16 @@ public class PostController {
         return postService.updatePost(postDto);
     }
 
-
     //Мягкое удаление поста по id.
     // Не удаляем из БД, а помечаем, как удаленный и продолжаем хранить.
     public void softDeletePost(Long postId) {
         postService.softDeletePost(postId);
     }
 
-
     //Получение поста по id.
     private PostDto getPostById(Long id) {
         return postService.getPostById(id);
     }
-
 
     //Получение всех черновиков не удаленных постов за авторством пользователя с данным id.
     // Посты должны быть отсортированы по дате создания от новых к старым.
@@ -66,13 +62,11 @@ public class PostController {
         return postService.getAllPostsByAuthorId(userId);
     }
 
-
     //Получение всех черновиков не удаленных постов за авторством проекта с данным id.
     // Посты должны быть отсортированы по дате создания от новых к старым.
     public List<PostDto> getAllPostsByProjectId(Long projectId) {
         return postService.getAllPostsByProjectId(projectId);
     }
-
 
     //Получение всех опубликованных не удаленных постов за авторством пользователя с данным id.
     // Посты должны быть отсортированы по дате публикации от новых к старым.
@@ -80,12 +74,12 @@ public class PostController {
         return postService.getAllPostsByAuthorIdAndPublished(userId);
     }
 
-
     //Получение всех опубликованных не удаленных постов за авторством проекта с данным id.
     // Посты должны быть отсортированы по дате публикации от новых к старым.
     public List<PostDto> getAllPostsByProjectIdAndPublished(Long projectId) {
         return postService.getAllPostsByProjectIdAndPublished(projectId);
     }
+
     private void validateCreatePost(CreatePostDto postDto) {
         if (postDto == null) {
             throw new DataValidationException("PostDto is null");
@@ -97,6 +91,7 @@ public class PostController {
             throw new DataValidationException("AuthorId and ProjectId is null");
         }
     }
+
     private void validateUpdatePost(UpdatePostDto postDto) {
         if (postDto == null) {
             throw new DataValidationException("PostDto is null");

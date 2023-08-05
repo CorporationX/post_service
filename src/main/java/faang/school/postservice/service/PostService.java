@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -68,7 +67,7 @@ public class PostService {
                 continue;
             }
             post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
+            post.setPublishedAt(null);
             postRepository.save(post);
         }
         return postMapper.toDtoList(readyToPublish);
@@ -83,7 +82,7 @@ public class PostService {
                 .orElseThrow(() -> new DataValidationException("Update Post not found"));
 
         postInTheDatabase.setContent(postDto.getContent());
-        postInTheDatabase.setUpdatedAt(LocalDateTime.now());
+        postInTheDatabase.setUpdatedAt(null);
 
         postInTheDatabase.setAd(adRepository.findById(postDto.getAdId())
                 .orElseThrow(() -> new DataValidationException("Update ad not found")));

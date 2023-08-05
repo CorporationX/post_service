@@ -7,10 +7,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostMapperImpl;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
@@ -28,9 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -63,8 +59,6 @@ class PostServiceTest {
     @BeforeEach
     void setUp() {
         posts = new ArrayList<>();
-        List<Comment> comments = new ArrayList<>(List.of(Comment.builder().id(1L).build()));
-        List<Like> likes = new ArrayList<>(List.of(Like.builder().id(1L).build()));
         postOne = Post.builder().id(1L)
                 .createdAt(LocalDateTime.of(2022, 3, 1, 0, 0))
                 .deleted(false).published(true).build();
@@ -80,7 +74,8 @@ class PostServiceTest {
                 .deleted(false).published(false).build();
         postDtoTree = PostDto.builder().id(3L).createdAt(LocalDateTime.of(2022, 2, 1, 0, 0))
                 .deleted(false).published(true).build();
-        updatePostDto = UpdatePostDto.builder().content("content").build();
+        updatePostDto = UpdatePostDto.builder().id(1L).adId(1L).build();
+
         posts.add(postDtoOne);
         posts.add(postDtoTree);
 
@@ -95,6 +90,7 @@ class PostServiceTest {
     @Test
     void testCreatePostMockAuthorDataValidationException() {
         CreatePostDto createPostDto = CreatePostDto.builder().authorId(1L).projectId(null).build();
+
         when(userServiceClient.getUser(1L)).thenReturn(null);
         assertThrows(DataValidationException.class, () -> postService.createPost(createPostDto));
     }
@@ -102,6 +98,7 @@ class PostServiceTest {
     @Test
     void testCreatePostMockProjectDataValidationException() {
         CreatePostDto createPostDto = CreatePostDto.builder().authorId(null).projectId(1L).build();
+
         when(projectServiceClient.getProject(1L)).thenReturn(null);
         assertThrows(DataValidationException.class, () -> postService.createPost(createPostDto));
     }
@@ -112,40 +109,103 @@ class PostServiceTest {
                 .authorId(null).projectId(1L)
                 .deleted(false).published(false).build();
         CreatePostDto createPostDto = CreatePostDto.builder().authorId(null).projectId(1L).build();
+
         when(projectServiceClient.getProject(1L)).thenReturn(new ProjectDto());
         postService.createPost(createPostDto);
         verify(postRepository).save(post);
     }
 
     @Test
-    void testPublishPost() {
+    void testPublishPostArrayList() {
+        when(postRepository.findReadyToPublish()).thenReturn(new ArrayList<>());
+        assertEquals(new ArrayList<>(), postService.publishPost());
+    }
 
+    @Test
+    void testPublishPostSave() {
+        Post postTwo2 = Post.builder().id(2L)
+                .createdAt(LocalDateTime.of(2022, 1, 1, 0, 0))
+                .deleted(false).published(true).build();
+
+        when(postRepository.findReadyToPublish()).thenReturn(new ArrayList<>(List.of(postOne, postTwo, postTree)));
+        postService.publishPost();
+        verify(postRepository).save(postTwo2);
+    }
+
+    @Test
+    void testPublishPost() {
+        Post postTwo2 = Post.builder().id(2L)
+                .createdAt(LocalDateTime.of(2022, 1, 1, 0, 0))
+                .deleted(false).published(true).build();
+
+        when(postRepository.findReadyToPublish()).thenReturn(new ArrayList<>(List.of(postOne, postTwo, postTree)));
+        postService.publishPost();
+        verify(postMapper).toDtoList(List.of(postOne, postTwo2, postTree));
     }
 
     @Test
     void testUpdatePostDataValidationException() {
-        when(postMapper.toDto(any())).thenThrow(new RuntimeException());
-        when(postRepository.findById(any())).thenThrow(new RuntimeException());
-        when(adRepository.findById(any())).thenThrow(new RuntimeException());
-        when(postRepository.save(any())).thenThrow(new RuntimeException());
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(DataValidationException.class, () -> postService.updatePost(updatePostDto));
+    }
+
+    @Test
+    void testUpdatePostAdDataValidationException() {
+        Post post123 = Post.builder().id(1L).ad(Ad.builder().id(1L).build()).build();
+
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post123));
+        when(adRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(DataValidationException.class, () -> postService.updatePost(updatePostDto));
+    }
+
+    @Test
+    void testUpdatePost() {
+        Post post = Post.builder().id(1L).build();
+        PostDto postDto = PostDto.builder().id(1L).build();
+
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        when(adRepository.findById(1L)).thenReturn(Optional.of(Ad.builder().id(1L).build()));
+        when(postMapper.toDto(post)).thenReturn(postDto);
+        when(postRepository.save(post)).thenReturn(post);
+
+        assertEquals(postDto, postService.updatePost(updatePostDto));
+    }
+
+    @Test
+    void softDeletePostDataValidationException() {
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(DataValidationException.class, () -> postService.softDeletePost(1L));
     }
 
     @Test
     void softDeletePost() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(postOne));
+        when(postMapper.toDto(postOne)).thenReturn(postDtoOne);
         when(postRepository.save(postOne)).thenReturn(postOne);
-        assertEquals(postService.softDeletePost(1L), postOne);
+
+        assertEquals(postDtoOne, postService.softDeletePost(1L));
+    }
+
+    @Test
+    void getPostByIdDataValidationException() {
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(DataValidationException.class, () -> postService.getPostById(1L));
     }
 
     @Test
     void getPostById() {
+        when(postRepository.findById(1L)).thenReturn(Optional.of(postOne));
+        when(postMapper.toDto(postOne)).thenReturn(postDtoOne);
+
+        assertEquals(postDtoOne, postService.getPostById(1L));
     }
 
     @Test
     void getAllPostsByAuthorId() {
         when(postRepository.findByProjectId(1L)).thenReturn(List.of(postOne, postTwo, postTree));
         when(postMapper.toDto(postTwo)).thenReturn(postDtoTwo);
+
         assertEquals(List.of(postDtoTwo), postService.getAllPostsByProjectId(1L));
     }
 
@@ -153,6 +213,7 @@ class PostServiceTest {
     void getAllPostsByProjectId() {
         when(postRepository.findByProjectId(1L)).thenReturn(List.of(postOne, postTwo, postTree));
         when(postMapper.toDto(postTwo)).thenReturn(postDtoTwo);
+
         assertEquals(List.of(postDtoTwo), postService.getAllPostsByProjectId(1L));
     }
 
@@ -161,6 +222,7 @@ class PostServiceTest {
         when(postRepository.findByAuthorId(1L)).thenReturn(List.of(postOne, postTwo, postTree));
         when(postMapper.toDto(postOne)).thenReturn(postDtoOne);
         when(postMapper.toDto(postTree)).thenReturn(postDtoTree);
+
         assertEquals(posts, postService.getAllPostsByAuthorIdAndPublished(1L));
     }
 
@@ -169,7 +231,7 @@ class PostServiceTest {
         when(postRepository.findByProjectId(1L)).thenReturn(List.of(postOne, postTwo, postTree));
         when(postMapper.toDto(postOne)).thenReturn(postDtoOne);
         when(postMapper.toDto(postTree)).thenReturn(postDtoTree);
-        assertEquals(posts, postService.getAllPostsByProjectIdAndPublished(1L));
 
+        assertEquals(posts, postService.getAllPostsByProjectIdAndPublished(1L));
     }
 }
