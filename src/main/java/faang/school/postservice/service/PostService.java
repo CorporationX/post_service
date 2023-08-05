@@ -54,4 +54,11 @@ public class PostService {
         List<Post> postByProjectId = postRepository.findByProjectId(project.getId());
         return postByProjectId.stream().filter(post -> !post.isDeleted() && !post.isPublished()).map(postMapper::toDto).toList();
     }
+
+    public List<PostDto> getNotDeletedPublishedPostsByAuthorId(Long authorId) {
+        UserDto user = userServiceClient.getUser(authorId);
+        postValidator.validateAuthor(user);
+        List<Post> postByAuthorId = postRepository.findByAuthorId(user.getId());
+        return postByAuthorId.stream().filter(post -> !post.isDeleted() && post.isPublished()).map(postMapper::toDto).toList();
+    }
 }

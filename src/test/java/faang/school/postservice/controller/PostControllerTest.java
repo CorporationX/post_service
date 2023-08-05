@@ -83,4 +83,15 @@ class PostControllerTest {
     void testGetNotDeletedDraftsByProjectIdFail() {
         assertEquals("Id cannot be negative", assertThrows(DataValidationException.class, () -> postController.getNotDeletedDraftsByProjectId(-1L)).getMessage());
     }
+
+    @Test
+    void testGetPublishedPostsByAuthorId() {
+        postController.getNotDeletedPublishedPostsByAuthorId(authorId);
+        verify(postService, Mockito.times(1)).getNotDeletedPublishedPostsByAuthorId(authorId);
+    }
+
+    @Test
+    void testGetPublishedPostsByAuthorIdFail() {
+        assertEquals("Id cannot be negative", assertThrows(DataValidationException.class, () -> postController.getNotDeletedPublishedPostsByAuthorId(-1L)).getMessage());
+    }
 }

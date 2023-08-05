@@ -24,6 +24,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -148,5 +149,27 @@ class PostServiceTest {
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
         when(postRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of());
         assertEquals(0, postService.getNotDeletedDraftsByProjectId(PROJECT_ID).size());
+    }
+
+    @Test
+    void testGetPublishedPostByAuthorIdSuccess() {
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+        when(postRepository.findByAuthorId(userDto.getId())).thenReturn(List.of(Post.builder().authorId(userDto.getId()).published(true).build()));
+        List<PostDto> posts = postService.getNotDeletedPublishedPostsByAuthorId(userDto.getId());
+        assertEquals(1, posts.size());
+        posts.forEach(post -> assertTrue(post.isPublished()));
+    }
+
+    @Test
+    void testGetPublishedPostByAuthorIdFailIfUserNotFound() {
+        when(userServiceClient.getUser(USER_ID)).thenThrow(NullPointerException.class);
+        assertThrows((NullPointerException.class), () -> postService.getNotDeletedPublishedPostsByAuthorId(USER_ID));
+    }
+
+    @Test
+    void testGetPublishedPostByAuthorIdFailIfNoPostsFound() {
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+        when(postRepository.findByAuthorId(USER_ID)).thenReturn(List.of());
+        assertEquals(0, postService.getNotDeletedPublishedPostsByAuthorId(USER_ID).size());
     }
 }
