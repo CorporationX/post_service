@@ -94,6 +94,12 @@ public class PostService {
         return postMapper.toDto(postById);
     }
 
+    public List<PostDto> getDraftsByAuthorId(Long authorId){
+        List<Post> draftsByAuthorId = postRepository.findReadyToPublishByAuthorId(authorId);
+
+        return postMapper.toDtos(draftsByAuthorId);
+    }
+
     private Post getPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with id " + String.format("%d", id) + " not found"));

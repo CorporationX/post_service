@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.response.DtosResponse;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/post")
@@ -54,5 +57,28 @@ public class PostController {
 
         return resultDto;
     }
+
+    @GetMapping("/author/drafts/{id}")
+    DtosResponse getDraftsByAuthorId(@PathVariable Long id){
+        List<PostDto> resultDtos = postService.getDraftsByAuthorId(id);
+
+        return new DtosResponse(resultDtos);
+    }
+
+    @GetMapping("/author/drafts/{id}")
+    ResponseEntity<DtosResponse> getDraftsByAuthorId(@PathVariable Long authorId){
+        validator.validateToGetByAuthorId(authorId);
+
+        return ResponseEntity.ok(new DtosResponse(postService.getDraftsByAuthorId(authorId)));
+    }
+
+    @GetMapping("/author/drafts/{id}")
+    ResponseEntity<DtosResponse> getDraftsByAuthorId(@PathVariable Long authorId){
+        validator.validateToGetByAuthorId(authorId);
+
+        return ResponseEntity.ok(new DtosResponse(postService.getDraftsByAuthorId(authorId)));
+    }
 }
+
+
 
