@@ -41,13 +41,4 @@ public class PostServiceValidator {
             throw new UpdatePostException("There is no changes to update");
         }
     }
-
-    public void validateToDelete(Post postById) {
-        if (postById.isDeleted()) {
-            throw new DeletePostException("Post is already deleted");
-        }
-        if (!postById.isPublished()) {
-            throw new DeletePostException("Post is in draft state. It can't be deleted");
-        }
-    }
 }
