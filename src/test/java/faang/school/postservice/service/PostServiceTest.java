@@ -65,6 +65,7 @@ public class PostServiceTest {
                 .build();
         alreadyPublishedPost = Post.builder()
                 .id(2L)
+                .published(true)
                 .build();
         correctPost = Post.builder()
                 .content("content")
@@ -112,7 +113,7 @@ public class PostServiceTest {
     @Test
     void testPublishPostWithAlreadyPublishedPost() {
         when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
-        when(postRepository.findReadyToPublish()).thenReturn(Arrays.asList(alreadyPublishedPost));
+        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(alreadyPublishedPost));
         assertThrows(AlreadyPostedException.class, () -> postService.publishPost(CORRECT_ID));
     }
 
@@ -121,7 +122,7 @@ public class PostServiceTest {
         correctPostDto.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
         correctPostDto.setPublished(true);
         when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
-        when(postRepository.findReadyToPublish()).thenReturn(Arrays.asList(alreadyPublishedPost, correctPost));
+        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
 
         PostDto actualPostDto = postService.publishPost(CORRECT_ID);
         actualPostDto.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));

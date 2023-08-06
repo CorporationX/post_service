@@ -43,14 +43,13 @@ public class PostService {
     public PostDto publishPost(long postId) {
         validatePostId(postId);
 
-        List<Post> readyToPublishPost = postRepository.findReadyToPublish().stream()
-                .filter(post -> post.getId() == postId)
-                .toList();
-        if (readyToPublishPost.isEmpty()) {
-            throw new AlreadyPostedException("You cannot publish a post that has already been published or deleted");
+
+        Post post = postRepository.findById(postId).get();
+        if (post.isPublished() || post.isDeleted() || (post.getScheduledAt() != null
+                && post.getScheduledAt().isAfter(LocalDateTime.now()))) {
+            throw new AlreadyPostedException("Нельзя опубликовать пост, который уже был опубликован или удален");
         }
 
-        Post post = readyToPublishPost.get(0);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         log.info("Post was published successfully, postId={}", post.getId());
