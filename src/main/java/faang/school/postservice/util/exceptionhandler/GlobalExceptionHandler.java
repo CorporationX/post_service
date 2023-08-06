@@ -4,6 +4,7 @@ import faang.school.postservice.dto.response.ErrorResponse;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.util.exception.PublishPostException;
+import faang.school.postservice.util.exception.UpdatePostException;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -47,14 +48,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PublishPostException.class)
     public ResponseEntity<ErrorResponse> handleException(PublishPostException e) {
-        log.error(MESSAGE, e);
+        log.error("Error has been occurred when publishing post: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }
 
     @ExceptionHandler(UpdatePostException.class)
     public ResponseEntity<ErrorResponse> handleException(UpdatePostException e) {
-        log.error(MESSAGE, e);
+        log.error("Error has been occurred when updating post: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }
