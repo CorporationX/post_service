@@ -86,6 +86,14 @@ public class PostService {
         return postMapper.toDto(postById);
     }
 
+    public PostDto getPost(Long id){
+        Post postById = getPostById(id);
+
+        validator.validateToGet(postById);
+
+        return postMapper.toDto(postById);
+    }
+
     private Post getPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with id " + String.format("%d", id) + " not found"));

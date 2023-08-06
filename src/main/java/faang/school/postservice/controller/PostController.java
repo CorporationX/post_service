@@ -5,6 +5,7 @@ import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,6 +44,13 @@ public class PostController {
     @DeleteMapping("/{id}")
     PostDto deletePost(@PathVariable Long id) {
         PostDto resultDto = postService.deletePost(id);
+
+        return resultDto;
+    }
+
+    @GetMapping("/{id}")
+    PostDto getPost(@PathVariable Long id){
+        PostDto resultDto = postService.getPost(id);
 
         return resultDto;
     }
