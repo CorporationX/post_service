@@ -336,8 +336,7 @@ class PostServiceTest {
 
         Mockito.verify(postRepository, Mockito.times(1)).save(post);
     }
-
-
+  
     private PostDto buildPostDto() {
         return PostDto.builder()
                 .content("content")

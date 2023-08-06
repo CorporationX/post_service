@@ -3,7 +3,6 @@ package faang.school.postservice.util.validator;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.util.exception.CreatePostException;
-import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import lombok.RequiredArgsConstructor;
