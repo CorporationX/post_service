@@ -64,14 +64,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DeletePostException.class)
     public ResponseEntity<ErrorResponse> handleException(DeletePostException e) {
-        log.error(MESSAGE, e);
+        log.error("Error has been occurred when deleting post: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }
 
     @ExceptionHandler(GetPostException.class)
     public ResponseEntity<ErrorResponse> handleException(GetPostException e) {
-        log.error(MESSAGE, e);
+        log.error("Error has been occurred when getting post: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }
