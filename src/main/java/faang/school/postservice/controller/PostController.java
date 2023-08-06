@@ -8,8 +8,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,6 +35,13 @@ public class PostController {
             return postService.createPost(post);
         }
         throw new DataValidationException("AuthorId or ProjectId cannot be null");
+    }
+
+    @PutMapping("{postId}/publish")
+    @Operation(summary = "Publish Post")
+    @ResponseStatus(HttpStatus.OK)
+    public PostDto publishPost(@PathVariable Long postId) {
+        return postService.publishPost(postId);
     }
 
     @GetMapping("/{authorId}/drafts")

@@ -9,8 +9,13 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -42,6 +47,20 @@ public class PostService {
 
         return postMapper.toDto(postRepository.save(postEntity));
     }
+
+    @Transactional
+    public PostDto publishPost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        postValidator.validatePublishPost(post);
+
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+
+        return postMapper.toDto(postRepository.save(post));
+    }
+
     @Transactional
     public List<PostDto> getNotDeletedDraftsByAuthorId(Long authorId) {
         UserDto user = userServiceClient.getUser(authorId);
