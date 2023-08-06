@@ -9,6 +9,7 @@ import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
+import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
@@ -129,10 +130,10 @@ class PostServiceTest {
         Mockito.when(postRepository.findById(1L))
                 .thenReturn(Optional.empty());
 
-        PublishPostException e = Assert.assertThrows(PublishPostException.class, () -> {
+        PostNotFoundException e = Assert.assertThrows(PostNotFoundException.class, () -> {
             postService.publishPost(1L);
         });
-        Assertions.assertEquals("Post not found", e.getMessage());
+        Assertions.assertEquals("Post with id " + String.format("%d", 1L) + " not found", e.getMessage());
     }
 
     @Test
@@ -193,10 +194,10 @@ class PostServiceTest {
     void updatePost_PostNotFound_ShouldThrowException() {
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+        PostNotFoundException e = Assert.assertThrows(PostNotFoundException.class, () -> {
             postService.updatePost(1L, "content");
         });
-        Assertions.assertEquals("Post not found", e.getMessage());
+        Assertions.assertEquals("Post with id " + String.format("%d", 1L) + " not found", e.getMessage());
     }
 
     @Test
@@ -274,10 +275,10 @@ class PostServiceTest {
     void deletePost_PostNotFound_ShouldThrowException() {
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        DeletePostException e = Assert.assertThrows(DeletePostException.class, () -> {
+        PostNotFoundException e = Assert.assertThrows(PostNotFoundException.class, () -> {
             postService.deletePost(1L);
         });
-        Assertions.assertEquals("Post not found", e.getMessage());
+        Assertions.assertEquals("Post with id " + String.format("%d", 1L) + " not found", e.getMessage());
     }
 
     @Test

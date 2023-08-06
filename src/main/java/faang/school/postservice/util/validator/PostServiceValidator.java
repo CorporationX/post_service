@@ -20,33 +20,33 @@ public class PostServiceValidator {
         }
     }
 
-    public void validateToPublish(Post postById) {
-        if (postById.isPublished()) {
+    public void validateToPublish(Post post) {
+        if (post.isPublished()) {
             throw new PublishPostException("Post is already published");
         }
 
-        if (postById.isDeleted()) {
+        if (post.isDeleted()) {
             throw new PublishPostException("Post is already deleted");
         }
     }
 
-    public void validateToUpdate(Post postById, String content) {
-        if (postById.isDeleted()) {
+    public void validateToUpdate(Post post, String content) {
+        if (post.isDeleted()) {
             throw new UpdatePostException("Post is already deleted");
         }
-        if (!postById.isPublished()) {
+        if (!post.isPublished()) {
             throw new UpdatePostException("Post is in draft state. It can't be updated");
         }
-        if (postById.getContent().equals(content)) {
+        if (post.getContent().equals(content)) {
             throw new UpdatePostException("There is no changes to update");
         }
     }
 
-    public void validateToDelete(Post postById) {
-        if (postById.isDeleted()) {
+    public void validateToDelete(Post post) {
+        if (post.isDeleted()) {
             throw new DeletePostException("Post is already deleted");
         }
-        if (!postById.isPublished()) {
+        if (!post.isPublished()) {
             throw new DeletePostException("Post is in draft state. It can't be deleted");
         }
     }
