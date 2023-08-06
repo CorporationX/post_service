@@ -8,13 +8,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -44,34 +43,34 @@ public class PostController {
         return postService.publishPost(postId);
     }
 
-    @GetMapping("/{authorId}/drafts")
+    @GetMapping("/users/{authorId}/drafts")
     @Operation(summary = "Get not deleted drafts by author id")
     @ResponseStatus(HttpStatus.OK)
-    public List<PostDto> getNotDeletedDraftsByAuthorId(@RequestParam @Valid Long authorId) {
+    public List<PostDto> getNotDeletedDraftsByAuthorId(@PathVariable @Valid Long authorId) {
         validateId(authorId);
         return postService.getNotDeletedDraftsByAuthorId(authorId);
     }
 
-    @GetMapping("/{projectId}/drafts")
+    @GetMapping("/projects/{projectId}/drafts")
     @Operation(summary = "Get not deleted drafts by project id")
     @ResponseStatus(HttpStatus.OK)
-    public List<PostDto> getNotDeletedDraftsByProjectId(@RequestParam @Valid Long projectId) {
+    public List<PostDto> getNotDeletedDraftsByProjectId(@PathVariable @Valid Long projectId) {
         validateId(projectId);
         return postService.getNotDeletedDraftsByProjectId(projectId);
     }
 
-    @GetMapping("/{authorId}/posts")
+    @GetMapping("/users/{authorId}/posts")
     @Operation(summary = "Get not deleted published posts by author id")
     @ResponseStatus(HttpStatus.OK)
-    public List<PostDto> getNotDeletedPublishedPostsByAuthorId(@RequestParam @Valid Long authorId) {
+    public List<PostDto> getNotDeletedPublishedPostsByAuthorId(@PathVariable @Valid Long authorId) {
         validateId(authorId);
         return postService.getNotDeletedPublishedPostsByAuthorId(authorId);
     }
 
-    @GetMapping("/{projectId}/posts")
+    @GetMapping("/projects/{projectId}/posts")
     @Operation(summary = "Get not deleted published posts by project id")
     @ResponseStatus(HttpStatus.OK)
-    public List<PostDto> getNotDeletedPublishedPostsByProjectId(@RequestParam @Valid Long projectId) {
+    public List<PostDto> getNotDeletedPublishedPostsByProjectId(@PathVariable @Valid Long projectId) {
         validateId(projectId);
         return postService.getNotDeletedPublishedPostsByProjectId(projectId);
     }
