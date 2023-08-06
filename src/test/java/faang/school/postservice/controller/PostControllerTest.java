@@ -27,6 +27,7 @@ class PostControllerTest {
 
     long authorId;
     long projectId;
+    long postId;
     PostDto postDtoWithAuthorId;
     PostDto postDtoWithProjectId;
 
@@ -34,6 +35,7 @@ class PostControllerTest {
     void setUp() {
         authorId = 1L;
         projectId = 1L;
+        postId = 1L;
         postDtoWithAuthorId = PostDto.builder().content("author content").authorId(authorId).build();
         postDtoWithProjectId = PostDto.builder().content("project content").projectId(projectId).build();
         postDtoWithEmptyAuthorIdAndProjectId = PostDto.builder().content("content").build();
@@ -60,5 +62,11 @@ class PostControllerTest {
             assertEquals("AuthorId or ProjectId cannot be null", e.getMessage());
         }
         verifyNoInteractions(postService);
+    }
+
+    @Test
+    void testPublishPost() {
+        postController.publishPost(postId);
+        verify(postService, Mockito.times(1)).publishPost(postId);
     }
 }

@@ -9,8 +9,12 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +25,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
+    @Transactional
     public PostDto createPost(PostDto post) {
         ProjectDto project = null;
         UserDto user = null;
@@ -37,5 +42,18 @@ public class PostService {
         Post postEntity = postMapper.toPost(post);
 
         return postMapper.toDto(postRepository.save(postEntity));
+    }
+
+    @Transactional
+    public PostDto publishPost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        postValidator.validatePublishPost(post);
+
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+
+        return postMapper.toDto(postRepository.save(post));
     }
 }
