@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/post")
 @RequiredArgsConstructor
@@ -57,10 +59,12 @@ public class PostController {
     }
 
     @GetMapping("/author/drafts/{id}")
-    ResponseEntity<DtosResponse> getDraftsByAuthorId(@PathVariable Long authorId){
-        validator.validateToGetByAuthorId(authorId);
+    DtosResponse getDraftsByAuthorId(@PathVariable Long id){
+        List<PostDto> resultDtos = postService.getDraftsByAuthorId(id);
 
-        return ResponseEntity.ok(new DtosResponse(postService.getDraftsByAuthorId(authorId)));
+        return new DtosResponse(resultDtos);
     }
 }
+
+
 
