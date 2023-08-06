@@ -72,6 +72,20 @@ public class PostService {
         return postMapper.toDto(postById);
     }
 
+    @Transactional
+    public PostDto deletePost(Long id) {
+        Post postById = getPostById(id);
+
+        validator.validateToDelete(postById);
+
+        postById.setDeleted(true);
+        postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+
+        postRepository.save(postById);
+
+        return postMapper.toDto(postById);
+    }
+
     private Post getPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with id " + String.format("%d", id) + " not found"));
