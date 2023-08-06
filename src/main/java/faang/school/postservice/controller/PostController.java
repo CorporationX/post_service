@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +30,13 @@ public class PostController {
         validate(post);
 
         return postService.createPost(post);
+    }
+
+    @PutMapping("{postId}/publish")
+    @Operation(summary = "Publish Post")
+    @ResponseStatus(HttpStatus.OK)
+    public PostDto publishPost(@PathVariable Long postId) {
+        return postService.publishPost(postId);
     }
 
     @PutMapping("/update")

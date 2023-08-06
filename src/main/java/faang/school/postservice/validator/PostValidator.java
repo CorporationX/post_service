@@ -42,6 +42,12 @@ public class PostValidator {
         }
     }
 
+    public void validatePublishPost(Post post) {
+        if (post.isPublished()) {
+            throw new DataValidationException("Post is already published");
+        }
+    }
+
     public void validationOfPostUpdate(PostDto postDto, Post post) {
         if (post == null) {
             throw new EntityNotFoundException("Post not found");
