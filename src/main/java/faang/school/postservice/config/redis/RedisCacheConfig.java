@@ -16,10 +16,12 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
     private String redisHost;
     @Value("${spring.data.redis.port}")
     private int redisPort;
+
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
         return new JedisConnectionFactory(new RedisStandaloneConfiguration(redisHost, redisPort));
     }
+
     @Bean
     public RedisCacheManager cacheManager() {
         return RedisCacheManager.builder(jedisConnectionFactory()).build();

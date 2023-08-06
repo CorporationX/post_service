@@ -3,6 +3,8 @@ CREATE TABLE hashtags (
     hashtag character varying(140) NOT NULL UNIQUE CHECK (hashtag ~ '^#[A-Za-z0-9]+$')
 );
 
+CREATE INDEX idx_hashtag ON hashtags (hashtag);
+
 CREATE TABLE post_hashtag (
     id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY UNIQUE,
     hashtag_id BIGINT NOT NULL,

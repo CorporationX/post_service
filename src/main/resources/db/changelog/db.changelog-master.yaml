@@ -6,4 +6,4 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V003__hashtag.sql
   - include:
-      file: db/changelog/changeset/post_V004__hashtag_idx.sql
+      file: db/changelog/changeset/post_V004__insert.sql

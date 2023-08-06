@@ -1,1 +1,0 @@
-CREATE INDEX idx_hashtag ON hashtags (hashtag);
