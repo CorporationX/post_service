@@ -14,10 +14,11 @@ import java.util.List;
 public interface PostMapper {
     @Mapping(source = "likes", target = "likes", qualifiedByName = "getLikes")
     PostDto toDto(Post post);
+    @Mapping(target = "likes", ignore = true)
     Post toEntity(PostDto postDto);
 
     @Named("getLikes")
-    default List<Long> getLikes(List<Like> likes){
+    default List<Long> getLikes(List<Like> likes) {
         return likes.stream().map(Like::getId).toList();
     }
 }
