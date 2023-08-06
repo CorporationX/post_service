@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
@@ -64,7 +65,28 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UpdatePostException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleUpdatePostException(UpdatePostException e) {
-        log.info("Update exception", e);
+        log.error("Update exception", e);
         return new ErrorResponse(e.getMessage(), e, HttpStatus.BAD_REQUEST, LocalDateTime.now());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleRuntimeException(RuntimeException e) {
+        log.error("Runtime exception", e);
+        return new ErrorResponse(e.getMessage(), e, HttpStatus.NOT_FOUND, LocalDateTime.now());
+    }
+
+    @ExceptionHandler(IOException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIOException(IOException e) {
+        log.error("IOException", e);
+        return new ErrorResponse(e.getMessage(), e, HttpStatus.BAD_REQUEST, LocalDateTime.now());
+    }
+
+    @ExceptionHandler(Error.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleError(Error e) {
+        log.error("ERROR", e);
+        return new ErrorResponse(e.getMessage(),e,HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now());
     }
 }
