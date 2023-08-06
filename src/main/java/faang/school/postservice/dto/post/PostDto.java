@@ -1,6 +1,5 @@
 package faang.school.postservice.dto.post;
 
-import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,6 +10,7 @@ import java.util.List;
 @Builder
 public class PostDto {
     private long id;
+    private String content;
     private Long authorId;
     private Long projectId;
     private List<String> hashtags;
