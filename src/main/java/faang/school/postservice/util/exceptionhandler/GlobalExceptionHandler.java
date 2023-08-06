@@ -19,35 +19,35 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CreatePostException.class)
     public ResponseEntity<ErrorResponse> handleException(CreatePostException e) {
-        log.error("Error has been occurred: ", e);
+        log.error("Error has been occurred when creating new post: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }
 
     @ExceptionHandler(FeignException.class)
     public ResponseEntity<ErrorResponse> handleException(FeignException e) {
-        log.error("Error with Feign has been occurred: ", e);
+        log.error("Error with Feign has been occurred: ", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleException(MethodArgumentNotValidException e) {
-        log.error("Error has been occurred: ", e);
+        log.error("Error has been occurred when validating inputs: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }
 
     @ExceptionHandler(DataValidationException.class)
     public ResponseEntity<ErrorResponse> handleException(DataValidationException e) {
-        log.error("Error has been occurred: ", e);
+        log.error("Error has been occurred when validating data: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }
 
     @ExceptionHandler(PublishPostException.class)
     public ResponseEntity<ErrorResponse> handleException(PublishPostException e) {
-        log.error("Error has been occurred: ", e);
+        log.error("Error has been occurred when publishing new post: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }
