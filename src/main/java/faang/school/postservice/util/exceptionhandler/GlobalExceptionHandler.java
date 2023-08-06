@@ -5,6 +5,7 @@ import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
+import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import feign.FeignException;
@@ -51,6 +52,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PublishPostException.class)
     public ResponseEntity<ErrorResponse> handleException(PublishPostException e) {
         log.error("Error has been occurred when publishing post: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleException(PostNotFoundException e) {
+        log.error("Error has been occurred when finding post: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }

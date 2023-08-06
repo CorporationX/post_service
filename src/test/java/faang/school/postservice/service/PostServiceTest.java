@@ -337,7 +337,7 @@ class PostServiceTest {
 
         Mockito.verify(postRepository, Mockito.times(1)).save(post);
     }
-
+  
     @Test
     void getPost_PostNotFound_ShouldThrowException() {
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
