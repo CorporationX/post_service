@@ -43,6 +43,12 @@ public class PostValidator {
         }
     }
 
+    public void validatePublishPost(Post post) {
+        if (post.isPublished()) {
+            throw new DataValidationException("Post is already published");
+        }
+    }
+
     public void validationOfPostDelete(Post post) {
         if (post == null) {
             throw new DataValidationException("Post not found");
