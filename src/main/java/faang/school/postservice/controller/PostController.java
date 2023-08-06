@@ -3,9 +3,9 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.response.DtosResponse;
 import faang.school.postservice.service.PostService;
-import faang.school.postservice.util.validator.PostControllerValidator;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/post")
@@ -21,69 +24,77 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
 
     private final PostService postService;
-    private final PostControllerValidator validator;
 
-    @PostMapping("/add")
-    ResponseEntity<PostDto> addPost(@RequestBody PostDto dto) {
-        validator.validateToAdd(dto);
+    @PostMapping("/")
+    @ResponseStatus(HttpStatus.OK)
+    PostDto addPost(@Valid @RequestBody PostDto dto) {
+        PostDto resultDto = postService.addPost(dto);
 
-        return ResponseEntity.ok(postService.addPost(dto));
+        return resultDto;
     }
 
     @PutMapping("/publish/{id}")
-    ResponseEntity<PostDto> publishPost(@PathVariable Long id) {
-        validator.validateToPublish(id);
+    @ResponseStatus(HttpStatus.OK)
+    PostDto publishPost(@PathVariable Long id) {
+        PostDto resultDto = postService.publishPost(id);
 
-        return ResponseEntity.ok(postService.publishPost(id));
+        return resultDto;
     }
 
     @PutMapping("/update/{id}")
-    ResponseEntity<PostDto> updatePost(@PathVariable Long id, @RequestBody String content) {
-        validator.validateToUpdate(id, content);
+    @ResponseStatus(HttpStatus.OK)
+    PostDto updatePost(@PathVariable Long id, @RequestBody String content) {
+        PostDto resultDto = postService.updatePost(id, content);
 
-        return ResponseEntity.ok(postService.updatePost(id, content));
+        return resultDto;
     }
 
-    @DeleteMapping("/delete/{id}")
-    ResponseEntity<PostDto> deletePost(@PathVariable Long id) {
-        validator.validateToDelete(id);
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    PostDto deletePost(@PathVariable Long id) {
+        PostDto resultDto = postService.deletePost(id);
 
-        return ResponseEntity.ok(postService.deletePost(id));
+        return resultDto;
     }
 
-    @GetMapping("/get/{id}")
-    ResponseEntity<PostDto> getPost(@PathVariable Long id){
-        validator.validateToGet(id);
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    PostDto getPost(@PathVariable Long id){
+        PostDto resultDto = postService.getPost(id);
 
-        return ResponseEntity.ok(postService.getPost(id));
+        return resultDto;
     }
 
     @GetMapping("/author/drafts/{id}")
-    ResponseEntity<DtosResponse> getDraftsByAuthorId(@PathVariable Long authorId){
-        validator.validateToGetByAuthorId(authorId);
+    @ResponseStatus(HttpStatus.OK)
+    DtosResponse getDraftsByAuthorId(@PathVariable Long id){
+        List<PostDto> resultDtos = postService.getDraftsByAuthorId(id);
 
-        return ResponseEntity.ok(new DtosResponse(postService.getDraftsByAuthorId(authorId)));
+        return new DtosResponse(resultDtos);
     }
 
     @GetMapping("/project/drafts/{id}")
-    ResponseEntity<DtosResponse> getDraftsByProjectId(@PathVariable Long projectId){
-        validator.validateToGetByProjectId(projectId);
+    @ResponseStatus(HttpStatus.OK)
+    DtosResponse getDraftsByProjectId(@PathVariable Long id){
+        List<PostDto> resultDtos = postService.getDraftsByProjectId(id);
 
-        return ResponseEntity.ok(new DtosResponse(postService.getDraftsByProjectId(projectId)));
+        return new DtosResponse(resultDtos);
     }
 
     @GetMapping("/author/posts/{id}")
-    ResponseEntity<DtosResponse> getPostsByAuthorId(@PathVariable Long authorId){
-        validator.validateToGetByAuthorId(authorId);
+    @ResponseStatus(HttpStatus.OK)
+    DtosResponse getPostsByAuthorId(@PathVariable Long id){
+        List<PostDto> resultDtos = postService.getPostsByAuthorId(id);
 
-        return ResponseEntity.ok(new DtosResponse(postService.getPostsByAuthorId(authorId)));
+        return new DtosResponse(resultDtos);
     }
 
     @GetMapping("/project/posts/{id}")
-    ResponseEntity<DtosResponse> getPostsByProjectId(@PathVariable Long projectId){
-        validator.validateToGetByProjectId(projectId);
+    @ResponseStatus(HttpStatus.OK)
+    DtosResponse getPostsByProjectId(@PathVariable Long id){
+        List<PostDto> resultDtos = postService.getPostsByProjectId(id);
 
-        return ResponseEntity.ok(new DtosResponse(postService.getPostsByProjectId(projectId)));
+        return new DtosResponse(resultDtos);
     }
 }
 

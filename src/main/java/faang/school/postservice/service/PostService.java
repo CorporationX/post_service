@@ -36,7 +36,7 @@ public class PostService {
         validator.validateToAdd(dto);
 
         if (dto.getAuthorId() != null) {
-            userServiceClient.getUser(dto.getAuthorId()); // если такого пользователя или эндпоинта нет, то выбросит FeignException, я его поймаю в ExceptionHandler
+            userServiceClient.getUser(dto.getAuthorId());
         }
         if (dto.getProjectId() != null) {
             projectServiceClient.getProject(dto.getProjectId());
