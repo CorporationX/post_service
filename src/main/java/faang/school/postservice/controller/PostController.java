@@ -5,8 +5,6 @@ import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -44,13 +42,6 @@ public class PostController {
         PostDto resultDto = postService.updatePost(id, content);
 
         return resultDto;
-    }
-
-    @DeleteMapping("/delete/{id}")
-    ResponseEntity<PostDto> deletePost(@PathVariable Long id) {
-        validator.validateToDelete(id);
-
-        return ResponseEntity.ok(postService.deletePost(id));
     }
 }
 

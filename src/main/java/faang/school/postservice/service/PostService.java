@@ -34,7 +34,7 @@ public class PostService {
         validator.validateToAdd(dto);
 
         if (dto.getAuthorId() != null) {
-            userServiceClient.getUser(dto.getAuthorId()); // если такого пользователя или эндпоинта нет, то выбросит FeignException, я его поймаю в ExceptionHandler
+            userServiceClient.getUser(dto.getAuthorId());
         }
         if (dto.getProjectId() != null) {
             projectServiceClient.getProject(dto.getProjectId());
@@ -69,21 +69,6 @@ public class PostService {
         validator.validateToUpdate(postById, content);
 
         postById.setContent(content);
-        postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
-
-        postRepository.save(postById);
-
-        return postMapper.toDto(postById);
-    }
-
-    @Transactional
-    public PostDto deletePost(Long id) {
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new DeletePostException("Post not found"));
-
-        validator.validateToDelete(postById);
-
-        postById.setDeleted(true);
         postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
