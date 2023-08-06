@@ -29,15 +29,11 @@ public class Hashtag {
     private Long id;
 
     @Column(name = "hashtag", nullable = false, length = 140, unique = true)
+    @Pattern(regexp = "#[A-Za-z0-9]+")
     private String hashtag;
 
     @ManyToMany
     @JoinTable(name = "post_hashtag", joinColumns = @JoinColumn(name = "hashtag_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
-    @Pattern(regexp = "#[A-Za-z0-9]+")
     private List<Post> posts;
 
-    @Override
-    public String toString() {
-        return String.format("Hashtag id: %s (%s)\nPosts: %s\n", id, hashtag, posts);
-    }
 }

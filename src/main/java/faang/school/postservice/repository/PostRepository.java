@@ -24,23 +24,25 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findReadyToPublish();
 
     @Query(nativeQuery = true, value = """
-            SELECT p FROM Post p
-            JOIN post_hashtag ph
-            ON p.id = ph.post_id
-            WHERE ph.hashtag = :hashtag AND p.published = TRUE AND p.deleted = FALSE
+            SELECT p.* FROM Post p
+            JOIN post_hashtag ph ON p.id = ph.post_id
+            JOIN hashtags h ON ph.hashtag_id = h.id
+            WHERE h.hashtag ILIKE '%' || :hashtag || '%' AND p.published = TRUE AND p.deleted = FALSE
             ORDER BY p.published_at DESC
             """)
     List<Post> findByHashtagOrderByDate(String hashtag);
 
+
     @Query(nativeQuery = true, value = """
-            SELECT p.id, p.content, p.author_id, p.project_id, p.published_at
+            SELECT p.id, p.content, p.author_id, p.project_id, p.published, p.published_at, p.scheduled_at, p.deleted, p.created_at, p.updated_at, COUNT(l.id) + COUNT(c.id) as popularity
             FROM Post p
             JOIN post_hashtag ph ON p.id = ph.post_id
             JOIN likes l ON p.id = l.post_id
             JOIN comment c ON p.id = c.post_id
-            WHERE ph.hashtag = :hashtag AND p.published = TRUE AND p.deleted = FALSE
-            GROUP BY p.id, p.content, p.author_id, p.project_id, p.published_at
-            ORDER BY COUNT(l.id) + COUNT(c.id) DESC;
+            JOIN hashtags h ON ph.hashtag_id = h.id
+            WHERE h.hashtag ILIKE '%' || :hashtag || '%' AND p.published = TRUE AND p.deleted = FALSE
+            GROUP BY p.id, p.content, p.author_id, p.project_id, p.published, p.published_at, p.scheduled_at, p.deleted, p.created_at, p.updated_at
+            ORDER BY popularity DESC;
             """)
     List<Post> findByHashtagOrderByPopularity(String hashtag);
 }

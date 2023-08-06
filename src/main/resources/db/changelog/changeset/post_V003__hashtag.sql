@@ -5,9 +5,9 @@ CREATE TABLE hashtags (
 
 CREATE TABLE post_hashtag (
     id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY UNIQUE,
-    hashtag_id BIGINT REFERENCES hashtags(id),
-    post_id BIGINT REFERENCES posts(id),
+    hashtag_id BIGINT NOT NULL,
+    post_id BIGINT NOT NULL,
 
     CONSTRAINT fk_post_id FOREIGN KEY (post_id) REFERENCES post (id) ON DELETE CASCADE,
-    CONSTRAINT fk_hashtag_id FOREIGN KEY (hashtag_id) REFERENCES hashtag (id) ON DELETE CASCADE
+    CONSTRAINT fk_hashtag_id FOREIGN KEY (hashtag_id) REFERENCES hashtags (id) ON DELETE CASCADE
 );

@@ -6,8 +6,8 @@ import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.repository.HashtagRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +20,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final HashtagRepository hashtagRepository;
+    private final CacheManager cacheManager;
+
 
     @Transactional(readOnly = true)
     public List<PostDto> getPostsByHashtagOrderByDate(String hashtag) {
@@ -27,7 +29,6 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(key = "popularPostsByHashtag", condition = "@postService.isPopular(#hashtag)")
     public List<PostDto> getPostsByHashtagOrderByPopularity(String hashtag) {
         return postMapper.toListDto(postRepository.findByHashtagOrderByPopularity(hashtag));
     }
@@ -35,6 +36,6 @@ public class PostService {
     boolean isPopular(String hashtag) {
         return hashtagRepository.getTop10Popular().stream()
                 .map(Hashtag::getHashtag)
-                .anyMatch(tag -> tag.equals(hashtag));
+                .anyMatch(tag -> tag.contains(hashtag));
     }
 }

@@ -14,13 +14,14 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
     PostMapper INSTANCE = Mappers.getMapper(PostMapper.class);
-    @Mapping(source = "hashtags", target = "hashtags", qualifiedByName = "hashtagToString")
+
+    @Mapping(source = "hashtags", target = "hashtags", qualifiedByName ="hashtagToString")
     PostDto toDto(Post entity);
 
     List<PostDto> toListDto(List<Post> posts);
 
     @Named("hashtagToString")
-    default List<String> hashtagToString(List<Hashtag> list){
+    default List<String> hashtagToString(List<Hashtag> list) {
         return list.stream()
                 .map(Hashtag::getHashtag)
                 .toList();
