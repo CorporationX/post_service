@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -24,12 +24,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -154,7 +150,8 @@ class PostServiceTest {
     @Test
     void testGetNotDeletedDraftsByAuthorIdSuccess() {
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
-        when(postRepository.findByAuthorId(userDto.getId())).thenReturn(List.of(Post.builder().authorId(userDto.getId()).build()));
+        when(postRepository.findDraftsByAuthorId(userDto.getId()))
+                .thenReturn(List.of(Post.builder().authorId(userDto.getId()).build()));
         List<PostDto> posts = postService.getNotDeletedDraftsByAuthorId(userDto.getId());
 
         assertEquals(1, posts.size());
@@ -169,14 +166,15 @@ class PostServiceTest {
     @Test
     void testGetNotDeletedDraftsByAuthorIdFailIfNoDraftsFound() {
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
-        when(postRepository.findByAuthorId(USER_ID)).thenReturn(List.of());
+        when(postRepository.findDraftsByAuthorId(USER_ID)).thenReturn(List.of());
         assertEquals(0, postService.getNotDeletedDraftsByAuthorId(USER_ID).size());
     }
 
     @Test
     void testGetNotDeletedDraftsByProjectIdSuccess() {
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
-        when(postRepository.findByProjectId(projectDto.getId())).thenReturn(List.of(Post.builder().projectId(projectDto.getId()).build()));
+        when(postRepository.findDraftsByProjectId(projectDto.getId()))
+                .thenReturn(List.of(Post.builder().projectId(projectDto.getId()).build()));
         List<PostDto> posts = postService.getNotDeletedDraftsByProjectId(projectDto.getId());
 
         assertEquals(1, posts.size());
@@ -191,14 +189,15 @@ class PostServiceTest {
     @Test
     void testGetNotDeletedDraftsByProjectIdFailIfNoDraftsFound() {
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
-        when(postRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of());
+        when(postRepository.findDraftsByProjectId(PROJECT_ID)).thenReturn(List.of());
         assertEquals(0, postService.getNotDeletedDraftsByProjectId(PROJECT_ID).size());
     }
 
     @Test
     void testGetPublishedPostByAuthorIdSuccess() {
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
-        when(postRepository.findByAuthorId(userDto.getId())).thenReturn(List.of(Post.builder().authorId(userDto.getId()).published(true).build()));
+        when(postRepository.findPublishedPostsByAuthorId(userDto.getId()))
+                .thenReturn(List.of(Post.builder().authorId(userDto.getId()).published(true).deleted(false).build()));
         List<PostDto> posts = postService.getNotDeletedPublishedPostsByAuthorId(userDto.getId());
         assertEquals(1, posts.size());
         posts.forEach(post -> assertTrue(post.isPublished()));
@@ -213,14 +212,14 @@ class PostServiceTest {
     @Test
     void testGetPublishedPostByAuthorIdFailIfNoPostsFound() {
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
-        when(postRepository.findByAuthorId(USER_ID)).thenReturn(List.of());
+        when(postRepository.findPublishedPostsByAuthorId(USER_ID)).thenReturn(List.of());
         assertEquals(0, postService.getNotDeletedPublishedPostsByAuthorId(USER_ID).size());
     }
 
     @Test
     void testGetPublishedPostByProjectIdSuccess() {
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
-        when(postRepository.findByProjectId(projectDto.getId())).thenReturn(List.of(Post.builder().projectId(projectDto.getId()).published(true).build()));
+        when(postRepository.findPublishedPostsByProjectId(projectDto.getId())).thenReturn(List.of(Post.builder().projectId(projectDto.getId()).published(true).build()));
         List<PostDto> posts = postService.getNotDeletedPublishedPostsByProjectId(projectDto.getId());
         assertEquals(1, posts.size());
         posts.forEach(post -> assertTrue(post.isPublished()));
@@ -235,7 +234,7 @@ class PostServiceTest {
     @Test
     void testGetPublishedPostByProjectIdFailIfNoPostsFound() {
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
-        when(postRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of());
+        when(postRepository.findPublishedPostsByProjectId(PROJECT_ID)).thenReturn(List.of());
         assertEquals(0, postService.getNotDeletedPublishedPostsByProjectId(PROJECT_ID).size());
     }
 }

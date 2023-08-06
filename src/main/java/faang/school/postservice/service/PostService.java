@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostMapper;
@@ -15,9 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import org.springframework.transaction.annotation.Transactional;
-
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -65,31 +63,43 @@ public class PostService {
     public List<PostDto> getNotDeletedDraftsByAuthorId(Long authorId) {
         UserDto user = userServiceClient.getUser(authorId);
         postValidator.validateAuthor(user);
-        List<Post> postByAuthorId = postRepository.findByAuthorId(user.getId());
-        return postByAuthorId.stream().filter(post -> !post.isDeleted() && !post.isPublished()).map(postMapper::toDto).toList();
+        List<Post> draftsByAuthorId = postRepository.findDraftsByAuthorId(user.getId());
+        return draftsByAuthorId.stream()
+                .sorted(Comparator.comparing(Post::getPublishedAt))
+                .map(postMapper::toDto)
+                .toList();
     }
 
     @Transactional
     public List<PostDto> getNotDeletedDraftsByProjectId(Long projectId) {
         ProjectDto project = projectServiceClient.getProject(projectId);
         postValidator.validateProject(project);
-        List<Post> postByProjectId = postRepository.findByProjectId(project.getId());
-        return postByProjectId.stream().filter(post -> !post.isDeleted() && !post.isPublished()).map(postMapper::toDto).toList();
+        List<Post> draftsByProjectId = postRepository.findDraftsByProjectId(project.getId());
+        return draftsByProjectId.stream()
+                .sorted(Comparator.comparing(Post::getPublishedAt))
+                .map(postMapper::toDto)
+                .toList();
     }
 
     @Transactional
     public List<PostDto> getNotDeletedPublishedPostsByAuthorId(Long authorId) {
         UserDto user = userServiceClient.getUser(authorId);
         postValidator.validateAuthor(user);
-        List<Post> postByAuthorId = postRepository.findByAuthorId(user.getId());
-        return postByAuthorId.stream().filter(post -> !post.isDeleted() && post.isPublished()).map(postMapper::toDto).toList();
+        List<Post> publishedPostsByAuthorId = postRepository.findPublishedPostsByAuthorId(user.getId());
+        return publishedPostsByAuthorId.stream()
+                .sorted(Comparator.comparing(Post::getPublishedAt))
+                .map(postMapper::toDto)
+                .toList();
     }
 
     @Transactional
     public List<PostDto> getNotDeletedPublishedPostsByProjectId(Long projectId) {
         ProjectDto project = projectServiceClient.getProject(projectId);
         postValidator.validateProject(project);
-        List<Post> postByProjectId = postRepository.findByProjectId(project.getId());
-        return postByProjectId.stream().filter(post -> !post.isDeleted() && post.isPublished()).map(postMapper::toDto).toList();
+        List<Post> publishedPostsByProjectId = postRepository.findPublishedPostsByProjectId(project.getId());
+        return publishedPostsByProjectId.stream()
+                .sorted(Comparator.comparing(Post::getPublishedAt))
+                .map(postMapper::toDto)
+                .toList();
     }
 }
