@@ -33,8 +33,8 @@ class PostServiceTest {
 
     @Test
     void testOrderByDate() {
-        String hashtag = "#test";
-        when(postRepository.findByHashtagOrderByDate(hashtag)).thenReturn(createPostList());
+        String hashtag = "test";
+        when(postRepository.findByHashtagOrderByDate("#" + hashtag)).thenReturn(createPostList());
 
         List<PostDto> result = postService.getPostsByHashtagOrderByDate(hashtag);
 
@@ -44,8 +44,8 @@ class PostServiceTest {
 
     @Test
     void testOrderByPopularity() {
-        String hashtag = "#test";
-        when(postRepository.findByHashtagOrderByPopularity(hashtag)).thenReturn(createPostList());
+        String hashtag = "test";
+        when(postRepository.findByHashtagOrderByPopularity("#" + hashtag)).thenReturn(createPostList());
 
         List<PostDto> result = postService.getPostsByHashtagOrderByPopularity(hashtag);
 

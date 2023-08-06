@@ -3,15 +3,19 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.HashtagRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -20,22 +24,43 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final HashtagRepository hashtagRepository;
-    private final CacheManager cacheManager;
 
 
     @Transactional(readOnly = true)
     public List<PostDto> getPostsByHashtagOrderByDate(String hashtag) {
-        return postMapper.toListDto(postRepository.findByHashtagOrderByDate(hashtag));
+        return postMapper.toListDto(postRepository.findByHashtagOrderByDate("#" + hashtag));
     }
 
     @Transactional(readOnly = true)
     public List<PostDto> getPostsByHashtagOrderByPopularity(String hashtag) {
+        hashtag = "#" + hashtag;
+        if (isPopular(hashtag)) {
+            return postMapper.toListDto(getPostsByHashtagByPopularity(hashtag));
+        }
         return postMapper.toListDto(postRepository.findByHashtagOrderByPopularity(hashtag));
     }
 
-    boolean isPopular(String hashtag) {
+    @Transactional(readOnly = true)
+    @Cacheable(value = "popularHashtags", key = "#hashtag")
+    private List<Post> getPostsByHashtagByPopularity(String hashtag) {
+        return postRepository.findByHashtagOrderByPopularity(hashtag);
+    }
+
+    private void extractHashtags(PostDto postDto) {
+        List<String> hashtags = new ArrayList<>();
+        Pattern pattern = Pattern.compile("#\\w+");
+        Matcher matcher = pattern.matcher(postDto.getContent());
+
+        while (matcher.find()) {
+            hashtags.add(matcher.group());
+        }
+
+        postDto.setHashtags(hashtags);
+    }
+
+    private boolean isPopular(String hashtag) {
         return hashtagRepository.getTop10Popular().stream()
                 .map(Hashtag::getHashtag)
-                .anyMatch(tag -> tag.contains(hashtag));
+                .anyMatch(tag -> tag.equals(hashtag));
     }
 }
