@@ -383,7 +383,7 @@ class PostServiceTest {
     }
 
     @Test
-    void getDrafts_ShouldMapCorrectlyToDtos() {
+    void getDraftsByAuthorId_ShouldMapCorrectlyToDtos() {
         List<Post> posts = buildListOfPosts();
 
         List<PostDto> actual = postMapper.toDtos(posts);
