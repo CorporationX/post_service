@@ -26,12 +26,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<List<String>> constraintViolationException(ConstraintViolationException e) {
         List<String> error = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).toList();
-        log.error("Data validation exception occurred: {}", e.getMessage());
+        log.error("Data validation exception occurred: {}", e.toString());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> entityNotFoundException(EntityNotFoundException e) {
+        log.error("the object was not found in the database: {}", e.toString());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
