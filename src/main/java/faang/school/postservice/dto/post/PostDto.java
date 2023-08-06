@@ -28,10 +28,8 @@ public class PostDto {
         @NotEmpty(message = "Content cannot be empty")
         String content;
 
-        @Min(value = 1L, message = "Id cannot be lower than 1")
         Long authorId;
 
-        @Min(value = 1L, message = "Id cannot be lower than 1")
         Long projectId;
 
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -43,8 +41,7 @@ public class PostDto {
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         List<AlbumDto> albums;
 
-        @Min(value = 1L, message = "Id cannot be lower than 1")
-        @NotEmpty(message = "AdId cannot be empty")
+        @NotEmpty(message = "Ad id cannot be empty")
         Long adId;
 
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
