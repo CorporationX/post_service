@@ -6,9 +6,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.util.exception.DeletePostException;
-import faang.school.postservice.util.exception.PublishPostException;
-import faang.school.postservice.util.exception.UpdatePostException;
+import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,7 +32,7 @@ public class PostService {
         validator.validateToAdd(dto);
 
         if (dto.getAuthorId() != null) {
-            userServiceClient.getUser(dto.getAuthorId()); // если такого пользователя или эндпоинта нет, то выбросит FeignException, я его поймаю в ExceptionHandler
+            userServiceClient.getUser(dto.getAuthorId());
         }
         if (dto.getProjectId() != null) {
             projectServiceClient.getProject(dto.getProjectId());
@@ -48,8 +46,7 @@ public class PostService {
 
     @Transactional
     public PostDto publishPost(Long id) {
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new PublishPostException("Post not found"));
+        Post postById = getPostById(id);
 
         validator.validateToPublish(postById);
 
@@ -63,8 +60,7 @@ public class PostService {
 
     @Transactional
     public PostDto updatePost(Long id, String content) {
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new UpdatePostException("Post not found"));
+        Post postById = getPostById(id);
 
         validator.validateToUpdate(postById, content);
 
@@ -78,8 +74,7 @@ public class PostService {
 
     @Transactional
     public PostDto deletePost(Long id) {
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new DeletePostException("Post not found"));
+        Post postById = getPostById(id);
 
         validator.validateToDelete(postById);
 
@@ -89,5 +84,10 @@ public class PostService {
         postRepository.save(postById);
 
         return postMapper.toDto(postById);
+    }
+
+    private Post getPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post with id " + String.format("%d", id) + " not found"));
     }
 }
