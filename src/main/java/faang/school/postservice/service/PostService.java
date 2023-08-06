@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -40,6 +43,19 @@ public class PostService {
         Post postEntity = postMapper.toPost(post);
 
         return postMapper.toDto(postRepository.save(postEntity));
+    }
+
+    @Transactional
+    public PostDto publishPost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        postValidator.validatePublishPost(post);
+
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+
+        return postMapper.toDto(postRepository.save(post));
     }
 
     @Transactional
