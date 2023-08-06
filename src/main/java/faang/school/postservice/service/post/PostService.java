@@ -46,6 +46,7 @@ public class PostService {
         return postRepository.findByHashtagOrderByPopularity(hashtag);
     }
 
+    /*Метод будет использоваться при создании Post*/
     private void extractHashtags(PostDto postDto) {
         List<String> hashtags = new ArrayList<>();
         Pattern pattern = Pattern.compile("#\\w+");
