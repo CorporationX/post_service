@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.exceptions.DataNotExistingException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Like;
@@ -51,6 +52,8 @@ class LikeServiceTest {
 
         Like like = Like.builder().id(0L).userId(1L).post(post).build();
 
+        Assertions.assertEquals(likeMapper.toDto(like), likeService.likePost(likeDto));
+        Mockito.verify(likeRepository).save(like);
         assertEquals(likeMapper.toDto(like), likeService.likePost(1L, likeDto));
         verify(likeRepository).save(like);
     }
@@ -59,5 +62,13 @@ class LikeServiceTest {
     void testUnlikePost() {
         likeService.unlikePost(1L, 1L);
         verify(likeRepository).deleteByPostIdAndUserId(1L, 1L);
+    }
+
+    @Test
+    void testLikePostThrowsDataNotExistingException() {
+        likeDto = LikeDto.builder().userId(1L).postId(1L).build();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(DataNotExistingException.class, ()-> likeService.likePost(likeDto));
     }
 }

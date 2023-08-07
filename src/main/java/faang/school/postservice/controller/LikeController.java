@@ -1,6 +1,8 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.exceptions.DataNotExistingException;
+import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.service.LikeService;
 import jakarta.validation.Valid;
@@ -17,10 +19,12 @@ public class LikeController {
 
     private final LikeService likeService;
 
-    @PostMapping("/post/{postId}/like")
-    public LikeDto likePost(@PathVariable long postId, @RequestBody @Valid LikeDto likeDto) {
-        validateId(postId);
-        return likeService.likePost(postId, likeDto);
+    @PostMapping("/post/like")
+    public LikeDto likePost(@RequestBody @Valid LikeDto likeDto) {
+        if (likeDto.getPostId() == null) {
+            throw new DataValidationException("Post id is required");
+        }
+        return likeService.likePost(likeDto);
     }
 
     @GetMapping("/post/{postId}/user/{userId}")

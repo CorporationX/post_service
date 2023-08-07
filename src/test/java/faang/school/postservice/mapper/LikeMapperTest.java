@@ -23,7 +23,7 @@ class LikeMapperTest {
     void setUp(){
         Comment comment = Comment.builder().id(1L).build();
         Post post = Post.builder().id(1L).build();
-        likeDto = new LikeDto(1L,1L,1L,1L);
+        likeDto = LikeDto.builder().id(1L).postId(1L).commentId(1L).userId(1L).build();
         like = Like.builder().id(1L).userId(1L).comment(comment).post(post).build();
     }
 
