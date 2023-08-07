@@ -4,7 +4,6 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.exceptions.DataAlreadyExistingException;
 import faang.school.postservice.exceptions.DataNotExistingException;
-import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.exceptions.SameTimeActionException;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
@@ -49,18 +48,6 @@ class LikeValidatorTest {
                 assertThrows(DataNotExistingException.class, () -> likeValidator.validateLike(likeDto));
 
         assertEquals("User who wants to add like doesn't exist", dataNotExistingException.getMessage());
-    }
-
-    @Test
-    void testValidatorThrowsDataValidationException() {
-        likeDto.setPostId(null);
-        likeDto.setCommentId(null);
-
-
-        DataValidationException dataValidationException =
-                assertThrows(DataValidationException.class, () -> likeValidator.validateLike(likeDto));
-
-        assertEquals("PostId or CommentId is required", dataValidationException.getMessage());
     }
 
     @Test

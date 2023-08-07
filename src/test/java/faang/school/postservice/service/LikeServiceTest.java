@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.exceptions.DataNotExistingException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
@@ -20,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -56,7 +58,7 @@ class LikeServiceTest {
 
         Like like = Like.builder().id(0L).userId(1L).post(post).build();
 
-        assertEquals(likeMapper.toDto(like), likeService.likePost(1L, likeDto));
+        assertEquals(likeMapper.toDto(like), likeService.likePost(likeDto));
         verify(likeRepository).save(like);
     }
 
@@ -64,6 +66,14 @@ class LikeServiceTest {
     void testUnlikePost() {
         likeService.unlikePost(1L, 1L);
         verify(likeRepository).deleteByPostIdAndUserId(1L, 1L);
+    }
+
+    @Test
+    void testLikePostThrowsDataNotExistingException() {
+        likeDto = LikeDto.builder().userId(1L).postId(1L).build();
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(DataNotExistingException.class, ()-> likeService.likePost(likeDto));
     }
 
     @Test

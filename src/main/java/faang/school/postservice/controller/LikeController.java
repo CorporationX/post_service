@@ -19,16 +19,16 @@ public class LikeController {
 
     private final LikeService likeService;
 
-    @PostMapping("/post/{postId}/like")
-    public LikeDto likePost(@PathVariable long postId, @RequestBody @Valid LikeDto likeDto) {
-        validateId(postId);
-        return likeService.likePost(postId, likeDto);
+    @PostMapping("/post/like")
+    public LikeDto likePost(@RequestBody @Valid LikeDto likeDto) {
+        if (likeDto.getPostId() == null) {
+            throw new DataValidationException("Post id is required");
+        }
+        return likeService.likePost(likeDto);
     }
 
     @GetMapping("/post/{postId}/user/{userId}")
     public void unlikePost(@PathVariable long postId, @PathVariable long userId) {
-        validateId(postId);
-        validateId(userId);
         likeService.unlikePost(postId, userId);
     }
 
