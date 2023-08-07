@@ -32,22 +32,17 @@ public class LikeController {
         likeService.unlikePost(postId, userId);
     }
 
-    @PostMapping("/comment/{commentId}/like")
-    public LikeDto likeComment(@PathVariable long commentId, @RequestBody @Valid LikeDto likeDto) {
-        validateId(commentId);
-        return likeService.likeComment(commentId, likeDto);
+    @PostMapping("/comment/like")
+    public LikeDto likeComment(@RequestBody @Valid LikeDto likeDto) {
+        if (likeDto.getCommentId() == null) {
+            throw new DataValidationException("Comment id is required");
+        }
+        return likeService.likeComment(likeDto);
     }
 
     @GetMapping("/comment/{commentId}/user/{userId}")
     public void unlikeComment(@PathVariable long commentId, @PathVariable long userId) {
-        validateId(commentId);
-        validateId(userId);
         likeService.unlikeComment(commentId, userId);
     }
 
-    private void validateId (long id){
-        if (id < 1){
-            throw new DataValidationException("Id can't be negative or zero");
-        }
-    }
 }

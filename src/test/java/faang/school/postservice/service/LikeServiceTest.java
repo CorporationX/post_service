@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.exceptions.DataNotExistingException;
+import faang.school.postservice.exceptions.DataNotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
@@ -63,17 +63,17 @@ class LikeServiceTest {
     }
 
     @Test
-    void testUnlikePost() {
-        likeService.unlikePost(1L, 1L);
-        verify(likeRepository).deleteByPostIdAndUserId(1L, 1L);
-    }
-
-    @Test
     void testLikePostThrowsDataNotExistingException() {
         likeDto = LikeDto.builder().userId(1L).postId(1L).build();
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(DataNotExistingException.class, ()-> likeService.likePost(likeDto));
+        assertThrows(DataNotFoundException.class, ()-> likeService.likePost(likeDto));
+    }
+
+    @Test
+    void testUnlikePost() {
+        likeService.unlikePost(1L, 1L);
+        verify(likeRepository).deleteByPostIdAndUserId(1L, 1L);
     }
 
     @Test
@@ -85,8 +85,16 @@ class LikeServiceTest {
 
         Like like = Like.builder().id(0L).userId(1L).comment(comment).build();
 
-        assertEquals(likeMapper.toDto(like), likeService.likeComment(1L, likeDto));
+        assertEquals(likeMapper.toDto(like), likeService.likeComment(likeDto));
         verify(likeRepository).save(like);
+    }
+
+    @Test
+    void testLikeCommentThrowsDataNotExistingException() {
+        likeDto = LikeDto.builder().userId(1L).commentId(1L).build();
+        when(commentRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(DataNotFoundException.class, ()-> likeService.likeComment(likeDto));
     }
 
     @Test

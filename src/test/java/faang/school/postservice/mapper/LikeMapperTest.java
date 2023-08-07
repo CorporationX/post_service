@@ -4,20 +4,14 @@ import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled
-@SpringBootTest
 class LikeMapperTest {
-    @Autowired
-    private LikeMapper likeMapper;
+
+    private LikeMapper likeMapper = new LikeMapperImpl();
     LikeDto likeDto;
     Like like;
 
@@ -31,12 +25,12 @@ class LikeMapperTest {
 
     @Test
     void toDto() {
-        Assertions.assertEquals(likeDto,likeMapper.toDto(like));
+        assertEquals(likeDto,likeMapper.toDto(like));
     }
 
     @Test
     void toModel() {
         like = Like.builder().id(1L).userId(1L).build();
-        Assertions.assertEquals(like,likeMapper.toModel(likeDto));
+        assertEquals(like,likeMapper.toModel(likeDto));
     }
 }

@@ -3,7 +3,7 @@ package faang.school.postservice.validator;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.exceptions.DataAlreadyExistingException;
-import faang.school.postservice.exceptions.DataNotExistingException;
+import faang.school.postservice.exceptions.DataNotFoundException;
 import faang.school.postservice.exceptions.SameTimeActionException;
 import faang.school.postservice.repository.LikeRepository;
 import feign.FeignException;
@@ -24,7 +24,7 @@ public class LikeValidator {
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException e) {
-            throw new DataNotExistingException("User who wants to add like doesn't exist");
+            throw new DataNotFoundException("User who wants to add like doesn't exist");
         }
         if (postId != null && commentId != null) {
             throw new SameTimeActionException("Can't add like on post and comment in the same time");
