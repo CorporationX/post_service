@@ -2,10 +2,10 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.exceptions.DataNotExistingException;
 import faang.school.postservice.exceptions.DataAlreadyExistingException;
 import faang.school.postservice.exceptions.DataNotFoundException;
 import faang.school.postservice.exceptions.SameTimeActionException;
-import faang.school.postservice.repository.LikeRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 public class LikeValidator {
 
     private final UserServiceClient userServiceClient;
-    private final LikeRepository likeRepository;
 
     public void validateLike(LikeDto likeDto) {
         Long userId = likeDto.getUserId();
@@ -24,22 +23,10 @@ public class LikeValidator {
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException e) {
-            throw new DataNotFoundException("User who wants to add like doesn't exist");
+            throw new DataNotFoundException(String.format("User with id=%d doesn't exist", userId));
         }
         if (postId != null && commentId != null) {
             throw new SameTimeActionException("Can't add like on post and comment in the same time");
-        }
-        if (postId != null) {
-            likeRepository.findByPostIdAndUserId(postId, userId).ifPresent(like -> {
-                throw new DataAlreadyExistingException(String
-                        .format("Like on postId: %d by user id: %d already exist", postId, userId));
-            });
-        }
-        if (commentId != null) {
-            likeRepository.findByCommentIdAndUserId(commentId, userId).ifPresent(like -> {
-                throw new DataAlreadyExistingException(String
-                        .format("Like on commentId: %d by user id: %d already exist", commentId, userId));
-            });
         }
     }
 }
