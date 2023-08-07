@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,9 +53,7 @@ class LikeServiceTest {
 
         Like like = Like.builder().id(0L).userId(1L).post(post).build();
 
-        Assertions.assertEquals(likeMapper.toDto(like), likeService.likePost(likeDto));
-        Mockito.verify(likeRepository).save(like);
-        assertEquals(likeMapper.toDto(like), likeService.likePost(1L, likeDto));
+        assertEquals(likeMapper.toDto(like), likeService.likePost(likeDto));
         verify(likeRepository).save(like);
     }
 
@@ -67,8 +66,8 @@ class LikeServiceTest {
     @Test
     void testLikePostThrowsDataNotExistingException() {
         likeDto = LikeDto.builder().userId(1L).postId(1L).build();
-        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(DataNotExistingException.class, ()-> likeService.likePost(likeDto));
+        assertThrows(DataNotExistingException.class, ()-> likeService.likePost(likeDto));
     }
 }

@@ -1,8 +1,6 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.exceptions.DataNotExistingException;
-import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.service.LikeService;
 import jakarta.validation.Valid;
@@ -29,14 +27,6 @@ public class LikeController {
 
     @GetMapping("/post/{postId}/user/{userId}")
     public void unlikePost(@PathVariable long postId, @PathVariable long userId) {
-        validateId(postId);
-        validateId(userId);
         likeService.unlikePost(postId, userId);
-    }
-
-    private void validateId (long id){
-        if (id < 1){
-            throw new DataValidationException("Id can't be negative or zero");
-        }
     }
 }
