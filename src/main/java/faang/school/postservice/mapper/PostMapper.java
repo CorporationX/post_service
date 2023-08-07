@@ -10,7 +10,6 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public interface PostMapper {
 
-    @Mapping(target = "ad.id", source = "adId")
     @Mapping(target = "likes", expression = "java(new ArrayList<>())")
     @Mapping(target = "comments", expression = "java(new ArrayList<>())")
     @Mapping(target = "albums", expression = "java(new ArrayList<>())")

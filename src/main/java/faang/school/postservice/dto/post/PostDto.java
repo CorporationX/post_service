@@ -39,7 +39,7 @@ public class PostDto {
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         List<AlbumDto> albums;
 
-        @NotNull(message = "Ad id cannot be null")
+        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         Long adId;
 
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)

@@ -5,7 +5,9 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.ad.AdRepository;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
 import faang.school.postservice.util.exception.PostNotFoundException;
@@ -44,6 +46,7 @@ public class PostService {
         }
 
         Post post = postMapper.toEntity(dto);
+
         postRepository.save(post);
 
         return postMapper.toDto(post);
