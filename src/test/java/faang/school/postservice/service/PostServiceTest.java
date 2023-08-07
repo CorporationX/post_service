@@ -69,7 +69,7 @@ class PostServiceTest {
         CreatePostException e = Assert.assertThrows(CreatePostException.class, () -> {
             postService.addPost(postDto);
         });
-        Assertions.assertEquals("There is should be only one author", e.getMessage());
+        Assertions.assertEquals("Post's author can be only author or project and can't be both", e.getMessage());
     }
 
     @Test
@@ -80,7 +80,7 @@ class PostServiceTest {
         CreatePostException e = Assert.assertThrows(CreatePostException.class, () -> {
             postService.addPost(postDto);
         });
-        Assertions.assertEquals("There is should be only one author", e.getMessage());
+        Assertions.assertEquals("Post's author can be only author or project and can't be both", e.getMessage());
     }
 
     @Test

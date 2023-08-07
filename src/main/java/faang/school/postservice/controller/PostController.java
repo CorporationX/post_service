@@ -73,10 +73,10 @@ public class PostController {
     }
 
     @GetMapping("/author/posts/{id}")
-    ResponseEntity<DtosResponse> getPostsByAuthorId(@PathVariable Long authorId){
-        validator.validateToGetByAuthorId(authorId);
+    DtosResponse getPostsByAuthorId(@PathVariable Long id){
+        List<PostDto> resultDtos = postService.getPostsByAuthorId(id);
 
-        return ResponseEntity.ok(new DtosResponse(postService.getPostsByAuthorId(authorId)));
+        return new DtosResponse(resultDtos);
     }
 }
 
