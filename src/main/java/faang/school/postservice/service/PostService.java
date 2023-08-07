@@ -6,10 +6,6 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.util.exception.DeletePostException;
-import faang.school.postservice.util.exception.GetPostException;
-import faang.school.postservice.util.exception.PublishPostException;
-import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,7 +31,7 @@ public class PostService {
         validator.validateToAdd(dto);
 
         if (dto.getAuthorId() != null) {
-            userServiceClient.getUser(dto.getAuthorId()); // если такого пользователя или эндпоинта нет, то выбросит FeignException, я его поймаю в ExceptionHandler
+            userServiceClient.getUser(dto.getAuthorId());
         }
         if (dto.getProjectId() != null) {
             projectServiceClient.getProject(dto.getProjectId());
@@ -49,13 +45,12 @@ public class PostService {
 
     @Transactional
     public PostDto publishPost(Long id) {
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new PublishPostException("Post not found"));
+        Post postById = getPostById(id);
 
         validator.validateToPublish(postById);
 
         postById.setPublished(true);
-        postById.setPublishedAt(LocalDateTime.now());
+        postById.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
 
@@ -64,13 +59,12 @@ public class PostService {
 
     @Transactional
     public PostDto updatePost(Long id, String content) {
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new UpdatePostException("Post not found"));
+        Post postById = getPostById(id);
 
         validator.validateToUpdate(postById, content);
 
         postById.setContent(content);
-        postById.setUpdatedAt(LocalDateTime.now());
+        postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
 
@@ -79,13 +73,12 @@ public class PostService {
 
     @Transactional
     public PostDto deletePost(Long id) {
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new DeletePostException("Post not found"));
+        Post postById = getPostById(id);
 
         validator.validateToDelete(postById);
 
         postById.setDeleted(true);
-        postById.setUpdatedAt(LocalDateTime.now());
+        postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
 
@@ -93,8 +86,7 @@ public class PostService {
     }
 
     public PostDto getPost(Long id){
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new GetPostException("Post not found"));
+        Post postById = getPostById(id);
 
         validator.validateToGet(postById);
 
@@ -112,10 +104,9 @@ public class PostService {
 
         return postMapper.toDtos(draftsByProjectId);
     }
-// это уже следующий таск
-    public List<PostDto> getPostsByAuthorId(Long authorId){
-        List<Post> postsByAuthorId = postRepository.findPublishedPostsByAuthorId(authorId);
 
-        return postMapper.toDtos(postsByAuthorId);
+    private Post getPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post with id " + String.format("%d", id) + " not found"));
     }
 }

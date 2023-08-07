@@ -3,7 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
@@ -25,11 +25,12 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-public class PostServiceTest {
+class PostServiceTest {
 
     @Spy
     private PostServiceValidator validator;
@@ -38,7 +39,7 @@ public class PostServiceTest {
     private PostRepository postRepository;
 
     @Spy
-    private PostMapper postMapper;
+    private PostMapperImpl postMapper;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -81,6 +82,24 @@ public class PostServiceTest {
     }
 
     @Test
+    void addPost_ShouldMapCorrectlyToEntity() {
+        PostDto dto = buildPostDto();
+
+        Post actual = postMapper.toEntity(dto);
+
+        Assertions.assertEquals(buildPost(), actual);
+    }
+
+    @Test
+    void addPost_ShouldMapCorrectlyToDto() {
+        Post post = buildPost();
+
+        PostDto actual = postMapper.toDto(post);
+
+        Assertions.assertEquals(buildExpectedPostDto(), actual);
+    }
+
+    @Test
     void addPost_ByAuthor_ShouldSave() {
         postService.addPost(postDto);
 
@@ -111,10 +130,10 @@ public class PostServiceTest {
         Mockito.when(postRepository.findById(1L))
                 .thenReturn(Optional.empty());
 
-        PublishPostException e = Assert.assertThrows(PublishPostException.class, () -> {
+        PostNotFoundException e = Assert.assertThrows(PostNotFoundException.class, () -> {
             postService.publishPost(1L);
         });
-        Assertions.assertEquals("Post not found", e.getMessage());
+        Assertions.assertEquals("Post with id " + String.format("%d", 1L) + " not found", e.getMessage());
     }
 
     @Test
@@ -157,7 +176,8 @@ public class PostServiceTest {
         postService.publishPost(1L);
 
         Assertions.assertTrue(post.isPublished());
-        Assertions.assertTrue(post.getPublishedAt().isAfter(LocalDateTime.now().minusSeconds(2))); // тут не уверен, что стоит так делать
+        Assertions.assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
+                post.getPublishedAt());
     }
 
     @Test
@@ -174,10 +194,10 @@ public class PostServiceTest {
     void updatePost_PostNotFound_ShouldThrowException() {
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        UpdatePostException e = Assert.assertThrows(UpdatePostException.class, () -> {
+        PostNotFoundException e = Assert.assertThrows(PostNotFoundException.class, () -> {
             postService.updatePost(1L, "content");
         });
-        Assertions.assertEquals("Post not found", e.getMessage());
+        Assertions.assertEquals("Post with id " + String.format("%d", 1L) + " not found", e.getMessage());
     }
 
     @Test
@@ -235,7 +255,8 @@ public class PostServiceTest {
         postService.updatePost(1L, "cont");
 
         Assertions.assertEquals("cont", post.getContent());
-        Assertions.assertTrue(post.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(2))); // тут не уверен, что стоит так делать
+        Assertions.assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
+                post.getUpdatedAt());
     }
 
     @Test
@@ -254,10 +275,10 @@ public class PostServiceTest {
     void deletePost_PostNotFound_ShouldThrowException() {
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        DeletePostException e = Assert.assertThrows(DeletePostException.class, () -> {
+        PostNotFoundException e = Assert.assertThrows(PostNotFoundException.class, () -> {
             postService.deletePost(1L);
         });
-        Assertions.assertEquals("Post not found", e.getMessage());
+        Assertions.assertEquals("Post with id " + String.format("%d", 1L) + " not found", e.getMessage());
     }
 
     @Test
@@ -301,7 +322,8 @@ public class PostServiceTest {
         postService.deletePost(1L);
 
         Assertions.assertTrue(post.isDeleted());
-        Assertions.assertTrue(post.getUpdatedAt().isAfter(LocalDateTime.now().minusSeconds(2))); // тут не уверен, что стоит так делать
+        Assertions.assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
+                post.getUpdatedAt());
     }
 
     @Test
@@ -319,11 +341,10 @@ public class PostServiceTest {
     void getPost_PostNotFound_ShouldThrowException() {
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        GetPostException e = Assert.assertThrows(GetPostException.class, () -> {
+        PostNotFoundException e = Assert.assertThrows(PostNotFoundException.class, () -> {
             postService.getPost(1L);
         });
-
-        Assertions.assertEquals("Post not found", e.getMessage());
+        Assertions.assertEquals("Post with id " + String.format("%d", 1L) + " not found", e.getMessage());
     }
 
     @Test
@@ -370,13 +391,6 @@ public class PostServiceTest {
         Assertions.assertDoesNotThrow(() -> postService.getDraftsByProjectId(1L));
         Mockito.verify(postRepository, Mockito.times(1)).findReadyToPublishByProjectId(1L);
     }
-    // это уже следующий таск
-    @Test
-    void getPostsByAuthorId_ShouldNotThrowException() {
-        Assertions.assertDoesNotThrow(() -> postService.getPostsByAuthorId(1L));
-        Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByAuthorId(1L);
-    }
-
 
     private PostDto buildPostDto() {
         return PostDto.builder()
@@ -397,7 +411,22 @@ public class PostServiceTest {
                 .albums(new ArrayList<>())
                 .published(false)
                 .deleted(false)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .build();
+    }
+
+    private PostDto buildExpectedPostDto() {
+        return PostDto.builder()
+                .id(0L)
+                .content("content")
+                .authorId(1L)
+                .adId(1L)
+                .likes(new ArrayList<>())
+                .comments(new ArrayList<>())
+                .albums(new ArrayList<>())
+                .published(false)
+                .deleted(false)
+                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
                 .build();
     }
 }

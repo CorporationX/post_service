@@ -16,7 +16,7 @@ public interface PostMapper {
     @Mapping(target = "albums", expression = "java(new ArrayList<>())")
     @Mapping(target = "published", expression = "java(false)")
     @Mapping(target = "deleted", expression = "java(false)")
-    @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
+    @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS))")
     Post toEntity(PostDto dto);
 
     @Mapping(target = "adId", source = "ad.id")
