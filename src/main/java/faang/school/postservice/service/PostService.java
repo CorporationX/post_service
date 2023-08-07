@@ -36,7 +36,7 @@ public class PostService {
         validator.validateToAdd(dto);
 
         if (dto.getAuthorId() != null) {
-            userServiceClient.getUser(dto.getAuthorId()); // если такого пользователя или эндпоинта нет, то выбросит FeignException, я его поймаю в ExceptionHandler
+            userServiceClient.getUser(dto.getAuthorId());
         }
         if (dto.getProjectId() != null) {
             projectServiceClient.getProject(dto.getProjectId());
@@ -50,8 +50,7 @@ public class PostService {
 
     @Transactional
     public PostDto publishPost(Long id) {
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new PublishPostException("Post not found"));
+        Post postById = getPostById(id);
 
         validator.validateToPublish(postById);
 
@@ -65,8 +64,7 @@ public class PostService {
 
     @Transactional
     public PostDto updatePost(Long id, String content) {
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new UpdatePostException("Post not found"));
+        Post postById = getPostById(id);
 
         validator.validateToUpdate(postById, content);
 
@@ -80,8 +78,7 @@ public class PostService {
 
     @Transactional
     public PostDto deletePost(Long id) {
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new DeletePostException("Post not found"));
+        Post postById = getPostById(id);
 
         validator.validateToDelete(postById);
 
@@ -94,8 +91,7 @@ public class PostService {
     }
 
     public PostDto getPost(Long id){
-        Post postById = postRepository.findById(id)
-                .orElseThrow(() -> new GetPostException("Post not found"));
+        Post postById = getPostById(id);
 
         validator.validateToGet(postById);
 
@@ -114,9 +110,8 @@ public class PostService {
         return postMapper.toDtos(draftsByProjectId);
     }
 
-    public List<PostDto> getPostsByAuthorId(Long authorId){
-        List<Post> postsByAuthorId = postRepository.findPublishedPostsByAuthorId(authorId);
-
-        return postMapper.toDtos(postsByAuthorId);
+    private Post getPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post with id " + String.format("%d", id) + " not found"));
     }
 }
