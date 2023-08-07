@@ -33,7 +33,7 @@ public class AlbumServiceTest {
     private AlbumService albumService;
 
     @Test
-    public void testGetAlbum_WithExistingId_Test() {
+    public void getAlbum_ShouldReturnUser_WhenExists_Test() {
         long existingId = 1L;
         Album existingAlbum = new Album();
         existingAlbum.setId(existingId);
@@ -52,13 +52,13 @@ public class AlbumServiceTest {
     }
 
     @Test
-    public void testGetAlbum_WithNonExistingId_Test() {
+    public void getAlbum_ShouldThrowAlbumException_WhenAlbumNotFound_Test() {
         long nonExistingId = 999L;
 
         when(albumRepository.findById(nonExistingId)).thenReturn(Optional.empty());
 
         AlbumException albumException = assertThrows(AlbumException.class, () -> albumService.getAlbum(nonExistingId));
-        assertEquals(albumException.getMessage(), "There is no album with such id");
+        assertEquals(albumException.getMessage(), "There is no album with id = " + nonExistingId);
         verify(albumRepository).findById(nonExistingId);
         verify(albumMapper, never()).toDto(any());
     }

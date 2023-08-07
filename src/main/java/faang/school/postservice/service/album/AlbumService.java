@@ -18,7 +18,7 @@ public class AlbumService {
     @Transactional(readOnly = true)
     public AlbumDto getAlbum(long id) {
         Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new AlbumException("There is no album with such id"));
+                .orElseThrow(() -> new AlbumException("There is no album with id = " + id));
         return albumMapper.toDto(album);
     }
 }
