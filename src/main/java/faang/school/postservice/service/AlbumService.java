@@ -1,5 +1,7 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.album.AlbumCreateDto;
+import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.repository.AlbumRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +19,9 @@ public class AlbumService {
     // Т.е. два пользователя могут иметь альбомы с одинаковым названием,
     // но один и тот же пользователь не может иметь два альбома с одинаковым названием.
     // Пользователь должен быть существующим пользователем в системе.
-    public void createAlbum() {
+    public AlbumDto createAlbum(AlbumCreateDto albumCreateDto) {
+
+        return albumRepository.save();
 
     }
 
@@ -27,6 +31,14 @@ public class AlbumService {
     // Также, затем пользователь может удалить любой пост из своего выбранного альбома.
 
     //Пользователь может добавить любой альбом в избранные альбомы, а также удалить его из избранных.
+
+    public void addAlbumToFavorites(long albumId, long userId) {
+        albumRepository.addAlbumToFavorites(albumId,userId);
+    }
+
+    public void deleteAlbumFromFavorites(long albumId, long userId) {
+        albumRepository.deleteAlbumFromFavorites(albumId,userId);
+    }
 
     //Пользователь может получить любой альбом по id этого альбома.
 
@@ -43,4 +55,7 @@ public class AlbumService {
     // Важно убедиться, что он обновляет именно свой альбом и не может изменить автора этого альбома.
 
     //Пользователь может удалить любой из своих альбомов.
+    public void deleteAlbum(Long id) {
+
+    }
 }
