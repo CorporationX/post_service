@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.exceptions.DataNotExistingException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -21,15 +22,14 @@ public class LikeService {
     private final LikeMapper likeMapper;
     private final LikeRepository likeRepository;
 
-    public LikeDto likePost(long postId, LikeDto likeDto) {
+    public LikeDto likePost(LikeDto likeDto) {
         likeValidator.validateLike(likeDto);
-        Optional<Post> post = postRepository.findById(postId);
+        Post post = postRepository.findById(likeDto.getPostId())
+                .orElseThrow(() -> new DataNotExistingException(String
+                        .format("Post with id:%d doesn't exist", likeDto.getPostId())));
         Like like = likeMapper.toModel(likeDto);
-        post.map(p -> {
-            like.setPost(p);
-            likeRepository.save(like);
-            return p;
-        });
+        like.setPost(post);
+        likeRepository.save(like);
         return likeMapper.toDto(like);
     }
 }
