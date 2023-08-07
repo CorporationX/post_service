@@ -4,14 +4,12 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.exceptions.DataNotFoundException;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exceptions.DataNotExistingException;
 import faang.school.postservice.exceptions.SameTimeActionException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
@@ -29,7 +27,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
 
-
 @ExtendWith(MockitoExtension.class)
 class LikeServiceTest {
 
@@ -41,6 +38,9 @@ class LikeServiceTest {
 
     @Mock
     private PostService postService;
+
+    @Mock
+    private CommentService commentService;
 
 
     LikeMapper likeMapper;
@@ -56,15 +56,16 @@ class LikeServiceTest {
 
     @BeforeEach
     void setUp() {
-        likeDto = LikeDto.builder().userId(1L).postId(1L).build();
+        likeDto = LikeDto.builder().userId(1L).build();
         userDto = new UserDto(1L, "Andrey", "gmail@gmail.com");
         likeMapper = new LikeMapperImpl();
         likeValidator = new LikeValidator(userServiceClient);
-        likeService = new LikeService(likeValidator,likeMapper,likeRepository,postService);
+        likeService = new LikeService(likeValidator, likeMapper, likeRepository, postService, commentService);
     }
 
     @Test
     void testLikePost() {
+        likeDto.setPostId(1L);
 
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
 
@@ -78,49 +79,20 @@ class LikeServiceTest {
     }
 
     @Test
-    void testUnlikePost() {
-        likeService.unlikePost(1L, 1L);
-        verify(likeRepository).deleteByPostIdAndUserId(1L, 1L);
-    }
-
-    @Test
-    void testWhenUserDoesNotExist() {
+    void testWhenUserDoesNotExistOnLikingPost() {
         Long userId = 1L;
         when(userServiceClient.getUser(userId)).thenThrow(FeignException.class);
-    void testLikeComment() {
-        likeDto = LikeDto.builder().userId(1L).commentId(1L).build();
-
-        Comment comment = Comment.builder().id(1L).build();
-        when(commentRepository.findById(1L)).thenReturn(Optional.ofNullable(comment));
-
-        DataNotExistingException dataNotExistingException =
-                assertThrows(DataNotExistingException.class, () -> likeService.likePost(likeDto));
+        DataNotFoundException dataNotExistingException =
+                assertThrows(DataNotFoundException.class, () -> likeService.likePost(likeDto));
 
         assertEquals(String.format("User with id=%d doesn't exist", userId), dataNotExistingException.getMessage());
-        Like like = Like.builder().id(0L).userId(1L).comment(comment).build();
-
-        assertEquals(likeMapper.toDto(like), likeService.likeComment(likeDto));
-        verify(likeRepository).save(like);
-    }
-
-    @Test
-    void testLikeCommentThrowsDataNotExistingException() {
-        likeDto = LikeDto.builder().userId(1L).commentId(1L).build();
-        when(commentRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(DataNotFoundException.class, ()-> likeService.likeComment(likeDto));
-    }
-
-    @Test
-    void testUnlikeComment() {
-        likeService.unlikeComment(1L, 1L);
-        verify(likeRepository).deleteByCommentIdAndUserId(1L, 1L);
     }
 
     @Test
     void testWhenAddLikeOnPostAndComment() {
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         likeDto.setCommentId(1L);
+        likeDto.setPostId(1L);
         SameTimeActionException sameTimeActionException =
                 assertThrows(SameTimeActionException.class, () -> likeService.likePost(likeDto));
 
@@ -128,4 +100,41 @@ class LikeServiceTest {
                 sameTimeActionException.getMessage());
     }
 
+    @Test
+    void testUnlikePost() {
+        likeService.unlikePost(1L, 1L);
+        verify(likeRepository).deleteByPostIdAndUserId(1L, 1L);
+    }
+
+    @Test
+    void testLikeComment () {
+        likeDto.setCommentId(1L);
+
+        when(userServiceClient.getUser(1L)).thenReturn(userDto);
+
+        Comment comment = Comment.builder().id(1L).build();
+        when(commentService.getComment(1L)).thenReturn(comment);
+
+
+        Like like = Like.builder().id(0L).userId(1L).comment(comment).build();
+
+        assertEquals(likeMapper.toDto(like), likeService.likeComment(likeDto));
+        verify(likeRepository).save(like);
+    }
+
+    @Test
+    void testWhenUserDoesNotExistOnLikingComment() {
+        Long userId = 1L;
+        when(userServiceClient.getUser(userId)).thenThrow(FeignException.class);
+        DataNotFoundException dataNotExistingException =
+                assertThrows(DataNotFoundException.class, () -> likeService.likeComment(likeDto));
+
+        assertEquals(String.format("User with id=%d doesn't exist", userId), dataNotExistingException.getMessage());
+    }
+
+    @Test
+    void testUnlikeComment() {
+        likeService.unlikeComment(1L, 1L);
+        verify(likeRepository).deleteByCommentIdAndUserId(1L, 1L);
+    }
 }

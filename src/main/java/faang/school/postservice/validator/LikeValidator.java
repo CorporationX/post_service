@@ -2,8 +2,6 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.exceptions.DataNotExistingException;
-import faang.school.postservice.exceptions.DataAlreadyExistingException;
 import faang.school.postservice.exceptions.DataNotFoundException;
 import faang.school.postservice.exceptions.SameTimeActionException;
 import feign.FeignException;

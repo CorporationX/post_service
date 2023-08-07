@@ -1,12 +1,10 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.exceptions.DataNotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +21,7 @@ public class LikeService {
     private final LikeMapper likeMapper;
     private final LikeRepository likeRepository;
     private final PostService postService;
+    private final CommentService commentService;
 
     public LikeDto likePost(LikeDto likeDto) {
         likeValidator.validateLike(likeDto);
@@ -47,9 +46,13 @@ public class LikeService {
 
     public LikeDto likeComment(LikeDto likeDto) {
         likeValidator.validateLike(likeDto);
-        Comment comment = commentRepository.findById(likeDto.getCommentId())
-                .orElseThrow(() -> new DataNotFoundException(String
-                        .format("Comment with id:%d doesn't exist", likeDto.getCommentId())));
+        Long commentId = likeDto.getCommentId();
+        Long userId = likeDto.getUserId();
+        Comment comment = commentService.getComment(likeDto.getCommentId());
+        Optional<Like> existingLike = likeRepository.findByCommentIdAndUserId(commentId, userId);
+        if (existingLike.isPresent()) {
+            return likeMapper.toDto(existingLike.get());
+        }
         Like like = likeMapper.toModel(likeDto);
         like.setComment(comment);
         likeRepository.save(like);
