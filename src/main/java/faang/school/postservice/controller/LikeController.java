@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@RestController("api/v1/likes")
 @RequiredArgsConstructor
 public class LikeController {
 
     private final LikeService likeService;
 
-    @PostMapping("/post/like")
+    @PostMapping("/post")
     public LikeDto likePost(@RequestBody @Valid LikeDto likeDto) {
         if (likeDto.getPostId() == null) {
             throw new DataValidationException("Post id is required");
