@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
@@ -24,69 +23,62 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ErrorResponse handleAlreadyDeletedException(AlreadyDeletedException e) {
         log.error("Already deleted exception", e);
-        return new ErrorResponse(e.getMessage(), e, HttpStatus.METHOD_NOT_ALLOWED, LocalDateTime.now());
+        return new ErrorResponse(e.getMessage(), HttpStatus.METHOD_NOT_ALLOWED, LocalDateTime.now());
     }
 
     @ExceptionHandler(AlreadyPostedException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ErrorResponse handleAlreadyPostedException(AlreadyPostedException e) {
         log.error("Already posted exception", e);
-        return new ErrorResponse(e.getMessage(), e, HttpStatus.METHOD_NOT_ALLOWED, LocalDateTime.now());
+        return new ErrorResponse(e.getMessage(), HttpStatus.METHOD_NOT_ALLOWED, LocalDateTime.now());
     }
 
     @ExceptionHandler(EmptyContentInPostException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleEmptyContentInPostException(EmptyContentInPostException e) {
         log.error("Empty content in post exception", e);
-        return new ErrorResponse(e.getMessage(), e, HttpStatus.BAD_REQUEST, LocalDateTime.now());
+        return new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleEntityNotFoundException(EntityNotFoundException e) {
         log.error("Entity not found exception", e);
-        return new ErrorResponse(e.getMessage(), e, HttpStatus.NOT_FOUND, LocalDateTime.now());
+        return new ErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND, LocalDateTime.now());
     }
 
     @ExceptionHandler(NoPublishedPostException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ErrorResponse handleNoPublishedPostException(NoPublishedPostException e) {
         log.error("Post isn't published exception", e);
-        return new ErrorResponse(e.getMessage(), e, HttpStatus.METHOD_NOT_ALLOWED, LocalDateTime.now());
+        return new ErrorResponse(e.getMessage(), HttpStatus.METHOD_NOT_ALLOWED, LocalDateTime.now());
     }
 
     @ExceptionHandler(SamePostAuthorException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleSamePostAuthorException(SamePostAuthorException e) {
         log.error("Same author of the post exception", e);
-        return new ErrorResponse(e.getMessage(), e, HttpStatus.BAD_REQUEST, LocalDateTime.now());
+        return new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
     }
 
     @ExceptionHandler(UpdatePostException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleUpdatePostException(UpdatePostException e) {
         log.error("Update exception", e);
-        return new ErrorResponse(e.getMessage(), e, HttpStatus.BAD_REQUEST, LocalDateTime.now());
+        return new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
     }
 
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleRuntimeException(RuntimeException e) {
         log.error("Runtime exception", e);
-        return new ErrorResponse(e.getMessage(), e, HttpStatus.NOT_FOUND, LocalDateTime.now());
-    }
-
-    @ExceptionHandler(IOException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleIOException(IOException e) {
-        log.error("IOException", e);
-        return new ErrorResponse(e.getMessage(), e, HttpStatus.BAD_REQUEST, LocalDateTime.now());
+        return new ErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND, LocalDateTime.now());
     }
 
     @ExceptionHandler(Error.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleError(Error e) {
         log.error("ERROR", e);
-        return new ErrorResponse(e.getMessage(),e,HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now());
+        return new ErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now());
     }
 }
