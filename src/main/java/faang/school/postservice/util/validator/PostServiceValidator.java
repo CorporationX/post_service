@@ -17,7 +17,7 @@ public class PostServiceValidator {
     public void validateToAdd(PostDto dto) {
         if (dto.getAuthorId() != null && dto.getProjectId() != null ||
                 dto.getAuthorId() == null && dto.getProjectId() == null) {
-            throw new CreatePostException("There is should be only one author");
+            throw new CreatePostException("Post's author can be only author or project and can't be both");
         }
     }
 

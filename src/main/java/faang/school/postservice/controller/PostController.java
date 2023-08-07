@@ -71,5 +71,12 @@ public class PostController {
 
         return new DtosResponse(resultDtos);
     }
+
+    @GetMapping("/author/posts/{id}")
+    DtosResponse getPostsByAuthorId(@PathVariable Long id){
+        List<PostDto> resultDtos = postService.getPostsByAuthorId(id);
+
+        return new DtosResponse(resultDtos);
+    }
 }
 

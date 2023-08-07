@@ -41,7 +41,7 @@ public class PostDto {
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         List<AlbumDto> albums;
 
-        @NotEmpty(message = "Ad id cannot be empty")
+        @NotNull(message = "Ad id cannot be null")
         Long adId;
 
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
