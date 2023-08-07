@@ -10,6 +10,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
+import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
@@ -27,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -381,6 +383,15 @@ class PostServiceTest {
     }
 
     @Test
+    void getDrafts_ShouldMapCorrectlyToDtos() {
+        List<Post> posts = buildListOfPosts();
+
+        List<PostDto> actual = postMapper.toDtos(posts);
+
+        Assertions.assertIterableEquals(buildListOfPostDtos(), actual);
+    }
+
+    @Test
     void getDraftsByAuthorId_ShouldNotThrowException() {
         Assertions.assertDoesNotThrow(() -> postService.getDraftsByAuthorId(1L));
         Mockito.verify(postRepository, Mockito.times(1)).findReadyToPublishByAuthorId(1L);
@@ -428,5 +439,21 @@ class PostServiceTest {
                 .deleted(false)
                 .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
                 .build();
+    }
+
+    private List<Post> buildListOfPosts() {
+        return List.of(
+                buildPost(),
+                buildPost(),
+                buildPost()
+        );
+    }
+
+    private List<PostDto> buildListOfPostDtos() {
+        return List.of(
+                buildExpectedPostDto(),
+                buildExpectedPostDto(),
+                buildExpectedPostDto()
+        );
     }
 }
