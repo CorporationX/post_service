@@ -4,20 +4,26 @@ on:
   pull_request:
     branches:
       - chimera-master
+  push:
+    branches:
+      - chimera-master
+
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: 17
 
       - name: Build Gradle
-        run: ./gradlew setup
+        run: ./gradlew build --no-daemon
 
       - name: Run tests
-        run: ./gradlew test
+        run: ./gradlew test --no-daemon
