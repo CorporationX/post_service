@@ -5,3 +5,4 @@ public class AlbumException extends RuntimeException{
         super(message);
     }
 }
+

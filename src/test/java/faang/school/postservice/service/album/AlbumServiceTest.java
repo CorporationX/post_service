@@ -1,23 +1,34 @@
 package faang.school.postservice.service.album;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.album.AlbumException;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
-import faang.school.postservice.validator.album.AlbumValidator;
-import org.junit.jupiter.api.Assertions;
+import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AlbumServiceTest {
@@ -26,66 +37,187 @@ public class AlbumServiceTest {
     @Mock
     private AlbumMapper albumMapper;
     @Mock
-    private AlbumValidator albumValidator;
+    private UserServiceClient userServiceClient;
     @Mock
     private UserContext userContext;
+    @Mock
+    private PostRepository postRepository;
     @InjectMocks
     private AlbumService albumService;
 
     @Test
-    public void addPostToAlbum_PostAlreadyExist_Test() {
-        Mockito.when(userContext.getUserId()).thenReturn(1L);
-        Mockito.when(albumValidator.addPostToAlbumValidateService(1, 1, 1)).thenReturn(Album.builder()
-                .build());
+    public void deletePostFromAlbum_ValidInput_PostDeleted_Test() {
+        long userId = 1L;
+        long albumId = 1L;
+        long postIdToDelete = 123L;
 
-        Mockito.when(albumMapper.toDto(Album.builder()
-                .build())).thenReturn(AlbumDto.builder()
-                .postsIds(List.of(1L, 2L, 3L))
-                .build());
+        Album album = new Album();
+        album.setAuthorId(userId);
+        ArrayList<Post> posts = new ArrayList<>();
+        posts.add(Post.builder().id(postIdToDelete).build());
+        album.setPosts(posts);
 
-        AlbumException albumException = Assertions.assertThrows(AlbumException.class,
-                () -> albumService.addPostToAlbum(1, 1));
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+        when(postRepository.findById(postIdToDelete)).thenReturn(Optional.of(Post.builder().id(postIdToDelete).build()));
 
-        Assertions.assertEquals(albumException.getMessage(), "this post already exist in album");
+        albumService.deletePostFromAlbum(albumId, postIdToDelete);
+
+        assertEquals(0, album.getPosts().size());
+        verify(albumRepository).save(album);
     }
 
     @Test
-    public void addPostToAlbum_Test() {
-        Mockito.when(userContext.getUserId()).thenReturn(1L);
-        Album album = Album.builder().build();
+    public void deletePostFromAlbum_PostNotInAlbum_AlbumExceptionThrown_Test() {
+        long userId = 1L;
+        long albumId = 1L;
+        long postIdToDelete = 123L;
 
-        AlbumDto albumDto = AlbumDto.builder()
-                .postsIds(new ArrayList<>(List.of(1L, 2L, 3L)))
-                .build();
+        Album album = new Album();
+        album.setAuthorId(userId);
+        ArrayList<Post> posts = new ArrayList<>();
+        posts.add(Post.builder().id(456L).build());
+        album.setPosts(posts);
 
-        Mockito.when(albumValidator.addPostToAlbumValidateService(1, 1, 4))
-                .thenReturn(album);
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+        when(postRepository.findById(postIdToDelete)).thenReturn(Optional.of(Post.builder().id(postIdToDelete).build()));
 
-        Mockito.when(albumMapper.toDto(album)).thenReturn(albumDto);
+        AlbumException albumException = assertThrows(AlbumException.class,
+                () -> albumService.deletePostFromAlbum(albumId, postIdToDelete));
+        assertEquals("Post with id=123 is not found in album", albumException.getMessage());
+        verify(albumRepository, never()).save(any());
+    }
 
-        albumService.addPostToAlbum(1, 4);
 
-        Mockito.verify(albumMapper).toDto(album);
+    @Test
+    public void addPostToAlbum_AlbumNotFound_AlbumExceptionThrown_Test() {
+        long userId = 1L;
+        long albumId = 1L;
+        long postIdToAdd = 123L;
+
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.empty());
+
+        AlbumException albumException = assertThrows(AlbumException.class,
+                () -> albumService.addPostToAlbum(albumId, postIdToAdd));
+
+        assertEquals("There is no album with such id", albumException.getMessage());
+        verify(albumRepository, never()).save(any());
     }
 
     @Test
-    public void deleteUnexistingPost_Test() {
-        Album album = Album.builder()
-                .posts(new ArrayList<>(List.of(Post.builder()
-                                .id(4)
-                        .build())))
+    public void addPostToAlbum_UserNotAuthorized_AlbumExceptionThrown_Test() {
+        long userId = 1L;
+        long albumId = 1L;
+        long postIdToAdd = 123L;
+
+        Album album = new Album();
+        album.setAuthorId(userId + 1);
+
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+
+        AlbumException albumException = assertThrows(AlbumException.class,
+                () -> albumService.addPostToAlbum(albumId, postIdToAdd));
+
+        assertEquals("You can perform this action only on your albums", albumException.getMessage());
+        verify(albumRepository, never()).save(any());
+    }
+
+    @Test
+    public void addPostToAlbum_PostAlreadyExists_AlbumExceptionThrown_Test() {
+        long userId = 1L;
+        long albumId = 1L;
+        long postIdToAdd = 123L;
+
+        Album album = new Album();
+        album.setAuthorId(userId);
+        List<Post> posts = new ArrayList<>();
+        posts.add(Post.builder().id(postIdToAdd).build());
+        album.setPosts(posts);
+
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+
+        AlbumException albumException = assertThrows(AlbumException.class,
+                () -> albumService.addPostToAlbum(albumId, postIdToAdd));
+
+        assertEquals("Post with id=123 is already added in album", albumException.getMessage());
+        verify(albumRepository, never()).save(any());
+    }
+
+    @Test
+    public void testCreateAlbum() {
+        UserDto mockUserDto = getMockUserDto();
+        when(userServiceClient.getUser(1L)).thenReturn(mockUserDto);
+
+        AlbumDto albumDto = getValidAlbumDto();
+        Album mockAlbum = Album.builder()
+                .id(1L)
+                .title(albumDto.getTitle())
+                .description(albumDto.getDescription())
+                .authorId(albumDto.getAuthorId())
                 .build();
-        Mockito.when(userContext.getUserId()).thenReturn(1L);
-        Mockito.when(albumValidator.addPostToAlbumValidateService(1, 1, 1))
-                .thenReturn(album);
+        when(albumMapper.toEntity(albumDto)).thenReturn(mockAlbum);
+        when(albumRepository.save(any(Album.class))).thenReturn(mockAlbum);
+        when(albumMapper.toDto(mockAlbum)).thenReturn(albumDto);
 
-        List<Post> posts = album.getPosts();
-        List<Long> postsIds = posts.stream().map(Post::getId).toList();
-        int id = 1;
+        AlbumDto createdAlbum = albumService.createAlbum(albumDto);
 
-        AlbumException albumException = Assertions.assertThrows(AlbumException.class,
-                () -> albumService.deletePostFromAlbum(1L, id));
+        verify(userServiceClient, times(1)).getUser(1L);
+        verify(albumRepository, times(1)).save(any(Album.class));
+        verify(albumMapper, times(1)).toDto(mockAlbum);
 
-        Assertions.assertEquals(albumException.getMessage(),"Undefined post");
+        assertNotNull(createdAlbum);
+        assertEquals(albumDto.getTitle(), createdAlbum.getTitle());
+        assertEquals(albumDto.getDescription(), createdAlbum.getDescription());
+        assertEquals(albumDto.getAuthorId(), createdAlbum.getAuthorId());
+    }
+
+    @Test
+    public void testCreateAlbum_InvalidAuthor() {
+        when(userServiceClient.getUser(1L)).thenReturn(null);
+
+        AlbumException exception = assertThrows(AlbumException.class,
+                () -> albumService.createAlbum(getValidAlbumDto()));
+
+        assertEquals("There is no user with id 1", exception.getMessage());
+    }
+
+    @Test
+    public void testCreateAlbum_NonUniqueTitle() {
+        UserDto mockUserDto = getMockUserDto();
+        when(userServiceClient.getUser(1L)).thenReturn(mockUserDto);
+
+        AlbumDto albumDto = getValidAlbumDto();
+        Album existingAlbum = Album.builder()
+                .id(2L)
+                .title(albumDto.getTitle())
+                .description("Another album with the same title")
+                .authorId(albumDto.getAuthorId())
+                .build();
+        when(albumRepository.findByAuthorId(1L)).thenReturn(Stream.of(existingAlbum));
+
+        AlbumException exception = assertThrows(AlbumException.class,
+                () -> albumService.createAlbum(albumDto));
+
+        assertEquals("Title of the album should be unique", exception.getMessage());
+    }
+
+    private UserDto getMockUserDto() {
+        return UserDto.builder()
+                .id(1L)
+                .username("testUser")
+                .email("test@example.com")
+                .build();
+    }
+
+    private AlbumDto getValidAlbumDto() {
+        return AlbumDto.builder()
+                .title("Test Album")
+                .description("Album description")
+                .authorId(1L)
+                .build();
     }
 }
