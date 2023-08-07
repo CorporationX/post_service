@@ -5,7 +5,7 @@ import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.service.LikeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +25,7 @@ public class LikeController {
         return likeService.likePost(likeDto);
     }
 
-    @GetMapping("/post/{postId}/user/{userId}")
+    @DeleteMapping("/post/{postId}/user/{userId}")
     public void unlikePost(@PathVariable long postId, @PathVariable long userId) {
         likeService.unlikePost(postId, userId);
     }
