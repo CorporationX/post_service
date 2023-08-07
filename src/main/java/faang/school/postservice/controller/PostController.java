@@ -78,5 +78,12 @@ public class PostController {
 
         return new DtosResponse(resultDtos);
     }
+
+    @GetMapping("/project/posts/{id}")
+    DtosResponse getPostsByProjectId(@PathVariable Long id) {
+        List<PostDto> resultDtos = postService.getPostsByProjectId(id);
+
+        return new DtosResponse(resultDtos);
+    }
 }
 
