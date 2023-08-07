@@ -5,6 +5,8 @@ import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public interface PostMapper {
 
@@ -19,4 +21,6 @@ public interface PostMapper {
 
     @Mapping(target = "adId", source = "ad.id")
     PostDto toDto(Post entity);
+
+    List<PostDto> toDtos(List<Post> entities);
 }
