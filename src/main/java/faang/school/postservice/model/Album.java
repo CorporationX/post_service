@@ -36,11 +36,6 @@ public class Album {
     @JoinTable(name = "post_album", joinColumns = @JoinColumn(name = "album_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
     private List<Post> posts;
 
-    @Column(name = "visibility", nullable = false)
-    @Enumerated(EnumType.ORDINAL)
-    @Builder.Default
-    private Visibility visibility = Visibility.ONLY_ME;
-
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
