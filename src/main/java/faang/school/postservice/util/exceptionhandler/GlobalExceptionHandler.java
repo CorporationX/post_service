@@ -5,6 +5,7 @@ import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
+import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import feign.FeignException;
