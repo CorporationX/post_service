@@ -8,6 +8,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
+import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
