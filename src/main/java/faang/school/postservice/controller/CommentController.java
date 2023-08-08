@@ -25,7 +25,7 @@ public class CommentController {
         return commentService.updateComment(commentId, commentDto);
     }
 
-    @GetMapping
+    @GetMapping("/list")
     public List<CommentDto> getCommentsByPostId(@PathVariable Long postId) {
         return commentService.getCommentsByPostId(postId);
     }

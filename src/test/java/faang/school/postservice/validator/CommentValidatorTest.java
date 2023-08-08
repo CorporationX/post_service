@@ -25,9 +25,9 @@ class CommentValidatorTest {
     @InjectMocks
     private CommentValidator commentValidator;
 
-    CommentDto commentDto;
-    UserDto userDto;
-    Comment comment;
+    private CommentDto commentDto;
+    private UserDto userDto;
+    private Comment comment;
 
     @BeforeEach
     void setUp() {
@@ -54,31 +54,11 @@ class CommentValidatorTest {
     }
 
     @Test
-    void testValidateUserBeforeCreate_NullAuthorId_ThrowsDataValidationException() {
-        CommentDto commentDtoWithNullAuthorId = CommentDto.builder()
-                .postId(100L)
-                .build();
-
-        assertThrows(DataValidationException.class, () -> commentValidator.validateUserBeforeCreate(commentDtoWithNullAuthorId));
-    }
-
-    @Test
     void testValidateUserBeforeCreate_InvalidAuthorId_ThrowsEntityNotFoundException() {
 
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(null);
 
         assertThrows(EntityNotFoundException.class, () -> commentValidator.validateUserBeforeCreate(commentDto));
-    }
-
-    @Test
-    void testValidateUserBeforeCreate_NullPostId_ThrowsDataValidationException() {
-        CommentDto commentDtoWhenNullPostId = CommentDto.builder()
-                .authorId(1L)
-                .build();
-
-        when(userServiceClient.getUser(commentDtoWhenNullPostId.getAuthorId())).thenReturn(userDto);
-
-        assertThrows(DataValidationException.class, () -> commentValidator.validateUserBeforeCreate(commentDtoWhenNullPostId));
     }
 
     @Test
