@@ -1,9 +1,19 @@
 package faang.school.postservice.dto.payment;
 
-import lombok.Builder;
-import lombok.Data;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
-@Data
-@Builder
-public class PaymentRequest {
+import java.math.BigDecimal;
+
+public record PaymentRequest(
+        @NotNull
+        long paymentNumber,
+
+        @Min(1)
+        @NotNull
+        BigDecimal amount,
+
+        @NotNull
+        Currency currency
+) 
 }

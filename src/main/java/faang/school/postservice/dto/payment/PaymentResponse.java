@@ -1,9 +1,13 @@
 package faang.school.postservice.dto.payment;
 
-import lombok.Builder;
-import lombok.Data;
+import java.math.BigDecimal;
 
-@Data
-@Builder
-public class PaymentResponse {
+public record PaymentResponse(
+        PaymentStatus status,
+        int verificationCode,
+        long paymentNumber,
+        BigDecimal amount,
+        Currency currency,
+        String message
+) 
 }
