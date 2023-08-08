@@ -1,11 +1,12 @@
 package faang.school.postservice.advice;
 
+import faang.school.postservice.exception.DtoGlobalException;
+import faang.school.postservice.exception.DtoGlobalExceptionList;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,23 +18,29 @@ import java.util.List;
 @Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<List<String>> methodArgumentNotValidException(MethodArgumentNotValidException e) {
-        List<String> error = e.getFieldErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList();
+    public ResponseEntity<DtoGlobalExceptionList> methodArgumentNotValidException(MethodArgumentNotValidException e) {
+        List<DtoGlobalException> error = e.getFieldErrors().stream().map(message -> new DtoGlobalException(message.getDefaultMessage())).toList();
         log.error("Data validation exception occurred: {}", e.getAllErrors());
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new DtoGlobalExceptionList(error), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<List<String>> constraintViolationException(ConstraintViolationException e) {
-        List<String> error = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).toList();
+    public ResponseEntity<DtoGlobalExceptionList> constraintViolationException(ConstraintViolationException e) {
+        List<DtoGlobalException> error = e.getConstraintViolations().stream().map(message -> new DtoGlobalException(message.getMessage())).toList();
         log.error("Data validation exception occurred: {}", e.toString());
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new DtoGlobalExceptionList(error), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> entityNotFoundException(EntityNotFoundException e) {
+    public ResponseEntity<DtoGlobalException> entityNotFoundException(EntityNotFoundException e) {
         log.error("the object was not found in the database: {}", e.toString());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new DtoGlobalException(e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<DtoGlobalException> runtimeException(RuntimeException e) {
+        log.error("RuntimeException: {}", e.getMessage());
+        return new ResponseEntity<>(new DtoGlobalException(e.getMessage()), HttpStatusCode.valueOf(500));
     }
 
 }
