@@ -1,5 +1,7 @@
 package faang.school.postservice.dictionary;
 
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -14,9 +16,10 @@ import java.util.Set;
 public class ModerationDictionary {
 
     public final Set<String> censorWords = new HashSet<>();
+    private final String censorWordsPath;
 
-    public ModerationDictionary() {
-        loadCensorWords();
+    public ModerationDictionary(@Value("${bad-words.path}") String censorWordsPath) {
+        this.censorWordsPath = censorWordsPath;
     }
 
     public boolean containsCensorWord(String content) {
@@ -26,10 +29,9 @@ public class ModerationDictionary {
                 .anyMatch(censorWords::contains);
     }
 
-
+    @PostConstruct
     private void loadCensorWords() {
-        Set<String> words = new HashSet<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ClassPathResource("files/bad-words.csv").getInputStream()))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ClassPathResource(censorWordsPath).getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 censorWords.addAll(

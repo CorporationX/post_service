@@ -49,3 +49,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+bad-words:
+  path: files/bad-words.csv
