@@ -58,12 +58,26 @@ public class PostService {
     @Transactional
     public PostDto softDeletePost(Long id) {
         Post post = getPostIfExist(id);
+        validatePostIsDeleted(post);
 
-        if (post.isDeleted()) {
-            throw new DataValidationException("Post is already deleted");
-        }
         post.setDeleted(true);
         return postMapper.toDto(post);
+    }
+
+    @Transactional(readOnly = true)
+    public PostDto getPostById(Long id) {
+        Post post = getPostIfExist(id);
+        validatePostIsDeleted(post);
+
+        if (!post.isPublished()) {
+            throw new DataValidationException("Post is not published");
+        }
+        return postMapper.toDto(post);
+    }
+
+    private Post getPostIfExist(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post with the specified id does not exist"));
     }
 
     private void validateIdPostDto(PostDto postDto) {
@@ -89,8 +103,9 @@ public class PostService {
         }
     }
 
-    private Post getPostIfExist(Long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Post with the specified id does not exist"));
+    private void validatePostIsDeleted(Post post) {
+        if (post.isDeleted()) {
+            throw new DataValidationException("Post is already deleted");
+        }
     }
 }
