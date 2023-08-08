@@ -23,7 +23,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -106,22 +105,27 @@ public class PostServiceTest {
 
     @Test
     void testPublishPostWithoutPostInDB() {
-        when(postRepository.existsById(CORRECT_ID)).thenReturn(false);
+        when(postRepository.findById(CORRECT_ID)).thenThrow(EntityNotFoundException.class);
         assertThrows(EntityNotFoundException.class, () -> postService.publishPost(CORRECT_ID));
     }
 
     @Test
     void testPublishPostWithAlreadyPublishedPost() {
-        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
         when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(alreadyPublishedPost));
         assertThrows(AlreadyPostedException.class, () -> postService.publishPost(CORRECT_ID));
+    }
+
+    @Test
+    void testPublishedPostWithDeletedPost() {
+        correctPost.setDeleted(true);
+        returnCorrectPostForPostRepository();
+        assertThrows(AlreadyDeletedException.class, () -> postService.publishPost(CORRECT_ID));
     }
 
     @Test
     void testPublishPost() {
         correctPostDto.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
         correctPostDto.setPublished(true);
-        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
         when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
 
         PostDto actualPostDto = postService.publishPost(CORRECT_ID);
@@ -131,7 +135,7 @@ public class PostServiceTest {
 
     @Test
     void testUpdatePostWithoutPostInDB() {
-        when(postRepository.existsById(INCORRECT_ID)).thenReturn(false);
+        when(postRepository.findById(INCORRECT_ID)).thenThrow(EntityNotFoundException.class);
         assertThrows(EntityNotFoundException.class, () -> postService.updatePost(incorrectPostDto));
     }
 
@@ -154,7 +158,7 @@ public class PostServiceTest {
 
     @Test
     void testSoftDeleteWithoutPostInDB() {
-        when(postRepository.existsById(CORRECT_ID)).thenReturn(false);
+        when(postRepository.findById(CORRECT_ID)).thenThrow(EntityNotFoundException.class);
         assertThrows(EntityNotFoundException.class, () -> postService.softDelete(CORRECT_ID));
     }
 
@@ -177,7 +181,7 @@ public class PostServiceTest {
 
     @Test
     void testGetPostWithoutPostInDB() {
-        when(postRepository.existsById(CORRECT_ID)).thenReturn(false);
+        when(postRepository.findById(CORRECT_ID)).thenThrow(EntityNotFoundException.class);
         assertThrows(EntityNotFoundException.class, () -> postService.getPost(CORRECT_ID));
     }
 
@@ -206,7 +210,6 @@ public class PostServiceTest {
     }
 
     private void returnCorrectPostForPostRepository() {
-        when(postRepository.existsById(CORRECT_ID)).thenReturn(true);
         when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
     }
 }

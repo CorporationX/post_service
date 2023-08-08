@@ -41,13 +41,14 @@ public class PostService {
     }
 
     public PostDto publishPost(long postId) {
-        validatePostId(postId);
+        Post post = validatePostId(postId);
 
-
-        Post post = postRepository.findById(postId).get();
-        if (post.isPublished() || post.isDeleted() || (post.getScheduledAt() != null
+        if (post.isPublished() || (post.getScheduledAt() != null
                 && post.getScheduledAt().isAfter(LocalDateTime.now()))) {
-            throw new AlreadyPostedException("Нельзя опубликовать пост, который уже был опубликован или удален");
+            throw new AlreadyPostedException("You cannot published post, that had been already published");
+        }
+        if (post.isDeleted()) {
+            throw new AlreadyDeletedException(("You cannot publish post, that had been deleted"));
         }
 
         post.setPublished(true);
@@ -58,9 +59,7 @@ public class PostService {
 
     public PostDto updatePost(PostDto updatePost) {
         long postId = updatePost.getId();
-        validatePostId(postId);
-
-        Post post = postRepository.findById(postId).get();
+        Post post = validatePostId(postId);
         validateAuthorUpdate(post, updatePost);
 
         post.setContent(updatePost.getContent());
@@ -70,9 +69,7 @@ public class PostService {
     }
 
     public PostDto softDelete(long postId) {
-        validatePostId(postId);
-
-        Post post = postRepository.findById(postId).get();
+        Post post = validatePostId(postId);
 
         if (post.isDeleted()) {
             throw new AlreadyDeletedException("Post has been already deleted");
@@ -83,9 +80,8 @@ public class PostService {
     }
 
     public PostDto getPost(long postId) {
-        validatePostId(postId);
+        Post post = validatePostId(postId);
 
-        Post post = postRepository.findById(postId).get();
         if (post.isDeleted()) {
             throw new AlreadyDeletedException("This post has been already deleted");
         }
@@ -149,10 +145,9 @@ public class PostService {
         return projectPosts;
     }
 
-    private void validatePostId(long postId) {
-        if (!postRepository.existsById(postId)) {
-            throw new EntityNotFoundException("This post does not exist");
-        }
+    private Post validatePostId(long postId) {
+        return postRepository.findById(postId).orElseThrow(
+                () -> new EntityNotFoundException("This post does not exist"));
     }
 
     private void validateData(PostDto postDto) {

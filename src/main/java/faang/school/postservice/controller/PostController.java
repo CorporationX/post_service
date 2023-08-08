@@ -52,31 +52,31 @@ public class PostController {
 
     @GetMapping("/{id}")
     public PostDto getPost(@PathVariable("id") long postId) {
-        log.info("Endpoint <getPost>, uti='/posts/{}' was called successfully", postId);
+        log.info("Endpoint <getPost>, uri='/posts/{}' was called successfully", postId);
         return postService.getPost(postId);
     }
 
     @GetMapping("drafts/users/{id}")
     public List<PostDto> getUserDrafts(@PathVariable("id") long userId) {
-        log.info("Endpoint <getUsersDrafts>, uti='/posts/drafts/users/{}' was called successfully", userId);
+        log.info("Endpoint <getUsersDrafts>, uri='/posts/drafts/users/{}' was called successfully", userId);
         return postService.getUserDrafts(userId);
     }
 
     @GetMapping("/drafts/projects/{id}")
     public List<PostDto> getProjectDrafts(@PathVariable("id") long projectId) {
-        log.info("Endpoint <getProjectDrafts>, uti='/posts/drafts/projects/{}' was called successfully", projectId);
+        log.info("Endpoint <getProjectDrafts>, uri='/posts/drafts/projects/{}' was called successfully", projectId);
         return postService.getProjectDrafts(projectId);
     }
 
     @GetMapping("/users/{id}")
     public List<PostDto> getUserPosts(@PathVariable("id") long userId) {
-        log.info("Endpoint <getUserPosts>, uti='/posts/users/{}' was called successfully", userId);
+        log.info("Endpoint <getUserPosts>, uri='/posts/users/{}' was called successfully", userId);
         return postService.getUserPosts(userId);
     }
 
     @GetMapping("/projects/{id}")
     public List<PostDto> getProjectPosts(@PathVariable("id") long projectId) {
-        log.info("Endpoint <getProjectPosts>, uti='/posts/projects/{}' was called successfully", projectId);
+        log.info("Endpoint <getProjectPosts>, uri='/posts/projects/{}' was called successfully", projectId);
         return postService.getProjectPosts(projectId);
     }
 
