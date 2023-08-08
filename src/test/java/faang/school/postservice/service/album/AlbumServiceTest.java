@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -55,6 +56,21 @@ public class AlbumServiceTest {
         DeleteResult result = albumService.deleteAlbumOfCertainUser(albumId);
 
         assertEquals(DeleteResult.NOT_FOUND, result);
+        verify(albumRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    public void testDeleteAlbumOfCertainUser_NotAuthorized() {
+        long userId = 1L;
+        Album album = new Album();
+        album.setAuthorId(2);
+
+        when(userContext.getUserId()).thenReturn(userId);
+        doReturn(Optional.of(album)).when(albumRepository).findById(2L);
+
+        DeleteResult result = albumService.deleteAlbumOfCertainUser(2L);
+
+        assertEquals(DeleteResult.NOT_AUTHORIZED, result);
         verify(albumRepository, never()).deleteById(anyLong());
     }
 }
