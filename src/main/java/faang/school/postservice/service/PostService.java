@@ -62,7 +62,7 @@ public class PostService {
         Post post = postRepository.findById(postUpdateDto.getId()).orElse(null);
         postValidator.validationOfPostUpdate(postUpdateDto, post);
 
-        postMapper.update(postUpdateDto, post);
+        postMapper.updatePostFromDto(postUpdateDto, post);
 
         return postMapper.toDto(postRepository.save(post));
     }
