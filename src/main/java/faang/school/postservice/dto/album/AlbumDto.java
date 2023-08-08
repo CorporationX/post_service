@@ -9,7 +9,6 @@ import java.util.List;
 @Data
 @Builder
 public class AlbumDto {
-    private long id;
     private String title;
     private String description;
     private long authorId;
