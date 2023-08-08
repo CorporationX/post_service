@@ -57,7 +57,7 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public PostDto getPost(Long postId) {
         return postMapper.toDto(postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found")));
     }

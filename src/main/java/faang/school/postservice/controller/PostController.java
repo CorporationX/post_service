@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,14 +37,14 @@ public class PostController {
     @PutMapping("{postId}/publish")
     @Operation(summary = "Publish Post")
     @ResponseStatus(HttpStatus.OK)
-    public PostDto publishPost(@PathVariable Long postId) {
+    public PostDto publishPost(@PathVariable @Valid Long postId) {
         return postService.publishPost(postId);
     }
 
     @GetMapping("/{postId}")
     @Operation(summary = "Get Post by Id")
     @ResponseStatus(HttpStatus.OK)
-    public PostDto getPost(@RequestParam @Valid Long postId) {
+    public PostDto getPost(@PathVariable @Valid Long postId) {
         return postService.getPost(postId);
     }
 
