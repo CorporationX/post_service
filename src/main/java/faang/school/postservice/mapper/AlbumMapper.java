@@ -1,27 +1,33 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumUpdateDto;
 import faang.school.postservice.model.Album;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring",unmappedTargetPolicy = ReportingPolicy.IGNORE,
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
         injectionStrategy = InjectionStrategy.FIELD)
 public interface AlbumMapper {
+
     @Mapping(target = "posts", source = "postsId", qualifiedByName = "toAlbum")
     Album toAlbum(AlbumDto albumDto);
 
     @Mapping(target = "postsId", source = "posts", qualifiedByName = "toId")
     AlbumDto toAlbumDto(Album album);
 
+    @Mapping(target = "posts", source = "postsId", qualifiedByName = "toAlbum")
+    void updateAlbum(AlbumUpdateDto albumUpdateDto, @MappingTarget Album album);
+
     @Named("toId")
-    default List<Long> toId(List<Album> albums){
+    default List<Long> toId(List<Album> albums) {
         if (albums == null) {
             return new ArrayList<>();
         }
@@ -29,7 +35,7 @@ public interface AlbumMapper {
     }
 
     @Named("toAlbum")
-    default List<Album> toAlbum(List<Long> ids){
+    default List<Album> toAlbum(List<Long> ids) {
         if (ids == null) {
             return new ArrayList<>();
         }

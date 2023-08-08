@@ -24,5 +24,4 @@ public class AlbumDto {
     private Visibility visibility;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
 }
