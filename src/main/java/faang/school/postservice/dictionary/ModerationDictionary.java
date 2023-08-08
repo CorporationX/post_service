@@ -24,7 +24,6 @@ public class ModerationDictionary {
 
     public boolean containsCensorWord(String content) {
         var words = content.toLowerCase().trim().split(" ");
-        System.out.println(Arrays.toString(words));
         return Arrays.stream(words)
                 .anyMatch(censorWords::contains);
     }

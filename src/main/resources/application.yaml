@@ -36,7 +36,7 @@ post:
   publisher:
     scheduler:
 #      cron: "0 0/1 * 1/1 * ?" # every minute
-      cron: "0/3 * * * * ?" # every second
+      cron: "0/10 * * * * ?" # every 10 second
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
@@ -56,6 +56,11 @@ bad-words:
 
 thread-pool:
   queueCapacity: 100
-  maxPoolSize: 2
-  corePoolSize: 2
+  maxPoolSize: 4
+  corePoolSize: 4
   threadNamePrefix: "poolThread-"
+
+ContentModerator:
+  secondsBetweenModeration: 3600
+  batchSize: 1000
+
