@@ -4,6 +4,7 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -30,5 +31,10 @@ public class PostController {
     @PutMapping
     public PostDto updatePost(@RequestBody @Validated PostDto postDto) {
         return postService.updatePost(postDto);
+    }
+
+    @DeleteMapping("/{id}")
+    public PostDto softDeletePost(@PathVariable Long id) {
+        return postService.softDeletePost(id);
     }
 }
