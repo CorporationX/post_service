@@ -3,7 +3,7 @@ name: CIForCerberusMaster
 on:
   pull_request:
     branches:
-      - cerberus-master
+      - feature-BC-4200
 
 jobs:
   build:
