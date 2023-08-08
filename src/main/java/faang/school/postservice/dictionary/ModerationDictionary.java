@@ -29,7 +29,7 @@ public class ModerationDictionary {
 
     private void loadCensorWords() {
         Set<String> words = new HashSet<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ClassPathResource("files/BadWords.txt").getInputStream()))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ClassPathResource("files/bad-words.csv").getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 censorWords.addAll(

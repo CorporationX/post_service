@@ -22,7 +22,6 @@ public class ModerationDictionaryTest {
             "I love unit tests!"
     })
     void GoodTextTest(String content){
-        System.out.println(moderationDictionary.censorWords);
         assertFalse(moderationDictionary.containsCensorWord(content));
     }
 
@@ -33,7 +32,6 @@ public class ModerationDictionaryTest {
             "I love ASSHOLE unit tests!"
     })
     void BadTextTest(String content){
-        System.out.println(moderationDictionary.censorWords);
         assertTrue(moderationDictionary.containsCensorWord(content));
     }
 }
