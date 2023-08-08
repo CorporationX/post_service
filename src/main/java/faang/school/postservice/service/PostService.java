@@ -29,18 +29,16 @@ public class PostService {
         validateAuthorExist(postDto);
 
         Post post = postMapper.toEntity(postDto);
-
         return postMapper.toDto(postRepository.save(post));
     }
 
     @Transactional
     public PostDto publishPost(Long id) {
-        Post post = validatePostExist(id);
+        Post post = getPostIfExist(id);
 
         if (post.isPublished() || post.isDeleted()) {
             throw new DataValidationException("Post is already published or deleted");
         }
-
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         return postMapper.toDto(post);
@@ -50,11 +48,21 @@ public class PostService {
     public PostDto updatePost(PostDto postDto) {
         validateIdPostDto(postDto);
         validateAuthorExist(postDto);
-        Post post = validatePostExist(postDto.getId());
+        Post post = getPostIfExist(postDto.getId());
 
         post.setContent(postDto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
+        return postMapper.toDto(post);
+    }
 
+    @Transactional
+    public PostDto softDeletePost(Long id) {
+        Post post = getPostIfExist(id);
+
+        if (post.isDeleted()) {
+            throw new DataValidationException("Post is already deleted");
+        }
+        post.setDeleted(true);
         return postMapper.toDto(post);
     }
 
@@ -81,7 +89,7 @@ public class PostService {
         }
     }
 
-    private Post validatePostExist(Long id) {
+    private Post getPostIfExist(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Post with the specified id does not exist"));
     }

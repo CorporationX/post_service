@@ -169,4 +169,39 @@ class PostServiceTest {
         assertEquals("New Content", actualDto.getContent());
         assertNotNull(actualDto.getUpdatedAt());
     }
+
+    @Test
+    void testSoftDeletePostValidData() {
+        long id = 1L;
+        Post post = Post.builder()
+                .id(id)
+                .content("Content")
+                .authorId(1L)
+                .deleted(false)
+                .build();
+
+        when(postRepository.findById(id)).thenReturn(Optional.of(post));
+
+        PostDto actualDto = postService.softDeletePost(id);
+
+        assertTrue(actualDto.isDeleted());
+        assertEquals(post.getUpdatedAt(), actualDto.getUpdatedAt());
+    }
+
+    @Test
+    void testSoftDeletePostInvalidData() {
+        long id = 1L;
+        Post post = Post.builder()
+                .id(id)
+                .content("Content")
+                .authorId(1L)
+                .deleted(true)
+                .build();
+
+        when(postRepository.findById(id)).thenReturn(Optional.of(post));
+
+        DataValidationException exception = assertThrows(DataValidationException.class,
+                () -> postService.softDeletePost(id));
+        assertEquals("Post is already deleted", exception.getMessage());
+    }
 }
