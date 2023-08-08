@@ -65,7 +65,7 @@ public class PostService {
         postValidator.validateAuthor(user);
         List<Post> draftsByAuthorId = postRepository.findDraftsByAuthorId(user.getId());
         return draftsByAuthorId.stream()
-                .sorted(Comparator.comparing(Post::getPublishedAt))
+                .sorted(Comparator.comparing(Post::getCreatedAt))
                 .map(postMapper::toDto)
                 .toList();
     }
@@ -76,7 +76,7 @@ public class PostService {
         postValidator.validateProject(project);
         List<Post> draftsByProjectId = postRepository.findDraftsByProjectId(project.getId());
         return draftsByProjectId.stream()
-                .sorted(Comparator.comparing(Post::getPublishedAt))
+                .sorted(Comparator.comparing(Post::getCreatedAt))
                 .map(postMapper::toDto)
                 .toList();
     }
