@@ -25,7 +25,7 @@ public class CommentController {
 
     @PostMapping
     public CommentDto create(@Valid CommentDto commentDto){
-        if (commentDto != null){
+        if (commentDto.getId() != null){
             throw new DataValidationException(ErrorMessage.COMMENT_ID_NOT_NULL_ON_CREATION);
         }
         return commentService.create(commentDto);
