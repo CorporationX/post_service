@@ -6,7 +6,7 @@ CREATE TABLE scheduled_tasks (
     retry_count int DEFAULT 0,
     status varchar(255) DEFAULT 'NEW',
     scheduled_at timestamptz
-)
+);
 
 CREATE INDEX scheduled_tasks_scheduled_at_idx
     ON scheduled_tasks (entity_id) WHERE status = 'NEW' OR status = 'ERROR';
