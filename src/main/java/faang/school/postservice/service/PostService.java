@@ -35,7 +35,7 @@ public class PostService {
     public PostDto crateDraftPost(PostDto postDto) {
         validateData(postDto);
 
-        Post savedPost = postRepository.save(postMapper.toPost(postDto));
+        Post savedPost = postRepository.save(postMapper.toEntity(postDto));
         log.info("Draft post was created successfully, draftId={}", savedPost.getId());
         return postMapper.toDto(savedPost);
     }

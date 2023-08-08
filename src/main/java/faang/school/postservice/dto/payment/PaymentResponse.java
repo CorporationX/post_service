@@ -9,5 +9,5 @@ public record PaymentResponse(
         BigDecimal amount,
         Currency currency,
         String message
-) 
+){
 }

@@ -96,7 +96,7 @@ public class PostServiceTest {
 
     @Test
     void testCreateDaftPost() {
-        Post post = postMapper.toPost(correctPostDto);
+        Post post = postMapper.toEntity(correctPostDto);
         when(postRepository.save(post)).thenReturn(post);
 
         PostDto actualPostDto = postService.crateDraftPost(correctPostDto);
