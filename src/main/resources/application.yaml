@@ -35,7 +35,8 @@ logging:
 post:
   publisher:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+#      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "0/3 * * * * ?" # every second
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
@@ -52,3 +53,9 @@ payment-service:
 
 bad-words:
   path: files/bad-words.csv
+
+thread-pool:
+  queueCapacity: 100
+  maxPoolSize: 2
+  corePoolSize: 2
+  threadNamePrefix: "poolThread-"
