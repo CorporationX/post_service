@@ -16,6 +16,9 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import faang.school.postservice.repository.PostRepository;
 
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -237,5 +240,127 @@ class PostServiceTest {
         DataValidationException exception = assertThrows(DataValidationException.class,
                 () -> postService.getPostById(id));
         assertEquals("Post is not published", exception.getMessage());
+    }
+
+    @Test
+    void testGetDraftPostByUserIdValidData() {
+        LocalDateTime createdAt1 = LocalDateTime.of(2023, Month.AUGUST, 9, 1, 1, 1);
+        LocalDateTime createdAt2 = LocalDateTime.of(2023, Month.AUGUST, 9, 1, 1, 2);
+        Post post1 = Post.builder()
+                .id(1L)
+                .content("Valid1")
+                .authorId(1L)
+                .createdAt(createdAt1)
+                .build();
+        Post post2 = Post.builder()
+                .id(2L)
+                .content("Valid2")
+                .authorId(1L)
+                .createdAt(createdAt2)
+                .build();
+        Post post3 = Post.builder()
+                .id(3L)
+                .content("Invalid1")
+                .authorId(1L)
+                .deleted(true)
+                .build();
+        Post post4 = Post.builder()
+                .id(4L)
+                .content("Invalid2")
+                .authorId(1L)
+                .published(true)
+                .build();
+        List<Post> posts = List.of(post1, post2, post3, post4);
+
+        when(postRepository.findByAuthorId(1L)).thenReturn(posts);
+
+        List<PostDto> actualDto = postService.getDraftPostByUserId(1L);
+
+        assertEquals(2, actualDto.size());
+        assertEquals(createdAt1, actualDto.get(1).getCreatedAt());
+    }
+
+    @Test
+    void testGetDraftPostByUserIdInvalidData() {
+        Post post1 = Post.builder()
+                .id(1L)
+                .content("Invalid1")
+                .authorId(1L)
+                .deleted(true)
+                .build();
+        Post post2 = Post.builder()
+                .id(2L)
+                .content("Invalid2")
+                .authorId(1L)
+                .published(true)
+                .build();
+        List<Post> posts = List.of(post1, post2);
+
+        when(postRepository.findByAuthorId(1L)).thenReturn(posts);
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> postService.getDraftPostByUserId(1L));
+        assertEquals("Draft post not found", exception.getMessage());
+    }
+
+    @Test
+    void testGetDraftPostByProjectIdValidData() {
+        LocalDateTime createdAt1 = LocalDateTime.of(2023, Month.AUGUST, 9, 1, 1, 1);
+        LocalDateTime createdAt2 = LocalDateTime.of(2023, Month.AUGUST, 9, 1, 1, 2);
+        Post post1 = Post.builder()
+                .id(1L)
+                .content("Valid1")
+                .authorId(1L)
+                .createdAt(createdAt1)
+                .build();
+        Post post2 = Post.builder()
+                .id(2L)
+                .content("Valid2")
+                .authorId(1L)
+                .createdAt(createdAt2)
+                .build();
+        Post post3 = Post.builder()
+                .id(3L)
+                .content("Invalid1")
+                .authorId(1L)
+                .deleted(true)
+                .build();
+        Post post4 = Post.builder()
+                .id(4L)
+                .content("Invalid2")
+                .authorId(1L)
+                .published(true)
+                .build();
+        List<Post> posts = List.of(post1, post2, post3, post4);
+
+        when(postRepository.findByProjectId(1L)).thenReturn(posts);
+
+        List<PostDto> actualDto = postService.getDraftPostByProjectId(1L);
+
+        assertEquals(2, actualDto.size());
+        assertEquals(createdAt1, actualDto.get(1).getCreatedAt());
+    }
+
+    @Test
+    void testGetDraftPostByProjectIdInvalidData() {
+        Post post1 = Post.builder()
+                .id(1L)
+                .content("Invalid1")
+                .authorId(1L)
+                .deleted(true)
+                .build();
+        Post post2 = Post.builder()
+                .id(2L)
+                .content("Invalid2")
+                .authorId(1L)
+                .published(true)
+                .build();
+        List<Post> posts = List.of(post1, post2);
+
+        when(postRepository.findByProjectId(1L)).thenReturn(posts);
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> postService.getDraftPostByProjectId(1L));
+        assertEquals("Draft post not found", exception.getMessage());
     }
 }

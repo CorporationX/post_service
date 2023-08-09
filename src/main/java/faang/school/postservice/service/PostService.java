@@ -88,6 +88,17 @@ public class PostService {
         return postMapper.toDtoList(draftPostsAndSortByCreatedAt);
     }
 
+    @Transactional(readOnly = true)
+    public List<PostDto> getDraftPostByProjectId(Long id) {
+        validateProjectIdExist(id);
+        List<Post> draftPostsAndSortByCreatedAt = filterDraftPostsAndSortByCreatedAt(postRepository.findByProjectId(id));
+
+        if (draftPostsAndSortByCreatedAt.isEmpty()) {
+            throw new EntityNotFoundException("Draft post not found");
+        }
+        return postMapper.toDtoList(draftPostsAndSortByCreatedAt);
+    }
+
     private Post getPostIfExist(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Post with the specified id does not exist"));
