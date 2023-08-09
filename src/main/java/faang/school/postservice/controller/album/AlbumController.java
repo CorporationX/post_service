@@ -2,6 +2,7 @@ package faang.school.postservice.controller.album;
 
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.service.album.AlbumService;
+import faang.school.postservice.service.album.DeleteResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
