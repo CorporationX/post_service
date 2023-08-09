@@ -64,7 +64,6 @@ public class AlbumServiceTest {
         albumService.deletePostFromAlbum(albumId, postIdToDelete);
 
         assertEquals(0, album.getPosts().size());
-        verify(albumRepository).save(album);
     }
 
     @Test

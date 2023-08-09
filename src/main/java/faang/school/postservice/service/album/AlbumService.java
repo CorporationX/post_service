@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -28,33 +27,28 @@ public class AlbumService {
     private final UserContext userContext;
     private final PostRepository postRepository;
 
-
+    @Transactional
     public void deletePostFromAlbum(long albumId, long postIdToDelete) {
         long userId = userContext.getUserId();
         Album album = deletePostFromAlbumValidation(userId, albumId, postIdToDelete);
 
         List<Post> posts = album.getPosts();
-        List<Long> postsIds = posts.stream().map(Post::getId).toList();
+        boolean removed = posts.removeIf(post -> post.getId() == postIdToDelete);
 
-        int id = postsIds.indexOf(postIdToDelete);
-
-        if (id == -1) {
+        if (!removed) {
             throw new AlbumException(String.format("Post with id=%d is not found in album", postIdToDelete));
         }
 
-        posts.remove(id);
-        album.setPosts(posts);
-
-        albumRepository.save(album);
+        log.info("Post with id {} successfully removed from album with id {}", postIdToDelete, albumId);
     }
 
+    @Transactional
     public AlbumDto addPostToAlbum(long albumId, long postId) {
         long userId = userContext.getUserId();
         Album album = addPostToAlbumValidation(userId, albumId, postId);
         album.addPost(postRepository.findById(postId).get());
 
-        albumRepository.save(album);
-
+        log.info("Post with id {} successfully added to album with id {}", postId, albumId);
         return albumMapper.toDto(album);
     }
 
@@ -92,11 +86,10 @@ public class AlbumService {
         checkIfAlbumHasUniqueTitle(albumDto);
 
         Album album = albumMapper.toEntity(albumDto);
-        album.setCreatedAt(LocalDateTime.now());
-        album.setUpdatedAt(LocalDateTime.now());
+        albumRepository.save(album);
 
         log.info("Created album: {}", album);
-        return albumMapper.toDto(albumRepository.save(album));
+        return albumMapper.toDto(album);
     }
 
 
