@@ -4,6 +4,7 @@ import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.service.album.AlbumService;
 import faang.school.postservice.service.album.DeleteResult;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -21,6 +24,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/album")
 public class AlbumController {
     private final AlbumService service;
+
+    @RequestMapping(method = RequestMethod.OPTIONS)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<?> options() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Allow", "GET, POST, PUT, DELETE, OPTIONS");
+
+        return new ResponseEntity<>(headers, HttpStatus.NO_CONTENT);
+    }
 
     @GetMapping("/{id}")
     public AlbumDto getAlbum(@PathVariable long id) {
