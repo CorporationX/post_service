@@ -2,10 +2,11 @@ package faang.school.postservice.util.validator;
 
 import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.scheduledexecutor.ScheduledTaskExecutor;
+import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.util.exception.InvalidKeyException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,10 @@ public class ScheduledTaskControllerValidator {
                     "Some keys are incorrect: " +
                             String.format("entityType: %s, taskType: %s", dto.entityType(), dto.taskType())
             );
+        }
+
+        if (dto.scheduleAt().isBefore(LocalDateTime.now())) {
+            throw new DataValidationException("Scheduled time must be in future");
         }
     }
 }

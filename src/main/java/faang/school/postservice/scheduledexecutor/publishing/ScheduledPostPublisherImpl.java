@@ -14,6 +14,6 @@ public class ScheduledPostPublisherImpl implements ScheduledTaskExecutor {
 
     @Override
     public void execute(ScheduledTaskDto dto) {
-        postService.addToPostBySchedule(dto);
+        postService.actWithPostBySchedule(dto);
     }
 }

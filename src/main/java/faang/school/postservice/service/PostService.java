@@ -5,8 +5,11 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.ScheduledTaskMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.scheduled.ScheduledTask;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.ScheduledTaskRepository;
 import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -28,8 +32,10 @@ public class PostService {
     private final PostServiceValidator validator;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final ScheduledTaskMapper scheduledTaskMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final ScheduledTaskRepository scheduledTaskRepository;
 
     @Transactional
     public PostDto addPost(PostDto dto) {
@@ -123,12 +129,15 @@ public class PostService {
         return postMapper.toDtos(postsByProjectId);
     }
 
-    public void addToPostBySchedule(ScheduledTaskDto dto) {
-        // TODO: 08.08.2023
-    }
+    public void actWithPostBySchedule(ScheduledTaskDto dto) {
+        postRepository.findById(dto.entityId()).orElseThrow(
+                () -> new PostNotFoundException(
+                        "Post with id = " + String.format("%d", dto.entityId()) + " not found")
+        );
 
-    public void addToDeletePostBySchedule(ScheduledTaskDto dto) {
-        // TODO: 08.08.2023
+        ScheduledTask task = scheduledTaskMapper.toEntity(dto);
+
+        scheduledTaskRepository.save(task);
     }
 
     @Async()

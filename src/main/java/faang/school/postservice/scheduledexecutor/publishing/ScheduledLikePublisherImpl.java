@@ -14,6 +14,6 @@ public class ScheduledLikePublisherImpl implements ScheduledTaskExecutor {
 
     @Override
     public void execute(ScheduledTaskDto dto) {
-        likeService.addToMakeLikeBySchedule(dto);
+        likeService.actWithLikeBySchedule(dto);
     }
 }

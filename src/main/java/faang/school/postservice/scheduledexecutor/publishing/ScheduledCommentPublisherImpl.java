@@ -14,6 +14,6 @@ public class ScheduledCommentPublisherImpl implements ScheduledTaskExecutor {
 
     @Override
     public void execute(ScheduledTaskDto dto) {
-        commentService.addToMakeCommentBySchedule(dto);
+        commentService.actWithCommentBySchedule(dto);
     }
 }

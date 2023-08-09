@@ -1,14 +1,18 @@
 package faang.school.postservice.util.validator;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
+import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -58,6 +62,18 @@ public class PostServiceValidator {
         }
         if (!postById.isPublished()) {
             throw new GetPostException("Post is in draft state. It can't be gotten");
+        }
+    }
+
+    public void validateToPublishPostBySchedule(ScheduledTaskDto dto) {
+        // TODO: 09.08.2023  
+    }
+
+    public void validateToDeletePostBySchedule(Optional<Post> post, Long postId) {
+        if (post.isEmpty()) {
+            throw new PostNotFoundException(
+                    "Post with id = " + String.format("%d", postId) + " not found"
+            );
         }
     }
 }
