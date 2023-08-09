@@ -149,6 +149,51 @@ public class AlbumServiceTest {
     }
 
     @Test
+    public void testUpdateAlbum_AlbumNotFound() {
+        long albumId = 1L;
+        AlbumDto updatedAlbumDto = AlbumDto.builder().build();
+
+        when(albumRepository.findById(albumId)).thenReturn(Optional.empty());
+
+        AlbumException albumException = assertThrows(AlbumException.class,
+                () -> albumService.updateAlbum(albumId, updatedAlbumDto));
+
+        assertEquals("Album not found", albumException.getMessage());
+
+        verify(albumRepository, times(1)).findById(albumId);
+        verify(albumRepository, never()).save(any(Album.class));
+        verify(albumMapper, never()).toEntity(updatedAlbumDto);
+        verify(userContext, never()).getUserId();
+    }
+
+    @Test
+    public void testUpdateAlbum_DifferentAuthor() {
+        long albumId = 1L;
+        long authorId = 123L;
+
+        Album existingAlbum = new Album();
+        existingAlbum.setId(albumId);
+        existingAlbum.setAuthorId(456L);
+
+        AlbumDto updatedAlbumDto = AlbumDto.builder().build();
+        updatedAlbumDto.setTitle("Updated Album");
+        updatedAlbumDto.setDescription("Updated description");
+        updatedAlbumDto.setAuthorId(authorId);
+
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(existingAlbum));
+        when(userContext.getUserId()).thenReturn(authorId);
+
+        AlbumException albumException = assertThrows(AlbumException.class,
+                () -> albumService.updateAlbum(albumId, updatedAlbumDto));
+        assertEquals("You can only update your own albums", albumException.getMessage());
+
+        verify(albumRepository, times(1)).findById(albumId);
+        verify(albumRepository, never()).save(any(Album.class));
+        verify(albumMapper, never()).toEntity(updatedAlbumDto);
+        verify(userContext, times(1)).getUserId();
+    }
+
+    @Test
     public void testCreateAlbum() {
         UserDto mockUserDto = getMockUserDto();
         when(userServiceClient.getUser(1L)).thenReturn(mockUserDto);

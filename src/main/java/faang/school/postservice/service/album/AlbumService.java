@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -46,6 +48,28 @@ public class AlbumService {
 
         log.info("Created album: {}", album);
         return albumMapper.toDto(album);
+    }
+
+    @Transactional
+    public AlbumDto updateAlbum(long albumId, AlbumDto updatedAlbum) {
+
+        Album existingAlbum = albumRepository.findById(albumId)
+                .orElseThrow(() -> new AlbumException("Album not found"));
+
+        if (existingAlbum.getAuthorId() != userContext.getUserId()) {
+            throw new AlbumException("You can only update your own albums");
+        }
+
+        Album updatedEntity = albumMapper.toEntity(updatedAlbum);
+        updatedAlbum.setAuthorId(existingAlbum.getAuthorId());
+
+        existingAlbum.setTitle(updatedEntity.getTitle());
+        existingAlbum.setDescription(updatedEntity.getDescription());
+        existingAlbum.setPosts(new ArrayList<>(updatedEntity.getPosts()));
+        existingAlbum.setUpdatedAt(LocalDateTime.now());
+
+        log.info("update album with id {}", albumId);
+        return albumMapper.toDto(existingAlbum);
     }
 
     @Transactional
