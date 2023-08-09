@@ -204,4 +204,38 @@ class PostServiceTest {
                 () -> postService.softDeletePost(id));
         assertEquals("Post is already deleted", exception.getMessage());
     }
+
+    @Test
+    void testGetPostByIdValidData() {
+        long id = 1L;
+        Post post = Post.builder()
+                .id(id)
+                .content("Content")
+                .authorId(1L)
+                .published(true)
+                .build();
+
+        when(postRepository.findById(id)).thenReturn(Optional.of(post));
+
+        PostDto actualDto = postService.getPostById(id);
+
+        assertNotNull(actualDto);
+        assertEquals("Content", actualDto.getContent());
+    }
+
+    @Test
+    void testGetPostByIdInvalidData() {
+        long id = 1L;
+        Post post = Post.builder()
+                .id(id)
+                .content("Content")
+                .authorId(1L)
+                .build();
+
+        when(postRepository.findById(id)).thenReturn(Optional.of(post));
+
+        DataValidationException exception = assertThrows(DataValidationException.class,
+                () -> postService.getPostById(id));
+        assertEquals("Post is not published", exception.getMessage());
+    }
 }
