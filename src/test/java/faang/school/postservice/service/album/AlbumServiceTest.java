@@ -37,9 +37,7 @@ public class AlbumServiceTest {
         long existingId = 1L;
         Album existingAlbum = new Album();
         existingAlbum.setId(existingId);
-        AlbumDto expectedDto = AlbumDto.builder()
-                .id(existingId)
-                .build();
+        AlbumDto expectedDto = AlbumDto.builder().build();
 
         when(albumRepository.findById(existingId)).thenReturn(Optional.of(existingAlbum));
         when(albumMapper.toDto(existingAlbum)).thenReturn(expectedDto);
