@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.repository.AlbumRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AlbumService {
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
@@ -39,7 +41,7 @@ public class AlbumService {
         existingAlbum.setPosts(new ArrayList<>(updatedEntity.getPosts()));
         existingAlbum.setUpdatedAt(LocalDateTime.now());
 
-        Album savedAlbum = albumRepository.save(existingAlbum);
-        return albumMapper.toDto(savedAlbum);
+        log.info("update album with id {}", albumId);
+        return albumMapper.toDto(existingAlbum);
     }
 }
