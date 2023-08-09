@@ -49,3 +49,7 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+postCorrecter:
+  correcter:
+    cron: "0 0 1 * * ?"
