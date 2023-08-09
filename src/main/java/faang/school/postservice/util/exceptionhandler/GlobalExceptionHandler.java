@@ -5,12 +5,14 @@ import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
+import faang.school.postservice.util.exception.InvalidKeyException;
 import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -80,6 +82,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(GetPostException.class)
     public ResponseEntity<ErrorResponse> handleException(GetPostException e) {
         log.error("Error has been occurred when getting post: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(InvalidKeyException.class)
+    public ResponseEntity<ErrorResponse> handleException(InvalidKeyException e) {
+        log.error("Error has been occurred when keys for task: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleException(HttpMessageNotReadableException e) {
+        log.error("Error has been occurred when parsing dto: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }

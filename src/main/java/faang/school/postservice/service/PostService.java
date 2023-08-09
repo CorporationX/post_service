@@ -3,24 +3,21 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.ad.AdRepository;
-import faang.school.postservice.util.exception.DeletePostException;
-import faang.school.postservice.util.exception.GetPostException;
 import faang.school.postservice.util.exception.PostNotFoundException;
-import faang.school.postservice.util.exception.PublishPostException;
-import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
@@ -124,6 +121,19 @@ public class PostService {
         List<Post> postsByProjectId = postRepository.findPublishedPostsByProjectId(projectId);
 
         return postMapper.toDtos(postsByProjectId);
+    }
+
+    public void addToPostBySchedule(ScheduledTaskDto dto) {
+        // TODO: 08.08.2023
+    }
+
+    public void addToDeletePostBySchedule(ScheduledTaskDto dto) {
+        // TODO: 08.08.2023
+    }
+
+    @Async()
+    public CompletableFuture<Void> publishScheduledPosts() {
+        return null; // TODO: 08.08.2023
     }
 
     private Post getPostById(Long id) {
