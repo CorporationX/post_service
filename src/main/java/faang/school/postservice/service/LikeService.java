@@ -52,7 +52,7 @@ public class LikeService {
         try {
             userServiceClient.getUser(likeDto.getUserId());
         } catch (FeignException e) {
-            System.out.println("User with this Id does not exist !");
+            throw new DataValidationException("User with this Id does not exist !");
         }
 
         Post post = postRepository.findById(postId).orElseThrow(
@@ -77,7 +77,7 @@ public class LikeService {
         try {
             userServiceClient.getUser(likeDto.getUserId());
         } catch (FeignException e) {
-            System.out.println("User with this Id does not exist !");
+            throw new DataValidationException("User with this Id does not exist !");
         }
 
         Comment comment = commentRepository.findById(commentId).orElseThrow(
