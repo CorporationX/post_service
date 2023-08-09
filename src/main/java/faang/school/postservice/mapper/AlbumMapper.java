@@ -4,6 +4,7 @@ import faang.school.postservice.dto.album.AlbumCreateDto;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumUpdateDto;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.Post;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,32 +21,32 @@ public interface AlbumMapper {
 
     Album toAlbumCreate(AlbumCreateDto albumCreateDto);
 
-    @Mapping(target = "posts", source = "postsId", qualifiedByName = "toAlbum")
+   @Mapping(target = "posts", source = "postsId", qualifiedByName = "toPosts")
     Album toAlbum(AlbumDto albumDto);
 
-    @Mapping(target = "postsId", source = "posts", qualifiedByName = "toId")
+    @Mapping(target = "postsId", source = "posts", qualifiedByName = "toPostsId")
     AlbumDto toAlbumDto(Album album);
 
-    @Mapping(target = "posts", source = "postsId", qualifiedByName = "toAlbum")
+    @Mapping(target = "posts", source = "postsId", qualifiedByName = "toPosts")
     void updateAlbum(AlbumUpdateDto albumUpdateDto, @MappingTarget Album album);
 
-    @Named("toId")
-    default List<Long> toId(List<Album> albums) {
-        if (albums == null) {
+    @Named(value = "toPostsId")
+    default List<Long> toId(List<Post> posts) {
+        if (posts == null) {
             return new ArrayList<>();
         }
-        return albums.stream().map(Album::getId).toList();
+        return posts.stream().map(Post::getId).toList();
     }
 
-    @Named("toAlbum")
-    default List<Album> toAlbum(List<Long> ids) {
+    @Named(value = "toPosts")
+    default List<Post> toPosts(List<Long> ids) {
         if (ids == null) {
             return new ArrayList<>();
         }
-        List<Album> albums = new ArrayList<>();
+        List<Post> posts = new ArrayList<>();
         for (Long id : ids) {
-            albums.add(Album.builder().id(id).build());
+            posts.add(Post.builder().id(id).build());
         }
-        return albums;
+        return posts;
     }
 }
