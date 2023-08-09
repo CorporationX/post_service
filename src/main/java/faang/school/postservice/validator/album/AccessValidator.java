@@ -33,6 +33,7 @@ public class AccessValidator {
     }
 
     public void validateAccess(Album album, long userId) throws JsonProcessingException {
+        if (userId == album.getAuthorId()) return;
         if (album.getVisibility() == Visibility.EVERYONE) return;
         if (album.getVisibility() == Visibility.ONLY_ME && userId == album.getAuthorId()) return;
 
