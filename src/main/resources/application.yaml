@@ -39,6 +39,9 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  banner:
+    scheduler:
+      cron: "*/10 * * * * *" # every day at midnight
 
 user-service:
   host: localhost
