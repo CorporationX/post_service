@@ -48,7 +48,7 @@ public class AlbumServiceTest {
     private AlbumService albumService;
 
     @Test
-    public void deletePostFromAlbum_ValidInput_PostDeleted_Test() {
+    public void testDeletePostFromAlbum_ValidInput_PostDeleted() {
         long userId = 1L;
         long albumId = 1L;
         long postIdToDelete = 123L;
@@ -69,7 +69,7 @@ public class AlbumServiceTest {
     }
 
     @Test
-    public void deletePostFromAlbum_PostNotInAlbum_AlbumExceptionThrown_Test() {
+    public void testDeletePostFromAlbum_PostNotInAlbum_AlbumExceptionThrown() {
         long userId = 1L;
         long albumId = 1L;
         long postIdToDelete = 123L;
@@ -92,7 +92,7 @@ public class AlbumServiceTest {
 
 
     @Test
-    public void addPostToAlbum_AlbumNotFound_AlbumExceptionThrown_Test() {
+    public void testAddPostToAlbum_AlbumNotFound_AlbumExceptionThrown() {
         long userId = 1L;
         long albumId = 1L;
         long postIdToAdd = 123L;
@@ -108,7 +108,7 @@ public class AlbumServiceTest {
     }
 
     @Test
-    public void addPostToAlbum_UserNotAuthorized_AlbumExceptionThrown_Test() {
+    public void testAddPostToAlbum_UserNotAuthorized_AlbumExceptionThrown() {
         long userId = 1L;
         long albumId = 1L;
         long postIdToAdd = 123L;
@@ -127,7 +127,7 @@ public class AlbumServiceTest {
     }
 
     @Test
-    public void addPostToAlbum_PostAlreadyExists_AlbumExceptionThrown_Test() {
+    public void testAddPostToAlbum_PostAlreadyExists_AlbumExceptionThrown() {
         long userId = 1L;
         long albumId = 1L;
         long postIdToAdd = 123L;
@@ -261,7 +261,7 @@ public class AlbumServiceTest {
         when(userContext.getUserId()).thenReturn(userId);
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
 
-        DeleteResult result = albumService.deleteAlbumOfCertainUser(albumId);
+        DeleteResult result = albumService.deleteAlbum(albumId);
 
         assertEquals(DeleteResult.DELETED, result);
         verify(albumRepository, times(1)).deleteById(albumId);
@@ -273,7 +273,7 @@ public class AlbumServiceTest {
 
         when(albumRepository.findById(albumId)).thenReturn(Optional.empty());
 
-        DeleteResult result = albumService.deleteAlbumOfCertainUser(albumId);
+        DeleteResult result = albumService.deleteAlbum(albumId);
 
         assertEquals(DeleteResult.NOT_FOUND, result);
         verify(albumRepository, never()).deleteById(anyLong());
@@ -288,14 +288,14 @@ public class AlbumServiceTest {
         when(userContext.getUserId()).thenReturn(userId);
         doReturn(Optional.of(album)).when(albumRepository).findById(2L);
 
-        DeleteResult result = albumService.deleteAlbumOfCertainUser(2L);
+        DeleteResult result = albumService.deleteAlbum(2L);
 
         assertEquals(DeleteResult.NOT_AUTHORIZED, result);
         verify(albumRepository, never()).deleteById(anyLong());
     }
 
     @Test
-    public void getAlbum_ShouldReturnUser_WhenExists_Test() {
+    public void testGetAlbum_ShouldReturnUser_WhenExists() {
         long existingId = 1L;
         Album existingAlbum = new Album();
         existingAlbum.setId(existingId);
@@ -313,7 +313,7 @@ public class AlbumServiceTest {
 
 
     @Test
-    public void getAlbum_ShouldThrowAlbumException_WhenAlbumNotFound_Test() {
+    public void testGetAlbum_ShouldThrowAlbumException_WhenAlbumNotFound() {
         long nonExistingId = 999L;
 
         when(albumRepository.findById(nonExistingId)).thenReturn(Optional.empty());

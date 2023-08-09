@@ -22,13 +22,25 @@ import org.springframework.web.bind.annotation.RestController;
 public class AlbumController {
     private final AlbumService service;
 
+    @GetMapping("/{id}")
+    public AlbumDto getAlbum(@PathVariable long id) {
+        return service.getAlbum(id);
+    }
+
     @PostMapping
     public AlbumDto createAlbum(@Validated @RequestBody AlbumDto albumDto) {
         return service.createAlbum(albumDto);
     }
+
+    @PutMapping("/{albumId}")
+    public ResponseEntity<AlbumDto> updateAlbum(@PathVariable long albumId, @Validated @RequestBody AlbumDto updatedAlbum) {
+        service.updateAlbum(albumId, updatedAlbum);
+        return ResponseEntity.accepted().body(updatedAlbum);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAlbum(@PathVariable Long id) {
-        DeleteResult result = service.deleteAlbumOfCertainUser(id);
+        DeleteResult result = service.deleteAlbum(id);
 
         if (result == DeleteResult.NOT_FOUND) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Album not found.");
@@ -48,16 +60,5 @@ public class AlbumController {
     @DeleteMapping("/{albumId}/{postIdToDelete}")
     public void deletePostFromAlbum(@PathVariable long albumId, @PathVariable long postIdToDelete) {
         service.deletePostFromAlbum(albumId, postIdToDelete);
-    }
-
-    @GetMapping("/{id}")
-    public AlbumDto getAlbum(@PathVariable long id) {
-        return service.getAlbum(id);
-    }
-
-    @PutMapping("/{albumId}")
-    public ResponseEntity<AlbumDto> updateAlbum(@PathVariable long albumId, @Validated @RequestBody AlbumDto updatedAlbum) {
-        service.updateAlbum(albumId, updatedAlbum);
-        return ResponseEntity.accepted().body(updatedAlbum);
     }
 }

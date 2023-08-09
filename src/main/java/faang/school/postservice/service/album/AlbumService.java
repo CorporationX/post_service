@@ -73,7 +73,7 @@ public class AlbumService {
     }
 
     @Transactional
-    public DeleteResult deleteAlbumOfCertainUser(Long albumId) {
+    public DeleteResult deleteAlbum(Long albumId) {
         long userId = userContext.getUserId();
         Album album = albumRepository.findById(albumId).orElse(null);
 
