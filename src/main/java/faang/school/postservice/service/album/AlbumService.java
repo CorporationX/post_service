@@ -51,7 +51,7 @@ public class AlbumService {
 
     @Transactional
     public void delete(Long albumId, Long userId) {
-        var album = repository.findById(albumId).orElseThrow(() -> new EntityNotFoundException("Entity wasn`t found"));
+        var album = repository.findById(albumId).orElseThrow(() -> new EntityNotFoundException(String.format("Entity with id: %d wasn`t found" , albumId)));
         accessValidator.validateUpdateAccess(album, userId);
         repository.delete(album);
     }

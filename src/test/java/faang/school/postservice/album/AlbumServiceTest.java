@@ -161,4 +161,14 @@ public class AlbumServiceTest {
         verify(repository, never()).delete(any());
     }
 
+    @Test
+    public void testDeleteAlbum_NotAllowedException() {
+        long albumId = 1L;
+        long userId = 2L;
+        when(repository.findById(albumId)).thenReturn(Optional.of(album));
+        doThrow(new NotAllowedException("Update not allowed")).when(accessValidator).validateUpdateAccess(album, userId);
+
+        assertThrows(NotAllowedException.class, () -> albumService.delete(albumId, userId));
+        verify(repository, never()).delete(any());
+    }
 }
