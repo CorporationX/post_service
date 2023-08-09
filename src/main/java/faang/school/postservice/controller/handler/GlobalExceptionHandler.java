@@ -6,6 +6,9 @@ import faang.school.postservice.exception.EmptyContentInPostException;
 import faang.school.postservice.exception.NoPublishedPostException;
 import faang.school.postservice.exception.SamePostAuthorException;
 import faang.school.postservice.exception.UpdatePostException;
+import faang.school.postservice.exception.DataNotFoundException;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.SameTimeActionException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -66,6 +69,27 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleUpdatePostException(UpdatePostException e) {
         log.error("Update exception", e);
         return new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
+    }
+
+    @ExceptionHandler(DataValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleDataValidationException(DataValidationException e){
+        log.error("Data validation exception", e);
+        return new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
+    }
+
+    @ExceptionHandler(DataNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleDataNotFoundException(DataNotFoundException e){
+        log.error("Data not found exception", e);
+        return new ErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND, LocalDateTime.now());
+    }
+
+    @ExceptionHandler(SameTimeActionException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleSameTimeActionException(SameTimeActionException e){
+        log.error("Same time action exception", e);
+        return new ErrorResponse(e.getMessage(), HttpStatus.CONFLICT, LocalDateTime.now());
     }
 
     @ExceptionHandler(RuntimeException.class)
