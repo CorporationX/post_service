@@ -3,6 +3,8 @@ package faang.school.postservice.controller.album;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.service.album.AlbumService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,19 @@ public class AlbumController {
     @PostMapping
     public AlbumDto createAlbum(@Validated @RequestBody AlbumDto albumDto) {
         return service.createAlbum(albumDto);
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteAlbum(@PathVariable Long id) {
+        DeleteResult result = service.deleteAlbumOfCertainUser(id);
+
+        if (result == DeleteResult.NOT_FOUND) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Album not found.");
+        } else if (result == DeleteResult.NOT_AUTHORIZED) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("You are not authorized to delete this album.");
+        } else {
+            return ResponseEntity.ok("Album deleted successfully.");
+        }
     }
 
     @PostMapping("/{albumId}/{postId}")

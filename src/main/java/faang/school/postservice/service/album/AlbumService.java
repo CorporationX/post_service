@@ -49,6 +49,24 @@ public class AlbumService {
     }
 
     @Transactional
+    public DeleteResult deleteAlbumOfCertainUser(Long albumId) {
+        long userId = userContext.getUserId();
+        Album album = albumRepository.findById(albumId).orElse(null);
+
+        if (album == null) {
+            return DeleteResult.NOT_FOUND;
+        }
+
+        if (album.getAuthorId() != userId) {
+            return DeleteResult.NOT_AUTHORIZED;
+        }
+
+        log.info("Deleting album with id: {}", albumId);
+        albumRepository.deleteById(albumId);
+        return DeleteResult.DELETED;
+    }
+
+    @Transactional
     public void deletePostFromAlbum(long albumId, long postIdToDelete) {
         long userId = userContext.getUserId();
         Album album = deletePostFromAlbumValidation(userId, albumId, postIdToDelete);
