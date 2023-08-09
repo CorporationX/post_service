@@ -20,21 +20,21 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleNotFoundException(EntityNotFoundException ex) {
+    public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException ex) {
         log.error(ex.getMessage(), ex.getCause());
         return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(JsonProcessingException.class)
-    public ResponseEntity<String> handleNotFoundException(JsonProcessingException ex) {
+    public ResponseEntity<String> handleJsonProcessingException(JsonProcessingException ex) {
         log.error(ex.getMessage(), ex.getCause());
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 
     @ExceptionHandler(NotAllowedException.class)
-    public ResponseEntity<String> handleNotFoundException(NotAllowedException ex) {
+    public ResponseEntity<String> handleNotAllowedException(NotAllowedException ex) {
         log.error(ex.getMessage(), ex.getCause());
-        return ResponseEntity.badRequest().body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

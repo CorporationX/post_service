@@ -95,20 +95,6 @@ public class AlbumControllerTest {
         ;
     }
 
-//    пока не понял, как написать тест на выкидывание ошибки
-//    @Test
-//    public void testUpdateAlbumWithoutId() throws Exception {
-//        albumDto.setId(null);
-//        String albumDtoJson = objectMapper.writeValueAsString(albumDto);
-//        when(service.update(Mockito.any(), Mockito.anyLong())).thenReturn(albumDto);
-//
-//        assertThrows(ServletException.class,
-//                () -> mockMvc.perform(put("/api/v1/albums")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .header("x-user-id", albumDto.getAuthorId())
-//                        .content(albumDtoJson)));
-//    }
-
     @Test
     public void testDeleteAlbum() throws Exception {
         long albumId = 1L;

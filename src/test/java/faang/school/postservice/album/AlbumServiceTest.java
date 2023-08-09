@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.NotAllowedException;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Visibility;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -95,6 +97,24 @@ public class AlbumServiceTest {
     }
 
     @Test
+    public void testGettingNotAllowed() throws JsonProcessingException {
+        when(repository.findById(albumDto.getId())).thenReturn(Optional.of(album));
+        doThrow(new NotAllowedException("message")).when(accessValidator).validateAccess(Mockito.any(), Mockito.anyLong());
+        assertThrows(NotAllowedException.class,
+                () -> albumService.getAlbum(albumDto.getId(), albumDto.getAuthorId() + 12));
+    }
+
+    @Test
+    public void testGettingPrivateAlbumException() throws JsonProcessingException {
+        album.setVisibility(Visibility.ONLY_ME);
+        when(repository.findById(albumDto.getId())).thenReturn(Optional.of(album));
+        doThrow(new NotAllowedException("message")).when(accessValidator).validateAccess(album, albumDto.getAuthorId() + 1);
+
+        assertThrows(NotAllowedException.class,
+                () -> albumService.getAlbum(albumDto.getId(), albumDto.getAuthorId() + 1));
+    }
+
+    @Test
     public void UpdateAlbumTest() throws JsonProcessingException {
         albumDto.setAuthorId(12L);
         when(mapper.toEntity(albumDto)).thenReturn(album);
@@ -119,6 +139,7 @@ public class AlbumServiceTest {
 
         verify(repository).delete(album);
     }
+
     @Test
     public void testDeleteAlbum_EntityNotFoundException() {
         long albumId = 1L;

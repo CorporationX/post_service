@@ -25,14 +25,14 @@ public class AlbumService {
     public AlbumDto createAlbum(AlbumDto dto) throws JsonProcessingException {
         var album = mapper.toEntity(dto);
         setAllowedUsers(dto, album);
-        var alDto = mapper.toDto(repository.save(album));
-        setAllowedUsers(album, alDto);
-        return alDto;
+        var albumDto = mapper.toDto(repository.save(album));
+        setAllowedUsers(album, albumDto);
+        return albumDto;
     }
 
     @Transactional
     public AlbumDto getAlbum(Long albumId, Long userId) throws JsonProcessingException {
-        var album = repository.findById(albumId).orElseThrow(() -> new EntityNotFoundException("Entity wasn`t found"));
+        var album = repository.findById(albumId).orElseThrow(() -> new EntityNotFoundException(String.format("Entity with id: %d wasn`t found", albumId)));
         accessValidator.validateAccess(album, userId);
         var responseDto = mapper.toDto(album);
         setAllowedUsers(album, responseDto);
