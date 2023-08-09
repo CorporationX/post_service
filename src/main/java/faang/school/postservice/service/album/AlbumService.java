@@ -27,6 +27,27 @@ public class AlbumService {
     private final UserContext userContext;
     private final PostRepository postRepository;
 
+    @Transactional(readOnly = true)
+    public AlbumDto getAlbum(long id) {
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new AlbumException("There is no album with id = " + id));
+
+        log.info("Album with id = " + id + " was found");
+        return albumMapper.toDto(album);
+    }
+
+    @Transactional
+    public AlbumDto createAlbum(AlbumDto albumDto) {
+        checkIfAuthorExists(albumDto);
+        checkIfAlbumHasUniqueTitle(albumDto);
+
+        Album album = albumMapper.toEntity(albumDto);
+        albumRepository.save(album);
+
+        log.info("Created album: {}", album);
+        return albumMapper.toDto(album);
+    }
+
     @Transactional
     public void deletePostFromAlbum(long albumId, long postIdToDelete) {
         long userId = userContext.getUserId();
@@ -71,14 +92,7 @@ public class AlbumService {
         return album;
     }
 
-    @Transactional(readOnly = true)
-    public AlbumDto getAlbum(long id) {
-        Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new AlbumException("There is no album with id = " + id));
 
-        log.info("Album with id = " + id + " was found");
-        return albumMapper.toDto(album);
-    }
     private Album deletePostFromAlbumValidation(long userId, long albumId, long postId) {
         Album album = validateAlbumAccess(userId, albumId);
 
@@ -86,18 +100,6 @@ public class AlbumService {
                 .orElseThrow(() -> new AlbumException("There is no post with such id"));
 
         return album;
-    }
-
-    @Transactional
-    public AlbumDto createAlbum(AlbumDto albumDto) {
-        checkIfAuthorExists(albumDto);
-        checkIfAlbumHasUniqueTitle(albumDto);
-
-        Album album = albumMapper.toEntity(albumDto);
-        albumRepository.save(album);
-
-        log.info("Created album: {}", album);
-        return albumMapper.toDto(album);
     }
 
 
