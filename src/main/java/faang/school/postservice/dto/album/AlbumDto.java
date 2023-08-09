@@ -19,6 +19,4 @@ public class AlbumDto {
     private String description;
     private long authorId;
     private List<Long> postsIds;
-//    private LocalDateTime createdAt;
-//    private LocalDateTime updatedAt;
 }
