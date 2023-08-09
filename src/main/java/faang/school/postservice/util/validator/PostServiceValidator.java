@@ -3,8 +3,11 @@ package faang.school.postservice.util.validator;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.scheduled.ScheduledEntityType;
+import faang.school.postservice.model.scheduled.ScheduledTask;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
+import faang.school.postservice.util.exception.EntitySchedulingException;
 import faang.school.postservice.util.exception.GetPostException;
 import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
@@ -65,15 +68,16 @@ public class PostServiceValidator {
         }
     }
 
-    public void validateToPublishPostBySchedule(ScheduledTaskDto dto) {
-        // TODO: 09.08.2023  
-    }
-
-    public void validateToDeletePostBySchedule(Optional<Post> post, Long postId) {
+    public void validateToActWithPostBySchedule(Optional<Post> post, Long postId,
+                                                Optional<ScheduledTask> scheduledTask) {
         if (post.isEmpty()) {
             throw new PostNotFoundException(
                     "Post with id = " + String.format("%d", postId) + " not found"
             );
+        }
+
+        if (scheduledTask.isPresent() && scheduledTask.get().getEntityType().equals(ScheduledEntityType.POST)) {
+            throw new EntitySchedulingException("Post with id = " + String.format("%d", postId) + " already scheduled");
         }
     }
 }

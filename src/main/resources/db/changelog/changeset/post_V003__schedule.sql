@@ -2,10 +2,11 @@ CREATE TABLE scheduled_tasks (
     id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY UNIQUE,
     entity_type varchar(255),
     task_type varchar(255),
-    entity_id bigint UNIQUE,
+    entity_id bigint,
     retry_count int DEFAULT 0,
     status varchar(255) DEFAULT 'NEW',
-    scheduled_at timestamptz
+    scheduled_at timestamptz,
+    UNIQUE (entity_type, entity_id)
 );
 
 CREATE INDEX scheduled_tasks_scheduled_at_idx

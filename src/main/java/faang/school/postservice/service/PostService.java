@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ScheduledTaskMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.scheduled.ScheduledEntityType;
 import faang.school.postservice.model.scheduled.ScheduledTask;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ScheduledTaskRepository;
@@ -129,15 +130,18 @@ public class PostService {
         return postMapper.toDtos(postsByProjectId);
     }
 
-    public void actWithPostBySchedule(ScheduledTaskDto dto) {
-        postRepository.findById(dto.entityId()).orElseThrow(
-                () -> new PostNotFoundException(
-                        "Post with id = " + String.format("%d", dto.entityId()) + " not found")
-        );
+    @Transactional
+    public ScheduledTaskDto actWithPostBySchedule(ScheduledTaskDto dto) {
+        Optional<Post> postById = postRepository.findById(dto.entityId());
+        Optional<ScheduledTask> scheduledPostById = scheduledTaskRepository.findPostById(dto.entityId());
+
+        validator.validateToActWithPostBySchedule(postById, dto.entityId(), scheduledPostById);
 
         ScheduledTask task = scheduledTaskMapper.toEntity(dto);
 
-        scheduledTaskRepository.save(task);
+        ScheduledTask entity = scheduledTaskRepository.save(task);
+
+        return scheduledTaskMapper.toDto(entity);
     }
 
     @Async()

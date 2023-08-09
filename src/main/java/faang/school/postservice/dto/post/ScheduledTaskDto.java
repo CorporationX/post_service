@@ -5,9 +5,11 @@ import faang.school.postservice.model.scheduled.ScheduledEntityType;
 import faang.school.postservice.model.scheduled.ScheduledTaskStatus;
 import faang.school.postservice.model.scheduled.ScheduledTaskType;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
 import java.time.LocalDateTime;
 
+@Builder
 public record ScheduledTaskDto(
 
         @NotNull(message = "Need to set entity type: POST, COMMENT OR LIKE")
