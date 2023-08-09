@@ -59,7 +59,7 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PostDto> getNotDeletedDraftsByAuthorId(Long authorId) {
         UserDto user = userServiceClient.getUser(authorId);
         postValidator.validateAuthor(user);
@@ -70,7 +70,7 @@ public class PostService {
                 .toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PostDto> getNotDeletedDraftsByProjectId(Long projectId) {
         ProjectDto project = projectServiceClient.getProject(projectId);
         postValidator.validateProject(project);
@@ -81,7 +81,7 @@ public class PostService {
                 .toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PostDto> getNotDeletedPublishedPostsByAuthorId(Long authorId) {
         UserDto user = userServiceClient.getUser(authorId);
         postValidator.validateAuthor(user);
@@ -92,7 +92,7 @@ public class PostService {
                 .toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PostDto> getNotDeletedPublishedPostsByProjectId(Long projectId) {
         ProjectDto project = projectServiceClient.getProject(projectId);
         postValidator.validateProject(project);
