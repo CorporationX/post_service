@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -75,9 +77,27 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional(readOnly = true)
+    public List<PostDto> getDraftPostByUserId(Long id) {
+        validateUserIdExist(id);
+        List<Post> draftPostsAndSortByCreatedAt = filterDraftPostsAndSortByCreatedAt(postRepository.findByAuthorId(id));
+
+        if (draftPostsAndSortByCreatedAt.isEmpty()) {
+            throw new EntityNotFoundException("Draft post not found");
+        }
+        return postMapper.toDtoList(draftPostsAndSortByCreatedAt);
+    }
+
     private Post getPostIfExist(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Post with the specified id does not exist"));
+    }
+
+    private List<Post> filterDraftPostsAndSortByCreatedAt(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .toList();
     }
 
     private void validateIdPostDto(PostDto postDto) {
@@ -89,23 +109,31 @@ public class PostService {
 
     private void validateAuthorExist(PostDto postDto) {
         if (postDto.getAuthorId() != null) {
-            try {
-                userServiceClient.getUser(postDto.getAuthorId());
-            } catch (FeignException e) {
-                throw new EntityNotFoundException("User with the specified authorId does not exist");
-            }
+            validateUserIdExist(postDto.getAuthorId());
         } else if (postDto.getProjectId() != null) {
-            try {
-                projectServiceClient.getProject(postDto.getProjectId());
-            } catch (FeignException e) {
-                throw new EntityNotFoundException("Project with the specified projectId does not exist");
-            }
+            validateProjectIdExist(postDto.getProjectId());
         }
     }
 
     private void validatePostIsDeleted(Post post) {
         if (post.isDeleted()) {
             throw new DataValidationException("Post is already deleted");
+        }
+    }
+
+    private void validateUserIdExist(Long id) {
+        try {
+            userServiceClient.getUser(id);
+        } catch (FeignException e) {
+            throw new EntityNotFoundException("User with the specified authorId does not exist");
+        }
+    }
+
+    private void validateProjectIdExist(Long id) {
+        try {
+            projectServiceClient.getProject(id);
+        } catch (FeignException e) {
+            throw new EntityNotFoundException("Project with the specified projectId does not exist");
         }
     }
 }
