@@ -128,6 +128,17 @@ public class AlbumServiceTest {
     }
 
     @Test
+    public void UpdateNotAllowedExceptionTest() {
+        long userId = 123L;
+
+        doThrow(new NotAllowedException("Update not allowed")).when(accessValidator).validateUpdateAccess(albumDto, userId);
+
+        assertThrows(NotAllowedException.class, () -> albumService.update(albumDto, userId));
+        verify(accessValidator).validateUpdateAccess(albumDto, userId);
+        verifyNoInteractions(repository);
+    }
+
+    @Test
     public void testDeleteAlbum_Success() {
         long albumId = 1L;
         long userId = 2L;

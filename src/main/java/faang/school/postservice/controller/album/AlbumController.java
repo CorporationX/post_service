@@ -27,7 +27,7 @@ public class AlbumController {
 
     @PutMapping
     public ResponseEntity<AlbumDto> updateAlbum(@RequestHeader(value = "x-user-id") long userId, @RequestBody AlbumDto dto) throws JsonProcessingException {
-        if (dto.getId() == null) throw new DataValidationException("U cannot update an album without id");
+        if (dto.getId() == null) throw new DataValidationException("An album cannot be updated without id");
         var responseDto = service.update(dto, userId);
         return ResponseEntity.ok().body(responseDto);
     }
