@@ -71,6 +71,14 @@ public class AlbumService {
         return album;
     }
 
+    @Transactional(readOnly = true)
+    public AlbumDto getAlbum(long id) {
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new AlbumException("There is no album with id = " + id));
+
+        log.info("Album with id = " + id + " was found");
+        return albumMapper.toDto(album);
+    }
     private Album deletePostFromAlbumValidation(long userId, long albumId, long postId) {
         Album album = validateAlbumAccess(userId, albumId);
 

@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -30,5 +33,10 @@ public class AlbumController {
     @DeleteMapping("/{albumId}/{postIdToDelete}")
     public void deletePostFromAlbum(@PathVariable long albumId, @PathVariable long postIdToDelete) {
         service.deletePostFromAlbum(albumId, postIdToDelete);
+    }
+
+    @GetMapping("/{id}")
+    public AlbumDto getAlbum(@PathVariable long id) {
+        return service.getAlbum(id);
     }
 }
