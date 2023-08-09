@@ -18,7 +18,7 @@ public class AlbumUpdateDto {
 
     private String title;
     private String description;
-    private long authorId;
+    private Long authorId;
     private List<Long> postsId;
     private Visibility visibility;
     private LocalDateTime updatedAt;

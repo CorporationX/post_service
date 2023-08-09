@@ -12,5 +12,5 @@ import lombok.RequiredArgsConstructor;
 public class AlbumCreateDto {
     private String title;
     private String description;
-    private long authorId;
+    private Long authorId;
 }

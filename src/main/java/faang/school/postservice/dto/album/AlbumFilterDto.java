@@ -7,20 +7,15 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
 
 @Data
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class AlbumDto {
+public class AlbumFilterDto {
 
-    private Long id;
     private String title;
-    private String description;
     private Long authorId;
-    private List<Long> postsId;
     private Visibility visibility;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
