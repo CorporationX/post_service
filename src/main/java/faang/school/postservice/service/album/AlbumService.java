@@ -171,7 +171,7 @@ public class AlbumService {
         return filterAlbums(albumRepository.findByAuthorId(userId), albumFilterDto);
     }
 
-    private List<AlbumDto> filterAlbums(Stream<Album> users, AlbumFilterDto filters) {
+    private List<AlbumDto> filterAlbums(Stream<Album> albums, AlbumFilterDto filters) {
         Stream<Album> albumStream = albumRepository.findByAuthorId(userContext.getUserId());
         for (AlbumFilter albumFilter : albumFilters) {
             if (albumFilter.isApplicable(filters)) {
