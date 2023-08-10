@@ -1,6 +1,7 @@
 package faang.school.postservice.controller.album;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.service.album.AlbumService;
 import faang.school.postservice.service.album.DeleteResult;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,6 +51,11 @@ public class AlbumController {
     public ResponseEntity<AlbumDto> updateAlbum(@PathVariable long albumId, @Validated @RequestBody AlbumDto updatedAlbum) {
         service.updateAlbum(albumId, updatedAlbum);
         return ResponseEntity.accepted().body(updatedAlbum);
+    }
+
+    @PostMapping("/{userId}/my-albums")
+    public List<AlbumDto> getMyAlbums(@PathVariable long userId, @RequestBody AlbumFilterDto albumFilterDto) {
+        return service.getMyAlbums(userId, albumFilterDto);
     }
 
     @DeleteMapping("/{id}")
