@@ -1,10 +1,12 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.ResponsePostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
     private final PostService postService;
 
-    @GetMapping("{id}")
+    @PutMapping
+    public ResponsePostDto update(UpdatePostDto dto){
+        return postService.update(dto);
+    }
+
+      @GetMapping("{id}")
     public ResponsePostDto getById(@PathVariable Long id){
         return postService.getById(id);
     }
