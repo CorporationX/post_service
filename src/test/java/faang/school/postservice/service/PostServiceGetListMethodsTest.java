@@ -103,7 +103,7 @@ public class PostServiceGetListMethodsTest {
     @Test
     void testGetUserPostsWithEmptyList() {
         when(userService.getUser(CORRECT_ID)).thenReturn(correctUserDto);
-        when(postRepository.findByAuthorId(CORRECT_ID)).thenReturn(new ArrayList<>());
+        when(postRepository.findByAuthorIdWithLikes(CORRECT_ID)).thenReturn(new ArrayList<>());
 
         List<PostDto> actualList = postService.getUserPosts(CORRECT_ID);
         assertEquals(new ArrayList<>(), actualList);
@@ -112,7 +112,7 @@ public class PostServiceGetListMethodsTest {
     @Test
     void testGetUserPosts() {
         when(userService.getUser(CORRECT_ID)).thenReturn(correctUserDto);
-        when(postRepository.findByAuthorId(CORRECT_ID)).thenReturn(getListOfPost());
+        when(postRepository.findByAuthorIdWithLikes(CORRECT_ID)).thenReturn(getListOfPost());
 
         List<PostDto> actualUserPosts = postService.getUserPosts(CORRECT_ID);
         List<PostDto> expectedUserPost = getCorrectListOfPostDto();
@@ -128,7 +128,7 @@ public class PostServiceGetListMethodsTest {
     @Test
     void testGetProjectPostsWithEmptyList() {
         when(projectService.getProject(CORRECT_ID)).thenReturn(correctProjectDto);
-        when(postRepository.findByProjectId(CORRECT_ID)).thenReturn(new ArrayList<>());
+        when(postRepository.findByProjectIdWithLikes(CORRECT_ID)).thenReturn(new ArrayList<>());
 
         List<PostDto> actualList = postService.getProjectPosts(CORRECT_ID);
         assertEquals(new ArrayList<>(), actualList);
@@ -137,7 +137,7 @@ public class PostServiceGetListMethodsTest {
     @Test
     void testGetProjectPosts() {
         when(projectService.getProject(CORRECT_ID)).thenReturn(correctProjectDto);
-        when(postRepository.findByProjectId(CORRECT_ID)).thenReturn(getListOfPost());
+        when(postRepository.findByProjectIdWithLikes(CORRECT_ID)).thenReturn(getListOfPost());
 
         List<PostDto> actualProjectPosts = postService.getProjectPosts(CORRECT_ID);
         List<PostDto> expectedProjectPosts = getCorrectListOfPostDto();
