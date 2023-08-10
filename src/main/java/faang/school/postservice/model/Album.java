@@ -51,8 +51,8 @@ public class Album {
     @Builder.Default
     private Visibility visibility = Visibility.ONLY_ME;
 
-    @Column(name = "allowed_users", columnDefinition = "json")
-    private String allowed_users;
+    @Column(name = "allowed_usersIds")
+    private String allowedUsersIds;
 
     public void addPost(Post post) {
         posts.add(post);
