@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
@@ -14,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -24,6 +28,42 @@ public class PostService {
     private final ResponsePostMapper responsePostMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+
+    @Transactional(readOnly = true)
+    public List<ResponsePostDto> getAllDraftByAuthor(Long authorId) {
+        return postRepository.findByAuthorId(authorId).stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .map(responsePostMapper::toDto)
+                .sorted(Comparator.comparing(ResponsePostDto::getCreatedAt).reversed())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResponsePostDto> getAllPublishedByAuthor(Long authorId) {
+        return postRepository.findByAuthorId(authorId).stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .map(responsePostMapper::toDto)
+                .sorted(Comparator.comparing(ResponsePostDto::getPublishedAt).reversed())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResponsePostDto> getAllDraftByProject(Long projectId) {
+        return postRepository.findByProjectId(projectId).stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .map(responsePostMapper::toDto)
+                .sorted(Comparator.comparing(ResponsePostDto::getCreatedAt).reversed())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResponsePostDto> getAllPublishedByProject(Long projectId) {
+        return postRepository.findByProjectId(projectId).stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .map(responsePostMapper::toDto)
+                .sorted(Comparator.comparing(ResponsePostDto::getPublishedAt).reversed())
+                .collect(Collectors.toList());
+
 
     @Transactional
     public ResponsePostDto publish(Long postId) {
