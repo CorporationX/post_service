@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.post.ResponsePostDto;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
@@ -16,8 +17,10 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,6 +41,16 @@ class PostServiceTest {
     private PostService postService;
 
     @Test
+    void softDeleteTest() {
+        Post post = Post.builder().id(1L).deleted(false).build();
+
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        ResponsePostDto result = postService.softDelete(1L);
+
+        assertTrue(result.isDeleted());
+    }
+  
     void createTest() {
         CreatePostDto correct = CreatePostDto.builder().authorId(1L).content("Content").build();
         UserDto userDto = new UserDto(1L, "username", "email@com");

@@ -11,6 +11,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -23,6 +24,25 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
+    @Transactional(readOnly = true)
+    public ResponsePostDto getById(Long id) {
+        return responsePostMapper.toDto(
+                postRepository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException("Post is not found"))
+        );
+    }
+
+    @Transactional
+    public ResponsePostDto softDelete(Long id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Post is not found"));
+
+        post.setDeleted(true);
+
+        return responsePostMapper.toDto(post);
+    }
+
+    @Transactional
     public ResponsePostDto createDraft(CreatePostDto dto) {
         Post post = new Post();
 
