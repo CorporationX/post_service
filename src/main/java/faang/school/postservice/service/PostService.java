@@ -64,6 +64,7 @@ public class PostService {
                 .sorted(Comparator.comparing(ResponsePostDto::getPublishedAt).reversed())
                 .collect(Collectors.toList());
 
+    }
 
     @Transactional
     public ResponsePostDto publish(Long postId) {

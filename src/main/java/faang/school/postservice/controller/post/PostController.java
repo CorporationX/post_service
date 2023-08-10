@@ -26,44 +26,47 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping("draft/by-author/{authorId}")
-    public List<ResponsePostDto> getAllDraftByAuthor(@PathVariable Long authorId){
+    public List<ResponsePostDto> getAllDraftByAuthor(@PathVariable Long authorId) {
         return postService.getAllDraftByAuthor(authorId);
     }
+
     @GetMapping("published/by-author/{authorId}")
-    public List<ResponsePostDto> getAllPublishedByAuthor(@PathVariable Long authorId){
+    public List<ResponsePostDto> getAllPublishedByAuthor(@PathVariable Long authorId) {
         return postService.getAllPublishedByAuthor(authorId);
     }
 
     @GetMapping("draft/by-project/{projectId}")
-    public List<ResponsePostDto> getAllDraftByProject(@PathVariable Long projectId){
+    public List<ResponsePostDto> getAllDraftByProject(@PathVariable Long projectId) {
         return postService.getAllDraftByProject(projectId);
     }
-    @GetMapping("published/by-project/{projectId}")
-    public List<ResponsePostDto> getAllPublishedByProject(@PathVariable Long projectId){
-        return postService.getAllPublishedByProject(projectId);
 
-      @PostMapping("{postId}/publish")
-    public ResponsePostDto publish(@PathVariable Long postId){
+    @GetMapping("published/by-project/{projectId}")
+    public List<ResponsePostDto> getAllPublishedByProject(@PathVariable Long projectId) {
+        return postService.getAllPublishedByProject(projectId);
+    }
+
+    @PostMapping("{postId}/publish")
+    public ResponsePostDto publish(@PathVariable Long postId) {
         return postService.publish(postId);
     }
-  
+
     @PutMapping
-    public ResponsePostDto update(UpdatePostDto dto){
+    public ResponsePostDto update(UpdatePostDto dto) {
         return postService.update(dto);
     }
 
     @GetMapping("{id}")
-    public ResponsePostDto getById(@PathVariable Long id){
+    public ResponsePostDto getById(@PathVariable Long id) {
         return postService.getById(id);
     }
 
     @DeleteMapping("{id}")
-    public ResponsePostDto softDelete(@PathVariable Long id){
+    public ResponsePostDto softDelete(@PathVariable Long id) {
         return postService.softDelete(id);
     }
-  
+
     @PostMapping
-    public ResponsePostDto createDraft(@Valid @RequestBody CreatePostDto dto){
+    public ResponsePostDto createDraft(@Valid @RequestBody CreatePostDto dto) {
         return postService.createDraft(dto);
     }
 }
