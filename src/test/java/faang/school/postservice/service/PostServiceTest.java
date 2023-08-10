@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -40,6 +41,17 @@ class PostServiceTest {
     @InjectMocks
     private PostService postService;
 
+    @Test
+    void publishTest(){
+        Post post = Post.builder().id(1L).published(false).deleted(false).build();
+
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        ResponsePostDto result = postService.publish(1L);
+
+        assertTrue(result.isPublished());
+    }
+  
     @Test
     void updateTest() {
         Post post = Post.builder().id(1L).content("Before").build();

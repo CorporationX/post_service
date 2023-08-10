@@ -20,6 +20,8 @@ import java.util.Objects;
 
 import java.time.LocalDateTime;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -27,6 +29,23 @@ public class PostService {
     private final ResponsePostMapper responsePostMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+
+    @Transactional
+    public ResponsePostDto publish(Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post is not found"));
+
+        if (post.isPublished()){
+            throw new IllegalArgumentException("Can't publish already published post");
+        }
+        if (post.isDeleted()){
+            throw new IllegalArgumentException("Post has been deleted");
+        }
+
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+
+        return responsePostMapper.toDto(post);
+    }
 
     @Transactional
     public ResponsePostDto update(UpdatePostDto dto) {

@@ -21,12 +21,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
     private final PostService postService;
 
+    @PostMapping("{postId}/publish")
+    public ResponsePostDto publish(@PathVariable Long postId){
+        return postService.publish(postId);
+    }
+  
     @PutMapping
     public ResponsePostDto update(UpdatePostDto dto){
         return postService.update(dto);
     }
 
-      @GetMapping("{id}")
+    @GetMapping("{id}")
     public ResponsePostDto getById(@PathVariable Long id){
         return postService.getById(id);
     }
@@ -34,7 +39,8 @@ public class PostController {
     @DeleteMapping("{id}")
     public ResponsePostDto softDelete(@PathVariable Long id){
         return postService.softDelete(id);
-      
+    }
+  
     @PostMapping
     public ResponsePostDto createDraft(@Valid @RequestBody CreatePostDto dto){
         return postService.createDraft(dto);
