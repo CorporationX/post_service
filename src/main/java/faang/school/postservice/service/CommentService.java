@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.exeption.DataValidationException;
+import faang.school.postservice.exсeption.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +13,6 @@ public class CommentService {
 
     public Comment getComment(long commentId){
         return commentRepository.findById(commentId).orElseThrow(
-                () -> new DataValidationException("Comment with this Id does not exist !"));
+                () -> new EntityNotFoundException("Comment with this Id does not exist !"));
     }
 }
