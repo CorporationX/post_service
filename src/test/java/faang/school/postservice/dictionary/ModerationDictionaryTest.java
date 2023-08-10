@@ -13,7 +13,7 @@ class ModerationDictionaryTest {
 
     @Test
     void containsUnwantedWords() {
-        assertTrue(moderationDictionary.containsUnwantedWords("This comment contains word3"));
+        assertTrue(moderationDictionary.containsUnwantedWords("This comment contains nigger"));
         assertFalse(moderationDictionary.containsUnwantedWords("This comment is clean"));
     }
 }

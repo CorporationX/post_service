@@ -1,21 +1,30 @@
 package faang.school.postservice.dictionary;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 
 @Component
 @RequiredArgsConstructor
-@PropertySource("classpath:moderation-dictionary.yml")
 public class ModerationDictionary {
-    @Value("${unwantedWords}")
-    private final String[] unwantedWords;
+    private List<String> badWords;
 
+    @PostConstruct
+    private void initialize(){
+        Path path = Path.of("./src/main/resources/dictionary.txt");
+        try {
+            badWords = Files.readAllLines(path).stream().map(word -> word.trim().toLowerCase()).toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public boolean containsUnwantedWords(String text) {
-        return Arrays.stream(unwantedWords).anyMatch(text::contains);
+        return badWords.stream().anyMatch(text.toLowerCase()::contains);
     }
 }
