@@ -26,7 +26,7 @@ public class PostService {
     public ResponsePostDto createDraft(CreatePostDto dto) {
         Post post = new Post();
 
-        validateCreate(dto, post);
+        processOwner(dto, post);
 
         post.setContent(dto.getContent());
         post.setCreatedAt(LocalDateTime.now());
@@ -36,7 +36,7 @@ public class PostService {
         return responsePostMapper.toDto(postRepository.save(post));
     }
 
-    private void validateCreate(CreatePostDto dto, Post post) {
+    private void processOwner(CreatePostDto dto, Post post) {
         if (dto.getAuthorId() != null && dto.getProjectId() != null) {
             throw new IllegalArgumentException("Both AuthorId and ProjectId can't be not null");
         }
