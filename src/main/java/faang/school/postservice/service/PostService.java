@@ -122,7 +122,7 @@ public class PostService {
     public List<PostDto> getUserPosts(long userId) {
         validateUserId(userId);
 
-        List<PostDto> userPosts = postRepository.findByAuthorId(userId).stream()
+        List<PostDto> userPosts = postRepository.findByAuthorIdWithLikes(userId).stream()
                 .filter(post -> post.isPublished() && !post.isDeleted())
                 .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
                 .map(postMapper::toDto)
@@ -135,7 +135,7 @@ public class PostService {
     public List<PostDto> getProjectPosts(long projectId) {
         validateProjectId(projectId);
 
-        List<PostDto> projectPosts = postRepository.findByProjectId(projectId).stream()
+        List<PostDto> projectPosts = postRepository.findByProjectIdWithLikes(projectId).stream()
                 .filter(post -> post.isPublished() && !post.isDeleted())
                 .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
                 .map(postMapper::toDto)
