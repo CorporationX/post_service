@@ -3,8 +3,10 @@ package faang.school.postservice.service.album;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.album.AlbumException;
+import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
@@ -30,6 +32,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,6 +45,11 @@ public class AlbumServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private UserContext userContext;
+    @Mock
+    private AlbumFilter titleFilter;
+
+    @Mock
+    private AlbumFilter descriptionFilter;
     @Mock
     private PostRepository postRepository;
     @InjectMocks
@@ -322,6 +330,42 @@ public class AlbumServiceTest {
         assertEquals(albumException.getMessage(), "There is no album with id = " + nonExistingId);
         verify(albumRepository).findById(nonExistingId);
         verify(albumMapper, never()).toDto(any());
+    }
+
+    @Test
+    public void testGetMyAlbumsWithInvalidUserId() {
+        long userId = 1L;
+        long invalidUserId = 2L;
+        AlbumFilterDto albumFilterDto = new AlbumFilterDto();
+
+        when(userContext.getUserId()).thenReturn(invalidUserId);
+
+        assertThrows(AlbumException.class, () -> albumService.getMyAlbums(userId, albumFilterDto));
+
+        verifyNoInteractions(albumRepository);
+        verifyNoInteractions(titleFilter);
+        verifyNoInteractions(descriptionFilter);
+        verifyNoInteractions(albumMapper);
+    }
+
+    @Test
+    public void testGetMyAlbumsWithoutFilters() {
+        long userId = 1L;
+        AlbumFilterDto albumFilterDto = new AlbumFilterDto();
+
+        Album album = new Album(1L, "Title", "Description", userId, null, null, null);
+        List<Album> albums = new ArrayList<>();
+        albums.add(album);
+
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.of(album));
+        when(albumMapper.toDto(album)).thenReturn(new AlbumDto(/*...*/));
+
+        List<AlbumDto> result = albumService.getMyAlbums(userId, albumFilterDto);
+
+        assertEquals(1, result.size());
+        verifyNoInteractions(titleFilter);
+        verifyNoInteractions(descriptionFilter);
     }
 
     private UserDto getMockUserDto() {
