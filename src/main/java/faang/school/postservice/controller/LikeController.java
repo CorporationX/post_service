@@ -22,19 +22,19 @@ public class LikeController {
         return likeService.addLikeToPost(postId, like);
     }
 
-    @PostMapping("comment/{commentId}/like")
+    @PostMapping("/like/comment/{commentId}")
     public LikeDto addLikeToComment(@PathVariable long commentId, @RequestBody LikeDto like) {
         likeControllerValidator.validate(commentId);
         return likeService.addLikeToComment(commentId, like);
     }
 
-    @DeleteMapping("/user/{userId}/post/{postId}/like")
+    @DeleteMapping("/like/user/{userId}/post/{postId}")
     public void deleteLikeFromPost(long postId, long userId) {
         likeControllerValidator.validate(postId, userId);
         likeService.deleteLikeFromPost(postId, userId);
     }
 
-    @DeleteMapping("/user/{userId}/comment/{commentId}/like")
+    @DeleteMapping("/like/user/{userId}/comment/{commentId}")
     public void deleteLikeFromComment(long commentId, long userId) {
         likeControllerValidator.validate(commentId, userId);
         likeService.deleteLikeFromComment(commentId, userId);
