@@ -3,8 +3,10 @@ package faang.school.postservice.service.album;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.album.AlbumException;
+import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class AlbumService {
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final PostRepository postRepository;
+    private final List<AlbumFilter> albumFilters;
 
     @Transactional(readOnly = true)
     public AlbumDto getAlbum(long id) {
@@ -176,7 +180,7 @@ public class AlbumService {
             }
         });
 
-        albumRepository.addAlbumToFavorites(albumId,userId);
+        albumRepository.addAlbumToFavorites(albumId, userId);
     }
 
     @Transactional
@@ -186,5 +190,27 @@ public class AlbumService {
         log.info("Deleting album from favorites albums with id: {}", albumId);
         albumRepository.deleteAlbumFromFavorites(albumId, userId);
         return DeleteResult.DELETED;
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlbumDto> getMyFavoriteAlbums(long userId, AlbumFilterDto filters) {
+        validationUserExists(userId);
+        return filterAlbums(albumRepository.findFavoriteAlbumsByUserId(userId), filters);
+    }
+
+    private List<AlbumDto> filterAlbums(Stream<Album> albums, AlbumFilterDto filters) {
+        Stream<Album> albumStream = albumRepository.findByAuthorId(userContext.getUserId());
+        for (AlbumFilter albumFilter : albumFilters) {
+            if (albumFilter.isApplicable(filters)) {
+                albumStream = albumFilter.apply(albumStream, filters);
+            }
+        }
+        return albumStream.map(albumMapper::toDto).toList();
+    }
+
+    private void validationUserExists(long userId) {
+        if (userContext.getUserId() != userId) {
+            throw new AlbumException("Incorrect User Id");
+        }
     }
 }

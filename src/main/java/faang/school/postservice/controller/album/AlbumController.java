@@ -1,6 +1,7 @@
 package faang.school.postservice.controller.album;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.service.album.AlbumService;
 import faang.school.postservice.service.album.DeleteResult;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/album")
@@ -35,6 +38,11 @@ public class AlbumController {
     public ResponseEntity<String> removeAlbumFromFavorites(@PathVariable long albumId) {
         service.removeAlbumFromFavorites(albumId);
         return ResponseEntity.accepted().body("Remove album from favorites");
+    }
+
+    @PostMapping("/{userId}/my-favorite-albums")
+    public List<AlbumDto> getMyFavoriteAlbums(@PathVariable long userId, @RequestBody AlbumFilterDto filters) {
+        return service.getMyFavoriteAlbums(userId, filters);
     }
 
     @RequestMapping(method = RequestMethod.OPTIONS)
