@@ -10,17 +10,12 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-
-import java.time.LocalDateTime;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -34,10 +29,10 @@ public class PostService {
     public ResponsePostDto publish(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post is not found"));
 
-        if (post.isPublished()){
+        if (post.isPublished()) {
             throw new IllegalArgumentException("Can't publish already published post");
         }
-        if (post.isDeleted()){
+        if (post.isDeleted()) {
             throw new IllegalArgumentException("Post has been deleted");
         }
 
