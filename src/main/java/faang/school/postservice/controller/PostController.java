@@ -55,4 +55,14 @@ public class PostController {
     public List<PostDto> getDraftPostsByProject(@PathVariable Long id) {
         return postService.getDraftPostsByProjectId(id);
     }
+
+    @GetMapping("/users/{id}")
+    public List<PostDto> getPostsByUser(@PathVariable Long id) {
+        return postService.getPostsByUserId(id);
+    }
+
+    @GetMapping("/projects/{id}")
+    public List<PostDto> getPostsByProject(@PathVariable Long id) {
+        return postService.getPostsByProjectId(id);
+    }
 }
