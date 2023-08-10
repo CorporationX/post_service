@@ -11,6 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,19 +28,21 @@ class CommentServiceTest {
 
     @Test
     void testModerateComment() {
+        List<Comment> comments = createCommentList();
         when(moderationDictionary.containsUnwantedWords("valid")).thenReturn(false);
         when(moderationDictionary.containsUnwantedWords("not valid")).thenReturn(true);
-        when(commentRepository.findNotVerified()).thenReturn(createCommentList());
+        when(commentRepository.findNotVerified()).thenReturn(comments);
 
         commentService.moderateComment();
+
+        assertTrue(comments.get(0).isVerified());
+        assertFalse(comments.get(1).isVerified());
 
         verify(commentRepository).saveAll(anyCollection());
     }
 
     private List<Comment> createCommentList() {
         return List.of(Comment.builder().id(1).content("valid").verified(false).build(),
-                Comment.builder().id(2).content("not valid").verified(false).build(),
-                Comment.builder().id(3).content("not valid").verified(false).build(),
-                Comment.builder().id(4).content("valid").verified(false).build());
+                Comment.builder().id(2).content("not valid").verified(false).build());
     }
 }
