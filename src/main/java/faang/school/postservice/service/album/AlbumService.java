@@ -160,4 +160,22 @@ public class AlbumService {
                     }
                 });
     }
+
+    @Transactional
+    public void addAlbumToFavorites(long albumId) {
+        long userId = userContext.getUserId();
+        UserDto user = userServiceClient.getUser(userId);
+
+        if (user == null) {
+            throw new AlbumException("There is no user with id " + userId);
+        }
+
+        albumRepository.findFavoriteAlbumsByUserId(userId).forEach(album -> {
+            if (album.getId() == albumId) {
+                throw new AlbumException("This album is already added to favorites");
+            }
+        });
+
+        albumRepository.addAlbumToFavorites(albumId,userId);
+    }
 }

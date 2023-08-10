@@ -25,6 +25,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AlbumController {
     private final AlbumService service;
 
+@PostMapping("/{albumId}/favorites")
+public ResponseEntity<String> addAlbumToFavorites(@PathVariable long albumId) {
+    service.addAlbumToFavorites(albumId);
+    return ResponseEntity.accepted().body("Album added to favorites");
+}
+
     @RequestMapping(method = RequestMethod.OPTIONS)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<?> options() {
