@@ -3,12 +3,10 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.HashtagRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,17 +32,9 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<PostDto> getPostsByHashtagOrderByPopularity(String hashtag) {
         hashtag = "#" + hashtag;
-        if (isPopular(hashtag)) {
-            return postMapper.toListDto(getPostsByHashtagByPopularity(hashtag));
-        }
         return postMapper.toListDto(postRepository.findByHashtagOrderByPopularity(hashtag));
     }
 
-    @Transactional(readOnly = true)
-    @Cacheable(value = "popularHashtags", key = "#hashtag")
-    private List<Post> getPostsByHashtagByPopularity(String hashtag) {
-        return postRepository.findByHashtagOrderByPopularity(hashtag);
-    }
 
     /*Метод будет использоваться при создании Post*/
     private void extractHashtags(PostDto postDto) {
@@ -59,7 +49,7 @@ public class PostService {
         postDto.setHashtags(hashtags);
     }
 
-    private boolean isPopular(String hashtag) {
+    public boolean isPopular(String hashtag) {
         return hashtagRepository.getTop10Popular().stream()
                 .map(Hashtag::getHashtag)
                 .anyMatch(tag -> tag.equals(hashtag));
