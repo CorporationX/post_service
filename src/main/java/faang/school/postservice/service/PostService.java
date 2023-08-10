@@ -78,25 +78,26 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostDto> getDraftPostByUserId(Long id) {
-        validateUserIdExist(id);
-        List<Post> draftPostsAndSortByCreatedAt = filterDraftPostsAndSortByCreatedAt(postRepository.findByAuthorId(id));
+    public List<PostDto> getDraftPostsByUserId(Long id) {
+        validateUserExist(id);
+        List<Post> draftPosts = filterDraftPostsAndSortByCreatedAt(postRepository.findByAuthorId(id));
 
-        if (draftPostsAndSortByCreatedAt.isEmpty()) {
+        if (draftPosts.isEmpty()) {
             throw new EntityNotFoundException("Draft post not found");
         }
-        return postMapper.toDtoList(draftPostsAndSortByCreatedAt);
+        return postMapper.toDtoList(draftPosts);
     }
 
-    @Transactional(readOnly = true)
-    public List<PostDto> getDraftPostByProjectId(Long id) {
-        validateProjectIdExist(id);
-        List<Post> draftPostsAndSortByCreatedAt = filterDraftPostsAndSortByCreatedAt(postRepository.findByProjectId(id));
 
-        if (draftPostsAndSortByCreatedAt.isEmpty()) {
+    @Transactional(readOnly = true)
+    public List<PostDto> getDraftPostsByProjectId(Long id) {
+        validateProjectExist(id);
+        List<Post> draftPosts = filterDraftPostsAndSortByCreatedAt(postRepository.findByProjectId(id));
+
+        if (draftPosts.isEmpty()) {
             throw new EntityNotFoundException("Draft post not found");
         }
-        return postMapper.toDtoList(draftPostsAndSortByCreatedAt);
+        return postMapper.toDtoList(draftPosts);
     }
 
     private Post getPostIfExist(Long id) {
@@ -120,9 +121,9 @@ public class PostService {
 
     private void validateAuthorExist(PostDto postDto) {
         if (postDto.getAuthorId() != null) {
-            validateUserIdExist(postDto.getAuthorId());
+            validateUserExist(postDto.getAuthorId());
         } else if (postDto.getProjectId() != null) {
-            validateProjectIdExist(postDto.getProjectId());
+            validateProjectExist(postDto.getProjectId());
         }
     }
 
@@ -132,7 +133,7 @@ public class PostService {
         }
     }
 
-    private void validateUserIdExist(Long id) {
+    private void validateUserExist(Long id) {
         try {
             userServiceClient.getUser(id);
         } catch (FeignException e) {
@@ -140,7 +141,7 @@ public class PostService {
         }
     }
 
-    private void validateProjectIdExist(Long id) {
+    private void validateProjectExist(Long id) {
         try {
             projectServiceClient.getProject(id);
         } catch (FeignException e) {

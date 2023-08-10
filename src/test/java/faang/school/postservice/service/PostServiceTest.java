@@ -274,7 +274,7 @@ class PostServiceTest {
 
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
 
-        List<PostDto> actualDto = postService.getDraftPostByUserId(1L);
+        List<PostDto> actualDto = postService.getDraftPostsByUserId(1L);
 
         assertEquals(2, actualDto.size());
         assertEquals(createdAt1, actualDto.get(1).getCreatedAt());
@@ -299,7 +299,7 @@ class PostServiceTest {
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> postService.getDraftPostByUserId(1L));
+                () -> postService.getDraftPostsByUserId(1L));
         assertEquals("Draft post not found", exception.getMessage());
     }
 
@@ -335,7 +335,7 @@ class PostServiceTest {
 
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
 
-        List<PostDto> actualDto = postService.getDraftPostByProjectId(1L);
+        List<PostDto> actualDto = postService.getDraftPostsByProjectId(1L);
 
         assertEquals(2, actualDto.size());
         assertEquals(createdAt1, actualDto.get(1).getCreatedAt());
@@ -360,7 +360,7 @@ class PostServiceTest {
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> postService.getDraftPostByProjectId(1L));
+                () -> postService.getDraftPostsByProjectId(1L));
         assertEquals("Draft post not found", exception.getMessage());
     }
 }

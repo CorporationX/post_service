@@ -48,11 +48,11 @@ public class PostController {
 
     @GetMapping("/drafts/users/{id}")
     public List<PostDto> getDraftPostsByUser(@PathVariable Long id) {
-        return postService.getDraftPostByUserId(id);
+        return postService.getDraftPostsByUserId(id);
     }
 
     @GetMapping("/drafts/projects/{id}")
     public List<PostDto> getDraftPostsByProject(@PathVariable Long id) {
-        return postService.getDraftPostByProjectId(id);
+        return postService.getDraftPostsByProjectId(id);
     }
 }
