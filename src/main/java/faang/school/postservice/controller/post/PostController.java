@@ -16,20 +16,20 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
 
-    @GetMapping("draft/{authorId}")
+    @GetMapping("draft/by-author/{authorId}")
     public List<ResponsePostDto> getAllDraftByAuthor(@PathVariable Long authorId){
         return postService.getAllDraftByAuthor(authorId);
     }
-    @GetMapping("published/{authorId}")
+    @GetMapping("published/by-author/{authorId}")
     public List<ResponsePostDto> getAllPublishedByAuthor(@PathVariable Long authorId){
         return postService.getAllPublishedByAuthor(authorId);
     }
 
-    @GetMapping("draft/{projectId}")
+    @GetMapping("draft/by-project/{projectId}")
     public List<ResponsePostDto> getAllDraftByProject(@PathVariable Long projectId){
         return postService.getAllDraftByProject(projectId);
     }
-    @GetMapping("published/{projectId}")
+    @GetMapping("published/by-project/{projectId}")
     public List<ResponsePostDto> getAllPublishedByProject(@PathVariable Long projectId){
         return postService.getAllPublishedByProject(projectId);
     }
