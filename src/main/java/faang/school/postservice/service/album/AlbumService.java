@@ -178,4 +178,13 @@ public class AlbumService {
 
         albumRepository.addAlbumToFavorites(albumId,userId);
     }
+
+    @Transactional
+    public DeleteResult removeAlbumFromFavorites(long albumId) {
+        long userId = userContext.getUserId();
+
+        log.info("Deleting album from favorites albums with id: {}", albumId);
+        albumRepository.deleteAlbumFromFavorites(albumId, userId);
+        return DeleteResult.DELETED;
+    }
 }
