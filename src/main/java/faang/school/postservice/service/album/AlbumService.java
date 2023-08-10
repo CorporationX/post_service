@@ -3,8 +3,10 @@ package faang.school.postservice.service.album;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.album.AlbumException;
+import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
     private final UserServiceClient userServiceClient;
+    private final List<AlbumFilter> albumFilters;
     private final UserContext userContext;
     private final PostRepository postRepository;
 
@@ -159,5 +163,16 @@ public class AlbumService {
                         throw new AlbumException("Title of the album should be unique");
                     }
                 });
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlbumDto> findAllAlbums(AlbumFilterDto albumFilterDto) {
+        Stream<Album> allAlbums = albumRepository.findAll().stream();
+        for (AlbumFilter albumFilter : albumFilters) {
+            if (albumFilter.isApplicable(albumFilterDto)) {
+                allAlbums = albumFilter.apply(allAlbums, albumFilterDto);
+            }
+        }
+        return allAlbums.map(albumMapper::toDto).toList();
     }
 }

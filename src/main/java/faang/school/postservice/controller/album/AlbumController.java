@@ -1,6 +1,7 @@
 package faang.school.postservice.controller.album;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.service.album.AlbumService;
 import faang.school.postservice.service.album.DeleteResult;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -73,4 +76,10 @@ public class AlbumController {
     public void deletePostFromAlbum(@PathVariable long albumId, @PathVariable long postIdToDelete) {
         service.deletePostFromAlbum(albumId, postIdToDelete);
     }
+
+    @PostMapping("/all")
+    public List<AlbumDto> findAllAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
+        return service.findAllAlbums(albumFilterDto);
+    }
+
 }
