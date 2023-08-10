@@ -100,6 +100,28 @@ public class PostService {
         return postMapper.toDtoList(draftPosts);
     }
 
+    @Transactional(readOnly = true)
+    public List<PostDto> getPostsByUserId(Long id) {
+        validateUserExist(id);
+        List<Post> posts = filterPublishedPostsAndSortByPublishedAt(postRepository.findByAuthorId(id));
+
+        if (posts.isEmpty()) {
+            throw new EntityNotFoundException("Posts not found");
+        }
+        return postMapper.toDtoList(posts);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostDto> getPostsByProjectId(Long id) {
+        validateProjectExist(id);
+        List<Post> posts = filterPublishedPostsAndSortByPublishedAt(postRepository.findByProjectId(id));
+
+        if (posts.isEmpty()) {
+            throw new EntityNotFoundException("Posts not found");
+        }
+        return postMapper.toDtoList(posts);
+    }
+
     private Post getPostIfExist(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Post with the specified id does not exist"));
@@ -109,6 +131,13 @@ public class PostService {
         return posts.stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .toList();
+    }
+
+    private List<Post> filterPublishedPostsAndSortByPublishedAt(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .toList();
     }
 
