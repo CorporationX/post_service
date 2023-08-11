@@ -193,9 +193,8 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlbumDto> getMyFavoriteAlbums(long userId, AlbumFilterDto filters) {
-        validationUserExists(userId);
-        return filterAlbums(albumRepository.findFavoriteAlbumsByUserId(userId), filters);
+    public List<AlbumDto> getMyFavoriteAlbums(AlbumFilterDto filters) {
+        return filterAlbums(albumRepository.findFavoriteAlbumsByUserId(userContext.getUserId()), filters);
     }
 
     private List<AlbumDto> filterAlbums(Stream<Album> albums, AlbumFilterDto filters) {
@@ -206,11 +205,5 @@ public class AlbumService {
             }
         }
         return albumStream.map(albumMapper::toDto).toList();
-    }
-
-    private void validationUserExists(long userId) {
-        if (userContext.getUserId() != userId) {
-            throw new AlbumException("Incorrect User Id");
-        }
     }
 }

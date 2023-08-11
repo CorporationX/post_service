@@ -40,9 +40,9 @@ public class AlbumController {
         return ResponseEntity.accepted().body("Remove album from favorites");
     }
 
-    @PostMapping("/{userId}/my-favorite-albums")
-    public List<AlbumDto> getMyFavoriteAlbums(@PathVariable long userId, @RequestBody AlbumFilterDto filters) {
-        return service.getMyFavoriteAlbums(userId, filters);
+    @PostMapping("/my-favorite-albums")
+    public List<AlbumDto> getMyFavoriteAlbums(AlbumFilterDto filters) {
+        return service.getMyFavoriteAlbums(filters);
     }
 
     @RequestMapping(method = RequestMethod.OPTIONS)
