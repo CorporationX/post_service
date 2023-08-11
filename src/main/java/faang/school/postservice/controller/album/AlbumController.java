@@ -21,13 +21,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/album")
+@RequestMapping("/api/v1/albums")
 public class AlbumController {
     private final AlbumService service;
 
-    @GetMapping("/{id}")
-    public AlbumDto getAlbum(@PathVariable long id) {
-        return service.getAlbum(id);
+    @GetMapping("/{albumId}")
+    public AlbumDto getAlbum(@PathVariable long albumId) {
+        return service.getAlbum(albumId);
     }
 
     @GetMapping("/my-favorite-albums")
@@ -67,9 +67,9 @@ public class AlbumController {
         return ResponseEntity.accepted().body(updatedAlbum);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteAlbum(@PathVariable Long id) {
-        DeleteResult result = service.deleteAlbum(id);
+    @DeleteMapping("/{albumId}")
+    public ResponseEntity<String> deleteAlbum(@PathVariable Long albumId) {
+        DeleteResult result = service.deleteAlbum(albumId);
 
         if (result == DeleteResult.NOT_FOUND) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Album not found.");
