@@ -129,6 +129,21 @@ public class AlbumService {
         return foundAlbum;
     }
 
+    @Transactional(readOnly = true)
+    public List<AlbumDto> getMyAlbums( AlbumFilterDto albumFilterDto) {
+        return filterAlbums(albumRepository.findByAuthorId(userContext.getUserId()), albumFilterDto);
+    }
+
+    private List<AlbumDto> filterAlbums(Stream<Album> albums, AlbumFilterDto filters) {
+        Stream<Album> albumStream = albumRepository.findByAuthorId(userContext.getUserId());
+        for (AlbumFilter albumFilter : albumFilters) {
+            if (albumFilter.isApplicable(filters)) {
+                albumStream = albumFilter.apply(albumStream, filters);
+            }
+        }
+        return albumStream.map(albumMapper::toDto).toList();
+    }
+
     private Album addPostToAlbumValidation(long userId, long albumId, long postId) {
         Album album = validateAlbumAccess(userId, albumId);
 
