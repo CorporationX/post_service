@@ -166,9 +166,8 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlbumDto> getMyAlbums(long userId, AlbumFilterDto albumFilterDto) {
-        validationUserExists(userId);
-        return filterAlbums(albumRepository.findByAuthorId(userId), albumFilterDto);
+    public List<AlbumDto> getMyAlbums( AlbumFilterDto albumFilterDto) {
+        return filterAlbums(albumRepository.findByAuthorId(userContext.getUserId()), albumFilterDto);
     }
 
     private List<AlbumDto> filterAlbums(Stream<Album> albums, AlbumFilterDto filters) {
@@ -179,11 +178,5 @@ public class AlbumService {
             }
         }
         return albumStream.map(albumMapper::toDto).toList();
-    }
-
-    private void validationUserExists(long userId) {
-        if (userContext.getUserId() != userId) {
-            throw new AlbumException("Incorrect User Id");
-        }
     }
 }

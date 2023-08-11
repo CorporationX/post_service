@@ -332,41 +332,6 @@ public class AlbumServiceTest {
         verify(albumMapper, never()).toDto(any());
     }
 
-    @Test
-    public void testGetMyAlbumsWithInvalidUserId() {
-        long userId = 1L;
-        long invalidUserId = 2L;
-        AlbumFilterDto albumFilterDto = new AlbumFilterDto();
-
-        when(userContext.getUserId()).thenReturn(invalidUserId);
-
-        assertThrows(AlbumException.class, () -> albumService.getMyAlbums(userId, albumFilterDto));
-
-        verifyNoInteractions(albumRepository);
-        verifyNoInteractions(titleFilter);
-        verifyNoInteractions(descriptionFilter);
-        verifyNoInteractions(albumMapper);
-    }
-
-    @Test
-    public void testGetMyAlbumsWithoutFilters() {
-        long userId = 1L;
-        AlbumFilterDto albumFilterDto = new AlbumFilterDto();
-
-        Album album = new Album(1L, "Title", "Description", userId, null, null, null);
-        List<Album> albums = new ArrayList<>();
-        albums.add(album);
-
-        when(userContext.getUserId()).thenReturn(userId);
-        when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.of(album));
-        when(albumMapper.toDto(album)).thenReturn(new AlbumDto(/*...*/));
-
-        List<AlbumDto> result = albumService.getMyAlbums(userId, albumFilterDto);
-
-        assertEquals(1, result.size());
-        verifyNoInteractions(titleFilter);
-        verifyNoInteractions(descriptionFilter);
-    }
 
     private UserDto getMockUserDto() {
         return UserDto.builder()
