@@ -6,66 +6,92 @@ import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.album.AlbumUpdateDto;
 import faang.school.postservice.service.AlbumService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/posts")
 public class AlbumController {
     private final AlbumService albumService;
 
-    public AlbumDto createAlbum(AlbumCreateDto albumCreateDto) {
+    @PostMapping("/albums")
+    public AlbumDto createAlbum(@RequestBody AlbumCreateDto albumCreateDto) {
         createValidation(albumCreateDto);
         return albumService.createAlbum(albumCreateDto);
     }
 
-    public void addPostToAlbum(Long albumId, Long postId) {
+    @PostMapping("/albums/{albumId}/posts/{postId}")
+    public void addPostToAlbum(@PathVariable Long albumId,@PathVariable Long postId) {
         validateId(albumId);
         validateId(postId);
+
         albumService.addPostToAlbum(albumId, postId);
     }
 
-    public void deletePostFromAlbum(Long albumId, Long postId) {
+    @DeleteMapping("/albums/{albumId}/posts/{postId}")
+    public void deletePostFromAlbum(@PathVariable Long albumId,@PathVariable Long postId) {
         validateId(albumId);
         validateId(postId);
+
         albumService.deletePostFromAlbum(albumId, postId);
     }
 
-    public void addAlbumToFavorites(Long albumId) {
+    @PostMapping("/albums/favorites/{albumId}")
+    public void addAlbumToFavorites(@PathVariable Long albumId) {
         validateId(albumId);
+
         albumService.addAlbumToFavorites(albumId);
     }
 
-    public void deleteAlbumFromFavorites(Long albumId) {
+    @DeleteMapping("/albums/favorites/{albumId}")
+    public void deleteAlbumFromFavorites(@PathVariable Long albumId) {
         validateId(albumId);
+
         albumService.deleteAlbumFromFavorites(albumId);
     }
 
-    public AlbumDto findByWithPosts(Long albumId) {
+    @GetMapping("/albums/{albumId}")
+    public AlbumDto findByWithPosts(@PathVariable Long albumId) {
         validateId(albumId);
+
         return albumService.findByIdWithPosts(albumId);
     }
 
-    public List<AlbumDto> findAListOfAllYourAlbums(AlbumFilterDto albumFilterDto) {
+    @PostMapping("/albums/filter/all")
+    public List<AlbumDto> findAListOfAllYourAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
         return albumService.findAListOfAllYourAlbums(albumFilterDto);
     }
 
-    public List<AlbumDto> findListOfAllAlbumsInTheSystem(AlbumFilterDto albumFilterDto) {
+    @PostMapping("/albums/filter/all/systems")
+    public List<AlbumDto> findListOfAllAlbumsInTheSystem(@RequestBody AlbumFilterDto albumFilterDto) {
         return albumService.findListOfAllAlbumsInTheSystem(albumFilterDto);
     }
 
-    public List<AlbumDto> findListOfAllYourFavorites(AlbumFilterDto albumFilterDto) {
+    @PostMapping("/albums/filter/all/favorites")
+    public List<AlbumDto> findListOfAllYourFavorites(@RequestBody AlbumFilterDto albumFilterDto) {
         return albumService.findAListOfAllYourFavoriteAlbums(albumFilterDto);
     }
 
-    public AlbumDto updateAlbum(Long albumId, AlbumUpdateDto albumUpdateDto) {
+    @PutMapping("/albums/{albumId}")
+    public AlbumDto updateAlbum(@PathVariable Long albumId,@RequestBody AlbumUpdateDto albumUpdateDto) {
         validateId(albumId);
+
         return albumService.updateAlbumAuthor(albumId, albumUpdateDto);
     }
 
-    public void deleteAlbum(Long albumId) {
+    @DeleteMapping("/albums/{albumId}")
+    public void deleteAlbum(@PathVariable Long albumId) {
         validateId(albumId);
+
         albumService.deleteAlbum(albumId);
     }
 
