@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
@@ -13,7 +14,6 @@ import faang.school.postservice.util.exception.GetPostException;
 import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
-import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
