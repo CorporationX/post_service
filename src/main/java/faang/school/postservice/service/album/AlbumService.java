@@ -29,9 +29,9 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
     private final UserServiceClient userServiceClient;
+    private final List<AlbumFilter> albumFilters;
     private final UserContext userContext;
     private final PostRepository postRepository;
-    private final List<AlbumFilter> albumFilters;
 
     @Transactional(readOnly = true)
     public AlbumDto getAlbum(long id) {
@@ -166,17 +166,13 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlbumDto> getMyAlbums( AlbumFilterDto albumFilterDto) {
-        return filterAlbums(albumRepository.findByAuthorId(userContext.getUserId()), albumFilterDto);
-    }
-
-    private List<AlbumDto> filterAlbums(Stream<Album> albums, AlbumFilterDto filters) {
-        Stream<Album> albumStream = albumRepository.findByAuthorId(userContext.getUserId());
+    public List<AlbumDto> findAllAlbums(AlbumFilterDto albumFilterDto) {
+        Stream<Album> allAlbums = albumRepository.findAll().stream();
         for (AlbumFilter albumFilter : albumFilters) {
-            if (albumFilter.isApplicable(filters)) {
-                albumStream = albumFilter.apply(albumStream, filters);
+            if (albumFilter.isApplicable(albumFilterDto)) {
+                allAlbums = albumFilter.apply(allAlbums, albumFilterDto);
             }
         }
-        return albumStream.map(albumMapper::toDto).toList();
+        return allAlbums.map(albumMapper::toDto).toList();
     }
 }

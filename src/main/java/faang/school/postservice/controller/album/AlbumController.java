@@ -70,4 +70,9 @@ public class AlbumController {
     public void deletePostFromAlbum(@PathVariable long albumId, @PathVariable long postIdToDelete) {
         service.deletePostFromAlbum(albumId, postIdToDelete);
     }
+
+    @GetMapping
+    public List<AlbumDto> findAllAlbums(AlbumFilterDto albumFilterDto) {
+        return service.findAllAlbums(albumFilterDto);
+    }
 }
