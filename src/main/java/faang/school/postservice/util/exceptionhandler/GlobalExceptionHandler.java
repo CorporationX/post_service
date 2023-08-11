@@ -1,4 +1,4 @@
-package faang.school.postservice.util.exceptionhandler;
+package faang.school.postservice.util.exceptionHandler;
 
 import faang.school.postservice.dto.response.ErrorResponse;
 import faang.school.postservice.util.exception.CreatePostException;
