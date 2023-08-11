@@ -5,15 +5,18 @@ import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
+import faang.school.postservice.util.exception.NotFoundException;
 import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.time.LocalDateTime;
 
@@ -82,5 +85,12 @@ public class GlobalExceptionHandler {
         log.error("Error has been occurred when getting post: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public faang.school.postservice.util.exceptionHandler.ErrorResponse handleNotFoundException(NotFoundException ex) {
+        log.error("Not found exception occurred.", ex);
+        return new faang.school.postservice.util.exceptionHandler.ErrorResponse(ex.getMessage());
     }
 }
