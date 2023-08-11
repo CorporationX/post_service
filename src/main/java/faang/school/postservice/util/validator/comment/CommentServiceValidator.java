@@ -7,6 +7,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.util.exceptionHandler.ErrorCommentMessage;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +17,9 @@ public class CommentServiceValidator {
     private final UserServiceClient userServiceClient;
 
     public void validateExistingUserAtCommentDto(CommentDto commentDto) {
-        UserDto userDto = userServiceClient.getUser(commentDto.getAuthorId());
-        if (userDto == null || userDto.getId() == null) {
+        try {
+            UserDto userDto = userServiceClient.getUser(commentDto.getAuthorId());
+        } catch (FeignException e) {
             throw new NotFoundException(ErrorCommentMessage.getAuthorIdWasNotFoundMessage(commentDto.getAuthorId()));
         }
     }

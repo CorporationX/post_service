@@ -6,7 +6,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.repository.PostRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -21,7 +21,7 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class CommentMapper {
     @Autowired
-    protected PostService postService;
+    protected PostRepository postRepository;
     @Autowired
     protected LikeRepository likeRepository;
 
@@ -48,7 +48,8 @@ public abstract class CommentMapper {
     protected Post mapPostIdToPost(Long postId) {
         if (postId == null)
             throw new NotFoundException("Comment must be related to the post! But given nothing in field postId");
-        return postService.getPostById(postId);
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException("Post with id " + postId + " was not found!"));
     }
 
     @Named("mapLikesIdsToList")

@@ -6,7 +6,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CommentMapperTest {
     @Mock
-    private PostService postService;
+    private PostRepository postRepository;
 
     @Mock
     private LikeRepository likeRepository;
@@ -54,8 +54,8 @@ class CommentMapperTest {
 
     @Test
     public void testToEntityMethodValid() {
-        Mockito.when(postService.getPostById(POST.getId()))
-                .thenReturn(POST);
+        Mockito.when(postRepository.findById(POST.getId()))
+                .thenReturn(Optional.of(POST));
         LIKES.forEach(like -> {
             Mockito.when(likeRepository.findById(like.getId()))
                     .thenReturn(Optional.of(like));
@@ -68,8 +68,8 @@ class CommentMapperTest {
 
     @Test
     public void testUpdateMethodValid() {
-        Mockito.when(postService.getPostById(POST.getId()))
-                .thenReturn(POST);
+        Mockito.when(postRepository.findById(POST.getId()))
+                .thenReturn(Optional.of(POST));
         LIKES.forEach(like -> {
             Mockito.when(likeRepository.findById(like.getId()))
                     .thenReturn(Optional.of(like));
@@ -83,7 +83,7 @@ class CommentMapperTest {
 
     @Test
     public void testConvertMethodInvalidPost() {
-        Mockito.when(postService.getPostById(POST.getId()))
+        Mockito.when(postRepository.findById(POST.getId()))
                 .thenThrow(new NotFoundException("Post with id " + POST.getId() + " was not found!"));
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> commentMapper.toEntity(commentDto));
@@ -92,8 +92,8 @@ class CommentMapperTest {
 
     @Test
     public void testConvertMethodInvalidLikes() {
-        Mockito.when(postService.getPostById(Mockito.anyLong()))
-                .thenReturn(POST);
+        Mockito.when(postRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(POST));
         Mockito.when(likeRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
         NotFoundException exception = assertThrows(NotFoundException.class,
