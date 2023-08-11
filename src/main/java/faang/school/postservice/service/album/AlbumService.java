@@ -3,6 +3,7 @@ package faang.school.postservice.service.album;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.album.AlbumException;
 import faang.school.postservice.filter.album.AlbumFilter;
@@ -39,6 +40,27 @@ public class AlbumService {
 
         log.info("Album with id = " + id + " was found");
         return albumMapper.toDto(album);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlbumDto> getMyAlbums(AlbumFilterDto albumFilterDto) {
+        return filterAlbums(albumRepository.findByAuthorId(userContext.getUserId()), albumFilterDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlbumDto> findAllAlbums(AlbumFilterDto albumFilterDto) {
+        Stream<Album> allAlbums = albumRepository.findAll().stream();
+        for (AlbumFilter albumFilter : albumFilters) {
+            if (albumFilter.isApplicable(albumFilterDto)) {
+                allAlbums = albumFilter.apply(allAlbums, albumFilterDto);
+            }
+        }
+        return allAlbums.map(albumMapper::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlbumDto> getMyFavoriteAlbums(AlbumFilterDto filters) {
+        return filterAlbums(albumRepository.findFavoriteAlbumsByUserId(userContext.getUserId()), filters);
     }
 
     @Transactional
@@ -94,6 +116,34 @@ public class AlbumService {
     }
 
     @Transactional
+    public AlbumDto addPostToAlbum(long albumId, long postId) {
+        long userId = userContext.getUserId();
+        Album album = addPostToAlbumValidation(userId, albumId, postId);
+        album.addPost(postRepository.findById(postId).get());
+
+        log.info("Post with id {} successfully added to album with id {}", postId, albumId);
+        return albumMapper.toDto(album);
+    }
+
+    @Transactional
+    public void addAlbumToFavorites(long albumId) {
+        long userId = userContext.getUserId();
+        UserDto user = userServiceClient.getUser(userId);
+
+        if (user == null) {
+            throw new AlbumException("There is no user with id " + userId);
+        }
+
+        albumRepository.findFavoriteAlbumsByUserId(userId).forEach(album -> {
+            if (album.getId() == albumId) {
+                throw new AlbumException("This album is already added to favorites");
+            }
+        });
+
+        albumRepository.addAlbumToFavorites(albumId, userId);
+    }
+
+    @Transactional
     public void deletePostFromAlbum(long albumId, long postIdToDelete) {
         long userId = userContext.getUserId();
         Album album = deletePostFromAlbumValidation(userId, albumId, postIdToDelete);
@@ -109,13 +159,11 @@ public class AlbumService {
     }
 
     @Transactional
-    public AlbumDto addPostToAlbum(long albumId, long postId) {
+    public void removeAlbumFromFavorites(long albumId) {
         long userId = userContext.getUserId();
-        Album album = addPostToAlbumValidation(userId, albumId, postId);
-        album.addPost(postRepository.findById(postId).get());
 
-        log.info("Post with id {} successfully added to album with id {}", postId, albumId);
-        return albumMapper.toDto(album);
+        log.info("Deleting album from favorites albums with id: {}", albumId);
+        albumRepository.deleteAlbumFromFavorites(albumId, userId);
     }
 
     private Album validateAlbumAccess(long userId, long albumId) {
@@ -128,20 +176,6 @@ public class AlbumService {
         return foundAlbum;
     }
 
-    @Transactional(readOnly = true)
-    public List<AlbumDto> getMyAlbums( AlbumFilterDto albumFilterDto) {
-        return filterAlbums(albumRepository.findByAuthorId(userContext.getUserId()), albumFilterDto);
-    }
-
-    private List<AlbumDto> filterAlbums(Stream<Album> albums, AlbumFilterDto filters) {
-        Stream<Album> albumStream = albumRepository.findByAuthorId(userContext.getUserId());
-        for (AlbumFilter albumFilter : albumFilters) {
-            if (albumFilter.isApplicable(filters)) {
-                albumStream = albumFilter.apply(albumStream, filters);
-            }
-        }
-        return albumStream.map(albumMapper::toDto).toList();
-    }
 
     private Album addPostToAlbumValidation(long userId, long albumId, long postId) {
         Album album = validateAlbumAccess(userId, albumId);
@@ -177,49 +211,6 @@ public class AlbumService {
                         throw new AlbumException("Title of the album should be unique");
                     }
                 });
-    }
-
-    @Transactional(readOnly = true)
-    public List<AlbumDto> findAllAlbums(AlbumFilterDto albumFilterDto) {
-        Stream<Album> allAlbums = albumRepository.findAll().stream();
-        for (AlbumFilter albumFilter : albumFilters) {
-            if (albumFilter.isApplicable(albumFilterDto)) {
-                allAlbums = albumFilter.apply(allAlbums, albumFilterDto);
-            }
-        }
-        return allAlbums.map(albumMapper::toDto).toList();
-    }
-
-    @Transactional
-    public void addAlbumToFavorites(long albumId) {
-        long userId = userContext.getUserId();
-        UserDto user = userServiceClient.getUser(userId);
-
-        if (user == null) {
-            throw new AlbumException("There is no user with id " + userId);
-        }
-
-        albumRepository.findFavoriteAlbumsByUserId(userId).forEach(album -> {
-            if (album.getId() == albumId) {
-                throw new AlbumException("This album is already added to favorites");
-            }
-        });
-
-        albumRepository.addAlbumToFavorites(albumId, userId);
-    }
-
-    @Transactional
-    public DeleteResult removeAlbumFromFavorites(long albumId) {
-        long userId = userContext.getUserId();
-
-        log.info("Deleting album from favorites albums with id: {}", albumId);
-        albumRepository.deleteAlbumFromFavorites(albumId, userId);
-        return DeleteResult.DELETED;
-    }
-
-    @Transactional(readOnly = true)
-    public List<AlbumDto> getMyFavoriteAlbums(AlbumFilterDto filters) {
-        return filterAlbums(albumRepository.findFavoriteAlbumsByUserId(userContext.getUserId()), filters);
     }
 
     private List<AlbumDto> filterAlbums(Stream<Album> albums, AlbumFilterDto filters) {

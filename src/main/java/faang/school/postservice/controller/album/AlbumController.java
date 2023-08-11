@@ -25,35 +25,30 @@ import java.util.List;
 public class AlbumController {
     private final AlbumService service;
 
-    @PostMapping("/{albumId}/favorites")
-    public ResponseEntity<String> addAlbumToFavorites(@PathVariable long albumId) {
-        service.addAlbumToFavorites(albumId);
-        return ResponseEntity.accepted().body("Album added to favorites");
+    @GetMapping("/{id}")
+    public AlbumDto getAlbum(@PathVariable long id) {
+        return service.getAlbum(id);
     }
 
-    @DeleteMapping("/{albumId}/favorites")
-    public ResponseEntity<String> removeAlbumFromFavorites(@PathVariable long albumId) {
-        service.removeAlbumFromFavorites(albumId);
-        return ResponseEntity.accepted().body("Remove album from favorites");
-    }
-
-    @PostMapping("/my-favorite-albums")
+    @GetMapping("/my-favorite-albums")
     public List<AlbumDto> getMyFavoriteAlbums(AlbumFilterDto filters) {
         return service.getMyFavoriteAlbums(filters);
     }
 
-    @RequestMapping(method = RequestMethod.OPTIONS)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<?> options() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Allow", "GET, POST, PUT, DELETE, OPTIONS");
-
-        return new ResponseEntity<>(headers, HttpStatus.NO_CONTENT);
+    @GetMapping
+    public List<AlbumDto> findAllAlbums(AlbumFilterDto albumFilterDto) {
+        return service.findAllAlbums(albumFilterDto);
     }
 
-    @GetMapping("/{id}")
-    public AlbumDto getAlbum(@PathVariable long id) {
-        return service.getAlbum(id);
+    @GetMapping("/my-albums")
+    public List<AlbumDto> getMyAlbums(AlbumFilterDto albumFilterDto) {
+        return service.getMyAlbums(albumFilterDto);
+    }
+
+    @PostMapping("/{albumId}/favorites")
+    public ResponseEntity<String> addAlbumToFavorites(@PathVariable long albumId) {
+        service.addAlbumToFavorites(albumId);
+        return ResponseEntity.accepted().body("Album added to favorites");
     }
 
     @PostMapping
@@ -61,15 +56,15 @@ public class AlbumController {
         return service.createAlbum(albumDto);
     }
 
+    @PostMapping("/{albumId}/{postId}")
+    public AlbumDto addPostToAlbum(@PathVariable long albumId, @PathVariable long postId) {
+        return service.addPostToAlbum(albumId, postId);
+    }
+
     @PutMapping("/{albumId}")
     public ResponseEntity<AlbumDto> updateAlbum(@PathVariable long albumId, @Validated @RequestBody AlbumDto updatedAlbum) {
         service.updateAlbum(albumId, updatedAlbum);
         return ResponseEntity.accepted().body(updatedAlbum);
-    }
-
-    @PostMapping("/my-albums")
-    public List<AlbumDto> getMyAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
-        return service.getMyAlbums(albumFilterDto);
     }
 
     @DeleteMapping("/{id}")
@@ -86,18 +81,14 @@ public class AlbumController {
         }
     }
 
-    @PostMapping("/{albumId}/{postId}")
-    public AlbumDto addPostToAlbum(@PathVariable long albumId, @PathVariable long postId) {
-        return service.addPostToAlbum(albumId, postId);
-    }
-
     @DeleteMapping("/{albumId}/{postIdToDelete}")
     public void deletePostFromAlbum(@PathVariable long albumId, @PathVariable long postIdToDelete) {
         service.deletePostFromAlbum(albumId, postIdToDelete);
     }
 
-    @GetMapping
-    public List<AlbumDto> findAllAlbums(AlbumFilterDto albumFilterDto) {
-        return service.findAllAlbums(albumFilterDto);
+    @DeleteMapping("/{albumId}/favorites")
+    public ResponseEntity<String> removeAlbumFromFavorites(@PathVariable long albumId) {
+        service.removeAlbumFromFavorites(albumId);
+        return ResponseEntity.accepted().body("Remove album from favorites");
     }
 }
