@@ -77,9 +77,8 @@ public class AlbumController {
         service.deletePostFromAlbum(albumId, postIdToDelete);
     }
 
-    @PostMapping("/all")
-    public List<AlbumDto> findAllAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
+    @GetMapping
+    public List<AlbumDto> findAllAlbums(AlbumFilterDto albumFilterDto) {
         return service.findAllAlbums(albumFilterDto);
     }
-
 }
