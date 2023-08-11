@@ -37,7 +37,7 @@ public class AlbumService {
             throw new DataValidationException("User is not found");
         }
         if (albumRepository.existsByTitleAndAuthorId(albumCreateDto.getTitle(), albumCreateDto.getAuthorId())) {
-            throw new DataValidationException("Album with this title already exists");
+            throw new IllegalArgumentException("Album with this title already exists");
         }
 
         return albumMapper.toAlbumDto(albumRepository.save(albumMapper.toAlbumCreate(albumCreateDto)));
@@ -90,39 +90,21 @@ public class AlbumService {
     public List<AlbumDto> findAListOfAllYourAlbums(AlbumFilterDto albumFilterDto) {
         Stream<Album> all = albumRepository.findByAuthorId(userContext.getUserId());
 
-        List<AlbumFilter> albums = albumFilters.stream()
-                .filter(filter -> filter.isApplicable(albumFilterDto))
-                .toList();
-        for (AlbumFilter filter : albums) {
-            all = filter.apply(all, albumFilterDto);
-        }
-        return all.map(albumMapper::toAlbumDto).toList();
+        return getFiltersAlbumDtos(albumFilterDto, all);
     }
 
     @Transactional
     public List<AlbumDto> findListOfAllAlbumsInTheSystem(AlbumFilterDto albumFilterDto) {
         Stream<Album> all = albumRepository.findAll().stream();
 
-        List<AlbumFilter> albums = albumFilters.stream()
-                .filter(filter -> filter.isApplicable(albumFilterDto))
-                .toList();
-        for (AlbumFilter filter : albums) {
-            all = filter.apply(all, albumFilterDto);
-        }
-        return all.map(albumMapper::toAlbumDto).toList();
+        return getFiltersAlbumDtos(albumFilterDto, all);
     }
 
     @Transactional
     public List<AlbumDto> findAListOfAllYourFavoriteAlbums(AlbumFilterDto albumFilterDto) {
         Stream<Album> all = albumRepository.findFavoriteAlbumsByUserId(userContext.getUserId());
 
-        List<AlbumFilter> albums = albumFilters.stream()
-                .filter(filter -> filter.isApplicable(albumFilterDto))
-                .toList();
-        for (AlbumFilter filter : albums) {
-            all = filter.apply(all, albumFilterDto);
-        }
-        return all.map(albumMapper::toAlbumDto).toList();
+        return getFiltersAlbumDtos(albumFilterDto, all);
     }
 
     @Transactional
@@ -152,4 +134,15 @@ public class AlbumService {
         return albumRepository.findById(albumId)
                 .orElseThrow(() -> new EntityNotFoundException("Album not found"));
     }
+
+    private List<AlbumDto> getFiltersAlbumDtos(AlbumFilterDto albumFilterDto, Stream<Album> all) {
+        List<AlbumFilter> albums = albumFilters.stream()
+                .filter(filter -> filter.isApplicable(albumFilterDto))
+                .toList();
+        for (AlbumFilter filter : albums) {
+            all = filter.apply(all, albumFilterDto);
+        }
+        return all.map(albumMapper::toAlbumDto).toList();
+    }
+
 }
