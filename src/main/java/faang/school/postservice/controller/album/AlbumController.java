@@ -25,6 +25,31 @@ import java.util.List;
 public class AlbumController {
     private final AlbumService service;
 
+    @PostMapping("/{albumId}/favorites")
+    public ResponseEntity<String> addAlbumToFavorites(@PathVariable long albumId) {
+        service.addAlbumToFavorites(albumId);
+        return ResponseEntity.accepted().body("Album added to favorites");
+    }
+
+    @DeleteMapping("/{albumId}/favorites")
+    public ResponseEntity<String> removeAlbumFromFavorites(@PathVariable long albumId) {
+        service.removeAlbumFromFavorites(albumId);
+        return ResponseEntity.accepted().body("Remove album from favorites");
+    }
+
+    @PostMapping("/my-favorite-albums")
+    public List<AlbumDto> getMyFavoriteAlbums(AlbumFilterDto filters) {
+        return service.getMyFavoriteAlbums(filters);
+    }
+
+    @RequestMapping(method = RequestMethod.OPTIONS)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<?> options() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Allow", "GET, POST, PUT, DELETE, OPTIONS");
+
+        return new ResponseEntity<>(headers, HttpStatus.NO_CONTENT);
+    }
 
     @GetMapping("/{id}")
     public AlbumDto getAlbum(@PathVariable long id) {
