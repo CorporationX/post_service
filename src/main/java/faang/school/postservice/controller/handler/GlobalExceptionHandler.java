@@ -24,17 +24,17 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(AlreadyDeletedException.class)
-    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleAlreadyDeletedException(AlreadyDeletedException e) {
         log.error("Already deleted exception", e);
-        return new ErrorResponse(e.getMessage(), HttpStatus.METHOD_NOT_ALLOWED, LocalDateTime.now());
+        return new ErrorResponse(e.getMessage(), HttpStatus.CONFLICT, LocalDateTime.now());
     }
 
     @ExceptionHandler(AlreadyPostedException.class)
-    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleAlreadyPostedException(AlreadyPostedException e) {
         log.error("Already posted exception", e);
-        return new ErrorResponse(e.getMessage(), HttpStatus.METHOD_NOT_ALLOWED, LocalDateTime.now());
+        return new ErrorResponse(e.getMessage(), HttpStatus.CONFLICT, LocalDateTime.now());
     }
 
     @ExceptionHandler(EmptyContentInPostException.class)
@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoPublishedPostException.class)
-    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleNoPublishedPostException(NoPublishedPostException e) {
         log.error("Post isn't published exception", e);
         return new ErrorResponse(e.getMessage(), HttpStatus.METHOD_NOT_ALLOWED, LocalDateTime.now());
@@ -93,17 +93,10 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(e.getMessage(), HttpStatus.CONFLICT, LocalDateTime.now());
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleRuntimeException(RuntimeException e) {
-        log.error("Runtime exception", e);
-        return new ErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND, LocalDateTime.now());
-    }
-
-    @ExceptionHandler(Error.class)
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleError(Error e) {
-        log.error("ERROR", e);
+    public ErrorResponse handleException(Exception e) {
+        log.error("EXCEPTION", e);
         return new ErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now());
     }
 }
