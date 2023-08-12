@@ -3,7 +3,6 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -12,7 +11,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,7 +74,7 @@ class PostServiceTest {
         when(postRepository.save(post)).thenReturn(post);
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
         PostDto postDto = postService.createPost(postWithAuthorIdDto);
-        verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithAuthorIdDto);
+        verify(postValidator, Mockito.times(1)).validatePostContent(postWithAuthorIdDto);
         assertEquals(postDto, postWithAuthorIdDto);
     }
 
@@ -93,7 +91,7 @@ class PostServiceTest {
         when(postRepository.save(post)).thenReturn(post);
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
         PostDto postDto = postService.createPost(postWithProjectIdDto);
-        verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithProjectIdDto);
+        verify(postValidator, Mockito.times(1)).validatePostContent(postWithProjectIdDto);
         assertEquals(postDto, postWithProjectIdDto);
     }
 

@@ -37,7 +37,7 @@ public class PostService {
         }
 
         postValidator.validatePostCreator(post, project, user);
-        postValidator.validationOfPostCreation(post);
+        postValidator.validatePostContent(post);
 
         Post postEntity = postMapper.toPost(post);
 
@@ -61,9 +61,9 @@ public class PostService {
         Post post = getPostById(postUpdateDto.getId());
         postValidator.validationOfPostUpdate(postUpdateDto, post);
 
-        postMapper.updatePostFromDto(postUpdateDto, post);
+        Post updatedPost = postMapper.toPost(postUpdateDto);
 
-        return postMapper.toDto(postRepository.save(post));
+        return postMapper.toDto(postRepository.save(updatedPost));
     }
 
     @Transactional(readOnly = true)

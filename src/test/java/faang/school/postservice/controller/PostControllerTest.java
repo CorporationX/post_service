@@ -20,6 +20,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class PostControllerTest {
+    private final String EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS = "AuthorId or ProjectId cannot be null";
+
     @InjectMocks
     private PostController postController;
     @Mock
@@ -59,9 +61,9 @@ class PostControllerTest {
 
     @Test
     void testThrowExceptionWhenCreatePostWithoutAuthorIdOrProjectId() {
-        String message = "AuthorId or ProjectId cannot be null";
-        doThrow(new DataValidationException(message)).when(postValidator).validationOfPostCreatorIds(postDtoWithEmptyAuthorIdAndProjectId);
-        assertEquals(message, assertThrows(DataValidationException.class,
+        doThrow(new DataValidationException(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS))
+                .when(postValidator).validationOfPostCreatorIds(postDtoWithEmptyAuthorIdAndProjectId);
+        assertEquals(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS, assertThrows(DataValidationException.class,
                 () -> postController.createPost(postDtoWithEmptyAuthorIdAndProjectId)).getMessage());
         verifyNoInteractions(postService);
     }
@@ -98,12 +100,9 @@ class PostControllerTest {
 
     @Test
     void testThrowExceptionWhenUpdatePostWithoutAuthorIdOrProjectId() {
-        assertThrows(DataValidationException.class, () -> postController.updatePost(postDtoWithEmptyAuthorIdAndProjectId));
-        try {
-            postController.updatePost(postDtoWithEmptyAuthorIdAndProjectId);
-        } catch (DataValidationException e) {
-            assertEquals("AuthorId or ProjectId cannot be null", e.getMessage());
-        }
+        doThrow(new DataValidationException(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS)).when(postValidator).validationOfPostCreatorIds(postDtoWithEmptyAuthorIdAndProjectId);
+        assertEquals(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS, assertThrows(DataValidationException.class,
+                () -> postController.updatePost(postDtoWithEmptyAuthorIdAndProjectId)).getMessage());
         verifyNoInteractions(postService);
     }
 }
