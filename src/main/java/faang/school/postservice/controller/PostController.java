@@ -1,8 +1,8 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.validator.PostValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,15 +24,14 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Post", description = "Post API")
 public class PostController {
     private final PostService postService;
+    private final PostValidator postValidator;
 
     @PostMapping("/create")
     @Operation(summary = "Create Post")
     @ResponseStatus(HttpStatus.CREATED)
     public PostDto createPost(@RequestBody @Valid PostDto post) {
-        if (validate(post)) {
-            return postService.createPost(post);
-        }
-        throw new DataValidationException("AuthorId or ProjectId cannot be null");
+        postValidator.validationOfPostCreatorIds(post);
+        return postService.createPost(post);
     }
 
     @PutMapping("{postId}/publish")
@@ -54,9 +53,5 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     public PostDto getPost(@PathVariable @Valid Long postId) {
         return postService.getPost(postId);
-    }
-
-    private boolean validate(PostDto post) {
-        return post.getAuthorId() != null || post.getProjectId() != null;
     }
 }

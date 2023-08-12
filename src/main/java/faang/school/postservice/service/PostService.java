@@ -46,8 +46,7 @@ public class PostService {
 
     @Transactional
     public PostDto publishPost(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        Post post = getPostById(postId);
 
         postValidator.validatePublishPost(post);
 
@@ -59,17 +58,22 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostDto getPost(Long postId) {
-        return postMapper.toDto(postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found")));
+        return postMapper.toDto(getPostById(postId));
     }
 
     @Transactional
     public boolean softDeletePost(Long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        Post post = getPostById(postId);
 
         postValidator.validationOfPostDelete(post);
 
         post.setDeleted(true);
         postRepository.save(post);
         return true;
+    }
+
+    private Post getPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
     }
 }

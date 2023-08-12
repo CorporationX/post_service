@@ -3,6 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -22,6 +24,8 @@ class PostControllerTest {
     private PostController postController;
     @Mock
     private PostService postService;
+    @Mock
+    private PostValidator postValidator;
     @Mock
     private PostDto postDtoWithEmptyAuthorIdAndProjectId;
 
@@ -55,12 +59,10 @@ class PostControllerTest {
 
     @Test
     void testThrowExceptionWhenCreatePostWithoutAuthorIdOrProjectId() {
-        assertThrows(DataValidationException.class, () -> postController.createPost(postDtoWithEmptyAuthorIdAndProjectId));
-        try {
-            postController.createPost(postDtoWithEmptyAuthorIdAndProjectId);
-        } catch (DataValidationException e) {
-            assertEquals("AuthorId or ProjectId cannot be null", e.getMessage());
-        }
+        String message = "AuthorId or ProjectId cannot be null";
+        doThrow(new DataValidationException(message)).when(postValidator).validationOfPostCreatorIds(postDtoWithEmptyAuthorIdAndProjectId);
+        assertEquals(message, assertThrows(DataValidationException.class,
+                () -> postController.createPost(postDtoWithEmptyAuthorIdAndProjectId)).getMessage());
         verifyNoInteractions(postService);
     }
 
