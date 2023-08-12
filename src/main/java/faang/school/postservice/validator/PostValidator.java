@@ -1,6 +1,6 @@
 package faang.school.postservice.validator;
 
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -12,6 +12,13 @@ import org.springframework.stereotype.Component;
 public class PostValidator {
 
     private static final int POST_LENGTH_MAX = 4096;
+
+    public void validationOfPostCreatorIds(PostDto postDto) {
+        if (postDto.getAuthorId() == null || postDto.getProjectId() == null) {
+            throw new DataValidationException("AuthorId or ProjectId cannot be null");
+        }
+
+    }
 
     public void validatePostCreator(PostDto post, ProjectDto project, UserDto user) {
         Long authorId = post.getAuthorId();

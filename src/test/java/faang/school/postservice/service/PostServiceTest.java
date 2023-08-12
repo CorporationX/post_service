@@ -2,7 +2,8 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -11,6 +12,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -144,6 +147,20 @@ class PostServiceTest {
         } catch (DataValidationException e) {
             assertEquals("Post is already published", e.getMessage());
         }
+    }
+
+    @Test
+    void testGetPostSuccess() {
+        Post post = Post.builder().id(1L).build();
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        PostDto postDto = postService.getPost(post.getId());
+        assertEquals(postDto, postMapperImpl.toDto(post));
+    }
+
+    @Test
+    void testGetPostFail() {
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+        Assertions.assertThrows(EntityNotFoundException.class, () -> postService.getPost(1L));
     }
 
     @Test
