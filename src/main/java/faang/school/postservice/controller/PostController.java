@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +42,13 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     public PostDto publishPost(@PathVariable @Valid Long postId) {
         return postService.publishPost(postId);
+    }
+
+    @DeleteMapping("/{postId}")
+    @Operation(summary = "Delete Post")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public boolean deletePost(@PathVariable Long postId) {
+        return postService.softDeletePost(postId);
     }
 
     @GetMapping("/{postId}")

@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostMapper;
@@ -60,5 +61,16 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostDto getPost(Long postId) {
         return postMapper.toDto(postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found")));
+    }
+
+    @Transactional
+    public boolean softDeletePost(Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        postValidator.validationOfPostDelete(post);
+
+        post.setDeleted(true);
+        postRepository.save(post);
+        return true;
     }
 }
