@@ -70,16 +70,18 @@ class CommentServiceTest {
         when(userServiceClient.getUser(comment.getAuthorId())).thenReturn(null);
 
         NotFoundException exception = assertThrows(NotFoundException.class,
-                () -> commentService.validateExistingUser(commentDto));
+                () -> commentService.createComment(commentDto));
         assertEquals("Author with id: " + commentDto.getAuthorId() + " not found!", exception.getMessage());
     }
 
     @Test
     public void invalidUserId() {
+        UserDto userDto = new UserDto(1L, "Adil", "adil@mail.ru");
+        when(userServiceClient.getUser(comment.getAuthorId())).thenReturn(userDto);
         when(postService.getPostById(commentDto.getPostId())).thenReturn(null);
 
         NotFoundException exception = assertThrows(NotFoundException.class,
-                () -> commentService.validateExistingPost(commentDto));
+                () -> commentService.createComment(commentDto));
         assertEquals("Post with id: " + commentDto.getAuthorId() + " not found!", exception.getMessage());
     }
 
@@ -107,7 +109,7 @@ class CommentServiceTest {
     @Test
     public void testDeleteCommentInvalidId() {
         long commentId = 1L;
-        when(commentRepository.existsById(anyLong())).thenReturn(false);
+        when(commentRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> commentService.deleteComment(commentId));
@@ -118,10 +120,10 @@ class CommentServiceTest {
     @Test
     public void testDeleteCommentValid() {
         long commentId = 1L;
-        when(commentRepository.existsById(anyLong())).thenReturn(true);
+        when(commentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(comment));
 
         boolean result = commentService.deleteComment(commentId);
-        verify(commentRepository, times(1)).existsById(commentId);
+        verify(commentRepository, times(1)).findById(commentId);
         verify(commentRepository, times(1)).deleteById(commentId);
 
         assertTrue(result);

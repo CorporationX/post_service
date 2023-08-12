@@ -46,8 +46,9 @@ public class CommentService {
 
     @Transactional
     public boolean deleteComment(long commentId) {
-        validateExistingComment(commentId);
-        commentRepository.deleteById(commentId);
+        Comment comment = commentRepository.findById(commentId)
+                        .orElseThrow(() -> new NotFoundException("Comment with id: " + commentId + " not found"));
+        commentRepository.deleteById(comment.getId());
         return true;
     }
 
@@ -62,7 +63,7 @@ public class CommentService {
     }
 
     @Retryable(retryFor = {FeignException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2))
-    public void validateExistingUser(CommentDto commentDto) {
+    private void validateExistingUser(CommentDto commentDto) {
         UserDto userDto = userServiceClient.getUser(commentDto.getAuthorId());
         if (userDto == null || userDto.getId() == null) {
             throw new NotFoundException("Author with id: " + commentDto.getAuthorId() + " not found!");
@@ -70,16 +71,10 @@ public class CommentService {
     }
 
     @Retryable(retryFor = {FeignException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2))
-    public void validateExistingPost(CommentDto commentDto) {
+    private void validateExistingPost(CommentDto commentDto) {
         Post post = postService.getPostById(commentDto.getPostId());
         if (post == null || post.getId() < 1) {
             throw new NotFoundException("Post with id: " + commentDto.getAuthorId() + " not found!");
-        }
-    }
-
-    private void validateExistingComment(long commentId) {
-        if (!commentRepository.existsById(commentId)) {
-            throw new NotFoundException("Comment with id: " + commentId + " not found");
         }
     }
 
