@@ -2,7 +2,6 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.repository.HashtagRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,6 @@ import java.util.regex.Pattern;
 public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
-    private final HashtagRepository hashtagRepository;
 
 
     @Transactional(readOnly = true)
@@ -47,11 +45,5 @@ public class PostService {
         }
 
         postDto.setHashtags(hashtags);
-    }
-
-    public boolean isPopular(String hashtag) {
-        return hashtagRepository.getTop10Popular().stream()
-                .map(Hashtag::getHashtag)
-                .anyMatch(tag -> tag.equals(hashtag));
     }
 }
