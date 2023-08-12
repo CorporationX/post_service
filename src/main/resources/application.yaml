@@ -50,6 +50,11 @@ payment-service:
   host: localhost
   port: 9080
 
-postCorrecter:
-  correcter:
-    cron: "0 0 1 * * ?"
+post-correcter:
+  url: "https://bing-spell-check2.p.rapidapi.com/spellcheck"
+  mode: "spell"
+  contentType: "application/x-www-form-urlencoded"
+  xRapidApiKey: "871e222f4dmsha404f4603a4687ep188b05jsn4942910dec51"
+  xRapidApiHost: "bing-spell-check2.p.rapidapi.com"
+  cron: "0 * * * * *" # every day at 03:00
+  rateLimitPerSecond: 3

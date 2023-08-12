@@ -158,9 +158,9 @@ public class PostService {
             throw new SamePostAuthorException("The author of the post cannot be both a user and a project");
         }
         if (userId != null) {
-           validateUserId(userId);
+            validateUserId(userId);
         } else {
-           validateProjectId(projectId);
+            validateProjectId(projectId);
         }
     }
 
