@@ -40,6 +40,13 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+comment:
+  moderator:
+    scheduler:
+      cron: "0 0 12 * * ?" # every day 12:00
+  batch:
+    size: 50
+
 user-service:
   host: localhost
   port: 8080
@@ -49,3 +56,4 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
