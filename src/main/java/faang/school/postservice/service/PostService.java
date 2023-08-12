@@ -46,8 +46,7 @@ public class PostService {
 
     @Transactional
     public PostDto publishPost(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        Post post = getPost(postId);
 
         postValidator.validatePublishPost(post);
 
@@ -59,11 +58,16 @@ public class PostService {
 
     @Transactional
     public PostDto updatePost(PostDto postUpdateDto) {
-        Post post = postRepository.findById(postUpdateDto.getId()).orElse(null);
+        Post post = getPost(postUpdateDto.getId());
         postValidator.validationOfPostUpdate(postUpdateDto, post);
 
         postMapper.updatePostFromDto(postUpdateDto, post);
 
         return postMapper.toDto(postRepository.save(post));
+    }
+
+    private Post getPost(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
     }
 }
