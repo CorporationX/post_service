@@ -1,4 +1,4 @@
-package faang.school.postservice.util.exceptionHandler;
+package faang.school.postservice.util.exceptionhandler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.response.ErrorResponse;
@@ -110,9 +110,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public faang.school.postservice.util.exceptionHandler.ErrorResponse handleNotFoundException(NotFoundException ex) {
+    public faang.school.postservice.util.exceptionhandler.ErrorResponse handleNotFoundException(NotFoundException ex) {
         log.error("Not found exception occurred.", ex);
-        return new faang.school.postservice.util.exceptionHandler.ErrorResponse(ex.getMessage());
+        return new faang.school.postservice.util.exceptionhandler.ErrorResponse(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

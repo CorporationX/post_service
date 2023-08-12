@@ -1,4 +1,4 @@
-package faang.school.postservice.util.exceptionHandler;
+package faang.school.postservice.util.exceptionhandler;
 
 public class ErrorCommentMessage {
     public static String getAuthorIdWasNotFoundMessage(long authorId) {

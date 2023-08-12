@@ -5,7 +5,7 @@ import faang.school.postservice.util.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.util.exceptionHandler.ErrorCommentMessage;
+import faang.school.postservice.util.exceptionhandler.ErrorCommentMessage;
 import faang.school.postservice.util.validator.comment.CommentServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
