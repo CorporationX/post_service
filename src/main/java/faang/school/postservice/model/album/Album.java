@@ -1,5 +1,6 @@
-package faang.school.postservice.model;
+package faang.school.postservice.model.album;
 
+import faang.school.postservice.model.Post;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,6 +46,16 @@ public class Album {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "visibility", nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    private AlbumVisibility visibility;
+
+    @ElementCollection
+    @CollectionTable(name = "user_album_access", joinColumns = @JoinColumn(name = "album_id"))
+    @Column(name = "user_id")
+    private List<Long> usersWithAccessIds;
+
 
     public void addPost(Post post) {
         posts.add(post);
