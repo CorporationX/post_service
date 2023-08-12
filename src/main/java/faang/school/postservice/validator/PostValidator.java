@@ -13,6 +13,13 @@ public class PostValidator {
 
     private static final int POST_LENGTH_MAX = 4096;
 
+    public void validationOfPostCreatorIds(PostDto postDto) {
+        if (postDto.getAuthorId() == null || postDto.getProjectId() == null) {
+            throw new DataValidationException("AuthorId or ProjectId cannot be null");
+        }
+
+    }
+
     public void validatePostCreator(PostDto post, ProjectDto project, UserDto user) {
         Long authorId = post.getAuthorId();
         Long projectId = post.getProjectId();
@@ -62,5 +69,11 @@ public class PostValidator {
         }
 
         validatePostContent(postDto);
+    }
+
+    public void validationOfPostDelete(Post post) {
+        if (post.isDeleted()) {
+            throw new DataValidationException("Post already deleted");
+        }
     }
 }

@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -11,6 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,7 +76,7 @@ class PostServiceTest {
         when(postRepository.save(post)).thenReturn(post);
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
         PostDto postDto = postService.createPost(postWithAuthorIdDto);
-        verify(postValidator, Mockito.times(1)).validatePostContent(postWithAuthorIdDto);
+        verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithAuthorIdDto);
         assertEquals(postDto, postWithAuthorIdDto);
     }
 
@@ -91,7 +93,7 @@ class PostServiceTest {
         when(postRepository.save(post)).thenReturn(post);
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
         PostDto postDto = postService.createPost(postWithProjectIdDto);
-        verify(postValidator, Mockito.times(1)).validatePostContent(postWithProjectIdDto);
+        verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithProjectIdDto);
         assertEquals(postDto, postWithProjectIdDto);
     }
 
@@ -212,6 +214,54 @@ class PostServiceTest {
             verify(postValidator, Mockito.times(1)).validationOfPostUpdate(updatedPostDto, updatedPost);
         } catch (DataValidationException e) {
             assertEquals("You cannot change the project of the post", e.getMessage());
+        }
+    }
+
+    @Test
+    void testGetPostSuccess() {
+        Post post = Post.builder().id(1L).build();
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        PostDto postDto = postService.getPost(post.getId());
+        assertEquals(postDto, postMapperImpl.toDto(post));
+    }
+
+    @Test
+    void testGetPostFail() {
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+        Assertions.assertThrows(EntityNotFoundException.class, () -> postService.getPost(1L));
+    }
+
+    @Test
+    void testSoftDeletePostSuccess() {
+        Post post = postMapperImpl.toPost(postWithAuthorIdDto);
+        when(postRepository.findById(postWithAuthorIdDto.getId())).thenReturn(Optional.of(post));
+        boolean result = postService.softDeletePost(postWithAuthorIdDto.getId());
+
+        assertTrue(post.isDeleted());
+        assertTrue(result);
+    }
+
+    @Test
+    void testSoftDeletePostFailIfPostNotFound() {
+        try {
+            Long postId = postWithAuthorIdDto.getId();
+            postService.softDeletePost(postId);
+            when(postRepository.findById(postId)).thenReturn(Optional.empty());
+        } catch (EntityNotFoundException e) {
+            assertEquals("Post not found", e.getMessage());
+        }
+    }
+
+    @Test
+    void testSoftDeletePostFailIfPostIsAlreadyDeleted() {
+        try {
+            Post post = postMapperImpl.toPost(postWithAuthorIdDto);
+            post.setDeleted(true);
+            Long postId = postWithAuthorIdDto.getId();
+            when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+            postService.softDeletePost(postId);
+        } catch (DataValidationException e) {
+            assertEquals("Post already deleted", e.getMessage());
         }
     }
 }
