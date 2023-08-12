@@ -1,6 +1,9 @@
 package faang.school.postservice.util.exceptionHandler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.response.ErrorResponse;
+import faang.school.postservice.util.exception.EntityNotFoundException;
+import faang.school.postservice.util.exception.NotAllowedException;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.util.exception.DeletePostException;
@@ -87,10 +90,34 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }
 
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException ex) {
+        log.error(ex.getMessage(), ex.getCause());
+        return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(JsonProcessingException.class)
+    public ResponseEntity<String> handleJsonProcessingException(JsonProcessingException ex) {
+        log.error(ex.getMessage(), ex.getCause());
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(NotAllowedException.class)
+    public ResponseEntity<String> handleNotAllowedException(NotAllowedException ex) {
+        log.error(ex.getMessage(), ex.getCause());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public faang.school.postservice.util.exceptionHandler.ErrorResponse handleNotFoundException(NotFoundException ex) {
         log.error("Not found exception occurred.", ex);
         return new faang.school.postservice.util.exceptionHandler.ErrorResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception ex) {
+        log.error(ex.getMessage(), ex.getCause());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 }

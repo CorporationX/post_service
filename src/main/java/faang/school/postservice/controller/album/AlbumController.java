@@ -2,8 +2,8 @@ package faang.school.postservice.controller.album;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.album.AlbumService;
+import faang.school.postservice.util.exception.DataValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

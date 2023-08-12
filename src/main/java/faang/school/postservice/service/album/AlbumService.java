@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.util.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.repository.AlbumRepository;

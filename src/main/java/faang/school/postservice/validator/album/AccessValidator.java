@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.NotAllowedException;
+import faang.school.postservice.util.exception.NotAllowedException;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Visibility;
 import feign.FeignException;

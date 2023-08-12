@@ -29,7 +29,7 @@ class CommentServiceValidatorTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        userDto = new UserDto(1L, "username", "email@mail.ru");
+        userDto = UserDto.builder().id(1L).username("username").email("email@mail.ru").build();
         commentDto = CommentDto.builder().id(1L).authorId(1L).content("content").postId(1L).build();
     }
 

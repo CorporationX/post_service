@@ -1,13 +1,10 @@
 package faang.school.postservice.album;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.dockerjava.api.exception.NotFoundException;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.NotAllowedException;
+import faang.school.postservice.util.exception.NotAllowedException;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Visibility;
 import faang.school.postservice.validator.album.AccessValidator;
@@ -18,11 +15,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.boot.test.mock.mockito.SpyBeans;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
