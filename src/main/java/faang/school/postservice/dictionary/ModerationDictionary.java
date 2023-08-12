@@ -24,6 +24,7 @@ public class ModerationDictionary {
             throw new RuntimeException(e);
         }
     }
+
     public boolean containsUnwantedWords(String text) {
         return badWords.stream().anyMatch(text.toLowerCase()::contains);
     }
