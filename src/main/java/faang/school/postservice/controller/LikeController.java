@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.exceptions.DataValidationException;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.LikeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
