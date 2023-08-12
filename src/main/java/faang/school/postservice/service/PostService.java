@@ -39,7 +39,7 @@ public class PostService {
         }
 
         postValidator.validatePostCreator(post, project, user);
-        postValidator.validationOfPostCreation(post);
+        postValidator.validatePostContent(post);
 
         Post postEntity = postMapper.toPost(post);
 
@@ -48,8 +48,7 @@ public class PostService {
 
     @Transactional
     public PostDto publishPost(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        Post post = getPostById(postId);
 
         postValidator.validatePublishPost(post);
 
@@ -57,6 +56,21 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         return postMapper.toDto(postRepository.save(post));
+    }
+
+    @Transactional
+    public PostDto updatePost(PostDto postUpdateDto) {
+        Post post = getPostById(postUpdateDto.getId());
+        postValidator.validationOfPostUpdate(postUpdateDto, post);
+
+        Post updatedPost = postMapper.toPost(postUpdateDto);
+
+        return postMapper.toDto(postRepository.save(updatedPost));
+    }
+
+    @Transactional(readOnly = true)
+    public PostDto getPost(Long postId) {
+        return postMapper.toDto(getPostById(postId));
     }
 
     @Transactional(readOnly = true)
@@ -101,5 +115,21 @@ public class PostService {
                 .sorted(Comparator.comparing(Post::getPublishedAt))
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    @Transactional
+    public boolean softDeletePost(Long postId) {
+        Post post = getPostById(postId);
+
+        postValidator.validationOfPostDelete(post);
+
+        post.setDeleted(true);
+        postRepository.save(post);
+        return true;
+    }
+
+    private Post getPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
     }
 }

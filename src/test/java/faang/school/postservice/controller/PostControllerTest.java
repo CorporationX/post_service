@@ -3,6 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,15 +14,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class PostControllerTest {
+    private final String EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS = "AuthorId or ProjectId cannot be null";
+
     @InjectMocks
     private PostController postController;
     @Mock
     private PostService postService;
+    @Mock
+    private PostValidator postValidator;
     @Mock
     private PostDto postDtoWithEmptyAuthorIdAndProjectId;
 
@@ -55,12 +61,10 @@ class PostControllerTest {
 
     @Test
     void testThrowExceptionWhenCreatePostWithoutAuthorIdOrProjectId() {
-        assertThrows(DataValidationException.class, () -> postController.createPost(postDtoWithEmptyAuthorIdAndProjectId));
-        try {
-            postController.createPost(postDtoWithEmptyAuthorIdAndProjectId);
-        } catch (DataValidationException e) {
-            assertEquals("AuthorId or ProjectId cannot be null", e.getMessage());
-        }
+        doThrow(new DataValidationException(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS))
+                .when(postValidator).validationOfPostCreatorIds(postDtoWithEmptyAuthorIdAndProjectId);
+        assertEquals(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS, assertThrows(DataValidationException.class,
+                () -> postController.createPost(postDtoWithEmptyAuthorIdAndProjectId)).getMessage());
         verifyNoInteractions(postService);
     }
 
@@ -68,6 +72,38 @@ class PostControllerTest {
     void testPublishPost() {
         postController.publishPost(postId);
         verify(postService, Mockito.times(1)).publishPost(postId);
+    }
+
+    @Test
+    void testGetPost() {
+        postController.getPost(1L);
+        verify(postService, Mockito.times(1)).getPost(1L);
+    }
+
+    @Test
+    void deletePost() {
+        postController.deletePost(postDtoWithAuthorId.getId());
+        verify(postService, Mockito.times(1)).softDeletePost(postDtoWithAuthorId.getId());
+    }
+
+    @Test
+    void updatePostWithAuthorIdSuccess() {
+        postController.updatePost(postDtoWithAuthorId);
+        verify(postService, Mockito.times(1)).updatePost(postDtoWithAuthorId);
+    }
+
+    @Test
+    void updatePostWithProjectIdSuccess() {
+        postController.updatePost(postDtoWithProjectId);
+        verify(postService, Mockito.times(1)).updatePost(postDtoWithProjectId);
+    }
+
+    @Test
+    void testThrowExceptionWhenUpdatePostWithoutAuthorIdOrProjectId() {
+        doThrow(new DataValidationException(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS)).when(postValidator).validationOfPostCreatorIds(postDtoWithEmptyAuthorIdAndProjectId);
+        assertEquals(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS, assertThrows(DataValidationException.class,
+                () -> postController.updatePost(postDtoWithEmptyAuthorIdAndProjectId)).getMessage());
+        verifyNoInteractions(postService);
     }
 
     @Test
