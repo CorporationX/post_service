@@ -82,7 +82,6 @@ public class AlbumService {
     @Transactional
     public AlbumDto findByIdWithPosts(Long albumId) {
         Album album = getAlbum(albumId);
-
         return albumMapper.toAlbumDto(album);
     }
 

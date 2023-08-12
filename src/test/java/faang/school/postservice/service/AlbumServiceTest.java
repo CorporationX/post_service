@@ -13,12 +13,12 @@ import faang.school.postservice.filter.album_filter.AlbumAuthorIdFilter;
 import faang.school.postservice.filter.album_filter.AlbumCreatedAtFilter;
 import faang.school.postservice.filter.album_filter.AlbumFilter;
 import faang.school.postservice.filter.album_filter.AlbumTitleFilter;
-import faang.school.postservice.filter.album_filter.AlbumUpdateAtFilter;
 import faang.school.postservice.mapper.AlbumMapperImpl;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -55,6 +55,24 @@ class AlbumServiceTest {
     private PostRepository postRepository;
     @InjectMocks
     private AlbumService albumService;
+    private Album album1;
+    private Album album2;
+    private Album album3;
+    private Album album4;
+    private List<AlbumFilter> albumFilter = new ArrayList<>();
+
+    @BeforeEach
+    void setUp() {
+        album1 = Album.builder().id(1L).title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
+        album2 = Album.builder().id(1L).title(" ").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
+        album3 = Album.builder().id(1L).title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
+        album4 = Album.builder().id(1L).title("title").authorId(2L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
+
+        albumFilter.add(new AlbumAuthorIdFilter());
+        albumFilter.add(new AlbumTitleFilter());
+        albumFilter.add(new AlbumCreatedAtFilter());
+        albumFilter.add(new AlbumCreatedAtFilter());
+    }
 
     @Test
     void testCreateAlbumDataValidationException() {
@@ -210,17 +228,6 @@ class AlbumServiceTest {
 
     @Test
     void testFindAListOfAllYourAlbums() {
-        Album album1 = Album.builder().id(1L).title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-        Album album2 = Album.builder().id(1L).title(" ").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-        Album album3 = Album.builder().id(1L).title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-        Album album4 = Album.builder().id(1L).title("title").authorId(2L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-
-        List<AlbumFilter> albumFilter = new ArrayList<>();
-        albumFilter.add(new AlbumAuthorIdFilter());
-        albumFilter.add(new AlbumTitleFilter());
-        albumFilter.add(new AlbumCreatedAtFilter());
-        albumFilter.add(new AlbumCreatedAtFilter());
-
         when(userContext.getUserId()).thenReturn(1L);
         when(albumRepository.findByAuthorId(1L)).thenReturn(Stream.of(
                 album1, album2, album3, album4));
@@ -233,17 +240,6 @@ class AlbumServiceTest {
 
     @Test
     void testFindListOfAllAlbumsInTheSystem() {
-        Album album1 = Album.builder().id(1L).title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-        Album album2 = Album.builder().id(1L).title(" ").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-        Album album3 = Album.builder().id(1L).title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-        Album album4 = Album.builder().id(1L).title("title").authorId(2L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-
-        List<AlbumFilter> albumFilter = new ArrayList<>();
-        albumFilter.add(new AlbumAuthorIdFilter());
-        albumFilter.add(new AlbumTitleFilter());
-        albumFilter.add(new AlbumCreatedAtFilter());
-        albumFilter.add(new AlbumCreatedAtFilter());
-
         when(albumRepository.findAll()).thenReturn(List.of(
                 album1, album2, album3, album4));
         albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
@@ -255,17 +251,6 @@ class AlbumServiceTest {
 
     @Test
     void testFindAListOfAllYourFavoriteAlbums() {
-        Album album1 = Album.builder().id(1L).title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-        Album album2 = Album.builder().id(1L).title(" ").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-        Album album3 = Album.builder().id(1L).title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-        Album album4 = Album.builder().id(1L).title("title").authorId(2L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build();
-
-        List<AlbumFilter> albumFilter = new ArrayList<>();
-        albumFilter.add(new AlbumAuthorIdFilter());
-        albumFilter.add(new AlbumTitleFilter());
-        albumFilter.add(new AlbumCreatedAtFilter());
-        albumFilter.add(new AlbumCreatedAtFilter());
-
         when(userContext.getUserId()).thenReturn(1L);
         when(albumRepository.findFavoriteAlbumsByUserId(1L)).thenReturn(Stream.of(
                 album1, album2, album3, album4));

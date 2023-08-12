@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 @Component
 public class AlbumCreatedAtFilter implements AlbumFilter {
+
     @Override
     public boolean isApplicable(AlbumFilterDto albumFilterDto) {
         return albumFilterDto.getCreatedAt() != null;
