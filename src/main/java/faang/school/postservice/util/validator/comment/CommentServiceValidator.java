@@ -6,7 +6,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.util.exception.NotFoundException;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.util.exceptionHandler.ErrorCommentMessage;
+import faang.school.postservice.util.exceptionhandler.ErrorCommentMessage;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
