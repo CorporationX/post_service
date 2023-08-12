@@ -80,7 +80,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<PostDto> getDraftPostsByUserId(Long id) {
         validateUserExist(id);
-        List<Post> draftPosts = filterDraftPostsAndSortByCreatedAt(postRepository.findByAuthorId(id));
+        List<Post> draftPosts = getDraftPosts(postRepository.findByAuthorId(id));
 
         if (draftPosts.isEmpty()) {
             throw new EntityNotFoundException("Draft post not found");
@@ -92,7 +92,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<PostDto> getDraftPostsByProjectId(Long id) {
         validateProjectExist(id);
-        List<Post> draftPosts = filterDraftPostsAndSortByCreatedAt(postRepository.findByProjectId(id));
+        List<Post> draftPosts = getDraftPosts(postRepository.findByProjectId(id));
 
         if (draftPosts.isEmpty()) {
             throw new EntityNotFoundException("Draft post not found");
@@ -100,15 +100,44 @@ public class PostService {
         return postMapper.toDtoList(draftPosts);
     }
 
+    @Transactional(readOnly = true)
+    public List<PostDto> getPostsByUserId(Long id) {
+        validateUserExist(id);
+        List<Post> posts = getPublishedPosts(postRepository.findByAuthorId(id));
+
+        if (posts.isEmpty()) {
+            throw new EntityNotFoundException("Posts not found");
+        }
+        return postMapper.toDtoList(posts);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostDto> getPostsByProjectId(Long id) {
+        validateProjectExist(id);
+        List<Post> posts = getPublishedPosts(postRepository.findByProjectId(id));
+
+        if (posts.isEmpty()) {
+            throw new EntityNotFoundException("Posts not found");
+        }
+        return postMapper.toDtoList(posts);
+    }
+
     private Post getPostIfExist(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Post with the specified id does not exist"));
     }
 
-    private List<Post> filterDraftPostsAndSortByCreatedAt(List<Post> posts) {
+    private List<Post> getDraftPosts(List<Post> posts) {
         return posts.stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .toList();
+    }
+
+    private List<Post> getPublishedPosts(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .toList();
     }
 
