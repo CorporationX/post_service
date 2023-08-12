@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,18 +28,18 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
 
     @Transactional
-    public PostDto createPost(CreatePostDto postDto) {
-        Post post = postMapper.toEntity(postDto);
-        if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
+    public PostDto createPost(CreatePostDto createPostDto) {
+        Post post = postMapper.toEntity(createPostDto);
+        if (createPostDto.getAuthorId() != null && createPostDto.getProjectId() != null) {
             throw new DataValidationException("The author can be either a user or a project");
         }
-        if (postDto.getAuthorId() != null && userServiceClient.getUser(postDto.getAuthorId()) == null) {
-            throw new DataValidationException("Author must be Existing on the user's system = " + postDto.getAuthorId()
-                    + " or project ID now it = " + postDto.getProjectId());
+        if (createPostDto.getAuthorId() != null && userServiceClient.getUser(createPostDto.getAuthorId()) == null) {
+            throw new DataValidationException("Author must be Existing on the user's system = " + createPostDto.getAuthorId()
+                    + " or project ID now it = " + createPostDto.getProjectId());
         }
-        if (postDto.getProjectId() != null && projectServiceClient.getProject(postDto.getProjectId()) == null) {
-            throw new DataValidationException("You must provide an author ID, now this is = " + postDto.getAuthorId()
-                    + " or project ID now it = " + postDto.getProjectId());
+        if (createPostDto.getProjectId() != null && projectServiceClient.getProject(createPostDto.getProjectId()) == null) {
+            throw new DataValidationException("You must provide an author ID, now this is = " + createPostDto.getAuthorId()
+                    + " or project ID now it = " + createPostDto.getProjectId());
         }
         post.setDeleted(false);
         post.setPublished(false);
@@ -65,14 +64,14 @@ public class PostService {
     }
 
     @Transactional
-    public PostDto updatePost(UpdatePostDto postDto) {
-        Post postInTheDatabase = postRepository.findById(postDto.getId())
+    public PostDto updatePost(UpdatePostDto updatePostDto) {
+        Post postInTheDatabase = postRepository.findById(updatePostDto.getId())
                 .orElseThrow(() -> new DataValidationException("Update Post not found"));
 
-        postInTheDatabase.setContent(postDto.getContent());
+        postInTheDatabase.setContent(updatePostDto.getContent());
         postInTheDatabase.setUpdatedAt(null);
 
-        postInTheDatabase.setAd(adRepository.findById(postDto.getAdId())
+        postInTheDatabase.setAd(adRepository.findById(updatePostDto.getAdId())
                 .orElseThrow(() -> new DataValidationException("Update ad not found")));
 
         return postMapper.toDto(postRepository.save(postInTheDatabase));
@@ -89,12 +88,9 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostDto getPostById(Long id) {
-        Optional<Post> postById = postRepository.findById(id);
-        if (postById.isEmpty()) {
-            throw new DataValidationException("'Post not in database' error occurred while fetching post");
-        }
-        return postMapper.toDto(postById
-                .orElseThrow(() -> new DataValidationException("Post not found")));
+        Post postById = postRepository.findById(id)
+                .orElseThrow(() -> new DataValidationException("'Post not in database' error occurred while fetching post"));
+        return postMapper.toDto(postById);
     }
 
     @Transactional

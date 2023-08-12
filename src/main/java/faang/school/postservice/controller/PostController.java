@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,24 +25,24 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("/create")
-    public PostDto createPost(@RequestBody CreatePostDto postDto) {
-        validateCreatePost(postDto);
-        return postService.createPost(postDto);
+    @PostMapping
+    public PostDto createPost(@RequestBody CreatePostDto createPostDto) {
+        validateCreatePost(createPostDto);
+        return postService.createPost(createPostDto);
     }
 
-    @PutMapping("/publish")
+    @PostMapping("/publish")
     public List<PostDto> publishPost() {
         return postService.publishPost();
     }
 
-    @PutMapping("/update")
-    public PostDto updatePost(@RequestBody UpdatePostDto postDto) {
-        validateUpdatePost(postDto);
-        return postService.updatePost(postDto);
+    @PutMapping
+    public PostDto updatePost(@RequestBody UpdatePostDto updatePostDto) {
+        validateUpdatePost(updatePostDto);
+        return postService.updatePost(updatePostDto);
     }
 
-    @GetMapping("/delete/{postId}")
+    @DeleteMapping("/{postId}")
     public void softDeletePost(@PathVariable Long postId) {
         postService.softDeletePost(postId);
     }
@@ -51,22 +52,22 @@ public class PostController {
         return postService.getPostById(id);
     }
 
-    @GetMapping("/all/author/{userId}")
+    @GetMapping("/author/{userId}/all")
     public List<PostDto> getAllPostsByAuthorId(@PathVariable Long userId) {
         return postService.getAllPostsByAuthorId(userId);
     }
 
-    @GetMapping("/all/project/{projectId}")
+    @GetMapping("/project/{projectId}/all")
     public List<PostDto> getAllPostsByProjectId(@PathVariable Long projectId) {
         return postService.getAllPostsByProjectId(projectId);
     }
 
-    @GetMapping("/all/author/published/{userId}")
+    @GetMapping("/all/author/{userId}/published")
     public List<PostDto> getAllPostsByAuthorIdAndPublished(@PathVariable Long userId) {
         return postService.getAllPostsByAuthorIdAndPublished(userId);
     }
 
-    @GetMapping("/all/project/published/{projectId}")
+    @GetMapping("/all/project/{projectId}/published")
     public List<PostDto> getAllPostsByProjectIdAndPublished(@PathVariable Long projectId) {
         return postService.getAllPostsByProjectIdAndPublished(projectId);
     }
