@@ -20,6 +20,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class PostControllerTest {
+    private final String EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS = "AuthorId or ProjectId cannot be null";
+
     @InjectMocks
     private PostController postController;
     @Mock
@@ -59,9 +61,9 @@ class PostControllerTest {
 
     @Test
     void testThrowExceptionWhenCreatePostWithoutAuthorIdOrProjectId() {
-        String message = "AuthorId or ProjectId cannot be null";
-        doThrow(new DataValidationException(message)).when(postValidator).validationOfPostCreatorIds(postDtoWithEmptyAuthorIdAndProjectId);
-        assertEquals(message, assertThrows(DataValidationException.class,
+        doThrow(new DataValidationException(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS))
+                .when(postValidator).validationOfPostCreatorIds(postDtoWithEmptyAuthorIdAndProjectId);
+        assertEquals(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS, assertThrows(DataValidationException.class,
                 () -> postController.createPost(postDtoWithEmptyAuthorIdAndProjectId)).getMessage());
         verifyNoInteractions(postService);
     }
@@ -82,5 +84,25 @@ class PostControllerTest {
     void deletePost() {
         postController.deletePost(postDtoWithAuthorId.getId());
         verify(postService, Mockito.times(1)).softDeletePost(postDtoWithAuthorId.getId());
+    }
+
+    @Test
+    void updatePostWithAuthorIdSuccess() {
+        postController.updatePost(postDtoWithAuthorId);
+        verify(postService, Mockito.times(1)).updatePost(postDtoWithAuthorId);
+    }
+
+    @Test
+    void updatePostWithProjectIdSuccess() {
+        postController.updatePost(postDtoWithProjectId);
+        verify(postService, Mockito.times(1)).updatePost(postDtoWithProjectId);
+    }
+
+    @Test
+    void testThrowExceptionWhenUpdatePostWithoutAuthorIdOrProjectId() {
+        doThrow(new DataValidationException(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS)).when(postValidator).validationOfPostCreatorIds(postDtoWithEmptyAuthorIdAndProjectId);
+        assertEquals(EXCEPTION_MESSAGE_IF_NO_CREATOR_IDS, assertThrows(DataValidationException.class,
+                () -> postController.updatePost(postDtoWithEmptyAuthorIdAndProjectId)).getMessage());
+        verifyNoInteractions(postService);
     }
 }

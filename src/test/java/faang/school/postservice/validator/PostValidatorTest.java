@@ -24,7 +24,7 @@ class PostValidatorTest {
     @Test
     void testValidateCreateLongPost() {
         try {
-            postValidator.validationOfPostCreation(postDtoWithLongContent);
+            postValidator.validatePostContent(postDtoWithLongContent);
         } catch (DataValidationException e) {
             assertEquals("Content is too long", e.getMessage());
         }
@@ -33,7 +33,7 @@ class PostValidatorTest {
     @Test
     void testValidateCreateEmptyPost() {
         try {
-            postValidator.validationOfPostCreation(postDtoWithEmptyContent);
+            postValidator.validatePostContent(postDtoWithEmptyContent);
         } catch (DataValidationException e) {
             assertEquals("Content is empty", e.getMessage());
         }

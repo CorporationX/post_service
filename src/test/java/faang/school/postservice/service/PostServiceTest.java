@@ -3,7 +3,6 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -12,7 +11,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,7 +74,7 @@ class PostServiceTest {
         when(postRepository.save(post)).thenReturn(post);
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
         PostDto postDto = postService.createPost(postWithAuthorIdDto);
-        verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithAuthorIdDto);
+        verify(postValidator, Mockito.times(1)).validatePostContent(postWithAuthorIdDto);
         assertEquals(postDto, postWithAuthorIdDto);
     }
 
@@ -93,7 +91,7 @@ class PostServiceTest {
         when(postRepository.save(post)).thenReturn(post);
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
         PostDto postDto = postService.createPost(postWithProjectIdDto);
-        verify(postValidator, Mockito.times(1)).validationOfPostCreation(postWithProjectIdDto);
+        verify(postValidator, Mockito.times(1)).validatePostContent(postWithProjectIdDto);
         assertEquals(postDto, postWithProjectIdDto);
     }
 
@@ -146,6 +144,74 @@ class PostServiceTest {
             postService.publishPost(post.getId());
         } catch (DataValidationException e) {
             assertEquals("Post is already published", e.getMessage());
+        }
+    }
+
+    @Test
+    void testUpdatePostWithAuthorIdSuccess() {
+        String content = "updated content";
+        PostDto updatedPostDto = PostDto.builder().content(content).authorId(userDto.getId()).build();
+        Post updatedPost = postMapperImpl.toPost(updatedPostDto);
+
+        when(postRepository.findById(updatedPost.getId())).thenReturn(Optional.of(updatedPost));
+        postService.updatePost(updatedPostDto);
+
+        verify(postValidator, Mockito.times(1)).validationOfPostUpdate(updatedPostDto, updatedPost);
+        verify(postRepository, Mockito.times(1)).save(updatedPost);
+
+        assertEquals(content, updatedPost.getContent());
+    }
+
+    @Test
+    void testUpdatePostWithAuthorIdFailIfPostNotFound() {
+        Assertions.assertEquals("Post not found", Assertions.assertThrows(EntityNotFoundException.class, () -> postService.updatePost(postWithAuthorIdDto)).getMessage());
+    }
+
+    @Test
+    void testUpdatePostWithProjectIdSuccess() {
+        String content = "updated content";
+        PostDto updatedPostDto = PostDto.builder().content(content).projectId(projectDto.getId()).build();
+        Post updatedPost = postMapperImpl.toPost(updatedPostDto);
+
+        when(postRepository.findById(updatedPost.getId())).thenReturn(Optional.of(updatedPost));
+        postService.updatePost(updatedPostDto);
+
+        verify(postValidator, Mockito.times(1)).validationOfPostUpdate(updatedPostDto, updatedPost);
+        verify(postRepository, Mockito.times(1)).save(updatedPost);
+
+        assertEquals(content, updatedPost.getContent());
+    }
+
+    @Test
+    void testUpdatePostWithProjectIdFailIfPostNotFound() {
+        Assertions.assertEquals("Post not found", Assertions.assertThrows(EntityNotFoundException.class, () -> postService.updatePost(postWithProjectIdDto)).getMessage());
+    }
+
+    @Test
+    void testUpdatePostWithAuthorIdFailIfAuthorIdHasBeenChanged() {
+        Long newAuthorId = 2L;
+        PostDto updatedPostDto = PostDto.builder().content("updated content").authorId(newAuthorId).build();
+        Post updatedPost = postMapperImpl.toPost(updatedPostDto);
+        try {
+            when(postRepository.findById(updatedPost.getId())).thenReturn(Optional.of(updatedPost));
+            postService.updatePost(updatedPostDto);
+            verify(postValidator, Mockito.times(1)).validationOfPostUpdate(updatedPostDto, updatedPost);
+        } catch (DataValidationException e) {
+            assertEquals("You cannot change the author of the post", e.getMessage());
+        }
+    }
+
+    @Test
+    void testUpdatePostWithProjectIdFailIfProjectIdHasBeenChanged() {
+        Long newProjectId = 2L;
+        PostDto updatedPostDto = PostDto.builder().content("updated content").projectId(newProjectId).build();
+        Post updatedPost = postMapperImpl.toPost(updatedPostDto);
+        try {
+            when(postRepository.findById(updatedPost.getId())).thenReturn(Optional.of(updatedPost));
+            postService.updatePost(updatedPostDto);
+            verify(postValidator, Mockito.times(1)).validationOfPostUpdate(updatedPostDto, updatedPost);
+        } catch (DataValidationException e) {
+            assertEquals("You cannot change the project of the post", e.getMessage());
         }
     }
 

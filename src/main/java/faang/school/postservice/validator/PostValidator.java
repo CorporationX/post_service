@@ -39,8 +39,7 @@ public class PostValidator {
         }
     }
 
-    public void validationOfPostCreation(PostDto post) {
-
+    public void validatePostContent(PostDto post) {
         if (post.getContent().length() > POST_LENGTH_MAX) {
             throw new DataValidationException("Content is too long");
         }
@@ -54,6 +53,22 @@ public class PostValidator {
         if (post.isPublished()) {
             throw new DataValidationException("Post is already published");
         }
+    }
+
+    public void validationOfPostUpdate(PostDto postDto, Post post) {
+        if (post == null) {
+            throw new EntityNotFoundException("Post not found");
+        }
+
+        if (postDto.getAuthorId() != null && !postDto.getAuthorId().equals(post.getAuthorId())) {
+            throw new DataValidationException("You cannot change the author of the post");
+        }
+
+        if (postDto.getProjectId() != null && !postDto.getProjectId().equals(post.getProjectId())) {
+            throw new DataValidationException("You cannot change the project of the post");
+        }
+
+        validatePostContent(postDto);
     }
 
     public void validationOfPostDelete(Post post) {
