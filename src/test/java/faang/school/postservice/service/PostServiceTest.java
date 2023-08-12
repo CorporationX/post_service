@@ -23,7 +23,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -39,6 +43,8 @@ public class PostServiceTest {
     private UserServiceClient userService;
     @Mock
     private ProjectServiceClient projectService;
+    @Mock
+    ThreadPoolExecutor threadPoolExecutor;
     @InjectMocks
     private PostService postService;
 
@@ -46,6 +52,9 @@ public class PostServiceTest {
     private PostDto correctPostDto;
     private Post alreadyPublishedPost;
     private Post correctPost;
+    private Post firstPost;
+    private Post secondPost;
+    private Post thirdPost;
     private final Long CORRECT_ID = 1L;
     private final long INCORRECT_ID = 0;
 
@@ -70,6 +79,21 @@ public class PostServiceTest {
                 .content("content")
                 .id(CORRECT_ID)
                 .authorId(CORRECT_ID)
+                .build();
+        firstPost = Post.builder()
+                .published(false)
+                .deleted(false)
+                .scheduledAt(LocalDateTime.now().minusMonths(1))
+                .build();
+        secondPost = Post.builder()
+                .published(false)
+                .deleted(true)
+                .scheduledAt(LocalDateTime.now().minusDays(1))
+                .build();
+        thirdPost = Post.builder()
+                .published(false)
+                .deleted(false)
+                .scheduledAt(LocalDateTime.now().plusMonths(3))
                 .build();
     }
 
@@ -150,6 +174,8 @@ public class PostServiceTest {
     @Test
     void testUpdatePost() {
         correctPostDto.setContent("other content");
+        correctPostDto.setScheduledAt(LocalDateTime.now().plusMonths(1));
+        correctPost.setScheduledAt(LocalDateTime.now());
         returnCorrectPostForPostRepository();
 
         PostDto actualPostDto = postService.updatePost(correctPostDto);
@@ -207,6 +233,44 @@ public class PostServiceTest {
 
         PostDto actualPostDto = postService.getPost(CORRECT_ID);
         assertEquals(correctPostDto, actualPostDto);
+    }
+
+
+    @Test
+    void publishSchedulePostsFirstScenarioTest() {
+        Iterable<Post> iterable = Arrays.asList(firstPost, secondPost, thirdPost);
+
+        List<Post> verifyExpected = List.of(firstPost);
+
+        when(postRepository.findAll()).thenReturn(iterable);
+
+        postService.publishScheduledPosts();
+
+        verify(postRepository).findAll();
+        verify(postRepository).saveAll(verifyExpected);
+
+        assertTrue(firstPost.isPublished());
+    }
+
+    @Test
+    void publishSchedulePostsSecondScenarioTest() {
+        List<Post> highCapacityList = new ArrayList<>(1200);
+        for (int i = 0; i < 1200; i++) {
+            if (i > 1099) {
+                highCapacityList.add(thirdPost);
+            } else {
+                highCapacityList.add(firstPost);
+            }
+        }
+
+        Iterable<Post> iterable = highCapacityList;
+
+        when(postRepository.findAll()).thenReturn(iterable);
+
+        postService.publishScheduledPosts();
+
+        verify(threadPoolExecutor, times(2)).execute(any());
+        verify(threadPoolExecutor).shutdown();
     }
 
     private void returnCorrectPostForPostRepository() {

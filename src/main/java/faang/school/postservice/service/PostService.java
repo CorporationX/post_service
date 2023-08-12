@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +33,7 @@ public class PostService {
     private final UserServiceClient userService;
     private final ProjectServiceClient projectService;
     private final PostMapper postMapper;
+    private final ThreadPoolExecutor threadPoolExecutor;
 
     public PostDto crateDraftPost(PostDto postDto) {
         validateData(postDto);
@@ -61,7 +64,7 @@ public class PostService {
         long postId = updatePost.getId();
         Post post = validatePostId(postId);
         validateAuthorUpdate(post, updatePost);
-
+        validateScheduleAt(post, updatePost);
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         log.info("Post was updated successfully, postId={}", post.getId());
@@ -145,9 +148,59 @@ public class PostService {
         return projectPosts;
     }
 
+    public void publishScheduledPosts() {
+        Iterable<Post> unFilteredPosts = postRepository.findAll();
+        List<Post> filteredPosts = filterPostsByPublicationDate(unFilteredPosts);
+        publishPosts(filteredPosts);
+        log.info("Scheduled post publishing executed");
+    }
+
+    private void publishPosts(List<Post> filteredPosts) {
+        if (filteredPosts.size() > 1000) {
+            int batchSize = 1000;
+
+            for (int i = 0; i < filteredPosts.size(); i += batchSize) {
+                int startIndex = i;
+                int endIndex = Math.min(i + batchSize, filteredPosts.size());
+                threadPoolExecutor.execute(() -> processAndSavePosts(filteredPosts.subList(startIndex, endIndex)));
+            }
+            threadPoolExecutor.shutdown();
+        } else {
+            processAndSavePosts(filteredPosts);
+        }
+    }
+
+    private void processAndSavePosts(List<Post> posts) {
+        posts.forEach(post -> {
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+        });
+        postRepository.saveAll(posts);
+    }
+
+    private List<Post> filterPostsByPublicationDate(Iterable<Post> unFilteredPosts) {
+        return StreamSupport.stream(unFilteredPosts.spliterator(), false)
+                .filter(post -> !post.isPublished())
+                .filter(post -> !post.isDeleted())
+                .filter(post -> {
+                    LocalDateTime postSchedule = post.getScheduledAt();
+                    LocalDateTime now = LocalDateTime.now();
+                    return postSchedule.isBefore(now) || postSchedule.isEqual(now);
+                })
+                .toList();
+    }
+
     private Post validatePostId(long postId) {
         return postRepository.findById(postId).orElseThrow(
                 () -> new EntityNotFoundException("This post does not exist"));
+    }
+
+    private void validateScheduleAt(Post post, PostDto updatePost) {
+        LocalDateTime updateScheduleAt = updatePost.getScheduledAt();
+
+        if (updateScheduleAt != null && updateScheduleAt.isAfter(post.getScheduledAt())) {
+            post.setScheduledAt(updateScheduleAt);
+        }
     }
 
     private void validateData(PostDto postDto) {
@@ -158,9 +211,9 @@ public class PostService {
             throw new SamePostAuthorException("The author of the post cannot be both a user and a project");
         }
         if (userId != null) {
-           validateUserId(userId);
+            validateUserId(userId);
         } else {
-           validateProjectId(projectId);
+            validateProjectId(projectId);
         }
     }
 
