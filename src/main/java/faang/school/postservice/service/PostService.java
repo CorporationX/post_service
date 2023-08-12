@@ -139,4 +139,8 @@ public class PostService {
             post.setProjectId(projectDto.getId());
         }
     }
+    public Post getPostById(long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException("Post with id " + postId + " was not found!"));
+    }
 }
