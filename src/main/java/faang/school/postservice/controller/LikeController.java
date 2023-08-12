@@ -17,31 +17,31 @@ import java.util.List;
 public class LikeController {
     private final LikeService likeService;
 
-    @PostMapping("/likepost")
+    @PostMapping("/likePost")
     @ResponseStatus(HttpStatus.OK)
     public LikeDto likePost(LikeDto likeDto) {
         return likeService.createLikeOnPost(likeDto);
     }
 
-    @PostMapping("/likecomment")
+    @PostMapping("/likeComment")
     @ResponseStatus(HttpStatus.OK)
     public LikeDto likeComment(LikeDto likeDto) {
         return likeService.createLikeOnComment(likeDto);
     }
 
-    @DeleteMapping("/deletelikepost")
+    @DeleteMapping("/deleteLikePost")
     @ResponseStatus(HttpStatus.OK)
     public void deleteLikeOnPost(LikeDto likeDto) {
         likeService.deleteLikeOnPost(likeDto);
     }
 
-    @DeleteMapping("/deletelikecomment")
+    @DeleteMapping("/deleteLikeComment")
     @ResponseStatus(HttpStatus.OK)
     public void deleteLikeOnComment(LikeDto likeDto) {
         likeService.deleteLikeOnComment(likeDto);
     }
 
-    @GetMapping("/getlikes")
+    @GetMapping("/getLikes")
     @ResponseStatus(HttpStatus.OK)
     public List<LikeDto> getAllPostLikes(LikeDto likeDto) {
         return likeService.getAllPostLikes(likeDto);
