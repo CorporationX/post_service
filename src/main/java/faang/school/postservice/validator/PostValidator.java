@@ -50,10 +50,6 @@ public class PostValidator {
     }
 
     public void validationOfPostDelete(Post post) {
-        if (post == null) {
-            throw new DataValidationException("Post not found");
-        }
-
         if (post.isDeleted()) {
             throw new DataValidationException("Post already deleted");
         }

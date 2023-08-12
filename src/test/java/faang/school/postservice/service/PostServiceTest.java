@@ -23,12 +23,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -165,7 +162,7 @@ class PostServiceTest {
             Long postId = postWithAuthorIdDto.getId();
             postService.softDeletePost(postId);
             when(postRepository.findById(postId)).thenReturn(Optional.empty());
-        } catch (DataValidationException e) {
+        } catch (EntityNotFoundException e) {
             assertEquals("Post not found", e.getMessage());
         }
     }

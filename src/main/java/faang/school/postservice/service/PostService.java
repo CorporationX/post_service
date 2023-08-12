@@ -59,7 +59,7 @@ public class PostService {
 
     @Transactional
     public boolean softDeletePost(Long postId) {
-        Post post = postRepository.findById(postId).orElse(null);
+        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
         postValidator.validationOfPostDelete(post);
 
