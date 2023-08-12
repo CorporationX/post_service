@@ -1,6 +1,5 @@
-package faang.school.postservice.dto.album;
+package faang.school.postservice.dto.user;
 
-import faang.school.postservice.model.Visibility;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,19 +8,19 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class AlbumDto {
+public class GoalDto {
     private Long id;
-    private String title;
     private String description;
-    private Long authorId;
-    private List<Long> postIds;
+    private Long parentId;
+    private String title;
+    private String status;
+    private LocalDateTime deadline;
+    private Long mentorId;
+    private List<Long> skillIds;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Visibility visibility;
-    private List<Long> allowedUsersIds;
 }
