@@ -145,4 +145,38 @@ class PostServiceTest {
             assertEquals("Post is already published", e.getMessage());
         }
     }
+
+    @Test
+    void testSoftDeletePostSuccess() {
+        Post post = postMapperImpl.toPost(postWithAuthorIdDto);
+        when(postRepository.findById(postWithAuthorIdDto.getId())).thenReturn(Optional.of(post));
+        boolean result = postService.softDeletePost(postWithAuthorIdDto.getId());
+
+        assertTrue(post.isDeleted());
+        assertTrue(result);
+    }
+
+    @Test
+    void testSoftDeletePostFailIfPostNotFound() {
+        try {
+            Long postId = postWithAuthorIdDto.getId();
+            postService.softDeletePost(postId);
+            when(postRepository.findById(postId)).thenReturn(Optional.empty());
+        } catch (EntityNotFoundException e) {
+            assertEquals("Post not found", e.getMessage());
+        }
+    }
+
+    @Test
+    void testSoftDeletePostFailIfPostIsAlreadyDeleted() {
+        try {
+            Post post = postMapperImpl.toPost(postWithAuthorIdDto);
+            post.setDeleted(true);
+            Long postId = postWithAuthorIdDto.getId();
+            when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+            postService.softDeletePost(postId);
+        } catch (DataValidationException e) {
+            assertEquals("Post already deleted", e.getMessage());
+        }
+    }
 }

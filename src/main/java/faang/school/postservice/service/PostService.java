@@ -56,4 +56,15 @@ public class PostService {
 
         return postMapper.toDto(postRepository.save(post));
     }
+
+    @Transactional
+    public boolean softDeletePost(Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        postValidator.validationOfPostDelete(post);
+
+        post.setDeleted(true);
+        postRepository.save(post);
+        return true;
+    }
 }

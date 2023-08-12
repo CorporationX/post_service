@@ -48,4 +48,10 @@ public class PostValidator {
             throw new DataValidationException("Post is already published");
         }
     }
+
+    public void validationOfPostDelete(Post post) {
+        if (post.isDeleted()) {
+            throw new DataValidationException("Post already deleted");
+        }
+    }
 }

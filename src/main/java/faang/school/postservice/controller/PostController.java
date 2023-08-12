@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -38,6 +39,13 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     public PostDto publishPost(@PathVariable Long postId) {
         return postService.publishPost(postId);
+    }
+
+    @DeleteMapping("/{postId}")
+    @Operation(summary = "Delete Post")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public boolean deletePost(@PathVariable Long postId) {
+        return postService.softDeletePost(postId);
     }
 
     private boolean validate(PostDto post) {

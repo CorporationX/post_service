@@ -69,4 +69,10 @@ class PostControllerTest {
         postController.publishPost(postId);
         verify(postService, Mockito.times(1)).publishPost(postId);
     }
+
+    @Test
+    void deletePost() {
+        postController.deletePost(postDtoWithAuthorId.getId());
+        verify(postService, Mockito.times(1)).softDeletePost(postDtoWithAuthorId.getId());
+    }
 }
