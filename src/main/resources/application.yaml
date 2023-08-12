@@ -1,4 +1,8 @@
 spring:
+  task:
+    scheduling:
+      moderateComment:
+        cron: "0 0 0 * * *"
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
