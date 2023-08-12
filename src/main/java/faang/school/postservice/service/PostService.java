@@ -78,10 +78,7 @@ public class PostService {
         UserDto user = userServiceClient.getUser(authorId);
         postValidator.validateAuthor(user);
         List<Post> draftsByAuthorId = postRepository.findDraftsByAuthorId(user.getId());
-        return draftsByAuthorId.stream()
-                .sorted(Comparator.comparing(Post::getCreatedAt))
-                .map(postMapper::toDto)
-                .toList();
+        return getSortedDrafts(draftsByAuthorId);
     }
 
     @Transactional(readOnly = true)
@@ -89,10 +86,7 @@ public class PostService {
         ProjectDto project = projectServiceClient.getProject(projectId);
         postValidator.validateProject(project);
         List<Post> draftsByProjectId = postRepository.findDraftsByProjectId(project.getId());
-        return draftsByProjectId.stream()
-                .sorted(Comparator.comparing(Post::getCreatedAt))
-                .map(postMapper::toDto)
-                .toList();
+        return getSortedDrafts(draftsByProjectId);
     }
 
     @Transactional(readOnly = true)
@@ -100,10 +94,7 @@ public class PostService {
         UserDto user = userServiceClient.getUser(authorId);
         postValidator.validateAuthor(user);
         List<Post> publishedPostsByAuthorId = postRepository.findPublishedPostsByAuthorId(user.getId());
-        return publishedPostsByAuthorId.stream()
-                .sorted(Comparator.comparing(Post::getPublishedAt))
-                .map(postMapper::toDto)
-                .toList();
+        return getSortedPublishedPosts(publishedPostsByAuthorId);
     }
 
     @Transactional(readOnly = true)
@@ -111,10 +102,7 @@ public class PostService {
         ProjectDto project = projectServiceClient.getProject(projectId);
         postValidator.validateProject(project);
         List<Post> publishedPostsByProjectId = postRepository.findPublishedPostsByProjectId(project.getId());
-        return publishedPostsByProjectId.stream()
-                .sorted(Comparator.comparing(Post::getPublishedAt))
-                .map(postMapper::toDto)
-                .toList();
+        return getSortedPublishedPosts(publishedPostsByProjectId);
     }
 
     @Transactional
@@ -131,5 +119,19 @@ public class PostService {
     private Post getPostById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+    }
+
+    private List<PostDto> getSortedDrafts(List<Post> draftsByAuthorId) {
+        return draftsByAuthorId.stream()
+                .sorted(Comparator.comparing(Post::getCreatedAt))
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    private List<PostDto> getSortedPublishedPosts(List<Post> publishedPostsByAuthorId) {
+        return publishedPostsByAuthorId.stream()
+                .sorted(Comparator.comparing(Post::getPublishedAt))
+                .map(postMapper::toDto)
+                .toList();
     }
 }

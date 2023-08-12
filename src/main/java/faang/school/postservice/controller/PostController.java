@@ -71,7 +71,7 @@ public class PostController {
     @GetMapping("/users/{authorId}/drafts")
     @Operation(summary = "Get not deleted drafts by author id")
     @ResponseStatus(HttpStatus.OK)
-    public List<PostDto> getNotDeletedDraftsByAuthorId(@PathVariable @Valid Long authorId) {
+    public List<PostDto> getDraftsByAuthorId(@PathVariable @Valid Long authorId) {
         validateId(authorId);
         return postService.getNotDeletedDraftsByAuthorId(authorId);
     }
@@ -79,7 +79,7 @@ public class PostController {
     @GetMapping("/projects/{projectId}/drafts")
     @Operation(summary = "Get not deleted drafts by project id")
     @ResponseStatus(HttpStatus.OK)
-    public List<PostDto> getNotDeletedDraftsByProjectId(@PathVariable @Valid Long projectId) {
+    public List<PostDto> getDraftsByProjectId(@PathVariable @Valid Long projectId) {
         validateId(projectId);
         return postService.getNotDeletedDraftsByProjectId(projectId);
     }
@@ -87,7 +87,7 @@ public class PostController {
     @GetMapping("/users/{authorId}/posts")
     @Operation(summary = "Get not deleted published posts by author id")
     @ResponseStatus(HttpStatus.OK)
-    public List<PostDto> getNotDeletedPublishedPostsByAuthorId(@PathVariable @Valid Long authorId) {
+    public List<PostDto> getPublishedPostsByAuthorId(@PathVariable @Valid Long authorId) {
         validateId(authorId);
         return postService.getNotDeletedPublishedPostsByAuthorId(authorId);
     }
@@ -95,7 +95,7 @@ public class PostController {
     @GetMapping("/projects/{projectId}/posts")
     @Operation(summary = "Get not deleted published posts by project id")
     @ResponseStatus(HttpStatus.OK)
-    public List<PostDto> getNotDeletedPublishedPostsByProjectId(@PathVariable @Valid Long projectId) {
+    public List<PostDto> getPublishedPostsByProjectId(@PathVariable @Valid Long projectId) {
         validateId(projectId);
         return postService.getNotDeletedPublishedPostsByProjectId(projectId);
     }
