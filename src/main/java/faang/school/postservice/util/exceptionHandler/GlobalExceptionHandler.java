@@ -1,49 +1,123 @@
 package faang.school.postservice.util.exceptionHandler;
 
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.NotFoundException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import faang.school.postservice.dto.response.ErrorResponse;
+import faang.school.postservice.util.exception.EntityNotFoundException;
+import faang.school.postservice.util.exception.NotAllowedException;
+import faang.school.postservice.util.exception.CreatePostException;
+import faang.school.postservice.util.exception.DataValidationException;
+import faang.school.postservice.util.exception.DeletePostException;
+import faang.school.postservice.util.exception.GetPostException;
+import faang.school.postservice.util.exception.NotFoundException;
+import faang.school.postservice.util.exception.PostNotFoundException;
+import faang.school.postservice.util.exception.PublishPostException;
+import faang.school.postservice.util.exception.UpdatePostException;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
-@RestControllerAdvice
+@ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(CreatePostException.class)
+    public ResponseEntity<ErrorResponse> handleException(CreatePostException e) {
+        log.error("Error has been occurred when creating new post: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<ErrorResponse> handleException(FeignException e) {
+        log.error("Error with Feign has been occurred: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleException(MethodArgumentNotValidException e) {
+        log.error("Error has been occurred when validating inputs: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
     @ExceptionHandler(DataValidationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleDataValidationException(DataValidationException ex) {
-        log.error("Data validation exception occurred.", ex);
-        return new ErrorResponse(ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleException(DataValidationException e) {
+        log.error("Error has been occurred when validating data: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(PublishPostException.class)
+    public ResponseEntity<ErrorResponse> handleException(PublishPostException e) {
+        log.error("Error has been occurred when publishing post: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleException(PostNotFoundException e) {
+        log.error("Error has been occurred when finding post: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(UpdatePostException.class)
+    public ResponseEntity<ErrorResponse> handleException(UpdatePostException e) {
+        log.error("Error has been occurred when updating post: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(DeletePostException.class)
+    public ResponseEntity<ErrorResponse> handleException(DeletePostException e) {
+        log.error("Error has been occurred when deleting post: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(GetPostException.class)
+    public ResponseEntity<ErrorResponse> handleException(GetPostException e) {
+        log.error("Error has been occurred when getting post: {}", e.getMessage(), e);
+
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException ex) {
+        log.error(ex.getMessage(), ex.getCause());
+        return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(JsonProcessingException.class)
+    public ResponseEntity<String> handleJsonProcessingException(JsonProcessingException ex) {
+        log.error(ex.getMessage(), ex.getCause());
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(NotAllowedException.class)
+    public ResponseEntity<String> handleNotAllowedException(NotAllowedException ex) {
+        log.error(ex.getMessage(), ex.getCause());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFoundException(NotFoundException ex) {
+    public faang.school.postservice.util.exceptionHandler.ErrorResponse handleNotFoundException(NotFoundException ex) {
         log.error("Not found exception occurred.", ex);
-        return new ErrorResponse(ex.getMessage());
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        StringBuilder message = new StringBuilder();
-
-        ex.getBindingResult().getAllErrors()
-                .forEach(error -> message.append(error.getDefaultMessage()).append("\n"));
-
-        log.error("Method argument not valid exception occurred.", ex);
-        return new ErrorResponse(message.toString());
+        return new faang.school.postservice.util.exceptionHandler.ErrorResponse(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleException(Exception ex) {
-        log.error("Exception occurred.", ex);
-        return new ErrorResponse(ex.getMessage(), ex.getClass());
+    public ResponseEntity<String> handleException(Exception ex) {
+        log.error(ex.getMessage(), ex.getCause());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 }
