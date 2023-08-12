@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -63,5 +66,43 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     public PostDto getPost(@PathVariable @Valid Long postId) {
         return postService.getPost(postId);
+    }
+
+    @GetMapping("/users/{authorId}/drafts")
+    @Operation(summary = "Get not deleted drafts by author id")
+    @ResponseStatus(HttpStatus.OK)
+    public List<PostDto> getDraftsByAuthorId(@PathVariable @Valid Long authorId) {
+        validateId(authorId);
+        return postService.getNotDeletedDraftsByAuthorId(authorId);
+    }
+
+    @GetMapping("/projects/{projectId}/drafts")
+    @Operation(summary = "Get not deleted drafts by project id")
+    @ResponseStatus(HttpStatus.OK)
+    public List<PostDto> getDraftsByProjectId(@PathVariable @Valid Long projectId) {
+        validateId(projectId);
+        return postService.getNotDeletedDraftsByProjectId(projectId);
+    }
+
+    @GetMapping("/users/{authorId}/posts")
+    @Operation(summary = "Get not deleted published posts by author id")
+    @ResponseStatus(HttpStatus.OK)
+    public List<PostDto> getPublishedPostsByAuthorId(@PathVariable @Valid Long authorId) {
+        validateId(authorId);
+        return postService.getNotDeletedPublishedPostsByAuthorId(authorId);
+    }
+
+    @GetMapping("/projects/{projectId}/posts")
+    @Operation(summary = "Get not deleted published posts by project id")
+    @ResponseStatus(HttpStatus.OK)
+    public List<PostDto> getPublishedPostsByProjectId(@PathVariable @Valid Long projectId) {
+        validateId(projectId);
+        return postService.getNotDeletedPublishedPostsByProjectId(projectId);
+    }
+
+    private void validateId(Long id) {
+        if (id < 0) {
+            throw new DataValidationException("Id cannot be negative");
+        }
     }
 }

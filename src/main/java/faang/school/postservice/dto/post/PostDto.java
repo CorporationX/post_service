@@ -30,4 +30,5 @@ public class PostDto {
     private boolean isPublished;
     private LocalDateTime scheduledAt;
     private LocalDateTime createdAt;
+    private boolean published;
 }

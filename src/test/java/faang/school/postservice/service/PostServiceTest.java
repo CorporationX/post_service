@@ -22,6 +22,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -227,6 +228,97 @@ class PostServiceTest {
     void testGetPostFail() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
         Assertions.assertThrows(EntityNotFoundException.class, () -> postService.getPost(1L));
+    }
+
+    @Test
+    void testGetNotDeletedDraftsByAuthorIdSuccess() {
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+        when(postRepository.findDraftsByAuthorId(userDto.getId()))
+                .thenReturn(List.of(Post.builder().authorId(userDto.getId()).build()));
+        List<PostDto> posts = postService.getNotDeletedDraftsByAuthorId(userDto.getId());
+
+        assertEquals(1, posts.size());
+    }
+
+    @Test
+    void testGetNotDeletedDraftsByAuthorIdFailIfUserNotFound() {
+        when(userServiceClient.getUser(USER_ID)).thenThrow(NullPointerException.class);
+        assertThrows((NullPointerException.class), () -> postService.getNotDeletedDraftsByAuthorId(USER_ID));
+    }
+
+    @Test
+    void testGetNotDeletedDraftsByAuthorIdFailIfNoDraftsFound() {
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+        when(postRepository.findDraftsByAuthorId(USER_ID)).thenReturn(List.of());
+        assertEquals(0, postService.getNotDeletedDraftsByAuthorId(USER_ID).size());
+    }
+
+    @Test
+    void testGetNotDeletedDraftsByProjectIdSuccess() {
+        when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
+        when(postRepository.findDraftsByProjectId(projectDto.getId()))
+                .thenReturn(List.of(Post.builder().projectId(projectDto.getId()).build()));
+        List<PostDto> posts = postService.getNotDeletedDraftsByProjectId(projectDto.getId());
+
+        assertEquals(1, posts.size());
+    }
+
+    @Test
+    void testGetNotDeletedDraftsByProjectIdFailIfProjectNotFound() {
+        when(projectServiceClient.getProject(PROJECT_ID)).thenThrow(NullPointerException.class);
+        assertThrows((NullPointerException.class), () -> postService.getNotDeletedDraftsByProjectId(PROJECT_ID));
+    }
+
+    @Test
+    void testGetNotDeletedDraftsByProjectIdFailIfNoDraftsFound() {
+        when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
+        when(postRepository.findDraftsByProjectId(PROJECT_ID)).thenReturn(List.of());
+        assertEquals(0, postService.getNotDeletedDraftsByProjectId(PROJECT_ID).size());
+    }
+
+    @Test
+    void testGetPublishedPostByAuthorIdSuccess() {
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+        when(postRepository.findPublishedPostsByAuthorId(userDto.getId()))
+                .thenReturn(List.of(Post.builder().authorId(userDto.getId()).published(true).deleted(false).build()));
+        List<PostDto> posts = postService.getNotDeletedPublishedPostsByAuthorId(userDto.getId());
+        assertEquals(1, posts.size());
+        posts.forEach(post -> assertTrue(post.isPublished()));
+    }
+
+    @Test
+    void testGetPublishedPostByAuthorIdFailIfUserNotFound() {
+        when(userServiceClient.getUser(USER_ID)).thenThrow(NullPointerException.class);
+        assertThrows((NullPointerException.class), () -> postService.getNotDeletedPublishedPostsByAuthorId(USER_ID));
+    }
+
+    @Test
+    void testGetPublishedPostByAuthorIdFailIfNoPostsFound() {
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+        when(postRepository.findPublishedPostsByAuthorId(USER_ID)).thenReturn(List.of());
+        assertEquals(0, postService.getNotDeletedPublishedPostsByAuthorId(USER_ID).size());
+    }
+
+    @Test
+    void testGetPublishedPostByProjectIdSuccess() {
+        when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
+        when(postRepository.findPublishedPostsByProjectId(projectDto.getId())).thenReturn(List.of(Post.builder().projectId(projectDto.getId()).published(true).build()));
+        List<PostDto> posts = postService.getNotDeletedPublishedPostsByProjectId(projectDto.getId());
+        assertEquals(1, posts.size());
+        posts.forEach(post -> assertTrue(post.isPublished()));
+    }
+
+    @Test
+    void testGetPublishedPostByProjectIdFailIfProjectNotFound() {
+        when(projectServiceClient.getProject(PROJECT_ID)).thenThrow(NullPointerException.class);
+        assertThrows((NullPointerException.class), () -> postService.getNotDeletedPublishedPostsByProjectId(PROJECT_ID));
+    }
+
+    @Test
+    void testGetPublishedPostByProjectIdFailIfNoPostsFound() {
+        when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
+        when(postRepository.findPublishedPostsByProjectId(PROJECT_ID)).thenReturn(List.of());
+        assertEquals(0, postService.getNotDeletedPublishedPostsByProjectId(PROJECT_ID).size());
     }
 
     @Test

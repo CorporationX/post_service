@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -71,6 +73,38 @@ public class PostService {
         return postMapper.toDto(getPostById(postId));
     }
 
+    @Transactional(readOnly = true)
+    public List<PostDto> getNotDeletedDraftsByAuthorId(Long authorId) {
+        UserDto user = userServiceClient.getUser(authorId);
+        postValidator.validateAuthor(user);
+        List<Post> draftsByAuthorId = postRepository.findDraftsByAuthorId(user.getId());
+        return getSortedDrafts(draftsByAuthorId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostDto> getNotDeletedDraftsByProjectId(Long projectId) {
+        ProjectDto project = projectServiceClient.getProject(projectId);
+        postValidator.validateProject(project);
+        List<Post> draftsByProjectId = postRepository.findDraftsByProjectId(project.getId());
+        return getSortedDrafts(draftsByProjectId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostDto> getNotDeletedPublishedPostsByAuthorId(Long authorId) {
+        UserDto user = userServiceClient.getUser(authorId);
+        postValidator.validateAuthor(user);
+        List<Post> publishedPostsByAuthorId = postRepository.findPublishedPostsByAuthorId(user.getId());
+        return getSortedPublishedPosts(publishedPostsByAuthorId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostDto> getNotDeletedPublishedPostsByProjectId(Long projectId) {
+        ProjectDto project = projectServiceClient.getProject(projectId);
+        postValidator.validateProject(project);
+        List<Post> publishedPostsByProjectId = postRepository.findPublishedPostsByProjectId(project.getId());
+        return getSortedPublishedPosts(publishedPostsByProjectId);
+    }
+
     @Transactional
     public boolean softDeletePost(Long postId) {
         Post post = getPostById(postId);
@@ -85,5 +119,19 @@ public class PostService {
     private Post getPostById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+    }
+
+    private List<PostDto> getSortedDrafts(List<Post> draftsByAuthorId) {
+        return draftsByAuthorId.stream()
+                .sorted(Comparator.comparing(Post::getCreatedAt))
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    private List<PostDto> getSortedPublishedPosts(List<Post> publishedPostsByAuthorId) {
+        return publishedPostsByAuthorId.stream()
+                .sorted(Comparator.comparing(Post::getPublishedAt))
+                .map(postMapper::toDto)
+                .toList();
     }
 }
