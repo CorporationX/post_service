@@ -16,7 +16,7 @@ public class ErrorResponse {
         this.message = message;
     }
 
-    public ErrorResponse(String message, Class<?> classException) {
+    public ErrorResponse(String message, Class<?> classException){
         this.message = message;
         this.classException = classException;
     }
