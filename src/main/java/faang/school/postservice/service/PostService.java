@@ -8,6 +8,7 @@ import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
