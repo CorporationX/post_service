@@ -42,7 +42,7 @@ public class PostService {
 
         Post post = postMapper.toEntity(dto);
         postRepository.save(post);
-        hashtagService.parseContent(post);
+        hashtagService.parseContentToAdd(post);
 
         return postMapper.toDto(post);
     }
@@ -64,13 +64,14 @@ public class PostService {
     @Transactional
     public PostDto updatePost(Long id, String content) {
         Post postById = getPostById(id);
-
         validator.validateToUpdate(postById, content);
+        String previousContent = postById.getContent();
 
         postById.setContent(content);
         postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
+        hashtagService.parseContentToUpdate(postById, previousContent);
 
         return postMapper.toDto(postById);
     }

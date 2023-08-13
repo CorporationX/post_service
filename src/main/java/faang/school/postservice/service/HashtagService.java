@@ -38,7 +38,7 @@ public class HashtagService {
 
     @Async("taskExecutor")
     @Transactional
-    public void parseContent(Post post) {
+    public void parseContentToAdd(Post post) {
         try {
             var content = extractHashtags(post.getContent());
             for (var tag : content) {
@@ -52,6 +52,43 @@ public class HashtagService {
             }
         } catch (Exception e) {
             log.error("Exception " + e.getCause() + " " + e.getMessage());
+        }
+    }
+
+    @Async("taskExecutor")
+    @Transactional
+    public void parseContentToUpdate(Post post, String previousContent) {
+        var oldHashtags = extractHashtags(previousContent);
+        var newHashtags = extractHashtags(post.getContent());
+
+        List<String> hashtagsToAdd = newHashtags.stream()
+                .filter(hashtag -> !oldHashtags.contains(hashtag))
+                .collect(Collectors.toList());
+
+        List<String> hashtagsToRemove = oldHashtags.stream()
+                .filter(hashtag -> !newHashtags.contains(hashtag))
+                .collect(Collectors.toList());
+        System.out.println(hashtagsToAdd);
+        System.out.println(hashtagsToRemove);
+        updatePostHashtags(post, hashtagsToAdd, hashtagsToRemove);
+    }
+
+    private void updatePostHashtags(Post post, List<String> hashtagsToAdd, List<String> hashtagsToRemove) {
+        for (String hashtagText : hashtagsToAdd) {
+            String tag = hashtagText.substring(1).toLowerCase();
+            Optional<Hashtag> hashtagOptional = hashtagRepository.findByHashtag(tag);
+
+            Hashtag hashtag = hashtagOptional.orElseGet(() ->
+                    hashtagRepository.save(Hashtag.builder().tag(tag).posts(new ArrayList<>()).build())
+            );
+            hashtag.getPosts().add(post);
+        }
+
+        for (String hashtagText : hashtagsToRemove) {
+            String tag = hashtagText.substring(1).toLowerCase();
+            var hashtag1 = hashtagRepository.findByHashtag(tag);
+            var hashtag = hashtag1.get(); // always exists
+            hashtagRepository.deletePostHashtag(post.getId(), hashtag.getId());
         }
     }
 
