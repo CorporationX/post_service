@@ -49,3 +49,5 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+yandex-spell-checker-service:
+  host: https://speller.yandex.net/services/spellservice.json
