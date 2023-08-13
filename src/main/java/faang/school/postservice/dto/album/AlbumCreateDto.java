@@ -19,7 +19,6 @@ public class AlbumCreateDto {
     @NotBlank
     @Size(max = 4096,message = "Description must be less than 4096 characters")
     private String description;
-    @NotBlank
     @NotNull
     private Long authorId;
 }

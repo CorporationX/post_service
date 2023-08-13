@@ -52,7 +52,6 @@ public class Album {
     @Enumerated(EnumType.ORDINAL)
     private AlbumVisibility visibility = AlbumVisibility.ALL_USERS;
 
-
     @ElementCollection
     @CollectionTable(name = "user_album_access", joinColumns = @JoinColumn(name = "album_id"))
     @Column(name = "user_id")

@@ -3,7 +3,7 @@ package faang.school.postservice.mapper;
 import faang.school.postservice.dto.album.AlbumCreateDto;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumUpdateDto;
-import faang.school.postservice.model.Album;
+import faang.school.postservice.model.album.Album;
 import faang.school.postservice.model.Post;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
