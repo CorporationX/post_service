@@ -2,6 +2,7 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Album;
 import org.springframework.stereotype.Component;
 import org.webjars.NotFoundException;
@@ -17,14 +18,16 @@ public class AlbumValidator {
         }
     }
 
-    public void validateAlbumCreation(AlbumDto album) {
+    public void validateAlbumCreation(AlbumDto album, boolean exist) {
+        validateAlbumTitleUnique(exist);
         validateAlbumTitleLength(album);
         validateAlbumDescriptionLength(album);
     }
 
-    public void validationOfAlbumUpdate(AlbumDto albumDto, Album albumToUpdate) {
+    public void validationOfAlbumUpdate(AlbumDto albumDto, Album albumToUpdate, boolean exist) {
         validateAlbum(albumToUpdate);
         validateAuthorIdChange(albumDto, albumToUpdate);
+        validateAlbumTitleUnique(exist);
         validateAlbumTitleLength(albumDto);
     }
 
@@ -36,7 +39,13 @@ public class AlbumValidator {
 
     public void validateAlbum(Album album) {
         if (album == null) {
-            throw new NotFoundException("Album not found");
+            throw new EntityNotFoundException("Album not found");
+        }
+    }
+
+    private void validateAlbumTitleUnique(Boolean exist) {
+        if (exist) {
+            throw new IllegalArgumentException("Title must be unique");
         }
     }
 

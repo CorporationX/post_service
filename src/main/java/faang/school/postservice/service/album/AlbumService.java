@@ -3,6 +3,7 @@ package faang.school.postservice.service.album;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.repository.AlbumRepository;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,13 +25,10 @@ public class AlbumService {
     @Transactional
     public AlbumDto createAlbum(AlbumDto albumDto) {
         UserDto user = userServiceClient.getUser(albumDto.getAuthorId());
-
-        if (albumRepository.existsByTitleAndAuthorId(albumDto.getTitle(), user.getId())) {
-            throw new IllegalArgumentException("Title must be unique");
-        }
+        boolean existsByTitleAndAuthorId = isExistsByTitleAndAuthorId(albumDto.getTitle(), user.getId());
 
         albumValidator.validateOwner(user);
-        albumValidator.validateAlbumCreation(albumDto);
+        albumValidator.validateAlbumCreation(albumDto, existsByTitleAndAuthorId);
 
         Album albumToSave = albumMapper.toAlbum(albumDto);
 
@@ -41,21 +38,32 @@ public class AlbumService {
     @Transactional
     public AlbumDto updateAlbum(AlbumDto albumDto) {
         UserDto user = userServiceClient.getUser(albumDto.getAuthorId());
+        Album albumToUpdate = getAlbumById(albumDto.getId());
+        boolean existsByTitleAndAuthorId = isExistsByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId());
+
         albumValidator.validateOwner(user);
+        albumValidator.validationOfAlbumUpdate(albumDto, albumToUpdate, existsByTitleAndAuthorId);
 
-        Album albumToUpdate = albumRepository.findById(albumDto.getId()).orElse(null);
+        Album updatedAlbum = albumMapper.toAlbum(albumDto);
+        updatedAlbum.setUpdatedAt(LocalDateTime.now());
 
-        albumValidator.validationOfAlbumUpdate(albumDto, albumToUpdate);
-
-        albumMapper.updateAlbumFromDto(albumDto, albumToUpdate);
-
-        return albumMapper.toDto(albumRepository.save(albumToUpdate));
+        return albumMapper.toDto(albumRepository.save(updatedAlbum));
     }
 
     @Transactional
-    public void deleteAlbum(Long album) {
-        Album albumToDelete = albumRepository.findById(album).orElse(null);
+    public void deleteAlbum(Long albumId) {
+        Album albumToDelete = getAlbumById(albumId);
         albumValidator.validateAlbum(albumToDelete);
         albumRepository.delete(albumToDelete);
+    }
+
+    @Transactional(readOnly = true)
+    private Album getAlbumById(Long albumId) {
+        return albumRepository.findById(albumId).orElseThrow(() -> new EntityNotFoundException("Album not found"));
+    }
+
+    @Transactional(readOnly = true)
+    private boolean isExistsByTitleAndAuthorId(String title, Long userId) {
+        return albumRepository.existsByTitleAndAuthorId(title, userId);
     }
 }
