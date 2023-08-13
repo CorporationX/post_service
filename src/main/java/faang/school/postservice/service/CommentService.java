@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.exсeption.EntityNotFoundException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;

@@ -2,8 +2,8 @@ package faang.school.postservice.validation;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.exсeption.DataValidationException;
-import faang.school.postservice.exсeption.EntityNotFoundException;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;

@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.exсeption.DataValidationException;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.LikeService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

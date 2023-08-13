@@ -1,6 +1,6 @@
 package faang.school.postservice.validation;
 
-import faang.school.postservice.exсeption.DataValidationException;
+import faang.school.postservice.exception.DataValidationException;
 import org.springframework.stereotype.Component;
 
 @Component
