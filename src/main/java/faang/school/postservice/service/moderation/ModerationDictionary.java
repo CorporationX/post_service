@@ -17,10 +17,12 @@ public class ModerationDictionary {
 
     public boolean checkWordContent(String content) {
         log.info(Thread.currentThread().getName() + " was started");
-        String resultString = content.replaceAll("[\\W]", "");
+        String resultString = content.replaceAll("[\\W]", "")
+                .replaceAll("[-_'~`]", "")
+                .toLowerCase();
 
         return obsceneWordsDictionary.stream()
-                .anyMatch(word -> resultString.toLowerCase().contains(word));
+                .anyMatch(word -> resultString.contains(word));
     }
 
     @SneakyThrows
