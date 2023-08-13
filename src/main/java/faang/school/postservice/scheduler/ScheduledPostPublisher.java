@@ -18,11 +18,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class ScheduledPostPublisher {
 
     @Value("${post.publisher.scheduler.batch_size}")
-    //post:
-    //  publisher:
-    //    scheduler:
-    //      batch_size: 1000
-    private Integer batchSize;
+    private final int batchSize;
 
     private final PostRepository postRepository;
     private final ThreadPoolExecutor threadPoolExecutor;
@@ -37,11 +33,15 @@ public class ScheduledPostPublisher {
 
     private void publishPosts(List<Post> filteredPosts) {
         if (filteredPosts.size() > batchSize) {
-
             for (int i = 0; i < filteredPosts.size(); i += batchSize) {
                 int startIndex = i;
                 int endIndex = Math.min(i + batchSize, filteredPosts.size());
                 threadPoolExecutor.execute(() -> processAndSavePosts(filteredPosts.subList(startIndex, endIndex)));
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException exception) {
+                    exception.printStackTrace();
+                }
             }
         } else {
             processAndSavePosts(filteredPosts);
