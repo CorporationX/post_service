@@ -2,14 +2,16 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.exceptions.DataNotFoundException;
-import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exceptions.SameTimeActionException;
+import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.client.UserDto;
+import faang.school.postservice.exception.DataNotFoundException;
+import faang.school.postservice.exception.SameTimeActionException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.LikeMapperImpl;
+import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
@@ -42,8 +44,8 @@ class LikeServiceTest {
     @Mock
     private CommentService commentService;
 
-
     LikeMapper likeMapper;
+    PostMapper postMapper;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -57,10 +59,11 @@ class LikeServiceTest {
     @BeforeEach
     void setUp() {
         likeDto = LikeDto.builder().userId(1L).build();
-        userDto = new UserDto(1L, "Andrey", "gmail@gmail.com");
+        userDto = UserDto.builder().id(1L).username("Andrey").email("gmail@gmail.com").build();
         likeMapper = new LikeMapperImpl();
+        postMapper = new PostMapperImpl();
         likeValidator = new LikeValidator(userServiceClient);
-        likeService = new LikeService(likeValidator, likeMapper, likeRepository, postService, commentService);
+        likeService = new LikeService(likeValidator, likeMapper, likeRepository, postService, commentService, postMapper);
     }
 
     @Test
@@ -69,10 +72,10 @@ class LikeServiceTest {
 
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
 
-        Post post = Post.builder().id(1L).build();
+        PostDto post = PostDto.builder().id(1L).build();
         Mockito.when(postService.getPost(1L)).thenReturn(post);
 
-        Like like = Like.builder().id(0L).userId(1L).post(post).build();
+        Like like = Like.builder().id(0L).userId(1L).post(postMapper.toEntity(post)).build();
 
         assertEquals(likeMapper.toDto(like), likeService.likePost(likeDto));
         verify(likeRepository).save(like);

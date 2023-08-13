@@ -2,8 +2,8 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.exceptions.DataNotFoundException;
-import faang.school.postservice.exceptions.SameTimeActionException;
+import faang.school.postservice.exception.DataNotFoundException;
+import faang.school.postservice.exception.SameTimeActionException;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
