@@ -45,10 +45,10 @@ public class HashtagService {
                 tag = tag.substring(1).toLowerCase();
                 var hashtag = hashtagRepository.findByHashtag(tag);
                 String finalTag = tag;
-                Hashtag hashtag2 = hashtag.orElseGet(() ->
+                Hashtag hashtagEntity = hashtag.orElseGet(() ->
                         hashtagRepository.save(Hashtag.builder().tag(finalTag).posts(new ArrayList<>()).build())
                 );
-                hashtag2.getPosts().add(post);
+                hashtagEntity.getPosts().add(post);
             }
         } catch (Exception e) {
             log.error("Exception " + e.getCause() + " " + e.getMessage());
