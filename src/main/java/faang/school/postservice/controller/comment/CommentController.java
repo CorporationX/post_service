@@ -33,7 +33,7 @@ public class CommentController {
         return commentService.getAllComments(postId);
     }
 
-    @DeleteMapping("{/commentId}/comment/{authorId}/author")
+    @DeleteMapping("{commentId}/comment/{authorId}/author")
     public void deleteComment(@PathVariable long commentId, @PathVariable long authorId) {
         commentValidator.validateDeleteComment(commentId, authorId);
         commentService.deleteComment(commentId);

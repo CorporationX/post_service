@@ -1,6 +1,6 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.exeption.DataValidationException;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;

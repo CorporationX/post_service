@@ -1,7 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.exeption.DataValidationException;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
@@ -22,10 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CommentServiceTest {
     @InjectMocks
@@ -41,8 +38,8 @@ class CommentServiceTest {
     private long rightId;
     private long wrongId;
     private Comment comment;
-    private Post post = new Post();
-    private List<Comment> comments = new ArrayList<>();
+    private final Post post = new Post();
+    private final List<Comment> comments = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
@@ -67,7 +64,7 @@ class CommentServiceTest {
         Mockito.when(commentMapper.toEntity(commentDto))
                 .thenReturn(comment);
 
-        assertEquals(null, commentDto.getCreatedAt());
+        assertNull(commentDto.getCreatedAt());
         commentService.createComment(commentDto);
         LocalDateTime time = commentDto.getCreatedAt();
 
