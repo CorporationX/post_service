@@ -24,10 +24,17 @@ public interface PostMapper {
     Post toEntity(PostDto dto);
 
     @Mapping(target = "adId", source = "ad.id")
-    @Mapping(target = "albums", ignore = true) // Внутри поста есть альбом, внутри альбома JSON с id юзеров,
-        // которые могут видеть альбом. В ДТО id юзеров лежат как List<Long>, он сам не может это смапить при такое,
-        // я тоже не понимаю пока, как это сделать. Пока игнор поля, чтобы можно было стартануть приложение TODO
     PostDto toDto(Post entity);
 
+    default List<Long> map(String value) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Long> ids = new ArrayList<>();
+        try {
+            ids = objectMapper.readValue(value, new TypeReference<>() {});
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return ids;
+    }
     List<PostDto> toDtos(List<Post> entities);
 }
