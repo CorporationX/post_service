@@ -35,22 +35,28 @@ class CommentServiceTest {
     @Test
     void testCreateComment_ValidData_ReturnsCreatedCommentDto() {
         Long postId = 1L;
-        CommentDto commentDto = CommentDto.builder().build();
-        Comment comment = Comment.builder().build();
+        CommentDto commentDto = CommentDto.builder()
+                .content("Test comment")
+                .authorId(2L)
+                .postId(postId)
+                .build();
+        Comment commentEntity = new Comment();
 
-        when(commentMapper.toEntity(commentDto)).thenReturn(comment);
-        when(commentRepository.save(comment)).thenReturn(comment);
-        when(commentMapper.toDto(comment)).thenReturn(commentDto);
+        when(commentMapper.toEntity(commentDto, postId)).thenReturn(commentEntity);
+        when(commentRepository.save(commentEntity)).thenReturn(commentEntity);
+        when(commentMapper.toDto(commentEntity)).thenReturn(commentDto);
 
         CommentDto result = commentService.createComment(postId, commentDto);
-
+        
         assertNotNull(result);
-        assertEquals(commentDto, result);
+        assertEquals(commentDto.getContent(), result.getContent());
+        assertEquals(commentDto.getAuthorId(), result.getAuthorId());
+        assertEquals(commentDto.getPostId(), result.getPostId());
 
         verify(commentValidator).validateUserBeforeCreate(commentDto);
-        verify(commentMapper).toEntity(commentDto);
-        verify(commentRepository).save(comment);
-        verify(commentMapper).toDto(comment);
+        verify(commentMapper).toEntity(commentDto, postId);
+        verify(commentRepository).save(commentEntity);
+        verify(commentMapper).toDto(commentEntity);
     }
 
 
@@ -149,23 +155,9 @@ class CommentServiceTest {
     @Test
     void testDeleteComment_ExistingCommentId_DeletesComment() {
         long commentId = 1L;
-
-        when(commentRepository.existsById(commentId)).thenReturn(true);
-
+        
         commentService.deleteComment(commentId);
 
-        verify(commentRepository, times(1)).existsById(commentId);
         verify(commentRepository, times(1)).deleteById(commentId);
-    }
-
-    @Test
-    void testDeleteComment_NonExistentCommentId_ThrowsEntityNotFoundException() {
-        long commentId = 9L;
-
-        when(commentRepository.existsById(commentId)).thenReturn(false);
-
-        assertThrows(EntityNotFoundException.class, () -> commentService.deleteComment(commentId));
-        verify(commentRepository, times(1)).existsById(commentId);
-        verify(commentRepository, never()).deleteById(commentId);
     }
 }

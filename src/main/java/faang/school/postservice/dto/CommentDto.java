@@ -6,12 +6,11 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Value;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Value
 @Builder
-public class CommentDto implements Serializable {
+public class CommentDto {
 
     long id;
 
