@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -22,12 +23,13 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final PostService postService;
     private final CommentService commentService;
+    private final PostMapper postMapper;
 
     public LikeDto likePost(LikeDto likeDto) {
         likeValidator.validateLike(likeDto);
         Long postId = likeDto.getPostId();
         Long userId = likeDto.getUserId();
-        Post post = postService.getPost(likeDto.getPostId());
+        Post post = postMapper.toEntity(postService.getPost(likeDto.getPostId()));
         Optional<Like> existingLike = likeRepository.findByPostIdAndUserId(postId, userId);
         if (existingLike.isPresent()) {
             return likeMapper.toDto(existingLike.get());

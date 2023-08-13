@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.exceptions.DataNotFoundException;
+import faang.school.postservice.exception.DataNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
