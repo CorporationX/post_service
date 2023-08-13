@@ -9,6 +9,7 @@ import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import feign.FeignException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -75,6 +76,12 @@ public class GlobalExceptionHandler {
         log.error("Error has been occurred when deleting post: {}", e.getMessage(), e);
 
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    }
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleException(EntityNotFoundException e) {
+        log.error("Error has been occurred when deleting post: {}", e.getMessage(), e);
+
+        return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(GetPostException.class)

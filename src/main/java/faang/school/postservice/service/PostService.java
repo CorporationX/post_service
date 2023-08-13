@@ -27,6 +27,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final HashtagService hashtagService;
 
     @Transactional
     public PostDto addPost(PostDto dto) {
@@ -40,8 +41,8 @@ public class PostService {
         }
 
         Post post = postMapper.toEntity(dto);
-
         postRepository.save(post);
+        hashtagService.parseContent(post);
 
         return postMapper.toDto(post);
     }

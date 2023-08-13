@@ -23,7 +23,12 @@ public class Hashtag {
     @Column(name = "tag", unique = true)
     private String tag;
 
-    @ManyToMany(mappedBy = "hashtags")
+    @ManyToMany
+    @JoinTable(
+            name = "post_hashtag",
+            joinColumns = @JoinColumn(name = "hashtag_id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id")
+    )
     private List<Post> posts;
 
     @Override

@@ -59,7 +59,4 @@ public class PostDto {
 
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         LocalDateTime updatedAt;
-
-        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-        List<String> hashtags;
 }

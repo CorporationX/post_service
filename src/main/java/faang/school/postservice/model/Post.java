@@ -68,12 +68,4 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @ManyToMany
-    @JoinTable(
-            name = "post_hashtag",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "hashtag_id")
-    )
-    private List<Hashtag> hashtags;
 }
