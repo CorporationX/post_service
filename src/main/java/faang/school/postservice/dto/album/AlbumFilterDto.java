@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class AlbumFilterDto {
-
     private String title;
     private Long authorId;
     private LocalDateTime createdAt;

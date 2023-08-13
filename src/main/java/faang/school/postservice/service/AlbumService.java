@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class AlbumService {
     private final AlbumRepository albumRepository;
@@ -85,21 +86,18 @@ public class AlbumService {
         return albumMapper.toAlbumDto(album);
     }
 
-    @Transactional
     public List<AlbumDto> findAListOfAllYourAlbums(AlbumFilterDto albumFilterDto) {
         Stream<Album> all = albumRepository.findByAuthorId(userContext.getUserId());
 
         return getFiltersAlbumDtos(albumFilterDto, all);
     }
 
-    @Transactional
     public List<AlbumDto> findListOfAllAlbumsInTheSystem(AlbumFilterDto albumFilterDto) {
         Stream<Album> all = albumRepository.findAll().stream();
 
         return getFiltersAlbumDtos(albumFilterDto, all);
     }
 
-    @Transactional
     public List<AlbumDto> findAListOfAllYourFavoriteAlbums(AlbumFilterDto albumFilterDto) {
         Stream<Album> all = albumRepository.findFavoriteAlbumsByUserId(userContext.getUserId());
 
@@ -143,5 +141,4 @@ public class AlbumService {
         }
         return all.map(albumMapper::toAlbumDto).toList();
     }
-
 }

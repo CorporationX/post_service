@@ -142,9 +142,11 @@ class AlbumServiceTest {
         Album album = Album.builder().id(2L).posts(new ArrayList<>(List.of(Post.builder().id(1L).albums(new ArrayList<>()).build()))).build();
         Album album2 = Album.builder().id(2L).posts(new ArrayList<>()).build();
         Post post = Post.builder().id(1L).albums(new ArrayList<>()).build();
+
         when(albumRepository.findById(2L)).thenReturn(Optional.of(album2));
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(albumRepository.save(any())).thenReturn(album);
+
         albumService.addPostToAlbum(2L, 1L);
         verify(albumRepository).save(album);
     }
