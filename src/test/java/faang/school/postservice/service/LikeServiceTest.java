@@ -1,15 +1,13 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.exсeption.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.repository.PostRepository;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -36,15 +33,10 @@ class LikeServiceTest {
     LikeRepository likeRepository;
     @Mock
     LikeMapper likeMapper;
-    @Mock
-    PostRepository postRepository;
-    @Mock
-    CommentRepository commentRepository;
-    @Mock
-    UserServiceClient userServiceClient;
 
+    private final LikeDto likeDto = LikeDto.builder().userId(1L).build();
     private final Post somePost = Post.builder().id(11).likes(likeList).comments(commentList).build();
-    private final Like someLike = Like.builder().id(5L).build();
+    private final Like someLike = Like.builder().id(5L).userId(1L).build();
     private final Comment someComment = Comment.builder().post(somePost).id(2L).likes(likeList).build();
 
     private final static List<Like> likeList = new ArrayList<>();
@@ -57,8 +49,61 @@ class LikeServiceTest {
     }
 
     @Test
+    void userNotExistOnPost(){
+        try{
+            likeService.addLikeToPost(1,like);
+        } catch (FeignException e){
+            assertEquals("User with this Id does not exist !", e.getMessage());
+        }
+    }
+
+    @Test
+    void userNotExistOnComment(){
+        try{
+            likeService.addLikeToComment(1,like);
+        } catch (FeignException e){
+            assertEquals("User with this Id does not exist !", e.getMessage());
+        }
+    }
+
+    @Test
+    void likeOnPostAlreadyExist(){
+        try {
+            likeService.addLikeToPost(11, likeDto);
+        } catch (DataValidationException e){
+            assertEquals("Like on post already exist !", e.getMessage());
+        }
+    }
+
+    @Test
+    void likeOnCommentAlreadyExist(){
+        try {
+            likeService.addLikeToComment(11, likeDto);
+        } catch (DataValidationException e){
+            assertEquals("Like on comment already exist !", e.getMessage());
+        }
+    }
+
+    @Test
+    void addLikeToPostAndCommentTogether() {
+        try {
+            likeService.addLikeToPost(11, like);
+        } catch (DataValidationException e){
+            assertEquals("Cannot like post and comment together !", e.getMessage());
+        }
+    }
+
+    @Test
+    void addLikeToCommentAndPostTogether() {
+        try {
+            likeService.addLikeToComment(11, like);
+        } catch (DataValidationException e){
+            assertEquals("Cannot like post and comment together !", e.getMessage());
+        }
+    }
+
+    @Test
     void addLikeToPost() {
-        when(postRepository.findById(11L)).thenReturn(Optional.ofNullable(somePost));
         when(likeMapper.toEntity(like)).thenReturn(someLike);
         likeService.addLikeToPost(11, like);
         verify(likeRepository, times(1)).save(someLike);
@@ -66,12 +111,9 @@ class LikeServiceTest {
 
     @Test
     void addLikeToComment() {
-        when(commentRepository.findById(11L)).thenReturn(Optional.ofNullable(someComment));
-        try {
-            likeService.addLikeToComment(11, like);
-        } catch (DataValidationException e){
-            assertEquals("Cannot like post and comment together !", e.getMessage());
-        }
+        when(likeMapper.toEntity(like)).thenReturn(someLike);
+        likeService.addLikeToComment(11, like);
+        verify(likeRepository, times(1)).save(someLike);
     }
 
     @Test
