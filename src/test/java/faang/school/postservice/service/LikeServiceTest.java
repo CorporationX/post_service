@@ -3,7 +3,8 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.client.UserDto;
-import faang.school.postservice.mapper.LikeMapperImpl;
+import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.mapper.*;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -13,22 +14,19 @@ import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceTest {
 
-    @InjectMocks
     private LikeService likeService;
 
     @Mock
@@ -43,8 +41,7 @@ class LikeServiceTest {
     @Mock
     private UserServiceClient userServiceClient;
 
-    @Spy
-    private LikeMapperImpl likeMapper;
+    private LikeMapperImpl likeMapper = new LikeMapperImpl();
 
     private LikeDto likeDto;
     private UserDto userDto;
@@ -61,7 +58,9 @@ class LikeServiceTest {
         comment.setId(5L);
         comment.setLikes(new ArrayList<>());
 
-        likeDto = new LikeDto(1L, 2L, comment, post);
+        likeDto = new LikeDto(1L, 2L, comment.getId(), post.getId());
+
+        likeService = new LikeService(likeRepository, userServiceClient, postRepository, commentRepository, likeMapper);
     }
 
     @Test
@@ -69,16 +68,19 @@ class LikeServiceTest {
         Mockito.when(userServiceClient.getUser(likeDto.getUserId()))
                 .thenReturn(userDto);
 
-        long postId = likeDto.getPost().getId();
+        long postId = likeDto.getPostId();
         Mockito.when(likeRepository.findByPostIdAndUserId(postId, likeDto.getUserId()))
                 .thenReturn(Optional.empty());
 
         Mockito.when(postRepository.findById(postId))
                 .thenReturn(Optional.of(post));
 
+
         LikeDto likeOnPost = likeService.createLikeOnPost(likeDto);
-        List<Like> actual = likeOnPost.getPost().getLikes();
-        assertEquals(1, actual.size());
+        assertNotNull(likeOnPost);
+        assertEquals(likeDto.getPostId(), likeOnPost.getPostId());
+
+        Mockito.verify(likeRepository).save(Mockito.any());
     }
 
     @Test
@@ -86,18 +88,16 @@ class LikeServiceTest {
         Mockito.when(userServiceClient.getUser(likeDto.getUserId()))
                 .thenReturn(userDto);
 
-        long postId = likeDto.getPost().getId();
+        long postId = likeDto.getPostId();
         Like expectedLike = Like.builder().id(likeDto.getId())
-                .userId(likeDto.getUserId()).comment(likeDto.getComment()).post(likeDto.getPost()).build();
+                .userId(likeDto.getUserId()).comment(comment).post(post).build();
+
         Mockito.when(likeRepository.findByPostIdAndUserId(postId, likeDto.getUserId()))
                 .thenReturn(Optional.of(expectedLike));
 
-        Mockito.when(postRepository.findById(postId))
-                .thenReturn(Optional.of(post));
-
-        LikeDto likeOnPost = likeService.createLikeOnPost(likeDto);
-        List<Like> actualLike = likeOnPost.getPost().getLikes();
-        assertEquals(expectedLike, actualLike.get(0));
+        LikeDto actualLike = likeService.createLikeOnPost(likeDto);
+        assertNotNull(actualLike);
+        assertEquals(expectedLike.getId(), actualLike.getId());
     }
 
     @Test
@@ -105,7 +105,7 @@ class LikeServiceTest {
         Mockito.when(userServiceClient.getUser(likeDto.getUserId()))
                 .thenReturn(userDto);
 
-        long commentId = likeDto.getComment().getId();
+        long commentId = likeDto.getCommentId();
         Mockito.when(likeRepository.findByCommentIdAndUserId(commentId, likeDto.getUserId()))
                 .thenReturn(Optional.empty());
 
@@ -113,39 +113,68 @@ class LikeServiceTest {
                 .thenReturn(Optional.of(comment));
 
         LikeDto likeOnComment = likeService.createLikeOnComment(likeDto);
-        List<Like> actual = likeOnComment.getComment().getLikes();
-        assertEquals(1, actual.size());
+        assertNotNull(likeOnComment);
+        assertEquals(commentId, likeOnComment.getCommentId());
+
+        Mockito.verify(likeRepository).save(Mockito.any());
     }
+
     @Test
     void createExistLikeOnComment() {
         Mockito.when(userServiceClient.getUser(likeDto.getUserId()))
                 .thenReturn(userDto);
 
-        long commentId = likeDto.getComment().getId();
+        long commentId = likeDto.getCommentId();
         Like expectedLike = Like.builder().id(likeDto.getId())
-                .userId(likeDto.getUserId()).comment(likeDto.getComment()).post(likeDto.getPost()).build();
+                .userId(likeDto.getUserId()).comment(comment).post(post).build();
+
         Mockito.when(likeRepository.findByCommentIdAndUserId(commentId, likeDto.getUserId()))
                 .thenReturn(Optional.of(expectedLike));
 
-        Mockito.when(commentRepository.findById(commentId))
-                .thenReturn(Optional.of(comment));
 
-        LikeDto likeOnComment = likeService.createLikeOnComment(likeDto);
-        List<Like> actualLike = likeOnComment.getComment().getLikes();
-        assertEquals(expectedLike, actualLike.get(0));
+        LikeDto actualLike = likeService.createLikeOnComment(likeDto);
+        assertNotNull(actualLike);
+        assertEquals(expectedLike.getId(), actualLike.getId());
     }
 
     @Test
     void deleteLikeOnPost() {
+        Mockito.when(postRepository.existsById(3L)).thenReturn(true);
         likeService.deleteLikeOnPost(likeDto);
         Mockito.verify(likeRepository, Mockito.times(1))
-                .deleteByPostIdAndUserId(likeDto.getPost().getId(), likeDto.getUserId());
+                .deleteByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId());
     }
 
     @Test
     void deleteLikeOnComment() {
+        Mockito.when(commentRepository.existsById(5L)).thenReturn(true);
         likeService.deleteLikeOnComment(likeDto);
         Mockito.verify(likeRepository, Mockito.times(1))
-                .deleteByCommentIdAndUserId(likeDto.getComment().getId(), likeDto.getUserId());
+                .deleteByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId());
+    }
+
+    @Test
+    void deleteLikeOnPost_EntityNotFoundException() {
+        assertThrows(EntityNotFoundException.class, () -> likeService.deleteLikeOnPost(likeDto));
+    }
+
+    @Test
+    void deleteLikeOnComment_EntityNotFoundException() {
+        assertThrows(EntityNotFoundException.class, () -> likeService.deleteLikeOnComment(likeDto));
+    }
+
+    @Test
+    void getAllPostLikes() {
+        Mockito.when(userServiceClient.getUser(likeDto.getUserId()))
+                .thenReturn(userDto);
+
+        List<Like> likes = List.of(likeMapper.toEntity(likeDto));
+        Mockito.when(likeRepository.findByPostId(likeDto.getPostId()))
+                .thenReturn(likes);
+
+        List<LikeDto> expected = List.of(likeDto);
+        List<LikeDto> actual = likeService.getAllPostLikes(likeDto);
+
+        assertEquals(expected, actual);
     }
 }
