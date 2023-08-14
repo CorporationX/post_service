@@ -32,4 +32,8 @@ public class LikeController {
         return likeService.likeComment(likeDto);
     }
 
+    @DeleteMapping("/comment/{commentId}/user/{userId}")
+    public void deleteLikeComment(@Valid @PathVariable Long commentId, @Valid @PathVariable Long userId) {
+        likeService.deleteLikeComment(commentId, userId);
+    }
 }
