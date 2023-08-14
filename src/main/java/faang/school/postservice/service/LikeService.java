@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

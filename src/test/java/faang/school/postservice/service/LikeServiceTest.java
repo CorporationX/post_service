@@ -18,8 +18,11 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,13 +54,14 @@ class LikeServiceTest {
                 .username("Ser").build();
         postDto = ResponsePostDto.builder()
                 .id(3L)
+                .likesIds(List.of(1L, 2L, 3L))
                 .published(true).build();
         likeDto = LikeDto.builder()
                 .id(5L)
                 .userDto(userDto)
                 .userId(userDto.getId())
                 .postId(postDto.getId()).build();
-        post = Post.builder().id(3L).build();
+        post = Post.builder().id(3L).likes(List.of(new Like(), new Like(), new Like())).build();
         like = Like.builder().id(5L).post(post).build();
     }
 
