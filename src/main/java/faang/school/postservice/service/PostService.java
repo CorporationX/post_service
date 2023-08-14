@@ -1,31 +1,30 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.post.ResponsePostDto;
-import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import lombok.RequiredArgsConstructor;
+import faang.school.postservice.util.ModerationDictionary;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final ResponsePostMapper responsePostMapper;
@@ -34,8 +33,13 @@ public class PostService {
     private final ModerationDictionary moderationDictionary;
     private final Integer batchSize;
 
-    public PostService(PostRepository postRepository, ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize) {
+    public PostService(PostRepository postRepository, ResponsePostMapper responsePostMapper,
+                       UserServiceClient userServiceClient, ProjectServiceClient projectServiceClient,
+                       ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize) {
         this.postRepository = postRepository;
+        this.responsePostMapper = responsePostMapper;
+        this.userServiceClient = userServiceClient;
+        this.projectServiceClient = projectServiceClient;
         this.moderationDictionary = moderationDictionary;
         this.batchSize = batchSize;
     }

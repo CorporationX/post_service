@@ -9,14 +9,18 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.util.ModerationDictionary;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,6 +28,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,7 +52,8 @@ class PostServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        postService = new PostService(postRepository, moderationDictionary, batchSize);
+        postService = new PostService(postRepository, responsePostMapper,
+                userServiceClient, projectServiceClient, moderationDictionary, batchSize);
     }
 
     @Test
@@ -57,7 +66,7 @@ class PostServiceTest {
 
         assertTrue(result.isPublished());
     }
-  
+
     @Test
     void updateTest() {
         Post post = Post.builder().id(1L).content("Before").build();
@@ -69,7 +78,7 @@ class PostServiceTest {
 
         assertEquals("After", post.getContent());
     }
-  
+
     @Test
     void softDeleteTest() {
         Post post = Post.builder().id(1L).deleted(false).build();
@@ -80,7 +89,7 @@ class PostServiceTest {
 
         assertTrue(result.isDeleted());
     }
-  
+
     @Test
     void createTest() {
         CreatePostDto correct = CreatePostDto.builder().authorId(1L).content("Content").build();
