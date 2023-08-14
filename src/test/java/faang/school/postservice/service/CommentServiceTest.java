@@ -8,12 +8,14 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.util.ModerationDictionary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,6 +35,8 @@ class CommentServiceTest {
     private PostService postService;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private ModerationDictionary moderationDictionary;
     @InjectMocks
     private CommentService commentService;
     private CommentDto commentDto;
@@ -151,5 +155,26 @@ class CommentServiceTest {
         verify(commentRepository, times(1)).findById(comment.getId());
         verify(commentRepository, times(1)).save(any());
         assertEquals(commentDto, result);
+    }
+
+    @Test
+    void testModerateComment() {
+        ReflectionTestUtils.setField(commentService, "batchSize", 100);
+        List<Comment> comments = createCommentList();
+        when(moderationDictionary.containsBadWord("valid")).thenReturn(false);
+        when(moderationDictionary.containsBadWord("not valid")).thenReturn(true);
+        when(commentRepository.findNotVerified()).thenReturn(comments);
+
+        commentService.moderateComment();
+
+        assertTrue(comments.get(0).isVerified());
+        assertFalse(comments.get(1).isVerified());
+
+        verify(commentRepository).saveAll(anyCollection());
+    }
+
+    private List<Comment> createCommentList() {
+        return List.of(Comment.builder().id(1).content("valid").verified(false).build(),
+                Comment.builder().id(2).content("not valid").verified(false).build());
     }
 }

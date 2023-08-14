@@ -1,6 +1,6 @@
 package faang.school.postservice.moderator.comment;
 
-import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.CommentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

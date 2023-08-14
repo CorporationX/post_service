@@ -1,6 +1,7 @@
 package faang.school.postservice.dictionary;
 
-import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.CommentService;
+import faang.school.postservice.util.ModerationDictionary;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +18,7 @@ class ModerationDictionaryTest {
 
     @Test
     void containsUnwantedWords() {
-        assertTrue(moderationDictionary.containsUnwantedWords("This comment contains nigger"));
-        assertFalse(moderationDictionary.containsUnwantedWords("This comment is clean"));
+        assertTrue(moderationDictionary.containsBadWord("This comment contains nigger"));
+        assertFalse(moderationDictionary.containsBadWord("This comment is clean"));
     }
 }

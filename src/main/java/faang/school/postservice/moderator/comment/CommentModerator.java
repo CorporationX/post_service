@@ -1,6 +1,6 @@
 package faang.school.postservice.moderator.comment;
 
-import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
