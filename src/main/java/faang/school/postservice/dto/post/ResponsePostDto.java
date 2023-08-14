@@ -1,5 +1,7 @@
 package faang.school.postservice.dto.post;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,10 +15,14 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ResponsePostDto {
+    @NotNull
     private long id;
     private String content;
+    @NotNull
     private Long authorId;
+    @NotNull
     private Long projectId;
+    @NotEmpty
     private List<Long> likesIds;
     private List<Long> commentsIds;
     private List<Long> albumsIds;
