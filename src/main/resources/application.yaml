@@ -39,6 +39,13 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderator:
+    scheduler:
+      cron: "0 0/1 * 1/1 * ?" # every minute
+      batchSize: 100
+  user-banner:
+    scheduler:
+      cron: "0 0/1 * 1/1 * ?"
 
 user-service:
   host: localhost

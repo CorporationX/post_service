@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuthorBanner {
     private final PostService postService;
-    @Scheduled(cron = "${post.banner.scheduler.cron}")
+    @Scheduled(cron = "${post.user-banner.scheduler.cron}")
     public void banForOffensiveContent(){
 		postService.banForOffensiveContent();
     }

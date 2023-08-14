@@ -170,14 +170,15 @@ public class PostService {
     }
 
     public void banForOffensiveContent() {
-        postRepository.findAllByVerifiedFalseAndVerifiedAtIsNotNull().stream()
+        postRepository.findAllByVerifiedFalseAndVerifiedAtIsNotNull()
+                .stream()
                 .collect(Collectors.groupingBy(Post::getAuthorId))
                 .entrySet()
                 .stream()
                 .filter(entry -> entry.getValue().size() > 5)
                 .map(Map.Entry::getKey)
                 .toList()
-                .forEach(authorId -> redisPublisher.publishMessage("auto-banner", String.valueOf(authorId)));
+                .forEach(authorId -> redisPublisher.publishMessage("user-banner", String.valueOf(authorId)));
     }
 
     private void verifySublist(List<Post> subList) {
