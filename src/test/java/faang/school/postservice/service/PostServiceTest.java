@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
+import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -145,5 +147,49 @@ class PostServiceTest {
         verify(postRepository).findAllByVerifiedAtIsNull();
         verify(moderationDictionary, times(posts.size())).containsBadWord(anyString());
         verify(postRepository, times(posts.size() / batchSize)).saveAll(anyList());
+    }
+
+    @Test
+    void testOrderByDate() {
+        String hashtag = "test";
+        when(postRepository.findByHashtagOrderByDate("#" + hashtag)).thenReturn(createPostList());
+
+        List<ResponsePostDto> result = postService.getPostsByHashtagOrderByDate(hashtag);
+
+        assertNotNull(result);
+        assertEquals(createPostDtoList().get(0).getId(), result.get(0).getId());
+    }
+
+    @Test
+    void testOrderByPopularity() {
+        String hashtag = "test";
+        when(postRepository.findByHashtagOrderByPopularity("#" + hashtag)).thenReturn(createPostList());
+
+        List<ResponsePostDto> result = postService.getPostsByHashtagOrderByPopularity(hashtag);
+
+        assertNotNull(result);
+        assertEquals(createPostDtoList().get(0).getId(), result.get(0).getId());
+    }
+
+    private List<Post> createPostList() {
+        List<Hashtag> hashtags = createHashtagList();
+        return List.of(Post.builder().id(1).hashtags(hashtags).build(),
+                Post.builder().id(2).hashtags(hashtags).build(),
+                Post.builder().id(3).hashtags(hashtags).build(),
+                Post.builder().id(4).hashtags(hashtags).build(),
+                Post.builder().id(5).hashtags(hashtags).build());
+    }
+
+    private List<ResponsePostDto> createPostDtoList() {
+        List<String> hashtags = List.of("#test");
+        return List.of(ResponsePostDto.builder().id(1).hashtags(hashtags).build(),
+                ResponsePostDto.builder().id(2).hashtags(hashtags).build(),
+                ResponsePostDto.builder().id(3).hashtags(hashtags).build(),
+                ResponsePostDto.builder().id(4).hashtags(hashtags).build(),
+                ResponsePostDto.builder().id(5).hashtags(hashtags).build());
+    }
+
+    private List<Hashtag> createHashtagList() {
+        return List.of(Hashtag.builder().id(1L).hashtag("#test").build());
     }
 }

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResponsePostDto {
+public class ResponsePostDto implements Serializable {
     private long id;
     private String content;
     private Long authorId;
@@ -20,6 +21,7 @@ public class ResponsePostDto {
     private List<Long> likesIds;
     private List<Long> commentsIds;
     private List<Long> albumsIds;
+    private List<String> hashtags;
     private Long adId;
     private boolean published;
     private LocalDateTime publishedAt;

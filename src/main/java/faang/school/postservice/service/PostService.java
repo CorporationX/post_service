@@ -13,6 +13,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +24,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
+@CacheConfig(cacheNames = "postsCache")
 public class PostService {
     private final PostRepository postRepository;
     private final ResponsePostMapper responsePostMapper;
@@ -138,6 +143,8 @@ public class PostService {
         post.setPublished(false);
         post.setDeleted(false);
 
+        extractHashtagsWhileCreating(dto);
+
         return responsePostMapper.toDto(postRepository.save(post));
     }
 
@@ -163,6 +170,29 @@ public class PostService {
                 .toList();
 
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).join();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResponsePostDto> getPostsByHashtagOrderByDate(String hashtag) {
+        return responsePostMapper.toDtoList(postRepository.findByHashtagOrderByDate("#" + hashtag));
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "hashtags", key = "#hashtag")
+    public List<ResponsePostDto> getPostsByHashtagOrderByPopularity(String hashtag) {
+        return responsePostMapper.toDtoList(postRepository.findByHashtagOrderByPopularity("#" + hashtag));
+    }
+
+    private void extractHashtagsWhileCreating(CreatePostDto createPostDto) {
+        List<String> hashtags = new ArrayList<>();
+        Pattern pattern = Pattern.compile("#\\w+");
+        Matcher matcher = pattern.matcher(createPostDto.getContent());
+
+        while (matcher.find()) {
+            hashtags.add(matcher.group());
+        }
+
+        createPostDto.setHashtags(hashtags);
     }
 
     private void verifySublist(List<Post> subList) {

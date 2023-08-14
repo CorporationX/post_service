@@ -3,6 +3,7 @@ package faang.school.postservice.mapper.post;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
@@ -23,6 +24,7 @@ public interface ResponsePostMapper {
     @Mapping(target = "likesIds", source = "likes", qualifiedByName = "likesToLikesIds")
     @Mapping(target = "commentsIds", source = "comments", qualifiedByName = "commentsToCommentsIds")
     @Mapping(target = "albumsIds", source = "albums", qualifiedByName = "albumsToAlbumsIds")
+    @Mapping(source = "hashtags", target = "hashtags", qualifiedByName ="hashtagToString")
     ResponsePostDto toDto(Post entity);
 
     List<ResponsePostDto> toDtoList(List<Post> entities);
@@ -56,5 +58,15 @@ public interface ResponsePostMapper {
         return list.stream()
                 .map(Album::getId)
                 .collect(Collectors.toList());
+    }
+
+    @Named("hashtagToString")
+    default List<String> hashtagToString(List<Hashtag> list) {
+        if (list == null) {
+            return new ArrayList<>();
+        }
+        return list.stream()
+                .map(Hashtag::getHashtag)
+                .toList();
     }
 }
