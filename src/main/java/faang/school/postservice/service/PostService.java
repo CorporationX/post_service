@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,14 @@ public class PostService {
     private final ResponsePostMapper responsePostMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final ModerationDictionary moderationDictionary;
+    private final Integer batchSize;
+
+    public PostService(PostRepository postRepository, ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize) {
+        this.postRepository = postRepository;
+        this.moderationDictionary = moderationDictionary;
+        this.batchSize = batchSize;
+    }
 
     @Transactional(readOnly = true)
     public List<ResponsePostDto> getAllDraftByAuthor(Long authorId) {
@@ -127,6 +137,38 @@ public class PostService {
         return responsePostMapper.toDto(postRepository.save(post));
     }
 
+    @Transactional
+    public void verifyContent() {
+        List<Post> posts = postRepository.findAllByVerifiedAtIsNull();
+        List<List<Post>> grouped = new ArrayList<>();
+        if (posts.size() > batchSize) {
+            int i = 0;
+            while (i < posts.size() / batchSize) {
+                grouped.add(posts.subList(i, i + batchSize));
+                i += batchSize;
+            }
+            if (i < posts.size()) {
+                grouped.add(posts.subList(i, posts.size()));
+            }
+        } else {
+            grouped.add(posts);
+        }
+
+        List<CompletableFuture<Void>> completableFutures = grouped.stream()
+                .map(list -> CompletableFuture.runAsync(() -> verifySublist(list)))
+                .toList();
+
+        CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).join();
+    }
+
+    private void verifySublist(List<Post> subList) {
+        subList.forEach(post -> {
+            post.setVerified(!moderationDictionary.containsBadWord(post.getContent()));
+            post.setVerifiedAt(LocalDateTime.now());
+        });
+        postRepository.saveAll(subList);
+    }
+
     private void processOwner(CreatePostDto dto, Post post) {
         if (dto.getAuthorId() != null && dto.getProjectId() != null) {
             throw new IllegalArgumentException("Both AuthorId and ProjectId can't be not null");
@@ -140,6 +182,7 @@ public class PostService {
             post.setProjectId(projectDto.getId());
         }
     }
+
     public Post getPostById(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post with id " + postId + " was not found!"));

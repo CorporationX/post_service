@@ -36,8 +36,16 @@ class PostServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private ProjectServiceClient projectServiceClient;
-    @InjectMocks
+    @Mock
+    private ModerationDictionary moderationDictionary;
+    private final Integer batchSize = 100;
     private PostService postService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        postService = new PostService(postRepository, moderationDictionary, batchSize);
+    }
 
     @Test
     void publishTest(){
@@ -100,5 +108,33 @@ class PostServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> postService.createDraft(bothNotNull));
         assertThrows(NullPointerException.class, () -> postService.createDraft(blankContent));
         assertEquals("Both AuthorId and ProjectId can't be not null", exception.getMessage());
+    }
+
+    @Test
+    void verifyContent_Test() {
+        List<Post> posts = new ArrayList<>();
+
+        for (int i = 0; i < batchSize * 2; i++) {
+            Post post = Post.builder()
+                    .id(i)
+                    .verified(false)
+                    .verifiedAt(null)
+                    .build();
+            if (post.getId() % 2 == 0) {
+                post.setContent("Something arse something");
+            } else {
+                post.setContent("To verify");
+            }
+            posts.add(post);
+        }
+
+        when(postRepository.findAllByVerifiedAtIsNull()).thenReturn(posts);
+        when(moderationDictionary.containsBadWord(anyString())).thenReturn(false);
+
+        postService.verifyContent();
+
+        verify(postRepository).findAllByVerifiedAtIsNull();
+        verify(moderationDictionary, times(posts.size())).containsBadWord(anyString());
+        verify(postRepository, times(posts.size() / batchSize)).saveAll(anyList());
     }
 }
