@@ -1,8 +1,4 @@
 spring:
-  task:
-    scheduling:
-      moderateComment:
-        cron: "0 0 0 * * *"
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -43,6 +39,11 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderator:
+    scheduler:
+      moderateComment:
+        cron: "0 0 0 * * *" # every day
+        batchSize: 1000
 
 user-service:
   host: localhost

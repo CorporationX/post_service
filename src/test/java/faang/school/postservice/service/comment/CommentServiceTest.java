@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
@@ -26,8 +27,10 @@ class CommentServiceTest {
     @InjectMocks
     private CommentService commentService;
 
+
     @Test
     void testModerateComment() {
+        ReflectionTestUtils.setField(commentService, "batchSize", 100);
         List<Comment> comments = createCommentList();
         when(moderationDictionary.containsUnwantedWords("valid")).thenReturn(false);
         when(moderationDictionary.containsUnwantedWords("not valid")).thenReturn(true);
