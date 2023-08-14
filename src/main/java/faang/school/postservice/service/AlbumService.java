@@ -83,6 +83,7 @@ public class AlbumService {
     @Transactional
     public AlbumDto findByIdWithPosts(Long albumId) {
         Album album = getAlbum(albumId);
+
         return albumMapper.toAlbumDto(album);
     }
 
@@ -113,18 +114,18 @@ public class AlbumService {
         return albumMapper.toAlbumDto(albumRepository.save(album));
     }
 
+    private void validateAlbumOwned(Album album) {
+        if (userContext.getUserId() != album.getAuthorId()) {
+            throw new DataValidationException("You are not author of this album");
+        }
+    }
+
     @Transactional
     public void deleteAlbum(Long albumId) {
         Album album = getAlbum(albumId);
         validateAlbumOwned(album);
 
         albumRepository.delete(album);
-    }
-
-    private void validateAlbumOwned(Album album) {
-        if (userContext.getUserId() != album.getAuthorId()) {
-            throw new DataValidationException("You are not author of this album");
-        }
     }
 
     private Album getAlbum(Long albumId) {

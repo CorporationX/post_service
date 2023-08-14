@@ -1,9 +1,6 @@
 package faang.school.postservice.dto.album;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,8 +8,9 @@ import java.util.List;
 @Data
 @Builder
 @AllArgsConstructor
-@RequiredArgsConstructor
-public class AlbumDto {
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+public class AlbumDto extends AlbumDtoResponse {
     private Long id;
     private String title;
     private String description;
