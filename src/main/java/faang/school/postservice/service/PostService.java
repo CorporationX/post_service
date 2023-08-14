@@ -12,6 +12,7 @@ import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
+import faang.school.postservice.util.RedisPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -32,16 +34,18 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final ModerationDictionary moderationDictionary;
     private final Integer batchSize;
+    private final RedisPublisher redisPublisher;
 
     public PostService(PostRepository postRepository, ResponsePostMapper responsePostMapper,
                        UserServiceClient userServiceClient, ProjectServiceClient projectServiceClient,
-                       ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize) {
+                       ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize, RedisPublisher redisPublisher) {
         this.postRepository = postRepository;
         this.responsePostMapper = responsePostMapper;
         this.userServiceClient = userServiceClient;
         this.projectServiceClient = projectServiceClient;
         this.moderationDictionary = moderationDictionary;
         this.batchSize = batchSize;
+        this.redisPublisher = redisPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -163,6 +167,17 @@ public class PostService {
                 .toList();
 
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).join();
+    }
+
+    public void banForOffensiveContent() {
+        postRepository.findAllByVerifiedFalseAndVerifiedAtIsNotNull().stream()
+                .collect(Collectors.groupingBy(Post::getAuthorId))
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().size() > 5)
+                .map(Map.Entry::getKey)
+                .toList()
+                .forEach(authorId -> redisPublisher.publishMessage("auto-banner", String.valueOf(authorId)));
     }
 
     private void verifySublist(List<Post> subList) {

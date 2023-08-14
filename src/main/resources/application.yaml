@@ -25,9 +25,6 @@ spring:
         calculations_channel:
           name: calculations_channel
 
-  aop:
-    proxy-target-class: true
-
 server:
   port: 8081
 
@@ -42,13 +39,6 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
-  moderator:
-    scheduler:
-      cron: "0 0 0/1 * * ?" # every hour
-      batchSize: 100
-  banner:
-    scheduler:
-      cron: "*/10 * * * * *" # every day at midnight
 
 user-service:
   host: localhost

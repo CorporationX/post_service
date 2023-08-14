@@ -53,7 +53,7 @@ class PostServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         postService = new PostService(postRepository, responsePostMapper,
-                userServiceClient, projectServiceClient, moderationDictionary, batchSize);
+                userServiceClient, projectServiceClient, moderationDictionary, batchSize, redisPublisher);
     }
 
     @Test
