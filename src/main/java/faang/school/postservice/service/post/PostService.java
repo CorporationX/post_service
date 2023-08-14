@@ -2,10 +2,10 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.repository.HashtagRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,21 +21,18 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
 
-
     @Transactional(readOnly = true)
     public List<PostDto> getPostsByHashtagOrderByDate(String hashtag) {
         return postMapper.toListDto(postRepository.findByHashtagOrderByDate("#" + hashtag));
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "hashtags", key = "#hashtag")
     public List<PostDto> getPostsByHashtagOrderByPopularity(String hashtag) {
-        hashtag = "#" + hashtag;
-        return postMapper.toListDto(postRepository.findByHashtagOrderByPopularity(hashtag));
+        return postMapper.toListDto(postRepository.findByHashtagOrderByPopularity("#" + hashtag));
     }
 
-
-    /*Метод будет использоваться при создании Post*/
-    private void extractHashtags(PostDto postDto) {
+    private void extractHashtagsWhileCreating(PostDto postDto) {
         List<String> hashtags = new ArrayList<>();
         Pattern pattern = Pattern.compile("#\\w+");
         Matcher matcher = pattern.matcher(postDto.getContent());

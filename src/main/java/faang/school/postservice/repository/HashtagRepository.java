@@ -16,6 +16,7 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
             ON h.id = ph.hashtag_id
             GROUP BY h.id, h.hashtag
             ORDER BY COUNT(ph.post_id) DESC
+            LIMIT 10
             """)
     List<Hashtag> getTop10Popular();
 }

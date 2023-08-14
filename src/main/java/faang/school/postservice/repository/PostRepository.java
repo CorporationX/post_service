@@ -34,7 +34,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
 
     @Query(nativeQuery = true, value = """
-            SELECT p.id, p.content, p.author_id, p.project_id, p.published, p.published_at, p.scheduled_at, p.deleted, p.created_at, p.updated_at
+            SELECT p.*
             FROM Post p
             JOIN post_hashtag ph ON p.id = ph.post_id
             JOIN likes l ON p.id = l.post_id
@@ -42,7 +42,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             JOIN hashtags h ON ph.hashtag_id = h.id
             WHERE h.hashtag = :hashtag AND p.published = TRUE AND p.deleted = FALSE
             GROUP BY p.id, p.content, p.author_id, p.project_id, p.published, p.published_at, p.scheduled_at, p.deleted, p.created_at, p.updated_at
-            ORDER BY COUNT(l.id) + COUNT(c.id) DESC;
+            ORDER BY COUNT(l.id) + COUNT(c.id) DESC
             """)
     List<Post> findByHashtagOrderByPopularity(String hashtag);
 }
