@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        user_banner_channel:
+          name: user_banner_channel
 
 server:
   port: 8081

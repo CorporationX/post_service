@@ -13,4 +13,11 @@ public class UserDto {
     private Long id;
     private String username;
     private String email;
+    private boolean banned;
+
+    public UserDto(Long id, String username, String email) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+    }
 }

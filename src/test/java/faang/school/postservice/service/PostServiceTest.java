@@ -10,6 +10,7 @@ import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
+import faang.school.postservice.util.RedisPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,14 +47,17 @@ class PostServiceTest {
     private ProjectServiceClient projectServiceClient;
     @Mock
     private ModerationDictionary moderationDictionary;
+    @Mock
+    private RedisPublisher redisPublisher;
     private final Integer batchSize = 100;
+    private final String userBannerChannel = "user_banner_channel";
     private PostService postService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         postService = new PostService(postRepository, responsePostMapper,
-                userServiceClient, projectServiceClient, moderationDictionary, batchSize, redisPublisher);
+                userServiceClient, projectServiceClient, moderationDictionary, batchSize, redisPublisher, userBannerChannel);
     }
 
     @Test

@@ -35,10 +35,12 @@ public class PostService {
     private final ModerationDictionary moderationDictionary;
     private final Integer batchSize;
     private final RedisPublisher redisPublisher;
+    private final String userBannerChannel;
 
     public PostService(PostRepository postRepository, ResponsePostMapper responsePostMapper,
                        UserServiceClient userServiceClient, ProjectServiceClient projectServiceClient,
-                       ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize, RedisPublisher redisPublisher) {
+                       ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize,
+                       RedisPublisher redisPublisher, @Value("${spring.data.redis.channels.user_banner_channel.name}") String userBannerChannel) {
         this.postRepository = postRepository;
         this.responsePostMapper = responsePostMapper;
         this.userServiceClient = userServiceClient;
@@ -46,6 +48,7 @@ public class PostService {
         this.moderationDictionary = moderationDictionary;
         this.batchSize = batchSize;
         this.redisPublisher = redisPublisher;
+        this.userBannerChannel = userBannerChannel;
     }
 
     @Transactional(readOnly = true)
@@ -170,15 +173,23 @@ public class PostService {
     }
 
     public void banForOffensiveContent() {
-        postRepository.findAllByVerifiedFalseAndVerifiedAtIsNotNull()
-                .stream()
+        List<Post> posts = postRepository.findAllByVerifiedFalseAndVerifiedAtIsNotNull();
+        List<Long> userIds = posts.stream().map(Post::getAuthorId).toList();
+
+        List<Long> bannedUsers = userServiceClient.getUsersByIds(userIds).stream()
+                .filter(UserDto::isBanned)
+                .map(UserDto::getId)
+                .toList();
+
+        posts.stream()
+                .filter(post -> !bannedUsers.contains(post.getAuthorId()))
                 .collect(Collectors.groupingBy(Post::getAuthorId))
                 .entrySet()
                 .stream()
                 .filter(entry -> entry.getValue().size() > 5)
                 .map(Map.Entry::getKey)
                 .toList()
-                .forEach(authorId -> redisPublisher.publishMessage("user-banner", String.valueOf(authorId)));
+                .forEach(authorId -> redisPublisher.publishMessage(userBannerChannel, String.valueOf(authorId)));
     }
 
     private void verifySublist(List<Post> subList) {
