@@ -49,8 +49,8 @@ public class AlbumController {
     }
 
     @PostMapping("/{albumId}")
-    public AlbumDto findByWithPosts(@NotNull @PathVariable Long albumId) {
-        return albumService.findByIdWithPosts(albumId);
+    public AlbumDtoResponse findByWithPosts(@NotNull @PathVariable Long albumId) {
+        return albumService.findAlbumById(albumId);
     }
 
     @PostMapping("/filter/all")

@@ -80,16 +80,16 @@ public class AlbumService {
     }
 
     @Transactional
-    public AlbumDto findByIdWithPosts(Long albumId) {
+    public AlbumDtoResponse findAlbumById(Long albumId) {
         Album album = getAlbum(albumId);
 
-        return albumMapper.toAlbumDto(album);
+        return processAlbumToDto(album);
     }
 
     public List<AlbumDtoResponse> findAListOfAllYourAlbums(AlbumFilterDto albumFilterDto) {
-        Stream<Album> all = albumRepository.findByAuthorId(userContext.getUserId());
+        Stream<Album> albumStream = albumRepository.findByAuthorId(userContext.getUserId());
 
-        return getFiltersAlbumDtos(albumFilterDto, all);
+        return getFiltersAlbumDtos(albumFilterDto, albumStream);
     }
 
     public List<AlbumDtoResponse> findListOfAllAlbumsInTheSystem(AlbumFilterDto albumFilterDto) {

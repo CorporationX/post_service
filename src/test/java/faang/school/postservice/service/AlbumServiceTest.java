@@ -13,6 +13,7 @@ import faang.school.postservice.filter.album_filter.AlbumTitleFilter;
 import faang.school.postservice.mapper.AlbumMapperImpl;
 import faang.school.postservice.model.album.Album;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.album.AlbumVisibility;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,13 +73,13 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testCreateAlbumDataValidationException() {
+    void testCreateAlbum_DataValidationException() {
         AlbumCreateDto albumCreateDto = AlbumCreateDto.builder().description("description").title("title").authorId(1L).build();
         assertThrows(DataValidationException.class, () -> albumService.createAlbum(albumCreateDto));
     }
 
     @Test
-    void testCreateAlbumUserDataValidationException() {
+    void testCreateAlbumUser_DataValidationException() {
         AlbumCreateDto albumCreateDto = AlbumCreateDto.builder().description("description").title("title").authorId(1L).build();
 
         when(userServiceClient.getUser(albumCreateDto.getAuthorId())).thenReturn(UserDto.builder().id(1L).build());
@@ -105,13 +106,13 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testAddPostToAlbumEntityNotFoundException() {
+    void testAddPostToAlbum_EntityNotFoundException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> albumService.addPostToAlbum(1L, 1L));
     }
 
     @Test
-    void testAddPostToAlbumDataValidationException() {
+    void testAddPostToAlbum_DataValidationException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
         when(userContext.getUserId()).thenReturn(1L);
 
@@ -119,7 +120,7 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testAddPostToAlbumEntityNotFoundExceptionTwo() {
+    void testAddPostToAlbum_EntityNotFoundExceptionTwo() {
         when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -127,7 +128,7 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testAddPostToAlbumDataValidationExceptionTwo() {
+    void testAddPostToAlbum_DataValidationExceptionTwo() {
         when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
         when(postRepository.findById(1L)).thenReturn(Optional.of(Post.builder().id(1L).albums(List.of(Album.builder().id(1L).build())).build()));
 
@@ -149,13 +150,13 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testDeletePostFromAlbumEntityNotFoundException() {
+    void testDeletePostFromAlbum_EntityNotFoundException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> albumService.deletePostFromAlbum(1L, 1L));
     }
 
     @Test
-    void testDeletePostFromAlbumDataValidationException() {
+    void testDeletePostFromAlbum_DataValidationException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
         when(userContext.getUserId()).thenReturn(1L);
 
@@ -175,7 +176,7 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testAddAlbumToFavoritesEntityNotFoundException() {
+    void testAddAlbumToFavorites_EntityNotFoundException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> albumService.addAlbumToFavorites(1L));
     }
@@ -193,7 +194,7 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testDeleteAlbumFromFavoritesEntityNotFoundException() {
+    void testDeleteAlbumFromFavorites_EntityNotFoundException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> albumService.deleteAlbumFromFavorites(1L));
     }
@@ -211,18 +212,34 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testFindByIdWithPostsEntityNotFoundException() {
+    void testFindAlbumById_EntityNotFoundException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> albumService.findByIdWithPosts(1L));
+        assertThrows(EntityNotFoundException.class, () -> albumService.findAlbumById(1L));
     }
 
     @Test
-    void testFindByIdWithPosts() {
+    void testFindAlbumById_UserIsNotAuthor() {
         AlbumDto albumDto = AlbumDto.builder().id(1L).authorId(0L).postsId(List.of()).build();
 
+        when(userContext.getUserId()).thenReturn(1L);
         when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
 
-        assertEquals(albumDto, albumService.findByIdWithPosts(1L));
+        assertEquals(albumDto, albumService.findAlbumById(1L));
+    }
+
+    @Test
+    void testFindAlbumById_UserIsAuthor() {
+        AuthorAlbumDto albumDto = AuthorAlbumDto.builder()
+                .id(1L)
+                .authorId(0L)
+                .postsId(List.of())
+                .visibility(AlbumVisibility.ALL_USERS)
+                .build();
+
+        when(userContext.getUserId()).thenReturn(0L);
+        when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
+
+        assertEquals(albumDto, albumService.findAlbumById(1L));
     }
 
     @Test
@@ -311,5 +328,19 @@ class AlbumServiceTest {
 
         albumService.deleteAlbum(1L);
         verify(albumRepository, times(1)).delete(any());
+    }
+
+    @Test
+    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional(){
+        List<Long> subscriberIds;
+        List<Long> userWithAccessIds;
+
+        album1.setVisibility(AlbumVisibility.ALL_USERS);
+        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
+        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
+        album4.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
+
+        when(userContext.getUserId()).thenReturn(1L);
+
     }
 }
