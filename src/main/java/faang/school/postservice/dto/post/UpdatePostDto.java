@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.user;
+package faang.school.postservice.dto.post;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
-    private Long id;
-    private String username;
-    private String email;
+public class UpdatePostDto {
+    private String content;
+    private Long adId;
 }
