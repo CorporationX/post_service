@@ -69,4 +69,14 @@ public class PostController {
     public ResponsePostDto createDraft(@Valid @RequestBody CreatePostDto dto) {
         return postService.createDraft(dto);
     }
+
+    @GetMapping("/hashtags/{hashtag}/firstNew")
+    public List<PostDto> getPostsByHashtagOrderByDate(@PathVariable String hashtag) {
+        return postService.getPostsByHashtagOrderByDate(hashtag);
+    }
+
+    @GetMapping("/hashtags/{hashtag}/firstPopular")
+    public List<PostDto> getPostsByHashtagOrderByPopularity(@PathVariable String hashtag) {
+        return postService.getPostsByHashtagOrderByPopularity(hashtag);
+    }
 }

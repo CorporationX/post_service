@@ -42,6 +42,9 @@ public class Post {
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;
 
+    @ManyToMany(mappedBy = "posts")
+    private List<Hashtag> hashtags;
+
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private Ad ad;
 
