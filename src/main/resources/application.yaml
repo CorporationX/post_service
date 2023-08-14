@@ -46,6 +46,9 @@ post:
     scheduler:
       cron: "0 0 0/1 * * ?" # every hour
       batchSize: 100
+      moderateComment:
+        cron: "0 0 0 * * *" # every day
+        batchSize: 1000
 
 user-service:
   host: localhost
