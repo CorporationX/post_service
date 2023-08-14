@@ -48,6 +48,9 @@ public class Post {
     @Column(name = "published", nullable = false)
     private boolean published;
 
+    @Column(name = "corrected", nullable = false)
+    private boolean corrected;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
