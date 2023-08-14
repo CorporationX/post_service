@@ -1,11 +1,13 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
@@ -37,6 +39,8 @@ class LikeServiceTest {
     private ResponsePostMapper postMapper = ResponsePostMapper.INSTANCE;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private CommentService commentService;
     @InjectMocks
     private LikeService likeService;
     private LikeDto likeDto;
@@ -44,22 +48,30 @@ class LikeServiceTest {
     private UserDto userDto;
     private Post post;
     private Like like;
+    private Comment comment;
+    private CommentDto commentDto;
 
     @BeforeEach
     public void setUp() {
+
         userDto = UserDto.builder()
                 .id(1L)
                 .username("Ser").build();
+        commentDto = CommentDto.builder().id(2L).postDto(postDto).authorId(userDto.getId()).build();
         postDto = ResponsePostDto.builder()
                 .id(3L)
                 .published(true).build();
         likeDto = LikeDto.builder()
                 .id(5L)
+                .commentId(commentDto.getId())
+                .commentDto(commentDto)
                 .userDto(userDto)
                 .userId(userDto.getId())
                 .postId(postDto.getId()).build();
         post = Post.builder().id(3L).build();
         like = Like.builder().id(5L).post(post).build();
+
+        comment = Comment.builder().id(2L).post(post).authorId(userDto.getId()).build();
     }
 
     @Test
@@ -78,5 +90,16 @@ class LikeServiceTest {
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         likeService.deleteLikePost(3L, 1L);
         verify(likeRepository).deleteByPostIdAndUserId(3L, 1L);
+    }
+
+    @Test
+    public void likeComment_correctAnswer() {
+        when(userServiceClient.getUser(1L)).thenReturn(likeDto.getUserDto());
+        when(commentService.getCommentById(2L)).thenReturn(commentDto);
+        when(likeMapper.toLike(likeDto)).thenReturn(like);
+        when(likeRepository.save(any())).thenReturn(like);
+        when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
+        LikeDto likeDto1 = likeService.likeComment(likeDto);
+        assertEquals(likeDto, likeDto1);
     }
 }
