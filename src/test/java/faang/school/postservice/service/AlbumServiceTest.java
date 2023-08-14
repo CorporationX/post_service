@@ -2,10 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.album.AlbumCreateDto;
-import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.dto.album.AlbumFilterDto;
-import faang.school.postservice.dto.album.AlbumUpdateDto;
+import faang.school.postservice.dto.album.*;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -235,7 +232,7 @@ class AlbumServiceTest {
                 album1, album2, album3, album4));
         albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
 
-        List<AlbumDto> albumByStatus = albumService.findAListOfAllYourAlbums(
+        List<AlbumDtoResponse> albumByStatus = albumService.findAListOfAllYourAlbums(
                 AlbumFilterDto.builder().title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build());
         assertEquals(2, albumByStatus.size());
     }
@@ -246,7 +243,7 @@ class AlbumServiceTest {
                 album1, album2, album3, album4));
         albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
 
-        List<AlbumDto> albumByStatus = albumService.findListOfAllAlbumsInTheSystem(
+        List<AlbumDtoResponse> albumByStatus = albumService.findListOfAllAlbumsInTheSystem(
                 AlbumFilterDto.builder().title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build());
         assertEquals(2, albumByStatus.size());
     }
@@ -258,7 +255,7 @@ class AlbumServiceTest {
                 album1, album2, album3, album4));
         albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
 
-        List<AlbumDto> albumByStatus = albumService.findAListOfAllYourFavoriteAlbums(
+        List<AlbumDtoResponse> albumByStatus = albumService.findAListOfAllYourFavoriteAlbums(
                 AlbumFilterDto.builder().title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build());
         assertEquals(2, albumByStatus.size());
     }
