@@ -7,7 +7,6 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
@@ -75,7 +74,7 @@ class PostServiceTest {
                 .deleted(false).published(false).build();
         postDtoTree = PostDto.builder().id(3L).createdAt(LocalDateTime.of(2022, 2, 1, 0, 0))
                 .deleted(false).published(true).build();
-        updatePostDto = UpdatePostDto.builder().id(1L).adId(1L).build();
+        updatePostDto = UpdatePostDto.builder().adId(1L).build();
 
         posts.add(postDtoOne);
         posts.add(postDtoTree);
@@ -147,7 +146,7 @@ class PostServiceTest {
     @Test
     void testUpdatePostDataValidationException() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(DataValidationException.class, () -> postService.updatePost(updatePostDto));
+        assertThrows(DataValidationException.class, () -> postService.updatePost(1L, updatePostDto));
     }
 
     @Test
@@ -157,7 +156,7 @@ class PostServiceTest {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post123));
         when(adRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(DataValidationException.class, () -> postService.updatePost(updatePostDto));
+        assertThrows(DataValidationException.class, () -> postService.updatePost(1L, updatePostDto));
     }
 
     @Test
@@ -170,7 +169,7 @@ class PostServiceTest {
         when(postMapper.toDto(post)).thenReturn(postDto);
         when(postRepository.save(post)).thenReturn(post);
 
-        assertEquals(postDto, postService.updatePost(updatePostDto));
+        assertEquals(postDto, postService.updatePost(1L, updatePostDto));
     }
 
     @Test
