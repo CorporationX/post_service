@@ -4,6 +4,6 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V002__ad.sql
   - include:
-      file: db/changelog/changeset/post_V003__hashtag.sql
+      file: db/changelog/changeset/post_V004__hashtag.sql
   - include:
-      file: db/changelog/changeset/post_V004__insert.sql
+      file: db/changelog/changeset/post_V005__insert.sql
