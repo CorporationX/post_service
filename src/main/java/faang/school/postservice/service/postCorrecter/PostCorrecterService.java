@@ -6,12 +6,12 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -22,13 +22,16 @@ public class PostCorrecterService {
     private final PostRepository postRepository;
     private final TextCorrecter textCorrecter;
     private final BingSpellCheckingConfig bingSpellCheckingConfig;
+    private final ApplicationContext applicationContext;
 
     public void correctUnpublishedPosts() throws JsonProcessingException {
         List<Post> readyToPublish = postRepository.findNotPublished();
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ThreadPoolTaskExecutor bingSpellAsyncExecutor = applicationContext
+                .getBean("bingSpellAsyncExecutor", ThreadPoolTaskExecutor.class);
+
         int rateLimit = bingSpellCheckingConfig.getRateLimitPerSecond();
         AtomicInteger requestCount = new AtomicInteger();
-        executorService.submit(() -> {
+        bingSpellAsyncExecutor.submit(() -> {
             for (Post toPublish : readyToPublish) {
                 String content = toPublish.getContent();
                 Post post = toPublish;
@@ -40,12 +43,12 @@ public class PostCorrecterService {
                     post.setContent(textCorrecter.getCorrectText(content).get());
                     requestCount.getAndIncrement();
                     post.setCorrected(true);
+                    log.info("Draft posts was corrected successfully postId ={}",toPublish.getId());
                 } catch (JsonProcessingException | ExecutionException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                postRepository.save(post);
-                log.debug("Draft post was corrected successfully, draftId={}", post.getId());
             }
+            postRepository.saveAll(readyToPublish);
         });
     }
 }

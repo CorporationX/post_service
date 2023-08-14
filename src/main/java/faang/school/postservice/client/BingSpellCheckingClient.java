@@ -10,8 +10,8 @@ import java.util.Map;
 
 @FeignClient(name = "bing-spell-checking", url = "${post-correcter.url}")
 public interface BingSpellCheckingClient {
-    @PostMapping
-    ResponseEntity<String> makeTextCorrect(@RequestHeader Map<String,String> headers,
-                                   @RequestParam("mode") String mode, String body);
 
+    @PostMapping
+    ResponseEntity<String> makeTextCorrect(@RequestHeader Map<String, String> headers,
+                                           @RequestParam("mode") String mode, String body);
 }

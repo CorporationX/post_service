@@ -21,6 +21,7 @@ public class TextCorrecter {
 
     private final BingSpellCheckingClient bingSpellCheckingClient;
     private final BingSpellCheckingConfig bingSpellCheckingConfig;
+
     @Async("bingSpellAsyncExecutor")
     @Retryable(maxAttempts = 10, backoff = @Backoff(delay = 1000))
     public CompletableFuture<String> getCorrectText(String text) throws JsonProcessingException {

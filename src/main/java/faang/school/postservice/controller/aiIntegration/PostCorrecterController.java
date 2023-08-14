@@ -1,6 +1,5 @@
 package faang.school.postservice.controller.aiIntegration;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.service.postCorrecter.PostCorrecterService;
 import lombok.RequiredArgsConstructor;
