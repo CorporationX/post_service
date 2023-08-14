@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,7 +35,7 @@ class LikeServiceTest {
     public void byPostTest() {
         when(likeRepository.findByPostId(1L)).thenReturn(createLikeList());
 
-        likeService.getUsersByPostId(1L);
+        assertNotNull(likeService.getUsersByPostId(1L));
 
         verify(userServiceClient).getUsersByIds(anyList());
     }
@@ -43,7 +44,7 @@ class LikeServiceTest {
     public void byCommentTest() {
         when(likeRepository.findByCommentId(2L)).thenReturn(createLikeList());
 
-        likeService.getUsersByCommentId(2L);
+        assertNotNull(likeService.getUsersByCommentId(2L));
 
         verify(userServiceClient).getUsersByIds(anyList());
     }
