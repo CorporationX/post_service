@@ -3,7 +3,6 @@ package faang.school.postservice.service;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +13,16 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Service
-@RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final ModerationDictionary moderationDictionary;
-    @Value("${post.moderator.scheduler.batchSize}")
-    private Integer batchSize;
+    private final Integer batchSize;
+
+    public PostService(PostRepository postRepository, ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize) {
+        this.postRepository = postRepository;
+        this.moderationDictionary = moderationDictionary;
+        this.batchSize = batchSize;
+    }
 
     @Transactional
     public void verifyContent() {
@@ -28,11 +31,11 @@ public class PostService {
         if (posts.size() > batchSize) {
             int i = 0;
             while (i < posts.size() / batchSize) {
-                grouped.add(posts.subList(i, i + batchSize - 1));
+                grouped.add(posts.subList(i, i + batchSize));
                 i += batchSize;
             }
             if (i < posts.size()) {
-                grouped.add(posts.subList(i, posts.size() - 1));
+                grouped.add(posts.subList(i, posts.size()));
             }
         } else {
             grouped.add(posts);
