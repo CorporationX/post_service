@@ -18,8 +18,7 @@ public class ScheduledTaskControllerValidator {
 
         if (!scheduledTaskExecutor.containsKey(dto.entityType())) {
             throw new InvalidKeyException(
-                    "Entity type is incorrect: " +
-                            String.format("entityType: %s", dto.entityType())
+                    String.format("Entity type not found: %s", dto.entityType())
             );
         }
 

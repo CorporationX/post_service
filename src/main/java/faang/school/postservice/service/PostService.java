@@ -3,40 +3,32 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.mapper.ScheduledTaskMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.scheduled.ScheduledEntityType;
-import faang.school.postservice.model.scheduled.ScheduledTask;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.ScheduledTaskRepository;
 import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 
 @Service
 @Transactional(readOnly = true)
+@Slf4j
 @RequiredArgsConstructor
 public class PostService {
 
     private final PostServiceValidator validator;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
-    private final ScheduledTaskMapper scheduledTaskMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
-    private final ScheduledTaskRepository scheduledTaskRepository;
 
     @Transactional
     public PostDto addPost(PostDto dto) {
@@ -130,27 +122,8 @@ public class PostService {
         return postMapper.toDtos(postsByProjectId);
     }
 
-    @Transactional
-    public ScheduledTaskDto actWithPostBySchedule(ScheduledTaskDto dto) {
-        Optional<Post> postById = postRepository.findById(dto.entityId());
-        Optional<ScheduledTask> scheduledPostById = scheduledTaskRepository.findPostById(dto.entityId());
-
-        validator.validateToActWithPostBySchedule(postById, dto.entityId(), scheduledPostById);
-
-        ScheduledTask task = scheduledTaskMapper.toEntity(dto);
-
-        ScheduledTask entity = scheduledTaskRepository.save(task);
-
-        return scheduledTaskMapper.toDto(entity);
-    }
-
-    @Async()
-    public CompletableFuture<Void> publishScheduledPosts() {
-        return null; // TODO: 08.08.2023
-    }
-
-    private Post getPostById(Long id) {
+    public Post getPostById(Long id) {
         return postRepository.findById(id)
-                .orElseThrow(() -> new PostNotFoundException("Post with id " + String.format("%d", id) + " not found"));
+                .orElseThrow(() -> new PostNotFoundException(String.format("Post with id %d not found", id)));
     }
 }

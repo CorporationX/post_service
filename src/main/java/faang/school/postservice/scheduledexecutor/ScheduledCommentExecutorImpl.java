@@ -12,7 +12,7 @@ public class ScheduledCommentExecutorImpl implements ScheduledTaskExecutor {
     private final CommentService commentService;
 
     @Override
-    public ScheduledTaskDto actWithTaskBySchedule(ScheduledTaskDto dto) {
+    public ScheduledTaskDto saveTaskBySchedule(ScheduledTaskDto dto) {
         return commentService.actWithCommentBySchedule(dto);
     }
 }
