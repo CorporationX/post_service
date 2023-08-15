@@ -9,7 +9,6 @@ import org.springframework.lang.NonNull;
 @Builder
 public class LikeDto {
     private long id;
-    @NonNull
     private Long commentId;
     private Long postId;
 }

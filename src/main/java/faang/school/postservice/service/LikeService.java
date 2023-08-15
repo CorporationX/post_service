@@ -26,78 +26,65 @@ public class LikeService {
     private final CommentService commentService;
     private final UserServiceClient userServiceClient;
     private final LikeMapper likeMapper;
-    private final PostMapper postMapper;
 
     @Transactional
     public LikeDto likePost(LikeDto likeDto, Long currentUserId){
         checkIfUserExists(currentUserId);
         Post currentPost = postService.getPost(likeDto.getPostId());
-        if(currentPost.getLikes().stream()
-                .map(Like::getUserId)
-                .anyMatch(userId -> userId.equals(currentUserId))){
+        boolean ifLikeExistsYet = currentPost.getLikes().stream()
+                .anyMatch(like -> like.getUserId().equals(currentUserId));
+
+        if(ifLikeExistsYet){
             removeLikeFromPost(likeDto, currentUserId);
+            return likeDto;
+        } else {
+            Like newLike = likeMapper.dtoToLike(likeDto);
+            return likeMapper.likeToDto(likeRepository.save(newLike));
         }
-        currentPost.getLikes().add(likeMapper.dtoToLike(likeDto));
-        currentPost = postService.updateLikes(currentPost);
-        Like newLike = currentPost.getLikes().stream()
-                .filter(like -> like.getId() == likeDto.getId())
-                .toList().get(0);
-        return likeMapper.likeToDto(likeRepository.findById(newLike.getId()).orElseThrow(() ->
-                new EntityNotFoundException(String.format("Like with ID %d didn't add to post with ID %d.",
-                        newLike.getId(), likeDto.getPostId()))));
     }
 
     @Transactional
-    public LikeDto removeLikeFromPost(LikeDto likeDto, Long currentUserId){
+    public void removeLikeFromPost(LikeDto likeDto, Long currentUserId){
         checkIfUserExists(currentUserId);
         Post currentPost = postService.getPost(likeDto.getPostId());
-        if(currentPost.getLikes().stream()
-                .map(Like::getUserId)
-                .noneMatch(userId -> userId.equals(currentUserId))) {
+        boolean ifLikeDoesNotExistYet = currentPost.getLikes().stream()
+                .noneMatch(like -> like.getUserId().equals(currentUserId));
+
+        if(ifLikeDoesNotExistYet) {
             likePost(likeDto, currentUserId);
+        } else {
+            likeRepository.deleteByPostIdAndUserId(likeDto.getPostId(), currentUserId);
         }
-        Like requiredLike = likeRepository.findById(likeDto.getId()).orElseThrow();
-        currentPost.getLikes().remove(requiredLike);
-        postService.updateLikes(currentPost);
-        return likeMapper.likeToDto(likeRepository.findById(requiredLike.getId()).orElseThrow(() ->
-                new EntityNotFoundException(String.format("Like with ID %d didn't remove form post with ID %d.",
-                        requiredLike.getId(), currentPost.getId()))));
     }
 
     @Transactional
     public LikeDto likeComment(LikeDto likeDto, Long currentUserId){
         checkIfUserExists(currentUserId);
         Comment currentComment = commentService.getCommentById(likeDto.getCommentId());
-        if(currentComment.getLikes().stream()
-                .map(Like::getUserId)
-                .anyMatch(userId -> userId.equals(currentUserId))){
+        boolean ifLikeExistsYet = currentComment.getLikes().stream()
+                .anyMatch(like -> like.getUserId().equals(currentUserId));
+
+        if(ifLikeExistsYet){
             removeLikeFromComment(likeDto, currentUserId);
+            return likeDto;
+        } else {
+            Like newLike = likeMapper.dtoToLike(likeDto);
+            return likeMapper.likeToDto(likeRepository.save(newLike));
         }
-        currentComment.getLikes().add(likeMapper.dtoToLike(likeDto));
-        commentService.updateLikes(currentComment);
-        Like newLike = currentComment.getLikes().stream()
-                .filter(like -> like.getId() == likeDto.getId())
-                .toList().get(0);
-        return likeMapper.likeToDto(likeRepository.findById(newLike.getId()).orElseThrow(() ->
-                new EntityNotFoundException(String.format("Like with ID %d didn't add to post with ID %d.",
-                        newLike.getId(), currentComment.getId()))));
+
     }
 
     @Transactional
-    public LikeDto removeLikeFromComment(LikeDto likeDto, Long currentUserId){
+    public void removeLikeFromComment(LikeDto likeDto, Long currentUserId){
         checkIfUserExists(currentUserId);
         Comment currentComment = commentService.getCommentById(likeDto.getCommentId());
-        if(currentComment.getLikes().stream()
-                .map(Like::getUserId)
-                .noneMatch(userId -> userId.equals(currentUserId))){
+        boolean ifLikeDoesNotExistYet = currentComment.getLikes().stream()
+                .noneMatch(like -> like.getUserId().equals(currentUserId));
+        if(ifLikeDoesNotExistYet){
             likeComment(likeDto, currentUserId);
+        } else {
+            likeRepository.deleteByCommentIdAndUserId(likeDto.getPostId(), currentUserId);
         }
-        Like requiredLike = likeRepository.findById(likeDto.getId()).orElseThrow();
-        currentComment.getLikes().remove(requiredLike);
-        commentService.updateLikes(currentComment);
-        return likeMapper.likeToDto(likeRepository.findById(requiredLike.getId()).orElseThrow(() ->
-                new EntityNotFoundException(String.format("Like with ID %d didn't remove form post with ID %d.",
-                        requiredLike.getId(), currentComment.getId()))));
     }
 
     private void checkIfUserExists(Long currentUserId){

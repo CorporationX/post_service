@@ -1,14 +1,12 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.config.context.UserHeaderFilter;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,8 +23,8 @@ public class LikeController {
     }
 
     @DeleteMapping("/")
-    public LikeDto removeLikeFromPost(@Valid LikeDto likeDto){
-        return service.removeLikeFromPost(likeDto, userContext.getUserId());
+    public void removeLikeFromPost(@Valid LikeDto likeDto){
+        service.removeLikeFromPost(likeDto, userContext.getUserId());
     }
 
     @PostMapping("/comment")
@@ -35,7 +33,7 @@ public class LikeController {
     }
 
     @DeleteMapping("/comment")
-    public LikeDto removeLikeFromComment(@Valid LikeDto likeDto){
-        return service.removeLikeFromComment(likeDto, userContext.getUserId());
+    public void removeLikeFromComment(@Valid LikeDto likeDto){
+        service.removeLikeFromComment(likeDto, userContext.getUserId());
     }
 }

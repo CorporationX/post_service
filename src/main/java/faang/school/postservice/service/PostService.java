@@ -129,11 +129,6 @@ public class PostService {
                 .toList();
     }
 
-    @Transactional
-    public Post updateLikes(Post post){
-        return postRepository.save(post);
-    }
-
     public Post getPost(Long postId){
         return postRepository.findById(postId).orElseThrow(() ->
                 new EntityNotFoundException(String.format("Post with ID %d not found", postId)));
