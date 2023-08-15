@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.post;
 
+import faang.school.postservice.dto.like.LikeDto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ public class ResponsePostDto {
     private List<Long> likesIds;
     private List<Long> commentsIds;
     private List<Long> albumsIds;
+    private List<LikeDto> likes;
     private Long adId;
     private boolean published;
     private LocalDateTime publishedAt;
