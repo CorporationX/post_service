@@ -23,8 +23,8 @@ public class LikeService {
     private final LikeMapper likeMapper;
 
     public LikeDto likePost(LikeDto likeDto, Long currentUserId){
-        validateCurrentUserInSystem(currentUserId);
-        Post currentPost = validatePost(likeDto.getPostId());
+        checkIfUserExists(currentUserId);
+        Post currentPost = getCurrentPost(likeDto.getPostId());
         if(currentPost.getLikes().stream()
                 .map(Like::getUserId)
                 .anyMatch(userId -> userId.equals(currentUserId))){
@@ -38,8 +38,8 @@ public class LikeService {
     }
 
     public LikeDto removeLikeFromPost(LikeDto likeDto, Long currentUserId){
-        validateCurrentUserInSystem(currentUserId);
-        Post currentPost = validatePost(likeDto.getPostId());
+        checkIfUserExists(currentUserId);
+        Post currentPost = getCurrentPost(likeDto.getPostId());
         if(currentPost.getLikes().stream()
                 .map(Like::getUserId)
                 .noneMatch(userId -> userId.equals(currentUserId))) {
@@ -52,8 +52,8 @@ public class LikeService {
     }
 
     public LikeDto likeComment(LikeDto likeDto, Long currentUserId){
-        validateCurrentUserInSystem(currentUserId);
-        Comment currentComment = validateComment(likeDto.getCommentId());
+        checkIfUserExists(currentUserId);
+        Comment currentComment = getCurrentComment(likeDto.getCommentId());
         if(currentComment.getLikes().stream()
                 .map(Like::getUserId)
                 .anyMatch(userId -> userId.equals(currentUserId))){
@@ -67,8 +67,8 @@ public class LikeService {
     }
 
     public LikeDto removeLikeFromComment(LikeDto likeDto, Long currentUserId){
-        validateCurrentUserInSystem(currentUserId);
-        Comment currentComment = validateComment(likeDto.getCommentId());
+        checkIfUserExists(currentUserId);
+        Comment currentComment = getCurrentComment(likeDto.getCommentId());
         if(currentComment.getLikes().stream()
                 .map(Like::getUserId)
                 .noneMatch(userId -> userId.equals(currentUserId))){
@@ -80,16 +80,16 @@ public class LikeService {
         return likeMapper.likeToDto(requiredLike);
     }
 
-    private void validateCurrentUserInSystem(Long currentUserId){
+    private void checkIfUserExists(Long currentUserId){
         userServiceClient.getUser(currentUserId);
     }
 
-    private Post validatePost(Long postId){
+    private Post getCurrentPost(Long postId){
         return postRepository.findById(postId).orElseThrow(() ->
                 new DataValidationException(String.format("The post with ID %d doesn't exist", postId)));
     }
 
-    private Comment validateComment(Long commentId){
+    private Comment getCurrentComment(Long commentId){
         return commentRepository.findById(commentId).orElseThrow(() ->
                 new DataValidationException(String.format("The comment with ID %d doesn't exist", commentId)));
     }
