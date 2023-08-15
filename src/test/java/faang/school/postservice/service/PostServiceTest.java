@@ -61,7 +61,7 @@ class PostServiceTest {
     }
 
     @Test
-    void publishTest(){
+    void publishTest() {
         Post post = Post.builder().id(1L).published(false).deleted(false).build();
 
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
@@ -149,5 +149,20 @@ class PostServiceTest {
         verify(postRepository).findAllByVerifiedAtIsNull();
         verify(moderationDictionary, times(posts.size())).containsBadWord(anyString());
         verify(postRepository, times(posts.size() / batchSize)).saveAll(anyList());
+    }
+
+    @Test
+    void banForOffensiveContentTest() {
+        Post post = Post.builder().authorId(1L).build();
+        List<Post> posts = new ArrayList<>(List.of(post, post, post, post, post, post));
+        UserDto userDto = UserDto.builder().id(1L).banned(false).build();
+        List<UserDto> users = new ArrayList<>(List.of(userDto));
+
+        when(postRepository.findAllByVerifiedFalseAndVerifiedAtIsNotNull()).thenReturn(posts);
+        when(userServiceClient.getUsersByIds(anyList())).thenReturn(users);
+
+        postService.banForOffensiveContent();
+
+        verify(redisPublisher).publishMessage(userBannerChannel, "1");
     }
 }
