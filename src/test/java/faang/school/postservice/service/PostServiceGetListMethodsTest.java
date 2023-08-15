@@ -8,11 +8,12 @@ import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.PostValidator;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -36,13 +37,21 @@ public class PostServiceGetListMethodsTest {
     private UserServiceClient userService;
     @Mock
     private ProjectServiceClient projectService;
-    @InjectMocks
+
+    private PostValidator postValidator;
+
     private PostService postService;
 
     private final long CORRECT_ID = 1L;
     private final LocalDateTime TEST_TIME = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
     private UserDto correctUserDto = UserDto.builder().build();
     private ProjectDto correctProjectDto = ProjectDto.builder().build();
+
+    @BeforeEach
+    void setUp() {
+        postValidator = new PostValidator(userService, projectService, postRepository);
+        postService = new PostService(postRepository, postValidator, postMapper);
+    }
 
     @Test
     void testGetUserDraftsWithoutUserInDB() {
