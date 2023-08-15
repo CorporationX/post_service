@@ -35,6 +35,12 @@ logging:
 post:
   publisher:
     scheduler:
+      thread-pool:
+        core-pool-size: 1
+        maximum-pool-size: 10
+        keep-alive-time: 0
+        time-unit: MILLISECONDS
+      batch_size: 1000
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
     scheduler:

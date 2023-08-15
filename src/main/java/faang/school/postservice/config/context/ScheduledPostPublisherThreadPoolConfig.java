@@ -9,22 +9,22 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-public class ThreadPoolConfig {
+public class ScheduledPostPublisherThreadPoolConfig {
 
-    @Value("${post.config.thread-pool.core-pool-size}")
+    @Value("${post.publisher.scheduler.thread-pool.core-pool-size}")
     private int corePoolSize;
 
-    @Value("${post.config.thread-pool.maximum-pool-size}")
+    @Value("${post.publisher.scheduler.thread-pool.maximum-pool-size}")
     private int maximumPoolSize;
 
-    @Value("${post.config.thread-pool.keep-alive-time}")
+    @Value("${post.publisher.scheduler.thread-pool.keep-alive-time}")
     private int keepAliveTime;
 
-    @Value("${post.config.thread-pool.time-unit}")
+    @Value("${post.publisher.scheduler.thread-pool.time-unit}")
     private String timeUnit;
 
     @Bean
-    public ThreadPoolExecutor threadPoolExecutor() {
+    public ThreadPoolExecutor scheduledPostPublisherThreadPoolExecutor() {
         return new ThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
