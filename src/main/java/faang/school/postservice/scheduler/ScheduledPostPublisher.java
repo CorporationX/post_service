@@ -37,11 +37,6 @@ public class ScheduledPostPublisher {
                 int startIndex = i;
                 int endIndex = Math.min(i + batchSize, filteredPosts.size());
                 threadPoolExecutor.execute(() -> processAndSavePosts(filteredPosts.subList(startIndex, endIndex)));
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException exception) {
-                    exception.printStackTrace();
-                }
             }
         } else {
             processAndSavePosts(filteredPosts);
