@@ -1,4 +1,4 @@
-package faang.school.postservice.util.validator.comment;
+package faang.school.postservice.util.validator;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;

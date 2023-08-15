@@ -2,8 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.dto.client.UserDto;
-import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.*;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -11,6 +10,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.util.exception.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

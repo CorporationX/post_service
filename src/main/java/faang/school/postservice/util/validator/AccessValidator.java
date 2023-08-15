@@ -1,4 +1,4 @@
-package faang.school.postservice.validator.album;
+package faang.school.postservice.util.validator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
