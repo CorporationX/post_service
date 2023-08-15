@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/album")
@@ -47,6 +49,18 @@ public class AlbumController {
         albumService.deleteAlbum(albumId);
     }
 
+    @PatchMapping("{userId}/albums/{albumId}/posts/add/{postId}")
+    public AlbumDto addPost(Long userId, Long albumId, Long postId) {
+        validateIds(userId, albumId, postId);
+        return albumService.addPost(userId, albumId, postId);
+    }
+
+    @PatchMapping("{userId}/albums/{albumId}/posts/delete/{postId}")
+    public AlbumDto deletePost(Long userId, Long albumId, Long postId) {
+        validateIds(userId, albumId, postId);
+        return albumService.deletePost(userId, albumId, postId);
+    }
+
     private void validate(AlbumDto album) {
         if (album.getAuthorId() == null) {
             throw new DataValidationException("AuthorId cannot be null");
@@ -57,5 +71,13 @@ public class AlbumController {
         if (album.getDescription() == null || album.getDescription().isEmpty()) {
             throw new DataValidationException("Description cannot be null");
         }
+    }
+
+    private void validateIds(long... ids) {
+        Arrays.stream(ids).forEach(id -> {
+            if (id < 0) {
+                throw new DataValidationException("Id must be more than zero");
+            }
+        });
     }
 }
