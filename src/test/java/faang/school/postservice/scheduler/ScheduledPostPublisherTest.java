@@ -34,7 +34,8 @@ class ScheduledPostPublisherTest {
 
     @BeforeEach
     void setUp() {
-        scheduledPostPublisher = new ScheduledPostPublisher(2, postRepository, threadPoolExecutor);
+        scheduledPostPublisher = new ScheduledPostPublisher(postRepository, threadPoolExecutor);
+        scheduledPostPublisher.setBatchSize(2);
         firstPost = Post.builder()
                 .published(false)
                 .deleted(false)
