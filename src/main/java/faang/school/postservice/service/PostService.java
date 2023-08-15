@@ -2,15 +2,18 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.async.PostAsyncService;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +23,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
 
     private final PostRepository postRepository;
@@ -27,6 +31,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
+    private final PostAsyncService postAsyncService;
 
 
     @Transactional(readOnly = true)
@@ -135,5 +140,19 @@ public class PostService {
                 .sorted(Comparator.comparing(Post::getPublishedAt))
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public void publishScheduledPosts(int partitionSize) {
+        log.info("Scheduled posts publishing started");
+        List<Post> posts = postRepository.findReadyToPublish();
+        log.info("Scheduled publication of posts in the amount: {}", posts.size());
+        if (posts.size() > partitionSize) {
+            List<List<Post>> partitions = ListUtils.partition(posts, posts.size() / partitionSize);
+            partitions.forEach(postAsyncService::publishPosts);
+        } else {
+            postAsyncService.publishPosts(posts);
+            log.info("Scheduled posts publishing finished");
+        }
     }
 }
