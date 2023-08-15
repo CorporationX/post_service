@@ -174,6 +174,7 @@ public class PostService {
 
     public void banForOffensiveContent() {
         List<Post> posts = postRepository.findAllByVerifiedFalseAndVerifiedAtIsNotNull();
+
         List<Long> userIds = posts.stream().map(Post::getAuthorId).toList();
 
         List<Long> bannedUsers = userServiceClient.getUsersByIds(userIds).stream()
