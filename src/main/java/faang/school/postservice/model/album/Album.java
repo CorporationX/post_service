@@ -49,7 +49,7 @@ public class Album {
 
     @Builder.Default
     @Column(name = "visibility", nullable = false)
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private AlbumVisibility visibility = AlbumVisibility.ALL_USERS;
 
     @ElementCollection
