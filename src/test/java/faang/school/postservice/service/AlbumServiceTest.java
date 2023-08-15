@@ -330,17 +330,99 @@ class AlbumServiceTest {
         verify(albumRepository, times(1)).delete(any());
     }
 
-//    @Test
-//    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional(){
-//        List<Long> subscriberIds;
-//        List<Long> userWithAccessIds;
-//
-//        album1.setVisibility(AlbumVisibility.ALL_USERS);
-//        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
-//        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
-//        album4.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
-//
-//        when(userContext.getUserId()).thenReturn(1L);
-//
-//    }
+    @Test
+    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional() {
+        album3.setUsersWithAccessIds(List.of(2L, 3L));
+        album2.setTitle("title");
+        UserDto author = UserDto.builder()
+                .id(1L).followerIds(List.of(2L, 3L))
+                .build();
+
+        album1.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
+        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
+        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
+        album4.setVisibility(AlbumVisibility.ALL_USERS);
+
+        when(userContext.getUserId()).thenReturn(4L);
+        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(albumRepository.findAll()).thenReturn(List.of(
+                album1, album2, album3, album4));
+
+        albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
+
+        List<AlbumDtoResponse> filteredAlbums = albumService.findListOfAllAlbumsInTheSystem(AlbumFilterDto.builder().title("title").build());
+        assertEquals(1, filteredAlbums.size());
+    }
+
+    @Test
+    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional_TheUserIsAuthor() {
+        album3.setUsersWithAccessIds(List.of(2L, 3L));
+        album2.setTitle("title");
+        UserDto author = UserDto.builder()
+                .id(1L).followerIds(List.of(2L, 3L))
+                .build();
+
+        album1.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
+        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
+        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
+        album4.setVisibility(AlbumVisibility.ALL_USERS);
+
+        when(userContext.getUserId()).thenReturn(1L);
+        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(albumRepository.findAll()).thenReturn(List.of(
+                album1, album2, album3, album4));
+
+        albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
+
+        List<AlbumDtoResponse> filteredAlbums = albumService.findListOfAllAlbumsInTheSystem(AlbumFilterDto.builder().title("title").build());
+        assertEquals(4, filteredAlbums.size());
+    }
+
+    @Test
+    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional_TheUserIsSubscriber() {
+        album3.setUsersWithAccessIds(List.of(3L));
+        album2.setTitle("title");
+        UserDto author = UserDto.builder()
+                .id(1L).followerIds(List.of(2L, 3L))
+                .build();
+
+        album1.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
+        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
+        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
+        album4.setVisibility(AlbumVisibility.ALL_USERS);
+
+        when(userContext.getUserId()).thenReturn(2L);
+        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(albumRepository.findAll()).thenReturn(List.of(
+                album1, album2, album3, album4));
+
+        albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
+
+        List<AlbumDtoResponse> filteredAlbums = albumService.findListOfAllAlbumsInTheSystem(AlbumFilterDto.builder().title("title").build());
+        assertEquals(2, filteredAlbums.size());
+    }
+
+    @Test
+    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional_TheUserHasAccessToAlbum() {
+        album3.setUsersWithAccessIds(List.of(2L, 3L));
+        album2.setTitle("title");
+        UserDto author = UserDto.builder()
+                .id(1L).followerIds(List.of(3L))
+                .build();
+
+        album1.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
+        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
+        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
+        album4.setVisibility(AlbumVisibility.ALL_USERS);
+
+        when(userContext.getUserId()).thenReturn(2L);
+        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(albumRepository.findAll()).thenReturn(List.of(
+                album1, album2, album3, album4));
+
+        albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
+
+        List<AlbumDtoResponse> filteredAlbums = albumService.findListOfAllAlbumsInTheSystem(AlbumFilterDto.builder().title("title").build());
+        assertEquals(2, filteredAlbums.size());
+    }
 }
