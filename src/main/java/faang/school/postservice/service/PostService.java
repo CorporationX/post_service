@@ -122,7 +122,7 @@ public class PostService {
         return postMapper.toDtoList(posts);
     }
 
-    private Post getPostIfExist(Long id) {
+    public Post getPostIfExist(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Post with the specified id does not exist"));
     }
