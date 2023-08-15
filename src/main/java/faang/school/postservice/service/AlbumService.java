@@ -25,6 +25,8 @@ public class AlbumService {
     public AlbumDto createAlbum(AlbumDto dto) throws JsonProcessingException {
         var album = mapper.toEntity(dto);
         setAllowedUsers(dto, album);
+        album.setTitle(album.getTitle().trim());
+        album.setDescription(album.getDescription().trim());
         var albumDto = mapper.toDto(repository.save(album));
         setAllowedUsers(album, albumDto);
         return albumDto;
@@ -51,7 +53,7 @@ public class AlbumService {
 
     @Transactional
     public void delete(Long albumId, Long userId) {
-        var album = repository.findById(albumId).orElseThrow(() -> new EntityNotFoundException(String.format("Entity with id: %d wasn`t found" , albumId)));
+        var album = repository.findById(albumId).orElseThrow(() -> new EntityNotFoundException(String.format("Entity with id: %d wasn`t found", albumId)));
         accessValidator.validateUpdateAccess(album, userId);
         repository.delete(album);
     }
