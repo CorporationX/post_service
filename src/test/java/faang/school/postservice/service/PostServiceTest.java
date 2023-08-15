@@ -6,11 +6,11 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -133,7 +133,7 @@ class PostServiceTest {
         Post post = postMapperImpl.toPost(postDto);
 
         assertThrows(EntityNotFoundException.class, () ->
-                postService.publishPost(post.getId()), "Post not found");
+                postService.publishPost(post.getId()), "Post with id " + postId + " not found");
     }
 
     @Test
@@ -165,7 +165,9 @@ class PostServiceTest {
 
     @Test
     void testUpdatePostWithAuthorIdFailIfPostNotFound() {
-        Assertions.assertEquals("Post not found", Assertions.assertThrows(EntityNotFoundException.class, () -> postService.updatePost(postWithAuthorIdDto)).getMessage());
+        postWithAuthorIdDto.setId(1L);
+        Assertions.assertEquals("Post with id " + postId + " not found",
+                Assertions.assertThrows(EntityNotFoundException.class, () -> postService.updatePost(postWithAuthorIdDto)).getMessage());
     }
 
     @Test
@@ -185,7 +187,9 @@ class PostServiceTest {
 
     @Test
     void testUpdatePostWithProjectIdFailIfPostNotFound() {
-        Assertions.assertEquals("Post not found", Assertions.assertThrows(EntityNotFoundException.class, () -> postService.updatePost(postWithProjectIdDto)).getMessage());
+        postWithProjectIdDto.setId(1L);
+        Assertions.assertEquals("Post with id " + postId + " not found",
+                Assertions.assertThrows(EntityNotFoundException.class, () -> postService.updatePost(postWithProjectIdDto)).getMessage());
     }
 
     @Test
@@ -334,11 +338,12 @@ class PostServiceTest {
     @Test
     void testSoftDeletePostFailIfPostNotFound() {
         try {
+            postWithAuthorIdDto.setId(1L);
             Long postId = postWithAuthorIdDto.getId();
             postService.softDeletePost(postId);
             when(postRepository.findById(postId)).thenReturn(Optional.empty());
         } catch (EntityNotFoundException e) {
-            assertEquals("Post not found", e.getMessage());
+            assertEquals("Post with id " + postId + " not found", e.getMessage());
         }
     }
 
@@ -380,7 +385,7 @@ class PostServiceTest {
 
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
-        assertThrows(faang.school.postservice.exception.EntityNotFoundException.class, () -> postService.getPostById(postId));
+        assertThrows(EntityNotFoundException.class, () -> postService.getPostById(postId));
 
         verify(postRepository, times(1)).findById(postId);
     }
