@@ -18,22 +18,22 @@ public class LikeController {
     private final UserContext userContext;
 
     @PostMapping("/")
-    public LikeDto likePost(@Valid LikeDto likeDto){
+    public LikeDto likePost(@Valid LikeDto likeDto) {
         return service.likePost(likeDto, userContext.getUserId());
     }
 
     @DeleteMapping("/")
-    public void removeLikeFromPost(@Valid LikeDto likeDto){
+    public void removeLikeFromPost(@Valid LikeDto likeDto) {
         service.removeLikeFromPost(likeDto, userContext.getUserId());
     }
 
     @PostMapping("/comment")
-    public LikeDto likeComment(@Valid LikeDto likeDto){
+    public LikeDto likeComment(@Valid LikeDto likeDto) {
         return service.likeComment(likeDto, userContext.getUserId());
     }
 
     @DeleteMapping("/comment")
-    public void removeLikeFromComment(@Valid LikeDto likeDto){
+    public void removeLikeFromComment(@Valid LikeDto likeDto) {
         service.removeLikeFromComment(likeDto, userContext.getUserId());
     }
 }
