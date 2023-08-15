@@ -30,9 +30,9 @@ class LikeServiceTest {
     @Mock
     private LikeRepository likeRepository;
     @Mock
-    private PostRepository postRepository;
+    private PostService postService;
     @Mock
-    private CommentRepository commentRepository;
+    private CommentService commentService;
     @Mock
     private UserServiceClient userServiceClient;
     @Spy
@@ -50,7 +50,7 @@ class LikeServiceTest {
 
     @BeforeEach
     public void setUp(){
-        likeDto = LikeDto.builder().id(10L).userId(CURRENT_USER_ID).build();
+        likeDto = LikeDto.builder().id(10L).build();
         like = Like.builder().id(10L).userId(CURRENT_USER_ID).build();
         userDto = new UserDto(CURRENT_USER_ID, "username", "mail");
         post = Post.builder().id(POST_ID).build();
@@ -62,8 +62,8 @@ class LikeServiceTest {
         likeDto.setPostId(POST_ID);
         like.setPost(post);
         Mockito.when(userServiceClient.getUser(CURRENT_USER_ID)).thenReturn(userDto);
-        Mockito.when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
-        Mockito.when(likeRepository.save(like)).thenReturn(like);
+        Mockito.when(postService.getPost(POST_ID)).thenReturn(post);
+        Mockito.doReturn(like).when(likeRepository).save(like);
 
         assertEquals(likeDto, likeService.likePost(likeDto, CURRENT_USER_ID));
         Mockito.verify(likeRepository, Mockito.times(1))
@@ -75,10 +75,9 @@ class LikeServiceTest {
         likeDto.setPostId(POST_ID);
         post.setLikes(List.of(like));
         Mockito.when(userServiceClient.getUser(CURRENT_USER_ID)).thenReturn(userDto);
-        Mockito.when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
-        Mockito.when(likeRepository.findById(likeDto.getId())).thenReturn(Optional.of(like));
+        Mockito.when(postService.getPost(POST_ID)).thenReturn(post);
 
-        assertEquals(likeDto, likeService.removeLikeFromPost(likeDto, CURRENT_USER_ID));
+        likeService.removeLikeFromPost(likeDto, CURRENT_USER_ID);
         Mockito.verify(likeRepository, Mockito.times(1))
                 .deleteByPostIdAndUserId(POST_ID, CURRENT_USER_ID);
     }
@@ -88,8 +87,8 @@ class LikeServiceTest {
         likeDto.setCommentId(COMMENT_ID);
         like.setComment(comment);
         Mockito.when(userServiceClient.getUser(CURRENT_USER_ID)).thenReturn(userDto);
-        Mockito.when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
-        Mockito.when(likeRepository.save(like)).thenReturn(like);
+        Mockito.when(commentService.getCommentById(COMMENT_ID)).thenReturn(comment);
+        Mockito.doReturn(like).when(likeRepository).save(like);
 
         assertEquals(likeDto, likeService.likeComment(likeDto, CURRENT_USER_ID));
         Mockito.verify(likeRepository, Mockito.times(1))
@@ -101,10 +100,9 @@ class LikeServiceTest {
         likeDto.setCommentId(COMMENT_ID);
         comment.setLikes(List.of(like));
         Mockito.when(userServiceClient.getUser(CURRENT_USER_ID)).thenReturn(userDto);
-        Mockito.when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
-        Mockito.when(likeRepository.findById(likeDto.getId())).thenReturn(Optional.of(like));
+        Mockito.when(commentService.getCommentById(COMMENT_ID)).thenReturn(comment);
 
-        assertEquals(likeDto, likeService.removeLikeFromComment(likeDto, CURRENT_USER_ID));
+        likeService.removeLikeFromComment(likeDto, CURRENT_USER_ID);
         Mockito.verify(likeRepository, Mockito.times(1))
                 .deleteByCommentIdAndUserId(COMMENT_ID, CURRENT_USER_ID);
     }

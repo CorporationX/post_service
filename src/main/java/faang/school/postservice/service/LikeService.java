@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -39,6 +40,7 @@ public class LikeService {
             return likeDto;
         } else {
             Like newLike = likeMapper.dtoToLike(likeDto);
+            newLike.setUserId(currentUserId);
             return likeMapper.likeToDto(likeRepository.save(newLike));
         }
     }
@@ -68,8 +70,9 @@ public class LikeService {
             removeLikeFromComment(likeDto, currentUserId);
             return likeDto;
         } else {
-            Like newLike = likeMapper.dtoToLike(likeDto);
-            return likeMapper.likeToDto(likeRepository.save(newLike));
+            Like newLike = likeMapper.dtoToEntity(likeDto);
+            newLike.setUserId(currentUserId);
+            return likeMapper.entityToDto(likeRepository.save(newLike));
         }
 
     }
@@ -80,10 +83,11 @@ public class LikeService {
         Comment currentComment = commentService.getCommentById(likeDto.getCommentId());
         boolean ifLikeDoesNotExistYet = currentComment.getLikes().stream()
                 .noneMatch(like -> like.getUserId().equals(currentUserId));
+
         if(ifLikeDoesNotExistYet){
             likeComment(likeDto, currentUserId);
         } else {
-            likeRepository.deleteByCommentIdAndUserId(likeDto.getPostId(), currentUserId);
+            likeRepository.deleteByCommentIdAndUserId(likeDto.getCommentId(), currentUserId);
         }
     }
 
