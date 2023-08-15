@@ -330,17 +330,17 @@ class AlbumServiceTest {
         verify(albumRepository, times(1)).delete(any());
     }
 
-    @Test
-    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional(){
-        List<Long> subscriberIds;
-        List<Long> userWithAccessIds;
-
-        album1.setVisibility(AlbumVisibility.ALL_USERS);
-        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
-        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
-        album4.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
-
-        when(userContext.getUserId()).thenReturn(1L);
-
-    }
+//    @Test
+//    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional(){
+//        List<Long> subscriberIds;
+//        List<Long> userWithAccessIds;
+//
+//        album1.setVisibility(AlbumVisibility.ALL_USERS);
+//        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
+//        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
+//        album4.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
+//
+//        when(userContext.getUserId()).thenReturn(1L);
+//
+//    }
 }

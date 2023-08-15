@@ -1,2 +1,2 @@
 ALTER TABLE album
-    ADD visibility INT;
+    ADD visibility VARCHAR;
