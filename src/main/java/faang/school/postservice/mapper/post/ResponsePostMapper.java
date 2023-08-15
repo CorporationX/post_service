@@ -25,6 +25,8 @@ public interface ResponsePostMapper {
     @Mapping(target = "albumsIds", source = "albums", qualifiedByName = "albumsToAlbumsIds")
     ResponsePostDto toDto(Post entity);
 
+    Post toPost(ResponsePostDto postDto);
+
     List<ResponsePostDto> toDtoList(List<Post> entities);
 
 
