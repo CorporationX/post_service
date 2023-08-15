@@ -19,6 +19,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -40,7 +41,8 @@ public class Hashtag {
 
     @ManyToMany
     @JoinColumn(name = "post_id", nullable = false)
-    private List<Post> posts;
+    @Builder.Default
+    private List<Post> posts = new ArrayList<>();
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
