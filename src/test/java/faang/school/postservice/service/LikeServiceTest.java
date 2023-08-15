@@ -75,4 +75,11 @@ class LikeServiceTest {
         LikeDto likeDto1 = likeService.likePost(likeDto);
         assertEquals(likeDto, likeDto1);
     }
+
+    @Test
+    public void deleteLikePost_correctAnswer() {
+        when(userServiceClient.getUser(1L)).thenReturn(userDto);
+        likeService.deleteLikePost(3L, 1L);
+        verify(likeRepository).deleteByPostIdAndUserId(3L, 1L);
+    }
 }

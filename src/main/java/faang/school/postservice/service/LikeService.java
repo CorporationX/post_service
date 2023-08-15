@@ -28,6 +28,11 @@ public class LikeService {
         return likeMapper.toDto(like);
     }
 
+    public void deleteLikePost(Long postId, Long userId) {
+        userServiceClient.getUser(userId);
+        likeRepository.deleteByPostIdAndUserId(postId, userId);
+    }
+
     private void validUser(LikeDto likeDto) {
         long userId = likeDto.getUserId();
         userServiceClient.getUser(userId);
