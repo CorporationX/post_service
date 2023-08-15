@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -23,7 +23,7 @@ class ScheduledExpiredAdRemoverTest {
     private AdRepository adRepository;
 
     @Mock
-    private ThreadPoolExecutor executor;
+    private ThreadPoolTaskExecutor executor;
 
     private ScheduledExpiredAdRemover scheduledExpiredAdRemover;
 

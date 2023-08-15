@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
 
 @Slf4j
 @Component
@@ -20,7 +20,7 @@ public class ScheduledExpiredAdRemover {
     @Value("${post.ad-remover.batch.size}")
     private final int batchSize;
 
-    private final ThreadPoolExecutor executor;
+    private final ThreadPoolTaskExecutor executor;
     private final AdRepository adRepository;
 
     @Scheduled(cron = "${post.ad-remover.scheduler.every_day_cron}")
