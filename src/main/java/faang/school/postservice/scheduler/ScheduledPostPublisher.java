@@ -3,6 +3,7 @@ package faang.school.postservice.scheduler;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,12 +14,13 @@ import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
+@Setter
 @RequiredArgsConstructor
 @Slf4j
 public class ScheduledPostPublisher {
 
     @Value("${post.publisher.scheduler.batch_size}")
-    private final int batchSize;
+    private int batchSize;
 
     private final PostRepository postRepository;
     private final ThreadPoolExecutor threadPoolExecutor;
