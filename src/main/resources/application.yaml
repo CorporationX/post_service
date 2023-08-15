@@ -49,3 +49,11 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+ai-spelling:
+  cron: "0 0 18 * * *" # every day at 18:00
+  url: "https://bing-spell-check2.p.rapidapi.com/spellcheck"
+  mode: "spell"
+  contentType: "application/x-www-form-urlencoded"
+  xRapidApiKey: "58a3c43c12msh2fe078f7a3f1c46p1b5471jsn5c4c9497ff76"
+  xRapidApiHost: "bing-spell-check2.p.rapidapi.com"
