@@ -61,7 +61,7 @@ public class PostService {
         long postId = updatePost.getId();
         Post post = validatePostId(postId);
         validateAuthorUpdate(post, updatePost);
-
+        validateScheduleAt(post, updatePost);
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         log.info("Post was updated successfully, postId={}", post.getId());
@@ -148,6 +148,14 @@ public class PostService {
     private Post validatePostId(long postId) {
         return postRepository.findById(postId).orElseThrow(
                 () -> new EntityNotFoundException("This post does not exist"));
+    }
+
+    private void validateScheduleAt(Post post, PostDto updatePost) {
+        LocalDateTime updateScheduleAt = updatePost.getScheduledAt();
+
+        if (updateScheduleAt != null && updateScheduleAt.isAfter(post.getScheduledAt())) {
+            post.setScheduledAt(updateScheduleAt);
+        }
     }
 
     private void validateData(PostDto postDto) {
