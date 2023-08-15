@@ -1,5 +1,6 @@
 plugins {
     java
+    jacoco
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
 }
@@ -10,6 +11,11 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
+}
+
+jacoco {
+	toolVersion = "0.8.9"
+	reportsDirectory.set(layout.buildDirectory.dir("customJacocoReportDir"))
 }
 
 dependencies {
@@ -67,4 +73,47 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+tasks.test{
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+    }
+
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it).apply {
+            exclude(
+                    "faang/school/postservice/client/**",
+                    "faang/school/postservice/config/**",
+                    "faang/school/postservice/dto/**",
+                    "faang/school/postservice/model/**",
+                    "faang/school/postservice/repository/**",
+                    "faang/school/postservice/PostServiceApp.class")
+        }
+    }))
+}
+
+tasks.jacocoTestCoverageVerification{
+    violationRules{
+        rule{
+            element = "CLASS"
+            excludes = listOf(
+                    "faang/school/postservice/client/**",
+                    "faang/school/postservice/config/**",
+                    "faang/school/postservice/dto/**",
+                    "faang/school/postservice/model/**",
+                    "faang/school/postservice/repository/**",
+                    "faang/school/postservice/PostServiceApp")
+            limit {
+                minimum = "0.8".toBigDecimal()
+            }
+        }
+    }
 }
