@@ -26,6 +26,10 @@ public class PostCorrecter {
         String body = "Text=" + post.getContent();
         SpellCheckDto spellCheckDto = bingSpellClient.checkSpell(bingSpellConfig.getHeaders(), bingSpellConfig.getMode(), body).getBody();
 
+        if (spellCheckDto == null) {
+            return CompletableFuture.completedFuture(post.getContent());
+        }
+
         List<FlaggedTokenDto> flaggedTokenList = spellCheckDto.getFlaggedTokens();
         String text = post.getContent();
         for (FlaggedTokenDto flaggedToken : flaggedTokenList) {
