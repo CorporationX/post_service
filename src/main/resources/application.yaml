@@ -48,12 +48,6 @@ post:
       every_day_cron: "0 0 0 * * ?"
     batch:
       size: 1000
-  config:
-    thread-pool:
-      core-pool-size: 1
-      maximum-pool-size: 10
-      keep-alive-time: 0
-      time-unit: MILLISECONDS
 
 comment:
   moderator:
