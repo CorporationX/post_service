@@ -69,9 +69,9 @@ class LikeServiceTest {
     public void likePost_correctAnswer() {
         when(userServiceClient.getUser(1L)).thenReturn(likeDto.getUserDto());
         when(postService.getById(3L)).thenReturn(postDto);
-        when(likeMapper.toLike(likeDto)).thenReturn(like);
+        when(likeMapper.toEntity(likeDto)).thenReturn(like);
         when(likeRepository.save(any())).thenReturn(like);
-        when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
+        when(likeMapper.toDto(like)).thenReturn(likeDto);
         LikeDto likeDto1 = likeService.likePost(likeDto);
         assertEquals(likeDto, likeDto1);
     }

@@ -9,7 +9,7 @@ import org.mapstruct.factory.Mappers;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LikeMapper {
     LikeMapper INSTANCE = Mappers.getMapper(LikeMapper.class);
-    Like toLike (LikeDto likeDto);
+    Like toEntity(LikeDto likeDto);
 
-    LikeDto toLikeDto (Like like);
+    LikeDto toDto(Like like);
 }
