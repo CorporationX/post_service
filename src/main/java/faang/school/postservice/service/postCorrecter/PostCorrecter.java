@@ -17,8 +17,8 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @RequiredArgsConstructor
 public class PostCorrecter {
-    private BingSpellConfig bingSpellConfig;
-    private BingSpellClient bingSpellClient;
+    private final BingSpellConfig bingSpellConfig;
+    private final BingSpellClient bingSpellClient;
 
     @Async("bingSpellAsyncExecutor")
     @Retryable(maxAttempts = 10, backoff = @Backoff(delay = 1000))

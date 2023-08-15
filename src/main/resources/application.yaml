@@ -51,7 +51,7 @@ payment-service:
   port: 9080
 
 ai-spelling:
-  cron: "0 0 18 * * *" # every day at 18:00
+  cron: "0 0 6 * * ?" # every day at 6:00
   url: "https://bing-spell-check2.p.rapidapi.com/spellcheck"
   mode: "spell"
   contentType: "application/x-www-form-urlencoded"

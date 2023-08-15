@@ -12,8 +12,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class PostCorrecterService {
-    private PostCorrecter postCorrecter;
-    private PostRepository postRepository;
+    private final PostCorrecter postCorrecter;
+    private final PostRepository postRepository;
 
     public void correctUnpublishedPosts() {
         List<Post> posts = postRepository.findReadyToPublish();
