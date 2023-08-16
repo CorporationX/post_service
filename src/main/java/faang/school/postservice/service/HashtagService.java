@@ -8,6 +8,8 @@ import faang.school.postservice.repository.HashtagRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,26 +40,27 @@ public class HashtagService {
 
     @Async("taskExecutor")
     @Transactional
+    @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 1000, multiplier = 2))
     public void parseContentToAdd(Post post) {
         try {
-            var content = extractHashtags(post.getContent());
-            for (var tag : content) {
-                tag = tag.substring(1).toLowerCase();
+            var hashtags = extractHashtags(post.getContent());
+            for (var tag : hashtags) {
                 var hashtag = hashtagRepository.findByHashtag(tag);
-                String finalTag = tag;
                 Hashtag hashtagEntity = hashtag.orElseGet(() ->
-                        hashtagRepository.save(Hashtag.builder().tag(finalTag).posts(new ArrayList<>()).build())
+                        hashtagRepository.save(Hashtag.builder().tag(tag).posts(new ArrayList<>()).build())
                 );
                 hashtagEntity.getPosts().add(post);
             }
         } catch (Exception e) {
             log.error("Exception " + e.getCause() + " " + e.getMessage());
+            throw e;
         }
     }
 
     @Async("taskExecutor")
     @Transactional
-    public void parseContentToUpdate(Post post, String previousContent) {
+    @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 1000, multiplier = 2))
+    public void parsePostContentAndSaveHashtags(Post post, String previousContent) {
         var oldHashtags = extractHashtags(previousContent);
         var newHashtags = extractHashtags(post.getContent());
 
@@ -68,24 +71,20 @@ public class HashtagService {
         List<String> hashtagsToRemove = oldHashtags.stream()
                 .filter(hashtag -> !newHashtags.contains(hashtag))
                 .collect(Collectors.toList());
-        System.out.println(hashtagsToAdd);
-        System.out.println(hashtagsToRemove);
         updatePostHashtags(post, hashtagsToAdd, hashtagsToRemove);
     }
 
+    @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 1000, multiplier = 2))
     private void updatePostHashtags(Post post, List<String> hashtagsToAdd, List<String> hashtagsToRemove) {
-        for (String hashtagText : hashtagsToAdd) {
-            String tag = hashtagText.substring(1).toLowerCase();
+        for (String tag : hashtagsToAdd) {
             Optional<Hashtag> hashtagOptional = hashtagRepository.findByHashtag(tag);
-
             Hashtag hashtag = hashtagOptional.orElseGet(() ->
                     hashtagRepository.save(Hashtag.builder().tag(tag).posts(new ArrayList<>()).build())
             );
             hashtag.getPosts().add(post);
         }
 
-        for (String hashtagText : hashtagsToRemove) {
-            String tag = hashtagText.substring(1).toLowerCase();
+        for (String tag : hashtagsToRemove) {
             var hashtag1 = hashtagRepository.findByHashtag(tag);
             var hashtag = hashtag1.get(); // always exists
             hashtagRepository.deletePostHashtag(post.getId(), hashtag.getId());
@@ -98,7 +97,9 @@ public class HashtagService {
 
         Matcher matcher = pattern.matcher(input);
         while (matcher.find()) {
-            hashtags.add(matcher.group());
+            String tag = matcher.group();
+            tag = tag.substring(1).toLowerCase();
+            hashtags.add(tag);
         }
         return new ArrayList<>(hashtags);
     }

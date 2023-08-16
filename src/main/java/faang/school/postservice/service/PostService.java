@@ -71,7 +71,7 @@ public class PostService {
         postById.setUpdatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
-        hashtagService.parseContentToUpdate(postById, previousContent);
+        hashtagService.parsePostContentAndSaveHashtags(postById, previousContent);
 
         return postMapper.toDto(postById);
     }

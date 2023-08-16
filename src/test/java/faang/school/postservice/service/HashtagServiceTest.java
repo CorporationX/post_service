@@ -86,7 +86,7 @@ public class HashtagServiceTest {
         when(hashtagRepository.findByHashtag(any())).thenReturn(Optional.of(hashtag));
         post.setContent(newContent);
 
-        hashtagService.parseContentToUpdate(post, previousContent);
+        hashtagService.parsePostContentAndSaveHashtags(post, previousContent);
 
         verify(hashtagRepository, times(3)).findByHashtag(Mockito.anyString());
         verify(hashtagRepository, times(2)).deletePostHashtag(any(), any());
