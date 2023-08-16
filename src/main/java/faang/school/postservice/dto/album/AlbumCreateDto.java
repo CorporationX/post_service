@@ -14,12 +14,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AlbumCreateDto {
     @NotBlank
-    @Size(max = 127,message = "Title must be less than 127 characters")
+    @Size(max = 127, message = "Title must be less than 127 characters")
     private String title;
     @NotBlank
-    @Size(max = 4096,message = "Description must be less than 4096 characters")
+    @Size(max = 4096, message = "Description must be less than 4096 characters")
     private String description;
-    @NotBlank
     @NotNull
     private Long authorId;
 }

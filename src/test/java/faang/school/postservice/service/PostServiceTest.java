@@ -204,10 +204,10 @@ class PostServiceTest {
 
     @Test
     void getAllPostsByAuthorId() {
-        when(postRepository.findByProjectId(1L)).thenReturn(List.of(postOne, postTwo, postTree));
+        when(postRepository.findByAuthorId(1L)).thenReturn(List.of(postOne, postTwo, postTree));
         when(postMapper.toDto(postTwo)).thenReturn(postDtoTwo);
 
-        assertEquals(List.of(postDtoTwo), postService.getAllPostsByProjectId(1L));
+        assertEquals(List.of(postDtoTwo), postService.getAllPostsByAuthorId(1L));
     }
 
     @Test
