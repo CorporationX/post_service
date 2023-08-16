@@ -22,7 +22,6 @@ public class PostAsyncService {
             post.setPublished(true);
             post.setPublishedAt(LocalDateTime.now());
             postRepository.save(post);
-            log.info(Thread.currentThread().getName() + "Published post: " + post);
         });
         log.info("Published " + posts.size() + " posts");
     }

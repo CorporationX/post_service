@@ -142,7 +142,7 @@ public class PostService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void publishScheduledPosts(int partitionSize) {
         log.info("Scheduled posts publishing started");
         List<Post> posts = postRepository.findReadyToPublish();
@@ -150,7 +150,7 @@ public class PostService {
         if (posts.size() > partitionSize) {
             List<List<Post>> partitions = ListUtils.partition(posts, posts.size() / partitionSize);
             partitions.forEach(postAsyncService::publishPosts);
-        } else {
+        } else if (posts.size() > 0) {
             postAsyncService.publishPosts(posts);
             log.info("Scheduled posts publishing finished");
         }
