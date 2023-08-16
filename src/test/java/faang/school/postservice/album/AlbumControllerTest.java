@@ -53,10 +53,11 @@ public class AlbumControllerTest {
                 .title("Title4")
                 .description("Album Descri2ption 2")
                 .authorId(2L)
-                .postIds(null)
+                .postIds(Arrays.asList(1L,2L))
                 .visibility(Visibility.EVERYONE)
                 .allowedUsersIds(Arrays.asList(1L, 4L, 5L))
                 .build();
+
     }
 
     @Test
