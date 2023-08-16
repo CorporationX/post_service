@@ -86,6 +86,22 @@ public class AlbumService {
         return albumMapper.toDto(albumRepository.save(album));
     }
 
+    @Transactional
+    public void addAlbumToFavourite(Long userId, Long albumId) {
+        UserDto user = userServiceClient.getUser(userId);
+        albumValidator.validateOwner(user);
+        Album album = getAlbumByOwnerId(albumId, user);
+        albumRepository.addAlbumToFavorites(album.getId(), user.getId());
+    }
+
+    @Transactional
+    public void deleteAlbumFromFavorites(Long userId, Long albumId) {
+        UserDto user = userServiceClient.getUser(userId);
+        albumValidator.validateOwner(user);
+        Album album = getAlbumByOwnerId(albumId, user);
+        albumRepository.deleteAlbumFromFavorites(album.getId(), user.getId());
+    }
+
     @Transactional(readOnly = true)
     private Album getAlbumByOwnerId(Long albumId, UserDto user) {
         return albumRepository.findByAuthorId(user.getId())

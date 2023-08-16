@@ -61,6 +61,18 @@ public class AlbumController {
         return albumService.deletePost(userId, albumId, postId);
     }
 
+    @PostMapping("{userId}/favourites/{albumId}")
+    public void addAlbumToFavourite(@PathVariable Long userId, @PathVariable Long albumId) {
+        validateIds(userId, albumId);
+        albumService.addAlbumToFavourite(userId, albumId);
+    }
+
+    @DeleteMapping("{userId}/favourites/{albumId}")
+    public void deleteAlbumFromFavourite(@PathVariable Long userId, @PathVariable Long albumId) {
+        validateIds(userId, albumId);
+        albumService.deleteAlbumFromFavorites(userId, albumId);
+    }
+
     private void validate(AlbumDto album) {
         if (album.getAuthorId() == null) {
             throw new DataValidationException("AuthorId cannot be null");
