@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import com.google.common.collect.Lists;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.SpringAsyncConfig;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
@@ -18,14 +19,14 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +39,7 @@ public class PostService {
     private final ProjectServiceClient projectService;
     private final PostMapper postMapper;
     private final ModerationDictionary moderationDictionary;
+    private final SpringAsyncConfig springAsyncConfig;
     @Value("${post.moderation.scheduler.sublist-size}")
     private int sublistSize;
 
@@ -154,7 +156,6 @@ public class PostService {
         return projectPosts;
     }
 
-    @Async("threadPoolForPostModeration")
     public void doPostModeration() {
         log.info("<doPostModeration> was called successfully");
         List<Post> notVerifiedPost = postRepository.findNotVerified();
@@ -166,10 +167,8 @@ public class PostService {
             partitionList.add(notVerifiedPost);
         }
 
-        List<CompletableFuture<Void>> futures = partitionList.stream()
-                .map(list -> CompletableFuture.runAsync(() -> checkListForObsceneWords(list)))
-                .toList();
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        Executor executor = springAsyncConfig.threadPoolForPostModeration();
+        partitionList.forEach(list -> executor.execute(() -> checkListForObsceneWords(list)));
         log.info("All posts have checked successfully");
     }
 
