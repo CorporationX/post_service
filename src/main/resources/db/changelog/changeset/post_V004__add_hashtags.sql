@@ -1,5 +1,4 @@
-CREATE TABLE hashtag
-(
+CREATE TABLE hashtag (
     id  bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY UNIQUE,
     tag varchar(255) UNIQUE
 );
