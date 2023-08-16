@@ -16,9 +16,11 @@ public interface PostMapper {
     @Mapping(target = "published", expression = "java(false)")
     @Mapping(target = "deleted", expression = "java(false)")
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS))")
+    @Mapping(target = "hashtags", ignore = true)
     Post toEntity(PostDto dto);
 
     @Mapping(target = "adId", source = "ad.id")
+    @Mapping(target = "hashtags", expression = "java(entity.getHashtags().stream().map(hashtag -> hashtag.getTag()).toList())")
     PostDto toDto(Post entity);
 
     List<PostDto> toDtos(List<Post> entities);
