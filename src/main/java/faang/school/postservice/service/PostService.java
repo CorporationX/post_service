@@ -154,7 +154,7 @@ public class PostService {
         return projectPosts;
     }
 
-    @Async("threadPoolTaskExecutor")
+    @Async("threadPoolForPostModeration")
     public void doPostModeration() {
         log.info("<doPostModeration> was called successfully");
         List<Post> notVerifiedPost = postRepository.findNotVerified();
