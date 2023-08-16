@@ -47,7 +47,7 @@ post:
       batchSize: 100
   user-banner:
     scheduler:
-      cron: "0 12 * * ?" #At 12:00 p.m. (noon) every day
+      cron: "0 0 0 * * ?" #At 00:00 (noon) every day
 
 user-service:
   host: localhost
