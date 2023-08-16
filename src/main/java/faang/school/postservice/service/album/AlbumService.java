@@ -64,7 +64,7 @@ public class AlbumService {
     public AlbumDto addPost(Long userId, Long albumId, Long postId) {
         UserDto user = userServiceClient.getUser(userId);
         albumValidator.validateOwner(user);
-        Album album = getAlbumByOwnerId(albumId, user);
+        Album album = getAlbumByOwnerId(albumId, user.getId());
 
         Post post = getPost(postId);
 
@@ -77,7 +77,7 @@ public class AlbumService {
     public AlbumDto deletePost(Long userId, Long albumId, Long postId) {
         UserDto user = userServiceClient.getUser(userId);
         albumValidator.validateOwner(user);
-        Album album = getAlbumByOwnerId(albumId, user);
+        Album album = getAlbumByOwnerId(albumId, user.getId());
 
         Post post = getPost(postId);
 
@@ -103,8 +103,8 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    private Album getAlbumByOwnerId(Long albumId, UserDto user) {
-        return albumRepository.findByAuthorId(user.getId())
+    private Album getAlbumByOwnerId(Long albumId, Long userId) {
+        return albumRepository.findByAuthorId(userId)
                 .filter(a -> a.getId() == albumId)
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException("Album not found"));
