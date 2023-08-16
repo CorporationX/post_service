@@ -55,7 +55,11 @@ public class PostService {
         long postId = updatePost.getId();
         Post post = postValidator.validatePostId(postId);
         postValidator.validateAuthorUpdate(post, updatePost);
+        LocalDateTime updateScheduleAt = updatePost.getScheduledAt();
 
+        if (updateScheduleAt != null && updateScheduleAt.isAfter(post.getScheduledAt())) {
+            post.setScheduledAt(updateScheduleAt);
+        }
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         log.info("Post was updated successfully, postId={}", post.getId());
