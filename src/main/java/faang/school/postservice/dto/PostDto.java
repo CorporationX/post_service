@@ -31,4 +31,5 @@ public class PostDto {
     private boolean published;
     private boolean deleted;
     private List<LikeDto> likes;
+    private LocalDateTime scheduledAt;
 }

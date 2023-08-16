@@ -12,7 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-class CommentModeratorSchedulerServiceTest {
+public class CommentModeratorSchedulerServiceTest {
+
     @Mock
     CommentService commentService;
 

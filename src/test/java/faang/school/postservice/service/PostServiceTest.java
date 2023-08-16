@@ -154,6 +154,8 @@ public class PostServiceTest {
     @Test
     void testUpdatePost() {
         correctPostDto.setContent("other content");
+        correctPostDto.setScheduledAt(LocalDateTime.now().plusMonths(1));
+        correctPost.setScheduledAt(LocalDateTime.now());
         returnCorrectPostForPostRepository();
 
         PostDto actualPostDto = postService.updatePost(correctPostDto);
