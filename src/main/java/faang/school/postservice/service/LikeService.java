@@ -15,7 +15,6 @@ import faang.school.postservice.service.redis.RedisMessagePublisher;
 import faang.school.postservice.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
@@ -34,7 +33,7 @@ public class LikeService {
     private final ObjectMapper objectMapper;
     private final RedisMessagePublisher redisMessagePublisher;
     private final LikeEventMapper likeEventMapper;
-    private final ChannelTopic likeTopicName;
+    private final ChannelTopic likeTopic;
 
     public LikeDto likePost(LikeDto likeDto) {
         likeValidator.validateLike(likeDto);
@@ -51,7 +50,7 @@ public class LikeService {
         LikeEventDto likeEventDto = likeEventMapper.toDto(like);
         try {
             String likeEvent = objectMapper.writeValueAsString(likeEventDto);
-            redisMessagePublisher.publish(likeTopicName.getTopic(),likeEvent);
+            redisMessagePublisher.publish(likeTopic.getTopic(),likeEvent);
         } catch (JsonProcessingException e) {
             log.error("JsonProcessingException", e);
         }
