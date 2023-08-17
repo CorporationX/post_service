@@ -27,6 +27,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.listener.ChannelTopic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -65,6 +66,9 @@ class LikeServiceTest {
     @Mock
     private UserServiceClient userServiceClient;
 
+    @Mock
+    private ChannelTopic likeTopicName;
+
     private LikeValidator likeValidator;
 
     private LikeDto likeDto;
@@ -80,7 +84,7 @@ class LikeServiceTest {
         likeEventMapper = new LikeEventMapperImpl();
         likeValidator = new LikeValidator(userServiceClient);
         likeService = new LikeService(likeValidator, likeMapper, likeRepository, postService, commentService
-                , postMapper,objectMapper,redisMessagePublisher,likeEventMapper);
+                , postMapper, objectMapper, redisMessagePublisher, likeEventMapper,likeTopicName);
     }
 
     @Test
@@ -101,6 +105,7 @@ class LikeServiceTest {
 
         assertEquals(likeMapper.toDto(like), likeService.likePost(likeDto));
         verify(likeRepository).save(like);
+        verify(redisMessagePublisher).publish(likeTopicName.getTopic(),message);
     }
 
     @Test
@@ -132,7 +137,7 @@ class LikeServiceTest {
     }
 
     @Test
-    void testLikeComment () {
+    void testLikeComment() {
         likeDto.setCommentId(1L);
 
         when(userServiceClient.getUser(1L)).thenReturn(userDto);

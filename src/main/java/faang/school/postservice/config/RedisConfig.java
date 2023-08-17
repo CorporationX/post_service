@@ -19,6 +19,8 @@ public class RedisConfig {
     private String host;
     @Value("${spring.data.redis.port}")
     private int port;
+    @Value("${spring.data.redis.channels.event_channels.likePost}")
+    private String likeTopicName;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -34,5 +36,10 @@ public class RedisConfig {
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
         return redisTemplate;
+    }
+
+    @Bean
+    public ChannelTopic likeTopicName(){
+        return new ChannelTopic(likeTopicName);
     }
 }
