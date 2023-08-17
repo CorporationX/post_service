@@ -4,6 +4,8 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,13 +16,12 @@ public class BingSpellConfig {
     private String contentType;
     private String xRapidApiKey;
     private String xRapidApiHost;
-    private String mode;
 
-    public Map<String, String> getHeaders() {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("content-type", contentType);
-        headers.put("X-RapidAPI-Key", xRapidApiKey);
-        headers.put("X-RapidAPI-Host", xRapidApiHost);
+    public Map<String, Collection<String>> getHeaders() {
+        Map<String, Collection<String>> headers = new HashMap<>();
+        headers.put("content-type", Collections.singleton(contentType));
+        headers.put("X-RapidAPI-Key", Collections.singleton(xRapidApiKey));
+        headers.put("X-RapidAPI-Host", Collections.singleton(xRapidApiHost));
         return headers;
     }
 }

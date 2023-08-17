@@ -1,7 +1,6 @@
 package faang.school.postservice.service.postCorrecter;
 
 import faang.school.postservice.client.BingSpellClient;
-import faang.school.postservice.config.postCorrecter.BingSpellConfig;
 import faang.school.postservice.dto.postCorrecter.FlaggedTokenDto;
 import faang.school.postservice.dto.postCorrecter.SpellCheckDto;
 import faang.school.postservice.dto.postCorrecter.SuggestionDto;
@@ -15,7 +14,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -25,8 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class PostCorrecterTest {
-    @Mock
-    private BingSpellConfig bingSpellConfig;
     @Mock
     private BingSpellClient bingSpellClient;
     @InjectMocks
@@ -39,11 +35,7 @@ class PostCorrecterTest {
                 .correctionType("type")
                 .flaggedTokens(getDtos())
                 .build();
-        Mockito.when(bingSpellConfig.getHeaders())
-                .thenReturn(Collections.emptyMap());
-        Mockito.when(bingSpellConfig.getMode())
-                .thenReturn("spell");
-        Mockito.when(bingSpellClient.checkSpell(Mockito.any(), Mockito.any(), Mockito.any()))
+        Mockito.when(bingSpellClient.checkSpell(Mockito.any(), Mockito.any()))
                 .thenReturn(ResponseEntity.of(Optional.of(spellCheckDto)));
     }
 

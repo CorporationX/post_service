@@ -1,12 +1,14 @@
 package faang.school.postservice.config.postCorrecter;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
+@RequiredArgsConstructor
 public class BingSpellAsyncConfig {
-    private BingSpellThreadPoolConfig poolConfig;
+    private final BingSpellThreadPoolConfig poolConfig;
 
     @Bean
     public ThreadPoolTaskExecutor bingSpellAsyncExecutor() {
