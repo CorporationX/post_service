@@ -20,13 +20,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
-    private final PostRepository postRepository;
     private final HashtagMapper hashtagMapper;
     private final PostMapper postMapper;
 
     @Transactional
-    public HashtagDto addHashtagToPost(HashtagDto hashtagDto, Long currentUserId){
-        validateCurrentUser(hashtagDto.getPostId(), currentUserId);
+    public HashtagDto addHashtagToPost(Post post, Long currentUserId){
+        validateCurrentUser(post.getAuthorId(), currentUserId);
         return hashtagMapper.entityToDto(hashtagRepository.save(hashtagMapper.dtoToEntity(hashtagDto)));
     }
 
@@ -37,7 +36,7 @@ public class HashtagService {
         return postMapper.listEntityToDto(sortedByDate);
     }
 
-    private void validateCurrentUser(Long postId, Long currentUserId){
+    private void validateCurrentUser(Long authorId, Long currentUserId){
         Post currentPost = postRepository.findById(postId).orElseThrow(() ->
                 new EntityNotFoundException(String.format("Post with ID %d doesn't exist", postId)));
         if(!(currentPost.getAuthorId().equals(currentUserId))){
