@@ -3,7 +3,6 @@ package faang.school.postservice.service;
 import com.google.common.collect.Lists;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.SpringAsyncConfig;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
@@ -19,7 +18,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +37,7 @@ public class PostService {
     private final ProjectServiceClient projectService;
     private final PostMapper postMapper;
     private final ModerationDictionary moderationDictionary;
-    private final SpringAsyncConfig springAsyncConfig;
+    private final Executor threadPoolForPostModeration;
     @Value("${post.moderation.scheduler.sublist-size}")
     private int sublistSize;
 
@@ -167,8 +165,7 @@ public class PostService {
             partitionList.add(notVerifiedPost);
         }
 
-        Executor executor = springAsyncConfig.threadPoolForPostModeration();
-        partitionList.forEach(list -> executor.execute(() -> checkListForObsceneWords(list)));
+        partitionList.forEach(list -> threadPoolForPostModeration.execute(() -> checkListForObsceneWords(list)));
         log.info("All posts have checked successfully");
     }
 

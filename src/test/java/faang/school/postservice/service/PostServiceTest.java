@@ -2,7 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.SpringAsyncConfig;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
@@ -12,7 +11,6 @@ import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.moderation.ModerationDictionary;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
@@ -46,9 +43,7 @@ public class PostServiceTest {
     @Mock
     private ProjectServiceClient projectService;
     @Mock
-    private ModerationDictionary moderationDictionary;
-    @Mock
-    private SpringAsyncConfig springAsyncConfig;
+    private Executor threadPoolForPostModeration;
     @InjectMocks
     private PostService postService;
 
@@ -226,20 +221,18 @@ public class PostServiceTest {
     void testDoPostModeration() {
         when(postRepository.findNotVerified()).thenReturn(getNotVerifiedPosts());
         ReflectionTestUtils.setField(postService, "sublistSize", 100);
-        when(springAsyncConfig.threadPoolForPostModeration()).thenReturn(getExecutorForTest());
         postService.doPostModeration();
 
-        verify(springAsyncConfig).threadPoolForPostModeration();
+        verify(threadPoolForPostModeration).execute(any());
     }
 
     @Test
     void testDoPostModerationWithAsync() {
         when(postRepository.findNotVerified()).thenReturn(getNotVerifiedPosts());
-        when(springAsyncConfig.threadPoolForPostModeration()).thenReturn(getExecutorForTest());
         ReflectionTestUtils.setField(postService, "sublistSize", 2);
         postService.doPostModeration();
 
-        verify(springAsyncConfig).threadPoolForPostModeration();
+        verify(threadPoolForPostModeration, times(2)).execute(any());
     }
 
     private void returnCorrectPostForPostRepository() {
@@ -257,15 +250,5 @@ public class PostServiceTest {
                 .content("This is the best bootcamp!")
                 .build();
         return List.of(post1, post2, post3);
-    }
-
-    private Executor getExecutorForTest() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-
-        executor.setCorePoolSize(4);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(100);
-        executor.initialize();
-        return executor;
     }
 }
