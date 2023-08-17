@@ -74,5 +74,6 @@ public class Post {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_date")
-    private LocalDateTime verifiedDate;
+    @Builder.Default
+    private LocalDateTime verifiedDate = LocalDateTime.now();
 }

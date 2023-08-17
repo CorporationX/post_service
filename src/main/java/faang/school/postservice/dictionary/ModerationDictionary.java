@@ -16,14 +16,11 @@ import java.util.Set;
 public class ModerationDictionary {
 
     public final Set<String> censorWords = new HashSet<>();
-    private final String censorWordsPath;
-
-    public ModerationDictionary(@Value("${bad-words.path}") String censorWordsPath) {
-        this.censorWordsPath = censorWordsPath;
-    }
+    @Value("${bad-words.path}")
+    private String censorWordsPath;
 
     public boolean containsCensorWord(String content) {
-        var words = content.toLowerCase().trim().split(" ");
+        var words = content.toLowerCase().trim().split("\\s+");
         return Arrays.stream(words)
                 .anyMatch(censorWords::contains);
     }

@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 public class ModerationDictionaryTest {
+    //TODO Не подтягивается файл, пока не понял, как пофиксить
 
     @InjectMocks
     private ModerationDictionary moderationDictionary;
@@ -37,8 +38,6 @@ public class ModerationDictionaryTest {
             "I love ASSHOLE unit tests!"
     })
     void BadTextTest(String content) {
-        System.out.println(moderationDictionary.censorWords);
-        System.out.println(content);
         assertTrue(moderationDictionary.containsCensorWord(content));
     }
 }

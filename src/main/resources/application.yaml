@@ -54,13 +54,13 @@ payment-service:
 bad-words:
   path: files/bad-words.csv
 
-thread-pool:
+moderation-thread-pool:
   queueCapacity: 100
   maxPoolSize: 4
   corePoolSize: 4
   threadNamePrefix: "poolThread-"
 
 ContentModerator:
-  secondsBetweenModeration: 3600
+  secondsBetweenModeration: 18000
   batchSize: 1000
 

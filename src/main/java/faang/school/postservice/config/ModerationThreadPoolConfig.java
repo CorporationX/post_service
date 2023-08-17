@@ -5,9 +5,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "thread-pool")
+@ConfigurationProperties(prefix = "moderation-thread-pool")
 @Data
-public class ThreadPoolConfig {
+public class ModerationThreadPoolConfig {
     private int queueCapacity;
     private int maxPoolSize;
     private int corePoolSize;

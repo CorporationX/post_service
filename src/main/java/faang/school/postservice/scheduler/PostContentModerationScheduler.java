@@ -12,8 +12,7 @@ public class PostContentModerationScheduler {
     private final ContentModerator contentModerator;
 
     @Scheduled(cron = "${post.publisher.scheduler.cron}")
-    @Async("taskExecutor")
-    public void de() {
+    public void start() {
         contentModerator.moderate();
     }
 }

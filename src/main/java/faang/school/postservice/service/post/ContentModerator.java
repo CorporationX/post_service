@@ -1,56 +1,55 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.config.AsyncConfig;
 import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.model.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 @Component
 @Slf4j
 public class ContentModerator {
+    @Value("${ContentModerator.secondsBetweenModeration}")
+    private int SECOND_BETWEEN_MODERATION;
+    @Value("${ContentModerator.batchSize}")
+    private int BATCH_SIZE;
     private final PostService postService;
     private final ModerationDictionary moderationDictionary;
-    private final int secondsBetweenModeration;
-    private final int batchSize;
-    private final AsyncConfig asyncConfig;
+    private final Executor executor;
 
     @Autowired
-    public ContentModerator(@Value("${ContentModerator.secondsBetweenModeration}") int secondsBetweenModeration, @Value("${ContentModerator.batchSize}") int batchSize, PostService postService, ModerationDictionary moderationDictionary, AsyncConfig asyncConfig) {
-        this.secondsBetweenModeration = secondsBetweenModeration;
-        this.batchSize = batchSize;
+    public ContentModerator(
+            PostService postService,
+            ModerationDictionary moderationDictionary,
+            @Qualifier("taskExecutor") Executor executor
+    ) {
         this.postService = postService;
         this.moderationDictionary = moderationDictionary;
-        this.asyncConfig = asyncConfig;
+        this.executor = executor;
     }
 
     public void moderate() {
+        log.info("Post content moderation has started " + Thread.currentThread().getId() + " " + LocalDateTime.now());
         var posts = postService.getAllPosts().stream()
                 .filter(post ->
-                        ChronoUnit.SECONDS.between(post.getVerifiedDate(), LocalDateTime.now()) > secondsBetweenModeration)
+                        post.getVerifiedDate() == null || checkTime(post.getVerifiedDate()) ||
+                                (post.getUpdatedAt() != null && post.getUpdatedAt().minusSeconds(2).isAfter(post.getVerifiedDate()))
+                )
                 .toList();
-        if (posts.isEmpty()) return;
-
-        var executor = asyncConfig.taskExecutor();
-        for (int i = 0; i < posts.size(); i += batchSize) {
-            List<Post> postBatch = posts.subList(i, Math.min(posts.size(), i + batchSize));
+        for (int i = 0; i < posts.size(); i += BATCH_SIZE) {
+            List<Post> postBatch = posts.subList(i, Math.min(posts.size(), i + BATCH_SIZE));
             executor.execute(() -> {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
                 moderatePosts(postBatch);
-                log.info(Thread.currentThread().getName()); // Тестил, что работает
             });
-            System.out.println(i);
         }
+        log.info("Post content moderation is done " + Thread.currentThread().getId() + " " + LocalDateTime.now());
     }
 
     private void moderatePosts(List<Post> posts) {
@@ -59,5 +58,9 @@ public class ContentModerator {
             post.setVerifiedDate(LocalDateTime.now());
             postService.save(post);
         });
+    }
+
+    private boolean checkTime(LocalDateTime time) {
+        return ChronoUnit.SECONDS.between(time, LocalDateTime.now()) > SECOND_BETWEEN_MODERATION;
     }
 }
