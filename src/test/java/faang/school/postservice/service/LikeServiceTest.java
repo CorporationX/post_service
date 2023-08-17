@@ -7,6 +7,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.validation.LikeServiceValidator;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,9 +33,12 @@ class LikeServiceTest {
     @Mock
     LikeRepository likeRepository;
     @Mock
+    LikeServiceValidator likeServiceValidator;
+    @Mock
     LikeMapper likeMapper;
 
     private final LikeDto likeDto = LikeDto.builder().userId(1L).build();
+    private final LikeDto returnedDto = LikeDto.builder().userId(1L).id(5L).build();
     private final Post somePost = Post.builder().id(11).likes(likeList).comments(commentList).build();
     private final Like someLike = Like.builder().id(5L).userId(1L).build();
     private final Comment someComment = Comment.builder().post(somePost).id(2L).likes(likeList).build();
@@ -126,5 +130,12 @@ class LikeServiceTest {
     void deleteLikeFromComment() {
         likeService.deleteLikeFromComment(22,22);
         verify(likeRepository, times(1)).deleteByCommentIdAndUserId(22,22);
+    }
+
+    @Test
+    void checkReturnedDto(){
+        when(likeMapper.toDto(likeRepository.save(someLike))).thenReturn(returnedDto);
+        LikeDto returned = likeService.addLikeToPost(13, likeDto);
+        assertEquals(returned.getId(), someLike.getId());
     }
 }
