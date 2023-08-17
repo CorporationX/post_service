@@ -39,6 +39,18 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderation:
+    scheduler:
+      cron: "0 0 0 * * ?" # every day at 00:00:00
+      sublist-size: 100
+
+async:
+  thread-pool:
+    settings:
+      core-pool-size: 4
+      max-pool-size: 8
+      queue-capacity: 100
+
 
 user-service:
   host: localhost

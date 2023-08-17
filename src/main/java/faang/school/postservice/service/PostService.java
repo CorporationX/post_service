@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import com.google.common.collect.Lists;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
@@ -11,15 +12,19 @@ import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.moderation.ModerationDictionary;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +36,10 @@ public class PostService {
     private final UserServiceClient userService;
     private final ProjectServiceClient projectService;
     private final PostMapper postMapper;
+    private final ModerationDictionary moderationDictionary;
+    private final Executor threadPoolForPostModeration;
+    @Value("${post.moderation.scheduler.sublist-size}")
+    private int sublistSize;
 
     public PostDto crateDraftPost(PostDto postDto) {
         validateData(postDto);
@@ -143,6 +152,31 @@ public class PostService {
 
         log.info("Posts of project have taken from DB successfully, projectId={}", projectId);
         return projectPosts;
+    }
+
+    public void doPostModeration() {
+        log.info("<doPostModeration> was called successfully");
+        List<Post> notVerifiedPost = postRepository.findNotVerified();
+        List<List<Post>> partitionList = new ArrayList<>();
+
+        if (notVerifiedPost.size() > sublistSize) {
+            partitionList = Lists.partition(notVerifiedPost, sublistSize);
+        } else {
+            partitionList.add(notVerifiedPost);
+        }
+
+        partitionList.forEach(list -> threadPoolForPostModeration.execute(() -> checkListForObsceneWords(list)));
+        log.info("All posts have checked successfully");
+    }
+
+    private void checkListForObsceneWords(List<Post> list) {
+        list.forEach(post -> {
+            boolean checkResult = moderationDictionary.checkWordContent(post.getContent());
+            log.info("Post, id={} has been checked for content obscene words", post.getId());
+            post.setVerified(!checkResult);
+            post.setVerifiedDate(LocalDateTime.now());
+        });
+        postRepository.saveAll(list);
     }
 
     private Post validatePostId(long postId) {
