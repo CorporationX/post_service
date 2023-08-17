@@ -36,6 +36,7 @@ public class PostService {
     private final Integer batchSize;
     private final RedisPublisher redisPublisher;
     private final String userBannerChannel;
+    private final Integer BAD_POSTS_MAX_COUNT = 5;
 
     public PostService(PostRepository postRepository, ResponsePostMapper responsePostMapper,
                        UserServiceClient userServiceClient, ProjectServiceClient projectServiceClient,
@@ -182,12 +183,11 @@ public class PostService {
                 .map(UserDto::getId)
                 .toList();
 
-        posts.stream()
+        Map<Long, List<Post>> groupedByAuthor = posts.stream()
                 .filter(post -> !bannedUsers.contains(post.getAuthorId()))
-                .collect(Collectors.groupingBy(Post::getAuthorId))
-                .entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().size() > 5)
+                .collect(Collectors.groupingBy(Post::getAuthorId));
+        groupedByAuthor.entrySet().stream()
+                .filter(entry -> entry.getValue().size() > BAD_POSTS_MAX_COUNT)
                 .map(Map.Entry::getKey)
                 .toList()
                 .forEach(authorId -> redisPublisher.publishMessage(userBannerChannel, String.valueOf(authorId)));
