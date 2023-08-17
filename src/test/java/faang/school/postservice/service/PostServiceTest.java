@@ -11,6 +11,7 @@ import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
+import faang.school.postservice.util.RedisPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,18 +49,21 @@ class PostServiceTest {
     private ProjectServiceClient projectServiceClient;
     @Mock
     private ModerationDictionary moderationDictionary;
+    @Mock
+    private RedisPublisher redisPublisher;
     private final Integer batchSize = 100;
+    private final String userBannerChannel = "user_banner_channel";
     private PostService postService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         postService = new PostService(postRepository, responsePostMapper,
-                userServiceClient, projectServiceClient, moderationDictionary, batchSize);
+                userServiceClient, projectServiceClient, moderationDictionary, batchSize, redisPublisher, userBannerChannel);
     }
 
     @Test
-    void publishTest(){
+    void publishTest() {
         Post post = Post.builder().id(1L).published(false).deleted(false).build();
 
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
@@ -147,6 +151,21 @@ class PostServiceTest {
         verify(postRepository).findAllByVerifiedAtIsNull();
         verify(moderationDictionary, times(posts.size())).containsBadWord(anyString());
         verify(postRepository, times(posts.size() / batchSize)).saveAll(anyList());
+    }
+
+    @Test
+    void banForOffensiveContentTest() {
+        Post post = Post.builder().authorId(1L).build();
+        List<Post> posts = new ArrayList<>(List.of(post, post, post, post, post, post));
+        UserDto userDto = UserDto.builder().id(1L).banned(false).build();
+        List<UserDto> users = new ArrayList<>(List.of(userDto));
+
+        when(postRepository.findAllByVerifiedFalseAndVerifiedAtIsNotNull()).thenReturn(posts);
+        when(userServiceClient.getUsersByIds(anyList())).thenReturn(users);
+
+        postService.banForOffensiveContent();
+
+        verify(redisPublisher).publishMessage(userBannerChannel, "1");
     }
 
     @Test

@@ -12,6 +12,7 @@ import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
+import faang.school.postservice.util.RedisPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
@@ -37,16 +39,22 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final ModerationDictionary moderationDictionary;
     private final Integer batchSize;
+    private final RedisPublisher redisPublisher;
+    private final String userBannerChannel;
+    private final Integer BAD_POSTS_MAX_COUNT = 5;
 
     public PostService(PostRepository postRepository, ResponsePostMapper responsePostMapper,
                        UserServiceClient userServiceClient, ProjectServiceClient projectServiceClient,
-                       ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize) {
+                       ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize,
+                       RedisPublisher redisPublisher, @Value("${spring.data.redis.channels.user_banner_channel.name}") String userBannerChannel) {
         this.postRepository = postRepository;
         this.responsePostMapper = responsePostMapper;
         this.userServiceClient = userServiceClient;
         this.projectServiceClient = projectServiceClient;
         this.moderationDictionary = moderationDictionary;
         this.batchSize = batchSize;
+        this.redisPublisher = redisPublisher;
+        this.userBannerChannel = userBannerChannel;
     }
 
     @Transactional(readOnly = true)
@@ -193,6 +201,26 @@ public class PostService {
         }
 
         createPostDto.setHashtags(hashtags);
+    }
+
+    public void banForOffensiveContent() {
+        List<Post> posts = postRepository.findAllByVerifiedFalseAndVerifiedAtIsNotNull();
+
+        List<Long> userIds = posts.stream().map(Post::getAuthorId).toList();
+
+        List<Long> bannedUsers = userServiceClient.getUsersByIds(userIds).stream()
+                .filter(UserDto::isBanned)
+                .map(UserDto::getId)
+                .toList();
+
+        Map<Long, List<Post>> groupedByAuthor = posts.stream()
+                .filter(post -> !bannedUsers.contains(post.getAuthorId()))
+                .collect(Collectors.groupingBy(Post::getAuthorId));
+        groupedByAuthor.entrySet().stream()
+                .filter(entry -> entry.getValue().size() > BAD_POSTS_MAX_COUNT)
+                .map(Map.Entry::getKey)
+                .toList()
+                .forEach(authorId -> redisPublisher.publishMessage(userBannerChannel, String.valueOf(authorId)));
     }
 
     private void verifySublist(List<Post> subList) {

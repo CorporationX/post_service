@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -47,4 +46,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             ORDER BY COUNT(l.id) + COUNT(c.id) DESC
             """)
     List<Post> findByHashtagOrderByPopularity(String hashtag);
+
+    List<Post> findAllByVerifiedFalseAndVerifiedAtIsNotNull();
 }

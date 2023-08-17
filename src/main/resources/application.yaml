@@ -44,11 +44,13 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   moderator:
     scheduler:
-      cron: "0 0 0/1 * * ?" # every hour
+      cron: "0 0/1 * 1/1 * ?" # every minute
       batchSize: 100
-      moderateComment:
-        cron: "0 0 0 * * *" # every day
-        batchSize: 1000
+  moderateComment:
+      cron: "0 0 0 * * *" # every day
+      batchSize: 1000
+  user-banner:
+      cron: "0 0 0 * * ?" #At 00:00 (noon) every day
 
 user-service:
   host: localhost
