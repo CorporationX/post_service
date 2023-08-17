@@ -3,6 +3,7 @@ package faang.school.postservice.mapper;
 import faang.school.postservice.dto.album.AlbumCreateDto;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumUpdateDto;
+import faang.school.postservice.dto.album.AuthorAlbumDto;
 import faang.school.postservice.model.album.Album;
 import faang.school.postservice.model.Post;
 import org.mapstruct.InjectionStrategy;
@@ -26,6 +27,9 @@ public interface AlbumMapper {
 
     @Mapping(target = "postsId", source = "posts", qualifiedByName = "toPostsId")
     AlbumDto toAlbumDto(Album album);
+
+    @Mapping(target = "postsId", source = "posts", qualifiedByName = "toPostsId")
+    AuthorAlbumDto toAuthorAlbumDto(Album album);
 
     @Mapping(target = "posts", source = "postsId", qualifiedByName = "toPosts")
     void updateAlbum(AlbumUpdateDto albumUpdateDto, @MappingTarget Album album);
