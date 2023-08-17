@@ -4,11 +4,9 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import faang.school.postservice.model.Comment;
-import jakarta.annotation.PostConstruct;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,11 +14,8 @@ import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +51,17 @@ public class ModerationDictionary {
         comment.setVerified(true);
     }
 
+
+    @PostConstruct
+    public void initProfanityWords() throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(profanityWordsFile.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                profanityWords.add(line.trim().toLowerCase());
+            }
+        }
+    }
+
     @PostConstruct
     private void initDictionary() {
         Path filePath = Path.of("./src/main/resources/dictionary-of-obscene-words.txt");
@@ -70,15 +76,5 @@ public class ModerationDictionary {
             throw new RuntimeException(e);
         }
         log.info("Dictionary of obscene words has initialized successfully");
-    }
-
-    @PostConstruct
-    public void initialize() throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(profanityWordsFile.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                profanityWords.add(line.trim().toLowerCase());
-            }
-        }
     }
 }

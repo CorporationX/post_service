@@ -50,7 +50,7 @@ class ModerationDictionaryTest {
         InputStream inputStream = new ByteArrayInputStream(word.getBytes());
         Mockito.when(mockResource.getInputStream()).thenReturn(inputStream);
 
-        moderationDictionary.initialize();
+        moderationDictionary.initProfanityWords();
 
         Comment comment = Comment.builder().content(content).build();
         moderationDictionary.checkComment(comment);
