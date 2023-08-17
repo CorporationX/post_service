@@ -90,7 +90,9 @@ public class AlbumService {
     public void addAlbumToFavourite(Long userId, Long albumId) {
         UserDto user = userServiceClient.getUser(userId);
         albumValidator.validateOwner(user);
-        Album album = getAlbumByOwnerId(albumId, user);
+        Album album = getAlbumByOwnerId(albumId, user.getId());
+        boolean exist = albumRepository.existInFavorites(album.getId(), user.getId());
+        albumValidator.vaidateExistsInFavorites(exist);
         albumRepository.addAlbumToFavorites(album.getId(), user.getId());
     }
 
@@ -98,7 +100,7 @@ public class AlbumService {
     public void deleteAlbumFromFavorites(Long userId, Long albumId) {
         UserDto user = userServiceClient.getUser(userId);
         albumValidator.validateOwner(user);
-        Album album = getAlbumByOwnerId(albumId, user);
+        Album album = getAlbumByOwnerId(albumId, user.getId());
         albumRepository.deleteAlbumFromFavorites(album.getId(), user.getId());
     }
 

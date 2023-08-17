@@ -43,6 +43,12 @@ public class AlbumValidator {
         }
     }
 
+    public void vaidateExistsInFavorites(boolean exist) {
+        if (exist) {
+            throw new IllegalArgumentException("Album already in favorites");
+        }
+    }
+
     private void validateAlbumTitleUnique(Boolean exist) {
         if (exist) {
             throw new IllegalArgumentException("Title must be unique");
