@@ -1,5 +1,7 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.PostDto;
@@ -10,9 +12,12 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.mapper.redis.LikeEventMapper;
+import faang.school.postservice.mapper.redis.LikeEventMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.redis.RedisMessagePublisher;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +30,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
@@ -45,7 +52,15 @@ class LikeServiceTest {
     private CommentService commentService;
 
     LikeMapper likeMapper;
+
+    LikeEventMapper likeEventMapper;
     PostMapper postMapper;
+
+    @Mock
+    ObjectMapper objectMapper;
+
+    @Mock
+    RedisMessagePublisher redisMessagePublisher;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -62,20 +77,27 @@ class LikeServiceTest {
         userDto = UserDto.builder().id(1L).username("Andrey").email("gmail@gmail.com").build();
         likeMapper = new LikeMapperImpl();
         postMapper = new PostMapperImpl();
+        likeEventMapper = new LikeEventMapperImpl();
         likeValidator = new LikeValidator(userServiceClient);
-        likeService = new LikeService(likeValidator, likeMapper, likeRepository, postService, commentService, postMapper);
+        likeService = new LikeService(likeValidator, likeMapper, likeRepository, postService, commentService
+                , postMapper,objectMapper,redisMessagePublisher,likeEventMapper);
     }
 
     @Test
-    void testLikePost() {
+    void testLikePost() throws JsonProcessingException {
         likeDto.setPostId(1L);
+        String message = "\"userId\": 1,\n" +
+                "    \"postId\": 1,\n" +
+                "    \"authorId\": 2,\n" +
+                "    \"createdAt\": \"2023-08-17T12:34:56\"";
 
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
 
-        PostDto post = PostDto.builder().id(1L).build();
+        PostDto post = PostDto.builder().id(1L).authorId(2L).build();
         Mockito.when(postService.getPost(1L)).thenReturn(post);
 
         Like like = Like.builder().id(0L).userId(1L).post(postMapper.toEntity(post)).build();
+        when(objectMapper.writeValueAsString(likeEventMapper.toDto(like))).thenReturn(message);
 
         assertEquals(likeMapper.toDto(like), likeService.likePost(likeDto));
         verify(likeRepository).save(like);
