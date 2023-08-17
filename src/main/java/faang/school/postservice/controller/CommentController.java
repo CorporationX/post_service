@@ -17,13 +17,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.management.Descriptor;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")
-@Tag(name="CommentController",description = "Контроллер создает, обновляет и удаляет комментарии." +
+@Tag(name = "CommentController", description = "Контроллер создает, обновляет и удаляет комментарии." +
         " Возвращает комментарии под конкретным постом")
 public class CommentController {
 
@@ -35,8 +34,8 @@ public class CommentController {
             description = "Создает комментарий под постом"
     )
     @Parameter(description = "Принимает комментарий который нужно создать")
-    public CommentDto create(@Valid CommentDto commentDto){
-        if (commentDto.getId() != null){
+    public CommentDto create(@Valid CommentDto commentDto) {
+        if (commentDto.getId() != null) {
             throw new DataValidationException(ErrorMessage.COMMENT_ID_NOT_NULL_ON_CREATION);
         }
         return commentService.create(commentDto);
@@ -48,7 +47,7 @@ public class CommentController {
             description = "Изменяет созданный комментарий"
     )
     @Parameter(description = "Принимает комментарий которую нужно изменить в базе данных")
-    public CommentDto update(@Valid CommentDto commentDto){
+    public CommentDto update(@Valid CommentDto commentDto) {
         return commentService.update(commentDto);
     }
 
@@ -58,7 +57,7 @@ public class CommentController {
             description = "Удаляет выбранный комментарий"
     )
     @Parameter(description = "Принимает параметр ID какого комментария нужно удалить")
-    public void delete(@PathVariable Long id){
+    public void delete(@PathVariable Long id) {
         commentService.delete(id);
     }
 
@@ -68,7 +67,7 @@ public class CommentController {
             description = "Возвращает все комментарии под выбранным постом"
     )
     @Parameter(description = "Принимает номер поста с которого нужно вернуть комментарии")
-    public List<CommentDto> getCommentsForPost(@PathVariable Long postId){
+    public List<CommentDto> getCommentsForPost(@PathVariable Long postId) {
         return commentService.getCommentsForPost(postId);
     }
 }

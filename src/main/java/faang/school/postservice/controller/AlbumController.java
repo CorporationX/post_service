@@ -1,9 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.album.AlbumCreateDto;
-import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.dto.album.AlbumFilterDto;
-import faang.school.postservice.dto.album.AlbumUpdateDto;
+import faang.school.postservice.dto.album.*;
 import faang.school.postservice.service.AlbumService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -52,22 +49,22 @@ public class AlbumController {
     }
 
     @PostMapping("/{albumId}")
-    public AlbumDto findByWithPosts(@NotNull @PathVariable Long albumId) {
-        return albumService.findByIdWithPosts(albumId);
+    public AlbumDtoResponse findByWithPosts(@NotNull @PathVariable Long albumId) {
+        return albumService.findAlbumById(albumId);
     }
 
     @PostMapping("/filter/all")
-    public List<AlbumDto> findAListOfAllYourAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
+    public List<AlbumDtoResponse> findAListOfAllYourAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
         return albumService.findAListOfAllYourAlbums(albumFilterDto);
     }
 
     @PostMapping("/filter/all/systems")
-    public List<AlbumDto> findListOfAllAlbumsInTheSystem(@RequestBody AlbumFilterDto albumFilterDto) {
+    public List<AlbumDtoResponse> findListOfAllAlbumsInTheSystem(@RequestBody AlbumFilterDto albumFilterDto) {
         return albumService.findListOfAllAlbumsInTheSystem(albumFilterDto);
     }
 
     @PostMapping("/filter/all/favorites")
-    public List<AlbumDto> findListOfAllYourFavorites(@RequestBody AlbumFilterDto albumFilterDto) {
+    public List<AlbumDtoResponse> findListOfAllYourFavorites(@RequestBody AlbumFilterDto albumFilterDto) {
         return albumService.findAListOfAllYourFavoriteAlbums(albumFilterDto);
     }
 

@@ -2,10 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.album.AlbumCreateDto;
-import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.dto.album.AlbumFilterDto;
-import faang.school.postservice.dto.album.AlbumUpdateDto;
+import faang.school.postservice.dto.album.*;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -14,8 +11,9 @@ import faang.school.postservice.filter.album_filter.AlbumCreatedAtFilter;
 import faang.school.postservice.filter.album_filter.AlbumFilter;
 import faang.school.postservice.filter.album_filter.AlbumTitleFilter;
 import faang.school.postservice.mapper.AlbumMapperImpl;
-import faang.school.postservice.model.Album;
+import faang.school.postservice.model.album.Album;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.album.AlbumVisibility;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,13 +73,13 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testCreateAlbumDataValidationException() {
+    void testCreateAlbum_DataValidationException() {
         AlbumCreateDto albumCreateDto = AlbumCreateDto.builder().description("description").title("title").authorId(1L).build();
         assertThrows(DataValidationException.class, () -> albumService.createAlbum(albumCreateDto));
     }
 
     @Test
-    void testCreateAlbumUserDataValidationException() {
+    void testCreateAlbumUser_DataValidationException() {
         AlbumCreateDto albumCreateDto = AlbumCreateDto.builder().description("description").title("title").authorId(1L).build();
 
         when(userServiceClient.getUser(albumCreateDto.getAuthorId())).thenReturn(UserDto.builder().id(1L).build());
@@ -108,13 +106,13 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testAddPostToAlbumEntityNotFoundException() {
+    void testAddPostToAlbum_EntityNotFoundException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> albumService.addPostToAlbum(1L, 1L));
     }
 
     @Test
-    void testAddPostToAlbumDataValidationException() {
+    void testAddPostToAlbum_DataValidationException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
         when(userContext.getUserId()).thenReturn(1L);
 
@@ -122,7 +120,7 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testAddPostToAlbumEntityNotFoundExceptionTwo() {
+    void testAddPostToAlbum_EntityNotFoundExceptionTwo() {
         when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -130,7 +128,7 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testAddPostToAlbumDataValidationExceptionTwo() {
+    void testAddPostToAlbum_DataValidationExceptionTwo() {
         when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
         when(postRepository.findById(1L)).thenReturn(Optional.of(Post.builder().id(1L).albums(List.of(Album.builder().id(1L).build())).build()));
 
@@ -152,13 +150,13 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testDeletePostFromAlbumEntityNotFoundException() {
+    void testDeletePostFromAlbum_EntityNotFoundException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> albumService.deletePostFromAlbum(1L, 1L));
     }
 
     @Test
-    void testDeletePostFromAlbumDataValidationException() {
+    void testDeletePostFromAlbum_DataValidationException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
         when(userContext.getUserId()).thenReturn(1L);
 
@@ -178,7 +176,7 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testAddAlbumToFavoritesEntityNotFoundException() {
+    void testAddAlbumToFavorites_EntityNotFoundException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> albumService.addAlbumToFavorites(1L));
     }
@@ -196,7 +194,7 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testDeleteAlbumFromFavoritesEntityNotFoundException() {
+    void testDeleteAlbumFromFavorites_EntityNotFoundException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> albumService.deleteAlbumFromFavorites(1L));
     }
@@ -214,18 +212,34 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testFindByIdWithPostsEntityNotFoundException() {
+    void testFindAlbumById_EntityNotFoundException() {
         when(albumRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> albumService.findByIdWithPosts(1L));
+        assertThrows(EntityNotFoundException.class, () -> albumService.findAlbumById(1L));
     }
 
     @Test
-    void testFindByIdWithPosts() {
+    void testFindAlbumById_UserIsNotAuthor() {
         AlbumDto albumDto = AlbumDto.builder().id(1L).authorId(0L).postsId(List.of()).build();
 
+        when(userContext.getUserId()).thenReturn(1L);
         when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
 
-        assertEquals(albumDto, albumService.findByIdWithPosts(1L));
+        assertEquals(albumDto, albumService.findAlbumById(1L));
+    }
+
+    @Test
+    void testFindAlbumById_UserIsAuthor() {
+        AuthorAlbumDto albumDto = AuthorAlbumDto.builder()
+                .id(1L)
+                .authorId(0L)
+                .postsId(List.of())
+                .visibility(AlbumVisibility.ALL_USERS)
+                .build();
+
+        when(userContext.getUserId()).thenReturn(0L);
+        when(albumRepository.findById(1L)).thenReturn(Optional.of(Album.builder().id(1L).build()));
+
+        assertEquals(albumDto, albumService.findAlbumById(1L));
     }
 
     @Test
@@ -235,7 +249,7 @@ class AlbumServiceTest {
                 album1, album2, album3, album4));
         albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
 
-        List<AlbumDto> albumByStatus = albumService.findAListOfAllYourAlbums(
+        List<AlbumDtoResponse> albumByStatus = albumService.findAListOfAllYourAlbums(
                 AlbumFilterDto.builder().title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build());
         assertEquals(2, albumByStatus.size());
     }
@@ -246,7 +260,7 @@ class AlbumServiceTest {
                 album1, album2, album3, album4));
         albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
 
-        List<AlbumDto> albumByStatus = albumService.findListOfAllAlbumsInTheSystem(
+        List<AlbumDtoResponse> albumByStatus = albumService.findListOfAllAlbumsInTheSystem(
                 AlbumFilterDto.builder().title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build());
         assertEquals(2, albumByStatus.size());
     }
@@ -258,7 +272,7 @@ class AlbumServiceTest {
                 album1, album2, album3, album4));
         albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
 
-        List<AlbumDto> albumByStatus = albumService.findAListOfAllYourFavoriteAlbums(
+        List<AlbumDtoResponse> albumByStatus = albumService.findAListOfAllYourFavoriteAlbums(
                 AlbumFilterDto.builder().title("title").authorId(1L).createdAt(LocalDateTime.MIN).updatedAt(LocalDateTime.MAX).build());
         assertEquals(2, albumByStatus.size());
     }
@@ -314,5 +328,101 @@ class AlbumServiceTest {
 
         albumService.deleteAlbum(1L);
         verify(albumRepository, times(1)).delete(any());
+    }
+
+    @Test
+    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional() {
+        album3.setUsersWithAccessIds(List.of(2L, 3L));
+        album2.setTitle("title");
+        UserDto author = UserDto.builder()
+                .id(1L).followerIds(List.of(2L, 3L))
+                .build();
+
+        album1.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
+        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
+        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
+        album4.setVisibility(AlbumVisibility.ALL_USERS);
+
+        when(userContext.getUserId()).thenReturn(4L);
+        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(albumRepository.findAll()).thenReturn(List.of(
+                album1, album2, album3, album4));
+
+        albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
+
+        List<AlbumDtoResponse> filteredAlbums = albumService.findListOfAllAlbumsInTheSystem(AlbumFilterDto.builder().title("title").build());
+        assertEquals(1, filteredAlbums.size());
+    }
+
+    @Test
+    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional_TheUserIsAuthor() {
+        album3.setUsersWithAccessIds(List.of(2L, 3L));
+        album2.setTitle("title");
+        UserDto author = UserDto.builder()
+                .id(1L).followerIds(List.of(2L, 3L))
+                .build();
+
+        album1.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
+        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
+        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
+        album4.setVisibility(AlbumVisibility.ALL_USERS);
+
+        when(userContext.getUserId()).thenReturn(1L);
+        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(albumRepository.findAll()).thenReturn(List.of(
+                album1, album2, album3, album4));
+
+        albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
+
+        List<AlbumDtoResponse> filteredAlbums = albumService.findListOfAllAlbumsInTheSystem(AlbumFilterDto.builder().title("title").build());
+        assertEquals(4, filteredAlbums.size());
+    }
+
+    @Test
+    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional_TheUserIsSubscriber() {
+        album3.setUsersWithAccessIds(List.of(3L));
+        album2.setTitle("title");
+        UserDto author = UserDto.builder()
+                .id(1L).followerIds(List.of(2L, 3L))
+                .build();
+
+        album1.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
+        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
+        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
+        album4.setVisibility(AlbumVisibility.ALL_USERS);
+
+        when(userContext.getUserId()).thenReturn(2L);
+        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(albumRepository.findAll()).thenReturn(List.of(
+                album1, album2, album3, album4));
+
+        albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
+
+        List<AlbumDtoResponse> filteredAlbums = albumService.findListOfAllAlbumsInTheSystem(AlbumFilterDto.builder().title("title").build());
+        assertEquals(2, filteredAlbums.size());
+    }
+
+    @Test
+    void testFindListOfAllAlbumsInTheSystem_visibilityFiltrationFunctional_TheUserHasAccessToAlbum() {
+        album3.setUsersWithAccessIds(List.of(2L, 3L));
+        album2.setTitle("title");
+        UserDto author = UserDto.builder()
+                .id(1L).followerIds(List.of(3L))
+                .build();
+
+        album1.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
+        album2.setVisibility(AlbumVisibility.ONLY_AUTHOR);
+        album3.setVisibility(AlbumVisibility.ONLY_SELECTED_BY_AUTHOR);
+        album4.setVisibility(AlbumVisibility.ALL_USERS);
+
+        when(userContext.getUserId()).thenReturn(2L);
+        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(albumRepository.findAll()).thenReturn(List.of(
+                album1, album2, album3, album4));
+
+        albumService = new AlbumService(albumRepository, userServiceClient, albumMapper, userContext, postRepository, albumFilter);
+
+        List<AlbumDtoResponse> filteredAlbums = albumService.findListOfAllAlbumsInTheSystem(AlbumFilterDto.builder().title("title").build());
+        assertEquals(2, filteredAlbums.size());
     }
 }
