@@ -6,12 +6,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 public class BingSpellAsyncConfig {
+    private BingSpellThreadPoolConfig poolConfig;
+
     @Bean
     public ThreadPoolTaskExecutor bingSpellAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(100000);
+        executor.setCorePoolSize(poolConfig.getCorePoolSize());
+        executor.setMaxPoolSize(poolConfig.getMaxPoolSize());
+        executor.setQueueCapacity(poolConfig.getQueueCapacity());
         executor.initialize();
         return executor;
     }

@@ -10,14 +10,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 public class PostCorrecterJob {
-    private final PostCorrecterService postCorrecterService;
+    private final PostCorrecterService bingSpellService;
 
     @Scheduled(cron = "${ai-spelling.cron}")
     public void correctPosts() {
         log.info("Correcting posts started.");
-        System.out.println("Begin...");
-        postCorrecterService.correctUnpublishedPosts();
-        System.out.println("end...");
+        bingSpellService.correctUnpublishedPosts();
         log.info("Correcting posts is over.");
     }
 }
