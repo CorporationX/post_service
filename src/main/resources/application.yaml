@@ -49,3 +49,8 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+ad-remover:
+  cron: "0 0 3 0 0 ?" #every day at 03:00
+  list-size: 100
+  thread-count: 5
