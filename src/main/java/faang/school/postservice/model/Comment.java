@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -29,8 +30,9 @@ public class Comment {
     @Column(name = "author_id", nullable = false)
     private long authorId;
 
+    @Builder.Default
     @OneToMany(mappedBy = "comment", orphanRemoval = true)
-    private List<Like> likes;
+    private List<Like> likes = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)

@@ -4,6 +4,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.util.ErrorMessage;
 import jakarta.persistence.EntityNotFoundException;
@@ -46,10 +47,7 @@ public class CommentService {
 
     @Transactional
     public void delete(Long id){
-        Comment comment = commentRepository.findById(id)
-                        .orElseThrow(()-> new EntityNotFoundException(
-                                MessageFormat.format(ErrorMessage.COMMENT_NOT_FOUND_FORMAT, id)));
-
+        Comment comment = getCommentById(id);
         commentRepository.delete(comment);
     }
 
@@ -58,5 +56,17 @@ public class CommentService {
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
                 .map(commentMapper::commentToDto)
                 .toList();
+    }
+
+    public Comment getCommentById(Long commentId){
+        return commentRepository.findById(commentId)
+                .orElseThrow(()-> new EntityNotFoundException(
+                        MessageFormat.format(ErrorMessage.COMMENT_NOT_FOUND_FORMAT, commentId)));
+
+    }
+
+    @Transactional
+    public Comment updateLikes(Comment comment){
+        return commentRepository.save(comment);
     }
 }

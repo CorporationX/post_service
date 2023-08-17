@@ -6,10 +6,12 @@ import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ad.AdRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,8 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final LikeMapper likeMapper;
+    private final LikeService likeService;
 
     @Transactional
     public PostDto createPost(CreatePostDto createPostDto) {
@@ -123,5 +127,10 @@ public class PostService {
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
+    }
+
+    public Post getPost(Long postId){
+        return postRepository.findById(postId).orElseThrow(() ->
+                new EntityNotFoundException(String.format("Post with ID %d not found", postId)));
     }
 }
