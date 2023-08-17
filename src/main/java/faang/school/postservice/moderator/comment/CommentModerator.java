@@ -12,7 +12,7 @@ public class CommentModerator {
     private final CommentService commentService;
 
     @Async
-    @Scheduled(cron = "${post.moderator.scheduler.moderateComment.cron}")
+    @Scheduled(cron = "${post.moderateComment.cron}")
     public void moderateComment() {
         commentService.moderateComment();
     }

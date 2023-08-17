@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class AuthorBanner {
     private final PostService postService;
     private final UserContext userContext;
-    @Scheduled(cron = "${post.user-banner.scheduler.cron}")
+    @Scheduled(cron = "${post.user-banner.cron}")
     public void banForOffensiveContent(){
         userContext.setUserId(-1L);
 		postService.banForOffensiveContent();

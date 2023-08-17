@@ -33,7 +33,7 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
     private final PostService postService;
-    @Value("${post.moderator.scheduler.batchSize}")
+    @Value("${post.moderateComment.batchSize}")
     private Integer batchSize;
 
     @Transactional
@@ -71,7 +71,7 @@ public class CommentService {
 
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void moderateComment() {
         List<Comment> comments = commentRepository.findNotVerified();
         List<List<Comment>> grouped = new ArrayList<>();
@@ -87,8 +87,8 @@ public class CommentService {
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).join();
     }
 
-    @org.springframework.transaction.annotation.Transactional
-    private void verifyComment(List<Comment> comments) {
+    @Transactional
+    public void verifyComment(List<Comment> comments) {
         Predicate<Comment> noUnwantedWords = comment -> !moderationDictionary.containsBadWord(comment.getContent());
         Consumer<Comment> verifyComment = comment -> {
             comment.setVerified(true);

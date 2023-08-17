@@ -43,7 +43,7 @@ public class LikeService {
         List<UserDto> allUsers = new ArrayList<>();
         for (int i = 0; i < userIds.size(); i += BATCH_SIZE) {
             int endIndex = Math.min(i + BATCH_SIZE, userIds.size());
-            allUsers.add(userServiceClient.getUsersByIds(userIds.subList(i, endIndex)));
+            allUsers.addAll(userServiceClient.getUsersByIds(userIds.subList(i, endIndex)));
         }
         return allUsers;
     }
