@@ -48,4 +48,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByHashtagOrderByPopularity(String hashtag);
 
     List<Post> findAllByVerifiedFalseAndVerifiedAtIsNotNull();
+
+    List<Post> findAllByPublishedFalseAndDeletedFalse();
 }

@@ -5,6 +5,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.postCorrector.AiResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotFoundException;
@@ -16,11 +17,17 @@ import faang.school.postservice.util.RedisPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -42,11 +49,14 @@ public class PostService {
     private final RedisPublisher redisPublisher;
     private final String userBannerChannel;
     private final Integer BAD_POSTS_MAX_COUNT = 5;
+    private final RestTemplate restTemplate;
+    private final String postCorrectorApiKey;
 
     public PostService(PostRepository postRepository, ResponsePostMapper responsePostMapper,
                        UserServiceClient userServiceClient, ProjectServiceClient projectServiceClient,
                        ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize,
-                       RedisPublisher redisPublisher, @Value("${spring.data.redis.channels.user_banner_channel.name}") String userBannerChannel) {
+                       RedisPublisher redisPublisher, @Value("${spring.data.redis.channels.user_banner_channel.name}") String userBannerChannel,
+                       RestTemplate restTemplate, @Value("${post.corrector.api-key}") String postCorrectorApiKey) {
         this.postRepository = postRepository;
         this.responsePostMapper = responsePostMapper;
         this.userServiceClient = userServiceClient;
@@ -55,6 +65,8 @@ public class PostService {
         this.batchSize = batchSize;
         this.redisPublisher = redisPublisher;
         this.userBannerChannel = userBannerChannel;
+        this.restTemplate = restTemplate;
+        this.postCorrectorApiKey = postCorrectorApiKey;
     }
 
     @Transactional(readOnly = true)
@@ -191,17 +203,6 @@ public class PostService {
         return responsePostMapper.toDtoList(postRepository.findByHashtagOrderByPopularity("#" + hashtag));
     }
 
-    private void extractHashtagsWhileCreating(CreatePostDto createPostDto) {
-        List<String> hashtags = new ArrayList<>();
-        Pattern pattern = Pattern.compile("#\\w+");
-        Matcher matcher = pattern.matcher(createPostDto.getContent());
-
-        while (matcher.find()) {
-            hashtags.add(matcher.group());
-        }
-
-        createPostDto.setHashtags(hashtags);
-    }
 
     public void banForOffensiveContent() {
         List<Post> posts = postRepository.findAllByVerifiedFalseAndVerifiedAtIsNotNull();
@@ -221,6 +222,42 @@ public class PostService {
                 .map(Map.Entry::getKey)
                 .toList()
                 .forEach(authorId -> redisPublisher.publishMessage(userBannerChannel, String.valueOf(authorId)));
+    }
+
+    public Post getPostById(long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException("Post with id " + postId + " was not found!"));
+    }
+
+    @Async
+    @Transactional
+    public void correctPosts() {
+        List<Post> posts = postRepository.findAllByPublishedFalseAndDeletedFalse();
+        List<CompletableFuture<Void>> completableFutures = posts.stream()
+                .map(post -> CompletableFuture.runAsync(() -> {
+                            String content = post.getContent().replaceAll(" ", "+");
+                            String url = "https://api.textgears.com/correct?text=" + content + "&language=en-GB&key=" + postCorrectorApiKey;
+                            ResponseEntity<AiResponseDto> response = restTemplate.exchange(url, HttpMethod.GET, null, AiResponseDto.class);
+                            if (response.getStatusCode().equals(HttpStatusCode.valueOf(200))
+                                    && Objects.requireNonNull(response.getBody()).getResponse().getCorrected() != null) {
+                                post.setContent(Objects.requireNonNull(response.getBody()).getResponse().getCorrected());
+                            }
+                        })
+                )
+                .toList();
+        CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).join();
+    }
+
+    private void extractHashtagsWhileCreating(CreatePostDto createPostDto) {
+        List<String> hashtags = new ArrayList<>();
+        Pattern pattern = Pattern.compile("#\\w+");
+        Matcher matcher = pattern.matcher(createPostDto.getContent());
+
+        while (matcher.find()) {
+            hashtags.add(matcher.group());
+        }
+
+        createPostDto.setHashtags(hashtags);
     }
 
     private void verifySublist(List<Post> subList) {
@@ -243,10 +280,5 @@ public class PostService {
             ProjectDto projectDto = Objects.requireNonNull(projectServiceClient.getProject(dto.getProjectId()));
             post.setProjectId(projectDto.getId());
         }
-    }
-
-    public Post getPostById(long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundException("Post with id " + postId + " was not found!"));
     }
 }

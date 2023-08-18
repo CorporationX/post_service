@@ -5,6 +5,8 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.postCorrector.AiResponseDto;
+import faang.school.postservice.dto.postCorrector.ResponseFieldDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Hashtag;
@@ -19,6 +21,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -54,12 +59,15 @@ class PostServiceTest {
     private final Integer batchSize = 100;
     private final String userBannerChannel = "user_banner_channel";
     private PostService postService;
+    @Mock
+    private RestTemplate restTemplate;
+    private final String postCorrectorApiKey = "http://some-key";
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         postService = new PostService(postRepository, responsePostMapper,
-                userServiceClient, projectServiceClient, moderationDictionary, batchSize, redisPublisher, userBannerChannel);
+                userServiceClient, projectServiceClient, moderationDictionary, batchSize, redisPublisher, userBannerChannel, restTemplate, postCorrectorApiKey);
     }
 
     @Test
@@ -188,6 +196,24 @@ class PostServiceTest {
 
         assertNotNull(result);
         assertEquals(createPostDtoList().get(0).getId(), result.get(0).getId());
+    }
+
+    @Test
+    void correctPostsTest() {
+        Post post = Post.builder().content("Wrong").build();
+        AiResponseDto response = AiResponseDto.builder().response(new ResponseFieldDto("Correct")).build();
+        List<Post> posts = new ArrayList<>(List.of(post, post, post, post, post));
+        String url = "https://api.textgears.com/correct?text=" + post.getContent() + "&language=en-GB&key=" + postCorrectorApiKey;
+
+        when(postRepository.findAllByPublishedFalseAndDeletedFalse()).thenReturn(posts);
+        when(restTemplate.exchange(url, HttpMethod.GET, null, AiResponseDto.class))
+                .thenReturn(ResponseEntity.ok(response));
+
+        postService.correctPosts();
+
+        for (Post result : posts) {
+            assertEquals("Correct", result.getContent());
+        }
     }
 
     private List<Post> createPostList() {
