@@ -29,7 +29,7 @@ public class RedisConfig {
 
     @Bean
     MessagePublisher commentEventPublisher() {
-        return new CommentEventPublisher(CommentRedisTemplate(commentConnectionFactory()), commentTopic());
+        return new CommentEventPublisher(commentRedisTemplate(commentConnectionFactory()), commentTopic());
     }
 
     @Bean
@@ -38,7 +38,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> CommentRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate<String, Object> commentRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
