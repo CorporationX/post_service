@@ -27,13 +27,13 @@ public class CommentController {
         commentService.updateComment(commentDto);
     }
 
-    @GetMapping("/{postId}/post")
+    @GetMapping("/post/{postId}")
     public List<CommentDto> getAllComments(@PathVariable long postId) {
         commentValidator.validatePostExist(postId);
         return commentService.getAllComments(postId);
     }
 
-    @DeleteMapping("{/commentId}/comment/{authorId}/author")
+    @DeleteMapping("/comment/{commentId}/author/{authorId}")
     public void deleteComment(@PathVariable long commentId, @PathVariable long authorId) {
         commentValidator.validateDeleteComment(commentId, authorId);
         commentService.deleteComment(commentId);
