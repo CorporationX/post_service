@@ -63,8 +63,6 @@ class PostServiceTest {
                 .id(1L)
                 .authorId(1L)
                 .build();
-
-        Mockito.lenient().doNothing().when(postViewEventPublisher).publish(Mockito.any(Post.class));
     }
 
     @Test
@@ -376,6 +374,7 @@ class PostServiceTest {
                 .thenReturn(Optional.of(post));
 
         Assertions.assertDoesNotThrow(() -> postService.getPost(1L));
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
     }
 
     @Test
@@ -392,13 +391,21 @@ class PostServiceTest {
 
     @Test
     void getPostsByAuthorId_ShouldNotThrowException() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findPublishedPostsByAuthorId(1L)).thenReturn(List.of(post));
+
         Assertions.assertDoesNotThrow(() -> postService.getPostsByAuthorId(1L));
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
         Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByAuthorId(1L);
     }
 
     @Test
     void getPostsByProjectId_ShouldNotThrowException() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findPublishedPostsByProjectId(1L)).thenReturn(List.of(post));
+
         Assertions.assertDoesNotThrow(() -> postService.getPostsByProjectId(1L));
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
         Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByProjectId(1L);
     }
 
@@ -436,21 +443,5 @@ class PostServiceTest {
                 .deleted(false)
                 .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
                 .build();
-    }
-
-    private List<Post> buildListOfPosts() {
-        return List.of(
-                buildPost(),
-                buildPost(),
-                buildPost()
-        );
-    }
-
-    private List<PostDto> buildListOfPostDtos() {
-        return List.of(
-                buildExpectedPostDto(),
-                buildExpectedPostDto(),
-                buildExpectedPostDto()
-        );
     }
 }
