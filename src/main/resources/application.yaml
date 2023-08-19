@@ -40,6 +40,11 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+correcter:
+  scheduler:
+    cron: "0 0 0 * * ?" # Every day at midnight
+
+
 user-service:
   host: localhost
   port: 8080
@@ -49,3 +54,7 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+ai:
+  api:
+    key: 7b59c5412dmsha6284a44d021ab9p14f51cjsn2e93aa88df77
