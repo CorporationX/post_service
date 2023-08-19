@@ -5,7 +5,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
@@ -49,6 +49,9 @@ class PostServiceTest {
     @Mock
     private ProjectServiceClient projectServiceClient;
 
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
+
     @InjectMocks
     private PostService postService;
 
@@ -60,6 +63,8 @@ class PostServiceTest {
                 .id(1L)
                 .authorId(1L)
                 .build();
+
+        Mockito.lenient().doNothing().when(postViewEventPublisher).publish(Mockito.any(Post.class));
     }
 
     @Test

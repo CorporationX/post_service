@@ -5,14 +5,9 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.ad.AdRepository;
-import faang.school.postservice.util.exception.DeletePostException;
-import faang.school.postservice.util.exception.GetPostException;
 import faang.school.postservice.util.exception.PostNotFoundException;
-import faang.school.postservice.util.exception.PublishPostException;
-import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +28,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final PostViewEventPublisher postViewEventPublisher;
 
     @Transactional
     public PostDto addPost(PostDto dto) {
@@ -99,6 +95,8 @@ public class PostService {
 
         validator.validateToGet(postById);
 
+        postViewEventPublisher.publish(postById);
+
         return postMapper.toDto(postById);
     }
 
@@ -117,11 +115,15 @@ public class PostService {
     public List<PostDto> getPostsByAuthorId(Long authorId){
         List<Post> postsByAuthorId = postRepository.findPublishedPostsByAuthorId(authorId);
 
+        postsByAuthorId.forEach(postViewEventPublisher::publish);
+
         return postMapper.toDtos(postsByAuthorId);
     }
 
     public List<PostDto> getPostsByProjectId(Long projectId) {
         List<Post> postsByProjectId = postRepository.findPublishedPostsByProjectId(projectId);
+
+        postsByProjectId.forEach(postViewEventPublisher::publish);
 
         return postMapper.toDtos(postsByProjectId);
     }

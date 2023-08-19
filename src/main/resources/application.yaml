@@ -7,12 +7,12 @@ spring:
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: none
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+#    hibernate:
+#      ddl-auto: none
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -24,6 +24,11 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: group
 
 server:
   port: 8081
