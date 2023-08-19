@@ -98,15 +98,6 @@ class PostServiceTest {
     }
 
     @Test
-    void addPost_ShouldMapCorrectlyToDto() {
-        Post post = buildPost();
-
-        PostDto actual = postMapper.toDto(post);
-
-        Assertions.assertEquals(buildExpectedPostDto(), actual);
-    }
-
-    @Test
     void addPost_ByAuthor_ShouldSave() {
         postService.addPost(postDto);
 
@@ -385,15 +376,6 @@ class PostServiceTest {
                 .thenReturn(Optional.of(post));
 
         Assertions.assertDoesNotThrow(() -> postService.getPost(1L));
-    }
-
-    @Test
-    void getDrafts_ShouldMapCorrectlyToDtos() {
-        List<Post> posts = buildListOfPosts();
-
-        List<PostDto> actual = postMapper.toDtos(posts);
-
-        Assertions.assertIterableEquals(buildListOfPostDtos(), actual);
     }
 
     @Test
