@@ -1,6 +1,5 @@
 package faang.school.postservice.mapper.redis;
 
-import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.redis.LikeEventDto;
 import faang.school.postservice.model.Like;
 import org.mapstruct.InjectionStrategy;
