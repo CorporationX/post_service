@@ -58,3 +58,5 @@ payment-service:
 ai:
   api:
     key: 7b59c5412dmsha6284a44d021ab9p14f51cjsn2e93aa88df77
+    host: "textgears-textgears-v1.p.rapidapi.com"
+    path: "/grammar"

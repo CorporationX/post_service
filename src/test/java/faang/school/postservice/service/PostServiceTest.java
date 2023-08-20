@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.corrector.external_service.ExternalAPIService;
+import faang.school.postservice.corrector.external_service.TextGearsAPIService;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -42,7 +42,7 @@ class PostServiceTest {
     @Mock
     private ProjectServiceClient projectServiceClient;
     @Mock
-    private ExternalAPIService externalAPIService;
+    private TextGearsAPIService textGearsAPIService;
 
     @Test
     void testCreateDraftPostValidData() {
@@ -510,10 +510,10 @@ class PostServiceTest {
 
         when(postRepository.findReadyToPublish()).thenReturn(unpublishedPosts);
 
-        when(externalAPIService.correctText("My mother are a doctor, but my father is a angeneer. I has a gun."))
+        when(textGearsAPIService.correctText("My mother are a doctor, but my father is a angeneer. I has a gun."))
                 .thenReturn("My mother is a doctor, but my father is an engineer. I have a gun.");
 
-        when(externalAPIService.correctText("Another example of incorrect text."))
+        when(textGearsAPIService.correctText("Another example of incorrect text."))
                 .thenReturn("Another example of corrected text.");
 
         postService.processSpellCheckUnpublishedPosts();
