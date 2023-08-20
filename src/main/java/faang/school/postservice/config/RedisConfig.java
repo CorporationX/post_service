@@ -1,7 +1,5 @@
 package faang.school.postservice.config;
 
-import faang.school.postservice.service.redis.MessagePublisher;
-import faang.school.postservice.service.redis.RedisMessagePublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,10 +17,11 @@ public class RedisConfig {
     private String host;
     @Value("${spring.data.redis.port}")
     private int port;
+    @Value("${spring.data.redis.channels.event_channels.likePost}")
+    private String likeTopicName;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
-        System.out.println(port);
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         return new JedisConnectionFactory(config);
     }
@@ -34,5 +33,10 @@ public class RedisConfig {
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
         return redisTemplate;
+    }
+
+    @Bean
+    public ChannelTopic likeTopic(){
+        return new ChannelTopic(likeTopicName);
     }
 }
