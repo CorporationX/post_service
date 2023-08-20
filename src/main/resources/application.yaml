@@ -26,8 +26,7 @@ spring:
           name: calculations_channel
         user_banner_channel:
           name: user_banner_channel
-        like_channel:
-          name: like_channel
+        like_channel: like_channel
 
   aop:
     proxy-target-class: true
