@@ -9,7 +9,11 @@ import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.event.LikeEvent;
+import faang.school.postservice.redis.publisher.LikeEventPublisher;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
 import faang.school.postservice.util.RedisPublisher;
@@ -41,12 +45,14 @@ public class PostService {
     private final Integer batchSize;
     private final RedisPublisher redisPublisher;
     private final String userBannerChannel;
+    private final LikeRepository likeRepository;
+    private final LikeEventPublisher likeEventPublisher;
     private final Integer BAD_POSTS_MAX_COUNT = 5;
 
     public PostService(PostRepository postRepository, ResponsePostMapper responsePostMapper,
                        UserServiceClient userServiceClient, ProjectServiceClient projectServiceClient,
                        ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize,
-                       RedisPublisher redisPublisher, @Value("${spring.data.redis.channels.user_banner_channel.name}") String userBannerChannel) {
+                       RedisPublisher redisPublisher, LikeRepository likeRepository, LikeEventPublisher likeEventPublisher, @Value("${spring.data.redis.channels.user_banner_channel.name}") String userBannerChannel) {
         this.postRepository = postRepository;
         this.responsePostMapper = responsePostMapper;
         this.userServiceClient = userServiceClient;
@@ -55,6 +61,8 @@ public class PostService {
         this.batchSize = batchSize;
         this.redisPublisher = redisPublisher;
         this.userBannerChannel = userBannerChannel;
+        this.likeRepository = likeRepository;
+        this.likeEventPublisher = likeEventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -117,6 +125,21 @@ public class PostService {
 
         post.setContent(dto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
+
+        return responsePostMapper.toDto(post);
+    }
+
+    @Transactional
+    public ResponsePostDto likePost(UpdatePostDto dto, Long user_id){
+        Post post = postRepository.findById(dto.getId()).orElseThrow(() -> new IllegalArgumentException("Post is not found"));
+        Like newLike = Like.builder().post(post).userId(user_id).build();
+        likeRepository.save(newLike);
+        List<Like> likes = new ArrayList<>(post.getLikes());
+        likes.add(newLike);
+        post.setLikes(likes);
+
+        LikeEvent likeEvent = LikeEvent.builder().idPost(post.getId()).dateTime(LocalDateTime.now()).idUser(user_id).idAuthor(post.getAuthorId()).build();
+        likeEventPublisher.publish(likeEvent);
 
         return responsePostMapper.toDto(post);
     }

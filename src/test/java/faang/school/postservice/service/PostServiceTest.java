@@ -8,7 +8,10 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Hashtag;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.publisher.LikeEventPublisher;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
 import faang.school.postservice.util.RedisPublisher;
@@ -51,6 +54,10 @@ class PostServiceTest {
     private ModerationDictionary moderationDictionary;
     @Mock
     private RedisPublisher redisPublisher;
+    @Mock
+    private LikeRepository likeRepository;
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
     private final Integer batchSize = 100;
     private final String userBannerChannel = "user_banner_channel";
     private PostService postService;
@@ -59,7 +66,8 @@ class PostServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         postService = new PostService(postRepository, responsePostMapper,
-                userServiceClient, projectServiceClient, moderationDictionary, batchSize, redisPublisher, userBannerChannel);
+                userServiceClient, projectServiceClient, moderationDictionary, batchSize, redisPublisher,
+                likeRepository, likeEventPublisher, userBannerChannel);
     }
 
     @Test
@@ -83,6 +91,28 @@ class PostServiceTest {
         ResponsePostDto result = postService.update(dto);
 
         assertEquals("After", post.getContent());
+    }
+
+    @Test
+    void likePostTest() {
+        Long postId = 1L;
+        Long userId = 2L;
+        Post post = new Post();
+        post.setId(postId);
+        post.setAuthorId(userId);
+        post.setLikes(List.of(Like.builder().id(12).build()));
+
+        UpdatePostDto updatePostDto = new UpdatePostDto(postId, "qweqwe");
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(likeRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ResponsePostDto responsePostDto = postService.likePost(updatePostDto, userId);
+
+        verify(likeRepository, times(1)).save(any());
+        verify(likeEventPublisher, times(1)).publish(any());
+
+        assertNotNull(responsePostDto);
     }
 
     @Test
