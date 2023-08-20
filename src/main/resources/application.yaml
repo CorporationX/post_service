@@ -60,7 +60,8 @@ moderation-thread-pool:
   corePoolSize: 4
   threadNamePrefix: "poolThread-"
 
-ContentModerator:
+moderation-properties:
   secondsBetweenModeration: 18000
   batchSize: 1000
+
 
