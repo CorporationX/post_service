@@ -38,12 +38,11 @@ class LikeEventPublisherTest {
     }
 
     @Test
-    void publish() throws JsonProcessingException {
+    void testPublishLikeEvent() throws JsonProcessingException {
 
-        String message = "\"userId\": 1,\n" +
-                "    \"postId\": 1,\n" +
-                "    \"authorId\": 2,\n" +
-                "    \"createdAt\": \"2023-08-17T12:34:56\"";
+        String message = "\"actorId\": 1,\n" +
+                "    \"receiverId\": 1,\n" +
+                "    \"receivedAt\": \"2023-08-17T12:34:56\"";
         Like like = Like.builder().id(0L).userId(1L).build();
 
         when(objectMapper.writeValueAsString(likeEventMapper.toDto(like))).thenReturn(message);
