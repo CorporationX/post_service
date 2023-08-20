@@ -36,6 +36,8 @@ public class PostServiceGetListMethodsTest {
     private UserServiceClient userService;
     @Mock
     private ProjectServiceClient projectService;
+    @Mock
+    private PublisherService publisherService;
     @InjectMocks
     private PostService postService;
 
@@ -117,6 +119,7 @@ public class PostServiceGetListMethodsTest {
         List<PostDto> actualUserPosts = postService.getUserPosts(CORRECT_ID);
         List<PostDto> expectedUserPost = getCorrectListOfPostDto();
         assertEquals(expectedUserPost, actualUserPosts);
+        verify(publisherService, times(3)).publishPostViewEventToRedis(any());
     }
 
     @Test
@@ -142,6 +145,7 @@ public class PostServiceGetListMethodsTest {
         List<PostDto> actualProjectPosts = postService.getProjectPosts(CORRECT_ID);
         List<PostDto> expectedProjectPosts = getCorrectListOfPostDto();
         assertEquals(expectedProjectPosts, actualProjectPosts);
+        verify(publisherService, times(3)).publishPostViewEventToRedis(any());
     }
 
     private List<PostDto> getCorrectListOfDraftPostDto() {

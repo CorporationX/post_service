@@ -44,6 +44,8 @@ public class PostServiceTest {
     private ProjectServiceClient projectService;
     @Mock
     private Executor threadPoolForPostModeration;
+    @Mock
+    private PublisherService publisherService;
     @InjectMocks
     private PostService postService;
 
@@ -217,6 +219,7 @@ public class PostServiceTest {
 
         PostDto actualPostDto = postService.getPost(CORRECT_ID);
         assertEquals(correctPostDto, actualPostDto);
+        verify(publisherService).publishPostViewEventToRedis(correctPost);
     }
 
     @Test

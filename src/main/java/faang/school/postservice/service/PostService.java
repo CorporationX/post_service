@@ -38,6 +38,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final ModerationDictionary moderationDictionary;
     private final Executor threadPoolForPostModeration;
+    private final PublisherService publisherService;
     @Value("${post.moderation.scheduler.sublist-size}")
     private int sublistSize;
 
@@ -97,6 +98,7 @@ public class PostService {
         if (!post.isPublished()) {
             throw new NoPublishedPostException("This post hasn't been published yet");
         }
+        publisherService.publishPostViewEventToRedis(post);
 
         log.info("Post has taken from DB successfully, postId={}", postId);
         return postMapper.toDto(post);
@@ -134,8 +136,12 @@ public class PostService {
         List<PostDto> userPosts = postRepository.findByAuthorIdWithLikes(userId).stream()
                 .filter(post -> post.isPublished() && !post.isDeleted())
                 .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
-                .map(postMapper::toDto)
+                .map(post -> {
+                    publisherService.publishPostViewEventToRedis(post);
+                    return postMapper.toDto(post);
+                })
                 .toList();
+
 
         log.info("User's posts have taken from DB successfully, userId={}", userId);
         return userPosts;
@@ -147,7 +153,10 @@ public class PostService {
         List<PostDto> projectPosts = postRepository.findByProjectIdWithLikes(projectId).stream()
                 .filter(post -> post.isPublished() && !post.isDeleted())
                 .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
-                .map(postMapper::toDto)
+                .map(post -> {
+                    publisherService.publishPostViewEventToRedis(post);
+                    return postMapper.toDto(post);
+                })
                 .toList();
 
         log.info("Posts of project have taken from DB successfully, projectId={}", projectId);

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2023-08-13T15:01:17+0300",
+    date = "2023-08-20T20:19:30+0300",
     comments = "version: 1.5.3.Final, compiler: javac, environment: Java 17.0.4.1 (Oracle Corporation)"
 )
 @Component
@@ -34,6 +34,7 @@ public class PostMapperImpl implements PostMapper {
         postDto.publishedAt( post.getPublishedAt() );
         postDto.published( post.isPublished() );
         postDto.deleted( post.isDeleted() );
+        postDto.scheduledAt( post.getScheduledAt() );
 
         return postDto.build();
     }
@@ -53,6 +54,7 @@ public class PostMapperImpl implements PostMapper {
         post.likes( likeDtoListToLikeList( postDto.getLikes() ) );
         post.published( postDto.isPublished() );
         post.publishedAt( postDto.getPublishedAt() );
+        post.scheduledAt( postDto.getScheduledAt() );
         post.deleted( postDto.isDeleted() );
         post.createdAt( postDto.getCreatedAt() );
 

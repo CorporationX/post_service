@@ -5,3 +5,6 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V002__ad.sql
   - include:
       file: db/changelog/changeset/post_V003__comment.sql
+  - include:
+      file: db/changelog/changeset/post_V003__corrected.sql
+
