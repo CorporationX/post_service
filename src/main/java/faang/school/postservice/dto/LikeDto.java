@@ -11,6 +11,8 @@ import org.springframework.validation.annotation.Validated;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LikeDto {
+
+
     private Long id;
 
     @NotNull

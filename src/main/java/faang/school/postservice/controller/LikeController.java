@@ -13,10 +13,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping(value = "/like")
 public class LikeController {
+
     private final LikeService likeService;
 
     @PostMapping("/post")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     public LikeDto likePost(@RequestBody @Valid LikeDto likeDto) {
         return likeService.createLikeOnPost(likeDto);
     }
