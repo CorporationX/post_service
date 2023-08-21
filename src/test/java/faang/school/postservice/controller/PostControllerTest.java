@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.util.Set;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -43,7 +43,7 @@ public class PostControllerTest {
     @Test
     public void testGetPostsByHashtag() throws Exception {
         String hashtag = "exampleHashtag";
-        Set<PostDto> mockPosts = Set.of(postDto);
+        List<PostDto> mockPosts = List.of(postDto);
         when(hashtagService.getPostByHashtag(hashtag)).thenReturn(mockPosts);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/post/byhashtag/" + hashtag))

@@ -92,7 +92,7 @@ public class PostController {
     }
 
     @GetMapping("/byhashtag/{hashtag}")
-    Set<PostDto> getByHashtag(@PathVariable String hashtag) {
+    List<PostDto> getByHashtag(@PathVariable String hashtag) {
         if (hashtag.length() > 255) throw new DataValidationException("Hashtag in too long");
         return hashtagService.getPostByHashtag(hashtag);
     }

@@ -41,6 +41,8 @@ class PostServiceTest {
     @Mock
     private PostRepository postRepository;
 
+    @Mock
+    private HashtagService hashtagService;
     @Spy
     private PostMapperImpl postMapper;
 
@@ -60,7 +62,6 @@ class PostServiceTest {
         postDto = PostDto.builder()
                 .id(1L)
                 .authorId(1L)
-                .hashtags(new ArrayList<>())
                 .build();
     }
 
@@ -150,7 +151,7 @@ class PostServiceTest {
 
     @Test
     void publishPost_PostIsNotPublishedOrDeleted_ShouldNotThrowException() {
-        Post post = Post.builder().published(false).deleted(false).hashtags(new ArrayList<>()).build();
+        Post post = Post.builder().published(false).deleted(false).build();
         Mockito.when(postRepository.findById(1L))
                 .thenReturn(Optional.of(post));
 
@@ -228,7 +229,7 @@ class PostServiceTest {
 
     @Test
     void updatePost_InputsAreCorrect_ShouldNotThrowException() {
-        Post post = Post.builder().published(true).content("old content").hashtags(new ArrayList<>()).build();
+        Post post = Post.builder().published(true).content("old content").build();
         Mockito.when(postRepository.findById(1L))
                 .thenReturn(Optional.of(post));
 
@@ -297,7 +298,7 @@ class PostServiceTest {
 
     @Test
     void deletePost_InputsAreCorrect_ShouldNotThrowException() {
-        Post post = Post.builder().published(true).deleted(false).hashtags(new ArrayList<>()).build();
+        Post post = Post.builder().published(true).deleted(false).build();
         Mockito.when(postRepository.findById(1L))
                 .thenReturn(Optional.of(post));
 
@@ -306,7 +307,7 @@ class PostServiceTest {
 
     @Test
     void deletePost_FieldsShouldBeSet() {
-        Post post = Post.builder().published(true).deleted(false).hashtags(new ArrayList<>()).build();
+        Post post = Post.builder().published(true).deleted(false).build();
         Mockito.when(postRepository.findById(1L))
                 .thenReturn(Optional.of(post));
         postService.deletePost(1L);
@@ -318,7 +319,7 @@ class PostServiceTest {
 
     @Test
     void deletePost_ShouldDelete() {
-        Post post = Post.builder().published(true).deleted(false).hashtags(new ArrayList<>()).build();
+        Post post = Post.builder().published(true).deleted(false).build();
         Mockito.when(postRepository.findById(1L))
                 .thenReturn(Optional.of(post));
 
@@ -363,7 +364,7 @@ class PostServiceTest {
 
     @Test
     void getPost_InputsAreCorrect_ShouldNotThrowException() {
-        Post post = Post.builder().published(true).hashtags(new ArrayList<>()).build();
+        Post post = Post.builder().published(true).build();
         Mockito.when(postRepository.findById(1L))
                 .thenReturn(Optional.of(post));
 
@@ -408,7 +409,6 @@ class PostServiceTest {
                 .content("content")
                 .authorId(1L)
                 .adId(1L)
-                .hashtags(new ArrayList<>())
                 .build();
     }
 
@@ -423,7 +423,6 @@ class PostServiceTest {
                 .published(false)
                 .deleted(false)
                 .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
-                .hashtags(new ArrayList<>())
                 .build();
     }
 
@@ -438,7 +437,6 @@ class PostServiceTest {
                 .published(false)
                 .deleted(false)
                 .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
-                .hashtags(new ArrayList<>())
                 .build();
     }
 
