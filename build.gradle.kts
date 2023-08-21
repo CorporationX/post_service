@@ -32,7 +32,12 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
-     * Database
+     * Amazon S3
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+
+    /**
+    * Database
      */
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
@@ -75,6 +80,13 @@ tasks.bootJar {
     archiveFileName.set("service.jar")
 }
 
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+}
+
 tasks.jacocoTestReport {
     reports {
         xml.required.set(false)
@@ -94,13 +106,6 @@ tasks.jacocoTestReport {
                     "faang/school/postservice/PostServiceApp.class")
         }
     }))
-}
-
-tasks.test {
-    finalizedBy(tasks.jacocoTestReport)
-}
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
 }
 
 tasks.jacocoTestCoverageVerification {
