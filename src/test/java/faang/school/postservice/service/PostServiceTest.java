@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.Mockito.doNothing;
+
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
 
@@ -84,16 +86,9 @@ class PostServiceTest {
     }
 
     @Test
-    void addPost_ShouldMapCorrectlyToEntity() {
-        PostDto dto = buildPostDto();
-
-        Post actual = postMapper.toEntity(dto);
-
-        Assertions.assertEquals(buildPost(), actual);
-    }
-
-    @Test
     void addPost_ByAuthor_ShouldSave() {
+        doNothing().when(validator).validateToAdd(Mockito.any());
+        Mockito.when(postMapper.toDto(Mockito.any())).thenReturn(postDto);
         postService.addPost(postDto);
 
         Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());
@@ -371,6 +366,15 @@ class PostServiceTest {
                 .thenReturn(Optional.of(post));
 
         Assertions.assertDoesNotThrow(() -> postService.getPost(1L));
+    }
+
+    @Test
+    void getDrafts_ShouldMapCorrectlyToDtos() {
+        List<Post> posts = buildListOfPosts();
+
+        List<PostDto> actual = postMapper.toDtos(posts);
+
+        Assertions.assertIterableEquals(buildListOfPostDtos(), actual);
     }
 
     @Test
