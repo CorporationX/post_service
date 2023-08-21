@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.corrector.external_service.TextGearsAPIService;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -18,11 +19,14 @@ import faang.school.postservice.repository.PostRepository;
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,6 +41,8 @@ class PostServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private ProjectServiceClient projectServiceClient;
+    @Mock
+    private TextGearsAPIService textGearsAPIService;
 
     @Test
     void testCreateDraftPostValidData() {
@@ -488,5 +494,34 @@ class PostServiceTest {
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> postService.getPostsByProjectId(1L));
         assertEquals("Posts not found", exception.getMessage());
+    }
+
+    @Test
+    public void testProcessSpellCheckUnpublishedPosts() {
+        Post post1 = new Post();
+        post1.setId(1L);
+        post1.setContent("My mother are a doctor, but my father is a angeneer. I has a gun.");
+
+        Post post2 = new Post();
+        post2.setId(2L);
+        post2.setContent("Another example of incorrect text.");
+
+        List<Post> unpublishedPosts = Arrays.asList(post1, post2);
+
+        when(postRepository.findReadyToPublish()).thenReturn(unpublishedPosts);
+
+        when(textGearsAPIService.correctText("My mother are a doctor, but my father is a angeneer. I has a gun."))
+                .thenReturn("My mother is a doctor, but my father is an engineer. I have a gun.");
+
+        when(textGearsAPIService.correctText("Another example of incorrect text."))
+                .thenReturn("Another example of corrected text.");
+
+        postService.processSpellCheckUnpublishedPosts();
+
+        verify(postRepository, times(1)).save(post1);
+        verify(postRepository, times(1)).save(post2);
+
+        assertEquals("My mother is a doctor, but my father is an engineer. I have a gun.", post1.getContent());
+        assertEquals("Another example of corrected text.", post2.getContent());
     }
 }

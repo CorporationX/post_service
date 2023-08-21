@@ -2,6 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.NetworkException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,6 +31,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleRuntimeException(RuntimeException e) {
         log.error("Runtime error", e);
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(NetworkException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public String handleNetworkException(NetworkException e){
+        log.error("Network error", e);
         return e.getMessage();
     }
 }
