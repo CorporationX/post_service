@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -63,7 +64,7 @@ public class HashtagServiceTest {
         when(hashtagRepository.findByHashtag(any())).thenReturn(Optional.empty());
         when(hashtagRepository.save(any(Hashtag.class))).thenReturn(hashtag);
 
-        hashtagService.parseContent(post);
+        hashtagService.parseContentToAdd(post);
 
         verify(hashtagRepository, times(extractedHashtags.size())).save(any());
     }
@@ -72,8 +73,23 @@ public class HashtagServiceTest {
     public void testParseEmptyContent() {
         String content = "   ";
         post.setContent(content);
-        hashtagService.parseContent(post);
+        hashtagService.parseContentToAdd(post);
 
+        verify(hashtagRepository, times(0)).save(any());
+    }
+
+    @Test
+    public void testParseContentToUpdate() {
+        String previousContent = "This is a #test #content with #hashtags";
+        String newContent = "Updated #content with #newhashtags";
+
+        when(hashtagRepository.findByHashtag(any())).thenReturn(Optional.of(hashtag));
+        post.setContent(newContent);
+
+        hashtagService.parsePostContentAndSaveHashtags(post, previousContent);
+
+        verify(hashtagRepository, times(3)).findByHashtag(Mockito.anyString());
+        verify(hashtagRepository, times(2)).deletePostHashtag(any(), any());
         verify(hashtagRepository, times(0)).save(any());
     }
 }
