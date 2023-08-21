@@ -15,6 +15,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
 import faang.school.postservice.util.RedisPublisher;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -67,7 +68,7 @@ class PostServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         postService = new PostService(postRepository, responsePostMapper,
-                userServiceClient, projectServiceClient, moderationDictionary, batchSize, redisPublisher, userBannerChannel, restTemplate, postCorrectorApiKey);
+                userServiceClient, projectServiceClient, moderationDictionary, batchSize, redisPublisher, userBannerChannel, restTemplate, postCorrectorApiKey, postCorrectorUrl);
     }
 
     @Test
@@ -198,23 +199,24 @@ class PostServiceTest {
         assertEquals(createPostDtoList().get(0).getId(), result.get(0).getId());
     }
 
-//    @Test
-//    void correctPostsTest() {
-//        Post post = Post.builder().content("Wrong").build();
-//        AiResponseDto response = AiResponseDto.builder().response(new ResponseFieldDto("Correct")).build();
-//        List<Post> posts = new ArrayList<>(List.of(post, post, post, post, post));
-//        String url = "https://api.textgears.com/correct?text=" + post.getContent() + "&language=en-GB&key=" + postCorrectorApiKey;
-//
-//        when(postRepository.findAllByPublishedFalseAndDeletedFalse()).thenReturn(posts);
-//        when(restTemplate.exchange(url, HttpMethod.GET, null, AiResponseDto.class))
-//                .thenReturn(ResponseEntity.ok(response));
-//
-//        postService.correctPosts();
-//
-//        for (Post result : posts) {
-//            assertEquals("Correct", result.getContent());
-//        }
-//    }
+    @Disabled
+    @Test
+    void correctPostsTest() {
+        Post post = Post.builder().content("Wrong").build();
+        AiResponseDto response = AiResponseDto.builder().response(new ResponseFieldDto("Correct")).build();
+        List<Post> posts = new ArrayList<>(List.of(post, post, post, post, post));
+        String url = "https://api.textgears.com/correct?text=" + post.getContent() + "&language=en-GB&key=" + postCorrectorApiKey;
+
+        when(postRepository.findAllByPublishedFalseAndDeletedFalse()).thenReturn(posts);
+        when(restTemplate.exchange(url, HttpMethod.GET, null, AiResponseDto.class))
+                .thenReturn(ResponseEntity.ok(response));
+
+        postService.correctPosts();
+
+        for (Post result : posts) {
+            assertEquals("Correct", result.getContent());
+        }
+    }
 
     private List<Post> createPostList() {
         List<Hashtag> hashtags = createHashtagList();

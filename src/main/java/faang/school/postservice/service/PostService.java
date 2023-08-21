@@ -27,7 +27,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -51,12 +50,13 @@ public class PostService {
     private final Integer BAD_POSTS_MAX_COUNT = 5;
     private final RestTemplate restTemplate;
     private final String postCorrectorApiKey;
+    private final String postCorrectorUrl;
 
     public PostService(PostRepository postRepository, ResponsePostMapper responsePostMapper,
                        UserServiceClient userServiceClient, ProjectServiceClient projectServiceClient,
                        ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize,
                        RedisPublisher redisPublisher, @Value("${spring.data.redis.channels.user_banner_channel.name}") String userBannerChannel,
-                       RestTemplate restTemplate, @Value("${post.corrector.api-key}") String postCorrectorApiKey) {
+                       RestTemplate restTemplate, @Value("${post.corrector.api-key}") String postCorrectorApiKey, @Value("${post.corrector.url}") String postCorrectorUrl) {
         this.postRepository = postRepository;
         this.responsePostMapper = responsePostMapper;
         this.userServiceClient = userServiceClient;
@@ -67,6 +67,7 @@ public class PostService {
         this.userBannerChannel = userBannerChannel;
         this.restTemplate = restTemplate;
         this.postCorrectorApiKey = postCorrectorApiKey;
+        this.postCorrectorUrl = postCorrectorUrl;
     }
 
     @Transactional(readOnly = true)
@@ -236,7 +237,7 @@ public class PostService {
         List<CompletableFuture<Void>> completableFutures = posts.stream()
                 .map(post -> CompletableFuture.runAsync(() -> {
                             String content = post.getContent().replaceAll(" ", "+");
-                            String url = "https://api.textgears.com/correct?text=" + content + "&language=en-GB&key=" + postCorrectorApiKey;
+                            String url = postCorrectorUrl + content + "&language=en-GB&key=" + postCorrectorApiKey;
                             ResponseEntity<AiResponseDto> response = restTemplate.exchange(url, HttpMethod.GET, null, AiResponseDto.class);
                             if (response.getStatusCode().equals(HttpStatusCode.valueOf(200))
                                     && Objects.requireNonNull(response.getBody()).getResponse().getCorrected() != null) {

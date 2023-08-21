@@ -57,6 +57,7 @@ post:
     cron: "0 0 0 * * ?"
 #    Create an account https://textgears.com/user/login and generate api key
     api-key: wrong-key
+    url: https://api.textgears.com/correct?text=
 
 user-service:
   host: localhost
