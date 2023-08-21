@@ -40,6 +40,12 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+comment:
+  moderation:
+    scheduler:
+      cron: "0 0 0 * * ?" # every day at midnight
+    batchSize: 100
+
 user-service:
   host: localhost
   port: 8080
