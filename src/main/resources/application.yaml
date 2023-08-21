@@ -25,6 +25,11 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: group
+
 server:
   port: 8081
 

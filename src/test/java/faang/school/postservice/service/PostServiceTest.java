@@ -4,8 +4,8 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.messaging.postevent.PostEventPublisher;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
@@ -48,6 +48,9 @@ class PostServiceTest {
 
     @Mock
     private ProjectServiceClient projectServiceClient;
+
+    @Mock
+    private PostEventPublisher postEventPublisher;
 
     @InjectMocks
     private PostService postService;
@@ -180,7 +183,17 @@ class PostServiceTest {
 
         postService.publishPost(1L);
 
-        Mockito.verify(postRepository, Mockito.times(1)).save(post);
+        Mockito.verify(postRepository).save(post);
+    }
+
+    @Test
+    void publishPost_ShouldBeSentByPublisher() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        postService.publishPost(1L);
+
+        Mockito.verify(postEventPublisher).send(post);
     }
 
     @Test
