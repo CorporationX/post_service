@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PostService {
     private final AdRepository adRepository;
@@ -68,8 +69,8 @@ public class PostService {
     }
 
     @Transactional
-    public PostDto updatePost(UpdatePostDto updatePostDto) {
-        Post postInTheDatabase = postRepository.findById(updatePostDto.getId())
+    public PostDto updatePost(Long id, UpdatePostDto updatePostDto) {
+        Post postInTheDatabase = postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("Update Post not found"));
 
         postInTheDatabase.setContent(updatePostDto.getContent());
@@ -90,14 +91,12 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
-    @Transactional(readOnly = true)
     public PostDto getPostById(Long id) {
         Post postById = postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("'Post not in database' error occurred while fetching post"));
         return postMapper.toDto(postById);
     }
 
-    @Transactional
     public List<PostDto> getAllPostsByAuthorId(Long authorId) {
         return postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
@@ -106,7 +105,6 @@ public class PostService {
                 .toList();
     }
 
-    @Transactional
     public List<PostDto> getAllPostsByProjectId(Long projectId) {
         return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
@@ -115,7 +113,6 @@ public class PostService {
                 .toList();
     }
 
-    @Transactional
     public List<PostDto> getAllPostsByAuthorIdAndPublished(Long authorId) {
         return postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
@@ -124,7 +121,6 @@ public class PostService {
                 .toList();
     }
 
-    @Transactional
     public List<PostDto> getAllPostsByProjectIdAndPublished(Long projectId) {
         return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
