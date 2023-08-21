@@ -7,6 +7,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.redis.LikeEventPublisher;
 import faang.school.postservice.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
     private final PostMapper postMapper;
+    private final LikeEventPublisher likeEventPublisher;
 
     public LikeDto likePost(LikeDto likeDto) {
         likeValidator.validateLike(likeDto);
@@ -37,6 +39,7 @@ public class LikeService {
         Like like = likeMapper.toModel(likeDto);
         like.setPost(post);
         likeRepository.save(like);
+        likeEventPublisher.publish(like);
         log.info("Post id={} was liked by user id={}", likeDto.getPostId(), likeDto.getUserId());
         return likeMapper.toDto(like);
     }

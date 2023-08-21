@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        event_channels:
+          likePost: /likes/post
         post_channel:
           name: post_channel
 
