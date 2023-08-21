@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @ControllerAdvice
 @Slf4j
@@ -41,12 +43,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleException(MethodArgumentNotValidException e) {
-        log.error("Error has been occurred when validating inputs: {}", e.getMessage(), e);
 
-        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage(), LocalDateTime.now()));
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleException(MethodArgumentNotValidException e) {
+        var bindingResult = e.getBindingResult();
+        Map<String, String> fieldErrors = new HashMap<>();
+
+        if (bindingResult.hasErrors()) {
+            bindingResult.getFieldErrors().forEach(error -> {
+                fieldErrors.put(error.getField(), error.getDefaultMessage());
+            });
+        }
+        log.error(e.getMessage(), e);
+        return ResponseEntity.badRequest().body(fieldErrors);
     }
+
 
     @ExceptionHandler(DataValidationException.class)
     public ResponseEntity<ErrorResponse> handleException(DataValidationException e) {

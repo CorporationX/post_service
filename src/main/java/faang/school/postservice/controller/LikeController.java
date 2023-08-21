@@ -17,31 +17,31 @@ public class LikeController {
 
     @PostMapping("/post")
     @ResponseStatus(HttpStatus.OK)
-    public LikeDto likePost(LikeDto likeDto) {
+    public LikeDto likePost(@RequestBody @Valid LikeDto likeDto) {
         return likeService.createLikeOnPost(likeDto);
     }
 
     @PostMapping("/comment")
     @ResponseStatus(HttpStatus.OK)
-    public LikeDto likeComment(LikeDto likeDto) {
+    public LikeDto likeComment(@RequestBody @Valid LikeDto likeDto) {
         return likeService.createLikeOnComment(likeDto);
     }
 
     @DeleteMapping("/deleteLikePost")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteLikeOnPost(LikeDto likeDto) {
+    public void deleteLikeOnPost(@RequestBody @Valid LikeDto likeDto) {
         likeService.deleteLikeOnPost(likeDto);
     }
 
     @DeleteMapping("/deleteLikeComment")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteLikeOnComment(LikeDto likeDto) {
+    public void deleteLikeOnComment(@RequestBody @Valid LikeDto likeDto) {
         likeService.deleteLikeOnComment(likeDto);
     }
 
     @GetMapping("/getLikes")
     @ResponseStatus(HttpStatus.OK)
-    public List<LikeDto> getAllPostLikes(LikeDto likeDto) {
+    public List<LikeDto> getAllPostLikes(@RequestBody @Valid LikeDto likeDto) {
         return likeService.getAllPostLikes(likeDto);
     }
 }

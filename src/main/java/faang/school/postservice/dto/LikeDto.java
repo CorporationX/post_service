@@ -1,22 +1,24 @@
 package faang.school.postservice.dto;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 
 @Data
 @Validated
+@NoArgsConstructor
+@AllArgsConstructor
 public class LikeDto {
+    private Long id;
 
     @NotNull
-    private final Long id;
+    private Long userId;
 
     @NotNull
-    private final Long userId;
+    private Long commentId;
 
     @NotNull
-    private final Long commentId;
-
-    @NotNull
-    private final Long postId;
+    private Long postId;
 }

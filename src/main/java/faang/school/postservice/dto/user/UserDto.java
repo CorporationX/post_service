@@ -1,12 +1,13 @@
 package faang.school.postservice.dto.user;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
 import java.util.List;
 
 @Builder
 public record UserDto(Long id,
-                      String username,
+                      @NotBlank String username,
                       String email,
                       String phone,
                       String aboutMe,
