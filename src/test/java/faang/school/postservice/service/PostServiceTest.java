@@ -51,6 +51,9 @@ class PostServiceTest {
     @Mock
     private ProjectServiceClient projectServiceClient;
 
+    @Mock
+    private HashtagService hashtagService;
+
     @InjectMocks
     private PostService postService;
 
