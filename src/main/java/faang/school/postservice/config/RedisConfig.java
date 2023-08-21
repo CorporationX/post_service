@@ -28,6 +28,7 @@ public class RedisConfig {
         return new JedisConnectionFactory(config);
     }
 
+    @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
