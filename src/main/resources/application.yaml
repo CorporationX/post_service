@@ -49,10 +49,15 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
       batchSize: 100
   moderateComment:
-      cron: "0 0 0 * * *" # every day
-      batchSize: 1000
+    cron: "0 0 0 * * *" # every day
+    batchSize: 1000
   user-banner:
-      cron: "0 0 0 * * ?" #At 00:00 (noon) every day
+    cron: "0 0 0 * * ?" #At 00:00 (noon) every day
+  corrector:
+    cron: "0 0 0 * * ?"
+#    Create an account https://textgears.com/user/login and generate api key
+    api-key: wrong-key
+    url: https://api.textgears.com/correct?text=
 
 user-service:
   host: localhost
