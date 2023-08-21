@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -63,5 +64,10 @@ public class PostViewEventServiceTest {
         postViewEventService.publishEventToChannel(postViewEventDto);
 
         verify(postViewEventPublisher).publish(TEST_TOPIC_NAME, message);
+    }
+
+    @Test
+    void testPublishEventToChannelWithNullDto() {
+        assertThrows(NullPointerException.class, () -> postViewEventService.publishEventToChannel(null));
     }
 }
