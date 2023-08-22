@@ -20,10 +20,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -39,6 +42,8 @@ public class PostServiceTest {
     private UserServiceClient userService;
     @Mock
     private ProjectServiceClient projectService;
+    @Mock
+    private Executor threadPoolForPostModeration;
 
     private PostValidator postValidator;
 
@@ -48,6 +53,9 @@ public class PostServiceTest {
     private PostDto correctPostDto;
     private Post alreadyPublishedPost;
     private Post correctPost;
+    private Post post1;
+    private Post post2;
+    private Post post3;
     private final Long CORRECT_ID = 1L;
     private final long INCORRECT_ID = 0;
 
@@ -215,7 +223,38 @@ public class PostServiceTest {
         assertEquals(correctPostDto, actualPostDto);
     }
 
+    @Test
+    void testDoPostModeration() {
+        when(postRepository.findNotVerified()).thenReturn(getNotVerifiedPosts());
+        ReflectionTestUtils.setField(postService, "sublistSize", 100);
+        postService.doPostModeration();
+
+        verify(threadPoolForPostModeration).execute(any());
+    }
+
+    @Test
+    void testDoPostModerationWithAsync() {
+        when(postRepository.findNotVerified()).thenReturn(getNotVerifiedPosts());
+        ReflectionTestUtils.setField(postService, "sublistSize", 2);
+        postService.doPostModeration();
+
+        verify(threadPoolForPostModeration, times(2)).execute(any());
+    }
+
     private void returnCorrectPostForPostRepository() {
         when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
+    }
+
+    private List<Post> getNotVerifiedPosts() {
+        post1 = Post.builder()
+                .content("some content")
+                .build();
+        post2 = Post.builder()
+                .content("post number two")
+                .build();
+        post3 = Post.builder()
+                .content("This is the best bootcamp!")
+                .build();
+        return List.of(post1, post2, post3);
     }
 }

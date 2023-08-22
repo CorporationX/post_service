@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.PostDto;
@@ -13,6 +14,7 @@ import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.redis.LikeEventPublisher;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,27 +36,21 @@ class LikeServiceTest {
 
     @InjectMocks
     private LikeService likeService;
-
     @Mock
     private LikeRepository likeRepository;
-
     @Mock
     private PostService postService;
-
     @Mock
     private CommentService commentService;
-
-    LikeMapper likeMapper;
-    PostMapper postMapper;
-
+    @Mock
+    LikeEventPublisher likeEventPublisher;
     @Mock
     private UserServiceClient userServiceClient;
-
     private LikeValidator likeValidator;
-
     private LikeDto likeDto;
-
     private UserDto userDto;
+    LikeMapper likeMapper;
+    PostMapper postMapper;
 
     @BeforeEach
     void setUp() {
@@ -63,22 +59,24 @@ class LikeServiceTest {
         likeMapper = new LikeMapperImpl();
         postMapper = new PostMapperImpl();
         likeValidator = new LikeValidator(userServiceClient);
-        likeService = new LikeService(likeValidator, likeMapper, likeRepository, postService, commentService, postMapper);
+        likeService = new LikeService(likeValidator, likeMapper, likeRepository, postService, commentService,
+                postMapper,likeEventPublisher);
     }
 
     @Test
-    void testLikePost() {
+    void testLikePost() throws JsonProcessingException {
         likeDto.setPostId(1L);
 
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
 
-        PostDto post = PostDto.builder().id(1L).build();
+        PostDto post = PostDto.builder().id(1L).authorId(2L).build();
         Mockito.when(postService.getPost(1L)).thenReturn(post);
 
         Like like = Like.builder().id(0L).userId(1L).post(postMapper.toEntity(post)).build();
 
         assertEquals(likeMapper.toDto(like), likeService.likePost(likeDto));
         verify(likeRepository).save(like);
+        verify(likeEventPublisher).publish(like);
     }
 
     @Test
@@ -110,7 +108,7 @@ class LikeServiceTest {
     }
 
     @Test
-    void testLikeComment () {
+    void testLikeComment() {
         likeDto.setCommentId(1L);
 
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
