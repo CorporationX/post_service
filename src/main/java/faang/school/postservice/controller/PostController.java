@@ -1,9 +1,8 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.exception.EmptyContentInPostException;
-import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.service.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,22 +24,20 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping("/drafts")
-    public PostDto createDraftPost(@RequestBody PostDto postDto) {
+    public PostDto createDraftPost(@RequestBody @Valid PostDto postDto) {
         log.info("Endpoint <createDraftPost>, uri='/posts/drafts' was called successfully");
-        validateData(postDto);
         return postService.crateDraftPost(postDto);
     }
 
-    @PostMapping ("/{id}/publish")
+    @PostMapping("/{id}/publish")
     public PostDto publishPost(@PathVariable("id") long postId) {
         log.info("Endpoint <publishPost>, uri='/posts/{}/publish' was called successfully", postId);
         return postService.publishPost(postId);
     }
 
     @PutMapping("/change")
-    public PostDto updatePost(@RequestBody PostDto updatePost) {
+    public PostDto updatePost(@RequestBody @Valid PostDto updatePost) {
         log.info("Endpoint <updatePost>, uri='/posts/change' was called successfully");
-        validateData(updatePost);
         return postService.updatePost(updatePost);
     }
 
@@ -78,14 +75,5 @@ public class PostController {
     public List<PostDto> getProjectPosts(@PathVariable("id") long projectId) {
         log.info("Endpoint <getProjectPosts>, uri='/posts/projects/{}' was called successfully", projectId);
         return postService.getProjectPosts(projectId);
-    }
-
-    private void validateData(PostDto postDto) {
-        if (postDto.getContent() == null || postDto.getContent().isBlank()) {
-            throw new EmptyContentInPostException("Post content cannot be empty");
-        }
-        if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
-            throw new UpdatePostException("There is not author of the post");
-        }
     }
 }
