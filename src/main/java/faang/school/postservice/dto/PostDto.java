@@ -19,7 +19,6 @@ import java.util.List;
 public class PostDto {
 
     private long id;
-    @NotNull(message = "Post content must be specified")
     @NotBlank(message = "Post content cannot be empty")
     @Size(max = 4096, message = "Post content must contains less then 4096 symbols")
     private String content;
