@@ -2,6 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.ModerationDictionaryException;
 import faang.school.postservice.exception.NetworkException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,13 @@ public class GlobalExceptionHandler {
         return e.getMessage();
     }
 
+    @ExceptionHandler(ModerationDictionaryException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String handleModerationDictionaryException(ModerationDictionaryException e) {
+        log.error("Moderation dictionary error", e);
+        return e.getMessage();
+    }
+  
     @ExceptionHandler(NetworkException.class)
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public String handleNetworkException(NetworkException e){
