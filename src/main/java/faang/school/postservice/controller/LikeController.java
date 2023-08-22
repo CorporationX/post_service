@@ -44,5 +44,4 @@ public class LikeController {
     public void unlikeComment(@PathVariable long userId, @PathVariable long commentId) {
         likeService.unlikeComment(commentId, userId);
     }
-
 }
