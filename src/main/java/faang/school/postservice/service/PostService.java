@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.corrector.external_service.TextGearsAPIService;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -24,6 +25,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final TextGearsAPIService textGearsAPIService;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
@@ -175,6 +177,16 @@ public class PostService {
             projectServiceClient.getProject(id);
         } catch (FeignException e) {
             throw new EntityNotFoundException("Project with the specified projectId does not exist");
+        }
+    }
+
+    public void processSpellCheckUnpublishedPosts() {
+        List<Post> unpublishedPosts = postRepository.findReadyToPublish();
+
+        for (Post post : unpublishedPosts) {
+            String correctedText = textGearsAPIService.correctText(post.getContent());
+            post.setContent(correctedText);
+            postRepository.save(post);
         }
     }
 }
