@@ -24,12 +24,6 @@ import java.util.List;
 public class CommentController {
     private final CommentService commentService;
 
-    @PostMapping("/publish")
-    @ResponseStatus(HttpStatus.OK)
-    public CommentEventDto publish(@RequestBody CommentEventDto commentEventDto) {
-        return commentService.publish(commentEventDto);
-    }
-
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public CommentDto createComment(@RequestBody @Valid CommentDto commentDto) {
