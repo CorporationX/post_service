@@ -8,6 +8,7 @@ import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.validator.PostValidator;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -37,6 +39,10 @@ public class PostServiceGetListMethodsTest {
     private UserServiceClient userService;
     @Mock
     private ProjectServiceClient projectService;
+    @Mock
+    private ModerationDictionary moderationDictionary;
+    @Mock
+    private Executor threadPoolForPostModeration;
 
     private PostValidator postValidator;
 
@@ -50,7 +56,7 @@ public class PostServiceGetListMethodsTest {
     @BeforeEach
     void setUp() {
         postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper);
+        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration);
     }
 
     @Test

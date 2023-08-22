@@ -1,21 +1,15 @@
 package faang.school.postservice.service;
 
 import com.google.common.collect.Lists;
-import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.NoPublishedPostException;
-import faang.school.postservice.exception.SamePostAuthorException;
-import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.service.moderation.ModerationDictionary;
-import feign.FeignException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,8 +29,6 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostValidator postValidator;
-    private final UserServiceClient userService;
-    private final ProjectServiceClient projectService;
     private final PostMapper postMapper;
     private final ModerationDictionary moderationDictionary;
     private final Executor threadPoolForPostModeration;
@@ -184,22 +176,5 @@ public class PostService {
             post.setVerifiedDate(LocalDateTime.now());
         });
         postRepository.saveAll(list);
-    }
-
-    private void validateAuthorUpdate(Post post, PostDto updatePost) {
-        Long authorId = post.getAuthorId();
-        Long projectId = post.getProjectId();
-        Long updateAuthorId = updatePost.getAuthorId();
-        Long updateProjectId = updatePost.getProjectId();
-
-        if (authorId != null) {
-            if (updateAuthorId == null || updateAuthorId != authorId) {
-                throw new UpdatePostException("Author of the post cannot be deleted or changed");
-            }
-        } else {
-            if (updateProjectId == null || updateProjectId != projectId) {
-                throw new UpdatePostException("Author of the post cannot be deleted or changed");
-            }
-        }
     }
 }

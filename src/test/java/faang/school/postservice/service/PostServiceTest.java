@@ -11,6 +11,7 @@ import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.validator.PostValidator;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
@@ -43,6 +44,8 @@ public class PostServiceTest {
     @Mock
     private ProjectServiceClient projectService;
     @Mock
+    private ModerationDictionary moderationDictionary;
+    @Mock
     private Executor threadPoolForPostModeration;
 
     private PostValidator postValidator;
@@ -62,7 +65,7 @@ public class PostServiceTest {
     @BeforeEach
     void initData() {
         postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper);
+        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration);
         incorrectPostDto = PostDto.builder()
                 .id(INCORRECT_ID)
                 .content("content")
