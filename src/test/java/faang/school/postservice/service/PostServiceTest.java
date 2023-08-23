@@ -63,6 +63,7 @@ class PostServiceTest {
     @Mock
     private RestTemplate restTemplate;
     private final String postCorrectorApiKey = "http://some-key";
+    private final String postCorrectorUrl = "https://api.textgears.com/correct?text=";
 
     @BeforeEach
     void setUp() {

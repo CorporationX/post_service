@@ -1,3 +1,3 @@
 ALTER TABLE comment
    ADD verified boolean DEFAULT false NOT NULL,
-   ADD verifiedDate timestamptz
+   ADD verified_at timestamptz
