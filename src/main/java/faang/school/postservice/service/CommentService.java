@@ -2,7 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEventDto;
-import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.messaging.CommentEventPublisher.RedisCommentEventPublisher;
 import faang.school.postservice.util.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
@@ -11,12 +10,9 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.util.exceptionhandler.ErrorCommentMessage;
 import faang.school.postservice.util.validator.CommentServiceValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -33,8 +29,8 @@ public class CommentService {
         validator.validateExistingUserAtCommentDto(commentDto);
 
         Comment comment = commentMapper.toEntity(commentDto);
-        redisCommentEventPublisher.publish(
-                new CommentEventDto(commentDto.getPostId(), commentDto.getAuthorId(), commentDto.getId()));
+        redisCommentEventPublisher.publish(new CommentEventDto(commentDto.getPostId(), commentDto.getAuthorId(),
+                commentDto.getId()));
         return commentMapper.toDto(commentRepository.save(comment));
     }
 

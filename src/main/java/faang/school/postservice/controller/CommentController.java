@@ -1,7 +1,6 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
