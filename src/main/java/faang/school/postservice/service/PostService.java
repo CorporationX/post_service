@@ -132,14 +132,12 @@ public class PostService {
     @Transactional
     public ResponsePostDto likePost(UpdatePostDto dto, Long user_id){
         Post post = postRepository.findById(dto.getId()).orElseThrow(() -> new IllegalArgumentException("Post is not found"));
-        Like newLike = Like.builder().post(post).userId(user_id).build();
+        Like newLike = Like.builder().post(post).comment(null).userId(user_id).build();
         likeRepository.save(newLike);
-        List<Like> likes = new ArrayList<>(post.getLikes());
-        likes.add(newLike);
-        post.setLikes(likes);
 
-        LikeEvent likeEvent = LikeEvent.builder().idPost(post.getId()).dateTime(LocalDateTime.now()).idUser(user_id).idAuthor(post.getAuthorId()).build();
-        likeEventPublisher.publish(likeEvent);
+        LikeEvent likeEvent = LikeEvent.builder().idPost(post.getId()).dateTime(LocalDateTime.now())
+                .idUser(user_id).idAuthor(post.getAuthorId()).build();
+        likeEventPublisher.publish(likeEvent.toString());
 
         return responsePostMapper.toDto(post);
     }

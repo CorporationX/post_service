@@ -47,7 +47,7 @@ public class PostController {
     }
 
     @PutMapping("/like")
-    public ResponsePostDto likePost(@RequestHeader("x-user-id") Long userId, UpdatePostDto dto) {
+    public ResponsePostDto likePost(@RequestHeader("x-user-id") Long userId, @RequestBody UpdatePostDto dto) {
         return postService.likePost(dto, userId);
     }
 

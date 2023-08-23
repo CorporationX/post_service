@@ -10,10 +10,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 @RequiredArgsConstructor
 @Component
-public class LikeEventPublisher{
+public class LikeEventPublisher implements MessagePublisher{
     private final RedisTemplate<String, Object> redisTemplate;
     private final LikeTopic likeTopic;
-    public void publish(LikeEvent message) {
+    public void publish(String message) {
         redisTemplate.convertAndSend(likeTopic.topic().getTopic(), message);
     }
 }

@@ -16,5 +16,13 @@ public class LikeEvent implements Serializable {
     private Long idAuthor;
     private Long idUser;
     private LocalDateTime dateTime;
-
+    @Override
+    public String toString() {
+        return "LikeEvent{" +
+                "idPost=" + idPost +
+                ", idAuthor=" + idAuthor +
+                ", idUser=" + idUser +
+                ", dateTime=" + dateTime +
+                '}';
+    }
 }
