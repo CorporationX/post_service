@@ -3,11 +3,9 @@ package faang.school.postservice.controller.post;
 import faang.school.postservice.dto.post.DtosResponse;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.HashtagService;
-import faang.school.postservice.service.PostService;
 import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/post")
@@ -93,7 +90,7 @@ public class PostController {
     }
 
     @GetMapping("/byhashtag/{hashtag}")
-    List<PostDto> getByHashtag(@PathVariable String hashtag) {
+    public List<PostDto> getByHashtag(@PathVariable String hashtag) {
         if (hashtag.length() > 255) throw new DataValidationException("Hashtag in too long");
         return hashtagService.getPostByHashtag(hashtag);
     }

@@ -38,7 +38,7 @@ public class HashtagService {
                 .collect(Collectors.toList());
     }
 
-    @Async("taskExecutor")
+    @Async("moderationExecutor")
     @Transactional
     @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 1000, multiplier = 2))
     public void parseContentToAdd(Post post) {
@@ -57,7 +57,7 @@ public class HashtagService {
         }
     }
 
-    @Async("taskExecutor")
+    @Async("moderationExecutor")
     @Transactional
     @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 1000, multiplier = 2))
     public void parsePostContentAndSaveHashtags(Post post, String previousContent) {
