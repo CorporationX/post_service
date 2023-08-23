@@ -49,6 +49,13 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+      every_day_cron: "0 0 0 * * ?"
+      thread-pool:
+        core-pool-size: 1
+        max-pool-size: 10
+        queue-capacity: 1000
+    batch:
+      size: 1000
   moderation:
     scheduler:
       cron: "0 0 0 * * ?" # every day at 00:00:00

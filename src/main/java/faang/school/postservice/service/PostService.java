@@ -1,20 +1,15 @@
 package faang.school.postservice.service;
 
 import com.google.common.collect.Lists;
-import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.NoPublishedPostException;
-import faang.school.postservice.exception.SamePostAuthorException;
-import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.service.moderation.ModerationDictionary;
-import feign.FeignException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,8 +28,7 @@ import java.util.concurrent.Executor;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final UserServiceClient userService;
-    private final ProjectServiceClient projectService;
+    private final PostValidator postValidator;
     private final PostMapper postMapper;
     private final ModerationDictionary moderationDictionary;
     private final Executor threadPoolForPostModeration;
@@ -43,7 +37,7 @@ public class PostService {
     private int sublistSize;
 
     public PostDto crateDraftPost(PostDto postDto) {
-        validateData(postDto);
+        postValidator.validateData(postDto);
 
         Post savedPost = postRepository.save(postMapper.toEntity(postDto));
         log.info("Draft post was created successfully, draftId={}", savedPost.getId());
@@ -51,7 +45,7 @@ public class PostService {
     }
 
     public PostDto publishPost(long postId) {
-        Post post = validatePostId(postId);
+        Post post = postValidator.validatePostId(postId);
 
         if (post.isPublished() || (post.getScheduledAt() != null
                 && post.getScheduledAt().isAfter(LocalDateTime.now()))) {
@@ -69,9 +63,14 @@ public class PostService {
 
     public PostDto updatePost(PostDto updatePost) {
         long postId = updatePost.getId();
-        Post post = validatePostId(postId);
-        validateAuthorUpdate(post, updatePost);
-        validateScheduleAt(post, updatePost);
+        Post post = postValidator.validatePostId(postId);
+        postValidator.validateAuthorUpdate(post, updatePost);
+        LocalDateTime updateScheduleAt = updatePost.getScheduledAt();
+
+        if (updateScheduleAt != null && updateScheduleAt.isAfter(post.getScheduledAt())) {
+            post.setScheduledAt(updateScheduleAt);
+        }
+
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         log.info("Post was updated successfully, postId={}", post.getId());
@@ -79,7 +78,7 @@ public class PostService {
     }
 
     public PostDto softDelete(long postId) {
-        Post post = validatePostId(postId);
+        Post post = postValidator.validatePostId(postId);
 
         if (post.isDeleted()) {
             throw new AlreadyDeletedException("Post has been already deleted");
@@ -90,7 +89,7 @@ public class PostService {
     }
 
     public PostDto getPost(long postId) {
-        Post post = validatePostId(postId);
+        Post post = postValidator.validatePostId(postId);
 
         if (post.isDeleted()) {
             throw new AlreadyDeletedException("This post has been already deleted");
@@ -105,7 +104,7 @@ public class PostService {
     }
 
     public List<PostDto> getUserDrafts(long userId) {
-        validateUserId(userId);
+        postValidator.validateUserId(userId);
 
         List<PostDto> userDrafts = postRepository.findByAuthorId(userId).stream()
                 .filter(post -> !post.isPublished() && !post.isDeleted())
@@ -118,7 +117,7 @@ public class PostService {
     }
 
     public List<PostDto> getProjectDrafts(long projectId) {
-        validateProjectId(projectId);
+        postValidator.validateProjectId(projectId);
 
         List<PostDto> projectDrafts = postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isPublished() && !post.isDeleted())
@@ -131,7 +130,7 @@ public class PostService {
     }
 
     public List<PostDto> getUserPosts(long userId) {
-        validateUserId(userId);
+        postValidator.validateUserId(userId);
 
         List<PostDto> userPosts = postRepository.findByAuthorIdWithLikes(userId).stream()
                 .filter(post -> post.isPublished() && !post.isDeleted())
@@ -148,7 +147,7 @@ public class PostService {
     }
 
     public List<PostDto> getProjectPosts(long projectId) {
-        validateProjectId(projectId);
+        postValidator.validateProjectId(projectId);
 
         List<PostDto> projectPosts = postRepository.findByProjectIdWithLikes(projectId).stream()
                 .filter(post -> post.isPublished() && !post.isDeleted())
@@ -186,65 +185,5 @@ public class PostService {
             post.setVerifiedDate(LocalDateTime.now());
         });
         postRepository.saveAll(list);
-    }
-
-    private Post validatePostId(long postId) {
-        return postRepository.findById(postId).orElseThrow(
-                () -> new EntityNotFoundException("This post does not exist"));
-    }
-
-    private void validateScheduleAt(Post post, PostDto updatePost) {
-        LocalDateTime updateScheduleAt = updatePost.getScheduledAt();
-
-        if (updateScheduleAt != null && updateScheduleAt.isAfter(post.getScheduledAt())) {
-            post.setScheduledAt(updateScheduleAt);
-        }
-    }
-
-    private void validateData(PostDto postDto) {
-        Long userId = postDto.getAuthorId();
-        Long projectId = postDto.getProjectId();
-
-        if (userId != null && projectId != null) {
-            throw new SamePostAuthorException("The author of the post cannot be both a user and a project");
-        }
-        if (userId != null) {
-            validateUserId(userId);
-        } else {
-            validateProjectId(projectId);
-        }
-    }
-
-    private void validateAuthorUpdate(Post post, PostDto updatePost) {
-        Long authorId = post.getAuthorId();
-        Long projectId = post.getProjectId();
-        Long updateAuthorId = updatePost.getAuthorId();
-        Long updateProjectId = updatePost.getProjectId();
-
-        if (authorId != null) {
-            if (updateAuthorId == null || updateAuthorId != authorId) {
-                throw new UpdatePostException("Author of the post cannot be deleted or changed");
-            }
-        } else {
-            if (updateProjectId == null || updateProjectId != projectId) {
-                throw new UpdatePostException("Author of the post cannot be deleted or changed");
-            }
-        }
-    }
-
-    private void validateUserId(long id) {
-        try {
-            userService.getUser(id);
-        } catch (FeignException e) {
-            throw new EntityNotFoundException("This user is not found");
-        }
-    }
-
-    private void validateProjectId(long id) {
-        try {
-            projectService.getProject(id);
-        } catch (FeignException e) {
-            throw new EntityNotFoundException("This project is not found");
-        }
     }
 }
