@@ -50,6 +50,6 @@ public class Comment {
     private boolean verified;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "verifiedDate")
+    @Column(name = "verified_at")
     private LocalDateTime verifiedDate;
 }
