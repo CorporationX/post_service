@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityAlreadyExistException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Like;
@@ -24,11 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -132,6 +129,7 @@ public class PostService {
     @Transactional
     public ResponsePostDto likePost(UpdatePostDto dto, Long user_id){
         Post post = postRepository.findById(dto.getId()).orElseThrow(() -> new IllegalArgumentException("Post is not found"));
+        checkExistLikeToPost(post, user_id);
         Like newLike = Like.builder().post(post).comment(null).userId(user_id).build();
         likeRepository.save(newLike);
 
@@ -140,6 +138,14 @@ public class PostService {
         likeEventPublisher.publish(likeEvent.toString());
 
         return responsePostMapper.toDto(post);
+    }
+
+    private void checkExistLikeToPost(Post post, Long user_id){
+        List<Like> likes = post.getLikes();
+        Optional<Like> existingLike = likes.stream().filter(like -> like.getUserId().equals(user_id)).findFirst();
+        existingLike.ifPresent(like -> {
+            throw new EntityAlreadyExistException(String.format("User with id %s already likes post with id %s", user_id, post.getId()));
+        });
     }
 
 

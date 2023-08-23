@@ -32,19 +32,15 @@ public class Post {
     @Column(name = "project_id")
     private Long projectId;
 
-    @EqualsAndHashCode.Exclude @ToString.Exclude
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Like> likes;
 
-    @EqualsAndHashCode.Exclude @ToString.Exclude
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments;
 
-    @EqualsAndHashCode.Exclude @ToString.Exclude
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;
 
-    @EqualsAndHashCode.Exclude @ToString.Exclude
     @ManyToMany(mappedBy = "posts")
     private List<Hashtag> hashtags;
 
@@ -81,27 +77,4 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
-
-//    @Override
-//    public String toString() {
-//        return "Post{" +
-//                "id=" + id +
-//                ", content='" + content + '\'' +
-//                ", authorId=" + authorId +
-//                ", projectId=" + projectId +
-//                ", likes=" + (likes != null ? likes.toString() : "null") +
-//                ", comments=" + (comments != null ? comments.toString() : "null") +
-//                ", albums=" + (albums != null ? albums.toString() : "null") +
-//                ", hashtags=" + (hashtags != null ? hashtags.toString() : "null") +
-//                ", ad=" + ad +
-//                ", published=" + published +
-//                ", publishedAt=" + publishedAt +
-//                ", scheduledAt=" + scheduledAt +
-//                ", deleted=" + deleted +
-//                ", createdAt=" + createdAt +
-//                ", updatedAt=" + updatedAt +
-//                ", verified=" + verified +
-//                ", verifiedAt=" + verifiedAt +
-//                '}';
-//    }
 }

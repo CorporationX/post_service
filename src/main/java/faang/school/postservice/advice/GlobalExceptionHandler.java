@@ -1,9 +1,6 @@
 package faang.school.postservice.advice;
 
-import faang.school.postservice.exception.DataValidException;
-import faang.school.postservice.exception.DtoGlobalException;
-import faang.school.postservice.exception.DtoGlobalExceptionList;
-import faang.school.postservice.exception.NotFoundException;
+import faang.school.postservice.exception.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +36,12 @@ public class GlobalExceptionHandler {
         log.error("the object was not found in the database: {}", e.toString());
         return new ResponseEntity<>(new DtoGlobalException(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(EntityAlreadyExistException.class)
+    public ResponseEntity<DtoGlobalException> entityAlreadyExistException(EntityAlreadyExistException e) {
+        log.error("the object already exist in the database: {}", e.toString());
+        return new ResponseEntity<>(new DtoGlobalException(e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<DtoGlobalException> runtimeException(RuntimeException e) {
