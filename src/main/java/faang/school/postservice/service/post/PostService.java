@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.post;
 
 
 import faang.school.postservice.client.ProjectServiceClient;
@@ -119,6 +119,15 @@ public class PostService {
         List<Post> postsByProjectId = postRepository.findPublishedPostsByProjectId(projectId);
 
         return postMapper.toDtos(postsByProjectId);
+    }
+    @Transactional
+    public List<Post> getAllPosts(){
+        return postRepository.findAll();
+    }
+
+    @Transactional
+    public void save(Post post){
+        postRepository.save(post);
     }
 
     private Post getPostById(Long id) {

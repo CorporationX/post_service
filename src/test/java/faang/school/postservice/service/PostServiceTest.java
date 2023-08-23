@@ -5,8 +5,8 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
@@ -369,15 +369,6 @@ class PostServiceTest {
                 .thenReturn(Optional.of(post));
 
         Assertions.assertDoesNotThrow(() -> postService.getPost(1L));
-    }
-
-    @Test
-    void getDrafts_ShouldMapCorrectlyToDtos() {
-        List<Post> posts = buildListOfPosts();
-
-        List<PostDto> actual = postMapper.toDtos(posts);
-
-        Assertions.assertIterableEquals(buildListOfPostDtos(), actual);
     }
 
     @Test

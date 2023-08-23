@@ -1,10 +1,11 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.DtosResponse;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.util.exception.DataValidationException;
+import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;

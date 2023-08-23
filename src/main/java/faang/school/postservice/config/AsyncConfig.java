@@ -12,10 +12,10 @@ import java.util.concurrent.Executor;
 @EnableAsync
 @RequiredArgsConstructor
 public class AsyncConfig {
-    private final ThreadPoolConfig threadPoolConfig;
+    private final ModerationThreadPoolConfig threadPoolConfig;
 
-    @Bean(name="taskExecutor")
-    public Executor taskExecutor() {
+    @Bean
+    public Executor moderationExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setQueueCapacity(threadPoolConfig.getQueueCapacity());
         executor.setMaxPoolSize(threadPoolConfig.getMaxPoolSize());
