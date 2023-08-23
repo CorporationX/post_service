@@ -42,7 +42,6 @@ public class PostServiceGetListMethodsTest {
     private ProjectServiceClient projectService;
     @Mock
     private PublisherService publisherService;
-    @InjectMocks
     @Mock
     private ModerationDictionary moderationDictionary;
     @Mock
@@ -60,7 +59,7 @@ public class PostServiceGetListMethodsTest {
     @BeforeEach
     void setUp() {
         postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration);
+        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration, publisherService);
     }
 
     @Test

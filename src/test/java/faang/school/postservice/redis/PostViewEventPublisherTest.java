@@ -1,7 +1,7 @@
 package faang.school.postservice.redis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.redis.PostViewEventDto;
+import faang.school.postservice.service.redis.ObjectMapperWriter;
 import faang.school.postservice.service.redis.PostViewEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,7 @@ public class PostViewEventPublisherTest {
     @Mock
     private ChannelTopic channelTopic;
     @Mock
-    private ObjectMapper objectMapper;
+    private ObjectMapperWriter writer;
     @InjectMocks
     private PostViewEventPublisher postViewEventPublisher;
 
