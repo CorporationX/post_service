@@ -112,7 +112,7 @@ tasks.jacocoTestCoverageVerification {
                     "faang.school.postservice.model.**",
                     "faang.school.postservice.repository.**",
                     "faang.school.postservice.controller.**",
-                    "faang.school.postservice.PostServiceApplication.class",
+                    "faang.school.postservice.PostServiceApplication",
                     "com.json.student.**")
             limit {
                 minimum = "0.7".toBigDecimal()
