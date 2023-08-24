@@ -92,7 +92,7 @@ tasks.jacocoTestReport {
                     "faang/school/postservice/model/**",
                     "faang/school/postservice/repository/**",
                     "faang/school/postservice/controller/**",
-                    "faang/school/postservice/ProjectServiceApplication.class",
+                    "faang/school/postservice/PostServiceApplication.class",
                     "com/json/student/**"
             )
         }
@@ -104,16 +104,16 @@ tasks.jacocoTestCoverageVerification {
         rule {
             element = "CLASS"
             excludes = listOf(
-                    "faang/school/postservice/entity/**",
-                    "faang/school/postservice/dto/**",
-                    "faang/school/postservice/config/**",
-                    "faang/school/postservice/exception/**",
-                    "faang/school/postservice/client/**",
-                    "faang/school/postservice/model/**",
-                    "faang/school/postservice/repository/**",
-                    "faang/school/postservice/controller/**",
-                    "faang/school/postservice/ProjectServiceApplication.class",
-                    "com/json/student/**")
+                    "faang.school.postservice.entity.**",
+                    "faang.school.postservice.dto.**",
+                    "faang.school.postservice.config.**",
+                    "faang.school.postservice.exception.**",
+                    "faang.school.postservice.client.**",
+                    "faang.school.postservice.model.**",
+                    "faang.school.postservice.repository.**",
+                    "faang.school.postservice.controller.**",
+                    "faang.school.postservice.PostServiceApplication.class",
+                    "com.json.student.**")
             limit {
                 minimum = "0.7".toBigDecimal()
             }
