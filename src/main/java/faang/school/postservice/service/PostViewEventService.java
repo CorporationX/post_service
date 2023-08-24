@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.redis.PostViewEventPublisher;
@@ -21,11 +22,14 @@ public class PostViewEventService {
     private final ObjectMapper objectMapper;
     private final PostViewEventPublisher postViewEventPublisher;
     private final ChannelTopic postViewTopic;
+    private final ProjectServiceClient projectServiceClient;
 
     public PostViewEventDto getPostViewEventDto(Long userId, Post post) {
         PostViewEventDto postViewEventDto = objectMapper.convertValue(post, PostViewEventDto.class);
+
         postViewEventDto.setCreatedAt(LocalDateTime.now());
         postViewEventDto.setUserId(userId);
+        postViewEventDto.setAuthorId(getAuthorId(post));
         return postViewEventDto;
     }
 
@@ -42,5 +46,11 @@ public class PostViewEventService {
                 postViewEventDto.getUserId(),
                 postViewEventDto.getCreatedAt()
         );
+    }
+
+    private Long getAuthorId(Post post) {
+        return (post.getProjectId() != null)
+                ? projectServiceClient.getProject(post.getProjectId()).getOwnerId()
+                : post.getAuthorId();
     }
 }

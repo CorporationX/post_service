@@ -17,6 +17,5 @@ public class PostViewEventDto {
     private Long userId;
     private Long postId;
     private Long authorId;
-    private Long projectId;
     private LocalDateTime createdAt;
 }
