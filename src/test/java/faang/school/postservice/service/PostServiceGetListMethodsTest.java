@@ -15,6 +15,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -40,6 +41,8 @@ public class PostServiceGetListMethodsTest {
     @Mock
     private ProjectServiceClient projectService;
     @Mock
+    private PublisherService publisherService;
+    @Mock
     private ModerationDictionary moderationDictionary;
     @Mock
     private Executor threadPoolForPostModeration;
@@ -56,7 +59,7 @@ public class PostServiceGetListMethodsTest {
     @BeforeEach
     void setUp() {
         postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration);
+        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration, publisherService);
     }
 
     @Test
@@ -132,6 +135,7 @@ public class PostServiceGetListMethodsTest {
         List<PostDto> actualUserPosts = postService.getUserPosts(CORRECT_ID);
         List<PostDto> expectedUserPost = getCorrectListOfPostDto();
         assertEquals(expectedUserPost, actualUserPosts);
+        verify(publisherService, times(3)).publishPostViewEventToRedis(any());
     }
 
     @Test
@@ -157,6 +161,7 @@ public class PostServiceGetListMethodsTest {
         List<PostDto> actualProjectPosts = postService.getProjectPosts(CORRECT_ID);
         List<PostDto> expectedProjectPosts = getCorrectListOfPostDto();
         assertEquals(expectedProjectPosts, actualProjectPosts);
+        verify(publisherService, times(3)).publishPostViewEventToRedis(any());
     }
 
     private List<PostDto> getCorrectListOfDraftPostDto() {

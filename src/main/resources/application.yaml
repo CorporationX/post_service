@@ -26,6 +26,8 @@ spring:
           name: calculations_channel
         event_channels:
           likePost: /likes/post
+        post_channel:
+          name: post_channel
 
 server:
   port: 8081

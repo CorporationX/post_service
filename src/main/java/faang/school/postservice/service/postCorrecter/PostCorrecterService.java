@@ -6,6 +6,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
@@ -21,14 +22,14 @@ public class PostCorrecterService {
     private final PostRepository postRepository;
     private final TextCorrecter textCorrecter;
     private final BingSpellCheckingConfig bingSpellCheckingConfig;
-    private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    private final ThreadPoolTaskExecutor bingSpellAsyncExecutor;
 
     public void correctUnpublishedPosts() throws JsonProcessingException {
         List<Post> readyToPublish = postRepository.findNotPublished();
 
         int rateLimit = bingSpellCheckingConfig.getRateLimitPerSecond();
         AtomicInteger requestCount = new AtomicInteger();
-        threadPoolTaskExecutor.submit(() -> {
+        bingSpellAsyncExecutor.submit(() -> {
             for (Post toPublish : readyToPublish) {
                 String content = toPublish.getContent();
                 Post post = toPublish;
