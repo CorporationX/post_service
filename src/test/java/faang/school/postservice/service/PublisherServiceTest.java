@@ -1,9 +1,9 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.mapper.PostViewEventMapperImpl;
+import faang.school.postservice.mapper.PostEventMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.service.redis.PostViewEventPublisher;
+import faang.school.postservice.service.redis.PostEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,9 +18,9 @@ import static org.mockito.Mockito.*;
 public class PublisherServiceTest {
 
     @Spy
-    private PostViewEventMapperImpl postViewEventMapper;
+    private PostEventMapperImpl postEventMapper;
     @Mock
-    private PostViewEventPublisher eventPublisher;
+    private PostEventPublisher eventPublisher;
     @Mock
     private UserContext userContext;
     @InjectMocks
@@ -36,8 +36,8 @@ public class PublisherServiceTest {
     }
 
     @Test
-    void testPublishPostViewEventToRedis() {
-        publisherService.publishPostViewEventToRedis(post);
+    void testPublishPostEventToRedis() {
+        publisherService.publishPostEventToRedis(post);
         verify(userContext).getUserId();
         verify(eventPublisher).publish(any());
     }

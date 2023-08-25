@@ -1,8 +1,8 @@
 package faang.school.postservice.redis;
 
-import faang.school.postservice.dto.redis.PostViewEventDto;
+import faang.school.postservice.dto.redis.PostEventDto;
 import faang.school.postservice.service.redis.ObjectMapperWriter;
-import faang.school.postservice.service.redis.PostViewEventPublisher;
+import faang.school.postservice.service.redis.PostEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,11 +23,11 @@ public class PostViewEventPublisherTest {
     @Mock
     private ObjectMapperWriter writer;
     @InjectMocks
-    private PostViewEventPublisher postViewEventPublisher;
+    private PostEventPublisher postViewEventPublisher;
 
     @Test
     void testPublish() {
-        PostViewEventDto dto = PostViewEventDto.builder()
+        PostEventDto dto = PostEventDto.builder()
                 .postId(1L)
                 .authorId(2L)
                 .build();

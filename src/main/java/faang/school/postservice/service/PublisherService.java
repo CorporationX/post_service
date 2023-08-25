@@ -1,10 +1,10 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.redis.PostViewEventDto;
-import faang.school.postservice.mapper.PostViewEventMapper;
+import faang.school.postservice.dto.redis.PostEventDto;
+import faang.school.postservice.mapper.PostEventMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.service.redis.PostViewEventPublisher;
+import faang.school.postservice.service.redis.PostEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,15 +14,15 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class PublisherService {
 
-    private final PostViewEventMapper eventMapper;
-    private final PostViewEventPublisher postViewEventPublisher;
+    private final PostEventMapper eventMapper;
+    private final PostEventPublisher postEventPublisher;
     private final UserContext userContext;
 
-    public void publishPostViewEventToRedis(Post post) {
-        PostViewEventDto postViewEvent = eventMapper.toDto(post);
-        postViewEvent.setViewTime(LocalDateTime.now());
-        postViewEvent.setUserId(userContext.getUserId());
+    public void publishPostEventToRedis(Post post) {
+        PostEventDto postEvent = eventMapper.toDto(post);
+        postEvent.setViewTime(LocalDateTime.now());
+        postEvent.setUserId(userContext.getUserId());
 
-        postViewEventPublisher.publish(postViewEvent);
+        postEventPublisher.publish(postEvent);
     }
 }

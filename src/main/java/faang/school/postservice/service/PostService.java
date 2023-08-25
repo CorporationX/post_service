@@ -57,6 +57,7 @@ public class PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        publisherService.publishPostEventToRedis(post);
         log.info("Post was published successfully, postId={}", post.getId());
         return postMapper.toDto(post);
     }
@@ -97,7 +98,7 @@ public class PostService {
         if (!post.isPublished()) {
             throw new NoPublishedPostException("This post hasn't been published yet");
         }
-        publisherService.publishPostViewEventToRedis(post);
+        publisherService.publishPostEventToRedis(post);
 
         log.info("Post has taken from DB successfully, postId={}", postId);
         return postMapper.toDto(post);
@@ -136,7 +137,7 @@ public class PostService {
                 .filter(post -> post.isPublished() && !post.isDeleted())
                 .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
                 .map(post -> {
-                    publisherService.publishPostViewEventToRedis(post);
+                    publisherService.publishPostEventToRedis(post);
                     return postMapper.toDto(post);
                 })
                 .toList();
@@ -153,7 +154,7 @@ public class PostService {
                 .filter(post -> post.isPublished() && !post.isDeleted())
                 .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
                 .map(post -> {
-                    publisherService.publishPostViewEventToRedis(post);
+                    publisherService.publishPostEventToRedis(post);
                     return postMapper.toDto(post);
                 })
                 .toList();

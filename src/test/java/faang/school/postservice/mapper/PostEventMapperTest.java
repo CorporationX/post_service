@@ -1,6 +1,6 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.redis.PostViewEventDto;
+import faang.school.postservice.dto.redis.PostEventDto;
 import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,12 +11,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class PostViewEventMapperTest {
+public class PostEventMapperTest {
 
     @Spy
-    private PostViewEventMapperImpl postViewEventMapper;
+    private PostEventMapperImpl postEventMapper;
     private Post post;
-    private PostViewEventDto dto;
+    private PostEventDto dto;
 
     @BeforeEach
     void initData() {
@@ -24,20 +24,20 @@ public class PostViewEventMapperTest {
                 .id(1L)
                 .authorId(2L)
                 .build();
-        dto = PostViewEventDto.builder()
+        dto = PostEventDto.builder()
                 .postId(1L)
                 .authorId(2L)
                 .build();
     }
     @Test
     void testToDto() {
-        PostViewEventDto actualDto = postViewEventMapper.toDto(post);
+        PostEventDto actualDto = postEventMapper.toDto(post);
         assertEquals(dto, actualDto);
     }
 
     @Test
     void testToEntity() {
-        Post actualPost = postViewEventMapper.toEntity(dto);
+        Post actualPost = postEventMapper.toEntity(dto);
         assertEquals(post, actualPost);
     }
 }
