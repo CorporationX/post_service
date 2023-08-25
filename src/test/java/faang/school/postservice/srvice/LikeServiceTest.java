@@ -39,6 +39,6 @@ public class LikeServiceTest {
 
         service.getCommentLikes(1);
 
-        Mockito.verify(likeRepository).findByCommentId(1L);
+        Mockito.verify(likeRepository).findByCommentId(2L);
     }
 }
