@@ -7,6 +7,6 @@ import org.junit.jupiter.api.Test;
 class PostServiceAppTests {
     @Test
     void contextLoads() {
-        Assertions.assertThat(43 + 2).isEqualTo(45);
+        Assertions.assertThat(43 + 3).isEqualTo(46);
     }
 }
