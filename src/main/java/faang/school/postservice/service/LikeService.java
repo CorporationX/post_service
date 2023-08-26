@@ -2,6 +2,8 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -15,6 +17,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,6 +30,7 @@ public class LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final LikeMapper likeMapper;
+    private static final int BATCH_SIZE = 100;
 
     public LikeDto createLikeOnPost(LikeDto likeDto) {
         isUserExist(likeDto);
@@ -89,5 +93,27 @@ public class LikeService {
         } catch (FeignException.FeignClientException e) {
             throw new DataValidationException("This user doesn't exist");
         }
+    }
+
+    public List<UserDto> getUsersLikeFromPost(long postId){
+        List<Like> listLike = likeRepository.findByPostId(postId);
+        List<Long> userIds = listLike
+                .stream()
+                .map(like -> like.getUserId())
+                .toList();
+        return retrieveUsersByIds(userIds);
+    }
+
+    private List<UserDto> retrieveUsersByIds(List<Long> userIds) {
+        List<UserDto> result = new ArrayList<>(userIds.size());
+        for (int i = 0; i < userIds.size(); i += BATCH_SIZE) {
+            int size = i + BATCH_SIZE;
+            if (size > userIds.size()) {
+                size = userIds.size();
+            }
+            List<Long> subId = userIds.subList(i, size);
+            result.addAll(userServiceClient.getUsersByIds(subId));
+        }
+        return result;
     }
 }

@@ -1,9 +1,11 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.LikeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,5 +45,11 @@ public class LikeController {
     @ResponseStatus(HttpStatus.OK)
     public List<LikeDto> getAllPostLikes(@RequestBody @Valid LikeDto likeDto) {
         return likeService.getAllPostLikes(likeDto);
+    }
+
+    @GetMapping("/{postId}/getAllUsers")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserDto> getAllUsersFromPost(@PathVariable long postId) {
+        return likeService.getUsersLikeFromPost(postId);
     }
 }
