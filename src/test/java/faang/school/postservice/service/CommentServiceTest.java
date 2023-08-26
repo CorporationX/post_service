@@ -7,7 +7,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.util.exceptionhandler.ErrorCommentMessage;
-import faang.school.postservice.util.validator.comment.CommentServiceValidator;
+import faang.school.postservice.util.validator.CommentServiceValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

@@ -13,6 +13,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableRetry
 @EnableAsync
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
+@EnableAsync
+@EnableRetry
 public class PostServiceApp {
     public static void main(String[] args) {
         new SpringApplicationBuilder(PostServiceApp.class)

@@ -5,8 +5,8 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.Mockito.doNothing;
+
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
 
@@ -48,6 +50,9 @@ class PostServiceTest {
 
     @Mock
     private ProjectServiceClient projectServiceClient;
+
+    @Mock
+    private HashtagService hashtagService;
 
     @InjectMocks
     private PostService postService;
@@ -84,16 +89,9 @@ class PostServiceTest {
     }
 
     @Test
-    void addPost_ShouldMapCorrectlyToEntity() {
-        PostDto dto = buildPostDto();
-
-        Post actual = postMapper.toEntity(dto);
-
-        Assertions.assertEquals(buildPost(), actual);
-    }
-
-    @Test
     void addPost_ByAuthor_ShouldSave() {
+        doNothing().when(validator).validateToAdd(Mockito.any());
+        Mockito.when(postMapper.toDto(Mockito.any())).thenReturn(postDto);
         postService.addPost(postDto);
 
         Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());

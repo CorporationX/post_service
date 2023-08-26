@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.user;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,8 +15,10 @@ import java.util.List;
 @AllArgsConstructor
 public class GoalDto {
     private Long id;
+    @NotBlank
     private String description;
     private Long parentId;
+    @NotBlank
     private String title;
     private String status;
     private LocalDateTime deadline;

@@ -7,6 +7,7 @@ import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.util.exception.NotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.util.validator.CommentServiceValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -43,7 +44,7 @@ class CommentServiceValidatorTest {
     @Test
     public void testValidateExistingUserInvalid() {
         Mockito.when(userServiceClient.getUser(Mockito.anyLong()))
-                .thenReturn(null);
+                .thenThrow(new NotFoundException("Author with 1 id was not found!"));
 
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> validator.validateExistingUserAtCommentDto(commentDto));

@@ -1,9 +1,10 @@
-package faang.school.postservice.controller.album;
+package faang.school.postservice.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.service.album.AlbumService;
+import faang.school.postservice.service.AlbumService;
 import faang.school.postservice.util.exception.DataValidationException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ public class AlbumController {
     private final AlbumService service;
 
     @PostMapping()
-    public ResponseEntity<AlbumDto> createAlbum(@RequestBody AlbumDto dto) throws JsonProcessingException {
+    public ResponseEntity<AlbumDto> createAlbum(@RequestBody @Valid AlbumDto dto) throws JsonProcessingException {
         return ResponseEntity.ok().body(service.createAlbum(dto));
     }
 
@@ -26,7 +27,7 @@ public class AlbumController {
     }
 
     @PutMapping
-    public ResponseEntity<AlbumDto> updateAlbum(@RequestHeader(value = "x-user-id") long userId, @RequestBody AlbumDto dto) throws JsonProcessingException {
+    public ResponseEntity<AlbumDto> updateAlbum(@RequestHeader(value = "x-user-id") long userId, @RequestBody @Valid AlbumDto dto) throws JsonProcessingException {
         if (dto.getId() == null) throw new DataValidationException("An album cannot be updated without id");
         var responseDto = service.update(dto, userId);
         return ResponseEntity.ok().body(responseDto);
