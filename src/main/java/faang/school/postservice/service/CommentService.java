@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.event.CommentEvent;
+import faang.school.postservice.dto.redis.CommentEvent;
 import faang.school.postservice.exception.DataNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.publisher.CommentEventPublisher;
