@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class LikeDto {
     private Long id;
 
-    @NotNull
+    @NotNull(message = "User ID must be specified")
     private Long userId;
     private Long postId;
     private Long commentId;

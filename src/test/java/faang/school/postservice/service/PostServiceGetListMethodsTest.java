@@ -8,8 +8,11 @@ import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.moderation.ModerationDictionary;
+import faang.school.postservice.validator.PostValidator;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -36,13 +40,27 @@ public class PostServiceGetListMethodsTest {
     private UserServiceClient userService;
     @Mock
     private ProjectServiceClient projectService;
-    @InjectMocks
+    @Mock
+    private PublisherService publisherService;
+    @Mock
+    private ModerationDictionary moderationDictionary;
+    @Mock
+    private Executor threadPoolForPostModeration;
+
+    private PostValidator postValidator;
+
     private PostService postService;
 
     private final long CORRECT_ID = 1L;
     private final LocalDateTime TEST_TIME = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
     private UserDto correctUserDto = UserDto.builder().build();
     private ProjectDto correctProjectDto = ProjectDto.builder().build();
+
+    @BeforeEach
+    void setUp() {
+        postValidator = new PostValidator(userService, projectService, postRepository);
+        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration, publisherService);
+    }
 
     @Test
     void testGetUserDraftsWithoutUserInDB() {
@@ -117,6 +135,7 @@ public class PostServiceGetListMethodsTest {
         List<PostDto> actualUserPosts = postService.getUserPosts(CORRECT_ID);
         List<PostDto> expectedUserPost = getCorrectListOfPostDto();
         assertEquals(expectedUserPost, actualUserPosts);
+        verify(publisherService, times(3)).publishPostViewEventToRedis(any());
     }
 
     @Test
@@ -142,6 +161,7 @@ public class PostServiceGetListMethodsTest {
         List<PostDto> actualProjectPosts = postService.getProjectPosts(CORRECT_ID);
         List<PostDto> expectedProjectPosts = getCorrectListOfPostDto();
         assertEquals(expectedProjectPosts, actualProjectPosts);
+        verify(publisherService, times(3)).publishPostViewEventToRedis(any());
     }
 
     private List<PostDto> getCorrectListOfDraftPostDto() {
