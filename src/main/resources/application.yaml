@@ -52,5 +52,8 @@ payment-service:
 
 ad-remover:
   cron: "0 0 3 0 0 ?" #every day at 03:00
-  list-size: 100
+  batch: 100
   thread-count: 5
+  retry:
+    maxAttempts: 5
+    maxDelay: 1000

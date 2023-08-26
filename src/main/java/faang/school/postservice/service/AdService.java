@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 public class AdService {
     private final AdRepository adRepository;
 
-    @Value("${ad-remover.list-size}")
+    @Value("${ad-remover.batch}")
     private final int listSize;
 
     @Value("${ad-remover.thread-count}")
