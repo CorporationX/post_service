@@ -104,6 +104,15 @@ public class LikeService {
         return retrieveUsersByIds(userIds);
     }
 
+    public List<UserDto> getUsersLikeFromComment(long commentId) {
+        List<Like> listLike = likeRepository.findByCommentId(commentId);
+        List<Long> userIds = listLike
+                .stream()
+                .map(like -> like.getUserId())
+                .toList();
+        return retrieveUsersByIds(userIds);
+    }
+
     private List<UserDto> retrieveUsersByIds(List<Long> userIds) {
         List<UserDto> result = new ArrayList<>(userIds.size());
         for (int i = 0; i < userIds.size(); i += BATCH_SIZE) {

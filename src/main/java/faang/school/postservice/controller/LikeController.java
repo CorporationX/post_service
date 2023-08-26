@@ -49,7 +49,13 @@ public class LikeController {
 
     @GetMapping("/{postId}/getAllUsers")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserDto> getAllUsersFromPost(@PathVariable long postId) {
+    public List<UserDto> getAllUsersFromPost(@PathVariable @Valid long postId) {
         return likeService.getUsersLikeFromPost(postId);
+    }
+
+    @GetMapping("/{commentId}/getAllUsers")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserDto> getAllUsersFromComment(@PathVariable @Valid long commentId) {
+        return likeService.getUsersLikeFromComment(commentId);
     }
 }

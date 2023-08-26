@@ -190,4 +190,17 @@ class LikeServiceTest {
 
         Mockito.verify(likeRepository).findByPostId(1L);
     }
+
+    @Test
+    void getUsersLikeFromComment_Successful(){
+        Mockito.when(likeRepository.findByCommentId(1L))
+                .thenReturn(List.of(Like
+                        .builder()
+                        .userId(1L)
+                        .build()));
+
+        likeService.getUsersLikeFromComment(1L);
+
+        Mockito.verify(likeRepository).findByCommentId(1L);
+    }
 }
