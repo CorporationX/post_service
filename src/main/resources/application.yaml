@@ -51,6 +51,13 @@ payment-service:
   host: localhost
   port: 9080
 
+ad-remover:
+  cron: "0 0 3 0 0 ?" #every day at 03:00
+  batch: 100
+  thread-count: 5
+  retry:
+    maxAttempts: 5
+    maxDelay: 1000
 bad-words:
   path: files/bad-words.csv
 
