@@ -1,6 +1,5 @@
 package faang.school.postservice;
 
-
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;

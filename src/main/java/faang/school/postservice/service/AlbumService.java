@@ -1,14 +1,14 @@
-package faang.school.postservice.service.album;
+package faang.school.postservice.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.util.exception.EntityNotFoundException;
-import faang.school.postservice.mapper.album.AlbumMapper;
+import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.repository.AlbumRepository;
-import faang.school.postservice.validator.album.AccessValidator;
+import faang.school.postservice.util.validator.AccessValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +25,8 @@ public class AlbumService {
     public AlbumDto createAlbum(AlbumDto dto) throws JsonProcessingException {
         var album = mapper.toEntity(dto);
         setAllowedUsers(dto, album);
+        album.setTitle(album.getTitle().trim());
+        album.setDescription(album.getDescription().trim());
         var albumDto = mapper.toDto(repository.save(album));
         setAllowedUsers(album, albumDto);
         return albumDto;
@@ -51,7 +53,7 @@ public class AlbumService {
 
     @Transactional
     public void delete(Long albumId, Long userId) {
-        var album = repository.findById(albumId).orElseThrow(() -> new EntityNotFoundException(String.format("Entity with id: %d wasn`t found" , albumId)));
+        var album = repository.findById(albumId).orElseThrow(() -> new EntityNotFoundException(String.format("Entity with id: %d wasn`t found", albumId)));
         accessValidator.validateUpdateAccess(album, userId);
         repository.delete(album);
     }

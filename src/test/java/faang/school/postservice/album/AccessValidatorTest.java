@@ -7,7 +7,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.util.exception.NotAllowedException;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Visibility;
-import faang.school.postservice.validator.album.AccessValidator;
+import faang.school.postservice.util.validator.AccessValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

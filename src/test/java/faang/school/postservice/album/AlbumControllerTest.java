@@ -1,10 +1,10 @@
 package faang.school.postservice.album;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.controller.album.AlbumController;
+import faang.school.postservice.controller.AlbumController;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.model.Visibility;
-import faang.school.postservice.service.album.AlbumService;
+import faang.school.postservice.service.AlbumService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,10 +53,11 @@ public class AlbumControllerTest {
                 .title("Title4")
                 .description("Album Descri2ption 2")
                 .authorId(2L)
-                .postIds(null)
+                .postIds(Arrays.asList(1L,2L))
                 .visibility(Visibility.EVERYONE)
                 .allowedUsersIds(Arrays.asList(1L, 4L, 5L))
                 .build();
+
     }
 
     @Test
