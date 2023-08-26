@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Builder
 public class CommentEventDto {
 
-    private long id;
     private long authorId;
     private long postId;
     private LocalDateTime createdAt;

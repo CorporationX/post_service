@@ -40,9 +40,8 @@ public class CommentService {
     @Transactional
     public Object create() {
         commentEventPublisher.publish(CommentEventDto.builder()
-                .id(new Random().nextLong(10))
                 .authorId(new Random().nextLong(100))
-                .postId(1L)
+                .postId(new Random().nextLong(10))
                 .createdAt(LocalDateTime.now())
                 .build());
         return null;
