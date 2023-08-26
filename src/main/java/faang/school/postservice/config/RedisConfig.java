@@ -47,32 +47,12 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic likeTopic(){
+    public ChannelTopic likeTopic() {
         return new ChannelTopic(likeTopicName);
-    }
-
-    @Bean
-    public JedisConnectionFactory commentConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
-        return new JedisConnectionFactory(config);
-    }
-
-    @Bean
-    MessagePublisher commentEventPublisher() {
-        return new CommentEventPublisher(commentRedisTemplate(commentConnectionFactory()), commentTopic());
     }
 
     @Bean
     ChannelTopic commentTopic() {
         return new ChannelTopic(commentTopicName);
-    }
-
-    @Bean
-    public RedisTemplate<String, Object> commentRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
-        return redisTemplate;
     }
 }
