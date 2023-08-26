@@ -57,6 +57,9 @@ ai-spelling:
   contentType: "application/x-www-form-urlencoded"
   xRapidApiKey: "58a3c43c12msh2fe078f7a3f1c46p1b5471jsn5c4c9497ff76"
   xRapidApiHost: "bing-spell-check2.p.rapidapi.com"
+  retry:
+    maxAttempts: 10
+    maxDelay: 1000
 
 bing-thread-poll:
   corePoolSize: 10

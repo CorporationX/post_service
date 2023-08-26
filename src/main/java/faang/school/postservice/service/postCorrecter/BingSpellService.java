@@ -17,7 +17,6 @@ public class BingSpellService implements PostCorrecterService {
 
     public void correctUnpublishedPosts() {
         List<Post> posts = postRepository.findReadyToPublish();
-        long failedPosts = 0;
         for (Post post : posts) {
             try {
                 postCorrecter.correctPostText(post).thenAcceptAsync(text -> {
@@ -26,12 +25,7 @@ public class BingSpellService implements PostCorrecterService {
                 });
             } catch (Exception e) {
                 log.error("Failed to process post.", e);
-                failedPosts++;
             }
-        }
-
-        if (failedPosts != 0) {
-            log.debug("Number of failed posts: " + failedPosts);
         }
     }
 }

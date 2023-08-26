@@ -15,9 +15,7 @@ public class PostCorrecterJob {
     @Scheduled(cron = "${ai-spelling.cron}")
     public void correctPosts() {
         log.info("Correcting posts started.");
-        System.out.println("Start...");
         bingSpellService.correctUnpublishedPosts();
-        System.out.println("End...");
         log.info("Correcting posts is over.");
     }
 }

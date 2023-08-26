@@ -4,9 +4,12 @@ import faang.school.postservice.client.BingSpellClient;
 import faang.school.postservice.dto.postCorrecter.FlaggedTokenDto;
 import faang.school.postservice.dto.postCorrecter.SpellCheckDto;
 import faang.school.postservice.model.Post;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -16,15 +19,17 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class PostCorrecter {
     @Value("${ai-spelling.mode}")
     private String mode;
     private final BingSpellClient bingSpellClient;
 
     @Async("bingSpellAsyncExecutor")
-    @Retryable(maxAttempts = 10, backoff = @Backoff(delay = 1000))
+    @Retryable(retryFor = FeignException.FeignClientException.class, maxAttemptsExpression = "${ai-spelling.retry.maxAttempts}",
+            backoff = @Backoff(delayExpression = "${ai-spelling.retry.maxDelay}"))
     public CompletableFuture<String> correctPostText(Post post) {
-        String body = "Text=" + post.getContent();
+        String body = "Text=" + post.getContent().replaceAll("\\[", "").replaceAll("]", "");
         SpellCheckDto spellCheckDto = bingSpellClient.checkSpell(mode, body).getBody();
 
         if (spellCheckDto == null) {
@@ -40,5 +45,10 @@ public class PostCorrecter {
         }
 
         return CompletableFuture.completedFuture(text);
+    }
+
+    @Recover
+    void recover(FeignException.FeignClientException e, Post post) {
+        log.error("Error while correct post: " + post.getId(), e);
     }
 }
