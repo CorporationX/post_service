@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CommentEvent {
+public class CommentEventDto {
 
     private long id;
     private long authorId;

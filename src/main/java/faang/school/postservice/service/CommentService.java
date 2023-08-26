@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.redis.CommentEvent;
+import faang.school.postservice.dto.redis.CommentEventDto;
 import faang.school.postservice.exception.DataNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.publisher.CommentEventPublisher;
@@ -39,7 +39,7 @@ public class CommentService {
 
     @Transactional
     public Object create() {
-        commentEventPublisher.publish(CommentEvent.builder()
+        commentEventPublisher.publish(CommentEventDto.builder()
                 .id(new Random().nextLong(10))
                 .authorId(new Random().nextLong(100))
                 .postId(1L)
