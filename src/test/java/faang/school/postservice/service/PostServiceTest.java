@@ -2,8 +2,10 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -29,8 +31,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -45,6 +51,10 @@ class PostServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private ProjectServiceClient projectServiceClient;
+    @Mock
+    private PostViewEventService postViewEventService;
+    @Mock
+    private UserContext userContext;
     @Spy
     private PostValidator postValidator;
     @InjectMocks
@@ -65,7 +75,6 @@ class PostServiceTest {
         postWithAuthorIdDto = PostDto.builder().authorId(userDto.getId()).projectId(null).content("content").build();
         postWithProjectIdDto = PostDto.builder().authorId(null).projectId(projectDto.getId()).content("content2").build();
         postWithAuthorIdAndProjectIdDto = PostDto.builder().authorId(userDto.getId()).projectId(projectDto.getId()).content("content3").build();
-
     }
 
     @Test
@@ -222,10 +231,24 @@ class PostServiceTest {
 
     @Test
     void testGetPostSuccess() {
-        Post post = Post.builder().id(1L).build();
-        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
-        PostDto postDto = postService.getPost(post.getId());
-        assertEquals(postDto, postMapperImpl.toDto(post));
+        Post post = new Post();
+        when(postRepository.findById(anyLong())).thenReturn(Optional.of(post));
+
+        when(userContext.getUserId()).thenReturn(1L);
+
+        PostViewEventDto postViewEventDto = new PostViewEventDto();
+        when(postViewEventService.getPostViewEventDto(anyLong(), any(Post.class))).thenReturn(postViewEventDto);
+
+        PostDto postDto = new PostDto();
+        when(postMapperImpl.toDto(any(Post.class))).thenReturn(postDto);
+
+        postService.getPost(1L);
+
+        verify(postRepository, times(1)).findById(1L);
+        verify(userContext, times(1)).getUserId();
+        verify(postViewEventService, times(1)).getPostViewEventDto(1L, post);
+        verify(postViewEventService, times(1)).publishEventToChannel(postViewEventDto);
+        verify(postMapperImpl, times(1)).toDto(post);
     }
 
     @Test
