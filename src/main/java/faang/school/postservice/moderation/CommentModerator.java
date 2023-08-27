@@ -2,7 +2,7 @@ package faang.school.postservice.moderation;
 
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.CommentService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -11,12 +11,20 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class CommentModerator {
+
     private final CommentService commentService;
-    @Value("${comment.moderation.scheduler.batchSize}")
     private final int batchSize;
     private final ThreadPoolTaskExecutor executor;
+
+    @Autowired
+    public CommentModerator(CommentService commentService,
+                            @Value("${comment.moderation.batchSize}") int batchSize,
+                            ThreadPoolTaskExecutor executor) {
+        this.commentService = commentService;
+        this.batchSize = batchSize;
+        this.executor = executor;
+    }
 
     @Scheduled(cron = "${comment.moderation.scheduler.cron}")
     public void moderateComments() {
