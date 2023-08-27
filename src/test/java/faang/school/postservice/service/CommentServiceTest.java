@@ -1,10 +1,12 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.CommentEventDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.Test;
@@ -12,12 +14,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -30,24 +30,52 @@ class CommentServiceTest {
     @Mock
     private CommentValidator commentValidator;
     @Mock
-    CommentRepository commentRepository;
+    private CommentRepository commentRepository;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
     @Test
     void testCreateComment_ValidData_ReturnsCreatedCommentDto() {
         Long postId = 1L;
+        long commentId = 3L;
+        LocalDateTime timeNow = LocalDateTime.now().withNano(0);
+
         CommentDto commentDto = CommentDto.builder()
+                .id(commentId)
                 .content("Test comment")
                 .authorId(2L)
                 .postId(postId)
                 .build();
-        Comment commentEntity = new Comment();
 
-        when(commentMapper.toEntity(commentDto, postId)).thenReturn(commentEntity);
-        when(commentRepository.save(commentEntity)).thenReturn(commentEntity);
-        when(commentMapper.toDto(commentEntity)).thenReturn(commentDto);
+        Comment createdComment = Comment.builder()
+                .id(commentId)
+                .content("Test comment")
+                .authorId(2L)
+                .post(Post.builder().id(postId).build())
+                .createdAt(timeNow)
+                .build();
+
+        CommentDto createdCommentDto = CommentDto.builder()
+                .id(commentId)
+                .content("Test comment")
+                .authorId(2L)
+                .postId(postId)
+                .createdAt(timeNow)
+                .build();
+
+        when(commentMapper.toEntity(commentDto, postId)).thenReturn(createdComment);
+        when(commentRepository.save(createdComment)).thenReturn(createdComment);
+        when(commentMapper.toDto(createdComment)).thenReturn(createdCommentDto);
+
+        CommentEventDto commentEventDto = CommentEventDto.builder()
+                .postId(postId)
+                .authorId(2L)
+                .commentId(commentId)
+                .createdAt(createdComment.getCreatedAt().withNano(0))
+                .build();
 
         CommentDto result = commentService.createComment(postId, commentDto);
-        
+
         assertNotNull(result);
         assertEquals(commentDto.getContent(), result.getContent());
         assertEquals(commentDto.getAuthorId(), result.getAuthorId());
@@ -55,10 +83,11 @@ class CommentServiceTest {
 
         verify(commentValidator).validateUserBeforeCreate(commentDto);
         verify(commentMapper).toEntity(commentDto, postId);
-        verify(commentRepository).save(commentEntity);
-        verify(commentMapper).toDto(commentEntity);
+        verify(commentRepository).save(createdComment);
+        verify(commentMapper).toDto(createdComment);
+        verify(commentRepository, times(1)).save(createdComment);
+        verify(commentEventPublisher, times(1)).publish(commentEventDto);
     }
-
 
     @Test
     void testUpdateComment_ValidData_ReturnsUpdatedCommentDto() {

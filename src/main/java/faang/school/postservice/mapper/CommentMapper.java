@@ -4,7 +4,9 @@ import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import org.mapstruct.*;
+import org.springframework.stereotype.Component;
 
+@Component
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface CommentMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

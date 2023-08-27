@@ -1,15 +1,17 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.CommentEventDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -19,13 +21,21 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentValidator commentValidator;
     private final CommentMapper commentMapper;
-
+    private final CommentEventPublisher commentEventPublisher;
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         commentValidator.validateUserBeforeCreate(commentDto);
         Comment comment = commentMapper.toEntity(commentDto, postId);
-        return commentMapper.toDto(commentRepository.save(comment));
+
+        CommentDto savedEventDto = commentMapper.toDto(commentRepository.save(comment));
+        commentEventPublisher.publish(CommentEventDto.builder()
+                .postId(commentDto.getPostId())
+                .authorId(commentDto.getAuthorId())
+                .commentId(commentDto.getId())
+                .createdAt(LocalDateTime.now().withNano(0))
+                .build());
+        return savedEventDto;
     }
 
     @Transactional
