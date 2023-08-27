@@ -1,10 +1,10 @@
 CREATE TABLE scheduled_tasks (
     id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY UNIQUE,
-    entity_type varchar(255),
-    task_type varchar(255),
-    entity_id bigint UNIQUE,
-    retry_count int DEFAULT 0,
-    status varchar(255) DEFAULT 'NEW',
+    entity_type varchar(255) NOT NULL,
+    task_type varchar(255) NOT NULL,
+    entity_id bigint NOT NULL,
+    retry_count int NOT NULL,
+    status varchar(255) NOT NULL,
     scheduled_at timestamptz
 );
 

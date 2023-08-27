@@ -4,4 +4,4 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V002__ad.sql
   - include:
-      file: db/changelog/changeset/post_V003__schedule.sql
+      file: db/changelog/changeset/post_V005__schedule.sql
