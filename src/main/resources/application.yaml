@@ -40,6 +40,22 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+
+comment:
+  moderation:
+    scheduler:
+      cron: "0 0 0 * * ?" # every day at midnight
+    batchSize: 100
+    maxThreadPoolSize: 10
+    coreThreadPoolSize: 5
+    queueCapacity: 100
+
+correcter:
+  scheduler:
+    cron: "0 0 0 * * ?" # Every day at midnight
+
+
+
 user-service:
   host: localhost
   port: 8080
@@ -50,10 +66,15 @@ payment-service:
   host: localhost
   port: 9080
 
+ai:
+  api:
+    key: 7b59c5412dmsha6284a44d021ab9p14f51cjsn2e93aa88df77
+    host: "textgears-textgears-v1.p.rapidapi.com"
+    path: "/grammar"
+
 services:
   s3:
     endpoint: <http://localhost:9000>
     accessKey: user
     secretKey: password
     bucketName: corpbucket
-#    bucketName: projectbucket
