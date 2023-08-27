@@ -40,7 +40,6 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
-
 comment:
   moderation:
     scheduler:
@@ -53,8 +52,6 @@ comment:
 correcter:
   scheduler:
     cron: "0 0 0 * * ?" # Every day at midnight
-
-
 
 user-service:
   host: localhost
