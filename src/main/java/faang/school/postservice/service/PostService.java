@@ -14,6 +14,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +22,9 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
@@ -31,6 +32,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final PostViewEventService postViewEventService;
     private final PostMapper postMapper;
+    private final PostAsyncService postAsyncService;
     private final UserContext userContext;
 
     @Transactional(readOnly = true)
@@ -165,5 +167,19 @@ public class PostService {
                 .sorted(Comparator.comparing(Post::getPublishedAt))
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    @Transactional
+    public void publishScheduledPosts(int partitionSize) {
+        log.info("Scheduled posts publishing started");
+        List<Post> posts = postRepository.findReadyToPublish();
+        log.info("Scheduled publication of posts in the amount: {}", posts.size());
+        if (posts.size() > partitionSize) {
+            List<List<Post>> partitions = ListUtils.partition(posts, posts.size() / partitionSize);
+            partitions.forEach(postAsyncService::publishPosts);
+        } else if (posts.size() > 0) {
+            postAsyncService.publishPosts(posts);
+            log.info("Scheduled posts publishing finished");
+        }
     }
 }

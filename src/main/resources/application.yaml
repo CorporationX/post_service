@@ -27,6 +27,17 @@ spring:
         event-channels:
           posts-view: posts-view
 
+  async:
+    poolSize: 10
+    maxPoolSize: 10
+    queueCapacity: 1000
+    threadNamePrefix: "task-executor-thread-"
+
+  scheduler:
+    publisher:
+      cron: "0 0/1 * 1/1 * ?" # every minute
+      partitionSize: 1000
+
 server:
   port: 8081
 
