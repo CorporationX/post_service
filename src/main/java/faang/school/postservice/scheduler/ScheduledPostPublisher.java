@@ -17,6 +17,4 @@ public class ScheduledPostPublisher {
     public void publishPosts() {
         postService.publishScheduledPosts(partitionSize);
     }
-
-
 }
