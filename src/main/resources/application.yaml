@@ -22,10 +22,10 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
-        event_channels:
-          posts_view: posts_view
+        calculations-channel:
+          name: calculations-channel
+        event-channels:
+          posts-view: posts-view
 
 server:
   port: 8081

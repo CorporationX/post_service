@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.service.redis.PostViewEventPublisher;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.listener.ChannelTopic;
