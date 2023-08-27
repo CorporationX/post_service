@@ -1,7 +1,5 @@
 package faang.school.postservice.config;
 
-import faang.school.postservice.publisher.CommentEventPublisher;
-import faang.school.postservice.publisher.MessagePublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
