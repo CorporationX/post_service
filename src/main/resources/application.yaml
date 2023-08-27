@@ -22,8 +22,10 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
+        calculations-channel:
+          name: calculations-channel
+        event-channels:
+          posts-view: posts-view
 
   async:
     poolSize: 10

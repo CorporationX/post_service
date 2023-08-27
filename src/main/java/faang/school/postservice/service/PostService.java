@@ -2,8 +2,10 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
@@ -25,18 +27,19 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class PostService {
-
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final PostViewEventService postViewEventService;
     private final PostMapper postMapper;
     private final PostAsyncService postAsyncService;
-
+    private final UserContext userContext;
 
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
-        return postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post with id " + postId + " not found"));
+        return postRepository.findById(postId).orElseThrow(()
+                -> new EntityNotFoundException("Post with id " + postId + " not found"));
     }
 
     @Transactional
@@ -82,7 +85,14 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostDto getPost(Long postId) {
-        return postMapper.toDto(getPostById(postId));
+        Post post = getPostById(postId);
+        Long userId = userContext.getUserId();
+
+        PostViewEventDto postViewEventDto = postViewEventService.getPostViewEventDto(userId, post);
+
+        postViewEventService.publishEventToChannel(postViewEventDto);
+
+        return postMapper.toDto(post);
     }
 
     @Transactional(readOnly = true)
@@ -103,9 +113,18 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<PostDto> getNotDeletedPublishedPostsByAuthorId(Long authorId) {
-        UserDto user = userServiceClient.getUser(authorId);
-        postValidator.validateAuthor(user);
-        List<Post> publishedPostsByAuthorId = postRepository.findPublishedPostsByAuthorId(user.getId());
+        UserDto authorDto = userServiceClient.getUser(authorId);
+        postValidator.validateAuthor(authorDto);
+        List<Post> publishedPostsByAuthorId = postRepository.findPublishedPostsByAuthorId(authorDto.getId());
+
+        Long userId = userContext.getUserId();
+
+        publishedPostsByAuthorId.forEach(post -> {
+            PostViewEventDto postViewEventDto = postViewEventService.getPostViewEventDto(userId, post);
+
+            postViewEventService.publishEventToChannel(postViewEventDto);
+        });
+
         return getSortedPublishedPosts(publishedPostsByAuthorId);
     }
 
@@ -114,6 +133,15 @@ public class PostService {
         ProjectDto project = projectServiceClient.getProject(projectId);
         postValidator.validateProject(project);
         List<Post> publishedPostsByProjectId = postRepository.findPublishedPostsByProjectId(project.getId());
+
+        Long userId = userContext.getUserId();
+
+        publishedPostsByProjectId.forEach(post -> {
+            PostViewEventDto postViewEventDto = postViewEventService.getPostViewEventDto(userId, post);
+
+            postViewEventService.publishEventToChannel(postViewEventDto);
+        });
+
         return getSortedPublishedPosts(publishedPostsByProjectId);
     }
 

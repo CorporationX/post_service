@@ -17,7 +17,6 @@ public class PostValidator {
         if (postDto.getAuthorId() == null || postDto.getProjectId() == null) {
             throw new DataValidationException("AuthorId or ProjectId cannot be null");
         }
-
     }
 
     public void validatePostCreator(PostDto post, ProjectDto project, UserDto user) {
