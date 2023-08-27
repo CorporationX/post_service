@@ -10,7 +10,9 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.async.PostAsyncService;
 import faang.school.postservice.validator.PostValidator;
+import org.apache.commons.collections4.ListUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,8 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -47,6 +51,8 @@ class PostServiceTest {
     private ProjectServiceClient projectServiceClient;
     @Spy
     private PostValidator postValidator;
+    @Mock
+    private PostAsyncService postAsyncService;
     @InjectMocks
     private PostService postService;
 
@@ -115,7 +121,7 @@ class PostServiceTest {
 
     @Test
     void testPublishPostSuccess() {
-        PostDto postDto = PostDto.builder().id(postId).createdAt(null).isPublished(false).build();
+        PostDto postDto = PostDto.builder().id(postId).createdAt(null).published(false).build();
         Post post = postMapperImpl.toPost(postDto);
 
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -129,7 +135,7 @@ class PostServiceTest {
 
     @Test
     void testPublishPostShouldThrowEntityNotFoundException() {
-        PostDto postDto = PostDto.builder().id(postId).createdAt(null).isPublished(false).build();
+        PostDto postDto = PostDto.builder().id(postId).createdAt(null).published(false).build();
         Post post = postMapperImpl.toPost(postDto);
 
         assertThrows(EntityNotFoundException.class, () ->
@@ -138,7 +144,7 @@ class PostServiceTest {
 
     @Test
     void testPublishPostShouldThrowDataValidationException() {
-        PostDto postDto = PostDto.builder().id(postId).createdAt(LocalDateTime.now()).isPublished(true).build();
+        PostDto postDto = PostDto.builder().id(postId).createdAt(LocalDateTime.now()).published(true).build();
         Post post = postMapperImpl.toPost(postDto);
         try {
             when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -388,5 +394,19 @@ class PostServiceTest {
         assertThrows(EntityNotFoundException.class, () -> postService.getPostById(postId));
 
         verify(postRepository, times(1)).findById(postId);
+    }
+
+    @Test
+    void testPublishScheduledPosts() {
+        Post post = mock(Post.class);
+        List<Post> posts = List.of(post, post, post);
+
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+
+        postService.publishScheduledPosts(1);
+
+        verify(postRepository, times(1)).findReadyToPublish();
+        List<List<Post>> partitions = ListUtils.partition(posts, posts.size());
+        partitions.forEach(partition -> verify(postAsyncService).publishPosts(partition));
     }
 }
