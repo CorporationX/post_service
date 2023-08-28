@@ -8,8 +8,8 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import lombok.extern.slf4j.Slf4j;
 @Data
 @Configuration
 public class RedisConfig {
@@ -22,7 +22,7 @@ public class RedisConfig {
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
-        System.out.println(port);
+        log.info("Creating Redis connection factory with host: {}, port: {}", host, port);
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         return new JedisConnectionFactory(config);
     }
@@ -33,9 +33,5 @@ public class RedisConfig {
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
         return redisTemplate;
-    }
-    @Bean
-    public ChannelTopic channelTopic(){
-        return new ChannelTopic(commentEventTopicName);
     }
 }

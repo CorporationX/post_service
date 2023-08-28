@@ -25,7 +25,7 @@ spring:
         calculations_channel:
           name: calculations_channel
         comment-event:
-          name: comment_event_channel
+          name: comment-event-channel
 
 server:
   port: 8081
