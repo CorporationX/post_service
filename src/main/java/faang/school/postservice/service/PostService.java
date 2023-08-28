@@ -195,7 +195,7 @@ public class PostService {
             return;
         }
 
-        posts.forEach(this::correctPostContent);
+        posts.forEach(this::getCorrectedPost);
 
         log.info("Corrected {} posts", posts.size());
     }
@@ -203,11 +203,11 @@ public class PostService {
     @Transactional
     public PostDto correctionSpelling(Long postId) {
         Post post = getPostById(postId);
-        Post correctedPost = correctPostContent(post);
+        Post correctedPost = getCorrectedPost(post);
         return postMapper.toDto(postRepository.save(correctedPost));
     }
 
-    private Post correctPostContent(Post post) {
+    private Post getCorrectedPost(Post post) {
         String correctedText = spellCorrectorService.getCorrectedText(post.getContent());
         post.setContent(correctedText);
         post.setSpellCheckedAt(LocalDateTime.now());
