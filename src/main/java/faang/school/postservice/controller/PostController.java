@@ -100,6 +100,14 @@ public class PostController {
         return postService.getNotDeletedPublishedPostsByProjectId(projectId);
     }
 
+    @GetMapping("/spelling/{postId}")
+    @Operation(summary = "Correction Spelling")
+    @ResponseStatus(HttpStatus.OK)
+    public PostDto correctionSpelling(@PathVariable @Valid Long postId) {
+        validateId(postId);
+        return postService.correctionSpelling(postId);
+    }
+
     private void validateId(Long id) {
         if (id < 0) {
             throw new DataValidationException("Id cannot be negative");

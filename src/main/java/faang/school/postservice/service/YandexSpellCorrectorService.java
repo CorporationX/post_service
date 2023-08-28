@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.web.YandexSpellerClient;
 import faang.school.postservice.dto.spelling.WordDto;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.text.BreakIterator;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -36,9 +34,12 @@ public class YandexSpellCorrectorService {
             words = mapper.readValue(spellText, WordDto[].class);
 
             Map<String, String> replacementMap = Arrays.stream(words)
-                    .collect(Collectors.toMap(WordDto::getWord, wordInfo -> wordInfo.getS().get(0)));
+                    .collect(Collectors.toMap(
+                            WordDto::getWord,
+                            wordInfo -> wordInfo.getS().get(0),
+                            (existingValue, newValue) -> existingValue));
 
-            StringBuilder correctedText = new StringBuilder();
+            StringBuilder correctedText = new StringBuilder(text.length());
 
             BreakIterator wordIterator = BreakIterator.getWordInstance(YandexSpellerClient.RUSSIAN_LOCALE);
             wordIterator.setText(text);
@@ -52,8 +53,8 @@ public class YandexSpellCorrectorService {
             }
 
             return correctedText.toString();
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
+        } catch (Exception e) {
+            log.error("Error processing text: {}", e.getMessage());
         }
 
         return text;

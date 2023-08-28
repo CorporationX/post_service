@@ -12,6 +12,6 @@ public class ScheduledPostSpellingCorrection {
 
     @Scheduled(cron = "${spring.scheduler.spellChecker.cron}")
     public void correctionSpelling() {
-        postService.correctionSpelling();
+        postService.autoCorrectionSpelling();
     }
 }

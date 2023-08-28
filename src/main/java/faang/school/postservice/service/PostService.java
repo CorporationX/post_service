@@ -186,7 +186,7 @@ public class PostService {
     }
 
     @Transactional
-    public void correctionSpelling() {
+    public void autoCorrectionSpelling() {
         log.info("Spelling correction started");
         List<Post> posts = postRepository.findReadyToSpellCorrection();
 
@@ -195,12 +195,23 @@ public class PostService {
             return;
         }
 
-        posts.forEach(post -> {
-            String correctedText = spellCorrectorService.getCorrectedText(post.getContent());
-            post.setContent(correctedText);
-            post.setSpellCheckedAt(LocalDateTime.now());
-        });
+        posts.forEach(this::correctPostContent);
 
         log.info("Corrected {} posts", posts.size());
+    }
+
+    @Transactional
+    public PostDto correctionSpelling(Long postId) {
+        Post post = getPostById(postId);
+        Post correctedPost = correctPostContent(post);
+        return postMapper.toDto(postRepository.save(correctedPost));
+    }
+
+    private Post correctPostContent(Post post) {
+        String correctedText = spellCorrectorService.getCorrectedText(post.getContent());
+        post.setContent(correctedText);
+        post.setSpellCheckedAt(LocalDateTime.now());
+
+        return post;
     }
 }
