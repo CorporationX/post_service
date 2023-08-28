@@ -37,6 +37,8 @@ spring:
     publisher:
       cron: "0 0/1 * 1/1 * ?" # every minute
       partitionSize: 1000
+    spellChecker:
+      cron: "0 0/1 * 1/1 * ?" # every minute
 
 server:
   port: 8081
