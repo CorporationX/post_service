@@ -5,6 +5,8 @@ import faang.school.postservice.client.web.YandexSpellerClient;
 import faang.school.postservice.dto.spelling.WordDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.text.BreakIterator;
@@ -25,6 +27,7 @@ public class YandexSpellCorrectorService {
      * @param text The input text to be corrected.
      * @return The corrected text with words replaced by suggested corrections, if available.
      */
+    @Retryable(exceptionExpression = "#{message.contains('Error processing text')}", maxAttempts = 4, backoff = @Backoff(delay = 1000))
     public String getCorrectedText(String text) {
         String spellText = client.checkText(text);
         ObjectMapper mapper = new ObjectMapper();
