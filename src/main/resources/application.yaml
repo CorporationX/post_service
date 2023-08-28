@@ -39,6 +39,10 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderation:
+    scheduler:
+      cron: "0 0 0 * * ?" # every day at midnight
+    batchSize: 100
 
 
 comment:
@@ -46,9 +50,13 @@ comment:
     scheduler:
       cron: "0 0 0 * * ?" # every day at midnight
     batchSize: 100
-    maxThreadPoolSize: 10
-    coreThreadPoolSize: 5
-    queueCapacity: 100
+
+
+thread-pool:
+  maxThreadPoolSize: 10
+  coreThreadPoolSize: 5
+  queueCapacity: 100
+
 
 correcter:
   scheduler:
