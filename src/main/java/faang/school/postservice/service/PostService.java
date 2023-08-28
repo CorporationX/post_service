@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
@@ -8,8 +7,8 @@ import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.postCorrector.AiResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.redis.LikeEventDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.exception.EntityAlreadyExistException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
@@ -308,15 +307,15 @@ public class PostService {
         }
     }
     @Transactional
-    public ResponsePostDto likePost(UpdatePostDto dto, Long user_id) throws JsonProcessingException {
+    public ResponsePostDto likePost(UpdatePostDto dto, Long user_id) {
         Post post = postRepository.findById(dto.getId()).orElseThrow(() -> new IllegalArgumentException("Post is not found"));
         checkExistLikeToPost(post, user_id);
         Like newLike = Like.builder().post(post).comment(null).userId(user_id).build();
         likeRepository.save(newLike);
 
-        LikeEvent likeEvent = LikeEvent.builder().idPost(post.getId()).dateTime(LocalDateTime.now())
-                .idUser(user_id).idAuthor(post.getAuthorId()).build();
-        likeEventPublisher.publish(likeEvent);
+        LikeEventDto likeEvent = LikeEventDto.builder().postId(post.getId()).dateTime(LocalDateTime.now())
+                .likeAuthor(user_id).postAuthor(post.getAuthorId()).build();
+        likeEventPublisher.publishMessage(likeEvent);
 
         return responsePostMapper.toDto(post);
     }

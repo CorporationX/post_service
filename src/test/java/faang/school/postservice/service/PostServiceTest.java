@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
@@ -8,8 +7,8 @@ import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.postCorrector.AiResponseDto;
 import faang.school.postservice.dto.postCorrector.ResponseFieldDto;
+import faang.school.postservice.dto.redis.LikeEventDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Like;
@@ -36,11 +35,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -254,7 +253,7 @@ class PostServiceTest {
     }
 
     @Test
-    void likePostTest() throws JsonProcessingException {
+    void likePostTest() {
         Long postId = 1L;
         Long userId = 2L;
         Post post = new Post();
@@ -270,7 +269,7 @@ class PostServiceTest {
         ResponsePostDto responsePostDto = postService.likePost(updatePostDto, userId);
 
         verify(likeRepository, times(1)).save(any());
-        verify(likeEventPublisher, times(1)).publish(LikeEvent.builder().idPost(1L).idAuthor(2L).idUser(2L).dateTime(any()).build());
+        verify(likeEventPublisher, times(1)).publishMessage(LikeEventDto.builder().postId(1L).postAuthor(2L).likeAuthor(2L).dateTime(any()).build());
 
         assertNotNull(responsePostDto);
     }
