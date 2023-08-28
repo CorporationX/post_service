@@ -40,7 +40,6 @@ public class YandexSpellCorrectorService {
 
             StringBuilder correctedText = new StringBuilder();
 
-            Locale locale = new Locale("ru", "RU");
             BreakIterator wordIterator = BreakIterator.getWordInstance(YandexSpellerClient.RUSSIAN_LOCALE);
             wordIterator.setText(text);
 
