@@ -111,7 +111,7 @@ public class CommentService {
     public Long getAuthorId(long postId) {
         return commentRepository
                 .findById(postId)
-                .orElseThrow(() -> new NotFoundException("Post not found. Id: " + postId))
+                .orElseThrow(() -> new NotFoundException("Comment not found. Id: " + postId))
                 .getAuthorId();
     }
 
