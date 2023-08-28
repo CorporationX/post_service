@@ -2,15 +2,14 @@ package faang.school.postservice.model;
 
 import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+
 
 @Data
 @NoArgsConstructor
@@ -78,5 +77,4 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
-
 }

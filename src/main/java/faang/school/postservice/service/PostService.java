@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
@@ -7,9 +8,14 @@ import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityAlreadyExistException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.event.LikeEvent;
+import faang.school.postservice.redis.publisher.LikeEventPublisher;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
 import faang.school.postservice.util.RedisPublisher;
@@ -20,11 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,12 +43,14 @@ public class PostService {
     private final Integer batchSize;
     private final RedisPublisher redisPublisher;
     private final String userBannerChannel;
+    private final LikeRepository likeRepository;
+    private final LikeEventPublisher likeEventPublisher;
     private final Integer BAD_POSTS_MAX_COUNT = 5;
 
     public PostService(PostRepository postRepository, ResponsePostMapper responsePostMapper,
                        UserServiceClient userServiceClient, ProjectServiceClient projectServiceClient,
                        ModerationDictionary moderationDictionary, @Value("${post.moderator.scheduler.batchSize}") Integer batchSize,
-                       RedisPublisher redisPublisher, @Value("${spring.data.redis.channels.user_banner_channel.name}") String userBannerChannel) {
+                       RedisPublisher redisPublisher, LikeRepository likeRepository, LikeEventPublisher likeEventPublisher, @Value("${spring.data.redis.channels.user_banner_channel.name}") String userBannerChannel) {
         this.postRepository = postRepository;
         this.responsePostMapper = responsePostMapper;
         this.userServiceClient = userServiceClient;
@@ -55,6 +59,8 @@ public class PostService {
         this.batchSize = batchSize;
         this.redisPublisher = redisPublisher;
         this.userBannerChannel = userBannerChannel;
+        this.likeRepository = likeRepository;
+        this.likeEventPublisher = likeEventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -119,6 +125,27 @@ public class PostService {
         post.setUpdatedAt(LocalDateTime.now());
 
         return responsePostMapper.toDto(post);
+    }
+
+    @Transactional
+    public ResponsePostDto likePost(UpdatePostDto dto, Long user_id) throws JsonProcessingException {
+        Post post = postRepository.findById(dto.getId()).orElseThrow(() -> new IllegalArgumentException("Post is not found"));
+        checkExistLikeToPost(post, user_id);
+        Like newLike = Like.builder().post(post).comment(null).userId(user_id).build();
+        likeRepository.save(newLike);
+
+        LikeEvent likeEvent = LikeEvent.builder().idPost(post.getId()).dateTime(LocalDateTime.now())
+                .idUser(user_id).idAuthor(post.getAuthorId()).build();
+        likeEventPublisher.publish(likeEvent);
+
+        return responsePostMapper.toDto(post);
+    }
+
+    private void checkExistLikeToPost(Post post, Long user_id){
+        List<Like> likes = post.getLikes();
+        likes.stream().filter(like -> like.getUserId().equals(user_id)).findFirst().ifPresent(like -> {
+            throw new EntityAlreadyExistException(String.format("User with id %s already likes post with id %s", user_id, post.getId()));
+        });
     }
 
 
