@@ -15,6 +15,7 @@ import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ public class LikeService {
     private final LikeEventPublisher likeEventPublisher;
     private static final int BATCH_SIZE = 100;
 
+    @Transactional
     public LikeDto createLike(LikeDto likeDto) {
         likeDto.setId(null);
         validateLike(likeDto);
