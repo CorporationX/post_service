@@ -5,15 +5,14 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.redis.LikeEvent;
+import faang.school.postservice.dto.redis.LikeEventDto;
 import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.LikeEventPublisher;
@@ -55,7 +54,7 @@ class PostServiceTest {
     @Mock
     private PostRepository postRepository;
     @Spy
-    private PostMapperImpl postMapperImpl;
+    PostMapper postMapper = PostMapper.INSTANCE;
     @Mock
     private UserServiceClient userServiceClient;
     @Mock
@@ -95,7 +94,7 @@ class PostServiceTest {
     @Test
     void testCreatePostWithAuthorIdSuccess() {
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
-        Post post = postMapperImpl.toPost(postWithAuthorIdDto);
+        Post post = postMapper.toPost(postWithAuthorIdDto);
         when(postRepository.save(post)).thenReturn(post);
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
         PostDto postDto = postService.createPost(postWithAuthorIdDto);
@@ -112,7 +111,7 @@ class PostServiceTest {
     @Test
     void testCreatePostWithProjectIdSuccess() {
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
-        Post post = postMapperImpl.toPost(postWithProjectIdDto);
+        Post post = postMapper.toPost(postWithProjectIdDto);
         when(postRepository.save(post)).thenReturn(post);
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
         PostDto postDto = postService.createPost(postWithProjectIdDto);
@@ -140,7 +139,7 @@ class PostServiceTest {
     @Test
     void testPublishPostSuccess() {
         PostDto postDto = PostDto.builder().id(postId).createdAt(null).published(false).build();
-        Post post = postMapperImpl.toPost(postDto);
+        Post post = postMapper.toPost(postDto);
 
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(postRepository.save(post)).thenReturn(post);
@@ -154,7 +153,7 @@ class PostServiceTest {
     @Test
     void testPublishPostShouldThrowEntityNotFoundException() {
         PostDto postDto = PostDto.builder().id(postId).createdAt(null).published(false).build();
-        Post post = postMapperImpl.toPost(postDto);
+        Post post = postMapper.toPost(postDto);
 
         assertThrows(EntityNotFoundException.class, () ->
                 postService.publishPost(post.getId()), "Post with id " + postId + " not found");
@@ -163,7 +162,7 @@ class PostServiceTest {
     @Test
     void testPublishPostShouldThrowDataValidationException() {
         PostDto postDto = PostDto.builder().id(postId).createdAt(LocalDateTime.now()).published(true).build();
-        Post post = postMapperImpl.toPost(postDto);
+        Post post = postMapper.toPost(postDto);
         try {
             when(postRepository.findById(postId)).thenReturn(Optional.of(post));
             postService.publishPost(post.getId());
@@ -176,7 +175,7 @@ class PostServiceTest {
     void testUpdatePostWithAuthorIdSuccess() {
         String content = "updated content";
         PostDto updatedPostDto = PostDto.builder().content(content).authorId(userDto.getId()).build();
-        Post updatedPost = postMapperImpl.toPost(updatedPostDto);
+        Post updatedPost = postMapper.toPost(updatedPostDto);
 
         when(postRepository.findById(updatedPost.getId())).thenReturn(Optional.of(updatedPost));
         postService.updatePost(updatedPostDto);
@@ -198,7 +197,7 @@ class PostServiceTest {
     void testUpdatePostWithProjectIdSuccess() {
         String content = "updated content";
         PostDto updatedPostDto = PostDto.builder().content(content).projectId(projectDto.getId()).build();
-        Post updatedPost = postMapperImpl.toPost(updatedPostDto);
+        Post updatedPost = postMapper.toPost(updatedPostDto);
 
         when(postRepository.findById(updatedPost.getId())).thenReturn(Optional.of(updatedPost));
         postService.updatePost(updatedPostDto);
@@ -220,7 +219,7 @@ class PostServiceTest {
     void testUpdatePostWithAuthorIdFailIfAuthorIdHasBeenChanged() {
         Long newAuthorId = 2L;
         PostDto updatedPostDto = PostDto.builder().content("updated content").authorId(newAuthorId).build();
-        Post updatedPost = postMapperImpl.toPost(updatedPostDto);
+        Post updatedPost = postMapper.toPost(updatedPostDto);
         try {
             when(postRepository.findById(updatedPost.getId())).thenReturn(Optional.of(updatedPost));
             postService.updatePost(updatedPostDto);
@@ -234,7 +233,7 @@ class PostServiceTest {
     void testUpdatePostWithProjectIdFailIfProjectIdHasBeenChanged() {
         Long newProjectId = 2L;
         PostDto updatedPostDto = PostDto.builder().content("updated content").projectId(newProjectId).build();
-        Post updatedPost = postMapperImpl.toPost(updatedPostDto);
+        Post updatedPost = postMapper.toPost(updatedPostDto);
         try {
             when(postRepository.findById(updatedPost.getId())).thenReturn(Optional.of(updatedPost));
             postService.updatePost(updatedPostDto);
@@ -255,7 +254,7 @@ class PostServiceTest {
         when(postViewEventService.getPostViewEventDto(anyLong(), any(Post.class))).thenReturn(postViewEventDto);
 
         PostDto postDto = new PostDto();
-        when(postMapperImpl.toDto(any(Post.class))).thenReturn(postDto);
+        when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
 
         postService.getPost(1L);
 
@@ -263,7 +262,7 @@ class PostServiceTest {
         verify(userContext, times(1)).getUserId();
         verify(postViewEventService, times(1)).getPostViewEventDto(1L, post);
         verify(postViewEventService, times(1)).publishEventToChannel(postViewEventDto);
-        verify(postMapperImpl, times(1)).toDto(post);
+        verify(postMapper, times(1)).toDto(post);
     }
 
     @Test
@@ -365,7 +364,7 @@ class PostServiceTest {
 
     @Test
     void testSoftDeletePostSuccess() {
-        Post post = postMapperImpl.toPost(postWithAuthorIdDto);
+        Post post = postMapper.toPost(postWithAuthorIdDto);
         when(postRepository.findById(postWithAuthorIdDto.getId())).thenReturn(Optional.of(post));
         boolean result = postService.softDeletePost(postWithAuthorIdDto.getId());
 
@@ -388,7 +387,7 @@ class PostServiceTest {
     @Test
     void testSoftDeletePostFailIfPostIsAlreadyDeleted() {
         try {
-            Post post = postMapperImpl.toPost(postWithAuthorIdDto);
+            Post post = postMapper.toPost(postWithAuthorIdDto);
             post.setDeleted(true);
             Long postId = postWithAuthorIdDto.getId();
             when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -459,7 +458,7 @@ class PostServiceTest {
         PostDto postDto = postService.likePost(updatePostDto, userId);
 
         verify(likeRepository, times(1)).save(any());
-        verify(likeEventPublisher, times(1)).publish(LikeEvent.builder().idPost(1L).idAuthor(2L).idUser(2L).dateTime(any()).build());
+        verify(likeEventPublisher, times(1)).publishMessage(LikeEventDto.builder().postId(1L).postAuthor(2L).likeAuthor(2L).dateTime(any()).build());
 
         assertNotNull(postDto);
     }

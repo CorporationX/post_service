@@ -49,6 +49,19 @@ public class CommentService {
         commentRepository.deleteById(commentId);
     }
 
+    @Transactional(readOnly = true)
+    public boolean existById(long commentId){
+        return commentRepository.existsById(commentId);
+    }
+
+    @Transactional(readOnly = true)
+    public Long getAuthorId(long postId) {
+        return commentRepository
+                .findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found. Id: " + postId))
+                .getAuthorId();
+    }
+
     private Comment checkCommentExists(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment with id " + commentId + " not found"));

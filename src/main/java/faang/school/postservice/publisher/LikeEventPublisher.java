@@ -1,23 +1,22 @@
 package faang.school.postservice.publisher;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.redis.LikeEvent;
-import lombok.RequiredArgsConstructor;
+import faang.school.postservice.dto.redis.LikeEventDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
 
-@RequiredArgsConstructor
 @Component
-public class LikeEventPublisher{
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final ObjectMapper objectMapper;
+public class LikeEventPublisher extends EventPublisher<LikeEventDto> {
     @Value("${spring.data.redis.channels.like_channel.name}")
-    private String likeChannel;
+    private String channel;
 
-    public void publish(LikeEvent message) throws JsonProcessingException {
-        String json = objectMapper.writeValueAsString(message);
-        redisTemplate.convertAndSend(likeChannel, json);
+    public LikeEventPublisher(RedisTemplate<String, String> redisTemplate, ObjectMapper objectMapper) {
+        super(redisTemplate, objectMapper);
+    }
+
+    @Override
+    protected String getChannel() {
+        return channel;
     }
 }

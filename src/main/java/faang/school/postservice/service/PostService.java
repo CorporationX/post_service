@@ -5,10 +5,9 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.redis.LikeEvent;
+import faang.school.postservice.dto.redis.LikeEventDto;
 import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityAlreadyExistException;
@@ -232,11 +231,24 @@ public class PostService {
         Like newLike = Like.builder().post(post).comment(null).userId(user_id).build();
         likeRepository.save(newLike);
 
-        LikeEvent likeEvent = LikeEvent.builder().idPost(post.getId()).dateTime(LocalDateTime.now())
-                .idUser(user_id).idAuthor(post.getAuthorId()).build();
-        likeEventPublisher.publish(likeEvent);
+        LikeEventDto likeEvent = LikeEventDto.builder().postId(post.getId()).dateTime(LocalDateTime.now())
+                .likeAuthor(user_id).postAuthor(post.getAuthorId()).build();
+        likeEventPublisher.publishMessage(likeEvent);
 
         return postMapper.toDto(post);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existById(long postId) {
+        return postRepository.existsById(postId);
+    }
+
+    @Transactional(readOnly = true)
+    public Long getAuthorId(long postId) {
+        return postRepository
+                .findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found. Id: " + postId))
+                .getAuthorId();
     }
 
     private void checkExistLikeToPost(Post post, Long user_id){
