@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V005__insert.sql
   - include:
       file: db/changelog/changeset/post_V006__comment_verified.sql
+  - include:
+      file: db/changelog/changeset/post_V007__add_two_columns.sql
