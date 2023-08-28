@@ -249,6 +249,19 @@ public class PostService {
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0])).join();
     }
 
+    @Transactional(readOnly = true)
+    public boolean existById(long postId) {
+        return postRepository.existsById(postId);
+    }
+
+    @Transactional(readOnly = true)
+    public Long getAuthorId(long postId) {
+        return postRepository
+                .findById(postId)
+                .orElseThrow(() -> new NotFoundException("Post not found. Id: " + postId))
+                .getAuthorId();
+    }
+
     private void extractHashtagsWhileCreating(CreatePostDto createPostDto) {
         List<String> hashtags = new ArrayList<>();
         Pattern pattern = Pattern.compile("#\\w+");
