@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
@@ -127,7 +128,7 @@ public class PostService {
     }
 
     @Transactional
-    public ResponsePostDto likePost(UpdatePostDto dto, Long user_id){
+    public ResponsePostDto likePost(UpdatePostDto dto, Long user_id) throws JsonProcessingException {
         Post post = postRepository.findById(dto.getId()).orElseThrow(() -> new IllegalArgumentException("Post is not found"));
         checkExistLikeToPost(post, user_id);
         Like newLike = Like.builder().post(post).comment(null).userId(user_id).build();
@@ -135,15 +136,14 @@ public class PostService {
 
         LikeEvent likeEvent = LikeEvent.builder().idPost(post.getId()).dateTime(LocalDateTime.now())
                 .idUser(user_id).idAuthor(post.getAuthorId()).build();
-        likeEventPublisher.publish(likeEvent.toString());
+        likeEventPublisher.publish(likeEvent);
 
         return responsePostMapper.toDto(post);
     }
 
     private void checkExistLikeToPost(Post post, Long user_id){
         List<Like> likes = post.getLikes();
-        Optional<Like> existingLike = likes.stream().filter(like -> like.getUserId().equals(user_id)).findFirst();
-        existingLike.ifPresent(like -> {
+        likes.stream().filter(like -> like.getUserId().equals(user_id)).findFirst().ifPresent(like -> {
             throw new EntityAlreadyExistException(String.format("User with id %s already likes post with id %s", user_id, post.getId()));
         });
     }

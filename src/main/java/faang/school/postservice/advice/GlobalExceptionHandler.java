@@ -36,17 +36,16 @@ public class GlobalExceptionHandler {
         log.error("the object was not found in the database: {}", e.toString());
         return new ResponseEntity<>(new DtoGlobalException(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler(EntityAlreadyExistException.class)
     public ResponseEntity<DtoGlobalException> entityAlreadyExistException(EntityAlreadyExistException e) {
         log.error("the object already exist in the database: {}", e.toString());
         return new ResponseEntity<>(new DtoGlobalException(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
-
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<DtoGlobalException> runtimeException(RuntimeException e) {
         log.error("RuntimeException: {}", e.getMessage());
         return new ResponseEntity<>(new DtoGlobalException(e.getMessage()), HttpStatusCode.valueOf(500));
     }
-
 }

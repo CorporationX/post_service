@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
@@ -10,6 +11,7 @@ import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.event.LikeEvent;
 import faang.school.postservice.redis.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -28,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.time.LocalDateTime.now;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -94,13 +97,13 @@ class PostServiceTest {
     }
 
     @Test
-    void likePostTest() {
+    void likePostTest() throws JsonProcessingException {
         Long postId = 1L;
         Long userId = 2L;
         Post post = new Post();
         post.setId(postId);
         post.setAuthorId(userId);
-        post.setLikes(List.of(Like.builder().id(12).build()));
+        post.setLikes(List.of(Like.builder().id(12).userId(13L).build()));
 
         UpdatePostDto updatePostDto = new UpdatePostDto(postId, "qweqwe");
 
@@ -110,7 +113,7 @@ class PostServiceTest {
         ResponsePostDto responsePostDto = postService.likePost(updatePostDto, userId);
 
         verify(likeRepository, times(1)).save(any());
-        verify(likeEventPublisher, times(1)).publish(any());
+        verify(likeEventPublisher, times(1)).publish(LikeEvent.builder().idPost(1L).idAuthor(2L).idUser(2L).dateTime(any()).build());
 
         assertNotNull(responsePostDto);
     }
@@ -130,7 +133,7 @@ class PostServiceTest {
     void createTest() {
         CreatePostDto correct = CreatePostDto.builder().authorId(1L).content("Content").build();
         UserDto userDto = new UserDto(1L, "username", "email@com");
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = now();
         Post post = Post.builder().authorId(1L).content("Content").createdAt(now).published(false).deleted(false).build();
 
         when(userServiceClient.getUser(1L)).thenReturn(userDto);

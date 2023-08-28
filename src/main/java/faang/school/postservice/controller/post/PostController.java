@@ -1,5 +1,6 @@
 package faang.school.postservice.controller.post;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
@@ -47,7 +48,7 @@ public class PostController {
     }
 
     @PutMapping("/like")
-    public ResponsePostDto likePost(@RequestHeader("x-user-id") Long userId, @RequestBody UpdatePostDto dto) {
+    public ResponsePostDto likePost(@RequestHeader("x-user-id") Long userId, @RequestBody UpdatePostDto dto) throws JsonProcessingException {
         return postService.likePost(dto, userId);
     }
 
