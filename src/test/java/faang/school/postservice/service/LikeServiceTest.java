@@ -177,4 +177,17 @@ class LikeServiceTest {
 
         assertEquals(expected, actual);
     }
+
+    @Test
+    void getUsersLikeFromPost_Successful(){
+        Mockito.when(likeRepository.findByPostId(1L))
+                .thenReturn(List.of(Like
+                        .builder()
+                        .userId(1L)
+                        .build()));
+
+        likeService.getUsersLikeFromPost(1L);
+
+        Mockito.verify(likeRepository).findByPostId(1L);
+    }
 }

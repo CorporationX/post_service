@@ -2,6 +2,8 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -13,10 +15,20 @@ import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.util.exception.EntityNotFoundException;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +39,9 @@ public class LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final LikeMapper likeMapper;
+
+    @Value("${batch-size-from-like}") //по какой-то причине тест бесконечно выполняется после использования этого
+    private int BATCH_SIZE;
 
     public LikeDto createLikeOnPost(LikeDto likeDto) {
         isUserExist(likeDto);
@@ -89,5 +104,33 @@ public class LikeService {
         } catch (FeignException.FeignClientException e) {
             throw new DataValidationException("This user doesn't exist");
         }
+    }
+
+    public List<UserDto> getUsersLikeFromPost(long postId){
+        List<Like> listLike = likeRepository.findByPostId(postId);
+        List<Long> userIds = listLike
+                .stream()
+                .map(like -> like.getUserId())
+                .toList();
+        return retrieveUsersByIds(userIds);
+    }
+
+    @Bean
+    public ExecutorService myPool(){
+        return new ThreadPoolExecutor(10, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>(10000));
+    }
+
+    @Async("myPool")
+    private List<UserDto> retrieveUsersByIds(List<Long> userIds) {
+        List<UserDto> result = new ArrayList<>(userIds.size());
+        for (int i = 0; i < userIds.size(); i += BATCH_SIZE) {
+            int size = i + BATCH_SIZE;
+            if (size > userIds.size()) {
+                size = userIds.size();
+            }
+            List<Long> subId = userIds.subList(i, size);
+            result.addAll(userServiceClient.getUsersByIds(subId));
+        }
+        return result;
     }
 }
