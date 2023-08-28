@@ -11,12 +11,12 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.util.ModerationDictionary;
 import feign.FeignException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -100,19 +100,6 @@ public class CommentService {
                 .peek(verifyComment)
                 .toList();
         commentRepository.saveAll(verifiedComments);
-    }
-
-    @Transactional(readOnly = true)
-    public boolean existById(long commentId){
-        return commentRepository.existsById(commentId);
-    }
-
-    @Transactional(readOnly = true)
-    public Long getAuthorId(long postId) {
-        return commentRepository
-                .findById(postId)
-                .orElseThrow(() -> new NotFoundException("Post not found. Id: " + postId))
-                .getAuthorId();
     }
 
     @Retryable(retryFor = {FeignException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2))
