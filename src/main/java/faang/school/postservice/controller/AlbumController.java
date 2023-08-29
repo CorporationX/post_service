@@ -28,7 +28,7 @@ public class AlbumController {
     @Operation(summary = "Create Album")
     @ResponseStatus(HttpStatus.CREATED)
     public AlbumDto createAlbum(@RequestBody @Valid AlbumDto album) {
-        validate(album);
+        validateId(album.getId());
         return albumService.createAlbum(album);
     }
 
@@ -36,7 +36,7 @@ public class AlbumController {
     @Operation(summary = "Update Album")
     @ResponseStatus(HttpStatus.OK)
     public AlbumDto updateAlbum(@RequestBody @Valid AlbumDto album) {
-        validate(album);
+        validateId(album.getId());
         return albumService.updateAlbum(album);
     }
 
@@ -47,15 +47,9 @@ public class AlbumController {
         albumService.deleteAlbum(albumId);
     }
 
-    private void validate(AlbumDto album) {
-        if (album.getAuthorId() == null) {
-            throw new DataValidationException("AuthorId cannot be null");
-        }
-        if (album.getTitle() == null || album.getTitle().isEmpty()) {
-            throw new DataValidationException("Title cannot be null");
-        }
-        if (album.getDescription() == null || album.getDescription().isEmpty()) {
-            throw new DataValidationException("Description cannot be null");
+    private void validateId(Long id) {
+        if (id < 0) {
+            throw new DataValidationException("Id cannot be negative");
         }
     }
 }

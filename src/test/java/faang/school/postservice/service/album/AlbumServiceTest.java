@@ -194,18 +194,14 @@ class AlbumServiceTest {
 
     @Test
     void testDeleteAlbumSuccess() {
-        Album album = albumMapper.toAlbum(trueAlbumDto);
-        when(albumRepository.findById(trueAlbumDto.getId())).thenReturn(Optional.of(album));
         albumService.deleteAlbum(trueAlbumDto.getId());
-        verify(albumValidator, times(1)).validateAlbum(album);
-        verify(albumRepository, times(1)).delete(album);
+        verify(albumRepository, times(1)).deleteById(trueAlbumDto.getId());
     }
 
     @Test
     void testDeleteAlbumFailIfAlbumNotFound() {
         try {
             albumService.deleteAlbum(2L);
-            doThrow(new EntityNotFoundException(EXPECTED_MESSAGE_ALBUM_NOT_FOUND)).when(albumRepository).findById(2L);
         } catch (EntityNotFoundException e) {
             assertEquals(e.getMessage(), EXPECTED_MESSAGE_ALBUM_NOT_FOUND);
         }
