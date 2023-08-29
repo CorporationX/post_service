@@ -19,10 +19,10 @@ public class AdService {
     private final AdRepository adRepository;
 
     @Value("${ad-remover.batch}")
-    private final int listSize;
+    private int listSize;
 
     @Value("${ad-remover.thread-count}")
-    private final int threadCount;
+    private int threadCount;
 
     public void deleteOverdueAds() {
         List<Ad> ads = adRepository.findAll();
