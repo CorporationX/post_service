@@ -46,6 +46,16 @@ public class Album {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Builder.Default
+    @Column(name = "visibility", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AlbumVisibility visibility = AlbumVisibility.ALL_USERS;
+
+    @ElementCollection
+    @CollectionTable(name = "user_album_access", joinColumns = @JoinColumn(name = "album_id"))
+    @Column(name = "user_id")
+    private List<Long> usersWithAccessIds;
+
     public void addPost(Post post) {
         posts.add(post);
     }
