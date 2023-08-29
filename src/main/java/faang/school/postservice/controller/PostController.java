@@ -105,7 +105,7 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     public PostDto correctionSpelling(@PathVariable @Valid Long postId) {
         validateId(postId);
-        return postService.correctionSpelling(postId);
+        return postService.manualCorrectionSpelling(postId);
     }
 
     private void validateId(Long id) {

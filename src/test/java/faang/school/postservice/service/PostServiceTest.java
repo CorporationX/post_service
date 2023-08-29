@@ -444,7 +444,7 @@ class PostServiceTest {
         when(spellCorrectorService.getCorrectedText(originalContent)).thenReturn(correctedContent);
         when(postRepository.save(any())).thenReturn(post);
 
-        PostDto result = postService.correctionSpelling(postId);
+        PostDto result = postService.manualCorrectionSpelling(postId);
 
         verify(spellCorrectorService).getCorrectedText(originalContent);
         verify(postRepository).save(post);

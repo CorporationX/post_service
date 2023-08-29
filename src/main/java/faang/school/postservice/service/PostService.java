@@ -201,7 +201,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostDto correctionSpelling(Long postId) {
+    public PostDto manualCorrectionSpelling(Long postId) {
         Post post = getPostById(postId);
         Post correctedPost = getCorrectedPost(post);
         return postMapper.toDto(postRepository.save(correctedPost));
