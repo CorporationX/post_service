@@ -14,6 +14,8 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.DataValidationException;
 import faang.school.postservice.util.exception.EntityNotFoundException;
 import feign.FeignException;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+@Data
 public class LikeService {
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
@@ -40,7 +42,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final LikeMapper likeMapper;
 
-    @Value("${batch-size-from-like}") //по какой-то причине тест бесконечно выполняется после использования этого
+    @Value("${batch-size-from-like}")
     private int BATCH_SIZE;
 
     public LikeDto createLikeOnPost(LikeDto likeDto) {

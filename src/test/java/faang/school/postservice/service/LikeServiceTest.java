@@ -11,9 +11,11 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.EntityNotFoundException;
+import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -61,6 +63,7 @@ class LikeServiceTest {
         likeDto = new LikeDto(1L, 2L, comment.getId(), post.getId());
 
         likeService = new LikeService(likeRepository, userServiceClient, postRepository, commentRepository, likeMapper);
+        likeService.setBATCH_SIZE(100);
     }
 
     @Test
