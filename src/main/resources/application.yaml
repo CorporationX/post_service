@@ -71,3 +71,5 @@ thread-pool:
   maxPoolSize: 4
   corePoolSize: 4
   threadNamePrefix: "poolThread-"
+
+batch-size-from-like: 100

@@ -47,7 +47,7 @@ public class LikeController {
         return likeService.getAllPostLikes(likeDto);
     }
 
-    @GetMapping("/{postId}/getAllUsers")
+    @GetMapping("/{postId}/get-users-by-post")
     @ResponseStatus(HttpStatus.OK)
     public List<UserDto> getAllUsersFromPost(@PathVariable @Valid long postId) {
         return likeService.getUsersLikeFromPost(postId);
