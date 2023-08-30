@@ -34,7 +34,5 @@ public class PostModerator {
             List<Post> postsBatch = unverifiedPosts.subList(i, endIndex);
             executor.submit(() -> postService.processPostsBatch(postsBatch));
         }
-
-        executor.shutdown();
     }
 }
