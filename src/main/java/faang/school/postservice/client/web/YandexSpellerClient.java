@@ -1,11 +1,11 @@
 package faang.school.postservice.client.web;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Locale;
 
-@Service
+@Component
 public class YandexSpellerClient {
     public static final Locale RUSSIAN_LOCALE = new Locale("ru", "RU");
     private static final String BASE_URL = "https://speller.yandex.net/services/spellservice.json";
