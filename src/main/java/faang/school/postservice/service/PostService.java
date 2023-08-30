@@ -8,6 +8,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final TextGearsAPIService textGearsAPIService;
+    private final ModerationDictionary moderationDictionary;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
@@ -186,6 +188,21 @@ public class PostService {
         for (Post post : unpublishedPosts) {
             String correctedText = textGearsAPIService.correctText(post.getContent());
             post.setContent(correctedText);
+            postRepository.save(post);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Post> getUnverifiedPosts() {
+        return postRepository.findByVerifiedDateBeforeAndVerifiedFalse(LocalDateTime.now());
+    }
+
+    @Transactional
+    public void processPostsBatch(List<Post> posts) {
+        for (Post post : posts) {
+            boolean containsBannedWord = moderationDictionary.containsBannedWord(post.getContent());
+            post.setVerified(!containsBannedWord);
+            post.setVerifiedDate(LocalDateTime.now());
             postRepository.save(post);
         }
     }
