@@ -1,28 +1,31 @@
 package faang.school.postservice.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
-import lombok.Value;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Value
+@Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CommentDto {
 
-    long id;
+    private long id;
 
     @Size(min = 1, max = 4096, message = "Comment content cannot exceed 4096 characters")
     @NotBlank(message = "Comment content cannot be empty")
-    String content;
+    private String content;
 
     @NotNull(message = "Author ID cannot be null")
-    Long authorId;
+    private Long authorId;
 
     @NotNull(message = "Post ID cannot be null")
-    Long postId;
+    private Long postId;
 
-    LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 }

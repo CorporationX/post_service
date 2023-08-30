@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -33,6 +34,7 @@ public class CommentService {
         Comment comment = checkCommentExists(commentId);
         commentValidator.validateBeforeUpdate(comment, commentDto);
         commentMapper.partialUpdate(commentDto, comment);
+        comment.setUpdatedAt(LocalDateTime.now());
         return commentMapper.toDto(comment);
     }
 
