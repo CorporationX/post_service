@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PostViewEventDto implements Serializable{
+public class PostEventDto implements Serializable{
 
     private Long postId;
     private Long authorId;

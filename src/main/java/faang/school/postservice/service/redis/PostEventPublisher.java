@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PostViewEventPublisher implements MessagePublisher {
+public class PostEventPublisher implements MessagePublisher {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChannelTopic postTopic;
@@ -17,7 +17,7 @@ public class PostViewEventPublisher implements MessagePublisher {
 
     @Override
     public void publish(Object message) {
-        log.info("PostViewEventPublisher is sending message to Redis");
+        log.info("PostEventPublisher is sending message to Redis");
         String jsonString = writer.asJsonString(message);
         redisTemplate.convertAndSend(postTopic.getTopic(), jsonString);
     }
