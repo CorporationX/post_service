@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.dto.redis.CommentEventDto;
 import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,7 @@ public class CommentController {
     private final CommentService service;
 
     @PostMapping
-    public ResponseEntity<Object> create() {
+    public ResponseEntity<CommentEventDto> create() {
         return ResponseEntity.ok(service.create());
     }
 }

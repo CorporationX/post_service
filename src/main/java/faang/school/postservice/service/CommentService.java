@@ -38,12 +38,13 @@ public class CommentService {
     }
 
     @Transactional
-    public Object create() {
-        commentEventPublisher.publish(CommentEventDto.builder()
+    public CommentEventDto create() {
+        CommentEventDto commentEventDto =CommentEventDto.builder()
                 .authorId(new Random().nextLong(100))
                 .postId(new Random().nextLong(10))
                 .createdAt(LocalDateTime.now())
-                .build());
-        return null;
+                .build();
+        commentEventPublisher.publish(commentEventDto);
+        return commentEventDto;
     }
 }
