@@ -26,6 +26,8 @@ spring:
           name: calculations-channel
         event-channels:
           posts-view: posts-view
+        like_channel:
+          name: like_channel
 
   async:
     poolSize: 10

@@ -1,6 +1,9 @@
 package faang.school.postservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.ResponsePostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -112,5 +116,10 @@ public class PostController {
         if (id < 0) {
             throw new DataValidationException("Id cannot be negative");
         }
+    }
+
+    @PutMapping("/like")
+    public PostDto likePost(@RequestHeader("x-user-id") Long userId, @RequestBody UpdatePostDto dto) throws JsonProcessingException {
+        return postService.likePost(dto, userId);
     }
 }

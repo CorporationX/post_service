@@ -1,15 +1,23 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.ResponsePostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.redis.LikeEvent;
 import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityAlreadyExistException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.async.PostAsyncService;
 import faang.school.postservice.validator.PostValidator;
@@ -36,6 +44,8 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostAsyncService postAsyncService;
     private final UserContext userContext;
+    private final LikeRepository likeRepository;
+    private final LikeEventPublisher likeEventPublisher;
 
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
@@ -213,5 +223,26 @@ public class PostService {
         post.setSpellCheckedAt(LocalDateTime.now());
 
         return post;
+    }
+
+    @Transactional
+    public PostDto likePost(UpdatePostDto dto, Long user_id) throws JsonProcessingException {
+        Post post = postRepository.findById(dto.getId()).orElseThrow(() -> new IllegalArgumentException("Post is not found"));
+        checkExistLikeToPost(post, user_id);
+        Like newLike = Like.builder().post(post).comment(null).userId(user_id).build();
+        likeRepository.save(newLike);
+
+        LikeEvent likeEvent = LikeEvent.builder().idPost(post.getId()).dateTime(LocalDateTime.now())
+                .idUser(user_id).idAuthor(post.getAuthorId()).build();
+        likeEventPublisher.publish(likeEvent);
+
+        return postMapper.toDto(post);
+    }
+
+    private void checkExistLikeToPost(Post post, Long user_id){
+        List<Like> likes = post.getLikes();
+        likes.stream().filter(like -> like.getUserId().equals(user_id)).findFirst().ifPresent(like -> {
+            throw new EntityAlreadyExistException(String.format("User with id %s already likes post with id %s", user_id, post.getId()));
+        });
     }
 }

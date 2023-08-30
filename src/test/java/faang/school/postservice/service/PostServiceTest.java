@@ -1,16 +1,23 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.ResponsePostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.redis.LikeEvent;
 import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.async.PostAsyncService;
 import faang.school.postservice.validator.PostValidator;
@@ -61,6 +68,10 @@ class PostServiceTest {
     private PostValidator postValidator;
     @Mock
     private PostAsyncService postAsyncService;
+    @Mock
+    private LikeRepository likeRepository;
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
     @InjectMocks
     private PostService postService;
 
@@ -429,5 +440,27 @@ class PostServiceTest {
         verify(postRepository, times(1)).findReadyToPublish();
         List<List<Post>> partitions = ListUtils.partition(posts, posts.size());
         partitions.forEach(partition -> verify(postAsyncService).publishPosts(partition));
+    }
+
+    @Test
+    void likePostTest() throws JsonProcessingException {
+        Long postId = 1L;
+        Long userId = 2L;
+        Post post = new Post();
+        post.setId(postId);
+        post.setAuthorId(userId);
+        post.setLikes(List.of(Like.builder().id(12).userId(13L).build()));
+
+        UpdatePostDto updatePostDto = new UpdatePostDto(postId, "qweqwe");
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(likeRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PostDto postDto = postService.likePost(updatePostDto, userId);
+
+        verify(likeRepository, times(1)).save(any());
+        verify(likeEventPublisher, times(1)).publish(LikeEvent.builder().idPost(1L).idAuthor(2L).idUser(2L).dateTime(any()).build());
+
+        assertNotNull(postDto);
     }
 }

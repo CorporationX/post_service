@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -61,6 +62,18 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleEntityNotFoundException(
             EntityNotFoundException e, HttpServletRequest request) {
         log.error("Entity not found exception occurred", e);
+        return ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error(e.getMessage())
+                .url(request.getRequestURI())
+                .build();
+    }
+
+    @ExceptionHandler(EntityAlreadyExistException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse entityAlreadyExistException(EntityAlreadyExistException e, HttpServletRequest request) {
+        log.error("the object already exist in the database: {}", e.toString());
         return ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
