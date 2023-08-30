@@ -12,6 +12,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -41,7 +42,7 @@ public class Post {
     private List<Comment> comments;
 
     @OneToMany(mappedBy = "hashtag", orphanRemoval = true)
-    private List<Hashtag> hashtags;
+    private Set<Hashtag> hashtags;
 
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;

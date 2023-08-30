@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.messaging.publishing.NewPostPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ad.AdRepository;
@@ -27,6 +28,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final NewPostPublisher newPostPublisher;
 
     @Transactional
     public PostDto createPost(CreatePostDto createPostDto) {
@@ -44,7 +46,9 @@ public class PostService {
         }
         post.setDeleted(false);
         post.setPublished(false);
-        return postMapper.toDto(postRepository.save(post));
+        PostDto result = postMapper.toDto(postRepository.save(post));
+        newPostPublisher.publish(result);
+        return result;
     }
 
     @Transactional

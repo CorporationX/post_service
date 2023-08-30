@@ -1,7 +1,6 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.hashtag.HashtagDto;
 import faang.school.postservice.service.HashtagService;
 import lombok.RequiredArgsConstructor;

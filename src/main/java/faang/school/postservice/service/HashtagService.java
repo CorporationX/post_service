@@ -1,46 +1,28 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.hashtag.HashtagDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.HashtagMapper;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.messaging.listening.HashtagListener;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.HashtagRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class HashtagService {
-    private final HashtagRepository hashtagRepository;
+    private final PostRepository postRepository;
     private final HashtagMapper hashtagMapper;
-    private final PostMapper postMapper;
 
     @Transactional
-    public HashtagDto addHashtagToPost(Post post, Long currentUserId){
-        validateCurrentUser(post.getAuthorId(), currentUserId);
-        return hashtagMapper.entityToDto(hashtagRepository.save(hashtagMapper.dtoToEntity(hashtagDto)));
-    }
-
-    public List<PostDto> getPostsByHashtag(HashtagDto hashtagDto){
-        List<Post> sortedByDate = postRepository.findByHashtagId(hashtagDto.getId()).stream()
-                .sorted(Comparator.comparing(Post::getCreatedAt))
-                .toList();
-        return postMapper.listEntityToDto(sortedByDate);
-    }
-
-    private void validateCurrentUser(Long authorId, Long currentUserId){
-        Post currentPost = postRepository.findById(postId).orElseThrow(() ->
-                new EntityNotFoundException(String.format("Post with ID %d doesn't exist", postId)));
-        if(!(currentPost.getAuthorId().equals(currentUserId))){
-            throw new DataValidationException("Current user can't add hashtag to post with ID " + postId);
-        }
+    public void saveHashtags(Set<HashtagDto> hashtags){
+        Long postId = hashtags.stream().findFirst().orElseThrow(EntityNotFoundException::new).getPostId();
+        Post currentPost = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("There is no post with ID + " + postId));
+        currentPost.setHashtags(hashtagMapper.setDtoToEntity(hashtags));
+        postRepository.save(currentPost);
     }
 }
