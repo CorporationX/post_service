@@ -2,6 +2,7 @@ package faang.school.postservice.model;
 
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.model.album.Album;
+import faang.school.postservice.model.resource.Resource;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -69,4 +70,8 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @ManyToMany
+    @JoinColumn(name = "resource_id", nullable = false)
+    private Resource resource;
 }

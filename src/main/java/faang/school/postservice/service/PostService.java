@@ -47,10 +47,6 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public void addPostPicture(Long postId, String picture) {
-
-    }
-
     @Transactional
     public List<PostDto> publishPost() {
         List<Post> readyToPublish = postRepository.findReadyToPublish();
