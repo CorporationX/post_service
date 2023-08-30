@@ -71,13 +71,11 @@ public class PostServiceValidator {
     public void validateToActWithPostBySchedule(Optional<Post> post, Long postId,
                                                 Optional<ScheduledTask> scheduledTask) {
         if (post.isEmpty()) {
-            throw new PostNotFoundException(
-                    "Post with id = " + String.format("%d", postId) + " not found"
-            );
+            throw new PostNotFoundException(String.format("Post with id = %d not found" , postId));
         }
 
         if (scheduledTask.isPresent() && scheduledTask.get().getEntityType().equals(ScheduledEntityType.POST)) {
-            throw new EntitySchedulingException("Post with id = " + String.format("%d", postId) + " already scheduled");
+            throw new EntitySchedulingException(String.format("Post with id = %d already scheduled" , postId));
         }
     }
 }

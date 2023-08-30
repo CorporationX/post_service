@@ -12,7 +12,7 @@ public class ScheduledPostExecutorImpl implements ScheduledTaskExecutor {
     private final PostService postService;
 
     @Override
-    public ScheduledTaskDto actWithTaskBySchedule(ScheduledTaskDto dto) {
-        return postService.actWithPostBySchedule(dto);
+    public ScheduledTaskDto actWithScheduledTask(ScheduledTaskDto dto) {
+        return postService.actWithScheduledPost(dto);
     }
 }

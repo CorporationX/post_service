@@ -7,7 +7,6 @@ import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ScheduledTaskMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.scheduled.ScheduledEntityType;
 import faang.school.postservice.model.scheduled.ScheduledTask;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ScheduledTaskRepository;
@@ -131,10 +130,10 @@ public class PostService {
     }
 
     @Transactional
-    public ScheduledTaskDto actWithPostBySchedule(ScheduledTaskDto dto) {
+    public ScheduledTaskDto actWithScheduledPost(ScheduledTaskDto dto) {
         Optional<Post> postById = postRepository.findById(dto.entityId());
-        Optional<ScheduledTask> scheduledPostById = scheduledTaskRepository.findPostById(dto.entityId());
-
+        Optional<ScheduledTask> scheduledPostById = scheduledTaskRepository.findScheduledTaskById(dto.entityId());
+//
         validator.validateToActWithPostBySchedule(postById, dto.entityId(), scheduledPostById);
 
         ScheduledTask task = scheduledTaskMapper.toEntity(dto);

@@ -433,7 +433,7 @@ class PostServiceTest {
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
         PostNotFoundException e = Assertions.assertThrows(PostNotFoundException.class, () -> {
-            postService.actWithPostBySchedule(dto);
+            postService.actWithScheduledPost(dto);
         });
         Assertions.assertEquals("Post with id = " + String.format("%d", 1L) + " not found", e.getMessage());
     }
@@ -442,10 +442,10 @@ class PostServiceTest {
     void actWithPostBySchedule_PostIsAlreadyScheduled_ShouldThrowException() {
         ScheduledTaskDto dto = buildScheduledTaskDto();
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(buildPost()));
-        Mockito.when(scheduledTaskRepository.findPostById(1L)).thenReturn(Optional.of(buildScheduledTask()));
+        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L)).thenReturn(Optional.of(buildScheduledTask()));
 
         EntitySchedulingException e = Assertions.assertThrows(EntitySchedulingException.class, () -> {
-            postService.actWithPostBySchedule(dto);
+            postService.actWithScheduledPost(dto);
         });
         Assertions.assertEquals("Post with id = " + String.format("%d", dto.entityId()) + " already scheduled", e.getMessage());
     }
@@ -461,9 +461,9 @@ class PostServiceTest {
     void actWithPostBySchedule_ShouldSave() {
         ScheduledTaskDto dto = buildScheduledTaskDto();
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(buildPost()));
-        Mockito.when(scheduledTaskRepository.findPostById(1L)).thenReturn(Optional.empty());
+        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L)).thenReturn(Optional.empty());
 
-        postService.actWithPostBySchedule(dto);
+        postService.actWithScheduledPost(dto);
 
         Mockito.verify(scheduledTaskRepository).save(buildScheduledTask());
     }
@@ -523,7 +523,7 @@ class PostServiceTest {
     private ScheduledTask buildScheduledTask() {
         return ScheduledTask.builder()
                 .entityType(ScheduledEntityType.POST)
-                .taskType(ScheduledTaskType.PUBLISHING)
+                .taskType(ScheduledTaskType.PUBLISHING_POST)
                 .entityId(1L)
                 .build();
     }
@@ -531,7 +531,7 @@ class PostServiceTest {
     private ScheduledTaskDto buildScheduledTaskDto() {
         return ScheduledTaskDto.builder()
                 .entityType(ScheduledEntityType.POST)
-                .taskType(ScheduledTaskType.PUBLISHING)
+                .taskType(ScheduledTaskType.PUBLISHING_POST)
                 .entityId(1L)
                 .build();
     }

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class LikeService {
     
-    public ScheduledTaskDto actWithLikeBySchedule(ScheduledTaskDto dto) {
+    public ScheduledTaskDto actWithScheduledLike(ScheduledTaskDto dto) {
         // TODO: 08.08.2023
         return null;
     }
