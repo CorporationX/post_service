@@ -36,7 +36,7 @@ public class LikeService {
                 .anyMatch(like -> like.getUserId().equals(currentUserId));
 
         if(ifLikeExistsYet){
-            removeLikeFromPost(likeDto, currentUserId);
+            likeRepository.deleteByPostIdAndUserId(likeDto.getPostId(), currentUserId);
             return likeDto;
         } else {
             Like newLike = likeMapper.dtoToLike(likeDto);
@@ -53,7 +53,8 @@ public class LikeService {
                 .noneMatch(like -> like.getUserId().equals(currentUserId));
 
         if(ifLikeDoesNotExistYet) {
-            likePost(likeDto, currentUserId);
+            Like newLike = likeMapper.dtoToLike(likeDto);
+            likeRepository.save(newLike);
         } else {
             likeRepository.deleteByPostIdAndUserId(likeDto.getPostId(), currentUserId);
         }

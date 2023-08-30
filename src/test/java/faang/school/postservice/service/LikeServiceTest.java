@@ -52,7 +52,7 @@ class LikeServiceTest {
     public void setUp(){
         likeDto = LikeDto.builder().id(10L).build();
         like = Like.builder().id(10L).userId(CURRENT_USER_ID).build();
-        userDto = new UserDto(CURRENT_USER_ID, "username", "mail");
+        userDto = new UserDto(CURRENT_USER_ID, "username", "mail", List.of(2L, 3L));
         post = Post.builder().id(POST_ID).build();
         comment = Comment.builder().id(COMMENT_ID).build();
     }
