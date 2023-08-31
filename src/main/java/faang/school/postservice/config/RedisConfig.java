@@ -2,6 +2,7 @@ package faang.school.postservice.config;
 
 import faang.school.postservice.messaging.listening.HashtagListener;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,15 +50,15 @@ public class RedisConfig {
     }
 
     @Bean
-    public MessageListenerAdapter hashtagListener(HashtagListener hashtagListener){
+    public MessageListenerAdapter hashtagListenerAdapter(HashtagListener hashtagListener){
         return new MessageListenerAdapter(hashtagListener);
     }
 
     @Bean
-    public RedisMessageListenerContainer redisContainer(MessageListenerAdapter messageListenerAdapter) {
+    public RedisMessageListenerContainer redisContainer(HashtagListener hashtagListener) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(redisConnectionFactory());
-        container.addMessageListener(messageListenerAdapter, hashtagTopic());
+        container.addMessageListener(hashtagListenerAdapter(hashtagListener), hashtagTopic());
         return container;
     }
 }

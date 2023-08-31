@@ -41,7 +41,7 @@ public class Post {
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments;
 
-    @OneToMany(mappedBy = "hashtag", orphanRemoval = true)
+    @ManyToMany(mappedBy = "posts")
     private Set<Hashtag> hashtags;
 
     @ManyToMany(mappedBy = "posts")

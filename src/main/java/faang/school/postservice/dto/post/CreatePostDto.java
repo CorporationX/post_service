@@ -20,6 +20,6 @@ public class CreatePostDto {
     private String content;
     @NotNull
     private Long authorId;
-    @NotNull
+
     private Long projectId;
 }

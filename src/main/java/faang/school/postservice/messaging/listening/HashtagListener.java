@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,8 +16,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Component
-public class HashtagListener extends AbstractPostListener<PostDto> implements MessageListener {
+@Service
+public class HashtagListener<T> extends AbstractPostListener<PostDto> implements MessageListener {
 
     public HashtagListener(ObjectMapper objectMapper, HashtagService hashtagService) {
         super(objectMapper, hashtagService);
@@ -31,12 +32,16 @@ public class HashtagListener extends AbstractPostListener<PostDto> implements Me
     private Set<HashtagDto> findHashtags(String content, Long postId) {
         List<String> hashtags = new ArrayList<>();
         while (!content.isBlank()) {
-            content = content.substring(content.indexOf("#"));
+            content = content.substring(content.indexOf("#", 1));
             int endOfHashtag = content.indexOf("\\s");
-            if (endOfHashtag > content.indexOf("#")) {
-                endOfHashtag = content.indexOf("#");
+            if (endOfHashtag > content.indexOf("#") || endOfHashtag == -1) {
+                endOfHashtag = content.indexOf("#", 1);
+                if (endOfHashtag == -1){
+                    endOfHashtag = content.length()-1;
+                }
             }
-            hashtags.add(content.substring(0, endOfHashtag));
+            hashtags.add(content.substring(0, endOfHashtag).trim());
+            if (content.matches("^#\\S[^#]+$")) break;
         }
         return hashtags.stream()
                 .distinct()

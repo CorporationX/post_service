@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -35,11 +36,10 @@ public class Hashtag {
     @Column(name = "content", nullable = false, length = 30)
     private String content;
 
-    @Column(name = "author_id", nullable = false)
-    private long authorId;
-
     @ManyToMany
-    @JoinColumn(name = "post_id", nullable = false)
+    @JoinTable(name = "post_hashtag",
+            joinColumns = @JoinColumn(name = "hashtag_id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id"))
     private List<Post> posts;
 
     @CreationTimestamp
