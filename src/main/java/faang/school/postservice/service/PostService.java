@@ -9,6 +9,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final TextGearsAPIService textGearsAPIService;
     private final CommentService commentService;
+    private final ModerationDictionary moderationDictionary;
     private final RedisTemplate<String,Long> redisTemplate;
     @Value("${spring.data.redis.channels.user_ban_channel.name}")
     private String userBanChannelName;
@@ -199,6 +201,7 @@ public class PostService {
         }
     }
 
+
     public void findCommentersAndPublishBanEvent() {
         List<Comment> unverifiedComments = commentService.getUnverifiedComments();
 
@@ -219,4 +222,19 @@ public class PostService {
         redisTemplate.convertAndSend(userBanChannelName, userId);
     }
 
+
+    @Transactional(readOnly = true)
+    public List<Post> getUnverifiedPosts() {
+        return postRepository.findByVerifiedDateBeforeAndVerifiedFalse(LocalDateTime.now());
+    }
+
+    @Transactional
+    public void processPostsBatch(List<Post> posts) {
+        for (Post post : posts) {
+            boolean containsBannedWord = moderationDictionary.containsBannedWord(post.getContent());
+            post.setVerified(!containsBannedWord);
+            post.setVerifiedDate(LocalDateTime.now());
+            postRepository.save(post);
+        }
+    }
 }
