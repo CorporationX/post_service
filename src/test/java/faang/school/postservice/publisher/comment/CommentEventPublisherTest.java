@@ -43,7 +43,5 @@ class CommentEventPublisherTest {
         commentEventPublisher.publish(commentEventDto);
 
         verify(redisTemplate).convertAndSend(topic, "JSON_STRING");
-
     }
-
 }
