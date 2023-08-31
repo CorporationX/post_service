@@ -7,16 +7,21 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +31,10 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final TextGearsAPIService textGearsAPIService;
+    private final CommentService commentService;
+    private final RedisTemplate<String,Long> redisTemplate;
+    @Value("${spring.data.redis.channels.user_ban_channel.name}")
+    private String userBanChannelName;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
@@ -189,4 +198,25 @@ public class PostService {
             postRepository.save(post);
         }
     }
+
+    public void findCommentersAndPublishBanEvent() {
+        List<Comment> unverifiedComments = commentService.getUnverifiedComments();
+
+        Map<Long, List<Comment>> commentsByAuthor = unverifiedComments.stream()
+                .collect(Collectors.groupingBy(Comment::getAuthorId));
+
+        for (Map.Entry<Long, List<Comment>> entry : commentsByAuthor.entrySet()) {
+            Long authorId = entry.getKey();
+            List<Comment> authorComments = entry.getValue();
+
+            if (authorComments.size() > 5) {
+                publishBanEvent(authorId);
+            }
+        }
+    }
+
+    private void publishBanEvent(Long userId) {
+        redisTemplate.convertAndSend(userBanChannelName, userId);
+    }
+
 }
