@@ -11,34 +11,29 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
-public class HashtagListener implements MessageListener {
-    private final ObjectMapper objectMapper;
-    private final HashtagService hashtagService;
+public class HashtagListener extends AbstractPostListener<PostDto> implements MessageListener {
+
+    public HashtagListener(ObjectMapper objectMapper, HashtagService hashtagService) {
+        super(objectMapper, hashtagService);
+    }
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        PostDto postDto = null;
-        try {
-            postDto = objectMapper.readValue(message.getBody(), PostDto.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        hashtagService.saveHashtags(findHashtags(postDto.getContent(), postDto.getId()));
+        handleData(message, PostDto.class,
+                (postDto) -> hashtagService.saveHashtags(findHashtags(postDto.getContent(), postDto.getId())));
     }
 
-    private Set<HashtagDto> findHashtags(String content, Long postId){
+    private Set<HashtagDto> findHashtags(String content, Long postId) {
         List<String> hashtags = new ArrayList<>();
-        while (!content.isBlank()){
+        while (!content.isBlank()) {
             content = content.substring(content.indexOf("#"));
             int endOfHashtag = content.indexOf("\\s");
-            if(endOfHashtag > content.indexOf("#")){
+            if (endOfHashtag > content.indexOf("#")) {
                 endOfHashtag = content.indexOf("#");
             }
             hashtags.add(content.substring(0, endOfHashtag));
