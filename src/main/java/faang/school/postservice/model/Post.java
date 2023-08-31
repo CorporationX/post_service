@@ -1,6 +1,7 @@
 package faang.school.postservice.model;
 
 import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.model.album.Album;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +12,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -39,8 +41,8 @@ public class Post {
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments;
 
-    @OneToMany(mappedBy = "hashtag", orphanRemoval = true)
-    private List<Hashtag> hashtags;
+    @ManyToMany(mappedBy = "posts")
+    private Set<Hashtag> hashtags;
 
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;
