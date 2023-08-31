@@ -6,6 +6,6 @@ CREATE TABLE resource_id
     size BIGINT,
     type varchar(64) NOT NULL,
     post_id BIGINT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,,
+    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
     FOREIGN KEY (post_id) REFERENCES post(id)
 );
