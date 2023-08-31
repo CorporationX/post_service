@@ -3,7 +3,6 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.exception.DataValidException;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -86,7 +85,7 @@ class LikeServiceTest {
         LikeDto likeDto = createLikeDto();
         likeDto.setPostId(null);
 
-        assertThrows(DataValidException.class, () -> likeService.createLike(likeDto));
+        assertThrows(IllegalArgumentException.class, () -> likeService.createLike(likeDto));
 
     }
 
