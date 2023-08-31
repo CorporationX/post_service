@@ -5,17 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResourceDto {
+public class DownloadFileDto {
     private String name;
-    private String key;
-    private Long size;
-    private String type;
-    private Long postId;
-    private LocalDateTime createdAt;
+    private String contentType;
+    private byte[] bytes;
 }
