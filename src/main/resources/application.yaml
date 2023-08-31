@@ -24,7 +24,7 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-        comment-event:
+        comment_event:
           name: comment-event-channel
 
 server:
