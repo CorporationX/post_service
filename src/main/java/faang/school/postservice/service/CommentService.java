@@ -62,7 +62,7 @@ public class CommentService {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment with id " + commentId + " not found"));
     }
-    @Transactional(readOnly = true)
+
     public void sendCommentEvent(CommentDto commentDto) {
         Post post = postService.getPostById(commentDto.getPostId());
 
@@ -73,7 +73,6 @@ public class CommentService {
                 .postAuthorId(post.getAuthorId())
                 .contentComment(commentDto.getContent())
                 .build();
-        System.out.println(commentEventDto);
         commentEventPublisher.publish(commentEventDto);
     }
 }
