@@ -3,6 +3,7 @@ package faang.school.postservice.service.s3;
 import faang.school.postservice.dto.resource.DownloadFileDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.resource.Resource;
@@ -30,9 +31,9 @@ public class PostFileService {
     @Transactional
     public List<ResourceDto> addFiles(Long postId, List<MultipartFile> files) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new DataValidationException("'Post not in database' error occurred while fetching post"));
+                .orElseThrow(() -> new EntityNotFoundException("'Post not in database' error occurred while fetching post"));
         if (files.size() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("Too many files");
+            throw new DataValidationException("Too many files");
         }
         List<Resource> resources = new ArrayList<>();
 
@@ -56,21 +57,24 @@ public class PostFileService {
 
     @Transactional
     public DownloadFileDto downloadFile(Long fileId) {
-        Resource resource = resourceRepository.findById(fileId)
-                .orElseThrow(() -> new DataValidationException("There is no matching resource in the database"));
-
+        Resource resource = getResource(fileId);
         byte[] bytes = s3Service.downloadFile(resource.getKey());
+
         return new DownloadFileDto(resource.getName(), resource.getType(), bytes);
     }
 
     @Transactional
     public ResourceDto deleteFile(Long fileId) {
-        Resource resource = resourceRepository.findById(fileId)
-                .orElseThrow(() -> new DataValidationException("There is no matching resource in the database"));
+        Resource resource = getResource(fileId);
 
         resourceRepository.deleteById(fileId);
         s3Service.deleteFile(resource.getKey());
 
         return resourceMapper.toDto(resource);
+    }
+
+    private Resource getResource(Long fileId) {
+        return resourceRepository.findById(fileId)
+                .orElseThrow(() -> new EntityNotFoundException("There is no matching resource in the database"));
     }
 }

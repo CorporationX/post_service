@@ -1,5 +1,6 @@
 package faang.school.postservice.service.s3;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Component
+@RequiredArgsConstructor
 public class ImageService {
     public byte[] resizeImage(MultipartFile image) {
         try {

@@ -62,3 +62,8 @@ services:
     secretKey: password
     bucketName: corpbucket
 
+aws:
+  accessKey: user
+  secretKey: password
+  region: http://127.0.0.1:9000/
+  bucket-name: user-bucket
