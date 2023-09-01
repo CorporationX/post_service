@@ -1,5 +1,6 @@
 package faang.school.postservice.service.s3;
 
+import faang.school.postservice.dto.resource.DownloadFileDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -22,7 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,8 +64,7 @@ class PostFileServiceTest {
 
         files = new ArrayList<>();
         files.add(new MockMultipartFile("file", "test.txt", "text/plain", "test".getBytes()));
-        files.add(new MockMultipartFile("file", "test.txt", "text/plain", "test".getBytes()));
-        files.add(new MockMultipartFile("file", "test.txt", "text/plain", "test".getBytes()));
+
     }
 
     @Test
@@ -81,13 +84,18 @@ class PostFileServiceTest {
     void testAddFilesResources() {
         byte[] byteFile = {1, 2, 3, 4, 5};
         List<ResourceDto> resourcesDto = new ArrayList<>();
+        resourcesDto.add(ResourceDto.builder().build());
+        List<Resource> resources = new ArrayList<>();
+        resources.add(Resource.builder().build());
 
         when(postRepository.findById(1L)).thenReturn(Optional.of(Post.builder().id(1L).build()));
-        when(imageService.resizeImage(fileslist.get(0))).thenReturn(byteFile);
-        postFileService.addFiles(1L, files);
-//        assertArrayEquals(byteFile, files.get(0).getBytes());
-//        assertArrayEquals(byteFile, files.get(0).getBytes());
-//        assertArrayEquals(byteFile, files.get(0).getBytes());
+        when(imageService.resizeImage(any())).thenReturn(byteFile);
+        when(s3Service.uploadFile(any(), any(), any())).thenReturn("test");
+        when(resourceRepository.saveAll(any())).thenReturn(resources);
+        when(resourceMapper.toListDto(any())).thenReturn(resourcesDto);
+
+        List<ResourceDto> resourceDtoList = postFileService.addFiles(1L, files);
+        assertEquals(resourcesDto.size(), resourceDtoList.size());
     }
 
     @Test
@@ -99,9 +107,14 @@ class PostFileServiceTest {
 
     @Test
     void testDownloadFile() {
-        when(resourceRepository.findById(1L))
-                .thenReturn(Optional.of(Resource.builder().id(1L).build()));
+        byte[] byteFile = {1, 2, 3, 4, 5};
+        DownloadFileDto downloadFileDto = DownloadFileDto.builder().name("test").contentType("jpg").bytes(byteFile).build();
 
+        when(resourceRepository.findById(1L))
+                .thenReturn(Optional.of(Resource.builder().id(1L).name("test").type("jpg").build()));
+        when(s3Service.downloadFile(any())).thenReturn(byteFile);
+
+        assertEquals(downloadFileDto, postFileService.downloadFile(1L));
     }
 
     @Test
@@ -114,5 +127,8 @@ class PostFileServiceTest {
     void testDeleteFile() {
         when(resourceRepository.findById(1L))
                 .thenReturn(Optional.of(Resource.builder().id(1L).build()));
+        postFileService.deleteFile(1L);
+
+        verify(resourceRepository).deleteById(1L);
     }
 }
