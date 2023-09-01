@@ -2,6 +2,7 @@ package faang.school.postservice.service.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.model.Resource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +23,7 @@ public class S3ServiceImp implements S3Service {
     private String bucketName;
 
     @Override
-    public List<Resource> uploadFile(MultipartFile[] files) {
+    public List<Resource> uploadFiles(MultipartFile[] files) {
         List<Resource> resources = new ArrayList<>();
 
         for (MultipartFile file : files) {
@@ -40,10 +42,17 @@ public class S3ServiceImp implements S3Service {
             Resource resource = new Resource();
             resource.setKey(fileKey);
             resource.setSize(fileSize);
+            resource.setCreatedAt(LocalDateTime.now());
+            resource.setUpdatedAt(LocalDateTime.now());
             resource.setName(file.getOriginalFilename());
 
             resources.add(resource);
         }
         return resources;
+    }
+
+    @Override
+    public ResourceDto deleteResource(Long resourceId) {
+        return null;
     }
 }

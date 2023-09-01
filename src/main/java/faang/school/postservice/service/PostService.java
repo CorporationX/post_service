@@ -8,7 +8,9 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.s3.S3Service;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,13 +29,17 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final TextGearsAPIService textGearsAPIService;
+    private final S3Service s3Service;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
         validateIdPostDto(postDto);
         validateAuthorExist(postDto);
 
+        List<Resource> resources = s3Service.uploadFiles(files);
+
         Post post = postMapper.toEntity(postDto);
+        post.setResources(resources);
         return postMapper.toDto(postRepository.save(post));
     }
 

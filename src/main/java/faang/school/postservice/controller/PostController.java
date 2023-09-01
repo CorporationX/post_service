@@ -1,7 +1,9 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,10 +24,16 @@ import java.util.List;
 @RequestMapping("/api/v1/posts")
 public class PostController {
     private final PostService postService;
+    private final S3Service s3Service;
 
     @PostMapping
     public PostDto crateDraftPost(@RequestBody @Validated PostDto postDto, @RequestParam("files") MultipartFile[] files) {
         return postService.createDraftPost(postDto, files);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResourceDto deleteResource(@PathVariable Long resourceId) {
+        return s3Service.deleteResource(resourceId);
     }
 
     @PutMapping("/{id}")
