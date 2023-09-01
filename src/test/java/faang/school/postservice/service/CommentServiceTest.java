@@ -1,10 +1,12 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.redis.CommentEventDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,10 @@ class CommentServiceTest {
     @InjectMocks
     private CommentService commentService;
     @Mock
+    private PostService postService;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
+    @Mock
     private CommentMapper commentMapper;
     @Mock
     private CommentValidator commentValidator;
@@ -40,11 +46,13 @@ class CommentServiceTest {
                 .authorId(2L)
                 .postId(postId)
                 .build();
-        Comment commentEntity = new Comment();
+        Comment commentEntity = mock(Comment.class);
+        Post post = Post.builder().id(postId).authorId(2L).build();
 
         when(commentMapper.toEntity(commentDto, postId)).thenReturn(commentEntity);
         when(commentRepository.save(commentEntity)).thenReturn(commentEntity);
         when(commentMapper.toDto(commentEntity)).thenReturn(commentDto);
+        when(postService.getPostById(postId)).thenReturn(post);
 
         CommentDto result = commentService.createComment(postId, commentDto);
         
@@ -57,6 +65,8 @@ class CommentServiceTest {
         verify(commentMapper).toEntity(commentDto, postId);
         verify(commentRepository).save(commentEntity);
         verify(commentMapper).toDto(commentEntity);
+        verify(postService).getPostById(postId);
+        verify(commentEventPublisher).publish(any(CommentEventDto.class));
     }
 
 
@@ -159,5 +169,37 @@ class CommentServiceTest {
         commentService.deleteComment(commentId);
 
         verify(commentRepository, times(1)).deleteById(commentId);
+    }
+
+    @Test
+    void testSendCommentEvent() {
+        CommentDto commentDto = CommentDto.builder()
+                .id(1L)
+                .authorId(2L)
+                .content("Test comment")
+                .postId(3L)
+                .build();
+
+        Post post = Post.builder()
+                .id(3L)
+                .authorId(1L)
+                .build();
+
+        when(postService.getPostById(commentDto.getPostId())).thenReturn(post);
+
+        commentService.sendCommentEvent(commentDto);
+
+        verify(postService).getPostById(commentDto.getPostId());
+
+        CommentEventDto expectedEventDto = CommentEventDto.builder()
+                .idComment(commentDto.getId())
+                .authorIdComment(commentDto.getAuthorId())
+                .postId(commentDto.getPostId())
+                .postAuthorId(post.getAuthorId())
+                .contentComment(commentDto.getContent())
+                .build();
+
+        verify(commentEventPublisher).publish(expectedEventDto);
+        verify(commentEventPublisher, times(1)).publish(expectedEventDto);
     }
 }

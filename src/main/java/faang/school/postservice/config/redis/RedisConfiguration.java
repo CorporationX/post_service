@@ -1,5 +1,6 @@
 package faang.school.postservice.config.redis;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
+@Slf4j
 public class RedisConfiguration {
 
     @Value("${spring.data.redis.host}")
@@ -22,6 +24,7 @@ public class RedisConfiguration {
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
+        log.info("Creating JedisConnectionFactory with host: {}, port: {}", host, port);
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         return new JedisConnectionFactory(config);
     }

@@ -14,8 +14,11 @@ public interface CommentMapper {
     @Mapping(source = "post.id", target = "postId")
     CommentDto toDto(Comment comment);
 
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(source = "postId", target = "post.id")
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "authorId", ignore = true)
+    @Mapping(target = "post", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     Comment partialUpdate(CommentDto commentDto, @MappingTarget Comment comment);
 
     @Named("mapPostIdToPost")
