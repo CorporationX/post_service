@@ -71,7 +71,6 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany
-    @JoinColumn(name = "resource_id", nullable = false)
+    @OneToMany(mappedBy = "post")
     private List<Resource> resources;
 }

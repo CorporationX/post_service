@@ -2,6 +2,7 @@ package faang.school.postservice.service.s3;
 
 import faang.school.postservice.dto.resource.DownloadFileDto;
 import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.dto.resource.ResourceDtoInputStream;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.ResourceMapper;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +63,18 @@ public class PostFileService {
         byte[] bytes = s3Service.downloadFile(resource.getKey());
 
         return new DownloadFileDto(resource.getName(), resource.getType(), bytes);
+    }
+
+    @Transactional
+    public ResourceDtoInputStream downloadFileInputStream(Long fileId) {
+        Resource resource = getResource(fileId);
+        InputStream inputStream = s3Service.downloadFileInputStream(resource.getKey());
+
+        ResourceDtoInputStream resourceDtoInputStream = new ResourceDtoInputStream();
+        resourceDtoInputStream.setInputStream(inputStream);
+        resourceDtoInputStream.setResourceDto(resourceMapper.toDto(resource));
+
+        return resourceDtoInputStream;
     }
 
     @Transactional

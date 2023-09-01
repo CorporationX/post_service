@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -43,6 +44,15 @@ public class S3Service {
 
     public void deleteFile(String key) {
         amazonS3.deleteObject(bucketName, key);
+    }
+
+    public InputStream downloadFileInputStream(String key) {
+        try {
+            S3Object object = amazonS3.getObject(bucketName, key);
+            return object.getObjectContent();
+        } catch (Exception e) {
+            throw new RuntimeException(ErrorMessage.FILE_EXCEPTION);
+        }
     }
 
     public byte[] downloadFile(String key) {

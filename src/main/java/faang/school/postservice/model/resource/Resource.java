@@ -44,7 +44,7 @@ public class Resource {
     private String type;
 
     @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
+    @JoinColumn(name = "resource_id", nullable = false)
     private Post post;
 
     @CreationTimestamp
