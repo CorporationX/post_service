@@ -59,7 +59,7 @@ class PostServiceTest {
 
         when(postRepository.save(post)).thenReturn(post);
 
-        PostDto actualDto = postService.createDraftPost(expectedDto);
+        PostDto actualDto = postService.createDraftPost(expectedDto, null);
 
         assertNotNull(actualDto);
         assertEquals(expectedDto, actualDto);
@@ -75,7 +75,7 @@ class PostServiceTest {
                 .build();
 
         DataValidationException exception = assertThrows(DataValidationException.class,
-                () -> postService.createDraftPost(postDto));
+                () -> postService.createDraftPost(postDto, null));
         assertEquals("Enter one thing: authorId or projectId", exception.getMessage());
     }
 
@@ -89,7 +89,7 @@ class PostServiceTest {
         doThrow(FeignException.class).when(userServiceClient).getUser(1L);
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> postService.createDraftPost(postDto));
+                () -> postService.createDraftPost(postDto, null));
         assertEquals("User with the specified authorId does not exist", exception.getMessage());
     }
 
@@ -103,7 +103,7 @@ class PostServiceTest {
         doThrow(FeignException.class).when(projectServiceClient).getProject(1L);
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> postService.createDraftPost(postDto));
+                () -> postService.createDraftPost(postDto, null));
         assertEquals("Project with the specified projectId does not exist", exception.getMessage());
     }
 

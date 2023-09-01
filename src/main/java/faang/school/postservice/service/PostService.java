@@ -13,6 +13,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -28,7 +29,7 @@ public class PostService {
     private final TextGearsAPIService textGearsAPIService;
 
     @Transactional
-    public PostDto createDraftPost(PostDto postDto) {
+    public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
         validateIdPostDto(postDto);
         validateAuthorExist(postDto);
 
