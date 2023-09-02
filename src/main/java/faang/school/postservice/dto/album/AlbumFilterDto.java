@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AlbumFilterDto {
     private String titlePattern;
+    private Long authorIdPattern;
 }

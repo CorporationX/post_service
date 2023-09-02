@@ -25,12 +25,6 @@ public class AlbumValidator {
         if (albumDto == null) {
             throw new DataValidationException("AlbumDto is null");
         }
-        if (albumDto.getDescription() == null || albumDto.getDescription().isEmpty()) {
-            throw new DataValidationException("Description is null");
-        }
-        if (albumDto.getTitle() == null || albumDto.getTitle().isEmpty()) {
-            throw new DataValidationException("Title is null");
-        }
         List<Album> albums = albumRepository.findByAuthorId(userId).toList();
         albums.forEach(album -> {
             if (album.getTitle().equals(albumDto.getTitle())) {
@@ -48,7 +42,7 @@ public class AlbumValidator {
 
     public void validateAuthor(long albumId,long userId) {
         validateUser(userId);
-        long authorId = albumRepository.findById(albumId).get().getAuthorId();
+        long authorId = validateAlbum(albumId).getAuthorId();
         if (authorId != userId) {
             throw new DataValidationException("You are not author of this album");
         }
@@ -56,14 +50,14 @@ public class AlbumValidator {
 
     public void validateFavoriteAlbumToDelete(long userId,long albumId) {
         List<Album> albums = albumRepository.findFavoriteAlbumsByUserId(userId).toList();
-        if(!albums.contains(albumRepository.findById(albumId).get())) {
+        if(!albums.contains(validateAlbum(albumId))) {
             throw new DataValidationException("Album not in favorites");
         }
     }
 
     public void validatePostToExist(long postId, long albumId) {
         Post post = postService.getPostById(postId);
-        Album album = albumRepository.findById(albumId).get();
+        Album album = validateAlbum(albumId);
         List<Post> posts = album.getPosts();
         if (posts.contains(post)) {
             throw new DataValidationException("Post already in this album");
@@ -74,7 +68,7 @@ public class AlbumValidator {
         userServiceClient.getUser(userId);
     }
 
-    public void validateAlbum(Long albumId) {
-        albumRepository.findById(albumId).orElseThrow(() -> new DataValidationException("Album not found"));
+    public Album validateAlbum(Long albumId) {
+        return albumRepository.findById(albumId).orElseThrow(() -> new DataValidationException("Album not found"));
     }
 }

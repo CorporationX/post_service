@@ -111,7 +111,6 @@ class AlbumControllerTest {
 
     @Test
     public void addPostToAlbumTest() throws Exception {
-        //postRepository.save(Post.builder().id(1).content("test").build());
         mockMvc.perform(post("/album/addPost/2/1")
                         .header("x-user-id", "1"))
                 .andExpect(status().isOk());

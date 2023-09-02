@@ -42,7 +42,7 @@ public class AlbumService {
 
     public void addPostToAlbum(Long albumId, Long postId, Long userId) {
         albumValidator.validatePostToAdd(albumId, postId, userId);
-        Album album = albumRepository.findById(albumId).orElseThrow(() -> new DataValidationException("Album not found"));
+        Album album = getAlbumFromDb(albumId);
         Post post = postService.getPostById(postId);
         album.addPost(post);
     }
@@ -63,8 +63,7 @@ public class AlbumService {
     }
 
     public AlbumDto getAlbum(Long albumId) {
-        return albumMapper.toDto(albumRepository.findById(albumId)
-                .orElseThrow(() -> new DataValidationException("Album not found")));
+        return albumMapper.toDto(getAlbumFromDb(albumId));
     }
 
     @Transactional
@@ -100,5 +99,9 @@ public class AlbumService {
         return albums.
                 map(albumMapper::toDto)
                 .toList();
+    }
+
+    private Album getAlbumFromDb(Long albumId) {
+        return albumRepository.findById(albumId).orElseThrow(() -> new DataValidationException("Album not found"));
     }
 }

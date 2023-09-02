@@ -4,6 +4,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.service.album.AlbumService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +24,7 @@ public class AlbumController {
     private final UserContext userContext;
 
     @PostMapping("/create")
-    public void createAlbum(@RequestBody AlbumDto albumDto) {
+    public void createAlbum(@RequestBody @Valid AlbumDto albumDto) {
         long userId = userContext.getUserId();
         albumService.createAlbum(albumDto, userId);
     }
