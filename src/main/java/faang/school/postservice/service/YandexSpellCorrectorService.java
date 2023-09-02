@@ -27,7 +27,11 @@ public class YandexSpellCorrectorService {
      * @param text The input text to be corrected.
      * @return The corrected text with words replaced by suggested corrections, if available.
      */
-    @Retryable(exceptionExpression = "#{message.contains('Error processing text')}", maxAttempts = 4, backoff = @Backoff(delay = 1000))
+    @Retryable(
+            exceptionExpression = "#{message.contains('Error processing text')}",
+            maxAttemptsExpression = "${yandex-speller.max-attempts-retry}",
+            backoff = @Backoff(delayExpression = "${yandex-speller.delay}")
+    )
     public String getCorrectedText(String text) {
         String spellText = client.checkText(text);
         ObjectMapper mapper = new ObjectMapper();
