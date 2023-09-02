@@ -26,6 +26,8 @@ spring:
           name: calculations-channel
         event-channels:
           posts-view: posts-view
+        comment_event:
+          name: comment-event-channel
 
   async:
     poolSize: 10
