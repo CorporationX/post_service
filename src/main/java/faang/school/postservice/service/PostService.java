@@ -9,11 +9,10 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.BanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,9 +31,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final TextGearsAPIService textGearsAPIService;
     private final CommentService commentService;
-    private final RedisTemplate<String,Long> redisTemplate;
-    @Value("${spring.data.redis.channels.user_ban_channel.name}")
-    private String userBanChannelName;
+    private final BanEventPublisher banEventPublisher;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
@@ -210,13 +207,8 @@ public class PostService {
             List<Comment> authorComments = entry.getValue();
 
             if (authorComments.size() > 5) {
-                publishBanEvent(authorId);
+                banEventPublisher.publishBanEvent(authorId);
             }
         }
     }
-
-    private void publishBanEvent(Long userId) {
-        redisTemplate.convertAndSend(userBanChannelName, userId);
-    }
-
 }
