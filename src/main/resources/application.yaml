@@ -55,6 +55,7 @@ comment:
   ban:
     scheduler:
       cron: "0 0 * * * ?" # every hour
+    numberOfCommentsToBan: 5
 
 thread-pool:
   maxThreadPoolSize: 10

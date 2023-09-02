@@ -14,6 +14,7 @@ import faang.school.postservice.publisher.BanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,8 @@ public class PostService {
     private final CommentService commentService;
     private final BanEventPublisher banEventPublisher;
     private final ModerationDictionary moderationDictionary;
+    @Value("${comment.ban.numberOfCommentsToBan}")
+    private final int numberOfCommentsToBan;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
@@ -209,7 +212,7 @@ public class PostService {
             Long authorId = entry.getKey();
             List<Comment> authorComments = entry.getValue();
 
-            if (authorComments.size() > 5) {
+            if (authorComments.size() > numberOfCommentsToBan) {
                 banEventPublisher.publishBanEvent(authorId);
             }
         }
