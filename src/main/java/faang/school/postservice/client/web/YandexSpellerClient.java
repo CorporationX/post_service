@@ -1,5 +1,6 @@
 package faang.school.postservice.client.web;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -8,8 +9,10 @@ import java.util.Locale;
 @Component
 public class YandexSpellerClient {
     public static final Locale RUSSIAN_LOCALE = new Locale("ru", "RU");
-    private static final String BASE_URL = "https://speller.yandex.net/services/spellservice.json";
-    private static final String CHECK_TEXT_URL = "/checkText?text=";
+    @Value("${yandex-speller.base-host}")
+    private String baseUrl;
+    @Value("${yandex-speller.check-text-url}")
+    private String checkTextUrl;
 
     private final WebClient.Builder webClientBuilder;
 
@@ -18,9 +21,9 @@ public class YandexSpellerClient {
     }
 
     public String checkText(String text) {
-        WebClient webClient = webClientBuilder.baseUrl(BASE_URL).build();
+        WebClient webClient = webClientBuilder.baseUrl(baseUrl).build();
         return webClient.get()
-                .uri(CHECK_TEXT_URL + text)
+                .uri(checkTextUrl + text)
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
