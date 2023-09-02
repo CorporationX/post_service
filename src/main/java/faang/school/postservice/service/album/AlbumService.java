@@ -49,7 +49,7 @@ public class AlbumService {
 
     @Transactional
     public void addPostToAlbum(Long albumId, Long postId) {
-        Album album = getAlbum(albumId);
+        Album album = getAlbumOrThrowException(albumId);
         validateAlbumOwned(album);
 
         Post post = postRepository.findById(postId)
@@ -58,34 +58,34 @@ public class AlbumService {
         if (post.getAlbums().contains(album)) {
             throw new DataValidException("Post already exists");
         }
-        album.addPost(post);
+        album.getPosts().add(post);
         albumRepository.save(album);
     }
 
     @Transactional
     public void deletePostFromAlbum(Long albumId, Long postId) {
-        Album album = getAlbum(albumId);
+        Album album = getAlbumOrThrowException(albumId);
         validateAlbumOwned(album);
 
-        album.removePost(postId);
+        album.getPosts().removeIf(post -> post.getId() == postId);
         albumRepository.save(album);
     }
 
     @Transactional
     public void addAlbumToFavorites(Long albumId) {
-        getAlbum(albumId);
+        getAlbumOrThrowException(albumId);
         albumRepository.addAlbumToFavorites(albumId, userContext.getUserId());
     }
 
     @Transactional
     public void deleteAlbumFromFavorites(Long albumId) {
-        getAlbum(albumId);
+        getAlbumOrThrowException(albumId);
         albumRepository.deleteAlbumFromFavorites(albumId, userContext.getUserId());
     }
 
     @Transactional
     public AlbumDtoResponse findAlbumById(Long albumId) {
-        Album album = getAlbum(albumId);
+        Album album = getAlbumOrThrowException(albumId);
 
         return processAlbumToDto(album);
     }
@@ -110,7 +110,7 @@ public class AlbumService {
 
     @Transactional
     public AlbumDto updateAlbumAuthor(Long albumId, AlbumUpdateDto albumUpdateDto) {
-        Album album = getAlbum(albumId);
+        Album album = getAlbumOrThrowException(albumId);
         validateAlbumOwned(album);
 
         albumMapper.updateAlbum(albumUpdateDto, album);
@@ -119,7 +119,7 @@ public class AlbumService {
 
     @Transactional
     public void deleteAlbum(Long albumId) {
-        Album album = getAlbum(albumId);
+        Album album = getAlbumOrThrowException(albumId);
         validateAlbumOwned(album);
 
         albumRepository.delete(album);
@@ -131,7 +131,7 @@ public class AlbumService {
         }
     }
 
-    private Album getAlbum(Long albumId) {
+    private Album getAlbumOrThrowException(Long albumId) {
         return albumRepository.findById(albumId)
                 .orElseThrow(() -> new EntityNotFoundException("Album not found"));
     }

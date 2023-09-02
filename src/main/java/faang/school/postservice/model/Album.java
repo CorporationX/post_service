@@ -55,12 +55,4 @@ public class Album {
     @CollectionTable(name = "user_album_access", joinColumns = @JoinColumn(name = "album_id"))
     @Column(name = "user_id")
     private List<Long> usersWithAccessIds;
-
-    public void addPost(Post post) {
-        posts.add(post);
-    }
-
-    public void removePost(long postId) {
-        posts.removeIf(post -> post.getId() == postId);
-    }
 }

@@ -3,6 +3,7 @@ package faang.school.postservice.filter.album;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.model.Album;
 
+import java.time.LocalDate;
 import java.util.stream.Stream;
 
 public class AlbumCreatedAtFilter implements AlbumFilter {
@@ -13,6 +14,7 @@ public class AlbumCreatedAtFilter implements AlbumFilter {
 
     @Override
     public Stream<Album> apply(Stream<Album> albums, AlbumFilterDto albumFilterDto) {
-        return albums.filter(album -> album.getCreatedAt().isEqual(albumFilterDto.getCreatedAt()));
+        LocalDate filterDate = albumFilterDto.getCreatedAt().toLocalDate();
+        return albums.filter(album -> album.getCreatedAt().toLocalDate().isEqual(filterDate));
     }
 }
