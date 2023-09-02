@@ -4,8 +4,6 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.redis.LikeEventDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.DataValidException;
-import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.publisher.LikeEventPublisher;
@@ -35,7 +33,6 @@ public class LikeService {
     @Transactional
     public LikeDto createLike(LikeDto likeDto) {
         likeDto.setId(null);
-        validateLike(likeDto);
         Like like = likeRepository.save(likeMapper.toEntity(likeDto));
         likeEventPublisher.publishMessage(createLikeEvent(likeDto));
         log.info("Created like. Id: {}", like.getId());
@@ -51,22 +48,6 @@ public class LikeService {
         List<Long> userIds = getLikedUserIdsByComment(commentId);
         return getAllUsersDto(userIds);
     }
-
-    private void validateLike(LikeDto likeDto) {
-        if (likeDto.getPostId() == null && likeDto.getCommentId() == null) {
-            throw new DataValidException("Both PostId and CommentId are null. UserID: " + likeDto.getUserId());
-        }
-        if (likeDto.getPostId() != null && likeDto.getCommentId() != null) {
-            throw new DataValidException("Both PostId and CommentId are present. UserID: " + likeDto.getUserId());
-        }
-        if (likeDto.getPostId() != null && !postService.existById(likeDto.getPostId())) {
-            throw new NotFoundException("Post not found with Id: " + likeDto.getPostId());
-        }
-        if (likeDto.getCommentId() != null && !commentService.existById(likeDto.getCommentId())) {
-            throw new NotFoundException("Comment not found with Id: " + likeDto.getCommentId());
-        }
-    }
-
 
     private LikeEventDto createLikeEvent(LikeDto likeDto) {
         LikeEventDto likeEventDto = new LikeEventDto();
