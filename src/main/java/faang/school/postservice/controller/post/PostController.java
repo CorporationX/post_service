@@ -1,5 +1,6 @@
 package faang.school.postservice.controller.post;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -76,5 +78,10 @@ public class PostController {
     @GetMapping("/hashtags/{hashtag}/firstPopular")
     public List<ResponsePostDto> getPostsByHashtagOrderByPopularity(@PathVariable String hashtag) {
         return postService.getPostsByHashtagOrderByPopularity(hashtag);
+    }
+
+    @PutMapping("/like")
+    public ResponsePostDto likePost(@RequestHeader("x-user-id") Long userId, @RequestBody UpdatePostDto dto) throws JsonProcessingException {
+        return postService.likePost(dto, userId);
     }
 }

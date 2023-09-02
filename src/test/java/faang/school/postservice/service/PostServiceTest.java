@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
@@ -8,9 +9,13 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.postCorrector.AiResponseDto;
 import faang.school.postservice.dto.postCorrector.ResponseFieldDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Hashtag;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
 import faang.school.postservice.util.RedisPublisher;
@@ -57,6 +62,10 @@ class PostServiceTest {
     private ModerationDictionary moderationDictionary;
     @Mock
     private RedisPublisher redisPublisher;
+    @Mock
+    private LikeRepository likeRepository;
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
     private final Integer batchSize = 100;
     private final String userBannerChannel = "user_banner_channel";
     private PostService postService;
@@ -69,7 +78,10 @@ class PostServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         postService = new PostService(postRepository, responsePostMapper,
-                userServiceClient, projectServiceClient, moderationDictionary, batchSize, redisPublisher, userBannerChannel, restTemplate, postCorrectorApiKey, postCorrectorUrl);
+                userServiceClient, projectServiceClient, moderationDictionary,
+                batchSize, redisPublisher, likeRepository, likeEventPublisher,
+                userBannerChannel, restTemplate,
+                postCorrectorApiKey, postCorrectorUrl);
     }
 
     @Test
@@ -239,5 +251,27 @@ class PostServiceTest {
 
     private List<Hashtag> createHashtagList() {
         return List.of(Hashtag.builder().id(1L).hashtag("#test").build());
+    }
+
+    @Test
+    void likePostTest() throws JsonProcessingException {
+        Long postId = 1L;
+        Long userId = 2L;
+        Post post = new Post();
+        post.setId(postId);
+        post.setAuthorId(userId);
+        post.setLikes(List.of(Like.builder().id(12).userId(13L).build()));
+
+        UpdatePostDto updatePostDto = new UpdatePostDto(postId, "qweqwe");
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(likeRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ResponsePostDto responsePostDto = postService.likePost(updatePostDto, userId);
+
+        verify(likeRepository, times(1)).save(any());
+        verify(likeEventPublisher, times(1)).publish(LikeEvent.builder().idPost(1L).idAuthor(2L).idUser(2L).dateTime(any()).build());
+
+        assertNotNull(responsePostDto);
     }
 }
