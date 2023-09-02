@@ -33,7 +33,6 @@ public class LikeService {
     @Transactional
     public LikeDto createLike(LikeDto likeDto) {
         likeDto.setId(null);
-        validateLike(likeDto);
         Like like = likeRepository.save(likeMapper.toEntity(likeDto));
         likeEventPublisher.publishMessage(createLikeEvent(likeDto));
         log.info("Created like. Id: {}", like.getId());
@@ -49,22 +48,6 @@ public class LikeService {
         List<Long> userIds = getLikedUserIdsByComment(commentId);
         return getAllUsersDto(userIds);
     }
-
-    private void validateLike(LikeDto likeDto) {
-        if (likeDto.getPostId() == null && likeDto.getCommentId() == null) {
-            throw new IllegalArgumentException("Both PostId and CommentId are null. UserID: " + likeDto.getUserId());
-        }
-        if (likeDto.getPostId() != null && likeDto.getCommentId() != null) {
-            throw new IllegalArgumentException("Both PostId and CommentId are present. UserID: " + likeDto.getUserId());
-        }
-        if (likeDto.getPostId() != null && !postService.existById(likeDto.getPostId())) {
-            throw new IllegalArgumentException("Post not found with Id: " + likeDto.getPostId());
-        }
-        if (likeDto.getCommentId() != null && !commentService.existById(likeDto.getCommentId())) {
-            throw new IllegalArgumentException("Comment not found with Id: " + likeDto.getCommentId());
-        }
-    }
-
 
     private LikeEventDto createLikeEvent(LikeDto likeDto) {
         LikeEventDto likeEventDto = new LikeEventDto();

@@ -22,7 +22,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
@@ -73,20 +72,11 @@ class LikeServiceTest {
         Like likeEntity = createLikeEntity();
 
         when(likeRepository.save(any())).thenReturn(likeEntity);
-        when(postService.existById(likeDto.getPostId())).thenReturn(true);
 
         LikeDto createdLike = likeService.createLike(likeDto);
 
         assertEquals(likeDto.getUserId(), createdLike.getUserId());
         verify(likeEventPublisher).publishMessage(any());
-    }
-    @Test()
-    public void testValidateLike_InvalidBothIds() {
-        LikeDto likeDto = createLikeDto();
-        likeDto.setPostId(null);
-
-        assertThrows(IllegalArgumentException.class, () -> likeService.createLike(likeDto));
-
     }
 
     private LikeDto createLikeDto() {

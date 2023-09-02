@@ -1,7 +1,9 @@
 package faang.school.postservice.dto.like;
 
-import jakarta.validation.constraints.Min;
+import faang.school.postservice.annotations.ValidateLikeDto;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,19 +15,21 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ValidateLikeDto
 public class LikeDto {
-    @Min(value = 1)
+    @Positive
     private Long id;
 
-    @Min(value = 1)
+    @Positive
     @NotNull
     private Long userId;
 
-    @Min(value = 1)
+    @Positive
     private Long commentId;
 
-    @Min(value = 1)
+    @Positive
     private Long postId;
 
+    @PastOrPresent
     private LocalDateTime createdAt;
 }
