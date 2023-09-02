@@ -9,6 +9,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.publisher.BanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
@@ -32,6 +33,7 @@ public class PostService {
     private final TextGearsAPIService textGearsAPIService;
     private final CommentService commentService;
     private final BanEventPublisher banEventPublisher;
+    private final ModerationDictionary moderationDictionary;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
@@ -196,6 +198,7 @@ public class PostService {
         }
     }
 
+
     public void findCommentersAndPublishBanEvent() {
         List<Comment> unverifiedComments = commentService.getUnverifiedComments();
 
@@ -209,6 +212,21 @@ public class PostService {
             if (authorComments.size() > 5) {
                 banEventPublisher.publishBanEvent(authorId);
             }
+        }
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Post> getUnverifiedPosts() {
+        return postRepository.findByVerifiedDateBeforeAndVerifiedFalse(LocalDateTime.now());
+    }
+
+    @Transactional
+    public void processPostsBatch(List<Post> posts) {
+        for (Post post : posts) {
+            boolean containsBannedWord = moderationDictionary.containsBannedWord(post.getContent());
+            post.setVerified(!containsBannedWord);
+            post.setVerifiedDate(LocalDateTime.now());
+            postRepository.save(post);
         }
     }
 }
