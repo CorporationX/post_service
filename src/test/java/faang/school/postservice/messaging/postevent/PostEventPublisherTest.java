@@ -33,6 +33,7 @@ import java.util.Map;
                 "listeners=PLAINTEXT://localhost:9092",
                 "port=9092"
         })
+@Disabled
 class PostEventPublisherTest {
 
     @Autowired
@@ -44,7 +45,6 @@ class PostEventPublisherTest {
     private final String TOPIC = "post-publication";
 
     @Test
-    @Disabled
     void send_ShouldSendToBroker() {
         Consumer<String, PostEvent> consumerServiceTest = createConsumer(TOPIC);
 
