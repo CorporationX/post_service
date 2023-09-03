@@ -1,5 +1,6 @@
 package faang.school.postservice.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.List;
 @Table(name = "post")
 public class Post {
     @Id
+    @JsonProperty("postId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

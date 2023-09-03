@@ -22,8 +22,23 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
+        calculations-channel:
+          name: calculations-channel
+        event-channels:
+          posts-view: posts-view
+        comment_event:
+          name: comment-event-channel
+
+  async:
+    poolSize: 10
+    maxPoolSize: 10
+    queueCapacity: 1000
+    threadNamePrefix: "task-executor-thread-"
+
+  scheduler:
+    publisher:
+      cron: "0 0/1 * 1/1 * ?" # every minute
+      partitionSize: 1000
 
 server:
   port: 8081
