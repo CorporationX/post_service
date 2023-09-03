@@ -12,6 +12,7 @@ import java.util.Map;
 
 @Configuration
 public class KafkaTopicConfig {
+
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
@@ -23,6 +24,11 @@ public class KafkaTopicConfig {
         Map<String, Object> configs = new HashMap<>();
         configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         return new KafkaAdmin(configs);
+    }
+
+    @Bean
+    public NewTopic postViewTopic() {
+        return new NewTopic("post-view", 1, (short) 1);
     }
 
     @Bean

@@ -1,4 +1,4 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.service;
 
 
 import faang.school.postservice.client.ProjectServiceClient;
@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.messaging.postevent.PostEventPublisher;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.util.exception.PostNotFoundException;
@@ -32,6 +33,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final HashtagService hashtagService;
     private final PostEventPublisher postEventPublisher;
+    private final PostViewEventPublisher postViewEventPublisher;
 
     @Transactional
     public PostDto addPost(PostDto dto) {
@@ -99,6 +101,9 @@ public class PostService {
     public PostDto getPost(Long id){
         Post postById = getPostById(id);
         validator.validateToGet(postById);
+
+        postViewEventPublisher.publish(postById);
+
         return postMapper.toDto(postById);
     }
 
@@ -117,11 +122,15 @@ public class PostService {
     public List<PostDto> getPostsByAuthorId(Long authorId){
         List<Post> postsByAuthorId = postRepository.findPublishedPostsByAuthorId(authorId);
 
+        postsByAuthorId.forEach(postViewEventPublisher::publish);
+
         return postMapper.toDtos(postsByAuthorId);
     }
 
     public List<PostDto> getPostsByProjectId(Long projectId) {
         List<Post> postsByProjectId = postRepository.findPublishedPostsByProjectId(projectId);
+
+        postsByProjectId.forEach(postViewEventPublisher::publish);
 
         return postMapper.toDtos(postsByProjectId);
     }

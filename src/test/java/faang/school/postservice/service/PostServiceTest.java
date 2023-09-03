@@ -6,8 +6,8 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.messaging.postevent.PostEventPublisher;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
@@ -15,6 +15,7 @@ import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
+import faang.school.postservice.service.PostService;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -51,6 +53,9 @@ class PostServiceTest {
 
     @Mock
     private ProjectServiceClient projectServiceClient;
+
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
 
     @Mock
     private HashtagService hashtagService;
@@ -90,6 +95,15 @@ class PostServiceTest {
             postService.addPost(postDto);
         });
         Assertions.assertEquals("Post's author can be only author or project and can't be both", e.getMessage());
+    }
+
+    @Test
+    void addPost_ShouldMapCorrectlyToEntity() {
+        PostDto dto = buildPostDto();
+
+        Post actual = postMapper.toEntity(dto);
+
+        Assertions.assertEquals(buildPost(), actual);
     }
 
     @Test
@@ -383,6 +397,7 @@ class PostServiceTest {
                 .thenReturn(Optional.of(post));
 
         Assertions.assertDoesNotThrow(() -> postService.getPost(1L));
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
     }
 
     @Test
@@ -399,13 +414,21 @@ class PostServiceTest {
 
     @Test
     void getPostsByAuthorId_ShouldNotThrowException() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findPublishedPostsByAuthorId(1L)).thenReturn(List.of(post));
+
         Assertions.assertDoesNotThrow(() -> postService.getPostsByAuthorId(1L));
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
         Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByAuthorId(1L);
     }
 
     @Test
     void getPostsByProjectId_ShouldNotThrowException() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findPublishedPostsByProjectId(1L)).thenReturn(List.of(post));
+
         Assertions.assertDoesNotThrow(() -> postService.getPostsByProjectId(1L));
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
         Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByProjectId(1L);
     }
 
@@ -427,7 +450,7 @@ class PostServiceTest {
                 .albums(new ArrayList<>())
                 .published(false)
                 .deleted(false)
-                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .verifiedDate(null)
                 .build();
     }
 

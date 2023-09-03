@@ -4,13 +4,13 @@ import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.ContentModerator;
-import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import faang.school.postservice.service.PostService;
 
 import java.time.LocalDateTime;
 import java.util.List;
