@@ -47,9 +47,9 @@ public class PostServiceTest {
     private ModerationDictionary moderationDictionary;
     @Mock
     private Executor threadPoolForPostModeration;
-
+    @Mock
+    private PublisherService publisherService;
     private PostValidator postValidator;
-
     private PostService postService;
 
     private PostDto incorrectPostDto;
@@ -65,7 +65,7 @@ public class PostServiceTest {
     @BeforeEach
     void initData() {
         postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration);
+        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration, publisherService);
         incorrectPostDto = PostDto.builder()
                 .id(INCORRECT_ID)
                 .content("content")

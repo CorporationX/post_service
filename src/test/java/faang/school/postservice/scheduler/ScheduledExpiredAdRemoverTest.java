@@ -5,9 +5,11 @@ import faang.school.postservice.repository.ad.AdRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
@@ -21,16 +23,15 @@ class ScheduledExpiredAdRemoverTest {
 
     @Mock
     private AdRepository adRepository;
-
     @Mock
     private ThreadPoolTaskExecutor executor;
-
+    @InjectMocks
     private ScheduledExpiredAdRemover scheduledExpiredAdRemover;
 
     @BeforeEach
     void setUp() {
         scheduledExpiredAdRemover = new ScheduledExpiredAdRemover(executor, adRepository);
-        scheduledExpiredAdRemover.setBatchSize(2);
+        ReflectionTestUtils.setField(scheduledExpiredAdRemover, "batchSize", 2);
     }
 
     @Test

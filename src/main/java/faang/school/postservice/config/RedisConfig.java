@@ -13,12 +13,16 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    @Value("${spring.data.redis.host}")
-    private String host;
     @Value("${spring.data.redis.port}")
     private int port;
+    @Value("${spring.data.redis.host}")
+    private String host;
     @Value("${spring.data.redis.channels.event_channels.likePost}")
     private String likeTopicName;
+    @Value("${spring.data.redis.channels.post_channel.name}")
+    private String postTopicName;
+    @Value("${spring.data.redis.channels.comment_event_channel.name}")
+    private String commentTopicName;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -36,7 +40,17 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic likeTopic(){
+    public ChannelTopic postTopic() {
+        return new ChannelTopic(postTopicName);
+    }
+
+    @Bean
+    public ChannelTopic likeTopic() {
         return new ChannelTopic(likeTopicName);
+    }
+
+    @Bean
+    ChannelTopic commentTopic() {
+        return new ChannelTopic(commentTopicName);
     }
 }

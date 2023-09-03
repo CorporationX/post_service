@@ -40,6 +40,8 @@ public class PostServiceGetListMethodsTest {
     @Mock
     private ProjectServiceClient projectService;
     @Mock
+    private PublisherService publisherService;
+    @Mock
     private ModerationDictionary moderationDictionary;
     @Mock
     private Executor threadPoolForPostModeration;
@@ -56,7 +58,7 @@ public class PostServiceGetListMethodsTest {
     @BeforeEach
     void setUp() {
         postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration);
+        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration, publisherService);
     }
 
     @Test
@@ -132,6 +134,7 @@ public class PostServiceGetListMethodsTest {
         List<PostDto> actualUserPosts = postService.getUserPosts(CORRECT_ID);
         List<PostDto> expectedUserPost = getCorrectListOfPostDto();
         assertEquals(expectedUserPost, actualUserPosts);
+        verify(publisherService, times(3)).publishPostEventToRedis(any());
     }
 
     @Test
@@ -157,6 +160,7 @@ public class PostServiceGetListMethodsTest {
         List<PostDto> actualProjectPosts = postService.getProjectPosts(CORRECT_ID);
         List<PostDto> expectedProjectPosts = getCorrectListOfPostDto();
         assertEquals(expectedProjectPosts, actualProjectPosts);
+        verify(publisherService, times(3)).publishPostEventToRedis(any());
     }
 
     private List<PostDto> getCorrectListOfDraftPostDto() {
