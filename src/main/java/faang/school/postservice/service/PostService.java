@@ -91,12 +91,13 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional(readOnly = true)
     public PostDto getPostById(Long id) {
         Post postById = postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("'Post not in database' error occurred while fetching post"));
         return postMapper.toDto(postById);
     }
-
+    @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByAuthorId(Long authorId) {
         return postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
@@ -104,7 +105,7 @@ public class PostService {
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
     }
-
+    @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByProjectId(Long projectId) {
         return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
@@ -112,7 +113,7 @@ public class PostService {
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
     }
-
+    @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByAuthorIdAndPublished(Long authorId) {
         return postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
@@ -120,12 +121,17 @@ public class PostService {
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
     }
-
+    @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByProjectIdAndPublished(Long projectId) {
         return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostDto> getAllPostsByHashtagId(String content){
+        return postMapper.toDtoList(postRepository.findByHashtagsContent(content));
     }
 }

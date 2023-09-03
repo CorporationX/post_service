@@ -39,7 +39,7 @@ class HashtagServiceTest {
     @BeforeEach
     public void setUp(){
         post = Post.builder().id(POST_ID).authorId(USER_ID).build();
-        hashtag = Hashtag.builder().id(HASHTAG_ID).posts(List.of(post)).authorId(USER_ID).build();
+        hashtag = Hashtag.builder().id(HASHTAG_ID).posts(List.of(post)).build();
         postDto = PostDto.builder().id(POST_ID).authorId(USER_ID).build();
         hashtagDto = HashtagDto.builder().id(HASHTAG_ID).postId(POST_ID).build();
     }

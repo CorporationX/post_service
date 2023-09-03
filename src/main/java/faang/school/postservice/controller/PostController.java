@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -69,5 +70,10 @@ public class PostController {
     @GetMapping("/all/project/{projectId}/published")
     public List<PostDto> getAllPostsByProjectIdAndPublished(@NotNull @PathVariable Long projectId) {
         return postService.getAllPostsByProjectIdAndPublished(projectId);
+    }
+
+    @GetMapping("/all/hashtag/")
+    public List<PostDto> getAllPostsByHashtag(@NotNull @RequestParam String hashtagContent){
+        return postService.getAllPostsByHashtagId(hashtagContent);
     }
 }
