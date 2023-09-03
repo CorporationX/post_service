@@ -27,11 +27,10 @@ public class AlbumService {
 
     @Transactional
     public AlbumDto createAlbum(AlbumDto albumDto) {
-        UserDto user = userServiceClient.getUser(albumDto.getAuthorId());
+        UserDto user = getUserDto(albumDto);
         boolean existsByTitleAndAuthorId = isExistsByTitleAndAuthorId(albumDto.getTitle(), user.getId());
 
-        albumValidator.validateOwner(user);
-        albumValidator.validateAlbumCreation(albumDto, existsByTitleAndAuthorId);
+        albumValidator.validateAlbumTitleUnique(existsByTitleAndAuthorId);
 
         Album albumToSave = albumMapper.toAlbum(albumDto);
 
@@ -40,11 +39,10 @@ public class AlbumService {
 
     @Transactional
     public AlbumDto updateAlbum(AlbumDto albumDto) {
-        UserDto user = userServiceClient.getUser(albumDto.getAuthorId());
         Album albumToUpdate = getAlbumById(albumDto.getId());
+
         boolean existsByTitleAndAuthorId = isExistsByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId());
 
-        albumValidator.validateOwner(user);
         albumValidator.validationOfAlbumUpdate(albumDto, albumToUpdate, existsByTitleAndAuthorId);
 
         Album updatedAlbum = albumMapper.toAlbum(albumDto);
@@ -55,9 +53,7 @@ public class AlbumService {
 
     @Transactional
     public void deleteAlbum(Long albumId) {
-        Album albumToDelete = getAlbumById(albumId);
-        albumValidator.validateAlbum(albumToDelete);
-        albumRepository.delete(albumToDelete);
+        albumRepository.deleteById(albumId);
     }
 
     @Transactional
@@ -99,12 +95,15 @@ public class AlbumService {
         return postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
     }
 
+    private UserDto getUserDto(AlbumDto albumDto) {
+        return userServiceClient.getUser(albumDto.getAuthorId());
+    }
+
     @Transactional(readOnly = true)
     private Album getAlbumById(Long albumId) {
         return albumRepository.findById(albumId).orElseThrow(() -> new EntityNotFoundException("Album not found"));
     }
 
-    @Transactional(readOnly = true)
     private boolean isExistsByTitleAndAuthorId(String title, Long userId) {
         return albumRepository.existsByTitleAndAuthorId(title, userId);
     }
