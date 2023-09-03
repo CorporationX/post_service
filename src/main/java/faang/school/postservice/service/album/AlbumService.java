@@ -44,7 +44,9 @@ public class AlbumService {
             throw new IllegalArgumentException("Album with this title already exists");
         }
 
-        return albumMapper.toAlbumDto(albumRepository.save(albumMapper.toAlbumCreate(albumCreateDto)));
+        Album albumToCreate = albumMapper.toAlbumCreate(albumCreateDto);
+        Album savedAlbum = albumRepository.save(albumToCreate);
+        return albumMapper.toAlbumDto(savedAlbum);
     }
 
     @Transactional
