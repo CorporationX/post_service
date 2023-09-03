@@ -7,6 +7,7 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.util.ModerationDictionary;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,8 @@ class CommentServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private ModerationDictionary moderationDictionary;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
     @InjectMocks
     private CommentService commentService;
     private CommentDto commentDto;
@@ -67,6 +70,7 @@ class CommentServiceTest {
         verify(userServiceClient, times(1)).getUser(comment.getAuthorId());
         verify(commentMapper, times(1)).toEntity(commentDto);
         verify(commentMapper, times(1)).toDto(comment);
+        verify(commentEventPublisher, times(1)).publish(commentDto);
     }
 
     @Test
