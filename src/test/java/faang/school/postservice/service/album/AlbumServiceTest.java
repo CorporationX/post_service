@@ -302,6 +302,38 @@ class AlbumServiceTest {
         }
     }
 
+    @Test
+    public void testAddAlbumToFavoriteSuccess() {
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.of(Album.builder().id(albumId).build()));
+        when(albumRepository.existInFavorites(albumId, userId)).thenReturn(false);
+        albumService.addAlbumToFavourite(albumId);
+        verify(albumRepository, times(1)).existInFavorites(albumId, userId);
+        verify(albumRepository, times(1)).addAlbumToFavorites(albumId, userId);
+    }
+
+    @Test
+    public void testAddAlbumToFavoriteFailIfAlbumNotFound() {
+        try {
+            when(userContext.getUserId()).thenReturn(userId);
+            when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.empty());
+            albumService.addAlbumToFavourite(albumId);
+        } catch (EntityNotFoundException e) {
+            assertEquals(e.getMessage(), EXPECTED_MESSAGE_ALBUM_NOT_FOUND);
+        }
+    }
+
+    @Test
+    public void testAddAlbumToFavoriteFailIfUserNotFound() {
+        try {
+            when(userContext.getUserId()).thenReturn(userId);
+            when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.of(Album.builder().id(albumId).build()));
+            albumService.addAlbumToFavourite(albumId);
+        } catch (EntityNotFoundException e) {
+            assertEquals(e.getMessage(), EXPECTED_MESSAGE_USER_NOT_FOUND);
+        }
+    }
+
     private String getLongTitle() {
         return "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut " +
                 "laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation " +

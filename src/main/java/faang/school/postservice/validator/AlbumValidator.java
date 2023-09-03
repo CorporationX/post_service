@@ -26,7 +26,7 @@ public class AlbumValidator {
 
     public void vaidateExistsInFavorites(boolean exist) {
         if (exist) {
-            throw new IllegalArgumentException("Album already in favorites");
+            throw new DataValidationException("Album already in favorites");
         }
     }
 }
