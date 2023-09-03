@@ -12,7 +12,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ScheduledTaskAndPostPreparingToSaveActor {
+public class PostSavingPreparerAfterScheduledTask {
 
     private final ScheduledTaskAndPostFieldsSettingActor fieldsSettingActor;
     private final PostService postService;

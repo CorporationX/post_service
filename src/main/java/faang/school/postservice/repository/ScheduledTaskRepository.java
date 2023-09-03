@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface ScheduledTaskRepository extends JpaRepository<ScheduledTask, Long> {
 
     @Query("SELECT t FROM ScheduledTask t WHERE t.entityType = :entityType AND t.entityId = :id")
-    Optional<ScheduledTask> findScheduledTaskById(Long id, @Param("taskType")ScheduledEntityType entityType);
+    Optional<ScheduledTask> findScheduledTaskById(Long id, ScheduledEntityType entityType);
 
     @Query(nativeQuery = true, value = "SELECT t.* FROM scheduled_tasks t " +
             "WHERE t.entity_type = 'POST' " +

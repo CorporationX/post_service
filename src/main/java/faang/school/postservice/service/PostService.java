@@ -148,6 +148,11 @@ public class PostService {
         return postRepository.findAll();
     }
 
+    @Transactional
+    public void save(Post post){
+        postRepository.save(post);
+    }
+
     public Post getPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException(String.format("Post with id %d not found", id)));

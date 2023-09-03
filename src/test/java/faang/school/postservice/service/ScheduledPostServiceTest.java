@@ -75,7 +75,8 @@ class ScheduledPostServiceTest {
     void savePostBySchedule_PostIsAlreadyScheduled_ShouldThrowException() {
         ScheduledTaskDto dto = buildScheduledTaskDto();
         Mockito.when(postService.getPostById(1L)).thenReturn(buildPost());
-        Mockito.when(scheduledTaskRepository.findPostById(1L)).thenReturn(Optional.of(buildScheduledTask()));
+        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L, dto.entityType()))
+                .thenReturn(Optional.of(buildScheduledTask()));
 
         EntitySchedulingException e = Assertions.assertThrows(EntitySchedulingException.class, () -> {
             scheduledPostService.savePostBySchedule(dto);
@@ -94,7 +95,7 @@ class ScheduledPostServiceTest {
     void savePostBySchedule_ShouldSave() {
         ScheduledTaskDto dto = buildScheduledTaskDto();
         Mockito.when(postService.getPostById(1L)).thenReturn(buildPost());
-        Mockito.when(scheduledTaskRepository.findPostById(1L)).thenReturn(Optional.empty());
+        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L, dto.entityType())).thenReturn(Optional.empty());
 
         scheduledPostService.savePostBySchedule(dto);
 
@@ -118,7 +119,7 @@ class ScheduledPostServiceTest {
     private ScheduledTask buildScheduledTask() {
         return ScheduledTask.builder()
                 .entityType(ScheduledEntityType.POST)
-                .taskType(ScheduledTaskType.PUBLISHING)
+                .taskType(ScheduledTaskType.PUBLISHING_POST)
                 .entityId(1L)
                 .status(ScheduledTaskStatus.NEW)
                 .build();
@@ -127,7 +128,7 @@ class ScheduledPostServiceTest {
     private ScheduledTaskDto buildScheduledTaskDto() {
         return ScheduledTaskDto.builder()
                 .entityType(ScheduledEntityType.POST)
-                .taskType(ScheduledTaskType.PUBLISHING)
+                .taskType(ScheduledTaskType.PUBLISHING_POST)
                 .entityId(1L)
                 .status(ScheduledTaskStatus.NEW)
                 .build();

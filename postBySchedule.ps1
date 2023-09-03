@@ -1,7 +1,7 @@
 for ($i = 1; $i -le 1000; $i++) {
     $params = @{
   	"entityType" = "POST"
-  	"taskType" = "DELETING"
+  	"taskType" = "DELETING_POST"
   	"entityId" = $i
   	"scheduleAt" = "2023-08-11T13:50:00"
     }

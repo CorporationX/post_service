@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ScheduledTaskAndPostUpdatesActor {
 
-    private final ScheduledTaskAndPostCorrespondenceActor correspondenceActor;
+    private final ScheduledTaskAndPostCheckerActor correspondenceActor;
     private final PostService postService;
     private final ScheduledTaskRepository scheduledTaskRepository;
 

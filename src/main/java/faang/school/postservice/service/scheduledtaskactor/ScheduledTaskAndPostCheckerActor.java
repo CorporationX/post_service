@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class ScheduledTaskAndPostCorrespondenceActor {
+public class ScheduledTaskAndPostCheckerActor {
 
     public void actWithCorrespondence(Post post, ScheduledTask task, int limit) {
-        List<Boolean> checkList = List.of(!post.isPublished() && task.getTaskType().equals(ScheduledTaskType.PUBLISHING),
-                !post.isDeleted() && task.getTaskType().equals(ScheduledTaskType.DELETING));
+        List<Boolean> checkList = List.of(!post.isPublished() && task.getTaskType().equals(ScheduledTaskType.PUBLISHING_POST),
+                !post.isDeleted() && task.getTaskType().equals(ScheduledTaskType.DELETING_POST));
 
         checkList.forEach(b -> {
             if (b.equals(true)) {

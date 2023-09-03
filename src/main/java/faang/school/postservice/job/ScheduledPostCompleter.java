@@ -13,7 +13,7 @@ public class ScheduledPostCompleter {
     private final ScheduledPostService scheduledPostService;
 
     @Scheduled(fixedDelayString = "${schedule.time_interval}")
-    @Async("taskExecutor")
+    @Async("scheduledTaskExecutor")
     public void completeScheduledPosts() {
         scheduledPostService.completeScheduledPosts();
     }

@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ScheduledTaskAndPostProcessingActor {
 
-    private final ScheduledTaskAndPostPreparingToSaveActor preparingToSaveActor;
+    private final PostSavingPreparerAfterScheduledTask preparingToSaveActor;
     private final PostRepository postRepository;
     private final ScheduledTaskAndPostUpdatesActor updatesActor;
 

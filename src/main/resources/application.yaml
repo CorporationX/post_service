@@ -34,11 +34,6 @@ spring:
     topics:
       post-publication: post-publication
 
-  kafka:
-    bootstrap-servers: localhost:9092
-    consumer:
-      group-id: group
-
 server:
   port: 8081
 
@@ -59,10 +54,11 @@ schedule:
   retry_limit: 3
   time_interval: 1000
 
-thread-pool:
-  queueCapacity: 1000
-  maxPoolSize: 10
-  corePoolSize: 10
+scheduled-task:
+  thread-pool:
+    queueCapacity: 1000
+    maxPoolSize: 10
+    corePoolSize: 10
 
 requestSize: 1000
 batchSize: 100

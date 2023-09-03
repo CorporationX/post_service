@@ -7,6 +7,7 @@ import faang.school.postservice.model.scheduled.ScheduledTaskStatus;
 import faang.school.postservice.repository.ScheduledTaskRepository;
 import faang.school.postservice.service.scheduledtaskactor.ScheduledTaskAndPostProcessingActor;
 import faang.school.postservice.util.validator.ScheduledPostServiceValidator;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,41 +24,32 @@ import java.util.concurrent.Executor;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 @Slf4j
 public class ScheduledPostService {
 
-    private final PostService postService;
+    private final faang.school.postservice.service.PostService postService;
     private final ScheduledTaskRepository scheduledTaskRepository;
     private final ScheduledPostServiceValidator validator;
     private final ScheduledTaskMapper scheduledTaskMapper;
     private final ScheduledTaskAndPostProcessingActor taskProcessingActor;
-    private final Executor taskExecutor;
-    private final int requestSize;
-    private final int limit;
-    private final int batchSize;
+    private final Executor scheduledTaskExecutor;
 
-    @Autowired
-    public ScheduledPostService(PostService postService, ScheduledTaskRepository scheduledTaskRepository,
-                                ScheduledPostServiceValidator validator, ScheduledTaskMapper scheduledTaskMapper,
-                                ScheduledTaskAndPostProcessingActor taskProcessingActor,
-                                @Qualifier("taskExecutor") Executor taskExecutor, @Value("${requestSize}") int requestSize,
-                                @Value("${schedule.retry_limit}") int limit, @Value("${batchSize}")int batchSize) {
-        this.postService = postService;
-        this.scheduledTaskRepository = scheduledTaskRepository;
-        this.validator = validator;
-        this.scheduledTaskMapper = scheduledTaskMapper;
-        this.taskProcessingActor = taskProcessingActor;
-        this.taskExecutor = taskExecutor;
-        this.requestSize = requestSize;
-        this.limit = limit;
-        this.batchSize = batchSize;
-    }
+    @Value("${requestSize}")
+    private int requestSize;
+
+    @Value("${batchSize}")
+    private int batchSize;
+
+    @Value("${schedule.retry_limit}")
+    private int limit;
 
     @Retryable(retryFor = {DataAccessException.class}, maxAttempts = 5, backoff = @Backoff(delay = 1000, multiplier = 2))
     @Transactional
     public ScheduledTaskDto savePostBySchedule(ScheduledTaskDto dto) {
         postService.getPostById(dto.entityId());
-        Optional<ScheduledTask> scheduledPostById = scheduledTaskRepository.findPostById(dto.entityId());
+        Optional<ScheduledTask> scheduledPostById = scheduledTaskRepository
+                .findScheduledTaskById(dto.entityId(), dto.entityType());
 
         validator.validateToActWithPostBySchedule(scheduledPostById);
 
@@ -75,12 +67,10 @@ public class ScheduledPostService {
     public void completeScheduledPosts() {
         List<ScheduledTask> tasks = scheduledTaskRepository.findNewOrErrorPostsToPublishOrDelete(requestSize);
 
-        if (!tasks.isEmpty()) {
-            for (int i = 0; i <= tasks.size(); i += batchSize + 1) {
-                List<ScheduledTask> batch = tasks.subList(i, Math.min(tasks.size(), i + batchSize));
+        for (int i = 0; i < tasks.size(); i += batchSize) {
+            List<ScheduledTask> batch = tasks.subList(i, Math.min(tasks.size(), i + batchSize));
 
-                taskExecutor.execute(() -> taskProcessingActor.processScheduledTasks(batch, limit));
-            }
+            scheduledTaskExecutor.execute(() -> taskProcessingActor.processScheduledTasks(batch, limit));
         }
     }
 }
