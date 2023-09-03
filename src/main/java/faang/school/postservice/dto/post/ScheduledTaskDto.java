@@ -18,7 +18,7 @@ public record ScheduledTaskDto(
         @NotNull(message = "Need to set type of task: PUBLISHING or DELETING")
         ScheduledTaskType taskType,
 
-        @NotNull(message = "Need to set task id")
+        @NotNull(message = "Need to set entity id")
         Long entityId,
 
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
