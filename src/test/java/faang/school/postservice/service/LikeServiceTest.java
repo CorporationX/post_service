@@ -30,10 +30,11 @@ class LikeServiceTest {
     LikeService likeService;
     @Mock
     LikeDto like;
-    @Mock
-    LikeRepository likeRepository;
+
     @Mock
     LikeServiceValidator likeServiceValidator;
+    @Mock
+    LikeRepository likeRepository;
     @Mock
     LikeMapper likeMapper;
 

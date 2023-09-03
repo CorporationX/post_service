@@ -11,8 +11,9 @@ public class LikeControllerValidator {
             throw new DataValidationException("Id cannot be less than 1 !");
         }
     }
-    public void validate(long Id, long anotherId){
-        if(Id <= 0 || anotherId <= 0){
+
+    public void validateTwoIds(long id1, long id2){
+        if(id1 <= 0 || id2 <= 0){
             throw new DataValidationException("Id cannot be less than 1 !");
         }
     }

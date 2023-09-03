@@ -30,13 +30,13 @@ public class LikeController {
 
     @DeleteMapping("/like/user/{userId}/post/{postId}")
     public void deleteLikeFromPost(long postId, long userId) {
-        likeControllerValidator.validate(postId, userId);
+        likeControllerValidator.validateTwoIds(postId, userId);
         likeService.deleteLikeFromPost(postId, userId);
     }
 
     @DeleteMapping("/like/user/{userId}/comment/{commentId}")
     public void deleteLikeFromComment(long commentId, long userId) {
-        likeControllerValidator.validate(commentId, userId);
+        likeControllerValidator.validateTwoIds(commentId, userId);
         likeService.deleteLikeFromComment(commentId, userId);
     }
 }
