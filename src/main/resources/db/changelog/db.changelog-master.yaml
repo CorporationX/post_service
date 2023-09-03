@@ -4,4 +4,8 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V002__ad.sql
   - include:
+      file: db/changelog/changeset/post_V003__ad.sql
+  - include:
+      file: db/changelog/changeset/post_V004__add_hashtags.sql
+  - include:
       file: db/changelog/changeset/post_V005__schedule.sql

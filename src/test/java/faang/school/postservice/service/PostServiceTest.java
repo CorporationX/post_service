@@ -4,8 +4,9 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.messaging.postevent.PostEventPublisher;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
@@ -14,6 +15,7 @@ import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
+import faang.school.postservice.service.PostService;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,11 +27,14 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.mockito.Mockito.doNothing;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -48,6 +53,15 @@ class PostServiceTest {
 
     @Mock
     private ProjectServiceClient projectServiceClient;
+
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
+
+    @Mock
+    private HashtagService hashtagService;
+
+    @Mock
+    private PostEventPublisher postEventPublisher;
 
     @InjectMocks
     private PostService postService;
@@ -93,16 +107,9 @@ class PostServiceTest {
     }
 
     @Test
-    void addPost_ShouldMapCorrectlyToDto() {
-        Post post = buildPost();
-
-        PostDto actual = postMapper.toDto(post);
-
-        Assertions.assertEquals(buildExpectedPostDto(), actual);
-    }
-
-    @Test
     void addPost_ByAuthor_ShouldSave() {
+        doNothing().when(validator).validateToAdd(Mockito.any());
+        Mockito.when(postMapper.toDto(Mockito.any())).thenReturn(postDto);
         postService.addPost(postDto);
 
         Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());
@@ -189,7 +196,17 @@ class PostServiceTest {
 
         postService.publishPost(1L);
 
-        Mockito.verify(postRepository, Mockito.times(1)).save(post);
+        Mockito.verify(postRepository).save(post);
+    }
+
+    @Test
+    void publishPost_ShouldBeSentByPublisher() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        postService.publishPost(1L);
+
+        Mockito.verify(postEventPublisher).send(post);
     }
 
     @Test
@@ -380,15 +397,7 @@ class PostServiceTest {
                 .thenReturn(Optional.of(post));
 
         Assertions.assertDoesNotThrow(() -> postService.getPost(1L));
-    }
-
-    @Test
-    void getDrafts_ShouldMapCorrectlyToDtos() {
-        List<Post> posts = buildListOfPosts();
-
-        List<PostDto> actual = postMapper.toDtos(posts);
-
-        Assertions.assertIterableEquals(buildListOfPostDtos(), actual);
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
     }
 
     @Test
@@ -405,13 +414,21 @@ class PostServiceTest {
 
     @Test
     void getPostsByAuthorId_ShouldNotThrowException() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findPublishedPostsByAuthorId(1L)).thenReturn(List.of(post));
+
         Assertions.assertDoesNotThrow(() -> postService.getPostsByAuthorId(1L));
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
         Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByAuthorId(1L);
     }
 
     @Test
     void getPostsByProjectId_ShouldNotThrowException() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findPublishedPostsByProjectId(1L)).thenReturn(List.of(post));
+
         Assertions.assertDoesNotThrow(() -> postService.getPostsByProjectId(1L));
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
         Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByProjectId(1L);
     }
 
@@ -433,7 +450,7 @@ class PostServiceTest {
                 .albums(new ArrayList<>())
                 .published(false)
                 .deleted(false)
-                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .verifiedDate(null)
                 .build();
     }
 

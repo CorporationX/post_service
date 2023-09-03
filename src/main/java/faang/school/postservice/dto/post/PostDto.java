@@ -59,4 +59,10 @@ public class PostDto {
 
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         LocalDateTime updatedAt;
+
+        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+        boolean verified = false;
+
+        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+        LocalDateTime verifiedDate;
 }
