@@ -16,6 +16,9 @@ public class KafkaTopicConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
+    @Value("${spring.kafka.topics.post-publication}")
+    private String postPublicationTopic;
+
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> configs = new HashMap<>();
@@ -26,5 +29,7 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic postViewTopic() {
         return new NewTopic("post-view", 1, (short) 1);
+    public NewTopic postPublicationTopic() {
+        return new NewTopic(postPublicationTopic, 1, (short) 1);
     }
 }

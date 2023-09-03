@@ -40,14 +40,14 @@ public class AccessValidator {
         var users = userService.getUsersByIds(objectMapper.readValue(album.getAllowedUsersIds(), new TypeReference<>() {
                 }))
                 .stream()
-                .map(UserDto::id)
+                .map(UserDto::getId)
                 .collect(Collectors.toSet());
 
         if (album.getVisibility() == Visibility.SPECIFIC_USERS && users.contains(userId)) return;
         try {
             boolean isFollower = userService.getFollowing(album.getAuthorId())
                     .stream()
-                    .map(UserDto::id)
+                    .map(UserDto::getId)
                     .toList()
                     .contains(userId);
 

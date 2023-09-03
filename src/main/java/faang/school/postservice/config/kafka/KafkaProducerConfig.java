@@ -1,5 +1,6 @@
 package faang.school.postservice.config.kafka;
 
+import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.post.PostViewEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -29,12 +30,17 @@ public class KafkaProducerConfig {
     }
 
     @Bean
+    public ProducerFactory<String, PostEvent> producerFactoryPostEvent() {
     public ProducerFactory<String, PostViewEvent> producerFactoryPostViewEvent() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
     @Bean
+    public KafkaTemplate<String, PostEvent> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactoryPostEvent());
     public KafkaTemplate<String, PostViewEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactoryPostViewEvent());
     }
+
+
 }

@@ -40,5 +40,4 @@ public class CommentDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime updatedAt;
-
 }

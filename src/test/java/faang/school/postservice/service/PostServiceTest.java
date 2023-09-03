@@ -4,9 +4,11 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.messaging.postevent.PostEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
@@ -31,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.Mockito.doNothing;
+
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
 
@@ -51,6 +55,12 @@ class PostServiceTest {
 
     @Mock
     private PostViewEventPublisher postViewEventPublisher;
+
+    @Mock
+    private HashtagService hashtagService;
+
+    @Mock
+    private PostEventPublisher postEventPublisher;
 
     @InjectMocks
     private PostService postService;
@@ -97,6 +107,17 @@ class PostServiceTest {
 
     @Test
     void addPost_ByAuthor_ShouldSave() {
+        doNothing().when(validator).validateToAdd(Mockito.any());
+        Mockito.when(postMapper.toDto(Mockito.any())).thenReturn(postDto);
+        postService.addPost(postDto);
+
+        Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());
+    }
+
+    @Test
+    void addPost_ByAuthor_ShouldSave() {
+        doNothing().when(validator).validateToAdd(Mockito.any());
+        Mockito.when(postMapper.toDto(Mockito.any())).thenReturn(postDto);
         postService.addPost(postDto);
 
         Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());
@@ -183,7 +204,17 @@ class PostServiceTest {
 
         postService.publishPost(1L);
 
-        Mockito.verify(postRepository, Mockito.times(1)).save(post);
+        Mockito.verify(postRepository).save(post);
+    }
+
+    @Test
+    void publishPost_ShouldBeSentByPublisher() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        postService.publishPost(1L);
+
+        Mockito.verify(postEventPublisher).send(post);
     }
 
     @Test
@@ -443,5 +474,21 @@ class PostServiceTest {
                 .deleted(false)
                 .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
                 .build();
+    }
+
+    private List<Post> buildListOfPosts() {
+        return List.of(
+                buildPost(),
+                buildPost(),
+                buildPost()
+        );
+    }
+
+    private List<PostDto> buildListOfPostDtos() {
+        return List.of(
+                buildExpectedPostDto(),
+                buildExpectedPostDto(),
+                buildExpectedPostDto()
+        );
     }
 }
