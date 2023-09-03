@@ -55,6 +55,11 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+schedule:
+  publishing_limit: 100
+  retry_limit: 3
+  time_interval: 300
+
 user-service:
   host: localhost
   port: 8080
