@@ -8,6 +8,7 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.util.ModerationDictionary;
 import feign.FeignException;
@@ -33,6 +34,7 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
     private final PostService postService;
+    private final CommentEventPublisher commentEventPublisher;
     @Value("${post.moderateComment.batchSize}")
     private Integer batchSize;
 
@@ -41,7 +43,10 @@ public class CommentService {
         validateExistingUser(commentDto);
         validateExistingPost(commentDto);
         Comment comment = commentMapper.toEntity(commentDto);
-        return commentMapper.toDto(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+        CommentDto savedCommentDto = commentMapper.toDto(savedComment);
+        commentEventPublisher.publish(savedCommentDto);
+        return savedCommentDto;
     }
 
     @Transactional
