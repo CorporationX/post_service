@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.album.AlbumService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,51 +80,49 @@ class AlbumControllerTest {
 
     @ParameterizedTest
     @MethodSource("validParametersProvider")
-    public void testAddPostSuccess(Long userId, Long albumId, Long postId) {
+    public void testAddPostSuccess(Long albumId, Long postId) {
         AlbumDto expectedAlbumDto = AlbumDto.builder().build();
-        when(albumService.addPost(userId, albumId, postId)).thenReturn(expectedAlbumDto);
+        when(albumService.addPost(albumId, postId)).thenReturn(expectedAlbumDto);
 
-        AlbumDto actualAlbumDto = albumController.addPost(userId, albumId, postId);
+        AlbumDto actualAlbumDto = albumController.addPost(albumId, postId);
 
         assertEquals(expectedAlbumDto, actualAlbumDto);
     }
 
     @ParameterizedTest
     @MethodSource("invalidParametersProvider")
-    public void testAddPostWithInvalidParameters(Long userId, Long albumId, Long postId) {
-        assertThrows(DataValidationException.class, () -> albumController.addPost(userId, albumId, postId));
+    public void testAddPostWithInvalidParameters(Long albumId, Long postId) {
+        assertThrows(DataValidationException.class, () -> albumController.addPost(albumId, postId));
     }
 
     @ParameterizedTest
     @MethodSource("validParametersProvider")
-    public void testDeletePostSuccess(Long userId, Long albumId, Long postId) {
+    public void testDeletePostSuccess(Long albumId, Long postId) {
         AlbumDto expectedAlbumDto = AlbumDto.builder().build();
-        when(albumService.deletePost(userId, albumId, postId)).thenReturn(expectedAlbumDto);
+        when(albumService.deletePost(albumId, postId)).thenReturn(expectedAlbumDto);
 
-        AlbumDto actualAlbumDto = albumController.deletePost(userId, albumId, postId);
+        AlbumDto actualAlbumDto = albumController.deletePost(albumId, postId);
 
         assertEquals(expectedAlbumDto, actualAlbumDto);
     }
 
     @ParameterizedTest
     @MethodSource("invalidParametersProvider")
-    public void testDeletePostWithInvalidParameters(Long userId, Long albumId, Long postId) {
-        assertThrows(DataValidationException.class, () -> albumController.deletePost(userId, albumId, postId));
+    public void testDeletePostWithInvalidParameters(Long albumId, Long postId) {
+        assertThrows(DataValidationException.class, () -> albumController.deletePost(albumId, postId));
     }
 
     static Stream<Arguments> invalidParametersProvider() {
         return Stream.of(
-                Arguments.of(-1L, 2L, 3L),
-                Arguments.of(1L, -2L, 3L),
-                Arguments.of(1L, 2L, -3L)
+                Arguments.of(-1L, 2L),
+                Arguments.of(1L, -2L)
         );
     }
 
     static Stream<Arguments> validParametersProvider() {
         return Stream.of(
-                Arguments.of(1L, 2L, 3L),
-                Arguments.of(4L, 5L, 6L),
-                Arguments.of(7L, 8L, 9L)
+                Arguments.of(1L, 2L),
+                Arguments.of(4L, 5L)
         );
     }
 }

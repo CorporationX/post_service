@@ -1,6 +1,7 @@
 package faang.school.postservice.service.album;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -24,15 +25,17 @@ public class AlbumService {
     private final PostRepository postRepository;
     private final AlbumValidator albumValidator;
     private final UserServiceClient userServiceClient;
+    private final UserContext userContext;
 
     @Transactional
     public AlbumDto createAlbum(AlbumDto albumDto) {
-        UserDto user = getUserDto(albumDto);
-        boolean existsByTitleAndAuthorId = isExistsByTitleAndAuthorId(albumDto.getTitle(), user.getId());
+        long userId = userContext.getUserId();
+        boolean existsByTitleAndAuthorId = isExistsByTitleAndAuthorId(albumDto.getTitle(), userId);
 
         albumValidator.validateAlbumTitleUnique(existsByTitleAndAuthorId);
 
         Album albumToSave = albumMapper.toAlbum(albumDto);
+        albumToSave.setAuthorId(userId);
 
         return albumMapper.toDto(albumRepository.save(albumToSave));
     }
@@ -57,10 +60,9 @@ public class AlbumService {
     }
 
     @Transactional
-    public AlbumDto addPost(Long userId, Long albumId, Long postId) {
-        UserDto user = userServiceClient.getUser(userId);
-        albumValidator.validateOwner(user);
-        Album album = getAlbumByOwnerId(albumId, user.getId());
+    public AlbumDto addPost(Long albumId, Long postId) {
+        Long userId = userContext.getUserId();
+        Album album = getAlbumByOwnerId(albumId, userId);
 
         Post post = getPost(postId);
 
@@ -70,10 +72,9 @@ public class AlbumService {
     }
 
     @Transactional
-    public AlbumDto deletePost(Long userId, Long albumId, Long postId) {
-        UserDto user = userServiceClient.getUser(userId);
-        albumValidator.validateOwner(user);
-        Album album = getAlbumByOwnerId(albumId, user.getId());
+    public AlbumDto deletePost(Long albumId, Long postId) {
+        Long userId = userContext.getUserId();
+        Album album = getAlbumByOwnerId(albumId, userId);
 
         Post post = getPost(postId);
 
@@ -82,7 +83,6 @@ public class AlbumService {
         return albumMapper.toDto(albumRepository.save(album));
     }
 
-    @Transactional(readOnly = true)
     private Album getAlbumByOwnerId(Long albumId, Long userId) {
         return albumRepository.findByAuthorId(userId)
                 .filter(a -> a.getId() == albumId)
@@ -90,16 +90,10 @@ public class AlbumService {
                 .orElseThrow(() -> new EntityNotFoundException("Album not found"));
     }
 
-    @Transactional(readOnly = true)
     private Post getPost(Long postId) {
         return postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
     }
 
-    private UserDto getUserDto(AlbumDto albumDto) {
-        return userServiceClient.getUser(albumDto.getAuthorId());
-    }
-
-    @Transactional(readOnly = true)
     private Album getAlbumById(Long albumId) {
         return albumRepository.findById(albumId).orElseThrow(() -> new EntityNotFoundException("Album not found"));
     }

@@ -25,7 +25,6 @@ public class AlbumDto {
     @NotBlank
     @Size(min = 1, max = 4096)
     private String description;
-    @NotNull(message = "AuthorId can't be null")
     private Long authorId;
     private List<Integer> postIds;
     private LocalDateTime createdAt;
