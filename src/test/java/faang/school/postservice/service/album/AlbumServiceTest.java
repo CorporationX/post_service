@@ -108,7 +108,6 @@ class AlbumServiceTest {
         String content = "changed";
         AlbumDto updatedAlbumDto = AlbumDto.builder().id(1L).authorId(1L).title("title1").description(content).build();
         Album album = albumMapper.toAlbum(updatedAlbumDto);
-        when(userServiceClient.getUser(updatedAlbumDto.getAuthorId())).thenReturn(userDto);
         when(albumRepository.findById(updatedAlbumDto.getId())).thenReturn(Optional.of(album));
         when(albumRepository.existsByTitleAndAuthorId(updatedAlbumDto.getTitle(), userDto.getId())).thenReturn(false);
 
@@ -137,7 +136,6 @@ class AlbumServiceTest {
             String content = "changed";
             AlbumDto updatedAlbumDto = AlbumDto.builder().id(1L).authorId(2L).title("title1").description(content).build();
             Album album = albumMapper.toAlbum(updatedAlbumDto);
-            when(userServiceClient.getUser(updatedAlbumDto.getAuthorId())).thenReturn(userDto);
             when(albumRepository.findById(updatedAlbumDto.getId())).thenReturn(Optional.of(album));
 
             albumService.updateAlbum(updatedAlbumDto);
@@ -152,7 +150,6 @@ class AlbumServiceTest {
             String content = "";
             AlbumDto updatedAlbumDto = AlbumDto.builder().id(1L).authorId(1L).title("title1").description(content).build();
             Album album = albumMapper.toAlbum(updatedAlbumDto);
-            when(userServiceClient.getUser(updatedAlbumDto.getAuthorId())).thenReturn(userDto);
             when(albumRepository.findById(updatedAlbumDto.getId())).thenReturn(Optional.of(album));
             when(albumRepository.existsByTitleAndAuthorId(updatedAlbumDto.getTitle(), userDto.getId())).thenReturn(false);
 
@@ -166,7 +163,6 @@ class AlbumServiceTest {
     void testUpdateAlbumFailIfTitleIsNotUnique() {
         try {
             Album album = albumMapper.toAlbum(trueAlbumDto);
-            when(userServiceClient.getUser(trueAlbumDto.getAuthorId())).thenReturn(userDto);
             when(albumRepository.findById(trueAlbumDto.getId())).thenReturn(Optional.of(album));
             when(albumRepository.existsByTitleAndAuthorId(trueAlbumDto.getTitle(), userDto.getId())).thenReturn(true);
 
@@ -182,7 +178,6 @@ class AlbumServiceTest {
             String title = getLongTitle();
             AlbumDto updatedAlbumDto = AlbumDto.builder().id(1L).authorId(1L).title(title).description("changed").build();
             Album album = albumMapper.toAlbum(updatedAlbumDto);
-            when(userServiceClient.getUser(updatedAlbumDto.getAuthorId())).thenReturn(userDto);
             when(albumRepository.findById(updatedAlbumDto.getId())).thenReturn(Optional.of(album));
             when(albumRepository.existsByTitleAndAuthorId(updatedAlbumDto.getTitle(), userDto.getId())).thenReturn(false);
 

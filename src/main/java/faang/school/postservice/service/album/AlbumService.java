@@ -24,11 +24,10 @@ public class AlbumService {
 
     @Transactional
     public AlbumDto createAlbum(AlbumDto albumDto) {
-        UserDto user = userServiceClient.getUser(albumDto.getAuthorId());
+        UserDto user = getUserDto(albumDto);
         boolean existsByTitleAndAuthorId = isExistsByTitleAndAuthorId(albumDto.getTitle(), user.getId());
 
-        albumValidator.validateOwner(user);
-        albumValidator.validateAlbumCreation(existsByTitleAndAuthorId);
+        albumValidator.validateAlbumTitleUnique(existsByTitleAndAuthorId);
 
         Album albumToSave = albumMapper.toAlbum(albumDto);
 
@@ -37,11 +36,10 @@ public class AlbumService {
 
     @Transactional
     public AlbumDto updateAlbum(AlbumDto albumDto) {
-        UserDto user = userServiceClient.getUser(albumDto.getAuthorId());
         Album albumToUpdate = getAlbumById(albumDto.getId());
+
         boolean existsByTitleAndAuthorId = isExistsByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId());
 
-        albumValidator.validateOwner(user);
         albumValidator.validationOfAlbumUpdate(albumDto, albumToUpdate, existsByTitleAndAuthorId);
 
         Album updatedAlbum = albumMapper.toAlbum(albumDto);
@@ -53,6 +51,10 @@ public class AlbumService {
     @Transactional
     public void deleteAlbum(Long albumId) {
         albumRepository.deleteById(albumId);
+    }
+
+    private UserDto getUserDto(AlbumDto albumDto) {
+        return userServiceClient.getUser(albumDto.getAuthorId());
     }
 
     private Album getAlbumById(Long albumId) {

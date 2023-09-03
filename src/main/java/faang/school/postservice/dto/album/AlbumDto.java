@@ -1,9 +1,8 @@
 package faang.school.postservice.dto.album;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,13 +19,11 @@ public class AlbumDto {
     private Long id;
     @NotNull
     @NotBlank
-    @Min(1)
-    @Max(256)
+    @Size(min = 1, max = 256)
     private String title;
     @NotNull
     @NotBlank
-    @Min(1)
-    @Max(4096)
+    @Size(min = 1, max = 4096)
     private String description;
     @NotNull(message = "AuthorId can't be null")
     private Long authorId;
