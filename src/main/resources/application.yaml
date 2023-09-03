@@ -27,6 +27,13 @@ spring:
         comment_channel:
           name: comment_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: group
+    topics:
+      post-publication: post-publication
+
 server:
   port: 8081
 

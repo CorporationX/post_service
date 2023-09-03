@@ -5,6 +5,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.messaging.postevent.PostEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.HashtagService;
@@ -30,6 +31,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final HashtagService hashtagService;
+    private final PostEventPublisher postEventPublisher;
 
     @Transactional
     public PostDto addPost(PostDto dto) {
@@ -59,6 +61,8 @@ public class PostService {
         postById.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
+
+        postEventPublisher.send(postById);
 
         return postMapper.toDto(postById);
     }
