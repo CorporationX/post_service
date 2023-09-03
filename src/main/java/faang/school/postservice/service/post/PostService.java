@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -156,7 +155,8 @@ public class PostService {
     @Transactional
     public ScheduledTaskDto actWithScheduledPost(ScheduledTaskDto dto) {
         Optional<Post> postById = postRepository.findById(dto.entityId());
-        Optional<ScheduledTask> scheduledPostById = scheduledTaskRepository.findScheduledTaskById(dto.entityId());
+        Optional<ScheduledTask> scheduledPostById = scheduledTaskRepository
+                .findScheduledTaskById(dto.entityId(), dto.entityType());
 
         validator.validateToActWithPostBySchedule(postById, dto.entityId(), scheduledPostById);
 

@@ -478,7 +478,7 @@ class PostServiceTest {
     void actWithPostBySchedule_PostIsAlreadyScheduled_ShouldThrowException() {
         ScheduledTaskDto dto = buildScheduledTaskDto();
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(buildPost()));
-        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L)).thenReturn(Optional.of(buildScheduledTask()));
+        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L, dto.entityType())).thenReturn(Optional.of(buildScheduledTask()));
 
         EntitySchedulingException e = Assertions.assertThrows(EntitySchedulingException.class, () -> {
             postService.actWithScheduledPost(dto);
@@ -497,7 +497,7 @@ class PostServiceTest {
     void actWithPostBySchedule_ShouldSave() {
         ScheduledTaskDto dto = buildScheduledTaskDto();
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(buildPost()));
-        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L)).thenReturn(Optional.empty());
+        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L, dto.entityType())).thenReturn(Optional.empty());
 
         postService.actWithScheduledPost(dto);
 
@@ -536,7 +536,7 @@ class PostServiceTest {
                 .albums(new ArrayList<>())
                 .published(false)
                 .deleted(false)
-                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .createdAt(null)
                 .build();
     }
 

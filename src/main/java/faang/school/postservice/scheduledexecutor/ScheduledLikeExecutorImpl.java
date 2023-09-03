@@ -13,6 +13,6 @@ public class ScheduledLikeExecutorImpl implements ScheduledTaskExecutor {
 
     @Override
     public ScheduledTaskDto actWithScheduledTask(ScheduledTaskDto dto) {
-        return likeService.actWithScheduledLike(dto);
+        return null;
     }
 }
