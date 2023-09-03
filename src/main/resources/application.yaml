@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        comment_channel:
+          name: comment_channel
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -75,12 +77,13 @@ bing-thread-poll:
   queueCapacity: 100000
 
 ad-remover:
-  cron: "0 0 3 0 0 ?" #every day at 03:00
+  cron: "0 0 3 * * ?" #every day at 03:00
   batch: 100
   thread-count: 5
   retry:
     maxAttempts: 5
     maxDelay: 1000
+
 bad-words:
   path: files/bad-words.csv
 
@@ -101,3 +104,5 @@ thread-pool:
   maxPoolSize: 4
   corePoolSize: 4
   threadNamePrefix: "poolThread-"
+
+batch-size-from-like: 100

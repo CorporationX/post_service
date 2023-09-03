@@ -60,6 +60,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
+
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
     testImplementation("org.springframework.kafka:spring-kafka-test:3.0.9")
 }

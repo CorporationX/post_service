@@ -17,11 +17,9 @@ public class CommentServiceValidator {
     private final UserServiceClient userServiceClient;
 
     public void validateExistingUserAtCommentDto(CommentDto commentDto) {
-        try {
+
             UserDto userDto = userServiceClient.getUser(commentDto.getAuthorId());
-        } catch (FeignException e) {
-            throw new NotFoundException(ErrorCommentMessage.getAuthorIdWasNotFoundMessage(commentDto.getAuthorId()));
-        }
+
     }
 
     public void validateUpdateComment(Comment comment, CommentDto commentDto) {

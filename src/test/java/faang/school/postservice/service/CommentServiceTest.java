@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.messaging.CommentEventPublisher.RedisCommentEventPublisher;
 import faang.school.postservice.util.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -28,6 +29,8 @@ class CommentServiceTest {
     private CommentServiceValidator validator;
     @Mock
     private CommentMapper commentMapper;
+    @Mock
+    private  RedisCommentEventPublisher redisCommentEventPublisher;
 
     @InjectMocks
     private CommentService commentService;
@@ -48,6 +51,7 @@ class CommentServiceTest {
         commentService.createComment(commentDto);
         Mockito.verify(commentRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(commentMapper, Mockito.times(1)).toEntity(commentDto);
+        Mockito.verify(redisCommentEventPublisher, Mockito.times(1)).publish(Mockito.any());
         Mockito.verify(commentMapper, Mockito.times(1)).toDto(Mockito.any());
     }
 
