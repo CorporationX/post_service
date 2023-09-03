@@ -21,6 +21,8 @@ public class RedisConfig {
     private String likeTopicName;
     @Value("${spring.data.redis.channels.post_channel.name}")
     private String postTopicName;
+    @Value("${spring.data.redis.channels.comment_event_channel.name}")
+    private String commentTopicName;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -43,7 +45,12 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic likeTopic(){
+    public ChannelTopic likeTopic() {
         return new ChannelTopic(likeTopicName);
+    }
+
+    @Bean
+    ChannelTopic commentTopic() {
+        return new ChannelTopic(commentTopicName);
     }
 }

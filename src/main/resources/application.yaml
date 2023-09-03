@@ -28,6 +28,8 @@ spring:
           likePost: /likes/post
         post_channel:
           name: post_channel
+        comment_event_channel:
+          name: comment_topic
 
 server:
   port: 8081
