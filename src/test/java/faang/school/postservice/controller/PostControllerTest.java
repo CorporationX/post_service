@@ -3,7 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.controller.post.PostController;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.HashtagService;
-import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.PostService;
 import faang.school.postservice.util.exception.DataValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

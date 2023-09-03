@@ -31,14 +31,21 @@ public class KafkaProducerConfig {
 
     @Bean
     public ProducerFactory<String, PostEvent> producerFactoryPostEvent() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs());
+    }
+
+    @Bean
     public ProducerFactory<String, PostViewEvent> producerFactoryPostViewEvent() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
     @Bean
-    public KafkaTemplate<String, PostEvent> kafkaTemplate() {
+    public KafkaTemplate<String, PostEvent> kafkaTemplateForPostEvent() {
         return new KafkaTemplate<>(producerFactoryPostEvent());
-    public KafkaTemplate<String, PostViewEvent> kafkaTemplate() {
+    }
+
+    @Bean
+    public KafkaTemplate<String, PostViewEvent> kafkaTemplateForPostViewEvent() {
         return new KafkaTemplate<>(producerFactoryPostViewEvent());
     }
 

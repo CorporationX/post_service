@@ -25,7 +25,7 @@ class AdServiceTest {
 
     @BeforeEach
     public void setup() {
-        adService = new AdService(adRepository, 100, 5);
+        adService = new AdService(adRepository);
         Mockito.doNothing().when(adRepository).deleteById(Mockito.anyLong());
     }
 

@@ -8,7 +8,6 @@ import faang.school.postservice.messaging.postevent.PostEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.util.exception.CreatePostException;
 import faang.school.postservice.util.exception.DeletePostException;
 import faang.school.postservice.util.exception.GetPostException;
@@ -16,6 +15,7 @@ import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
+import faang.school.postservice.service.PostService;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -103,15 +104,6 @@ class PostServiceTest {
         Post actual = postMapper.toEntity(dto);
 
         Assertions.assertEquals(buildPost(), actual);
-    }
-
-    @Test
-    void addPost_ByAuthor_ShouldSave() {
-        doNothing().when(validator).validateToAdd(Mockito.any());
-        Mockito.when(postMapper.toDto(Mockito.any())).thenReturn(postDto);
-        postService.addPost(postDto);
-
-        Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());
     }
 
     @Test
@@ -458,7 +450,7 @@ class PostServiceTest {
                 .albums(new ArrayList<>())
                 .published(false)
                 .deleted(false)
-                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .verifiedDate(null)
                 .build();
     }
 

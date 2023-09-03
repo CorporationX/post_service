@@ -29,6 +29,9 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic postViewTopic() {
         return new NewTopic("post-view", 1, (short) 1);
+    }
+
+    @Bean
     public NewTopic postPublicationTopic() {
         return new NewTopic(postPublicationTopic, 1, (short) 1);
     }
