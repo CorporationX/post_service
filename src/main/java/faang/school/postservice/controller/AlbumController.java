@@ -30,7 +30,6 @@ public class AlbumController {
     @Operation(summary = "Create Album")
     @ResponseStatus(HttpStatus.CREATED)
     public AlbumDto createAlbum(@RequestBody @Valid AlbumDto album) {
-        validate(album);
         return albumService.createAlbum(album);
     }
 
@@ -38,7 +37,7 @@ public class AlbumController {
     @Operation(summary = "Update Album")
     @ResponseStatus(HttpStatus.OK)
     public AlbumDto updateAlbum(@RequestBody @Valid AlbumDto album) {
-        validate(album);
+        validateIds(album.getId(), album.getAuthorId());
         return albumService.updateAlbum(album);
     }
 
@@ -49,16 +48,16 @@ public class AlbumController {
         albumService.deleteAlbum(albumId);
     }
 
-    @PatchMapping("{userId}/albums/{albumId}/posts/add/{postId}")
-    public AlbumDto addPost(Long userId, Long albumId, Long postId) {
-        validateIds(userId, albumId, postId);
-        return albumService.addPost(userId, albumId, postId);
+    @PatchMapping("{albumId}/posts/add/{postId}")
+    public AlbumDto addPost(@PathVariable Long albumId, @PathVariable Long postId) {
+        validateIds(albumId, postId);
+        return albumService.addPost(albumId, postId);
     }
 
-    @PatchMapping("{userId}/albums/{albumId}/posts/delete/{postId}")
-    public AlbumDto deletePost(Long userId, Long albumId, Long postId) {
-        validateIds(userId, albumId, postId);
-        return albumService.deletePost(userId, albumId, postId);
+    @PatchMapping("{albumId}/posts/delete/{postId}")
+    public AlbumDto deletePost(@PathVariable Long albumId, @PathVariable Long postId) {
+        validateIds(albumId, postId);
+        return albumService.deletePost(albumId, postId);
     }
 
     @PostMapping("{userId}/favourites/{albumId}")
@@ -71,18 +70,6 @@ public class AlbumController {
     public void deleteAlbumFromFavourite(@PathVariable Long userId, @PathVariable Long albumId) {
         validateIds(userId, albumId);
         albumService.deleteAlbumFromFavorites(userId, albumId);
-    }
-
-    private void validate(AlbumDto album) {
-        if (album.getAuthorId() == null) {
-            throw new DataValidationException("AuthorId cannot be null");
-        }
-        if (album.getTitle() == null || album.getTitle().isEmpty()) {
-            throw new DataValidationException("Title cannot be null");
-        }
-        if (album.getDescription() == null || album.getDescription().isEmpty()) {
-            throw new DataValidationException("Description cannot be null");
-        }
     }
 
     private void validateIds(long... ids) {

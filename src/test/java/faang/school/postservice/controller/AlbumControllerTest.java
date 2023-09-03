@@ -24,9 +24,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AlbumControllerTest {
-    private final String EXPECTED_MESSAGE_TITLE_CANNOT_BE_NULL = "Title cannot be null";
-    private final String EXPECTED_MESSAGE_DESCRIPTION_CANNOT_BE_NULL = "Description cannot be null";
-    private final String EXPECTED_MESSAGE_AUTHOR_ID_CANNOT_BE_NULL = "AuthorId cannot be null";
     @InjectMocks
     private AlbumController albumController;
     @Mock
@@ -36,40 +33,13 @@ class AlbumControllerTest {
 
     @BeforeEach
     void setUp() {
-        trueAlbumDto = AlbumDto.builder().authorId(1L).title("title").description("description").build();
+        trueAlbumDto = AlbumDto.builder().id(1L).authorId(1L).title("title").description("description").build();
     }
 
     @Test
     void testCreateAlbumSuccess() {
         albumController.createAlbum(trueAlbumDto);
         verify(albumService, times(1)).createAlbum(trueAlbumDto);
-    }
-
-    @Test
-    void testCreateAlbumFailIfAuthorIdIsNull() {
-        AlbumDto wrongAlbumDto = AlbumDto.builder().title("title").description("description").build();
-        assertEquals(EXPECTED_MESSAGE_AUTHOR_ID_CANNOT_BE_NULL, assertThrows(DataValidationException.class,
-                () -> albumController.createAlbum(wrongAlbumDto)).getMessage());
-
-        verifyNoInteractions(albumService);
-    }
-
-    @Test
-    void testCreateAlbumFailIfTitleIsEmpty() {
-        AlbumDto wrongAlbumDto = AlbumDto.builder().authorId(1L).description("description").build();
-        assertEquals(EXPECTED_MESSAGE_TITLE_CANNOT_BE_NULL, assertThrows(DataValidationException.class,
-                () -> albumController.createAlbum(wrongAlbumDto)).getMessage());
-
-        verifyNoInteractions(albumService);
-    }
-
-    @Test
-    void testCreateAlbumFailIfDescriptionIsEmpty() {
-        AlbumDto wrongAlbumDto = AlbumDto.builder().authorId(1L).title("title").build();
-        assertEquals(EXPECTED_MESSAGE_DESCRIPTION_CANNOT_BE_NULL, assertThrows(DataValidationException.class,
-                () -> albumController.createAlbum(wrongAlbumDto)).getMessage());
-
-        verifyNoInteractions(albumService);
     }
 
     @Test
@@ -81,8 +51,7 @@ class AlbumControllerTest {
     @Test
     void testUpdateAlbumFailIfAuthorIdIsNull() {
         AlbumDto wrongAlbumDto = AlbumDto.builder().title("title").description("description").build();
-        assertEquals(EXPECTED_MESSAGE_AUTHOR_ID_CANNOT_BE_NULL, assertThrows(DataValidationException.class,
-                () -> albumController.updateAlbum(wrongAlbumDto)).getMessage());
+        assertThrows(NullPointerException.class, () -> albumController.updateAlbum(wrongAlbumDto));
 
         verifyNoInteractions(albumService);
     }
@@ -90,8 +59,7 @@ class AlbumControllerTest {
     @Test
     void testUpdateAlbumFailIfTitleIsEmpty() {
         AlbumDto wrongAlbumDto = AlbumDto.builder().authorId(1L).description("description").build();
-        assertEquals(EXPECTED_MESSAGE_TITLE_CANNOT_BE_NULL, assertThrows(DataValidationException.class,
-                () -> albumController.updateAlbum(wrongAlbumDto)).getMessage());
+        assertThrows(NullPointerException.class, () -> albumController.updateAlbum(wrongAlbumDto));
 
         verifyNoInteractions(albumService);
     }
@@ -99,8 +67,7 @@ class AlbumControllerTest {
     @Test
     void testUpdateAlbumFailIfDescriptionIsEmpty() {
         AlbumDto wrongAlbumDto = AlbumDto.builder().authorId(1L).title("title").build();
-        assertEquals(EXPECTED_MESSAGE_DESCRIPTION_CANNOT_BE_NULL, assertThrows(DataValidationException.class,
-                () -> albumController.updateAlbum(wrongAlbumDto)).getMessage());
+        assertThrows(NullPointerException.class, () -> albumController.updateAlbum(wrongAlbumDto));
 
         verifyNoInteractions(albumService);
     }
@@ -113,51 +80,49 @@ class AlbumControllerTest {
 
     @ParameterizedTest
     @MethodSource("validParametersProvider")
-    public void testAddPostSuccess(Long userId, Long albumId, Long postId) {
+    public void testAddPostSuccess(Long albumId, Long postId) {
         AlbumDto expectedAlbumDto = AlbumDto.builder().build();
-        when(albumService.addPost(userId, albumId, postId)).thenReturn(expectedAlbumDto);
+        when(albumService.addPost(albumId, postId)).thenReturn(expectedAlbumDto);
 
-        AlbumDto actualAlbumDto = albumController.addPost(userId, albumId, postId);
+        AlbumDto actualAlbumDto = albumController.addPost(albumId, postId);
 
         assertEquals(expectedAlbumDto, actualAlbumDto);
     }
 
     @ParameterizedTest
     @MethodSource("invalidParametersProvider")
-    public void testAddPostWithInvalidParameters(Long userId, Long albumId, Long postId) {
-        assertThrows(DataValidationException.class, () -> albumController.addPost(userId, albumId, postId));
+    public void testAddPostWithInvalidParameters(Long albumId, Long postId) {
+        assertThrows(DataValidationException.class, () -> albumController.addPost(albumId, postId));
     }
 
     @ParameterizedTest
     @MethodSource("validParametersProvider")
-    public void testDeletePostSuccess(Long userId, Long albumId, Long postId) {
+    public void testDeletePostSuccess(Long albumId, Long postId) {
         AlbumDto expectedAlbumDto = AlbumDto.builder().build();
-        when(albumService.deletePost(userId, albumId, postId)).thenReturn(expectedAlbumDto);
+        when(albumService.deletePost(albumId, postId)).thenReturn(expectedAlbumDto);
 
-        AlbumDto actualAlbumDto = albumController.deletePost(userId, albumId, postId);
+        AlbumDto actualAlbumDto = albumController.deletePost(albumId, postId);
 
         assertEquals(expectedAlbumDto, actualAlbumDto);
     }
 
     @ParameterizedTest
     @MethodSource("invalidParametersProvider")
-    public void testDeletePostWithInvalidParameters(Long userId, Long albumId, Long postId) {
-        assertThrows(DataValidationException.class, () -> albumController.deletePost(userId, albumId, postId));
+    public void testDeletePostWithInvalidParameters(Long albumId, Long postId) {
+        assertThrows(DataValidationException.class, () -> albumController.deletePost(albumId, postId));
     }
 
     static Stream<Arguments> invalidParametersProvider() {
         return Stream.of(
-                Arguments.of(-1L, 2L, 3L),
-                Arguments.of(1L, -2L, 3L),
-                Arguments.of(1L, 2L, -3L)
+                Arguments.of(-1L, 2L),
+                Arguments.of(1L, -2L)
         );
     }
 
     static Stream<Arguments> validParametersProvider() {
         return Stream.of(
-                Arguments.of(1L, 2L, 3L),
-                Arguments.of(4L, 5L, 6L),
-                Arguments.of(7L, 8L, 9L)
+                Arguments.of(1L, 2L),
+                Arguments.of(4L, 5L)
         );
     }
 }

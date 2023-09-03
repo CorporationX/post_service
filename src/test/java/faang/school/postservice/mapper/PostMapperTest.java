@@ -15,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class PostMapperTest {
     @Spy
     private PostMapperImpl postMapper;
-
     private PostDto postDto;
     private Post post;
 

@@ -2,15 +2,19 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.async.PostAsyncService;
 import faang.school.postservice.validator.PostValidator;
-import jakarta.persistence.EntityNotFoundException;
+import org.apache.commons.collections4.ListUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +33,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,8 +53,14 @@ class PostServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private ProjectServiceClient projectServiceClient;
+    @Mock
+    private PostViewEventService postViewEventService;
+    @Mock
+    private UserContext userContext;
     @Spy
     private PostValidator postValidator;
+    @Mock
+    private PostAsyncService postAsyncService;
     @InjectMocks
     private PostService postService;
 
@@ -65,7 +79,6 @@ class PostServiceTest {
         postWithAuthorIdDto = PostDto.builder().authorId(userDto.getId()).projectId(null).content("content").build();
         postWithProjectIdDto = PostDto.builder().authorId(null).projectId(projectDto.getId()).content("content2").build();
         postWithAuthorIdAndProjectIdDto = PostDto.builder().authorId(userDto.getId()).projectId(projectDto.getId()).content("content3").build();
-
     }
 
     @Test
@@ -115,7 +128,7 @@ class PostServiceTest {
 
     @Test
     void testPublishPostSuccess() {
-        PostDto postDto = PostDto.builder().id(postId).createdAt(null).isPublished(false).build();
+        PostDto postDto = PostDto.builder().id(postId).createdAt(null).published(false).build();
         Post post = postMapperImpl.toPost(postDto);
 
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -129,16 +142,16 @@ class PostServiceTest {
 
     @Test
     void testPublishPostShouldThrowEntityNotFoundException() {
-        PostDto postDto = PostDto.builder().id(postId).createdAt(null).isPublished(false).build();
+        PostDto postDto = PostDto.builder().id(postId).createdAt(null).published(false).build();
         Post post = postMapperImpl.toPost(postDto);
 
         assertThrows(EntityNotFoundException.class, () ->
-                postService.publishPost(post.getId()), "Post not found");
+                postService.publishPost(post.getId()), "Post with id " + postId + " not found");
     }
 
     @Test
     void testPublishPostShouldThrowDataValidationException() {
-        PostDto postDto = PostDto.builder().id(postId).createdAt(LocalDateTime.now()).isPublished(true).build();
+        PostDto postDto = PostDto.builder().id(postId).createdAt(LocalDateTime.now()).published(true).build();
         Post post = postMapperImpl.toPost(postDto);
         try {
             when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -165,7 +178,9 @@ class PostServiceTest {
 
     @Test
     void testUpdatePostWithAuthorIdFailIfPostNotFound() {
-        Assertions.assertEquals("Post not found", Assertions.assertThrows(EntityNotFoundException.class, () -> postService.updatePost(postWithAuthorIdDto)).getMessage());
+        postWithAuthorIdDto.setId(1L);
+        Assertions.assertEquals("Post with id " + postId + " not found",
+                Assertions.assertThrows(EntityNotFoundException.class, () -> postService.updatePost(postWithAuthorIdDto)).getMessage());
     }
 
     @Test
@@ -185,7 +200,9 @@ class PostServiceTest {
 
     @Test
     void testUpdatePostWithProjectIdFailIfPostNotFound() {
-        Assertions.assertEquals("Post not found", Assertions.assertThrows(EntityNotFoundException.class, () -> postService.updatePost(postWithProjectIdDto)).getMessage());
+        postWithProjectIdDto.setId(1L);
+        Assertions.assertEquals("Post with id " + postId + " not found",
+                Assertions.assertThrows(EntityNotFoundException.class, () -> postService.updatePost(postWithProjectIdDto)).getMessage());
     }
 
     @Test
@@ -218,10 +235,24 @@ class PostServiceTest {
 
     @Test
     void testGetPostSuccess() {
-        Post post = Post.builder().id(1L).build();
-        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
-        PostDto postDto = postService.getPost(post.getId());
-        assertEquals(postDto, postMapperImpl.toDto(post));
+        Post post = new Post();
+        when(postRepository.findById(anyLong())).thenReturn(Optional.of(post));
+
+        when(userContext.getUserId()).thenReturn(1L);
+
+        PostViewEventDto postViewEventDto = new PostViewEventDto();
+        when(postViewEventService.getPostViewEventDto(anyLong(), any(Post.class))).thenReturn(postViewEventDto);
+
+        PostDto postDto = new PostDto();
+        when(postMapperImpl.toDto(any(Post.class))).thenReturn(postDto);
+
+        postService.getPost(1L);
+
+        verify(postRepository, times(1)).findById(1L);
+        verify(userContext, times(1)).getUserId();
+        verify(postViewEventService, times(1)).getPostViewEventDto(1L, post);
+        verify(postViewEventService, times(1)).publishEventToChannel(postViewEventDto);
+        verify(postMapperImpl, times(1)).toDto(post);
     }
 
     @Test
@@ -334,11 +365,12 @@ class PostServiceTest {
     @Test
     void testSoftDeletePostFailIfPostNotFound() {
         try {
+            postWithAuthorIdDto.setId(1L);
             Long postId = postWithAuthorIdDto.getId();
             postService.softDeletePost(postId);
             when(postRepository.findById(postId)).thenReturn(Optional.empty());
         } catch (EntityNotFoundException e) {
-            assertEquals("Post not found", e.getMessage());
+            assertEquals("Post with id " + postId + " not found", e.getMessage());
         }
     }
 
@@ -353,5 +385,49 @@ class PostServiceTest {
         } catch (DataValidationException e) {
             assertEquals("Post already deleted", e.getMessage());
         }
+    }
+
+    @Test
+    void testGetPostById_ExistingPostId_ReturnsPost() {
+        Long postId = 1L;
+        Post existingPost = Post.builder()
+                .id(postId)
+                .content("Test post content")
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(existingPost));
+
+        Post retrievedPost = postService.getPostById(postId);
+
+        assertNotNull(retrievedPost);
+        assertEquals(existingPost.getId(), retrievedPost.getId());
+        assertEquals(existingPost.getContent(), retrievedPost.getContent());
+
+        verify(postRepository, times(1)).findById(postId);
+    }
+
+    @Test
+    void testGetPostById_NonExistingPostId_ThrowsEntityNotFoundException() {
+        Long postId = 1L;
+
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> postService.getPostById(postId));
+
+        verify(postRepository, times(1)).findById(postId);
+    }
+
+    @Test
+    void testPublishScheduledPosts() {
+        Post post = mock(Post.class);
+        List<Post> posts = List.of(post, post, post);
+
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+
+        postService.publishScheduledPosts(1);
+
+        verify(postRepository, times(1)).findReadyToPublish();
+        List<List<Post>> partitions = ListUtils.partition(posts, posts.size());
+        partitions.forEach(partition -> verify(postAsyncService).publishPosts(partition));
     }
 }
