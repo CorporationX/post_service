@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface AdRepository extends JpaRepository<Ad, Long> {
 
-    @Query("SELECT a FROM Ad a WHERE a.end_date <= CURRENT_TIMESTAMP OR a.appearances_left = 0")
+    @Query("SELECT a FROM Ad a WHERE a.endDate <= CURRENT_TIMESTAMP OR a.appearancesLeft = 0")
     List<Ad> findExpiredAds();
 
     @Query("SELECT a FROM Ad a WHERE a.post.id = ?1")

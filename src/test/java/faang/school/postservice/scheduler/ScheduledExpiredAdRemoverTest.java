@@ -29,7 +29,8 @@ class ScheduledExpiredAdRemoverTest {
 
     @BeforeEach
     void setUp() {
-        scheduledExpiredAdRemover = new ScheduledExpiredAdRemover(2, executor, adRepository);
+        scheduledExpiredAdRemover = new ScheduledExpiredAdRemover(executor, adRepository);
+        scheduledExpiredAdRemover.setBatchSize(2);
     }
 
     @Test

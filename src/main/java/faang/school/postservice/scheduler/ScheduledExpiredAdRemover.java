@@ -3,6 +3,7 @@ package faang.school.postservice.scheduler;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.ad.AdRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,13 +15,14 @@ import java.util.List;
 
 @Slf4j
 @Component
+@Setter
 @RequiredArgsConstructor
 public class ScheduledExpiredAdRemover {
 
     @Value("${post.ad-remover.batch.size}")
-    private final int batchSize;
+    private int batchSize;
 
-    private final ThreadPoolTaskExecutor executor;
+    private final ThreadPoolTaskExecutor scheduledRemoverThreadPoolExecutor;
     private final AdRepository adRepository;
 
     @Scheduled(cron = "${post.ad-remover.scheduler.every_day_cron}")
@@ -33,7 +35,7 @@ public class ScheduledExpiredAdRemover {
         for (int i = 0; i < adList.size(); i += batchSize) {
             int endIndex = Math.min(i + batchSize, adList.size());
             List<Ad> subList = adList.subList(i, endIndex);
-            executor.execute(() -> {
+            scheduledRemoverThreadPoolExecutor.execute(() -> {
                 List<Long> ids = subList.stream()
                         .map(Ad::getId)
                         .toList();
