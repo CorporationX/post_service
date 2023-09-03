@@ -6,11 +6,13 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.ScheduledTaskMapperImpl;
+import faang.school.postservice.messaging.postevent.PostEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.scheduled.ScheduledEntityType;
 import faang.school.postservice.model.scheduled.ScheduledTask;
 import faang.school.postservice.model.scheduled.ScheduledTaskStatus;
 import faang.school.postservice.model.scheduled.ScheduledTaskType;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ScheduledTaskRepository;
 import faang.school.postservice.util.exception.CreatePostException;
@@ -21,6 +23,7 @@ import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.exception.PublishPostException;
 import faang.school.postservice.util.exception.UpdatePostException;
 import faang.school.postservice.util.validator.PostServiceValidator;
+import faang.school.postservice.service.PostService;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +40,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.mockito.Mockito.doNothing;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -61,6 +66,15 @@ class PostServiceTest {
 
     @Mock
     private ProjectServiceClient projectServiceClient;
+
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
+
+    @Mock
+    private HashtagService hashtagService;
+
+    @Mock
+    private PostEventPublisher postEventPublisher;
 
     @InjectMocks
     private PostService postService;
@@ -116,6 +130,8 @@ class PostServiceTest {
 
     @Test
     void addPost_ByAuthor_ShouldSave() {
+        doNothing().when(validator).validateToAdd(Mockito.any());
+        Mockito.when(postMapper.toDto(Mockito.any())).thenReturn(postDto);
         postService.addPost(postDto);
 
         Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());
@@ -202,7 +218,17 @@ class PostServiceTest {
 
         postService.publishPost(1L);
 
-        Mockito.verify(postRepository, Mockito.times(1)).save(post);
+        Mockito.verify(postRepository).save(post);
+    }
+
+    @Test
+    void publishPost_ShouldBeSentByPublisher() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        postService.publishPost(1L);
+
+        Mockito.verify(postEventPublisher).send(post);
     }
 
     @Test
@@ -393,6 +419,7 @@ class PostServiceTest {
                 .thenReturn(Optional.of(post));
 
         Assertions.assertDoesNotThrow(() -> postService.getPost(1L));
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
     }
 
     @Test
@@ -418,14 +445,63 @@ class PostServiceTest {
 
     @Test
     void getPostsByAuthorId_ShouldNotThrowException() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findPublishedPostsByAuthorId(1L)).thenReturn(List.of(post));
+
         Assertions.assertDoesNotThrow(() -> postService.getPostsByAuthorId(1L));
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
         Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByAuthorId(1L);
     }
 
     @Test
     void getPostsByProjectId_ShouldNotThrowException() {
+        Post post = buildPost();
+        Mockito.when(postRepository.findPublishedPostsByProjectId(1L)).thenReturn(List.of(post));
+
         Assertions.assertDoesNotThrow(() -> postService.getPostsByProjectId(1L));
+        Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
         Mockito.verify(postRepository, Mockito.times(1)).findPublishedPostsByProjectId(1L);
+    }
+
+    @Test
+    void actWithPostBySchedule_PostNotFound_ShouldThrowException() {
+        ScheduledTaskDto dto = ScheduledTaskDto.builder().entityId(1L).build();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        PostNotFoundException e = Assertions.assertThrows(PostNotFoundException.class, () -> {
+            postService.actWithScheduledPost(dto);
+        });
+        Assertions.assertEquals("Post with id = " + String.format("%d", 1L) + " not found", e.getMessage());
+    }
+
+    @Test
+    void actWithPostBySchedule_PostIsAlreadyScheduled_ShouldThrowException() {
+        ScheduledTaskDto dto = buildScheduledTaskDto();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(buildPost()));
+        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L, dto.entityType())).thenReturn(Optional.of(buildScheduledTask()));
+
+        EntitySchedulingException e = Assertions.assertThrows(EntitySchedulingException.class, () -> {
+            postService.actWithScheduledPost(dto);
+        });
+        Assertions.assertEquals("Post with id = " + String.format("%d", dto.entityId()) + " already scheduled", e.getMessage());
+    }
+
+    @Test
+    void actWithPostBySchedule_ShouldMapCorrectly() {
+        ScheduledTask actual = scheduledTaskMapper.toEntity(buildScheduledTaskDto());
+
+        Assertions.assertEquals(buildScheduledTask(), actual);
+    }
+
+    @Test
+    void actWithPostBySchedule_ShouldSave() {
+        ScheduledTaskDto dto = buildScheduledTaskDto();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(buildPost()));
+        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L, dto.entityType())).thenReturn(Optional.empty());
+
+        postService.actWithScheduledPost(dto);
+
+        Mockito.verify(scheduledTaskRepository).save(buildScheduledTask());
     }
 
     private PostDto buildPostDto() {
@@ -446,7 +522,7 @@ class PostServiceTest {
                 .albums(new ArrayList<>())
                 .published(false)
                 .deleted(false)
-                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .verifiedDate(null)
                 .build();
     }
 
@@ -460,7 +536,7 @@ class PostServiceTest {
                 .albums(new ArrayList<>())
                 .published(false)
                 .deleted(false)
-                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .createdAt(null)
                 .build();
     }
 
@@ -478,5 +554,21 @@ class PostServiceTest {
                 buildExpectedPostDto(),
                 buildExpectedPostDto()
         );
+    }
+
+    private ScheduledTask buildScheduledTask() {
+        return ScheduledTask.builder()
+                .entityType(ScheduledEntityType.POST)
+                .taskType(ScheduledTaskType.PUBLISHING_POST)
+                .entityId(1L)
+                .build();
+    }
+
+    private ScheduledTaskDto buildScheduledTaskDto() {
+        return ScheduledTaskDto.builder()
+                .entityType(ScheduledEntityType.POST)
+                .taskType(ScheduledTaskType.PUBLISHING_POST)
+                .entityId(1L)
+                .build();
     }
 }

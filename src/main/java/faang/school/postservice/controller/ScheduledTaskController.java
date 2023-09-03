@@ -25,12 +25,12 @@ public class ScheduledTaskController {
     private final ScheduledTaskControllerValidator validator;
 
     @PostMapping("/")
-    public ScheduledTaskDto addTaskBySchedule(@Valid @RequestBody ScheduledTaskDto dto) {
-        log.info("Entity type: {}, task type: {}", dto.entityType(), dto.taskType());
+    ScheduledTaskDto addScheduledTask(@Valid @RequestBody ScheduledTaskDto dto) {
+        log.info("Request to add scheduled task: Entity type: {}, task type: {}", dto.entityType(), dto.taskType());
 
-        validator.addTaskBySchedule(scheduledTaskExecutors, dto);
+        validator.validateToAddScheduledTask(scheduledTaskExecutors, dto);
         var scheduledTaskExecutor = scheduledTaskExecutors.get(dto.entityType());
-        ScheduledTaskDto resultDto = scheduledTaskExecutor.saveTaskBySchedule(dto);
+        ScheduledTaskDto resultDto = scheduledTaskExecutor.actWithScheduledTask(dto);
 
         return resultDto;
     }

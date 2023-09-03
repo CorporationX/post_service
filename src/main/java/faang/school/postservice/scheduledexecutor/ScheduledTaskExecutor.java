@@ -4,5 +4,5 @@ import faang.school.postservice.dto.post.ScheduledTaskDto;
 
 public interface ScheduledTaskExecutor {
 
-    ScheduledTaskDto saveTaskBySchedule(ScheduledTaskDto dto);
+    ScheduledTaskDto actWithScheduledTask(ScheduledTaskDto dto);
 }

@@ -8,11 +8,11 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-#      ddl-auto: none
-#    show-sql: true
+      ddl-auto: none
+    show-sql: true
     properties:
       hibernate:
-#        format_sql: true
+        format_sql: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -24,6 +24,20 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        comment_channel:
+          name: comment_channel
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: group
+    topics:
+      post-publication: post-publication
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: group
 
 server:
   port: 8081
@@ -35,7 +49,8 @@ logging:
 post:
   publisher:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+#      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "0/10 * * * * ?" # every 10 second
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
@@ -61,3 +76,50 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+ai-spelling:
+  cron: "0 0 6 * * ?" # every day at 6:00
+  url: "https://bing-spell-check2.p.rapidapi.com/spellcheck"
+  mode: "spell"
+  contentType: "application/x-www-form-urlencoded"
+  xRapidApiKey: "58a3c43c12msh2fe078f7a3f1c46p1b5471jsn5c4c9497ff76"
+  xRapidApiHost: "bing-spell-check2.p.rapidapi.com"
+  retry:
+    maxAttempts: 10
+    maxDelay: 1000
+
+bing-thread-poll:
+  corePoolSize: 10
+  maxPoolSize: 10
+  queueCapacity: 100000
+
+ad-remover:
+  cron: "0 0 3 * * ?" #every day at 03:00
+  batch: 100
+  thread-count: 5
+  retry:
+    maxAttempts: 5
+    maxDelay: 1000
+
+bad-words:
+  path: files/bad-words.csv
+
+moderation-thread-pool:
+  queueCapacity: 100
+  maxPoolSize: 4
+  corePoolSize: 4
+  threadNamePrefix: "poolThread-"
+
+moderation-properties:
+  secondsBetweenModeration: 18000
+  batchSize: 1000
+
+
+
+thread-pool:
+  queueCapacity: 100
+  maxPoolSize: 4
+  corePoolSize: 4
+  threadNamePrefix: "poolThread-"
+
+batch-size-from-like: 100
