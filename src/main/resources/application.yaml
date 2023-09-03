@@ -26,7 +26,7 @@ spring:
           name: calculations-channel
         event-channels:
           posts-view: posts-view
-        comment_event:
+        comment_event-channel:
           name: comment-event-channel
 
   async:

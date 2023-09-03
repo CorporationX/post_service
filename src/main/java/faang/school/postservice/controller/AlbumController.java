@@ -42,34 +42,38 @@ public class AlbumController {
     }
 
     @DeleteMapping("/{albumId}")
-    @Operation(summary = "Delete Album")
+    @Operation(summary = "Delete album")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAlbum(@PathVariable Long albumId) {
         albumService.deleteAlbum(albumId);
     }
 
     @PatchMapping("{albumId}/posts/add/{postId}")
+    @Operation(summary = "Add post to album")
     public AlbumDto addPost(@PathVariable Long albumId, @PathVariable Long postId) {
         validateIds(albumId, postId);
         return albumService.addPost(albumId, postId);
     }
 
     @PatchMapping("{albumId}/posts/delete/{postId}")
+    @Operation(summary = "Delete post from album")
     public AlbumDto deletePost(@PathVariable Long albumId, @PathVariable Long postId) {
         validateIds(albumId, postId);
         return albumService.deletePost(albumId, postId);
     }
 
-    @PostMapping("{userId}/favourites/{albumId}")
-    public void addAlbumToFavourite(@PathVariable Long userId, @PathVariable Long albumId) {
-        validateIds(userId, albumId);
-        albumService.addAlbumToFavourite(userId, albumId);
+    @PostMapping("/favourites/add/{albumId}")
+    @Operation(summary = "Add album to favourites")
+    public void addAlbumToFavourite(@PathVariable Long albumId) {
+        validateIds(albumId);
+        albumService.addAlbumToFavourite(albumId);
     }
 
-    @DeleteMapping("{userId}/favourites/{albumId}")
-    public void deleteAlbumFromFavourite(@PathVariable Long userId, @PathVariable Long albumId) {
-        validateIds(userId, albumId);
-        albumService.deleteAlbumFromFavorites(userId, albumId);
+    @DeleteMapping("/favourites/delete/{albumId}")
+    @Operation(summary = "Delete album from favourites")
+    public void deleteAlbumFromFavourite(@PathVariable Long albumId) {
+        validateIds(albumId);
+        albumService.deleteAlbumFromFavorites(albumId);
     }
 
     private void validateIds(long... ids) {

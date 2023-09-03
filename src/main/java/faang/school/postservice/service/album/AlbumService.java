@@ -84,19 +84,19 @@ public class AlbumService {
     }
 
     @Transactional
-    public void addAlbumToFavourite(Long userId, Long albumId) {
-        UserDto user = userServiceClient.getUser(userId);
-        Album album = getAlbumByOwnerId(albumId, user.getId());
-        boolean exist = albumRepository.existInFavorites(album.getId(), user.getId());
+    public void addAlbumToFavourite(Long albumId) {
+        long userId = userContext.getUserId();
+        Album album = getAlbumByOwnerId(albumId, userId);
+        boolean exist = albumRepository.existInFavorites(album.getId(), userId);
         albumValidator.vaidateExistsInFavorites(exist);
-        albumRepository.addAlbumToFavorites(album.getId(), user.getId());
+        albumRepository.addAlbumToFavorites(album.getId(), userId);
     }
 
     @Transactional
-    public void deleteAlbumFromFavorites(Long userId, Long albumId) {
-        UserDto user = userServiceClient.getUser(userId);
-        Album album = getAlbumByOwnerId(albumId, user.getId());
-        albumRepository.deleteAlbumFromFavorites(album.getId(), user.getId());
+    public void deleteAlbumFromFavorites(Long albumId) {
+        long userId = userContext.getUserId();
+        Album album = getAlbumByOwnerId(albumId, userId);
+        albumRepository.deleteAlbumFromFavorites(album.getId(), userId);
     }
 
     private Album getAlbumByOwnerId(Long albumId, Long userId) {
