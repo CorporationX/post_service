@@ -29,7 +29,7 @@ public class Comment {
     @Column(name = "author_id", nullable = false)
     private long authorId;
 
-    @OneToMany(mappedBy = "comment", orphanRemoval = true)
+    @OneToMany(mappedBy = "comment")
     private List<Like> likes;
 
     @ManyToOne
