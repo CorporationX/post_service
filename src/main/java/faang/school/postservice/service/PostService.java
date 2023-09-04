@@ -32,6 +32,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostViewEventService postViewEventService;
+    private final YandexSpellCorrectorService spellCorrectorService;
     private final PostMapper postMapper;
     private final PostAsyncService postAsyncService;
     private final UserContext userContext;
@@ -182,5 +183,35 @@ public class PostService {
             postAsyncService.publishPosts(posts);
             log.info("Scheduled posts publishing finished");
         }
+    }
+
+    @Transactional
+    public void autoCorrectionSpelling() {
+        log.info("Spelling correction started");
+        List<Post> posts = postRepository.findReadyToSpellCorrection();
+
+        if (posts.isEmpty()) {
+            log.info("No posts for correction");
+            return;
+        }
+
+        posts.forEach(this::getCorrectedPost);
+
+        log.info("Corrected {} posts", posts.size());
+    }
+
+    @Transactional
+    public PostDto manualCorrectionSpelling(Long postId) {
+        Post post = getPostById(postId);
+        Post correctedPost = getCorrectedPost(post);
+        return postMapper.toDto(postRepository.save(correctedPost));
+    }
+
+    private Post getCorrectedPost(Post post) {
+        String correctedText = spellCorrectorService.getCorrectedText(post.getContent());
+        post.setContent(correctedText);
+        post.setSpellCheckedAt(LocalDateTime.now());
+
+        return post;
     }
 }
