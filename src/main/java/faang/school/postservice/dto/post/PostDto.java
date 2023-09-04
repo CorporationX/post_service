@@ -29,5 +29,6 @@ public class PostDto {
     private List<Integer> likeIds;
     private LocalDateTime scheduledAt;
     private LocalDateTime createdAt;
+    private LocalDateTime spellCheckedAt;
     private boolean published;
 }
