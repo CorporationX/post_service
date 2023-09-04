@@ -1,9 +1,12 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.validator.like.LikeServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +19,6 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
     private final LikeServiceValidator likeServiceValidator;
-    private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;
     private static final int BATCH_SIZE = 100;
 
@@ -44,7 +46,6 @@ public class LikeService {
             List<Long> subIds = ids.subList(i, p);
             res.addAll(userServiceClient.getUsersByIds(subIds));
         }
-
         return res;
     }
 
