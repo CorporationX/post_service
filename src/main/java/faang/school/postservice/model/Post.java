@@ -1,5 +1,6 @@
 package faang.school.postservice.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,10 +20,10 @@ import java.util.List;
 @Entity
 @Table(name = "post")
 public class Post {
-
     @Id
+    @JsonProperty("postId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
@@ -58,6 +59,13 @@ public class Post {
 
     @Column(name = "deleted", nullable = false)
     private boolean deleted;
+
+    @Column(name = "spell_check", nullable = false)
+    private boolean spellCheck;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "spell_checked_at")
+    private LocalDateTime spellCheckedAt;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

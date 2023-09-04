@@ -22,8 +22,27 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
+        calculations-channel:
+          name: calculations-channel
+        event-channels:
+          posts-view: posts-view
+        comment_event:
+          name: comment-event-channel
+        comment_channels:
+          name: comments-channel
+
+  async:
+    poolSize: 10
+    maxPoolSize: 10
+    queueCapacity: 1000
+    threadNamePrefix: "task-executor-thread-"
+
+  scheduler:
+    publisher:
+      cron: "0 0/1 * 1/1 * ?" # every minute
+      partitionSize: 1000
+    spellChecker:
+      cron: "0 0/1 * 1/1 * ?" # every minute
 
 server:
   port: 8081
@@ -45,7 +64,13 @@ user-service:
   port: 8080
 project-service:
   host: localhost
-  port: 8080
+  port: 8082
 payment-service:
   host: localhost
   port: 9080
+
+yandex-speller:
+  base-host: https://speller.yandex.net/services/spellservice.json
+  check-text-url: /checkText?text=
+  max-attempts-retry: 4
+  delay: 1000
