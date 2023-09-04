@@ -20,6 +20,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -50,17 +52,24 @@ class LikeServiceTest {
     private Like like;
     private Comment comment;
     private CommentDto commentDto;
+    private LikeDto likeDto1;
+    private LikeDto likeDto2;
+    private LikeDto likeDto3;
 
     @BeforeEach
     public void setUp() {
-
+        likeDto1 =LikeDto.builder().id(2L).build();
+        likeDto2 =LikeDto.builder().id(3L).build();
+        likeDto3 =LikeDto.builder().id(6L).build();
         userDto = UserDto.builder()
                 .id(1L)
                 .username("Ser").build();
         commentDto = CommentDto.builder().id(2L).postDto(postDto).authorId(userDto.getId()).build();
         postDto = ResponsePostDto.builder()
                 .id(3L)
-                .published(true).build();
+                .published(true)
+                .likes(List.of(likeDto1, likeDto2, likeDto3))
+                .build();
         likeDto = LikeDto.builder()
                 .id(5L)
                 .commentId(commentDto.getId())
@@ -68,7 +77,7 @@ class LikeServiceTest {
                 .userDto(userDto)
                 .userId(userDto.getId())
                 .postId(postDto.getId()).build();
-        post = Post.builder().id(3L).build();
+        post = Post.builder().id(3L).likes(List.of(new Like(), new Like(), new Like())).build();
         like = Like.builder().id(5L).post(post).build();
 
         comment = Comment.builder().id(2L).post(post).authorId(userDto.getId()).build();
@@ -108,5 +117,14 @@ class LikeServiceTest {
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         likeService.deleteLikeComment(2L, 1L);
         verify(likeRepository).deleteByCommentIdAndUserId(2L, 1L);
+    }
+
+    @Test
+    public void getAllLikesByPost_correctAnswer() {
+        //when(likeMapper.toDtoList(post.getLikes())).thenReturn(postDto.getLikes());
+        when(postService.getById(3L)).thenReturn(postDto);
+        when(likeRepository.findByPostId(3L)).thenReturn(post.getLikes());
+
+        assertEquals(3, likeService.getAllLikesByPost(3L));
     }
 }
