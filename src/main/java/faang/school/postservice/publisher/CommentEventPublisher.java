@@ -1,8 +1,7 @@
-package faang.school.postservice.publisher.comment;
+package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.redis.CommentEventDto;
-import faang.school.postservice.publisher.AbstractPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
