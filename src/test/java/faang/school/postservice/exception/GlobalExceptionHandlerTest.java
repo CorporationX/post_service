@@ -69,6 +69,12 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void handleIllegalArgumentException() {
+        IllegalArgumentException exception = mock(IllegalArgumentException.class);
+        when(exception.getMessage()).thenReturn("IllegalArgumentException");
+    }
+
+    @Test
     void handleConstraintViolationException_shouldMatchAllFields() {
         ConstraintViolationException exception = mock(ConstraintViolationException.class);
         when(exception.getMessage()).thenReturn("Constraint violation exception");

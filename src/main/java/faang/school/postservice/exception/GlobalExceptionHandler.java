@@ -30,6 +30,19 @@ public class GlobalExceptionHandler {
                 );
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgumentException(
+            IllegalArgumentException e, HttpServletRequest request) {
+        log.error("IllegalArgumentException occurred", e);
+        return ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(e.getMessage())
+                .url(request.getRequestURI())
+                .build();
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleConstraintViolationException(
