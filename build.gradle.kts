@@ -1,5 +1,6 @@
 plugins {
     java
+    jacoco
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
 }
@@ -56,6 +57,11 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    /**
+     * swagger
+     */
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 }
 
 tasks.withType<Test> {
@@ -66,4 +72,60 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        html.required.set(true)
+        xml.required.set(false)
+        csv.required.set(true)
+    }
+
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it).apply {
+            exclude(
+                    "faang/school/postservice/entity/**",
+                    "faang/school/postservice/dto/**",
+                    "faang/school/postservice/config/**",
+                    "faang/school/postservice/exception/**",
+                    "faang/school/postservice/client/**",
+                    "faang/school/postservice/model/**",
+                    "faang/school/postservice/repository/**",
+                    "faang/school/postservice/controller/**",
+                    "faang/school/postservice/PostServiceApplication.class",
+                    "com/json/student/**"
+            )
+        }
+    }))
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "CLASS"
+            excludes = listOf(
+                    "faang.school.postservice.entity.**",
+                    "faang.school.postservice.dto.**",
+                    "faang.school.postservice.config.**",
+                    "faang.school.postservice.exception.**",
+                    "faang.school.postservice.client.**",
+                    "faang.school.postservice.model.**",
+                    "faang.school.postservice.repository.**",
+                    "faang.school.postservice.controller.**",
+                    "faang.school.postservice.PostServiceApplication",
+                    "com.json.student.**")
+            limit {
+                minimum = "0.7".toBigDecimal()
+            }
+        }
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.9"
 }
