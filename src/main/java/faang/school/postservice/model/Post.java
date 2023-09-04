@@ -60,6 +60,13 @@ public class Post {
     @Column(name = "deleted", nullable = false)
     private boolean deleted;
 
+    @Column(name = "spell_check", nullable = false)
+    private boolean spellCheck;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "spell_checked_at")
+    private LocalDateTime spellCheckedAt;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
