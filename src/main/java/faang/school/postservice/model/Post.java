@@ -69,5 +69,6 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Resource> resources;
 }

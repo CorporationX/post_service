@@ -1,9 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.service.PostService;
-import faang.school.postservice.service.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,18 +22,12 @@ import java.util.List;
 @RequestMapping("/api/v1/posts")
 public class PostController {
     private final PostService postService;
-    private final S3Service s3Service;
 
     @PostMapping
     public PostDto crateDraftPost(@RequestBody @Validated PostDto postDto,
                                   @RequestParam(value = "files", required = false) MultipartFile[] files) {
         return postService.createDraftPost(postDto, files);
     }
-//
-//    @DeleteMapping("/{id}")
-//    public ResourceDto deleteResource(@PathVariable Long resourceId) {
-//        return s3Service.deleteResource(resourceId);
-//    }
 
     @PutMapping("/{id}")
     public PostDto publishPost(@PathVariable Long id) {
@@ -44,8 +36,8 @@ public class PostController {
 
     @PutMapping
     public PostDto updatePost(@RequestBody @Validated PostDto postDto,
-                             @RequestParam(value = "deletedFileIds", required = false) List<Long> deletedFileIds,
-                             @RequestParam(value = "addedFiles", required = false) MultipartFile[] addedFiles) {
+                              @RequestParam(value = "deletedFileIds", required = false) List<Long> deletedFileIds,
+                              @RequestParam(value = "addedFiles", required = false) MultipartFile[] addedFiles) {
         return postService.updatePost(postDto, deletedFileIds, addedFiles);
     }
 

@@ -27,5 +27,5 @@ public class PostDto {
     private boolean published;
     private boolean deleted;
 
-    private List<Long> resourceIds;//седлать маппинг
+    private List<Long> resourceIds;
 }

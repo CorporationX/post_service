@@ -16,6 +16,5 @@ public class ResourceDto {
     private String key;
     private long size;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private String name;
 }

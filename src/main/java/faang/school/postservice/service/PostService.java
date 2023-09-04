@@ -10,7 +10,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.s3.S3Service;
+import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,14 +29,14 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final TextGearsAPIService textGearsAPIService;
-    private final S3Service s3Service;
+    private final PostImageService postImageService;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
         validateIdPostDto(postDto);
         validateAuthorExist(postDto);
 
-        List<Resource> resources = s3Service.uploadFiles(files);
+        List<Resource> resources = postImageService.uploadImages(files);
 
         Post post = postMapper.toEntity(postDto);
         post.setResources(resources);
@@ -56,17 +56,17 @@ public class PostService {
     }
 
     @Transactional
-    public PostDto updatePost(PostDto postDto, List<Long> deletedFiles, MultipartFile[] addedFiles) {
+    public PostDto updatePost(PostDto postDto, List<Long> deletedFileIds, MultipartFile[] addedFiles) {
         validateIdPostDto(postDto);
         validateAuthorExist(postDto);
         Post post = getPostIfExist(postDto.getId());
 
-        if (deletedFiles != null && !deletedFiles.isEmpty()) {
-            List<Resource> deleteResources = s3Service.deleteResource(deletedFiles);
-            post.setResources(deleteResources);
+        if (deletedFileIds != null && !deletedFileIds.isEmpty()) {
+            List<Resource> deleteResources = postImageService.deleteImages(deletedFileIds);
+            post.getResources().removeAll(deleteResources);
         }
         if (addedFiles != null && addedFiles.length > 0) {
-            List<Resource> addedResources = s3Service.uploadFiles(addedFiles);
+            List<Resource> addedResources = postImageService.uploadImages(addedFiles);
             post.setResources(addedResources);
         }
         post.setContent(postDto.getContent());
