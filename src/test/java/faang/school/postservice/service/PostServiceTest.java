@@ -173,7 +173,7 @@ class PostServiceTest {
 
         when(postRepository.findById(id)).thenReturn(Optional.of(post));
 
-        PostDto actualDto = postService.updatePost(postDto);
+        PostDto actualDto = postService.updatePost(postDto, null, null);
 
         assertEquals("New Content", actualDto.getContent());
         assertNotNull(actualDto.getUpdatedAt());

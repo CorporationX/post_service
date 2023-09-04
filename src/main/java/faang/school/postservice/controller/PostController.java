@@ -27,14 +27,15 @@ public class PostController {
     private final S3Service s3Service;
 
     @PostMapping
-    public PostDto crateDraftPost(@RequestBody @Validated PostDto postDto, @RequestParam("files") MultipartFile[] files) {
+    public PostDto crateDraftPost(@RequestBody @Validated PostDto postDto,
+                                  @RequestParam(value = "files", required = false) MultipartFile[] files) {
         return postService.createDraftPost(postDto, files);
     }
-
-    @DeleteMapping("/{id}")
-    public ResourceDto deleteResource(@PathVariable Long resourceId) {
-        return s3Service.deleteResource(resourceId);
-    }
+//
+//    @DeleteMapping("/{id}")
+//    public ResourceDto deleteResource(@PathVariable Long resourceId) {
+//        return s3Service.deleteResource(resourceId);
+//    }
 
     @PutMapping("/{id}")
     public PostDto publishPost(@PathVariable Long id) {
@@ -42,8 +43,10 @@ public class PostController {
     }
 
     @PutMapping
-    public PostDto updatePost(@RequestBody @Validated PostDto postDto) {
-        return postService.updatePost(postDto);
+    public PostDto updatePost(@RequestBody @Validated PostDto postDto,
+                             @RequestParam(value = "deletedFileIds", required = false) List<Long> deletedFileIds,
+                             @RequestParam(value = "addedFiles", required = false) MultipartFile[] addedFiles) {
+        return postService.updatePost(postDto, deletedFileIds, addedFiles);
     }
 
     @DeleteMapping("/{id}")

@@ -9,6 +9,6 @@ import java.util.List;
 public interface S3Service {
     List<Resource> uploadFiles(MultipartFile[] multipartFile);
 
-    ResourceDto deleteResource(Long fileId);
+    List<Resource> deleteResource(List<Long> deletedFiles);
 }
 

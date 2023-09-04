@@ -56,11 +56,19 @@ public class PostService {
     }
 
     @Transactional
-    public PostDto updatePost(PostDto postDto) {
+    public PostDto updatePost(PostDto postDto, List<Long> deletedFiles, MultipartFile[] addedFiles) {
         validateIdPostDto(postDto);
         validateAuthorExist(postDto);
         Post post = getPostIfExist(postDto.getId());
 
+        if (deletedFiles != null && !deletedFiles.isEmpty()) {
+            List<Resource> deleteResources = s3Service.deleteResource(deletedFiles);
+            post.setResources(deleteResources);
+        }
+        if (addedFiles != null && addedFiles.length > 0) {
+            List<Resource> addedResources = s3Service.uploadFiles(addedFiles);
+            post.setResources(addedResources);
+        }
         post.setContent(postDto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         return postMapper.toDto(post);
