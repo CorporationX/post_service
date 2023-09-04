@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/like")
+@RequestMapping("api/v1/like")
 public class LikeController {
     private final LikeService likeService;
 
@@ -22,14 +22,14 @@ public class LikeController {
             return likeService.createLikeForPost(likeDto);
         }
     }
-    @DeleteMapping("/delete_from_post")
-    public LikeDto deleteLikeFromPost (@RequestBody LikeDto likeDto) {
+    @DeleteMapping("/delete/{postId}")
+    public void deleteLikeFromPost (@PathVariable long postId, @RequestBody LikeDto likeDto) {
         if (likeDto.getPostId() == null ) {
             throw new DataValidationException("PostId cannot be empty");
         } else if  (likeDto.getUserId() == null) {
             throw new DataValidationException("UserId cannot be empty");
         } else {
-            return likeService.deleteLikeForPost(likeDto);
+            likeService.deleteLikeForPost(likeDto);
         }
     }
 
@@ -44,14 +44,14 @@ public class LikeController {
         }
     }
 
-    @DeleteMapping("/delete_from_comment")
-    public LikeDto deleteLikeFromComment (@RequestBody LikeDto likeDto) {
+    @DeleteMapping("/delete/{commentId}")
+    public void deleteLikeFromComment (@PathVariable long commentId, @RequestBody LikeDto likeDto) {
         if (likeDto.getCommentId() == null ) {
             throw new DataValidationException("CommentId cannot be empty");
         } else if  (likeDto.getUserId() == null) {
             throw new DataValidationException("UserId cannot be empty");
         } else {
-            return likeService.deleteLikeForComment(likeDto);
+            likeService.deleteLikeForComment(likeDto);
         }
     }
 }

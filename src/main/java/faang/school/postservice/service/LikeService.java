@@ -26,12 +26,12 @@ public class LikeService {
 
         Like postLike = likeMapper.toEntity(likeDto);
         postRepository.findById(likeDto.getPostId()).ifPresent(post -> post.getLikes().add(postLike));
+        likeRepository.save(postLike);
         return likeMapper.toDto(postLike);
     }
 
-    public LikeDto deleteLikeForPost (LikeDto likeDto) {
+    public void deleteLikeForPost (LikeDto likeDto) {
         likeRepository.deleteByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId());
-        return likeDto;
     }
 
     public LikeDto createLikeForComment (LikeDto likeDto) {
@@ -41,11 +41,11 @@ public class LikeService {
 
         Like commentLike = likeMapper.toEntity(likeDto);
         commentRepository.findById(likeDto.getCommentId()).ifPresent(comment -> comment.getLikes().add(commentLike));
+        likeRepository.save(commentLike);
         return likeMapper.toDto(commentLike);
     }
 
-    public LikeDto deleteLikeForComment (LikeDto likeDto) {
+    public void deleteLikeForComment (LikeDto likeDto) {
         likeRepository.deleteByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId());
-        return likeDto;
     }
 }
