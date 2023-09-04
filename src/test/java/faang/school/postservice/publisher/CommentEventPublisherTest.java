@@ -3,6 +3,7 @@ package faang.school.postservice.publisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEventDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,18 +37,16 @@ class CommentEventPublisherTest {
 
     @Test
     void testPublish() throws JsonProcessingException {
-        CommentDto commentDto = CommentDto.builder()
-                .id(1L)
-                .content("content")
+        CommentEventDto commentEventDto = CommentEventDto.builder()
+                .commentId(1L)
                 .authorId(1L)
                 .postId(1L)
                 .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
 
-        when(objectMapper.writeValueAsString(commentDto)).thenReturn("json");
+        when(objectMapper.writeValueAsString(commentEventDto)).thenReturn("json");
 
-        eventPublisher.publish(commentDto);
+        eventPublisher.publish(commentEventDto);
 
         verify(redisTemplate, times(1)).convertAndSend(commentTopic.getTopic(), "json");
     }

@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
@@ -44,6 +45,7 @@ class CommentServiceTest {
     private CommentService commentService;
     private CommentDto commentDto;
     private Comment comment;
+    private CommentEventDto commentEventDto;
 
     @BeforeEach
     void setUp() {
@@ -51,10 +53,17 @@ class CommentServiceTest {
         commentDto = CommentDto.builder().id(commentId).authorId(authorId).content("content").postId(postId).build();
         comment = Comment.builder().id(commentId).authorId(authorId)
                 .post(Post.builder().id(postId).build()).content("content").build();
+        commentEventDto = CommentEventDto.builder()
+                .commentId(1L)
+                .authorId(1L)
+                .postId(1L)
+                .createdAt(LocalDateTime.now().withNano(0))
+                .build();
     }
 
     @Test
     public void testCreateComment() {
+
         when(commentMapper.toEntity(commentDto)).thenReturn(comment);
         when(commentMapper.toDto(comment)).thenReturn(commentDto);
         when(commentRepository.save(comment)).thenReturn(comment);
@@ -70,7 +79,7 @@ class CommentServiceTest {
         verify(userServiceClient, times(1)).getUser(comment.getAuthorId());
         verify(commentMapper, times(1)).toEntity(commentDto);
         verify(commentMapper, times(1)).toDto(comment);
-        verify(commentEventPublisher, times(1)).publish(commentDto);
+        verify(commentEventPublisher, times(1)).publish(commentEventDto);
     }
 
     @Test
