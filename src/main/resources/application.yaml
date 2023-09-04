@@ -28,6 +28,8 @@ spring:
           posts-view: posts-view
         comment_event:
           name: comment-event-channel
+        comment_channels:
+          name: comments-channel
 
   async:
     poolSize: 10
