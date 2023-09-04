@@ -61,6 +61,8 @@ class PostServiceTest {
     private PostValidator postValidator;
     @Mock
     private PostAsyncService postAsyncService;
+    @Mock
+    private YandexSpellCorrectorService spellCorrectorService;
     @InjectMocks
     private PostService postService;
 
@@ -429,5 +431,29 @@ class PostServiceTest {
         verify(postRepository, times(1)).findReadyToPublish();
         List<List<Post>> partitions = ListUtils.partition(posts, posts.size());
         partitions.forEach(partition -> verify(postAsyncService).publishPosts(partition));
+    }
+
+    @Test
+    public void testCorrectionSpelling() {
+        String originalContent = "Превет, это тестовая статя с ощибками.";
+        String correctedContent = "Привет, это тестовая статья с ошибками.";
+
+        Post post = Post.builder().id(postId).content(originalContent).build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(spellCorrectorService.getCorrectedText(originalContent)).thenReturn(correctedContent);
+        when(postRepository.save(any())).thenReturn(post);
+
+        PostDto result = postService.manualCorrectionSpelling(postId);
+
+        verify(spellCorrectorService).getCorrectedText(originalContent);
+        verify(postRepository).save(post);
+
+        assertEquals(correctedContent, post.getContent());
+        assertNotNull(post.getSpellCheckedAt());
+
+        assertEquals(post.getId(), result.getId());
+        assertEquals(correctedContent, result.getContent());
+        assertEquals(post.getSpellCheckedAt(), result.getSpellCheckedAt());
     }
 }
