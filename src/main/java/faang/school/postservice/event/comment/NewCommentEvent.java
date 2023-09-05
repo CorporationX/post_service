@@ -5,13 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentEvent implements Serializable {
+public class NewCommentEvent {
     private Long commentId;
     private Long authorCommentId;
     private Long authorPostId;

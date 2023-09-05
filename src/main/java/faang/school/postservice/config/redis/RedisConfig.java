@@ -1,4 +1,4 @@
-package faang.school.postservice.config.context.redis;
+package faang.school.postservice.config.redis;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,12 +18,11 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
 
+    @Value("${spring.data.redis.channels.comment_channel.name}")
+    private String commentChanel;
+
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
-        // настраиваю подключение к Redis
-        // Jedis это библиотека Java для упрощения работы с Redis,
-        // тк Redis это отдельная программа и с ней нужно как то взаимодействовать
-        // те это слой абстракции
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         return new JedisConnectionFactory(config);
     }
@@ -37,9 +36,8 @@ public class RedisConfig {
         return redisTemplate;
     }
 
-    @Bean
-    public ChannelTopic newCommentTopic() {
-        return new ChannelTopic("newCommentTopic");
+    @Bean()
+    public ChannelTopic commentTopic() {
+        return new ChannelTopic(commentChanel);
     }
-
 }
