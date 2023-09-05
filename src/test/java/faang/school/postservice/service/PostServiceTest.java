@@ -8,6 +8,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderation.ModerationDictionary;
 import feign.FeignException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +26,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,6 +47,9 @@ class PostServiceTest {
     private ProjectServiceClient projectServiceClient;
     @Mock
     private TextGearsAPIService textGearsAPIService;
+    @Mock
+    private ModerationDictionary moderationDictionary;
+
 
     @Test
     void testCreateDraftPostValidData() {
@@ -525,5 +531,61 @@ class PostServiceTest {
 
         assertEquals("My mother is a doctor, but my father is an engineer. I have a gun.", post1.getContent());
         assertEquals("Another example of corrected text.", post2.getContent());
+    }
+
+    @Test
+    void testGetUnverifiedPosts() {
+        List<Post> unverifiedPosts = new ArrayList<>();
+        when(postRepository.findByVerifiedDateBeforeAndVerifiedFalse(any(LocalDateTime.class)))
+                .thenReturn(unverifiedPosts);
+
+        List<Post> result = postService.getUnverifiedPosts();
+
+        assertNotNull(result);
+        assertEquals(unverifiedPosts, result);
+        verify(postRepository).findByVerifiedDateBeforeAndVerifiedFalse(any(LocalDateTime.class));
+    }
+
+    @Test
+    void testProcessPostsBatch_ContainsBannedWords() {
+        List<Post> posts = new ArrayList<>();
+        Post post1 = new Post();
+        post1.setContent("Post with word - horrifying");
+        Post post2 = new Post();
+        post2.setContent("Post with word - shocking");
+        posts.add(post1);
+        posts.add(post2);
+
+        when(moderationDictionary.containsBannedWord(anyString())).thenReturn(true);
+
+        postService.processPostsBatch(posts);
+
+        assertFalse(post1.isVerified());
+        assertFalse(post2.isVerified());
+        assertNotNull(post1.getVerifiedDate());
+        assertNotNull(post2.getVerifiedDate());
+        verify(postRepository, times(2)).save(any(Post.class));
+    }
+
+
+    @Test
+    void testProcessPostsBatch_NoBannedWords() {
+        List<Post> posts = new ArrayList<>();
+        Post post1 = new Post();
+        post1.setContent("Comment without banned words");
+        Post post2 = new Post();
+        post2.setContent("Some comment");
+        posts.add(post1);
+        posts.add(post2);
+
+        when(moderationDictionary.containsBannedWord(anyString())).thenReturn(false);
+
+        postService.processPostsBatch(posts);
+
+        assertTrue(post1.isVerified());
+        assertTrue(post2.isVerified());
+        assertNotNull(post1.getVerifiedDate());
+        assertNotNull(post2.getVerifiedDate());
+        verify(postRepository, times(2)).save(any(Post.class));
     }
 }

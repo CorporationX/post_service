@@ -10,13 +10,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Configuration
 public class ThreadPoolTaskExecutorConfig {
 
-    @Value("${comment.moderation.maxThreadPoolSize}")
+    @Value("${thread-pool.maxThreadPoolSize}")
     private int maxThreadPoolSize;
 
-    @Value("${comment.moderation.coreThreadPoolSize}")
+    @Value("${thread-pool.coreThreadPoolSize}")
     private int coreThreadPoolSize;
 
-    @Value("${comment.moderation.queueCapacity}")
+    @Value("${thread-pool.queueCapacity}")
     private int queueCapacity;
 
     @Bean
