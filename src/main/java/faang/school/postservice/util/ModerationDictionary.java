@@ -15,7 +15,7 @@ public class ModerationDictionary {
     private List<String> badWords;
 
     @PostConstruct
-    private void initialize(){
+    private void initialize() {
         Path path = Path.of("./src/main/resources/dictionary.txt");
         try {
             badWords = Files.readAllLines(path).stream().map(word -> word.trim().toLowerCase()).toList();
@@ -24,7 +24,7 @@ public class ModerationDictionary {
         }
     }
 
-    public boolean containsBadWord(String str){
+    public boolean containsBadWord(String str) {
         return badWords.stream().anyMatch(badWord -> str.toLowerCase().contains(badWord.toLowerCase()));
     }
 }

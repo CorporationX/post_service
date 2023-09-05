@@ -5,11 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class AlbumFilterDto {
-    private String titlePattern;
-    private String descriptionPattern;
+    private String title;
+    private Long authorId;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

@@ -1,9 +1,10 @@
 package faang.school.postservice.dto.album;
 
+import faang.school.postservice.model.AlbumVisibility;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -13,13 +14,13 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class AlbumDto extends AlbumDtoResponse {
-    private Long id;
+public class AlbumUpdateDto {
     private String title;
     private String description;
+    @NotNull
     private Long authorId;
     private List<Long> postsId;
-    private LocalDateTime createdAt;
+    private AlbumVisibility visibility;
+    private List<Long> usersWithAccessIds;
     private LocalDateTime updatedAt;
 }
