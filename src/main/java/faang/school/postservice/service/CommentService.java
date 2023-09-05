@@ -2,12 +2,14 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.GetCommentEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.util.ModerationDictionary;
 import feign.FeignException;
@@ -33,6 +35,7 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
     private final PostService postService;
+    private final CommentEventPublisher commentEventPublisher;
     @Value("${post.moderateComment.batchSize}")
     private Integer batchSize;
 
@@ -41,7 +44,22 @@ public class CommentService {
         validateExistingUser(commentDto);
         validateExistingPost(commentDto);
         Comment comment = commentMapper.toEntity(commentDto);
-        return commentMapper.toDto(commentRepository.save(comment));
+        CommentDto createdComment = commentMapper.toDto(commentRepository.save(comment));
+        sendCommentEvent(createdComment);
+        return createdComment;
+    }
+
+    public void sendCommentEvent(CommentDto commentDto) {
+        Post post = postService.getPostById(commentDto.getPostId());
+
+        GetCommentEventDto commentEventDto = GetCommentEventDto.builder()
+                .idComment(commentDto.getId())
+                .authorIdComment(commentDto.getAuthorId())
+                .postId(commentDto.getPostId())
+                .postAuthorId(post.getAuthorId())
+                .contentComment(commentDto.getContent())
+                .build();
+        commentEventPublisher.publish(commentEventDto);
     }
 
     @Transactional
