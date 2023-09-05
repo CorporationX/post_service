@@ -10,6 +10,7 @@ import faang.school.postservice.messaging.postevent.PostEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.scheduled.ScheduledEntityType;
 import faang.school.postservice.model.scheduled.ScheduledTask;
+import faang.school.postservice.model.scheduled.ScheduledTaskStatus;
 import faang.school.postservice.model.scheduled.ScheduledTaskType;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
@@ -421,7 +422,6 @@ class PostServiceTest {
         Mockito.verify(postViewEventPublisher, Mockito.times(1)).publish(post);
     }
 
-
     @Test
     void getDrafts_ShouldMapCorrectlyToDtos() {
         List<Post> posts = buildListOfPosts();
@@ -464,44 +464,10 @@ class PostServiceTest {
     }
 
     @Test
-    void actWithPostBySchedule_PostNotFound_ShouldThrowException() {
-        ScheduledTaskDto dto = ScheduledTaskDto.builder().entityId(1L).build();
-        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.empty());
-
-        PostNotFoundException e = Assertions.assertThrows(PostNotFoundException.class, () -> {
-            postService.actWithScheduledPost(dto);
-        });
-        Assertions.assertEquals("Post with id = " + String.format("%d", 1L) + " not found", e.getMessage());
-    }
-
-    @Test
-    void actWithPostBySchedule_PostIsAlreadyScheduled_ShouldThrowException() {
-        ScheduledTaskDto dto = buildScheduledTaskDto();
-        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(buildPost()));
-        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L, dto.entityType())).thenReturn(Optional.of(buildScheduledTask()));
-
-        EntitySchedulingException e = Assertions.assertThrows(EntitySchedulingException.class, () -> {
-            postService.actWithScheduledPost(dto);
-        });
-        Assertions.assertEquals("Post with id = " + String.format("%d", dto.entityId()) + " already scheduled", e.getMessage());
-    }
-
-    @Test
     void actWithPostBySchedule_ShouldMapCorrectly() {
         ScheduledTask actual = scheduledTaskMapper.toEntity(buildScheduledTaskDto());
 
         Assertions.assertEquals(buildScheduledTask(), actual);
-    }
-
-    @Test
-    void actWithPostBySchedule_ShouldSave() {
-        ScheduledTaskDto dto = buildScheduledTaskDto();
-        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(buildPost()));
-        Mockito.when(scheduledTaskRepository.findScheduledTaskById(1L, dto.entityType())).thenReturn(Optional.empty());
-
-        postService.actWithScheduledPost(dto);
-
-        Mockito.verify(scheduledTaskRepository).save(buildScheduledTask());
     }
 
     private PostDto buildPostDto() {

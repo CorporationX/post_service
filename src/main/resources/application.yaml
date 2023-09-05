@@ -7,12 +7,12 @@ spring:
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-#    hibernate:
-#      ddl-auto: none
-#    show-sql: true
-#    properties:
-#      hibernate:
-#        format_sql: true
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -34,11 +34,6 @@ spring:
     topics:
       post-publication: post-publication
 
-  kafka:
-    bootstrap-servers: localhost:9092
-    consumer:
-      group-id: group
-
 server:
   port: 8081
 
@@ -56,9 +51,17 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
 schedule:
-  publishing_limit: 100
   retry_limit: 3
-  time_interval: 300
+  time_interval: 1000
+
+scheduled-task:
+  thread-pool:
+    queueCapacity: 1000
+    maxPoolSize: 10
+    corePoolSize: 10
+
+requestSize: 1000
+batchSize: 100
 
 user-service:
   host: localhost

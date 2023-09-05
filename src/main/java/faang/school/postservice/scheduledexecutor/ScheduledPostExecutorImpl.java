@@ -1,7 +1,7 @@
 package faang.school.postservice.scheduledexecutor;
 
 import faang.school.postservice.dto.post.ScheduledTaskDto;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.ScheduledPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ScheduledPostExecutorImpl implements ScheduledTaskExecutor {
 
-    private final PostService postService;
+    private final ScheduledPostService scheduledPostService;
 
     @Override
     public ScheduledTaskDto actWithScheduledTask(ScheduledTaskDto dto) {
-        return postService.actWithScheduledPost(dto);
+        return scheduledPostService.savePostBySchedule(dto);
     }
 }
