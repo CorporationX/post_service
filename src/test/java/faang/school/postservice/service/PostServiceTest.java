@@ -19,6 +19,7 @@ import faang.school.postservice.repository.PostRepository;
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +51,7 @@ class PostServiceTest {
                 .id(1L)
                 .content("Content")
                 .authorId(1L)
+                .resourceIds(new ArrayList<>())
                 .build();
         Post post = Post.builder()
                 .id(1L)

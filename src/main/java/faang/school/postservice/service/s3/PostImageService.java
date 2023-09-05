@@ -50,6 +50,9 @@ public class PostImageService {
             InputStream inputStream = image.getInputStream();
             BufferedImage originalImage = ImageIO.read(inputStream);
 
+            if (originalImage == null) {
+                return new byte[0];
+            }
             int height = originalImage.getHeight();
             int width = originalImage.getWidth();
 

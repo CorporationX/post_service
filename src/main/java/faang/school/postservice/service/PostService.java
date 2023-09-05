@@ -35,11 +35,11 @@ public class PostService {
     public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
         validateIdPostDto(postDto);
         validateAuthorExist(postDto);
-
-        List<Resource> resources = postImageService.uploadImages(files);
-
         Post post = postMapper.toEntity(postDto);
-        post.setResources(resources);
+        if (files != null && files.length > 0) {
+            List<Resource> resources = postImageService.uploadImages(files);
+            post.setResources(resources);
+        }
         return postMapper.toDto(postRepository.save(post));
     }
 
