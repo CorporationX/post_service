@@ -173,11 +173,13 @@ class CommentServiceTest {
 
     @Test
     void testSendCommentEvent() {
+        LocalDateTime now = LocalDateTime.now().withNano(0);
         CommentDto commentDto = CommentDto.builder()
                 .id(1L)
                 .authorId(2L)
                 .content("Test comment")
                 .postId(3L)
+                .createdAt(now)
                 .build();
 
         Post post = Post.builder()
@@ -197,6 +199,7 @@ class CommentServiceTest {
                 .postId(commentDto.getPostId())
                 .postAuthorId(post.getAuthorId())
                 .contentComment(commentDto.getContent())
+                .createdAt(now)
                 .build();
 
         verify(commentEventPublisher).publish(expectedEventDto);

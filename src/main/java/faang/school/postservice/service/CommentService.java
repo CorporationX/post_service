@@ -72,6 +72,7 @@ public class CommentService {
                 .postId(commentDto.getPostId())
                 .postAuthorId(post.getAuthorId())
                 .contentComment(commentDto.getContent())
+                .createdAt(LocalDateTime.now().withNano(0))
                 .build();
         commentEventPublisher.publish(commentEventDto);
     }
