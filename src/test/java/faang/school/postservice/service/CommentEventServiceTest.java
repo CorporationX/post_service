@@ -3,7 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.CommentEventDto;
 import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.CommentEventPublisherForAnalytics;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentEventValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,7 +28,7 @@ class CommentEventServiceTest {
     @Mock
     private CommentEventMapper mapper;
     @Mock
-    private CommentEventPublisher publisher;
+    private CommentEventPublisherForAnalytics publisher;
 
     @Test
     void testCreateCommentEvent_Success() {
