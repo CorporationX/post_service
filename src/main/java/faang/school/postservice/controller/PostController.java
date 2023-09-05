@@ -2,6 +2,8 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.service.PostService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,22 +21,26 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name="Post Controller")
 @RequestMapping("/api/v1/posts")
 public class PostController {
     private final PostService postService;
 
     @PostMapping
+    @Operation(summary = "Create a post draft")
     public PostDto crateDraftPost(@RequestBody @Validated PostDto postDto,
                                   @RequestParam(value = "files", required = false) MultipartFile[] files) {
         return postService.createDraftPost(postDto, files);
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Publish a post with ID")
     public PostDto publishPost(@PathVariable Long id) {
         return postService.publishPost(id);
     }
 
     @PutMapping
+    @Operation(summary = "Update a post")
     public PostDto updatePost(@RequestBody @Validated PostDto postDto,
                               @RequestParam(value = "deletedFileIds", required = false) List<Long> deletedFileIds,
                               @RequestParam(value = "addedFiles", required = false) MultipartFile[] addedFiles) {
