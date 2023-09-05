@@ -49,5 +49,5 @@ public class ScheduledTask {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "scheduled_at")
-    private LocalDateTime scheduledAt;
+    private LocalDateTime scheduleAt;
 }
