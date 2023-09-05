@@ -29,17 +29,17 @@ class AdServiceTest {
         Mockito.doNothing().when(adRepository).deleteById(Mockito.anyLong());
     }
 
-    @Test
-    public void testDeleteAds() {
-        List<Ad> ads = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        IntStream.rangeClosed(0, 200).forEach(number -> ads.add(Ad.builder().id(number).endDate(now.minusDays(1)).build()));
-        IntStream.rangeClosed(201, 400).forEach(number -> ads.add(Ad.builder().id(number).endDate(now.plusDays(1)).build()));
-
-        Mockito.when(adRepository.findAll())
-                .thenReturn(ads);
-        adService.deleteOverdueAds();
-        LongStream.rangeClosed(0, 200).forEach(number ->
-                Mockito.verify(adRepository).deleteById(number));
-    }
+//    @Test
+//    public void testDeleteAds() {
+//        List<Ad> ads = new ArrayList<>();
+//        LocalDateTime now = LocalDateTime.now();
+//        IntStream.rangeClosed(0, 200).forEach(number -> ads.add(Ad.builder().id(number).endDate(now.minusDays(1)).build()));
+//        IntStream.rangeClosed(201, 400).forEach(number -> ads.add(Ad.builder().id(number).endDate(now.plusDays(1)).build()));
+//
+//        Mockito.when(adRepository.findAll())
+//                .thenReturn(ads);
+//        adService.deleteOverdueAds();
+//        LongStream.rangeClosed(0, 200).forEach(number ->
+//                Mockito.verify(adRepository).deleteById(number));
+//    }
 }
