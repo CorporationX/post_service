@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @Entity
-@Table(name = "resource")
+@Table(name = "FILE_RESOURCE")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Resource {
