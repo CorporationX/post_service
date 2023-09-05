@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.album.AlbumService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,6 +49,35 @@ public class AlbumController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAlbum(@PathVariable Long albumId) {
         albumService.deleteAlbum(albumId);
+    }
+
+    @GetMapping("/{albumId}")
+    @Operation(summary = "Get Album by Id")
+    @ResponseStatus(HttpStatus.OK)
+    public AlbumDto getAlbum(@PathVariable Long albumId) {
+        validateIds(albumId);
+        return albumService.getAlbum(albumId);
+    }
+
+    @PostMapping("/my/filter")
+    @Operation(summary = "Get my Albums by Filter")
+    @ResponseStatus(HttpStatus.OK)
+    public List<AlbumDto> getMyAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
+        return albumService.getMyAlbums(albumFilterDto);
+    }
+
+    @PostMapping("/my/favourites/filter")
+    @Operation(summary = "Get my Favourites Albums by Filter")
+    @ResponseStatus(HttpStatus.OK)
+    public List<AlbumDto> getMyFavouritesAlbums(@Valid @RequestBody AlbumFilterDto albumFilterDto) {
+        return albumService.getMyFavouritesAlbums(albumFilterDto);
+    }
+
+    @PostMapping("/filter")
+    @Operation(summary = "Get Albums by Filter")
+    @ResponseStatus(HttpStatus.OK)
+    public List<AlbumDto> getAlbums(@Valid @RequestBody AlbumFilterDto albumFilterDto) {
+        return albumService.getAlbumsByFilter(albumFilterDto);
     }
 
     @PatchMapping("{albumId}/posts/add/{postId}")
