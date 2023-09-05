@@ -1,12 +1,15 @@
 package faang.school.postservice.service.album;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.album.AlbumMapperImpl;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.AlbumValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,15 +18,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.webjars.NotFoundException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,6 +37,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AlbumServiceTest {
     private static final String EXPECTED_MESSAGE_ALBUM_NOT_FOUND = "Album not found";
+    private static final String EXPECTED_MESSAGE_USER_NOT_FOUND = "User not found";
+    private static final String EXPECTED_MESSAGE_POST_NOT_FOUND = "Post not found";
     private static final String EXPECTED_MESSAGE_TITLE_MUST_BE_UNIQUE = "Title must be unique";
     private static final String EXPECTED_MESSAGE_TITLE_TOO_LONG = "Title must be less than 256 characters";
     private static final String EXPECTED_MESSAGE_AUTHOR_ID_CANNOT_BE_CHANGED = "AuthorId cannot be changed";
@@ -40,28 +47,39 @@ class AlbumServiceTest {
     @InjectMocks
     private AlbumService albumService;
     @Mock
+    private PostRepository postRepository;
+    @Mock
     private AlbumRepository albumRepository;
     @Mock
     private AlbumValidator albumValidator;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private UserContext userContext;
     @Spy
     private AlbumMapperImpl albumMapper;
 
     private AlbumDto trueAlbumDto;
     private UserDto userDto;
 
+    private long userId;
+    private long albumId;
+    private long postId;
+
 
     @BeforeEach
     void setUp() {
         trueAlbumDto = AlbumDto.builder().authorId(1L).title("title1").description("description2").build();
         userDto = UserDto.builder().id(1L).build();
+        userId = 1L;
+        albumId = 1L;
+        postId = 1L;
     }
 
     @Test
     void testCreateAlbumSuccess() {
         Album album = albumMapper.toAlbum(trueAlbumDto);
-        when(userServiceClient.getUser(trueAlbumDto.getAuthorId())).thenReturn(userDto);
+        when(userContext.getUserId()).thenReturn(userId);
         when(albumRepository.save(album)).thenReturn(album);
         AlbumDto albumDto = albumService.createAlbum(trueAlbumDto);
 
@@ -75,16 +93,9 @@ class AlbumServiceTest {
     }
 
     @Test
-    void testCreateAlbumFailIfAuthorIdIsNull() {
-        AlbumDto wrongAlbumDto = AlbumDto.builder().authorId(2L).title("title").description("description").build();
-        when(userServiceClient.getUser(wrongAlbumDto.getAuthorId())).thenThrow(NotFoundException.class);
-        assertThrows(NotFoundException.class, () -> albumService.createAlbum(wrongAlbumDto));
-    }
-
-    @Test
     void testCreateAlbumFailIfTitleIsNotUnique() {
         try {
-            when(userServiceClient.getUser(trueAlbumDto.getAuthorId())).thenReturn(userDto);
+            when(userContext.getUserId()).thenReturn(userId);
             when(albumRepository.existsByTitleAndAuthorId(trueAlbumDto.getTitle(), userDto.getId())).thenReturn(true);
             albumService.createAlbum(trueAlbumDto);
         } catch (IllegalArgumentException e) {
@@ -95,7 +106,7 @@ class AlbumServiceTest {
     @Test
     void testCreateAlbumFailIfTitleIsTooLong() {
         try {
-            when(userServiceClient.getUser(trueAlbumDto.getAuthorId())).thenReturn(userDto);
+            when(userContext.getUserId()).thenReturn(userId);
             when(albumRepository.existsByTitleAndAuthorId(trueAlbumDto.getTitle(), userDto.getId())).thenReturn(false);
             albumService.createAlbum(trueAlbumDto);
         } catch (IllegalArgumentException e) {
@@ -199,6 +210,95 @@ class AlbumServiceTest {
             albumService.deleteAlbum(2L);
         } catch (EntityNotFoundException e) {
             assertEquals(e.getMessage(), EXPECTED_MESSAGE_ALBUM_NOT_FOUND);
+        }
+    }
+
+    @Test
+    public void testAddPostSuccess() {
+        Album album = Album.builder().id(albumId).authorId(userId).posts(new ArrayList<>()).build();
+        Post post = new Post();
+
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findByAuthorId(userDto.getId())).thenReturn(Stream.of(album));
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(albumRepository.save(album)).thenReturn(album);
+        when(albumMapper.toDto(album)).thenReturn(new AlbumDto());
+
+        AlbumDto result = albumService.addPost(albumId, postId);
+
+        assertNotNull(result);
+        assertEquals(album.getPosts().size(), 1);
+    }
+
+    @Test()
+    public void testAddPostFailIfAlbumNotFound() {
+        try {
+            albumService.addPost(albumId, postId);
+            when(postRepository.findById(postId)).thenReturn(Optional.of(new Post()));
+            doThrow(new EntityNotFoundException(EXPECTED_MESSAGE_ALBUM_NOT_FOUND)).when(albumRepository).getReferenceById(albumId);
+        } catch (EntityNotFoundException e) {
+            assertEquals(e.getMessage(), EXPECTED_MESSAGE_ALBUM_NOT_FOUND);
+        }
+    }
+
+    @Test()
+    public void testAddPostFailIfPostNotFound() {
+        Album album = Album.builder().id(albumId).authorId(userId).posts(new ArrayList<>()).build();
+
+        try {
+            when(userContext.getUserId()).thenReturn(userId);
+            when(albumRepository.findByAuthorId(userDto.getId())).thenReturn(Stream.of(album));
+            when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+            albumService.addPost(albumId, postId);
+        } catch (EntityNotFoundException e) {
+            assertEquals(e.getMessage(), EXPECTED_MESSAGE_POST_NOT_FOUND);
+        }
+    }
+
+    @Test
+    public void testDeletePost() {
+        Post post = Post.builder().id(postId).build();
+        List<Post> posts = new ArrayList<>();
+        posts.add(post);
+        Album album = Album.builder().id(albumId).authorId(userId).posts(posts).build();
+
+
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findByAuthorId(userDto.getId())).thenReturn(Stream.of(album));
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(albumRepository.save(album)).thenReturn(album);
+        when(albumMapper.toDto(album)).thenReturn(new AlbumDto());
+
+        AlbumDto result = albumService.deletePost(albumId, postId);
+
+        assertNotNull(result);
+        assertFalse(album.getPosts().contains(post));
+    }
+
+    @Test()
+    public void testDeletePostFailIfAlbumNotFound() {
+        try {
+            when(userContext.getUserId()).thenReturn(userId);
+            when(albumRepository.findByAuthorId(userDto.getId())).thenReturn(Stream.empty());
+            albumService.deletePost(albumId, postId);
+        } catch (EntityNotFoundException e) {
+            assertEquals(e.getMessage(), EXPECTED_MESSAGE_ALBUM_NOT_FOUND);
+        }
+    }
+
+    @Test()
+    public void testDeletePostFailIfPostNotFound() {
+        Album album = Album.builder().id(albumId).authorId(userId).posts(new ArrayList<>()).build();
+
+        try {
+            when(userContext.getUserId()).thenReturn(userId);
+            when(albumRepository.findByAuthorId(userDto.getId())).thenReturn(Stream.of(album));
+            when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+            albumService.deletePost(albumId, postId);
+        } catch (EntityNotFoundException e) {
+            assertEquals(e.getMessage(), EXPECTED_MESSAGE_POST_NOT_FOUND);
         }
     }
 

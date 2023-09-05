@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/album")
@@ -28,7 +30,6 @@ public class AlbumController {
     @Operation(summary = "Create Album")
     @ResponseStatus(HttpStatus.CREATED)
     public AlbumDto createAlbum(@RequestBody @Valid AlbumDto album) {
-        validateId(album.getId());
         return albumService.createAlbum(album);
     }
 
@@ -36,7 +37,7 @@ public class AlbumController {
     @Operation(summary = "Update Album")
     @ResponseStatus(HttpStatus.OK)
     public AlbumDto updateAlbum(@RequestBody @Valid AlbumDto album) {
-        validateId(album.getId());
+        validateIds(album.getId(), album.getAuthorId());
         return albumService.updateAlbum(album);
     }
 
@@ -47,9 +48,23 @@ public class AlbumController {
         albumService.deleteAlbum(albumId);
     }
 
-    private void validateId(Long id) {
-        if (id < 0) {
-            throw new DataValidationException("Id cannot be negative");
-        }
+    @PatchMapping("{albumId}/posts/add/{postId}")
+    public AlbumDto addPost(@PathVariable Long albumId, @PathVariable Long postId) {
+        validateIds(albumId, postId);
+        return albumService.addPost(albumId, postId);
+    }
+
+    @PatchMapping("{albumId}/posts/delete/{postId}")
+    public AlbumDto deletePost(@PathVariable Long albumId, @PathVariable Long postId) {
+        validateIds(albumId, postId);
+        return albumService.deletePost(albumId, postId);
+    }
+
+    private void validateIds(long... ids) {
+        Arrays.stream(ids).forEach(id -> {
+            if (id < 0) {
+                throw new DataValidationException("Id must be more than zero");
+            }
+        });
     }
 }
