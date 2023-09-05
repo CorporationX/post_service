@@ -1,4 +1,5 @@
 plugins {
+    jacoco
     java
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
@@ -73,4 +74,38 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+    finalizedBy(tasks.jacocoTestCoverageVerification)
+}
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+}
+
+jacoco {
+    reportsDirectory.set(layout.buildDirectory.dir("customJacocoReportDir"))
+}
+tasks.jacocoTestReport {
+    reports {
+        // Конфигурация отчета JaCoCo
+        xml.required.set(false)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+    }
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it).apply {
+            exclude("school/faang/postservice/client/**",
+                    "school/faang/postservice/config/**",
+                    "school/faang/postservice/dto/**",
+                    "school/faang/postservice/mapper/**",
+                    "school/faang/postservice/model/**",
+                    "school/faang/postservice/repository/**",
+                    "school/faang/postservice/exception/**",
+                    "school/faang/postservice/util/**",
+                    )
+        }
+    }))
 }
