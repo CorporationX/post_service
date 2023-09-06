@@ -1,9 +1,12 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.validator.like.LikeServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +18,8 @@ import java.util.List;
 public class LikeService {
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
+    private final LikeServiceValidator likeServiceValidator;
+    private final LikeMapper likeMapper;
     private static final int BATCH_SIZE = 100;
 
     public List<UserDto> getPostLikes(long id) {
@@ -41,7 +46,26 @@ public class LikeService {
             List<Long> subIds = ids.subList(i, p);
             res.addAll(userServiceClient.getUsersByIds(subIds));
         }
-
         return res;
+    }
+
+    public LikeDto addLikeToPost(long postId, LikeDto like) {
+        likeServiceValidator.validateLikeOnPost(postId, like);
+        Like likeEntity = likeMapper.toEntity(like);
+        return likeMapper.toDto(likeRepository.save(likeEntity));
+    }
+
+    public LikeDto addLikeToComment(long commentId, LikeDto like) {
+        likeServiceValidator.validateLikeOnComment(commentId, like);
+        Like likeEntity = likeMapper.toEntity(like);
+        return likeMapper.toDto(likeRepository.save(likeEntity));
+    }
+
+    public void deleteLikeFromPost(long postId, long userId) {
+        likeRepository.deleteByPostIdAndUserId(postId, userId);
+    }
+
+    public void deleteLikeFromComment(long commentId, long userId) {
+        likeRepository.deleteByCommentIdAndUserId(commentId, userId);
     }
 }
