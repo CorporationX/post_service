@@ -1,4 +1,4 @@
-package faang.school.postservice.config.context;
+package faang.school.postservice.config;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
