@@ -29,6 +29,8 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 @AutoConfigureMockMvc
 public class BaseContextTest {
+
+
     @Autowired
     protected MockMvc mockMvc;
 
