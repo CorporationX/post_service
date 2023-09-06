@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.album.AlbumService;
 import org.junit.jupiter.api.BeforeEach;
@@ -110,6 +111,30 @@ class AlbumControllerTest {
     @MethodSource("invalidParametersProvider")
     public void testDeletePostWithInvalidParameters(Long albumId, Long postId) {
         assertThrows(DataValidationException.class, () -> albumController.deletePost(albumId, postId));
+    }
+
+    @Test
+    void testGetAlbumSuccess() {
+        albumController.getAlbum(1L);
+        verify(albumService, times(1)).getAlbum(1L);
+    }
+
+    @Test
+    void testGetMyAlbumsSuccess() {
+        albumController.getMyAlbums(new AlbumFilterDto());
+        verify(albumService, times(1)).getMyAlbums(new AlbumFilterDto());
+    }
+
+    @Test
+    void testGetMyFavouritesAlbumsSuccess() {
+        albumController.getMyFavouritesAlbums(new AlbumFilterDto());
+        verify(albumService, times(1)).getMyFavouritesAlbums(new AlbumFilterDto());
+    }
+
+    @Test
+    void testGetAllAlbumsSuccess() {
+        albumController.getAlbums(new AlbumFilterDto());
+        verify(albumService, times(1)).getAlbumsByFilter(new AlbumFilterDto());
     }
 
     static Stream<Arguments> invalidParametersProvider() {
