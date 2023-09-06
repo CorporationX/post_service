@@ -1,24 +1,40 @@
 package faang.school.postservice.controller.album;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import faang.school.postservice.WireMockConfig;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.model.Album;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,12 +47,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ActiveProfiles("test")
-@Testcontainers
+@TestConfiguration
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@EnableConfigurationProperties
+@ContextConfiguration(classes = { WireMockConfig.class })
 class AlbumControllerTest {
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private WireMockServer mockBooksService;
+
+    @Autowired
+    private UserServiceClient userServiceClient;
     @Container
     public static PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
             new PostgreSQLContainer<>("postgres:13.6");
@@ -55,6 +78,14 @@ class AlbumControllerTest {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @BeforeEach
+    void setUp() throws IOException {
+        GetUserMock.setupMockBooksResponse(mockBooksService);
+//        mockBooksService.start();
+//        mockBooksService = new WireMockServer(9561);
+//        WireMock.configureFor("localhost", mockBooksService.port());
     }
 
     @Test
