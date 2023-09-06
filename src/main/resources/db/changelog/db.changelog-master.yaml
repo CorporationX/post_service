@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003__add_verified_columns.sql
   - include:
       file: db/changelog/changeset/post_V004__add_verified_columns_to_post.sql
+  - include:
+      file: db/changelog/changeset/post_V005_resource.sql
