@@ -10,6 +10,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ad.AdRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,8 @@ class PostServiceTest {
     private PostMapperImpl postMapper;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
     @Mock
     private ProjectServiceClient projectServiceClient;
     @InjectMocks
