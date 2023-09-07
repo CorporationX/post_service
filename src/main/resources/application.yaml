@@ -23,7 +23,7 @@ spring:
       host: localhost
       channels:
         calculations_channel: calculations-channel
-        comment_event_channel: comment-event
+        comment_event_channel: comment-event-channel
 
 server:
   port: 8081
