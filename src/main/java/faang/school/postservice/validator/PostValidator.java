@@ -14,7 +14,7 @@ public class PostValidator {
     private static final int POST_LENGTH_MAX = 4096;
 
     public void validationOfPostCreatorIds(PostDto postDto) {
-        if (postDto.getAuthorId() == null || postDto.getProjectId() == null) {
+        if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
             throw new DataValidationException("AuthorId or ProjectId cannot be null");
         }
     }

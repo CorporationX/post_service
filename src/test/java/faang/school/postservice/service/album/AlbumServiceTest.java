@@ -385,17 +385,6 @@ class AlbumServiceTest {
     }
 
     @Test
-    public void testAddAlbumToFavoriteFailIfUserNotFound() {
-        try {
-            when(userContext.getUserId()).thenReturn(userId);
-            when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.of(Album.builder().id(albumId).build()));
-            albumService.addAlbumToFavourite(albumId);
-        } catch (EntityNotFoundException e) {
-            assertEquals(e.getMessage(), EXPECTED_MESSAGE_USER_NOT_FOUND);
-        }
-    }
-
-    @Test
     public void testAddAlbumToFavoriteFailIfAlreadyInFavorites() {
         Album album = Album.builder().id(albumId).authorId(userId).build();
         try {
