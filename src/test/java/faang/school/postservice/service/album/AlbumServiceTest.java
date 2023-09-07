@@ -1,11 +1,12 @@
 package faang.school.postservice.service.album;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.mapper.album.AlbumMapperImpl;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
@@ -30,6 +31,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,7 +42,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AlbumServiceTest {
     private static final String EXPECTED_MESSAGE_ALBUM_NOT_FOUND = "Album not found";
-    private static final String EXPECTED_MESSAGE_USER_NOT_FOUND = "User not found";
     private static final String EXPECTED_MESSAGE_POST_NOT_FOUND = "Post not found";
     private static final String EXPECTED_MESSAGE_TITLE_MUST_BE_UNIQUE = "Title must be unique";
     private static final String EXPECTED_MESSAGE_TITLE_TOO_LONG = "Title must be less than 256 characters";
@@ -55,7 +58,7 @@ class AlbumServiceTest {
     @Mock
     private AlbumValidator albumValidator;
     @Mock
-    private UserServiceClient userServiceClient;
+    private List<AlbumFilter> albumFilters;
     @Mock
     private UserContext userContext;
     @Spy
@@ -302,6 +305,62 @@ class AlbumServiceTest {
         } catch (EntityNotFoundException e) {
             assertEquals(e.getMessage(), EXPECTED_MESSAGE_POST_NOT_FOUND);
         }
+    }
+
+    @Test
+    public void testGetAlbumSuccess() {
+        Album album = new Album();
+        AlbumDto albumDto = new AlbumDto();
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+        when(albumMapper.toDto(album)).thenReturn(albumDto);
+
+        AlbumDto result = albumService.getAlbum(albumId);
+
+        assertNotNull(result);
+        assertSame(albumDto, result);
+    }
+
+    @Test
+    public void testGetAlbumNotFound() {
+        when(albumRepository.findById(albumId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> albumService.getAlbum(albumId));
+    }
+
+    @Test
+    public void testGetMyAlbums() {
+        AlbumFilterDto albumFilterDto = new AlbumFilterDto();
+        List<Album> albums = List.of(
+                Album.builder().id(1L).authorId(userId).title("Album 1").build(),
+                Album.builder().id(2L).authorId(userId).title("Album 2").build()
+        );
+
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findByAuthorId(userId)).thenReturn(albums.stream());
+
+        List<AlbumDto> result = albumService.getMyAlbums(albumFilterDto);
+
+        assertEquals(2, result.size());
+        assertEquals("Album 1", result.get(0).getTitle());
+        assertEquals("Album 2", result.get(1).getTitle());
+
+        verify(userContext, times(1)).getUserId();
+        verify(albumRepository, times(1)).findByAuthorId(userId);
+    }
+
+    @Test
+    public void testGetMyAlbumsNoAlbumsFound() {
+        AlbumFilterDto albumFilterDto = new AlbumFilterDto();
+
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.empty());
+
+        List<AlbumDto> result = albumService.getMyAlbums(albumFilterDto);
+
+        assertTrue(result.isEmpty());
+
+        verify(userContext, times(1)).getUserId();
+        verify(albumRepository, times(1)).findByAuthorId(userId);
     }
 
     @Test

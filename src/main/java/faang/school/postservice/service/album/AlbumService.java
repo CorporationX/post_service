@@ -1,10 +1,10 @@
 package faang.school.postservice.service.album;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +27,13 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final PostRepository postRepository;
     private final AlbumValidator albumValidator;
-    private final UserServiceClient userServiceClient;
     private final UserContext userContext;
+    private final List<AlbumFilter> albumFilters;
+
+    @Transactional(readOnly = true)
+    public AlbumDto getAlbum(Long albumId) {
+        return albumMapper.toDto(getAlbumById(albumId));
+    }
 
     @Transactional
     public AlbumDto createAlbum(AlbumDto albumDto) {
@@ -81,6 +89,33 @@ public class AlbumService {
         album.removePost(post.getId());
 
         return albumMapper.toDto(albumRepository.save(album));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlbumDto> getMyAlbums(AlbumFilterDto albumFilterDto) {
+        long userId = userContext.getUserId();
+        Stream<Album> albums = albumRepository.findByAuthorId(userId);
+        return getFilteredAlbums(albumFilterDto, new ArrayList<>(albums.toList()));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlbumDto> getMyFavouritesAlbums(AlbumFilterDto albumFilterDto) {
+        long userId = userContext.getUserId();
+        Stream<Album> albums = albumRepository.findFavoriteAlbumsByUserId(userId);
+        return getFilteredAlbums(albumFilterDto, new ArrayList<>(albums.toList()));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlbumDto> getAlbumsByFilter(AlbumFilterDto albumFilterDto){
+        List<Album> albums = albumRepository.findAll();
+        return getFilteredAlbums(albumFilterDto, albums);
+    }
+
+    private List<AlbumDto> getFilteredAlbums(AlbumFilterDto albumFilterDto, List<Album> albums) {
+        albumFilters.stream()
+                .filter(albumFilter -> albumFilter.isApplicable(albumFilterDto))
+                .forEach(albumFilter -> albumFilter.apply(albums, albumFilterDto));
+        return albums.stream().map(albumMapper::toDto).toList();
     }
 
     @Transactional

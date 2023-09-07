@@ -57,7 +57,7 @@ class CommentMapperTest {
         assertEquals(comment.getPost().getId(), commentDto.getPostId());
         assertEquals(comment.getCreatedAt(), commentDto.getCreatedAt());
     }
-//
+
     @Test
     void testPartialUpdate() {
 
@@ -71,7 +71,7 @@ class CommentMapperTest {
 
         CommentDto commentDto = CommentDto.builder()
                 .content("Updated comment content")
-                .authorId(2L)
+                .authorId(1L)
                 .postId(100L)
                 .build();
 
