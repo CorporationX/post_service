@@ -9,7 +9,10 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
+import faang.school.postservice.publisher.BanEventPublisher;
+import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,6 +38,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
+    @Mock
     @InjectMocks
     private PostService postService;
     @Mock
@@ -49,7 +53,18 @@ class PostServiceTest {
     private TextGearsAPIService textGearsAPIService;
     @Mock
     private ModerationDictionary moderationDictionary;
+    @Mock
+    private CommentService commentService;
+    @Mock
+    private BanEventPublisher banEventPublisher;
+    @Mock
+    private PostImageService postImageService;
 
+    @BeforeEach
+    void setUp() {
+        postService = new PostService(postRepository, postMapper, userServiceClient, projectServiceClient,
+                textGearsAPIService, commentService, banEventPublisher, postImageService, moderationDictionary, 1);
+    }
 
     @Test
     void testCreateDraftPostValidData() {
