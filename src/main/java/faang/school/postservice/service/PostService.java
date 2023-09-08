@@ -43,8 +43,6 @@ public class PostService {
     @Value("${comment.ban.numberOfCommentsToBan}")
     private int numberOfCommentsToBan;
 
-    @Autowired
-
     @Transactional
     public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
         validateIdPostDto(postDto);
