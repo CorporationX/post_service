@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class PostViewEventPublisher {
+public class PostViewEventPublisher implements MessagePublisher<PostViewEventDto>{
     @Value("${spring.data.redis.channels.post_view_channel.name}")
     private String topic;
 
