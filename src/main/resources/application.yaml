@@ -30,7 +30,7 @@ spring:
         like_channel:
           name: like-channel
         calculations_channel:
-          name: calculations_channel
+          name: calculations-channel
 
 server:
   port: 8081
