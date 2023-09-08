@@ -21,6 +21,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -40,7 +41,7 @@ public class Hashtag {
     @JoinTable(name = "post_hashtag",
             joinColumns = @JoinColumn(name = "hashtag_id"),
             inverseJoinColumns = @JoinColumn(name = "post_id"))
-    private List<Post> posts;
+    private Set<Post> posts;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
@@ -51,4 +52,16 @@ public class Hashtag {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Override
+    public String toString() {
+        return "Hashtag{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", posts=" + posts +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
+
 }

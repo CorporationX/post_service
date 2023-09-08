@@ -49,7 +49,8 @@ public class Post {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "hashtag_id")
     )
-    private Set<Hashtag> hashtags;
+    @Builder.Default
+    private Set<Hashtag> hashtags = new HashSet<>();
 
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;
