@@ -46,7 +46,6 @@ post:
       cron: "0 0 0 * * ?" # every day at midnight
     batchSize: 100
 
-
 comment:
   moderation:
     scheduler:
@@ -67,8 +66,6 @@ correcter:
   scheduler:
     cron: "0 0 0 * * ?" # Every day at midnight
 
-
-
 user-service:
   host: localhost
   port: 8080
@@ -84,3 +81,15 @@ ai:
     key: 7b59c5412dmsha6284a44d021ab9p14f51cjsn2e93aa88df77
     host: "textgears-textgears-v1.p.rapidapi.com"
     path: "/grammar"
+
+services:
+  s3:
+    endpoint: <http://localhost:9000>
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+aws:
+  accessKey: user
+  secretKey: password
+  region: http://127.0.0.1:9000/
+  bucket-name: user-bucket

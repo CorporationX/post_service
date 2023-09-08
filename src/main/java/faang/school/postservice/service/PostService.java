@@ -9,14 +9,17 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.publisher.BanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -34,16 +37,20 @@ public class PostService {
     private final TextGearsAPIService textGearsAPIService;
     private final CommentService commentService;
     private final BanEventPublisher banEventPublisher;
+    private final PostImageService postImageService;
     private final ModerationDictionary moderationDictionary;
     @Value("${comment.ban.numberOfCommentsToBan}")
     private final int numberOfCommentsToBan;
 
     @Transactional
-    public PostDto createDraftPost(PostDto postDto) {
+    public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
         validateIdPostDto(postDto);
         validateAuthorExist(postDto);
-
         Post post = postMapper.toEntity(postDto);
+        if (files != null && files.length > 0) {
+            List<Resource> resources = postImageService.uploadImages(files);
+            post.setResources(resources);
+        }
         return postMapper.toDto(postRepository.save(post));
     }
 
@@ -60,11 +67,19 @@ public class PostService {
     }
 
     @Transactional
-    public PostDto updatePost(PostDto postDto) {
+    public PostDto updatePost(PostDto postDto, List<Long> deletedFileIds, MultipartFile[] addedFiles) {
         validateIdPostDto(postDto);
         validateAuthorExist(postDto);
         Post post = getPostIfExist(postDto.getId());
 
+        if (deletedFileIds != null && !deletedFileIds.isEmpty()) {
+            List<Resource> deleteResources = postImageService.deleteImages(deletedFileIds);
+            post.getResources().removeAll(deleteResources);
+        }
+        if (addedFiles != null && addedFiles.length > 0) {
+            List<Resource> addedResources = postImageService.uploadImages(addedFiles);
+            post.setResources(addedResources);
+        }
         post.setContent(postDto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         return postMapper.toDto(post);
@@ -217,7 +232,7 @@ public class PostService {
             }
         }
     }
-    
+
     @Transactional(readOnly = true)
     public List<Post> getUnverifiedPosts() {
         return postRepository.findByVerifiedDateBeforeAndVerifiedFalse(LocalDateTime.now());

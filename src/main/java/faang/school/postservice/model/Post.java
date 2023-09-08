@@ -74,4 +74,7 @@ public class Post {
 
     @Column(name = "verified_date")
     private LocalDateTime verifiedDate;
+
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
+    private List<Resource> resources;
 }

@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,8 +28,9 @@ public class PostController {
 
     @PostMapping
     @Operation(summary = "Create a post draft")
-    public PostDto crateDraftPost(@RequestBody @Validated PostDto postDto) {
-        return postService.createDraftPost(postDto);
+    public PostDto crateDraftPost(@RequestBody @Validated PostDto postDto,
+                                  @RequestParam(value = "files", required = false) MultipartFile[] files) {
+        return postService.createDraftPost(postDto, files);
     }
 
     @PutMapping("/{id}")
@@ -38,8 +41,10 @@ public class PostController {
 
     @PutMapping
     @Operation(summary = "Update a post")
-    public PostDto updatePost(@RequestBody @Validated PostDto postDto) {
-        return postService.updatePost(postDto);
+    public PostDto updatePost(@RequestBody @Validated PostDto postDto,
+                              @RequestParam(value = "deletedFileIds", required = false) List<Long> deletedFileIds,
+                              @RequestParam(value = "addedFiles", required = false) MultipartFile[] addedFiles) {
+        return postService.updatePost(postDto, deletedFileIds, addedFiles);
     }
 
     @DeleteMapping("/{id}")

@@ -32,6 +32,9 @@ dependencies {
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
 
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+
+
     /**
      * Utils & Logging
      */
@@ -43,6 +46,8 @@ dependencies {
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
     implementation("io.swagger.core.v3:swagger-annotations:2.2.15")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+
 
     /**
      * Test containers
