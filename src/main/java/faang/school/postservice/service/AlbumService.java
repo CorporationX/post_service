@@ -33,7 +33,7 @@ public class AlbumService {
 
     @Transactional
     public AlbumDto createAlbum(AlbumCreateDto albumCreateDto) {
-        if (userServiceClient.getUser(albumCreateDto.getAuthorId()) == null) {
+        if (userServiceClient.getUserInternal(albumCreateDto.getAuthorId()) == null) {
             throw new DataValidationException("User is not found");
         }
         if (albumRepository.existsByTitleAndAuthorId(albumCreateDto.getTitle(), albumCreateDto.getAuthorId())) {
@@ -158,7 +158,7 @@ public class AlbumService {
         }
 
         if (visibility.equals(AlbumVisibility.ONLY_SUBSCRIBERS)) {
-            List<Long> followerIds = userServiceClient.getUser(authorId).getFollowerIds();
+            List<Long> followerIds = userServiceClient.getUserInternal(authorId).getFollowerIds();
             if (!followerIds.contains(userId) && authorId != userId) {
                 album = null;
             }

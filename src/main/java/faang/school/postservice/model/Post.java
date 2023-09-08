@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -35,7 +36,8 @@ public class Post {
     private Long projectId;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Like> likes;
+    @Builder.Default
+    private List<Like> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments;
