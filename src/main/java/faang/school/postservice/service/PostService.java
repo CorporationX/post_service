@@ -134,4 +134,15 @@ public class PostService {
     public List<PostDto> getAllPostsByHashtagId(String content){
         return postMapper.toDtoList(postRepository.findByHashtagsContent(content));
     }
+
+    @Transactional(readOnly = true)
+    public Post getPostByIdInternal(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new DataValidationException("'Post not in database' error occurred while fetching post"));
+    }
+
+    @Transactional
+    public Post updatePostInternal(Post post){
+        return postRepository.save(post);
+    }
 }

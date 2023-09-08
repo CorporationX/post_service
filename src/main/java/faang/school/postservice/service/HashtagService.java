@@ -19,17 +19,15 @@ import java.util.Set;
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
     private final HashtagMapper hashtagMapper;
+    private final PostService postService;
 
     @Transactional
     public void saveHashtags(Set<HashtagDto> hashtags) {
         for (var hashtagDto : hashtags) {
             Hashtag hashtag = hashtagRepository.save(hashtagMapper.dtoToEntity(hashtagDto));
-            hashtagRepository.saveHashtagsIntoInnerTable(hashtagDto.getPostId(), hashtag.getId());
+            Post post = postService.getPostByIdInternal(hashtagDto.getPostId());
+            post.getHashtags().add(hashtag);
+            postService.updatePostInternal(post);
         }
-    }
-
-    @Transactional(readOnly = true)
-    public Hashtag getHashtagByContent(String content){
-        return hashtagRepository.findHashtagByContent(content);
     }
 }

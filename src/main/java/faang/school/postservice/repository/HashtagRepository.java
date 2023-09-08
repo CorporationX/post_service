@@ -9,7 +9,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface HashtagRepository extends CrudRepository<Hashtag, Long> {
     public Hashtag findHashtagByContent(String content);
-
-    @Query(value = "INSERT INTO post_hashtag (post_id, hashtag_id) VALUES (:postId, :hashtagId)", nativeQuery = true)
-    public void saveHashtagsIntoInnerTable(Long postId, Long hashtagId);
 }

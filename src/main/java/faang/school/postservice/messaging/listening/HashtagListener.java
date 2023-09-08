@@ -33,8 +33,8 @@ public class HashtagListener<T> extends AbstractPostListener<PostDto> implements
         List<String> hashtags = new ArrayList<>();
         while (!content.isBlank()) {
             content = content.substring(content.indexOf("#", 1));
-            int endOfHashtag = content.indexOf("\\s");
-            if (endOfHashtag > content.indexOf("#") || endOfHashtag == -1) {
+            int endOfHashtag = content.indexOf("\s");
+            if (endOfHashtag > content.indexOf("#", 1) || endOfHashtag == -1) {
                 endOfHashtag = content.indexOf("#", 1);
                 if (endOfHashtag == -1){
                     endOfHashtag = content.length()-1;

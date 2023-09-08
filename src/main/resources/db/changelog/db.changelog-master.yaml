@@ -8,4 +8,4 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V004__user_album_access.sql
   - include:
-      file: db/changelog/changeset/post_V005_create_hashtag.sql
+      file: db/changelog/changeset/post_V005__create_hashtag.sql
