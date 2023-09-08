@@ -7,9 +7,13 @@ import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.mapper.post.ResponsePostMapper;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +24,7 @@ public class LikeService {
     private final PostService postService;
     private final UserServiceClient userServiceClient;
     private final CommentService commentService;
+    private final CommentRepository commentRepository;
 
     public LikeDto likePost(LikeDto likeDto) {
         validUser(likeDto);
@@ -42,6 +47,16 @@ public class LikeService {
         likeDto.setCommentDto(commentDto);
         Like like = likeRepository.save(likeMapper.toLike(likeDto));
         return likeMapper.toLikeDto(like);
+    }
+
+    public void deleteLikeComment(Long commentId, Long userId) {
+        userServiceClient.getUser(userId);
+        likeRepository.deleteByCommentIdAndUserId(commentId, userId);
+    }
+
+    public int getAllLikesByPost(Long postId) {
+        ResponsePostDto post = postService.getById(postId);
+        return likeRepository.findByPostId(post.getId()).size();
     }
 
     private void validUser(LikeDto likeDto) {
