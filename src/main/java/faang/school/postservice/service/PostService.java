@@ -38,7 +38,7 @@ public class PostService {
         if (createPostDto.getAuthorId() != null && createPostDto.getProjectId() != null) {
             throw new DataValidationException("The author can be either a user or a project");
         }
-        if (createPostDto.getAuthorId() != null && userServiceClient.getUser(createPostDto.getAuthorId()) == null) {
+        if (createPostDto.getAuthorId() != null && userServiceClient.getUserInternal(createPostDto.getAuthorId()) == null) {
             throw new DataValidationException("Author must be Existing on the user's system = " + createPostDto.getAuthorId()
                     + " or project ID now it = " + createPostDto.getProjectId());
         }

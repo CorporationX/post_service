@@ -68,7 +68,7 @@ public class LikeService {
                 .anyMatch(like -> like.getUserId().equals(currentUserId));
 
         if(ifLikeExistsYet){
-            removeLikeFromComment(likeDto, currentUserId);
+            likeRepository.deleteByCommentIdAndUserId(likeDto.getCommentId(), currentUserId);
             return likeDto;
         } else {
             Like newLike = likeMapper.dtoToEntity(likeDto);
@@ -86,13 +86,15 @@ public class LikeService {
                 .noneMatch(like -> like.getUserId().equals(currentUserId));
 
         if(ifLikeDoesNotExistYet){
-            likeComment(likeDto, currentUserId);
+            Like newLike = likeMapper.dtoToEntity(likeDto);
+            newLike.setUserId(currentUserId);
+            likeMapper.entityToDto(likeRepository.save(newLike));
         } else {
             likeRepository.deleteByCommentIdAndUserId(likeDto.getCommentId(), currentUserId);
         }
     }
 
     private void checkIfUserExists(Long currentUserId){
-        userServiceClient.getUser(currentUserId);
+        userServiceClient.getUserInternal(currentUserId);
     }
 }

@@ -91,7 +91,7 @@ class PostServiceTest {
     void testCreatePostMockAuthorDataValidationException() {
         CreatePostDto createPostDto = CreatePostDto.builder().authorId(1L).projectId(null).build();
 
-        when(userServiceClient.getUser(1L)).thenReturn(null);
+        when(userServiceClient.getUserInternal(1L)).thenReturn(null);
         assertThrows(DataValidationException.class, () -> postService.createPost(createPostDto));
     }
 

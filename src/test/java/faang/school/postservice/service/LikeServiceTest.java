@@ -7,10 +7,7 @@ import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.repository.PostRepository;
-import org.apache.commons.compress.harmony.unpack200.bytecode.CPMember;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +18,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,7 +57,7 @@ class LikeServiceTest {
     void likePostSaveLikeInDBTest(){
         likeDto.setPostId(POST_ID);
         like.setPost(post);
-        Mockito.when(userServiceClient.getUser(CURRENT_USER_ID)).thenReturn(userDto);
+        Mockito.when(userServiceClient.getUserInternal(CURRENT_USER_ID)).thenReturn(userDto);
         Mockito.when(postService.getPost(POST_ID)).thenReturn(post);
         Mockito.doReturn(like).when(likeRepository).save(like);
 
@@ -71,10 +67,23 @@ class LikeServiceTest {
     }
 
     @Test
+    void likePostRemoveLikeIfItExists(){
+        likeDto.setPostId(POST_ID);
+        post.getLikes().add(like);
+        Mockito.when(userServiceClient.getUserInternal(CURRENT_USER_ID)).thenReturn(userDto);
+        Mockito.when(postService.getPost(likeDto.getPostId())).thenReturn(post);
+
+        likeService.likePost(likeDto, CURRENT_USER_ID);
+
+        Mockito.verify(likeRepository, Mockito.times(1))
+                .deleteByPostIdAndUserId(POST_ID, CURRENT_USER_ID);
+    }
+
+    @Test
     void removeLikeFromPostUpdateDBTest(){
         likeDto.setPostId(POST_ID);
         post.setLikes(List.of(like));
-        Mockito.when(userServiceClient.getUser(CURRENT_USER_ID)).thenReturn(userDto);
+        Mockito.when(userServiceClient.getUserInternal(CURRENT_USER_ID)).thenReturn(userDto);
         Mockito.when(postService.getPost(POST_ID)).thenReturn(post);
 
         likeService.removeLikeFromPost(likeDto, CURRENT_USER_ID);
@@ -83,10 +92,23 @@ class LikeServiceTest {
     }
 
     @Test
+    void removeLikeFromPostAddLikeTest(){
+        likeDto.setPostId(POST_ID);
+        Mockito.when(userServiceClient.getUserInternal(CURRENT_USER_ID)).thenReturn(userDto);
+        Mockito.when(postService.getPost(POST_ID)).thenReturn(post);
+        Mockito.when(likeMapper.dtoToLike(likeDto)).thenReturn(like);
+
+        likeService.removeLikeFromPost(likeDto, CURRENT_USER_ID);
+
+        Mockito.verify(likeRepository, Mockito.times(1))
+                .save(like);
+    }
+
+    @Test
     void likeCommentSaveLikeInDBTest(){
         likeDto.setCommentId(COMMENT_ID);
         like.setComment(comment);
-        Mockito.when(userServiceClient.getUser(CURRENT_USER_ID)).thenReturn(userDto);
+        Mockito.when(userServiceClient.getUserInternal(CURRENT_USER_ID)).thenReturn(userDto);
         Mockito.when(commentService.getCommentById(COMMENT_ID)).thenReturn(comment);
         Mockito.doReturn(like).when(likeRepository).save(like);
 
@@ -96,14 +118,40 @@ class LikeServiceTest {
     }
 
     @Test
+    void likeCommentRemoveLikeTest(){
+        likeDto.setCommentId(COMMENT_ID);
+        like.setComment(comment);
+        comment.getLikes().add(like);
+        Mockito.when(userServiceClient.getUserInternal(CURRENT_USER_ID)).thenReturn(userDto);
+        Mockito.when(commentService.getCommentById(COMMENT_ID)).thenReturn(comment);
+
+        likeService.likeComment(likeDto, CURRENT_USER_ID);
+
+        Mockito.verify(likeRepository, Mockito.times(1))
+                .deleteByCommentIdAndUserId(COMMENT_ID, CURRENT_USER_ID);
+    }
+
+    @Test
     void removeLikeFromCommentUpdateDBTest(){
         likeDto.setCommentId(COMMENT_ID);
         comment.setLikes(List.of(like));
-        Mockito.when(userServiceClient.getUser(CURRENT_USER_ID)).thenReturn(userDto);
+        Mockito.when(userServiceClient.getUserInternal(CURRENT_USER_ID)).thenReturn(userDto);
         Mockito.when(commentService.getCommentById(COMMENT_ID)).thenReturn(comment);
 
         likeService.removeLikeFromComment(likeDto, CURRENT_USER_ID);
         Mockito.verify(likeRepository, Mockito.times(1))
                 .deleteByCommentIdAndUserId(COMMENT_ID, CURRENT_USER_ID);
+    }
+
+    @Test
+    void removeLikeFromCommentAddLike(){
+        likeDto.setCommentId(COMMENT_ID);
+        Mockito.when(userServiceClient.getUserInternal(CURRENT_USER_ID)).thenReturn(userDto);
+        Mockito.when(commentService.getCommentById(COMMENT_ID)).thenReturn(comment);
+        Mockito.when(likeMapper.dtoToEntity(likeDto)).thenReturn(like);
+
+        likeService.removeLikeFromComment(likeDto, CURRENT_USER_ID);
+        Mockito.verify(likeRepository, Mockito.times(1))
+                .save(like);
     }
 }
