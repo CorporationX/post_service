@@ -16,6 +16,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +41,9 @@ public class PostService {
     private final PostImageService postImageService;
     private final ModerationDictionary moderationDictionary;
     @Value("${comment.ban.numberOfCommentsToBan}")
-    private final int numberOfCommentsToBan;
+    private int numberOfCommentsToBan;
+
+    @Autowired
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
