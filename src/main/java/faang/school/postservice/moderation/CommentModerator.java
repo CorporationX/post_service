@@ -35,7 +35,5 @@ public class CommentModerator {
             List<Comment> commentsBatch = unverifiedComments.subList(i, endIndex);
             executor.submit(() -> commentService.processCommentsBatch(commentsBatch));
         }
-
-        executor.shutdown();
     }
 }
