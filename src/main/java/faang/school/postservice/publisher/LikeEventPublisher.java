@@ -1,7 +1,6 @@
 package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEventDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
