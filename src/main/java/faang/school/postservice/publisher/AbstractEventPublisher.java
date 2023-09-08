@@ -14,14 +14,16 @@ public abstract class AbstractEventPublisher<T> {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final String topicChannelName;
 
-    protected void publishInTopic(ChannelTopic topic, T event) {
+    protected void publishInTopic(T event) {
         String json;
         try {
             json = objectMapper.writeValueAsString(event);
         } catch (JsonProcessingException e) {
             throw new SerializeJsonException("Cannot serialize event to json");
         }
+        ChannelTopic topic = new ChannelTopic(topicChannelName);
         redisTemplate.convertAndSend(topic.getTopic(), json);
     }
 }
