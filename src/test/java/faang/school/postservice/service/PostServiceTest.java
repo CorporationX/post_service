@@ -5,12 +5,14 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.redis.PostEventDto;
 import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.async.PostAsyncService;
 import faang.school.postservice.validator.PostValidator;
@@ -63,6 +65,8 @@ class PostServiceTest {
     private PostAsyncService postAsyncService;
     @Mock
     private YandexSpellCorrectorService spellCorrectorService;
+    @Mock
+    private PostEventPublisher postEventPublisher;
     @InjectMocks
     private PostService postService;
 
@@ -91,6 +95,7 @@ class PostServiceTest {
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
         PostDto postDto = postService.createPost(postWithAuthorIdDto);
         verify(postValidator, Mockito.times(1)).validatePostContent(postWithAuthorIdDto);
+        verify(postEventPublisher, Mockito.times(1)).publish(any(PostEventDto.class));
         assertEquals(postDto, postWithAuthorIdDto);
     }
 
@@ -108,6 +113,7 @@ class PostServiceTest {
         when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(projectDto);
         PostDto postDto = postService.createPost(postWithProjectIdDto);
         verify(postValidator, Mockito.times(1)).validatePostContent(postWithProjectIdDto);
+        verify(postEventPublisher, Mockito.times(1)).publish(any(PostEventDto.class));
         assertEquals(postDto, postWithProjectIdDto);
     }
 
