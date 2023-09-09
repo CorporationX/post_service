@@ -1,14 +1,14 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface PostRepository extends CrudRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByAuthorId(long authorId);
 
@@ -22,6 +22,9 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
+
+    @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.spellCheck = true AND p.spellCheckedAt IS NULL")
+    List<Post> findReadyToSpellCorrection();
 
     @Query("SELECT p FROM Post p WHERE p.authorId = :authorId AND p.published = false AND p.deleted = false")
     List<Post> findDraftsByAuthorId(long authorId);

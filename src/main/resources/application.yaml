@@ -26,6 +26,10 @@ spring:
           name: calculations-channel
         event-channels:
           posts-view: posts-view
+        comment_channels:
+          name: comments-channel
+        post_channels:
+          name: post-channel
 
   async:
     poolSize: 10
@@ -37,6 +41,8 @@ spring:
     publisher:
       cron: "0 0/1 * 1/1 * ?" # every minute
       partitionSize: 1000
+    spellChecker:
+      cron: "0 0/1 * 1/1 * ?" # every minute
 
 server:
   port: 8081
@@ -62,3 +68,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+yandex-speller:
+  base-host: https://speller.yandex.net/services/spellservice.json
+  check-text-url: /checkText?text=
+  max-attempts-retry: 4
+  delay: 1000

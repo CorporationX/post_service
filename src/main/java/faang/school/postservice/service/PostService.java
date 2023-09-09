@@ -5,11 +5,13 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.redis.PostEventDto;
 import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.async.PostAsyncService;
 import faang.school.postservice.validator.PostValidator;
@@ -32,9 +34,11 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostViewEventService postViewEventService;
+    private final YandexSpellCorrectorService spellCorrectorService;
     private final PostMapper postMapper;
     private final PostAsyncService postAsyncService;
     private final UserContext userContext;
+    private final PostEventPublisher postEventPublisher;
 
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
@@ -57,8 +61,9 @@ public class PostService {
         postValidator.validatePostContent(post);
 
         Post postEntity = postMapper.toPost(post);
-
-        return postMapper.toDto(postRepository.save(postEntity));
+        PostDto createdPost = postMapper.toDto(postRepository.save(postEntity));
+        sendPostCreatedEvent(createdPost);
+        return createdPost;
     }
 
     @Transactional
@@ -182,5 +187,42 @@ public class PostService {
             postAsyncService.publishPosts(posts);
             log.info("Scheduled posts publishing finished");
         }
+    }
+
+    @Transactional
+    public void autoCorrectionSpelling() {
+        log.info("Spelling correction started");
+        List<Post> posts = postRepository.findReadyToSpellCorrection();
+
+        if (posts.isEmpty()) {
+            log.info("No posts for correction");
+            return;
+        }
+
+        posts.forEach(this::getCorrectedPost);
+
+        log.info("Corrected {} posts", posts.size());
+    }
+
+    @Transactional
+    public PostDto manualCorrectionSpelling(Long postId) {
+        Post post = getPostById(postId);
+        Post correctedPost = getCorrectedPost(post);
+        return postMapper.toDto(postRepository.save(correctedPost));
+    }
+
+    private Post getCorrectedPost(Post post) {
+        String correctedText = spellCorrectorService.getCorrectedText(post.getContent());
+        post.setContent(correctedText);
+        post.setSpellCheckedAt(LocalDateTime.now());
+
+        return post;
+    }
+    private void sendPostCreatedEvent(PostDto createdPost) {
+        PostEventDto postCreateEventDto = PostEventDto.builder()
+                .authorId(createdPost.getAuthorId())
+                .postId(createdPost.getId())
+                .build();
+        postEventPublisher.publish(postCreateEventDto);
     }
 }

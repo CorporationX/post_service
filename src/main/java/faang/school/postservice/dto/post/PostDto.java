@@ -1,9 +1,6 @@
 package faang.school.postservice.dto.post;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,13 +18,13 @@ public class PostDto {
 
     @NotNull
     @NotBlank
-    @Min(1)
-    @Max(4096)
+    @Size(min = 1, max = 4096)
     private String content;
     private Long authorId;
     private Long projectId;
     private List<Integer> likeIds;
     private LocalDateTime scheduledAt;
     private LocalDateTime createdAt;
+    private LocalDateTime spellCheckedAt;
     private boolean published;
 }
