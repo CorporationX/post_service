@@ -4,6 +4,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.util.ErrorMessage;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,11 +23,13 @@ import java.util.Optional;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Transactional
     public CommentDto create(CommentDto commentDto){
         Comment comment = commentMapper.commentToEntity(commentDto);
         commentRepository.save(comment);
+        commentEventPublisher.publish(commentDto);
 
         return commentMapper.commentToDto(comment);
     }
