@@ -9,7 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder
@@ -26,7 +25,6 @@ public class AlbumDto {
     @Size(min = 1, max = 4096)
     private String description;
     private Long authorId;
-    private List<Integer> postIds;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
