@@ -33,10 +33,8 @@ public class CommentService {
         postRepository.findById(commentDto.getPostId()).orElseThrow(() -> new EntityNotFoundException(
                 MessageFormat.format(ErrorMessage.POST_NOT_FOUND, commentDto.getPostId())));
         log.info("Comment created and saved: " + comment);
-        Comment comment1 = commentRepository.save(comment);
-        System.out.println(comment1);
 
-        return commentMapper.commentToDto(comment);
+        return commentMapper.commentToDto(commentRepository.save(comment));
     }
 
     @Transactional

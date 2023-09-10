@@ -61,8 +61,8 @@ public class CommentServiceTest {
         Comment comment = Comment.builder().post(post).build();
         lenient().when(commentRepository.save(comment)).thenReturn(comment);
         lenient().when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
-        CommentDto expectedDto = CommentDto.builder().postId(post.getId()).build();
 
+        CommentDto expectedDto = CommentDto.builder().postId(post.getId()).postId(post.getId()).build();
         CommentDto result = commentService.create(commentDto);
 
         Mockito.verify(commentRepository).save(comment);
