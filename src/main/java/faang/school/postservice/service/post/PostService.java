@@ -29,7 +29,7 @@ public class PostService {
         return postRepository.findByVerifiedIsFalse().stream()
                 .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()))
                 .entrySet().stream()
-                .filter(entry -> entry.getValue() >= countOffensiveContentForBan)
+                .filter(entry -> entry.getValue() > countOffensiveContentForBan)
                 .map(Map.Entry::getKey)
                 .toList();
     }
