@@ -23,4 +23,10 @@ public class AlbumValidator {
             throw new DataValidationException("AuthorId cannot be changed");
         }
     }
+
+    public void vaidateExistsInFavorites(boolean exist) {
+        if (exist) {
+            throw new DataValidationException("Album already in favorites");
+        }
+    }
 }

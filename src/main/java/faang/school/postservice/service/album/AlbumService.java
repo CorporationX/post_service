@@ -70,7 +70,7 @@ public class AlbumService {
     @Transactional
     public AlbumDto addPost(Long albumId, Long postId) {
         Long userId = userContext.getUserId();
-        Album album = getAlbumByOwnerId(albumId, userId);
+        Album album = getAlbumByIdAndOwnerId(albumId, userId);
 
         Post post = getPost(postId);
 
@@ -82,7 +82,7 @@ public class AlbumService {
     @Transactional
     public AlbumDto deletePost(Long albumId, Long postId) {
         Long userId = userContext.getUserId();
-        Album album = getAlbumByOwnerId(albumId, userId);
+        Album album = getAlbumByIdAndOwnerId(albumId, userId);
 
         Post post = getPost(postId);
 
@@ -118,7 +118,23 @@ public class AlbumService {
         return albums.stream().map(albumMapper::toDto).toList();
     }
 
-    private Album getAlbumByOwnerId(Long albumId, Long userId) {
+    @Transactional
+    public void addAlbumToFavourite(Long albumId) {
+        long userId = userContext.getUserId();
+        Album album = getAlbumByIdAndOwnerId(albumId, userId);
+        boolean exist = albumRepository.existInFavorites(album.getId(), userId);
+        albumValidator.vaidateExistsInFavorites(exist);
+        albumRepository.addAlbumToFavorites(album.getId(), userId);
+    }
+
+    @Transactional
+    public void deleteAlbumFromFavorites(Long albumId) {
+        long userId = userContext.getUserId();
+        Album album = getAlbumByIdAndOwnerId(albumId, userId);
+        albumRepository.deleteAlbumFromFavorites(album.getId(), userId);
+    }
+
+    private Album getAlbumByIdAndOwnerId(Long albumId, Long userId) {
         return albumRepository.findByAuthorId(userId)
                 .filter(a -> a.getId() == albumId)
                 .findFirst()

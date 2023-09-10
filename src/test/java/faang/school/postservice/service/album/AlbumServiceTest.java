@@ -4,6 +4,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.mapper.album.AlbumMapperImpl;
@@ -46,6 +47,7 @@ class AlbumServiceTest {
     private static final String EXPECTED_MESSAGE_TITLE_TOO_LONG = "Title must be less than 256 characters";
     private static final String EXPECTED_MESSAGE_AUTHOR_ID_CANNOT_BE_CHANGED = "AuthorId cannot be changed";
     private static final String EXPECTED_MESSAGE_DESCRIPTION_CANNOT_BE_NULL = "Description cannot be null";
+    private static final String EXPECTED_ALBUM_ALREADY_IN_FAVORITES = "Album already in favorites";
 
     @InjectMocks
     private AlbumService albumService;
@@ -359,6 +361,40 @@ class AlbumServiceTest {
 
         verify(userContext, times(1)).getUserId();
         verify(albumRepository, times(1)).findByAuthorId(userId);
+    }
+
+    @Test
+    public void testAddAlbumToFavoriteSuccess() {
+        when(userContext.getUserId()).thenReturn(userId);
+        when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.of(Album.builder().id(albumId).build()));
+        when(albumRepository.existInFavorites(albumId, userId)).thenReturn(false);
+        albumService.addAlbumToFavourite(albumId);
+        verify(albumRepository, times(1)).existInFavorites(albumId, userId);
+        verify(albumRepository, times(1)).addAlbumToFavorites(albumId, userId);
+    }
+
+    @Test
+    public void testAddAlbumToFavoriteFailIfAlbumNotFound() {
+        try {
+            when(userContext.getUserId()).thenReturn(userId);
+            when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.empty());
+            albumService.addAlbumToFavourite(albumId);
+        } catch (EntityNotFoundException e) {
+            assertEquals(e.getMessage(), EXPECTED_MESSAGE_ALBUM_NOT_FOUND);
+        }
+    }
+
+    @Test
+    public void testAddAlbumToFavoriteFailIfAlreadyInFavorites() {
+        Album album = Album.builder().id(albumId).authorId(userId).build();
+        try {
+            when(userContext.getUserId()).thenReturn(userId);
+            when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.of(album));
+            when(albumRepository.existInFavorites(albumId, userId)).thenReturn(true);
+            albumService.addAlbumToFavourite(albumId);
+        } catch (DataValidationException e) {
+            assertEquals(e.getMessage(), EXPECTED_ALBUM_ALREADY_IN_FAVORITES);
+        }
     }
 
     private String getLongTitle() {

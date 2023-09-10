@@ -34,4 +34,12 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
             )
             """)
     Stream<Album> findFavoriteAlbumsByUserId(long userId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT EXISTS (SELECT * FROM album
+            WHERE id IN (
+                SELECT album_id FROM favorite_albums WHERE album_id = :albumId AND user_id = :userId
+            ))
+            """)
+    boolean existInFavorites(long albumId, long userId);
 }

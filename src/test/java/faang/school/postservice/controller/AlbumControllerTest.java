@@ -137,6 +137,23 @@ class AlbumControllerTest {
         verify(albumService, times(1)).getAlbumsByFilter(new AlbumFilterDto());
     }
 
+    @Test
+    public void testAddAlbumToFavouriteSuccess() {
+        albumController.addAlbumToFavourite(1L);
+        verify(albumService, times(1)).addAlbumToFavourite(1L);
+    }
+
+    @Test
+    public void testDeleteAlbumFromFavouriteSuccess() {
+        albumController.deleteAlbumFromFavourite(1L);
+        verify(albumService, times(1)).deleteAlbumFromFavorites(1L);
+    }
+
+    @Test
+    public void testAddAlbumToFavouriteWithInvalidParameters() {
+        assertThrows(DataValidationException.class, () -> albumController.addAlbumToFavourite(-1L));
+    }
+
     static Stream<Arguments> invalidParametersProvider() {
         return Stream.of(
                 Arguments.of(-1L, 2L),
