@@ -64,6 +64,12 @@ dependencies {
 
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+
+    /**
+     * Swagger
+     */
+    implementation("io.springfox:springfox-swagger2:3.0.0")
+    implementation("io.springfox:springfox-swagger-ui:3.0.0")
 }
 
 tasks.withType<Test> {
