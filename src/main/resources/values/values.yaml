@@ -1,0 +1,4 @@
+author_banner:
+  count_offensive_content_for_ban: 5
+  start_scheduler_cron: 0 0 0 * * *
+#  start_scheduler_cron: 0 53 22 * * *
