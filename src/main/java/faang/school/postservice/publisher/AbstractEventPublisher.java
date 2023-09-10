@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.exception.SerializeJsonException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,7 +22,6 @@ public abstract class AbstractEventPublisher<T> {
         } catch (JsonProcessingException e) {
             throw new SerializeJsonException("Cannot serialize event to json");
         }
-        ChannelTopic topic = new ChannelTopic(topicChannelName);
-        redisTemplate.convertAndSend(topic.getTopic(), json);
+        redisTemplate.convertAndSend(topicChannelName, json);
     }
 }
