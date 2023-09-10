@@ -1,4 +1,4 @@
-package faang.school.postservice;
+package faang.school.postservice.sheduler;
 
 import faang.school.postservice.publisher.AuthorBannerPublisher;
 import faang.school.postservice.service.post.PostService;
