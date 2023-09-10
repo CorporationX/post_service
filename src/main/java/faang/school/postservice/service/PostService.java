@@ -314,7 +314,7 @@ public class PostService {
         likeRepository.save(newLike);
 
         LikeEventDto likeEvent = LikeEventDto.builder().postId(post.getId()).dateTime(LocalDateTime.now())
-                .likeAuthor(user_id).postAuthor(post.getAuthorId()).build();
+                .likeAuthorId(user_id).postAuthor(post.getAuthorId()).build();
         likeEventPublisher.publishMessage(likeEvent);
 
         return responsePostMapper.toDto(post);

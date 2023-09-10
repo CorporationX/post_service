@@ -51,7 +51,8 @@ public class LikeService {
 
     private LikeEventDto createLikeEvent(LikeDto likeDto) {
         LikeEventDto likeEventDto = new LikeEventDto();
-        likeEventDto.setLikeAuthor(likeDto.getUserId());
+        likeEventDto.setLikeAuthorId(likeDto.getUserId());
+        likeEventDto.setLikeAuthorName(userServiceClient.getUser(likeDto.getUserId()).getUsername());
         if (likeDto.getPostId() != null) {
             likeEventDto.setPostId(likeDto.getPostId());
             likeEventDto.setPostAuthor(postService.getAuthorId(likeDto.getPostId()));
