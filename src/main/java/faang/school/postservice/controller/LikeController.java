@@ -2,7 +2,6 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.LikeService;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
