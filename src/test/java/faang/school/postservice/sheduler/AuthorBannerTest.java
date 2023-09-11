@@ -12,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-//@TestPropertySource(properties = {"author_banner.start_scheduler_cron=0 0 0 * * *"})
 class AuthorBannerTest {
 
     @Mock
