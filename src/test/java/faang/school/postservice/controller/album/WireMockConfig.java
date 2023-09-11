@@ -7,9 +7,9 @@ import org.springframework.context.annotation.Bean;
 @TestConfiguration
 public class WireMockConfig {
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public WireMockServer mockUserService() {
-        return new WireMockServer(8080);
-    }
+//    @Bean(initMethod = "start", destroyMethod = "stop")
+//    public WireMockServer mockUserService() {
+//        return new WireMockServer(8080);
+//    }
 
 }

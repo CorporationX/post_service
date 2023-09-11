@@ -8,4 +8,5 @@ VALUES
 
 INSERT INTO post(content, author_id, project_id, published, published_at, scheduled_at, deleted, created_at, updated_at)
 VALUES
-    ('test', 1, 1, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    ('test', 1, 1, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('test2', 2, 2, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
