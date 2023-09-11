@@ -1,4 +1,3 @@
 author_banner:
-  count_offensive_content_for_ban: 5
-  start_scheduler_cron: 0 0 0 * * *
-#  start_scheduler_cron: 0 53 22 * * *
+  count_offensive_content_for_ban: 1
+  start_scheduler_cron: 0 0 0 * * * # every day at 00:00
