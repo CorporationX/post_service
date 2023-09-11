@@ -74,3 +74,9 @@ yandex-speller:
   check-text-url: /checkText?text=
   max-attempts-retry: 4
   delay: 1000
+
+feign:
+  client:
+    config:
+      user-service:
+        maxSubListSize: 100

@@ -6,6 +6,7 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,6 +20,9 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final CommentService commentService;
     private final PostService postService;
+
+    @Value("${feign.client.config.user-service.maxSubListSize}")
+    private int maxSubListSize;
 
 
     public List<UserDto> getLikesByPostId(Long postId) {
@@ -40,10 +44,9 @@ public class LikeService {
     private List<UserDto> findUsersWhoLiked(List<Like> likes) {
         List<Long> usersId = likes.stream().map(Like::getUserId).toList();
         List<UserDto> result = new ArrayList<>();
-        int subListSize = 100;
-        for (int i = 0; i < usersId.size(); i += subListSize) {
+        for (int i = 0; i < usersId.size(); i += maxSubListSize) {
             ArrayList<Long> subList = new ArrayList<>();
-            for (int j = i; j < i + subListSize && j < usersId.size(); j++) {
+            for (int j = i; j < i + maxSubListSize && j < usersId.size(); j++) {
                 subList.add(usersId.get(j));
             }
             result.addAll(userServiceClient.getUsersByIds(subList));
