@@ -21,6 +21,7 @@ public class RedisMessagePublisher {
             log.info(channel + " notification was published. {}", json);
         } catch (JsonProcessingException e) {
             log.error(channel + " notification failed.");
+            throw new RuntimeException(e);
         }
     }
 }
