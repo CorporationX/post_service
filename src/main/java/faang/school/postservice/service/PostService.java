@@ -12,6 +12,9 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ad.AdRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +32,9 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final NewPostPublisher newPostPublisher;
+
+    @Value("${page.size}")
+    private int pageSize;
 
     @Transactional
     public PostDto createPost(CreatePostDto createPostDto) {
@@ -132,7 +138,8 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByHashtagId(String content){
-        return postMapper.toDtoList(postRepository.findByHashtagsContent(content));
+        Pageable page = PageRequest.of(0, pageSize);
+        return postMapper.toDtoList(postRepository.findByHashtagsContent(content, page));
     }
 
     @Transactional(readOnly = true)

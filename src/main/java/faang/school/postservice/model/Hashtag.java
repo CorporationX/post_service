@@ -18,6 +18,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.context.annotation.Lazy;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,6 +39,7 @@ public class Hashtag {
     private String content;
 
     @ManyToMany
+    @Lazy
     @JoinTable(name = "post_hashtag",
             joinColumns = @JoinColumn(name = "hashtag_id"),
             inverseJoinColumns = @JoinColumn(name = "post_id"))
