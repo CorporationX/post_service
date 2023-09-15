@@ -4,9 +4,11 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostViewEventDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.messaging.publishing.NewPostPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,9 +36,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final NewPostPublisher newPostPublisher;
-
-    @Value("${page.size}")
-    private int pageSize;
+    private final PostViewEventPublisher postViewEventPublisher;
 
     @Transactional
     public PostDto createPost(CreatePostDto createPostDto) {
@@ -102,6 +103,14 @@ public class PostService {
     public PostDto getPostById(Long id) {
         Post postById = postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("'Post not in database' error occurred while fetching post"));
+
+        PostViewEventDto eventDto = PostViewEventDto.builder()
+                .viewDate(LocalDateTime.now())
+                .postId(id)
+                .build();
+
+        postViewEventPublisher.publish(eventDto);
+
         return postMapper.toDto(postById);
     }
     @Transactional(readOnly = true)

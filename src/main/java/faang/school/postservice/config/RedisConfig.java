@@ -12,6 +12,11 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+@Configuration
+public class RedisConfig {
+
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -24,13 +29,12 @@ public class RedisConfig {
     private String host;
     @Value("${spring.data.redis.port}")
     private int port;
+    @Value("${spring.data.redis.channels.post_view_channel.name}")
+    private String postViewTopic;
 
-    /**
-     * Connection to redis
-     */
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
-        log.info("port - {}", port);
+        System.out.println(port);
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         return new JedisConnectionFactory(config);
     }
@@ -60,5 +64,10 @@ public class RedisConfig {
         container.setConnectionFactory(redisConnectionFactory());
         container.addMessageListener(hashtagListenerAdapter(hashtagListener), hashtagTopic());
         return container;
+    }
+}
+
+    public ChannelTopic viewProfileTopic() {
+        return new ChannelTopic(postViewTopic);
     }
 }
