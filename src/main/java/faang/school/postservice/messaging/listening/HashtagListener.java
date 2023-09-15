@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,17 +33,10 @@ public class HashtagListener<T> extends AbstractPostListener<PostDto> implements
 
     private Set<HashtagDto> findHashtags(String content, Long postId) {
         List<String> hashtags = new ArrayList<>();
-        while (!content.isBlank()) {
-            content = content.substring(content.indexOf("#", 1));
-            int endOfHashtag = content.indexOf("\s");
-            if (endOfHashtag > content.indexOf("#", 1) || endOfHashtag == -1) {
-                endOfHashtag = content.indexOf("#", 1);
-                if (endOfHashtag == -1){
-                    endOfHashtag = content.length()-1;
-                }
-            }
-            hashtags.add(content.substring(0, endOfHashtag).trim());
-            if (content.matches("^#\\S[^#]+$")) break;
+        Pattern pattern = Pattern.compile("#\\S+");
+        Matcher matcher = pattern.matcher(content);
+        while (matcher.find()){
+            hashtags.add(matcher.group());
         }
         return hashtags.stream()
                 .distinct()

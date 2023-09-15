@@ -13,6 +13,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ad.AdRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -137,9 +138,8 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostDto> getAllPostsByHashtagId(String content){
-        Pageable page = PageRequest.of(0, pageSize);
-        return postMapper.toDtoList(postRepository.findByHashtagsContent(content, page));
+    public Page<PostDto> getAllPostsByHashtagId(String content, Pageable pageable){
+        return postRepository.findByHashtagsContent(content, pageable).map(postMapper::toDto);
     }
 
     @Transactional(readOnly = true)

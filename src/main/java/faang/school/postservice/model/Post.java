@@ -43,7 +43,7 @@ public class Post {
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(
             name = "post_hashtag",
             joinColumns = @JoinColumn(name = "post_id"),

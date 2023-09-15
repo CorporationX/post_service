@@ -72,7 +72,7 @@ pool:
   notice-pool:
     core-pool-size: 10
     maximum-pool-size: 15
-    keep-alive-time: 5000L
+    keep-alive-time: 5000
     capacity: 10000
 
 page:
