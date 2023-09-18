@@ -43,7 +43,7 @@ public class PostService {
     }
 
     public void createPost(PostDto postDto) {
-        idDefinition(postDto);
+        definitionId(postDto);
         postRepository.save(postMapper.toEntity(postDto));
     }
 
@@ -68,7 +68,7 @@ public class PostService {
 
     public void updatePost(long postId, PostDto postDto) {
         Post post = getPostById(postId);
-        idDefinition(postDto);
+        definitionId(postDto);
         postValidator.validatePostToUpdate(post, postDto);
 
         postRepository.save(postMapper.toEntity(postDto));
@@ -130,7 +130,7 @@ public class PostService {
         return postMapper.toDtoList(filteredPosts);
     }
 
-    private void idDefinition(PostDto postDto) {
+    private void definitionId(PostDto postDto) {
         if (postDto.getAuthorId() != null) {
             postValidator.validateUser(postDto.getAuthorId());
         } else {

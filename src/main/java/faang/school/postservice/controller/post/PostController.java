@@ -28,7 +28,7 @@ public class PostController {
     public void createPost(@RequestBody @Valid PostDto postDto) {
         Long userId = userContext.getUserId();
         Long projectId = projectContext.getProjectId();
-        postService.createPost(idDefinition(userId, projectId, postDto));
+        postService.createPost(definitionId(userId, projectId, postDto));
     }
 
     @PostMapping("/publishByUser/{postId}")
@@ -47,7 +47,7 @@ public class PostController {
     public void updatePost(@PathVariable long postId, @RequestBody @Valid PostDto postDto) {
         Long userId = userContext.getUserId();
         Long projectId = projectContext.getProjectId();
-        postService.updatePost(postId, idDefinition(userId, projectId, postDto));
+        postService.updatePost(postId, definitionId(userId, projectId, postDto));
     }
 
     @DeleteMapping("/deleteByUser/{postId}")
@@ -91,7 +91,7 @@ public class PostController {
         return postService.getAllProjectPublished(projectId);
     }
 
-    private PostDto idDefinition(Long userId, Long projectId, PostDto postDto) {
+    private PostDto definitionId(Long userId, Long projectId, PostDto postDto) {
         if (userId != null) {
             postDto.setAuthorId(userId);
         } else if (projectId != null) {
