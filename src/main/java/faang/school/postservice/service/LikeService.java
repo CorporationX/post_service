@@ -32,7 +32,6 @@ public class LikeService {
 
     public void deleteLikeForPost (LikeDto likeDto) {
         likeRepository.deleteByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId());
-
     }
 
     public LikeDto createLikeForComment (LikeDto likeDto) {
@@ -48,6 +47,5 @@ public class LikeService {
 
     public void deleteLikeForComment (LikeDto likeDto) {
         likeRepository.deleteByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId());
-
     }
 }

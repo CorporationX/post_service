@@ -1,7 +1,6 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;
@@ -18,16 +17,15 @@ public class LikeController {
     public LikeDto makeLikeForPost (@RequestBody LikeDto likeDto) {
         likeValidator.validatePostId(likeDto);
         likeValidator.validateUserId(likeDto);
-            return likeService.createLikeForPost(likeDto);
-        }
+        return likeService.createLikeForPost(likeDto);
+    }
 
     @DeleteMapping("/delete/{postId}")
     public void deleteLikeFromPost (@PathVariable long postId, @RequestBody LikeDto likeDto) {
         likeValidator.validatePostId(likeDto);
         likeValidator.validateUserId(likeDto);
-            likeService.deleteLikeForPost(likeDto);
-        }
-
+        likeService.deleteLikeForPost(likeDto);
+    }
 
     @PostMapping("/create_for_comment")
     public LikeDto makeLikeForComment(@RequestBody LikeDto likeDto) {
@@ -40,7 +38,7 @@ public class LikeController {
     public void deleteLikeFromComment (@PathVariable long commentId, @RequestBody LikeDto likeDto) {
         likeValidator.validateCommentId(likeDto);
         likeValidator.validateUserId(likeDto);
-            likeService.deleteLikeForComment(likeDto);
-        }
+        likeService.deleteLikeForComment(likeDto);
     }
+}
 
