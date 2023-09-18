@@ -4,16 +4,24 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostViewEventDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.messaging.publishing.NewPostPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ad.AdRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -27,6 +35,8 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final NewPostPublisher newPostPublisher;
+    private final PostViewEventPublisher postViewEventPublisher;
 
     @Transactional
     public PostDto createPost(CreatePostDto createPostDto) {
@@ -34,7 +44,7 @@ public class PostService {
         if (createPostDto.getAuthorId() != null && createPostDto.getProjectId() != null) {
             throw new DataValidationException("The author can be either a user or a project");
         }
-        if (createPostDto.getAuthorId() != null && userServiceClient.getUser(createPostDto.getAuthorId()) == null) {
+        if (createPostDto.getAuthorId() != null && userServiceClient.getUserInternal(createPostDto.getAuthorId()) == null) {
             throw new DataValidationException("Author must be Existing on the user's system = " + createPostDto.getAuthorId()
                     + " or project ID now it = " + createPostDto.getProjectId());
         }
@@ -44,7 +54,9 @@ public class PostService {
         }
         post.setDeleted(false);
         post.setPublished(false);
-        return postMapper.toDto(postRepository.save(post));
+        PostDto result = postMapper.toDto(postRepository.save(post));
+        newPostPublisher.publish(result);
+        return result;
     }
 
     @Transactional
@@ -87,12 +99,21 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional(readOnly = true)
     public PostDto getPostById(Long id) {
         Post postById = postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("'Post not in database' error occurred while fetching post"));
+
+        PostViewEventDto eventDto = PostViewEventDto.builder()
+                .viewDate(LocalDateTime.now())
+                .postId(id)
+                .build();
+
+        postViewEventPublisher.publish(eventDto);
+
         return postMapper.toDto(postById);
     }
-
+    @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByAuthorId(Long authorId) {
         return postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
@@ -100,7 +121,7 @@ public class PostService {
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
     }
-
+    @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByProjectId(Long projectId) {
         return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
@@ -108,7 +129,7 @@ public class PostService {
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
     }
-
+    @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByAuthorIdAndPublished(Long authorId) {
         return postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
@@ -116,12 +137,28 @@ public class PostService {
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
     }
-
+    @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByProjectIdAndPublished(Long projectId) {
         return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostDto> getAllPostsByHashtagId(String content, Pageable pageable){
+        return postRepository.findByHashtagsContent(content, pageable).map(postMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Post getPostByIdInternal(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new DataValidationException("'Post not in database' error occurred while fetching post"));
+    }
+
+    @Transactional
+    public Post updatePostInternal(Post post){
+        return postRepository.save(post);
     }
 }

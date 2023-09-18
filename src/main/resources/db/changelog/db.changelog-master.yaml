@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V004__user_album_access.sql
   - include:
       file: db/changelog/changeset/post_V005__resource.sql
+  - include:
+      file: db/changelog/changeset/post_V006__create_hashtag.sql

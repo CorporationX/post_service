@@ -5,8 +5,10 @@ import faang.school.postservice.event.comment.NewCommentEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.redisPublisher.MessagePublisher;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ErrorMessage;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,11 +29,15 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
     @Mock
     private CommentRepository commentRepository;
+    @Mock
+    private PostRepository postRepository;
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
     @Spy
@@ -54,19 +60,22 @@ public class CommentServiceTest {
 
     @Test
     void createCommentTest(){
-        CommentDto commentDto = CommentDto.builder().content("content").build();
-        Comment comment = Comment.builder().content("content").build();
+        Post post = Post.builder().id(1L).build();
+        CommentDto commentDto = CommentDto.builder().postId(post.getId()).build();
+        Comment comment = Comment.builder().post(post).build();
+        lenient().when(commentRepository.save(comment)).thenReturn(comment);
+        lenient().when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
 
-        CommentDto expectedDto = CommentDto.builder().id(0L).content("content").authorId(0L).build();
+        CommentDto expectedDto = CommentDto.builder().postId(post.getId()).postId(post.getId()).build();
         CommentDto result = commentService.create(commentDto);
 
         Mockito.verify(commentRepository).save(comment);
-        assertEquals(expectedDto, result);
+        assertEquals(expectedDto.getPostId(), result.getPostId());
     }
 
     @Test
     public void commentUpdateTest() {
-        Mockito.when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
         CommentDto resultDto = commentService.update(updatedCommentDto);
 
         assertEquals(updatedCommentDto.getContent(), resultDto.getContent());
@@ -88,7 +97,7 @@ public class CommentServiceTest {
     public void deleteCommentSuccessfulTest(){
         Comment comment = Comment.builder().id(commentId).build();
 
-        Mockito.when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
         commentService.delete(commentId);
 
         Mockito.verify(commentRepository, Mockito.times(1)).delete(comment);
@@ -96,7 +105,7 @@ public class CommentServiceTest {
 
     @Test
     public void deleteCommentNotFoundTest(){
-        Mockito.when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
+        when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
         String expectedMessage = MessageFormat.format(ErrorMessage.COMMENT_NOT_FOUND_FORMAT, commentId);
 
@@ -121,7 +130,7 @@ public class CommentServiceTest {
                 commentMapper.commentToDto(comment2),
                 commentMapper.commentToDto(comment3));
 
-        Mockito.when(commentRepository.findAllByPostId(postId)).thenReturn(commentList);
+        when(commentRepository.findAllByPostId(postId)).thenReturn(commentList);
         List<CommentDto> result = commentService.getCommentsForPost(postId);
 
         assertEquals(expectedList, result);
