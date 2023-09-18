@@ -173,8 +173,7 @@ class PostServiceTest {
         postService.getAllProjectPublished(1L);
         Mockito.verify(postRepository, Mockito.times(1)).findAllProjectPublished(1L);
         assertEquals(2, publishedPosts.size());
-
-
+    }
     @Test
     void testGetByPostIsVerifiedFalse() {
         Mockito.when(postRepository.findByVerifiedIsFalse()).thenReturn(listFindByVerifiedIsFalse);
