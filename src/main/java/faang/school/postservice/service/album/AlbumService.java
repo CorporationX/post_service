@@ -42,7 +42,7 @@ public class AlbumService {
 
     public void addPostToAlbum(Long albumId, Long postId, Long userId) {
         albumValidator.validatePostToAdd(albumId, postId, userId);
-        Album album = getAlbumFromDb(albumId);
+        Album album = albumValidator.getAlbumFromDb(albumId);
         Post post = postService.getPostById(postId);
         album.addPost(post);
     }
@@ -50,20 +50,22 @@ public class AlbumService {
     @Transactional
     public void addToFavorite(Long albumId, Long userId) {
         albumValidator.validateUser(userId);
-        albumValidator.validateAlbum(albumId);
+        albumValidator.getAlbumFromDb(albumId);
+        albumValidator.privacyCheck(albumId, userId);
         albumRepository.addAlbumToFavorites(albumId, userId);
     }
 
     @Transactional
     public void removeFromFavorite(Long albumId, Long userId) {
         albumValidator.validateUser(userId);
-        albumValidator.validateAlbum(albumId);
+        albumValidator.getAlbumFromDb(albumId);
         albumValidator.validateFavoriteAlbumToDelete(userId, albumId);
         albumRepository.deleteAlbumFromFavorites(albumId, userId);
     }
 
-    public AlbumDto getAlbum(Long albumId) {
-        return albumMapper.toDto(getAlbumFromDb(albumId));
+    public AlbumDto getAlbum(Long albumId, Long userId) {
+        albumValidator.privacyCheck(albumId, userId);
+        return albumMapper.toDto(albumValidator.getAlbumFromDb(albumId));
     }
 
     @Transactional
@@ -99,9 +101,5 @@ public class AlbumService {
         return albums.
                 map(albumMapper::toDto)
                 .toList();
-    }
-
-    private Album getAlbumFromDb(Long albumId) {
-        return albumRepository.findById(albumId).orElseThrow(() -> new DataValidationException("Album not found"));
     }
 }

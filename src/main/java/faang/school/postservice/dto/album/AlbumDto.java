@@ -16,4 +16,5 @@ public class AlbumDto {
     private String description;
     private long authorId;
     private List<Post> posts;
+    private List<Long> allowedUserIds;
 }

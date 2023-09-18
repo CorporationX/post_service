@@ -47,7 +47,7 @@ class CommentValidatorTest {
         wrongId = -2L;
         comment.setAuthorId(rightId);
         comment.setId(rightId);
-        userDto = new UserDto(rightId, "any", "any");
+        userDto = new UserDto(rightId, "any", "any", List.of());
 
         Mockito.when(postService.getPostById(rightId))
                 .thenReturn(new Post());

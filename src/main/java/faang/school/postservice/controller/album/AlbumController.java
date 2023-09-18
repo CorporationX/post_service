@@ -55,7 +55,8 @@ public class AlbumController {
 
     @GetMapping("/get/{albumId}")
     public AlbumDto getAlbum(@PathVariable long albumId) {
-        return albumService.getAlbum(albumId);
+        long userId = userContext.getUserId();
+        return albumService.getAlbum(albumId, userId);
     }
 
     @GetMapping("/get/allUserAlbums")

@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003_insert_album_and_posts.sql
   - include:
       file: db/changelog/changeset/post_V004_alter_verified_post.sql
+  - include:
+      file: db/changelog/changeset/post_V005__add_visibility.sql
