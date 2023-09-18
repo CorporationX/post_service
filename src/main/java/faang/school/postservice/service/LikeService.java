@@ -24,9 +24,10 @@ public class LikeService {
         likeValidator.validateUserExists(likeDto);
         likeValidator.validateLikeOnPostNotExist(likeDto);
 
-        Like postLike = likeMapper.toEntity(likeDto);
-        postRepository.findById(likeDto.getPostId()).ifPresent(post -> post.getLikes().add(postLike));
-        return likeMapper.toDto(postLike);
+        Like likeOnPostEntity = likeMapper.toEntity(likeDto);
+        postRepository.findById(likeDto.getPostId()).ifPresent(post -> post.getLikes().add(likeOnPostEntity));
+        likeRepository.save(likeOnPostEntity);
+        return likeMapper.toDto(likeOnPostEntity);
     }
 
     public LikeDto deleteLikeForPost (LikeDto likeDto) {
@@ -39,9 +40,10 @@ public class LikeService {
         likeValidator.validateUserExists(likeDto);
         likeValidator.validateLikeOnCommentNotExist(likeDto);
 
-        Like commentLike = likeMapper.toEntity(likeDto);
-        commentRepository.findById(likeDto.getCommentId()).ifPresent(comment -> comment.getLikes().add(commentLike));
-        return likeMapper.toDto(commentLike);
+        Like likeOnCommentEntity = likeMapper.toEntity(likeDto);
+        commentRepository.findById(likeDto.getCommentId()).ifPresent(comment -> comment.getLikes().add(likeOnCommentEntity));
+        likeRepository.save(likeOnCommentEntity);
+        return likeMapper.toDto(likeOnCommentEntity);
     }
 
     public LikeDto deleteLikeForComment (LikeDto likeDto) {
