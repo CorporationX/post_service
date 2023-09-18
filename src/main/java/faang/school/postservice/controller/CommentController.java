@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,7 +35,7 @@ public class CommentController {
             description = "Создает комментарий под постом"
     )
     @Parameter(description = "Принимает комментарий который нужно создать")
-    public CommentDto create(@Valid CommentDto commentDto) {
+    public CommentDto create(@Valid @RequestBody CommentDto commentDto) {
         if (commentDto.getId() != null) {
             throw new DataValidationException(ErrorMessage.COMMENT_ID_NOT_NULL_ON_CREATION);
         }

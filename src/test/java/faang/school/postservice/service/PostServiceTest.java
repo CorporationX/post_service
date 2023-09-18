@@ -8,6 +8,7 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.messaging.publishing.NewPostPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.publisher.PostViewEventPublisher;
@@ -46,6 +47,8 @@ class PostServiceTest {
     private PostViewEventPublisher postViewEventPublisher;
     @Mock
     private ProjectServiceClient projectServiceClient;
+    @Mock
+    private NewPostPublisher newPostPublisher;
     @InjectMocks
     private PostService postService;
     private Post postOne;
@@ -95,7 +98,7 @@ class PostServiceTest {
     void testCreatePostMockAuthorDataValidationException() {
         CreatePostDto createPostDto = CreatePostDto.builder().authorId(1L).projectId(null).build();
 
-        when(userServiceClient.getUser(1L)).thenReturn(null);
+        when(userServiceClient.getUserInternal(1L)).thenReturn(null);
         assertThrows(DataValidationException.class, () -> postService.createPost(createPostDto));
     }
 

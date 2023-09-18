@@ -12,7 +12,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -40,6 +42,15 @@ public class Post {
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "post_hashtag",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "hashtag_id")
+    )
+    @Builder.Default
+    private Set<Hashtag> hashtags = new HashSet<>();
 
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;
