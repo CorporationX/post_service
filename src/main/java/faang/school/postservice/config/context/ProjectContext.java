@@ -10,7 +10,7 @@ public class ProjectContext {
         projectIdHolder.set(userId);
     }
 
-    public long getProjectId() {
+    public Long getProjectId() {
         return projectIdHolder.get();
     }
 

@@ -38,7 +38,10 @@ public class PostValidator {
         if (postDto.getAuthorId() != null) {
             if (postDto.getAuthorId() != post.getAuthorId()) {
                 throw new DataValidationException("You can't update this post");
-            } else if (post.getProjectId() != postDto.getProjectId()) {
+            }
+        }
+        if (postDto.getProjectId() != null){
+            if (post.getProjectId() != postDto.getProjectId()) {
                 throw new DataValidationException("You can't update this post");
             }
         }
