@@ -3,24 +3,43 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    @Value("${author_banner.count_offensive_content_for_ban}")
+    private long countOffensiveContentForBan;
 
     public Post getPostById(long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(() -> new DataValidationException("This post was not found"));
+                .orElseThrow(() -> new EntityNotFoundException("This post was not found"));
+    }
+
+    public List<Long> getByPostIsVerifiedFalse() {
+        return postRepository.findByVerifiedIsFalse().stream()
+                .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()))
+                .entrySet().stream()
+                .filter(entry -> entry.getValue() > countOffensiveContentForBan)
+                .map(Map.Entry::getKey)
+                .toList();
     }
 
     public void createPost(PostDto postDto) {

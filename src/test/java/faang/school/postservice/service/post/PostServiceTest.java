@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.test.util.ReflectionTestUtils;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,10 +31,24 @@ class PostServiceTest {
     private PostValidator postValidator;
     @InjectMocks
     private PostService postService;
+    List<Post> listFindByVerifiedIsFalse;
     List<Post> draftsPosts;
     List<Post> publishedPosts;
     Post post;
     Post post2;
+  
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(postService, "countOffensiveContentForBan", 1);
+
+        Post post1 = Post.builder().authorId(1L).verified(false).build();
+        Post post2 = Post.builder().authorId(1L).verified(false).build();
+        Post post3 = Post.builder().authorId(3L).verified(true).build();
+        Post post4 = Post.builder().authorId(2L).verified(false).build();
+        Post post5 = Post.builder().authorId(2L).verified(false).build();
+
+        listFindByVerifiedIsFalse = List.of(post1, post2, post3, post4, post5);
+    }
 
 
     @BeforeEach
@@ -157,5 +173,36 @@ class PostServiceTest {
         postService.getAllProjectPublished(1L);
         Mockito.verify(postRepository, Mockito.times(1)).findAllProjectPublished(1L);
         assertEquals(2, publishedPosts.size());
+
+
+    @Test
+    void testGetByPostIsVerifiedFalse() {
+        Mockito.when(postRepository.findByVerifiedIsFalse()).thenReturn(listFindByVerifiedIsFalse);
+        List<Long> expected = List.of(1L, 2L);
+
+        List<Long> actual = postService.getByPostIsVerifiedFalse();
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testGetByPostIsVerifiedFalseWhenEmptyList() {
+        Mockito.when(postRepository.findByVerifiedIsFalse()).thenReturn(List.of());
+        List<Long> expected = List.of();
+
+        List<Long> actual = postService.getByPostIsVerifiedFalse();
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testGetByPostIsVerifiedFalseWhenNotVerified() {
+        Mockito.when(postRepository.findByVerifiedIsFalse()).thenReturn(listFindByVerifiedIsFalse);
+        List<Long> expected = List.of();
+        ReflectionTestUtils.setField(postService, "countOffensiveContentForBan", 5);
+
+        List<Long> actual = postService.getByPostIsVerifiedFalse();
+
+        assertEquals(expected, actual);
     }
 }
