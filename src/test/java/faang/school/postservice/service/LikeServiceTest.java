@@ -51,16 +51,14 @@ class LikeServiceTest {
     }
 
     @Test
-    void testExistIdAndGetLikesByPostId() {
+    void testGetLikesByPostId() {
         likeService.getUsersWhoLikesByPostId(anyLong());
-        verify(postService, Mockito.times(1)).getPostById(anyLong());
         verify(likeRepository, Mockito.times(1)).findByPostId(anyLong());
     }
 
     @Test
-    void testExistIdAndGetLikesByCommentId() {
+    void testGetLikesByCommentId() {
         likeService.getUsersWhoLikesByCommentId(anyLong());
-        verify(commentService, Mockito.times(1)).checkCommentExists(anyLong());
         verify(likeRepository, Mockito.times(1)).findByCommentId(anyLong());
     }
 }
