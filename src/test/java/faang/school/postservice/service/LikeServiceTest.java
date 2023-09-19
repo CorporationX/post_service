@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -18,11 +17,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceTest {
@@ -35,9 +31,6 @@ class LikeServiceTest {
     private CommentService commentService;
     @Mock
     private PostService postService;
-
-    @Mock
-    private UserServiceClient userServiceClient;
 
     List<Like> likes;
     List<UserDto> expectedUsers;
@@ -59,23 +52,15 @@ class LikeServiceTest {
 
     @Test
     void testExistIdAndGetLikesByPostId() {
-        likeService.getLikesByPostId(anyLong());
+        likeService.getUsersWhoLikesByPostId(anyLong());
         verify(postService, Mockito.times(1)).getPostById(anyLong());
         verify(likeRepository, Mockito.times(1)).findByPostId(anyLong());
     }
 
     @Test
     void testExistIdAndGetLikesByCommentId() {
-        likeService.getLikesByCommentId(anyLong());
+        likeService.getUsersWhoLikesByCommentId(anyLong());
         verify(commentService, Mockito.times(1)).checkCommentExists(anyLong());
         verify(likeRepository, Mockito.times(1)).findByCommentId(anyLong());
     }
-
-//    @Test
-//    void testFindUsersWhoLiked() {
-//        when(likeRepository.findByPostId(anyLong())).thenReturn(likes);
-//        when(userServiceClient.getUsersByIds(anyList())).thenReturn(expectedUsers);
-//        List<UserDto> result = likeService.getLikesByPostId(anyLong());
-//        assertEquals(expectedUsers, result);
-//    }
 }

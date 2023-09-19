@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,20 +22,20 @@ public class LikeService {
     private final CommentService commentService;
     private final PostService postService;
 
-    @Value("${feign.client.config.user-service.maxSubListSize}")
+    @Value("${feign.maxUsersSubListSize}")
     private int maxSubListSize;
 
 
-    public List<UserDto> getLikesByPostId(Long postId) {
-        postService.getPostById(postId);
+    @Transactional
+    public List<UserDto> getUsersWhoLikesByPostId(Long postId) {
         List<Like> likes = likeRepository.findByPostId(postId);
         List<UserDto> result = findUsersWhoLiked(likes);
         log.info("Corrected {} users", result.size());
         return result;
     }
 
-    public List<UserDto> getLikesByCommentId(Long commentId) {
-        commentService.checkCommentExists(commentId);
+    @Transactional
+    public List<UserDto> getUsersWhoLikesByCommentId(Long commentId) {
         List<Like> likes = likeRepository.findByCommentId(commentId);
         List<UserDto> result = findUsersWhoLiked(likes);
         log.info("Corrected {} users", result.size());
@@ -45,10 +46,8 @@ public class LikeService {
         List<Long> usersId = likes.stream().map(Like::getUserId).toList();
         List<UserDto> result = new ArrayList<>();
         for (int i = 0; i < usersId.size(); i += maxSubListSize) {
-            ArrayList<Long> subList = new ArrayList<>();
-            for (int j = i; j < i + maxSubListSize && j < usersId.size(); j++) {
-                subList.add(usersId.get(j));
-            }
+            List<Long> subList = new ArrayList<>();
+            subList = usersId.subList(i, Math.min(i + maxSubListSize, usersId.size()));
             result.addAll(userServiceClient.getUsersByIds(subList));
         }
         return result;

@@ -76,7 +76,4 @@ yandex-speller:
   delay: 1000
 
 feign:
-  client:
-    config:
-      user-service:
-        maxSubListSize: 100
+  maxUsersSubListSize: 100
