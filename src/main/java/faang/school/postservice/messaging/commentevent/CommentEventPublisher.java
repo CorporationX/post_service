@@ -1,32 +1,30 @@
-package faang.school.postservice.messaging.CommentEventPublisher;
+package faang.school.postservice.messaging.commentevent;
 
 import faang.school.postservice.dto.comment.CommentEventDto;
+import faang.school.postservice.messaging.EventPublisher;
 import faang.school.postservice.util.JsonMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class RedisCommentEventPublisher implements CommentEventPublisher {
+@RequiredArgsConstructor
+public class CommentEventPublisher implements EventPublisher<CommentEventDto> {
+    private final RedisTemplate<String, Object> redisTemplate;
     @Autowired
-    private  RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private final ChannelTopic topic;
-    @Autowired
-    private  JsonMapper jsonMapper;
-
-    public RedisCommentEventPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic topic) {
-        this.redisTemplate = redisTemplate;
-        this.topic = topic;
-    }
+    @Qualifier("commentTopic")
+    private ChannelTopic topic;
+    private final JsonMapper jsonMapper;
 
     @Override
     public void publish(CommentEventDto commentEventDto) {
         jsonMapper.toObject(commentEventDto)
                 .ifPresent(s -> redisTemplate.convertAndSend(topic.getTopic(), s));
+        log.info(commentEventDto + " was send");
     }
 }

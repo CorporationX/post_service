@@ -1,6 +1,5 @@
 package faang.school.postservice.config.redis;
 
-import faang.school.postservice.messaging.CommentEventPublisher.RedisCommentEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +20,8 @@ public class RedisConfig {
     private int post;
     @Value("${spring.data.redis.channels.comment_channel.name}")
     private String commentEvent;
+    @Value("${spring.data.redis.channels.user_ban_channel.name}")
+    private String userBanEvent;
 
     @Bean
     RedisConnectionFactory jedisConnectionFactory() {
@@ -44,7 +45,7 @@ public class RedisConfig {
     }
 
     @Bean
-    RedisCommentEventPublisher redisPublisher() {
-        return new RedisCommentEventPublisher(redisTemplate(), commentTopic());
+    ChannelTopic userBanTopic() {
+        return new ChannelTopic(userBanEvent);
     }
 }
