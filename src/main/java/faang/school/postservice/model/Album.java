@@ -51,7 +51,9 @@ public class Album {
     @Enumerated(EnumType.STRING)
     private Visibility visibility;
 
-    @Column(name = "allowed_user_ids")
+    @CollectionTable(name ="allowed_user", joinColumns = @JoinColumn(name = "album_id"))
+    @ElementCollection
+    @Column(name = "user_id")
     private List<Long> allowedUserIds;
 
     public void addPost(Post post) {

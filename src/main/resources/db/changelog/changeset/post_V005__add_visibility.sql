@@ -1,2 +1,9 @@
 ALTER TABLE album ADD COLUMN visibility VARCHAR;
-ALTER TABLE album ADD COLUMN allowed_user_ids bigint;
+
+CREATE TABLE allowed_user
+(
+    user_id  BIGINT,
+    album_id BIGINT,
+    PRIMARY KEY (user_id, album_id),
+    CONSTRAINT fk_album_id FOREIGN KEY (album_id) REFERENCES album (id)
+);
