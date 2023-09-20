@@ -29,6 +29,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.post_view_channel.name}")
     private String postViewTopic;
 
+    @Value("${spring.data.redis.channels.comment_channel.name}")
+    private String commentChanel;
+
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
         System.out.println(port);
@@ -63,7 +66,13 @@ public class RedisConfig {
         return container;
     }
 
+    @Bean
     public ChannelTopic viewProfileTopic() {
         return new ChannelTopic(postViewTopic);
+    }
+
+    @Bean
+    public ChannelTopic commentTopic() {
+        return new ChannelTopic(commentChanel);
     }
 }

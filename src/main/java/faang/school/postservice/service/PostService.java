@@ -8,15 +8,12 @@ import faang.school.postservice.dto.post.PostViewEventDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.publisher.PostViewEventPublisher;
-import faang.school.postservice.messaging.publishing.NewPostPublisher;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ad.AdRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,8 +32,8 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
-    private final NewPostPublisher newPostPublisher;
-    private final PostViewEventPublisher postViewEventPublisher;
+    private final MessagePublisher<PostDto> newPostPublisher;
+    private final MessagePublisher<PostViewEventDto> postViewEventPublisher;
 
     @Transactional
     public PostDto createPost(CreatePostDto createPostDto) {
