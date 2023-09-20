@@ -29,6 +29,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        comment_channel:
+          name: comment_chanel
         post_view_channel:
           name: post_view_channel
 

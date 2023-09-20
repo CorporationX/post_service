@@ -1,10 +1,12 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.event.comment.NewCommentEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ErrorMessage;
@@ -38,6 +40,8 @@ public class CommentServiceTest {
     private PostRepository postRepository;
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
+    @Spy
+    private MessagePublisher<NewCommentEvent> messagePublisher;
     @InjectMocks
     private CommentService commentService;
 

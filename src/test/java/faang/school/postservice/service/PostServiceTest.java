@@ -4,14 +4,14 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostViewEventDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapperImpl;
-import faang.school.postservice.messaging.publishing.NewPostPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
-import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ad.AdRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +22,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,11 +43,11 @@ class PostServiceTest {
     @Mock
     private UserServiceClient userServiceClient;
     @Mock
-    private PostViewEventPublisher postViewEventPublisher;
+    private MessagePublisher<PostViewEventDto> postViewEventPublisher;
     @Mock
     private ProjectServiceClient projectServiceClient;
     @Mock
-    private NewPostPublisher newPostPublisher;
+    private MessagePublisher<PostDto> newPostPublisher;
     @InjectMocks
     private PostService postService;
     private Post postOne;
