@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import java.util.List;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
@@ -33,6 +32,7 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException("This post was not found"));
     }
 
+    @Transactional(readOnly = true)
     public List<Long> getByPostIsVerifiedFalse() {
         return postRepository.findByVerifiedIsFalse().stream()
                 .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()))
@@ -42,30 +42,29 @@ public class PostService {
                 .toList();
     }
 
+    @Transactional
     public void createPost(PostDto postDto) {
         definitionId(postDto);
         postRepository.save(postMapper.toEntity(postDto));
     }
 
+    @Transactional
     public void publishPost(long postId, long userId) {
         Post post = getPostById(postId);
         postValidator.validatePostByUser(post, userId);
         postValidator.isPublished(post);
         post.setPublished(true);
-
-        postRepository.save(post);
     }
 
+    @Transactional
     public void publishPostByProject(long postId, long projectId) {
         Post post = getPostById(postId);
         postValidator.validatePostByProject(post, projectId);
         postValidator.isPublished(post);
         post.setPublished(true);
-
-        postRepository.save(post);
     }
 
-
+    @Transactional
     public void updatePost(long postId, PostDto postDto) {
         Post post = getPostById(postId);
         definitionId(postDto);
@@ -74,6 +73,7 @@ public class PostService {
         postRepository.save(postMapper.toEntity(postDto));
     }
 
+    @Transactional
     public void deletePost(long postId, long userId) {
         Post post = getPostById(postId);
         postValidator.validatePostByUser(post, userId);
@@ -83,6 +83,7 @@ public class PostService {
         postRepository.save(post);
     }
 
+    @Transactional
     public void deletePostByProject(long postId, long projectId) {
         Post post = getPostById(postId);
         postValidator.validatePostByProject(post, projectId);
@@ -91,6 +92,7 @@ public class PostService {
         postRepository.save(post);
     }
 
+    @Transactional
     public PostDto getPost(long postId) {
         Post post = getPostById(postId);
         postValidator.isDeleted(post);
@@ -98,6 +100,7 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public List<PostDto> getAllUsersDrafts(long userId) {
         postValidator.validateUser(userId);
         List<Post> posts = postRepository.findAllUsersDrafts(userId);
@@ -106,6 +109,7 @@ public class PostService {
         return postMapper.toDtoList(filteredPosts);
     }
 
+    @Transactional
     public List<PostDto> getAllProjectDrafts(long projectId) {
         postValidator.validateProject(projectId);
         List<Post> posts = postRepository.findAllProjectDrafts(projectId);
@@ -114,6 +118,7 @@ public class PostService {
         return postMapper.toDtoList(filteredPosts);
     }
 
+    @Transactional
     public List<PostDto> getAllUsersPublished(long userId) {
         postValidator.validateUser(userId);
         List<Post> posts = postRepository.findAllAuthorPublished(userId);
@@ -122,6 +127,7 @@ public class PostService {
         return postMapper.toDtoList(filteredPosts);
     }
 
+    @Transactional
     public List<PostDto> getAllProjectPublished(long projectId) {
         postValidator.validateProject(projectId);
         List<Post> posts = postRepository.findAllProjectPublished(projectId);

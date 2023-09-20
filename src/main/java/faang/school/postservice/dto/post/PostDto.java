@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 public class PostDto {
@@ -11,4 +13,5 @@ public class PostDto {
     private String content;
     private Long authorId;
     private Long projectId;
+    private List<Long> likes;
 }

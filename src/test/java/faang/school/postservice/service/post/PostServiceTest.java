@@ -91,16 +91,18 @@ class PostServiceTest {
 
     @Test
     void publishPost() {
-        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
+        Post post = new Post();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         postService.publishPost(1L, 1L);
-        Mockito.verify(postRepository, Mockito.times(1)).save(Mockito.any(Post.class));
+        assertTrue(post.isPublished());
     }
 
     @Test
     void publishPostByProject() {
-        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
+        Post post = new Post();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         postService.publishPostByProject(1L, 1L);
-        Mockito.verify(postRepository, Mockito.times(1)).save(Mockito.any(Post.class));
+        assertTrue(post.isPublished());
     }
 
     @Test
