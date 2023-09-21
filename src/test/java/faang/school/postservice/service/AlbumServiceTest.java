@@ -82,7 +82,7 @@ class AlbumServiceTest {
     void testCreateAlbumUser_DataValidationException() {
         AlbumCreateDto albumCreateDto = AlbumCreateDto.builder().description("description").title("title").authorId(1L).build();
 
-        when(userServiceClient.getUser(albumCreateDto.getAuthorId())).thenReturn(UserDto.builder().id(1L).build());
+        when(userServiceClient.getUserInternal(albumCreateDto.getAuthorId())).thenReturn(UserDto.builder().id(1L).build());
         when(albumRepository.existsByTitleAndAuthorId(albumCreateDto.getTitle(), albumCreateDto.getAuthorId())).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () -> albumService.createAlbum(albumCreateDto));
@@ -94,7 +94,7 @@ class AlbumServiceTest {
         AlbumDto albumDto = AlbumDto.builder().id(1L).build();
         AlbumCreateDto albumCreateDto = AlbumCreateDto.builder().description("description").title("title").authorId(1L).build();
 
-        when(userServiceClient.getUser(albumCreateDto.getAuthorId())).thenReturn(UserDto.builder().id(1L).build());
+        when(userServiceClient.getUserInternal(albumCreateDto.getAuthorId())).thenReturn(UserDto.builder().id(1L).build());
         when(albumRepository.existsByTitleAndAuthorId(anyString(), anyLong())).thenReturn(false);
 
         when(albumMapper.toAlbumCreate(albumCreateDto)).thenReturn(album);
@@ -344,7 +344,7 @@ class AlbumServiceTest {
         album4.setVisibility(AlbumVisibility.ALL_USERS);
 
         when(userContext.getUserId()).thenReturn(4L);
-        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(userServiceClient.getUserInternal(anyLong())).thenReturn(author);
         when(albumRepository.findAll()).thenReturn(List.of(
                 album1, album2, album3, album4));
 
@@ -368,7 +368,7 @@ class AlbumServiceTest {
         album4.setVisibility(AlbumVisibility.ALL_USERS);
 
         when(userContext.getUserId()).thenReturn(1L);
-        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(userServiceClient.getUserInternal(anyLong())).thenReturn(author);
         when(albumRepository.findAll()).thenReturn(List.of(
                 album1, album2, album3, album4));
 
@@ -392,7 +392,7 @@ class AlbumServiceTest {
         album4.setVisibility(AlbumVisibility.ALL_USERS);
 
         when(userContext.getUserId()).thenReturn(2L);
-        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(userServiceClient.getUserInternal(anyLong())).thenReturn(author);
         when(albumRepository.findAll()).thenReturn(List.of(
                 album1, album2, album3, album4));
 
@@ -416,7 +416,7 @@ class AlbumServiceTest {
         album4.setVisibility(AlbumVisibility.ALL_USERS);
 
         when(userContext.getUserId()).thenReturn(2L);
-        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(userServiceClient.getUserInternal(anyLong())).thenReturn(author);
         when(albumRepository.findAll()).thenReturn(List.of(
                 album1, album2, album3, album4));
 

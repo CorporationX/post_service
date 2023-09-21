@@ -30,7 +30,9 @@ spring:
         like_channel:
           name: like-channel
         calculations_channel:
-          name: calculations-channel
+          name: calculations_channel
+        post_view_channel:
+          name: post_view_channel
 
 server:
   port: 8081
@@ -69,3 +71,13 @@ aws:
   secretKey: password
   region: http://127.0.0.1:9000/
   bucket-name: user-bucket
+
+pool:
+  notice-pool:
+    core-pool-size: 10
+    maximum-pool-size: 15
+    keep-alive-time: 5000
+    capacity: 10000
+
+page:
+  size: 20
