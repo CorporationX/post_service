@@ -37,5 +37,4 @@ class LikeEventPublisherTest {
 
         verify(redisMessagePublisher, times(1)).publish("like_events_channel", likeEvent);
     }
-
 }
