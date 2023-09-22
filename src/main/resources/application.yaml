@@ -28,6 +28,8 @@ spring:
           name: user_ban_channel
         comment_events_channel:
           name: comment_events_channel
+        like_events_channel:
+          name: like_events_channel
 
 server:
   port: 8081
