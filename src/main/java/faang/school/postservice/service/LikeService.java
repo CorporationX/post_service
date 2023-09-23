@@ -78,12 +78,12 @@ public class LikeService {
 
     private Like getExistingLikeForComment(long commentId, long userId) {
         return likeRepository.findByCommentIdAndUserId(commentId, userId)
-                .orElseThrow(() -> new EntityNotFoundException("User hasn't liked this comment"));
+                .orElseThrow(() -> new EntityNotFoundException("User with userId - " + userId + " hasn't liked this comment"));
     }
 
     private Like getExistingLikeForPost(long postId, long userId) {
         return likeRepository.findByPostIdAndUserId(postId, userId)
-                .orElseThrow(() -> new EntityNotFoundException("User hasn't liked this post"));
+                .orElseThrow(() -> new EntityNotFoundException("User with userId - " + userId + " hasn't liked this post"));
     }
 
     private void validateUserHasNotLiked(long id, long userId) {
