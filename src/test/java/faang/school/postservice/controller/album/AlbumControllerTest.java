@@ -49,11 +49,11 @@ class AlbumControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private WireMockServer mockBooksService;
+//    @Autowired
+//    private WireMockServer mockBooksService;
 
-    @Autowired
-    private UserServiceClient userServiceClient;
+//    @Autowired
+//    private UserServiceClient;
     @Container
     public static PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
             new PostgreSQLContainer<>("postgres:13.6");

@@ -1,7 +1,11 @@
 package faang.school.postservice.service.post;
 
+
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,23 +13,30 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.springframework.test.util.ReflectionTestUtils;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
-
     @Mock
     private PostRepository postRepository;
-
+    @Mock
+    private PostMapper postMapper;
+    @Mock
+    private PostValidator postValidator;
     @InjectMocks
     private PostService postService;
-
     List<Post> listFindByVerifiedIsFalse;
-
+    List<Post> draftsPosts;
+    List<Post> publishedPosts;
+    Post post;
+    Post post2;
+  
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(postService, "countOffensiveContentForBan", 1);
@@ -39,6 +50,132 @@ class PostServiceTest {
         listFindByVerifiedIsFalse = List.of(post1, post2, post3, post4, post5);
     }
 
+
+    @BeforeEach
+    public void init() {
+        post = new Post();
+        post.setAuthorId(1L);
+        post.setDeleted(false);
+        post.setId(1L);
+        post.setCreatedAt(LocalDateTime.now());
+
+        post2 = new Post();
+        post2.setProjectId(1L);
+        post2.setDeleted(false);
+        post2.setId(1L);
+        post2.setCreatedAt(LocalDateTime.now());
+
+        draftsPosts = List.of(post, post2);
+
+        Post post3 = new Post();
+        post3.setPublishedAt(LocalDateTime.now());
+        Post post4 = new Post();
+        post4.setPublishedAt(LocalDateTime.now());
+        publishedPosts = List.of(post3, post4);
+    }
+
+    @Test
+    void getPostById() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
+        postService.getPostById(1L);
+        Mockito.verify(postRepository, Mockito.times(1)).findById(1L);
+    }
+
+    @Test
+    void createPost() {
+        PostDto postDto = PostDto.builder().content("content").authorId(1L).build();
+        Mockito.when(postMapper.toEntity(postDto)).thenReturn(new Post());
+        postService.createPost(postDto);
+        Mockito.verify(postRepository, Mockito.times(1)).save(Mockito.any(Post.class));
+    }
+
+    @Test
+    void publishPost() {
+        Post post = new Post();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        postService.publishPost(1L, 1L);
+        assertTrue(post.isPublished());
+    }
+
+    @Test
+    void publishPostByProject() {
+        Post post = new Post();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        postService.publishPostByProject(1L, 1L);
+        assertTrue(post.isPublished());
+    }
+
+    @Test
+    void updatePost() {
+        PostDto postDto = PostDto.builder().content("content").authorId(1L).build();
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        Mockito.when(postMapper.toEntity(postDto)).thenReturn(post);
+
+        postService.updatePost(1L, postDto);
+        Mockito.verify(postRepository, Mockito.times(1)).save(post);
+    }
+
+    @Test
+    void deletePost() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        postService.deletePost(1L, 1L);
+        Mockito.verify(postRepository, Mockito.times(1)).save(post);
+        assertTrue(post.isDeleted());
+    }
+
+    @Test
+    void deletePostByProject() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post2));
+
+        postService.deletePostByProject(1L, 1L);
+        Mockito.verify(postRepository, Mockito.times(1)).save(post2);
+        assertTrue(post2.isDeleted());
+    }
+
+    @Test
+    void getPost() {
+        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        postService.getPost(1L);
+        Mockito.verify(postRepository, Mockito.times(1)).findById(1L);
+    }
+
+    @Test
+    void getAllUsersDrafts() {
+        Mockito.when(postRepository.findAllUsersDrafts(1L)).thenReturn(draftsPosts);
+
+        postService.getAllUsersDrafts(1L);
+        Mockito.verify(postRepository, Mockito.times(1)).findAllUsersDrafts(1L);
+        assertEquals(2, draftsPosts.size());
+    }
+
+    @Test
+    void getAllProjectDrafts() {
+        Mockito.when(postRepository.findAllProjectDrafts(1L)).thenReturn(draftsPosts);
+
+        postService.getAllProjectDrafts(1L);
+        Mockito.verify(postRepository, Mockito.times(1)).findAllProjectDrafts(1L);
+        assertEquals(2, draftsPosts.size());
+    }
+
+    @Test
+    void getAllUsersPublished() {
+        Mockito.when(postRepository.findAllAuthorPublished(1L)).thenReturn(publishedPosts);
+
+        postService.getAllUsersPublished(1L);
+        Mockito.verify(postRepository, Mockito.times(1)).findAllAuthorPublished(1L);
+        assertEquals(2, publishedPosts.size());
+    }
+
+    @Test
+    void getAllProjectPublished() {
+        Mockito.when(postRepository.findAllProjectPublished(1L)).thenReturn(publishedPosts);
+
+        postService.getAllProjectPublished(1L);
+        Mockito.verify(postRepository, Mockito.times(1)).findAllProjectPublished(1L);
+        assertEquals(2, publishedPosts.size());
+    }
     @Test
     void testGetByPostIsVerifiedFalse() {
         Mockito.when(postRepository.findByVerifiedIsFalse()).thenReturn(listFindByVerifiedIsFalse);
