@@ -41,8 +41,10 @@ public class LikeService {
         if (byPostIdAndUserId.isEmpty()) {
             Like postLike = likeMapper.toEntity(likeDto);
             Optional<Post> postById = postRepository.findById(postId);
-            postById.get().getLikes().add(postLike);
-            postLike.setPost(postById.get());
+            postById.ifPresent(post -> {
+                post.getLikes().add(postLike);
+                postLike.setPost(post);
+            });
             likeRepository.save(postLike);
             return likeMapper.toDto(postLike);
         }
