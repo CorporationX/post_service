@@ -1,5 +1,6 @@
 package faang.school.postservice.model;
 
+import faang.school.postservice.enums.Visibility;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,6 +46,15 @@ public class Album {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "visibility")
+    @Enumerated(EnumType.STRING)
+    private Visibility visibility;
+
+    @CollectionTable(name ="allowed_user", joinColumns = @JoinColumn(name = "album_id"))
+    @ElementCollection
+    @Column(name = "user_id")
+    private List<Long> allowedUserIds;
 
     public void addPost(Post post) {
         posts.add(post);

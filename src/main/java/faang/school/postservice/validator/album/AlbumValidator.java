@@ -2,6 +2,8 @@ package faang.school.postservice.validator.album;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.enums.Visibility;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
@@ -35,29 +37,29 @@ public class AlbumValidator {
 
     public void validatePostToAdd(long albumId, long postId, long userId) {
         validateUser(userId);
-        validateAlbum(albumId);
+        getAlbumFromDb(albumId);
         validateAuthor(albumId, userId);
         validatePostToExist(postId, albumId);
     }
 
-    public void validateAuthor(long albumId,long userId) {
+    public void validateAuthor(long albumId, long userId) {
         validateUser(userId);
-        long authorId = validateAlbum(albumId).getAuthorId();
+        long authorId = getAlbumFromDb(albumId).getAuthorId();
         if (authorId != userId) {
             throw new DataValidationException("You are not author of this album");
         }
     }
 
-    public void validateFavoriteAlbumToDelete(long userId,long albumId) {
+    public void validateFavoriteAlbumToDelete(long userId, long albumId) {
         List<Album> albums = albumRepository.findFavoriteAlbumsByUserId(userId).toList();
-        if(!albums.contains(validateAlbum(albumId))) {
+        if (!albums.contains(getAlbumFromDb(albumId))) {
             throw new DataValidationException("Album not in favorites");
         }
     }
 
     public void validatePostToExist(long postId, long albumId) {
         Post post = postService.getPostById(postId);
-        Album album = validateAlbum(albumId);
+        Album album = getAlbumFromDb(albumId);
         List<Post> posts = album.getPosts();
         if (posts.contains(post)) {
             throw new DataValidationException("Post already in this album");
@@ -68,7 +70,28 @@ public class AlbumValidator {
         userServiceClient.getUser(userId);
     }
 
-    public Album validateAlbum(Long albumId) {
+    public Album getAlbumFromDb(Long albumId) {
         return albumRepository.findById(albumId).orElseThrow(() -> new DataValidationException("Album not found"));
+    }
+
+    public void privacyCheck(Long userId, Long albumId) {
+        Album album = getAlbumFromDb(albumId);
+
+        if (album.getVisibility() == Visibility.PRIVATE && !userId.equals(album.getAuthorId())) {
+            throw new DataValidationException("You are not author of this album");
+        }
+
+        if (album.getVisibility() == Visibility.ONLY_SUBSCRIBERS) {
+            UserDto authorDto = userServiceClient.getUser(album.getAuthorId());
+            if (!authorDto.getFollowedUserIds().contains(userId)) {
+                throw new DataValidationException("You are not a subscriber of this author");
+            }
+        }
+
+        if (album.getVisibility() == Visibility.ONLY_SELECTED) {
+            if (!album.getAllowedUserIds().contains(userId)) {
+                throw new DataValidationException("You are not allowed to see this album");
+            }
+        }
     }
 }

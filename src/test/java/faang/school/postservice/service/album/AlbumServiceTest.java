@@ -1,6 +1,8 @@
 package faang.school.postservice.service.album;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.enums.Visibility;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
@@ -15,6 +17,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+
+import static org.junit.Assert.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class AlbumServiceTest {
@@ -63,9 +67,9 @@ class AlbumServiceTest {
     @Test
     public void getAlbumTest() {
         var albumId = 1L;
-        Mockito.when(albumRepository.findById(albumId)).thenReturn(java.util.Optional.of(new Album()));
-        albumService.getAlbum(albumId);
-        Mockito.verify(albumRepository, Mockito.times(1)).findById(albumId);
+        var album = Album.builder().visibility(Visibility.PUBLIC).build();
+        Mockito.when(albumValidator.getAlbumFromDb(albumId)).thenReturn(album);
+        albumService.getAlbum(albumId, 1L);
+        Mockito.verify(albumValidator, Mockito.times(1)).getAlbumFromDb(albumId);
     }
-
 }
