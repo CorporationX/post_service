@@ -26,6 +26,8 @@ spring:
           name: calculations_channel
         comment_channel:
           name: comment_channel
+        user_ban_channel:
+          name: user_ban_channel
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -48,9 +50,10 @@ post:
     scheduler:
 #      cron: "0 0/1 * 1/1 * ?" # every minute
       cron: "0/10 * * * * ?" # every 10 second
-  ad-remover:
-    scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+    ad-remover:
+      scheduler:
+         cron: "0 0/1 * 1/1 * ?" # every minute
+
 
 schedule:
   publishing_limit: 100

@@ -8,12 +8,12 @@ import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ScheduledTaskMapper;
 import faang.school.postservice.messaging.postevent.PostEventPublisher;
+import faang.school.postservice.messaging.userbanevent.UserBanEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.scheduled.ScheduledTask;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ScheduledTaskRepository;
-import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -42,6 +41,7 @@ public class PostService {
     private final PostEventPublisher postEventPublisher;
     private final PostViewEventPublisher postViewEventPublisher;
     private final ScheduledTaskRepository scheduledTaskRepository;
+    private final UserBanEventPublisher userBanEventPublisher;
 
     @Transactional
     public PostDto addPost(PostDto dto) {
@@ -106,7 +106,7 @@ public class PostService {
         return postMapper.toDto(postById);
     }
 
-    public PostDto getPost(Long id){
+    public PostDto getPost(Long id) {
         Post postById = getPostById(id);
         validator.validateToGet(postById);
 
@@ -115,7 +115,7 @@ public class PostService {
         return postMapper.toDto(postById);
     }
 
-    public List<PostDto> getDraftsByAuthorId(Long authorId){
+    public List<PostDto> getDraftsByAuthorId(Long authorId) {
         List<Post> draftsByAuthorId = postRepository.findReadyToPublishByAuthorId(authorId);
 
         return postMapper.toDtos(draftsByAuthorId);
@@ -127,7 +127,7 @@ public class PostService {
         return postMapper.toDtos(draftsByProjectId);
     }
 
-    public List<PostDto> getPostsByAuthorId(Long authorId){
+    public List<PostDto> getPostsByAuthorId(Long authorId) {
         List<Post> postsByAuthorId = postRepository.findPublishedPostsByAuthorId(authorId);
 
         postsByAuthorId.forEach(postViewEventPublisher::publish);
@@ -142,13 +142,14 @@ public class PostService {
 
         return postMapper.toDtos(postsByProjectId);
     }
+
     @Transactional
-    public List<Post> getAllPosts(){
+    public List<Post> getAllPosts() {
         return postRepository.findAll();
     }
 
     @Transactional
-    public void save(Post post){
+    public void save(Post post) {
         postRepository.save(post);
     }
 
@@ -166,6 +167,30 @@ public class PostService {
 
         return scheduledTaskMapper.toDto(entity);
     }
+
+    public void banUser() {
+        Map<Long, Long> banList = new HashMap<>();
+        List<Post> allPosts = postRepository.findAll();
+        long postCount = 0;
+
+        for (Post allPost : allPosts) {
+            Long authorId = allPost.getAuthorId();
+            if (!banList.containsKey(authorId)) {
+                banList.put(authorId, postCount);
+            }
+            if (!allPost.isVerified()) {
+                long increment = banList.get(authorId) + 1;
+                banList.put(authorId, increment);
+            }
+        }
+
+        for (Map.Entry<Long, Long> entry : banList.entrySet()) {
+            if (entry.getValue() > 5) {
+                userBanEventPublisher.publish(entry.getKey());
+            }
+        }
+    }
+
 
     @Async()
     public CompletableFuture<Void> publishScheduledPosts() {
