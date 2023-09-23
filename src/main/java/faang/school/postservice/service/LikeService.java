@@ -83,7 +83,8 @@ public class LikeService {
 
     private Like getExistingLikeForPost(long postId, long userId) {
         return likeRepository.findByPostIdAndUserId(postId, userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with userId - " + userId + " hasn't liked this post"));
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("User with userId - " + userId + " hasn't liked this post with id - " + postId));
     }
 
     private void validateUserHasNotLiked(long id, long userId) {
