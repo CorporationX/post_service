@@ -6,10 +6,12 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -36,6 +38,20 @@ public class ContentModerator {
                 moderatePosts(postBatch);
             });
         }
+        log.info("Post content moderation is done " + Thread.currentThread().getId() + " " + LocalDateTime.now());
+    }
+
+    @Async("moderationExecutor")
+    public void moderateComment() {
+        log.info("Post content moderation has started " + Thread.currentThread().getId() + " " + LocalDateTime.now());
+        List<Post> allPosts = postService.getAllPosts();
+        List<Post> VerifiedPosts = new ArrayList<>();
+        for (Post allPost : allPosts) {
+            if (checkTime(allPost.getVerifiedDate())) {
+                VerifiedPosts.add(allPost);
+            }
+        }
+        moderatePosts(VerifiedPosts);
         log.info("Post content moderation is done " + Thread.currentThread().getId() + " " + LocalDateTime.now());
     }
 
