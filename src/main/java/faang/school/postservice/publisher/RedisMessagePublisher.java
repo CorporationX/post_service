@@ -15,12 +15,12 @@ public class RedisMessagePublisher {
     private final ObjectMapper objectMapper;
 
     public void publish(String channel, Object message) {
+        redisTemplate.convertAndSend(channel, message);
         try {
-            String json = objectMapper.writeValueAsString(message);
-            redisTemplate.convertAndSend(channel, json);
-            log.info(channel + " notification was published. {}", json);
+            String messageJson = objectMapper.writeValueAsString(message);
+            log.info("A message has been sent to channel {}, message: {}", channel, messageJson);
         } catch (JsonProcessingException e) {
-            log.error(channel + " notification failed.");
+            log.error("An exception was thrown when reading a message in RedisMessagePublisher: {}", e.getMessage());
             throw new RuntimeException(e);
         }
     }
