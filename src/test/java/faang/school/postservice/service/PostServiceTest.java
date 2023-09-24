@@ -13,6 +13,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostEventPublisher;
+import faang.school.postservice.publisher.UserBannerPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.async.PostAsyncService;
 import faang.school.postservice.validator.PostValidator;
@@ -29,7 +30,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -69,6 +72,8 @@ class PostServiceTest {
     private PostEventPublisher postEventPublisher;
     @InjectMocks
     private PostService postService;
+    @Mock
+    private UserBannerPublisher userBannerPublisher;
 
     private Long postId;
     private UserDto userDto;
@@ -461,5 +466,19 @@ class PostServiceTest {
         assertEquals(post.getId(), result.getId());
         assertEquals(correctedContent, result.getContent());
         assertEquals(post.getSpellCheckedAt(), result.getSpellCheckedAt());
+    }
+
+    @Test
+    public void testPublishAuthorBanner() {
+        Post post = Post.builder().authorId(1L).build();
+        List<Post> posts = List.of(post, post, post, post, post, post);
+        Map<Long, List<Post>> groupedPosts = Map.of(1L, posts);
+
+        when(postRepository.findUnverifiedPosts()).thenReturn(posts);
+
+        postService.publishAuthorBanner();
+
+        verify(postRepository, times(1)).findUnverifiedPosts();
+        groupedPosts.entrySet().stream().filter(entry -> entry.getValue().size() > 5).forEach(entry -> verify(userBannerPublisher).publish(1L));
     }
 }
