@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @EnableRedisRepositories
@@ -22,6 +23,8 @@ public class RedisConfig {
     private String commentEvent;
     @Value("${spring.data.redis.channels.user_ban_channel.name}")
     private String userBanEvent;
+    @Value("${spring.data.redis.channels.like_channel.name}")
+    private String likeEvent;
 
     @Bean
     RedisConnectionFactory jedisConnectionFactory() {
@@ -32,11 +35,12 @@ public class RedisConfig {
     }
 
     @Bean
-    RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(jedisConnectionFactory());
-        template.setValueSerializer(new GenericToStringSerializer<>(Object.class));
-        return template;
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        return redisTemplate;
     }
 
     @Bean
@@ -47,5 +51,10 @@ public class RedisConfig {
     @Bean
     ChannelTopic userBanTopic() {
         return new ChannelTopic(userBanEvent);
+    }
+
+    @Bean
+    ChannelTopic likeTopic() {
+        return new ChannelTopic(likeEvent);
     }
 }
