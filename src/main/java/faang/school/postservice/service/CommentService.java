@@ -33,8 +33,8 @@ public class CommentService {
         validator.validateExistingUserAtCommentDto(commentDto);
 
         Comment comment = commentMapper.toEntity(commentDto);
-        commentEventPublisher.publish(new CommentEventDto(commentDto.getPostId(), commentDto.getAuthorId(),
-                commentDto.getId()));
+        CommentEventDto commentEventDto = commentMapper.toEvent(comment);
+        commentEventPublisher.publish(commentEventDto);
         return commentMapper.toDto(commentRepository.save(comment));
     }
 

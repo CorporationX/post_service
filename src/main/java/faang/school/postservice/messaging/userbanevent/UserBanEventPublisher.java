@@ -12,11 +12,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserBanEventPublisher implements EventPublisher<Long> {
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic topic;
+    private final ChannelTopic userBanTopic;
 
     @Override
     public void publish(Long userId) {
-        redisTemplate.convertAndSend(topic.getTopic(), userId);
+        redisTemplate.convertAndSend(userBanTopic.getTopic(), userId);
         log.info(userId + " was sent");
     }
 }
