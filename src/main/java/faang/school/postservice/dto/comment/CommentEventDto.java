@@ -15,5 +15,6 @@ public class CommentEventDto {
     private long postId;
     private long authorId;
     private long commentId;
+    private String commentText;
     private LocalDateTime createdAt;
 }

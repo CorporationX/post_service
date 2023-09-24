@@ -269,7 +269,7 @@ class PostServiceTest {
         ResponsePostDto responsePostDto = postService.likePost(updatePostDto, userId);
 
         verify(likeRepository, times(1)).save(any());
-        verify(likeEventPublisher, times(1)).publishMessage(LikeEventDto.builder().postId(1L).postAuthor(2L).likeAuthor(2L).dateTime(any()).build());
+        verify(likeEventPublisher, times(1)).publishMessage(LikeEventDto.builder().postId(1L).postAuthor(2L).likeAuthorId(2L).dateTime(any()).build());
 
         assertNotNull(responsePostDto);
     }
