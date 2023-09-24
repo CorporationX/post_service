@@ -12,7 +12,6 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostEventPublisher;
-import faang.school.postservice.publisher.UserBannerPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.async.PostAsyncService;
 import faang.school.postservice.validator.PostValidator;
@@ -229,17 +228,5 @@ public class PostService {
                 .postId(createdPost.getId())
                 .build();
         postEventPublisher.publish(postCreateEventDto);
-    }
-
-    @Transactional(readOnly = true)
-    public void publishAuthorBanner() {
-        List<Post> posts = postRepository.findUnverifiedPosts();
-        Map<Long, List<Post>> groupedPosts = posts.stream().collect(Collectors.groupingBy(Post::getAuthorId));
-
-        groupedPosts.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().size() > 5)
-                .forEach(entry -> userBannerPublisher.publish(entry.getKey()));
-
     }
 }

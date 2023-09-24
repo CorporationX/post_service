@@ -30,8 +30,7 @@ spring:
           name: comments-channel
         post_channels:
           name: post-channel
-        user_channels:
-          user-ban-channel
+
 
   async:
     poolSize: 10
@@ -45,8 +44,6 @@ spring:
       partitionSize: 1000
     spellChecker:
       cron: "0 0/1 * 1/1 * ?" # every minute
-    userBannerPublisher:
-      cron: "0 0 * * * *" # every day
 
 server:
   port: 8081
