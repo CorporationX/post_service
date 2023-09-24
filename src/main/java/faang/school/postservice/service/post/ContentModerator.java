@@ -43,7 +43,7 @@ public class ContentModerator {
 
     @Async("moderationExecutor")
     public void moderateComment() {
-        log.info("Post content moderation has started " + Thread.currentThread().getId() + " " + LocalDateTime.now());
+        log.info("Comment content moderation has started " + Thread.currentThread().getId() + " " + LocalDateTime.now());
         List<Post> allPosts = postService.getAllPosts();
         List<Post> VerifiedPosts = new ArrayList<>();
         for (Post allPost : allPosts) {
@@ -52,7 +52,7 @@ public class ContentModerator {
             }
         }
         moderatePosts(VerifiedPosts);
-        log.info("Post content moderation is done " + Thread.currentThread().getId() + " " + LocalDateTime.now());
+        log.info("Comment content moderation is done " + Thread.currentThread().getId() + " " + LocalDateTime.now());
     }
 
     private void moderatePosts(List<Post> posts) {
