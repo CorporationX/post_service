@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.util.exception.NotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -66,4 +67,7 @@ public abstract class CommentMapper {
         });
         return likes;
     }
+    @Mapping(source = "post.id", target = "postId")
+    @Mapping(source = "comment.id", target = "commentId")
+    public abstract CommentEventDto toEvent(Comment comment);
 }
