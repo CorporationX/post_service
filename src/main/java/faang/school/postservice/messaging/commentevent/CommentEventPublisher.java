@@ -16,15 +16,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CommentEventPublisher implements EventPublisher<CommentEventDto> {
     private final RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    @Qualifier("commentTopic")
-    private ChannelTopic topic;
+    private final ChannelTopic commentTopic;
     private final JsonMapper jsonMapper;
 
     @Override
     public void publish(CommentEventDto commentEventDto) {
         jsonMapper.toObject(commentEventDto)
-                .ifPresent(s -> redisTemplate.convertAndSend(topic.getTopic(), s));
+                .ifPresent(s -> redisTemplate.convertAndSend(commentTopic.getTopic(), s));
         log.info(commentEventDto + " was send");
     }
 }
