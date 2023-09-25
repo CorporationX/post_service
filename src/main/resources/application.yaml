@@ -25,6 +25,8 @@ spring:
         calculations_channel: calculations-channel
         comment_event_channel: comment-event-channel
         user_ban: user-ban
+        like_channel: like-channel
+
 
   config:
     import: classpath:values/values.yaml

@@ -6,6 +6,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.like.LikeServiceValidator;
 import feign.FeignException;
@@ -37,6 +38,9 @@ class LikeServiceTest {
     LikeRepository likeRepository;
     @Mock
     LikeMapper likeMapper;
+
+    @Mock
+    LikeEventPublisher likeEventPublisher;
 
     private final LikeDto likeDto = LikeDto.builder().userId(1L).build();
     private final LikeDto returnedDto = LikeDto.builder().userId(1L).id(5L).build();
@@ -111,6 +115,7 @@ class LikeServiceTest {
     void addLikeToPost() {
         when(likeMapper.toEntity(like)).thenReturn(someLike);
         likeService.addLikeToPost(11, like);
+        verify(likeEventPublisher, times(1)).publish(someLike);
         verify(likeRepository, times(1)).save(someLike);
     }
 
