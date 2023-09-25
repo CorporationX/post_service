@@ -20,8 +20,6 @@ public class LikeServiceTest {
     private LikeRepository likeRepository;
     @Mock
     private UserServiceClient userServiceClient;
-    @Mock
-    private LikeEventPublisher likeEventPublisher;
     @InjectMocks
     private LikeService service;
 

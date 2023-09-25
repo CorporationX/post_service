@@ -20,7 +20,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Builder
 public class LikeService {
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
