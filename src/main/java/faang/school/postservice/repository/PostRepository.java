@@ -37,4 +37,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.projectId = :projectId AND p.published = true AND p.deleted = false")
     List<Post> findPublishedPostsByProjectId(long projectId);
+
+    @Query("SELECT p FROM Post p WHERE p.verified = false")
+    List<Post> findUnverifiedPosts();
 }
