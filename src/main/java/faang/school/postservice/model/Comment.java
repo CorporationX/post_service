@@ -46,7 +46,7 @@ public class Comment {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "verified")
+    @Column(name = "verified", nullable = false)
     private boolean isVerified;
 
     @Temporal(TemporalType.TIMESTAMP)
