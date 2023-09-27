@@ -24,6 +24,6 @@ public class LikeEventPublisher implements EventPublisher<LikeEventDto> {
     public void publish(LikeEventDto likeEventDto) {
         jsonMapper.toObject(likeEventDto)
                 .ifPresent(str -> redisTemplate.convertAndSend(likeTopic.getTopic(), str));
-        log.info(likeEventDto + "was send");
+        log.info(likeEventDto + " was send");
     }
 }
