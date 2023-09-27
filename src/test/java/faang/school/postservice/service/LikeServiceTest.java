@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.*;
 import faang.school.postservice.messaging.likeevent.LikeEventPublisher;
@@ -88,6 +89,7 @@ class LikeServiceTest {
         assertEquals(likeDto.getPostId(), likeOnPost.getPostId());
 
         Mockito.verify(likeRepository).save(Mockito.any());
+        Mockito.verify(likeEventPublisher).publish(Mockito.any());
     }
 
     @Test
