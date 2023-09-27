@@ -2,6 +2,7 @@ package faang.school.postservice.srvice;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.LikeService;
 import org.junit.jupiter.api.Test;
