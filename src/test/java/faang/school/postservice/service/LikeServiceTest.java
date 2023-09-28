@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,6 +52,9 @@ class LikeServiceTest {
 
     @Mock
     private CommentService commentService;
+
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
 
     private UserDto userDto;
     private LikeDto likeDto;

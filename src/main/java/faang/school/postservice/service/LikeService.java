@@ -9,9 +9,11 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,8 +24,10 @@ public class LikeService {
     private final LikeMapper likeMapper;
     private final PostService postService;
     private final CommentService commentService;
+    private final LikeEventPublisher likeEventPublisher;
 
 
+    @Transactional
     public LikeDto likePost(LikeDto likeDto) {
         long postId = likeDto.getPostId();
         Post existingPost = postService.getPostIfExist(postId);
@@ -36,9 +40,13 @@ public class LikeService {
         like.setPost(existingPost);
         Like savedLike = likeRepository.save(like);
 
+        likeEventPublisher.publishLikeEvent
+                (postId, existingPost.getAuthorId(), savedLike.getUserId(), savedLike.getCreatedAt());
+
         return likeMapper.toDto(savedLike);
     }
 
+    @Transactional
     public LikeDto likeComment(LikeDto likeDto) {
         long commentId = likeDto.getCommentId();
         Comment existingComment = commentService.findExistingComment(commentId);
@@ -54,12 +62,14 @@ public class LikeService {
         return likeMapper.toDto(savedLike);
     }
 
+    @Transactional
     public void unlikePost(long postId) {
         UserDto userDto = userService.getUser();
         Like like = getExistingLikeForPost(postId, userDto.getId());
         likeRepository.delete(like);
     }
 
+    @Transactional
     public void unlikeComment(long commentId) {
         UserDto userDto = userService.getUser();
         Like like = getExistingLikeForComment(commentId, userDto.getId());
@@ -68,12 +78,13 @@ public class LikeService {
 
     private Like getExistingLikeForComment(long commentId, long userId) {
         return likeRepository.findByCommentIdAndUserId(commentId, userId)
-            .orElseThrow(() -> new EntityNotFoundException("User hasn't liked this comment"));
+                .orElseThrow(() -> new EntityNotFoundException("User with userId - " + userId + " hasn't liked this comment"));
     }
 
     private Like getExistingLikeForPost(long postId, long userId) {
         return likeRepository.findByPostIdAndUserId(postId, userId)
-            .orElseThrow(() -> new EntityNotFoundException("User hasn't liked this post"));
+                .orElseThrow(() -> new EntityNotFoundException
+                        ("User with userId - " + userId + " hasn't liked this post with id - " + postId));
     }
 
     private void validateUserHasNotLiked(long id, long userId) {
