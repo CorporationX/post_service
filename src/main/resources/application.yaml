@@ -26,6 +26,7 @@ spring:
         comment_event_channel: comment-event-channel
         user_ban: user-ban
         like_channel: like-channel
+        post_achievement: post-achievement-channel
 
 
   config:
