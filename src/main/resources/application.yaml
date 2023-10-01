@@ -79,5 +79,12 @@ yandex-speller:
   max-attempts-retry: 4
   delay: 1000
 
+moderation:
+  badWords:
+    list: classpath:moderation-dictionary.yaml
+  chunkSize: 100
+  schedule:
+    cron: "0 0 * * *"
+
 feign:
   maxUsersSubListSize: 100

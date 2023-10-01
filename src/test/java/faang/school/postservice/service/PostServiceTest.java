@@ -16,6 +16,7 @@ import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.UserBannerPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.async.PostAsyncService;
+import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.validator.PostValidator;
 import org.apache.commons.collections4.ListUtils;
 import org.junit.jupiter.api.Assertions;
@@ -27,22 +28,29 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.testcontainers.shaded.com.google.common.collect.Lists;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,6 +82,8 @@ class PostServiceTest {
     private PostService postService;
     @Mock
     private UserBannerPublisher userBannerPublisher;
+    @Mock
+    private ModerationDictionary moderationDictionary;
 
     private Long postId;
     private UserDto userDto;
@@ -90,6 +100,8 @@ class PostServiceTest {
         postWithAuthorIdDto = PostDto.builder().authorId(userDto.getId()).projectId(null).content("content").build();
         postWithProjectIdDto = PostDto.builder().authorId(null).projectId(projectDto.getId()).content("content2").build();
         postWithAuthorIdAndProjectIdDto = PostDto.builder().authorId(userDto.getId()).projectId(projectDto.getId()).content("content3").build();
+
+        ReflectionTestUtils.setField(postService, "chunkSize", 2);
     }
 
     @Test
@@ -480,5 +492,48 @@ class PostServiceTest {
 
         verify(postRepository, times(1)).findUnverifiedPosts();
         groupedPosts.entrySet().stream().filter(entry -> entry.getValue().size() > 5).forEach(entry -> verify(userBannerPublisher).publish(1L));
+    }
+
+    @Test
+    void testModeratePostsNoPostsToModerate() {
+        when(postRepository.findAllByVerifiedDateIsNull()).thenReturn(Collections.emptyList());
+
+        postService.moderatePosts();
+
+        verifyNoInteractions(moderationDictionary);
+    }
+
+    @Test
+    public void testWhenModeratePosts_thenPostsAreModerated() {
+        Post post1 = Post.builder().content("this is bad").build();
+        Post post2 = Post.builder().content("this is also bad").build();
+
+        when(postRepository.findAllByVerifiedDateIsNull()).thenReturn(Arrays.asList(post1, post2));
+        when(moderationDictionary.containsBadWords(anyString())).thenReturn(true);
+
+        postService.moderatePosts();
+
+        assertFalse(post1.isVerified());
+        assertNull(post1.getVerifiedDate());
+        assertFalse(post2.isVerified());
+        assertNull(post2.getVerifiedDate());
+        verify(postRepository, times(1)).saveAll(Lists.newArrayList(post1, post2));
+    }
+
+    @Test
+    public void testWhenModeratePosts_thenPostsAreNotModerated() {
+        Post post1 = Post.builder().content("this is good").build();
+        Post post2 = Post.builder().content("this is also good").build();
+
+        when(postRepository.findAllByVerifiedDateIsNull()).thenReturn(Arrays.asList(post1, post2));
+        when(moderationDictionary.containsBadWords(anyString())).thenReturn(false);
+
+        postService.moderatePosts();
+
+        assertTrue(post1.isVerified());
+        assertNotNull(post1.getVerifiedDate());
+        assertTrue(post2.isVerified());
+        assertNotNull(post2.getVerifiedDate());
+        verify(postRepository, times(1)).saveAll(Lists.newArrayList(post1, post2));
     }
 }
