@@ -2,6 +2,7 @@ package faang.school.postservice;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.info.License;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -19,7 +20,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         info = @Info(
                 title = "Post service",
                 version = "service for post",
-                description = "1.0.0"
+                description = "1.0.0",
+                license = @License(name = "Your License Name", url = "Your License URL")
         )
 )
 public class PostServiceApp {
