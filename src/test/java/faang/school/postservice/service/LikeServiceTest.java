@@ -51,6 +51,7 @@ class LikeServiceTest {
     private LikeEventPublisher likeEventPublisher;
 
     private LikeDto likeDto;
+    private Like like;
     private UserDto userDto;
     private Post post;
     private Comment comment;
@@ -66,6 +67,7 @@ class LikeServiceTest {
         comment.setLikes(new ArrayList<>());
 
         likeDto = new LikeDto(1L, 2L, comment.getId(), post.getId());
+        like = likeMapper.toEntity(likeDto);
 
         likeService = new LikeService(likeRepository, userServiceClient, postRepository, commentRepository, likeMapper, likeEventPublisher);
         likeService.setBATCH_SIZE(100);

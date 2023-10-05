@@ -46,12 +46,11 @@ public class LikeService {
             postById.ifPresent(post -> {
                 post.getLikes().add(postLike);
                 postLike.setPost(post);
+                likeEventPublisher.publish(likeMapper.toEvent(postLike));
             });
             likeRepository.save(postLike);
-            likeEventPublisher.publish(likeMapper.toEvent(byPostIdAndUserId.get()));
             return likeMapper.toDto(postLike);
         }
-        likeEventPublisher.publish(likeMapper.toEvent(byPostIdAndUserId.get()));
         return likeMapper.toDto(byPostIdAndUserId.get());
     }
 
