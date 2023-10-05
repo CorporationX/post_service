@@ -3,6 +3,7 @@ package faang.school.postservice.dto.user;
 import faang.school.postservice.dto.country.CountryDto;
 import faang.school.postservice.dto.goal.GoalDto;
 import faang.school.postservice.dto.skill.SkillDto;
+import faang.school.postservice.model.PreferredContact;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,7 +32,4 @@ public class UserDto {
     private List<GoalDto> goals;
     private List<SkillDto> skills;
     private PreferredContact preference;
-    public enum PreferredContact {
-        EMAIL, SMS, TELEGRAM
-    }
 }
