@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -251,25 +253,32 @@ public class PostService {
     }
 
     @Transactional
+    @Async
     public void moderatePosts() {
         List<Post> postsToModerate = postRepository.findAllByVerifiedDateIsNull();
         if (postsToModerate.isEmpty() || chunkSize <= 0) {
             log.info("No posts to moderate");
+            CompletableFuture.completedFuture(null);
             return;
         }
 
         Map<Integer, List<Post>> chunks = postsToModerate.stream()
                 .collect(Collectors.groupingBy(post -> postsToModerate.indexOf(post) / chunkSize));
 
-        chunks.values().parallelStream().forEach(this::moderateChunk);
+        List<CompletableFuture<Void>> futures = chunks.values().stream()
+                .map(this::moderateChunkAsync).toList();
+
+        CompletableFuture<?>[] futuresArray = futures.toArray(new CompletableFuture[0]);
+        CompletableFuture.allOf(futuresArray);
     }
 
-    private void moderateChunk(List<Post> posts) {
+    @Async
+    public CompletableFuture<Void> moderateChunkAsync(List<Post> posts) {
         List<Post> moderatedPosts = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
 
         if (posts.isEmpty()) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         posts.forEach(post -> {
@@ -282,5 +291,7 @@ public class PostService {
         });
 
         postRepository.saveAll(moderatedPosts);
+
+        return CompletableFuture.completedFuture(null);
     }
 }

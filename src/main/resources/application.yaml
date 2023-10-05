@@ -84,7 +84,7 @@ moderation:
     list: classpath:moderation-dictionary.yaml
   chunkSize: 100
   schedule:
-    cron: "0 0 * * *"
+    cron: "0 0 * * *" # every day at 00:00
 
 feign:
   maxUsersSubListSize: 100
