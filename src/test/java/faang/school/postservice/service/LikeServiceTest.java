@@ -1,9 +1,11 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.*;
+import faang.school.postservice.messaging.likeevent.LikeEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -11,13 +13,12 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.exception.EntityNotFoundException;
-import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
@@ -43,7 +44,11 @@ class LikeServiceTest {
     @Mock
     private UserServiceClient userServiceClient;
 
-    private LikeMapperImpl likeMapper = new LikeMapperImpl();
+    @Spy
+    private LikeMapperImpl likeMapper;
+
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
 
     private LikeDto likeDto;
     private UserDto userDto;
@@ -62,7 +67,7 @@ class LikeServiceTest {
 
         likeDto = new LikeDto(1L, 2L, comment.getId(), post.getId());
 
-        likeService = new LikeService(likeRepository, userServiceClient, postRepository, commentRepository, likeMapper);
+        likeService = new LikeService(likeRepository, userServiceClient, postRepository, commentRepository, likeMapper, likeEventPublisher);
         likeService.setBATCH_SIZE(100);
     }
 
@@ -84,6 +89,7 @@ class LikeServiceTest {
         assertEquals(likeDto.getPostId(), likeOnPost.getPostId());
 
         Mockito.verify(likeRepository).save(Mockito.any());
+        Mockito.verify(likeEventPublisher).publish(Mockito.any());
     }
 
     @Test
