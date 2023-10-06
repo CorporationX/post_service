@@ -15,6 +15,13 @@ repositories {
 
 dependencies {
     /**
+     * Amazon S3
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+    implementation("software.amazon.awssdk:s3:2.17.16")
+
+
+    /**
      * Spring boot starters
      */
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
@@ -27,6 +34,8 @@ dependencies {
     testImplementation("junit:junit:4.13.1")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("commons-fileupload:commons-fileupload:1.4")
+    implementation("commons-io:commons-io:2.11.0")
 
     /**
      * Database
