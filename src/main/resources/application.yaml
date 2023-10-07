@@ -28,6 +28,10 @@ spring:
           posts-view: posts-view
         comment_channels:
           name: comments-channel
+        post_channels:
+          name: post-channel
+        user_channels:
+          user-ban-channel
 
   async:
     poolSize: 10
@@ -41,6 +45,8 @@ spring:
       partitionSize: 1000
     spellChecker:
       cron: "0 0/1 * 1/1 * ?" # every minute
+    userBannerPublisher:
+      cron: "0 0 * * * *" # every day
 
 server:
   port: 8081
@@ -72,3 +78,6 @@ yandex-speller:
   check-text-url: /checkText?text=
   max-attempts-retry: 4
   delay: 1000
+
+feign:
+  maxUsersSubListSize: 100

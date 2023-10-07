@@ -5,11 +5,14 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.redis.PostEventDto;
 import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
+import faang.school.postservice.publisher.UserBannerPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.async.PostAsyncService;
 import faang.school.postservice.validator.PostValidator;
@@ -22,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +41,8 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostAsyncService postAsyncService;
     private final UserContext userContext;
+    private final PostEventPublisher postEventPublisher;
+    private final UserBannerPublisher userBannerPublisher;
 
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
@@ -58,8 +65,9 @@ public class PostService {
         postValidator.validatePostContent(post);
 
         Post postEntity = postMapper.toPost(post);
-
-        return postMapper.toDto(postRepository.save(postEntity));
+        PostDto createdPost = postMapper.toDto(postRepository.save(postEntity));
+        sendPostCreatedEvent(createdPost);
+        return createdPost;
     }
 
     @Transactional
@@ -213,5 +221,25 @@ public class PostService {
         post.setSpellCheckedAt(LocalDateTime.now());
 
         return post;
+    }
+
+    private void sendPostCreatedEvent(PostDto createdPost) {
+        PostEventDto postCreateEventDto = PostEventDto.builder()
+                .authorId(createdPost.getAuthorId())
+                .postId(createdPost.getId())
+                .build();
+        postEventPublisher.publish(postCreateEventDto);
+    }
+
+    @Transactional(readOnly = true)
+    public void publishAuthorBanner() {
+        List<Post> posts = postRepository.findUnverifiedPosts();
+        Map<Long, List<Post>> groupedPosts = posts.stream().collect(Collectors.groupingBy(Post::getAuthorId));
+
+        groupedPosts.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().size() > 5)
+                .forEach(entry -> userBannerPublisher.publish(entry.getKey()));
+
     }
 }
