@@ -39,12 +39,24 @@ logging:
     root: info
 
 post:
+
+  cache:
+    # SERVICE ANF SCHEDULER MUST BE EQUALS
+    update: 60 # minutes
+    scheduler:
+      #cron: "0 0 * * * ?" #evry hour
+      cron: "0/20 * * * * ?" #evry 20 sec for testing
+
   publisher:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      #cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "0/5 * * * * ?" #evry 5 sec for testing
+
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+
+  quantity_elements: 3 #quantity element for async
 
 user-service:
   host: localhost

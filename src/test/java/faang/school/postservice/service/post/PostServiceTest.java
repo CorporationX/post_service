@@ -12,14 +12,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.test.util.ReflectionTestUtils;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -29,6 +31,8 @@ class PostServiceTest {
     private PostMapper postMapper;
     @Mock
     private PostValidator postValidator;
+    @Spy
+    private ConcurrentHashMap<LocalDateTime, Set<PostDto>> postMap;
     @InjectMocks
     private PostService postService;
     List<Post> listFindByVerifiedIsFalse;
@@ -40,6 +44,7 @@ class PostServiceTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(postService, "countOffensiveContentForBan", 1);
+        ReflectionTestUtils.setField(postService, "timeForCacheUpdate", 3);
 
         Post post1 = Post.builder().authorId(1L).verified(false).build();
         Post post2 = Post.builder().authorId(1L).verified(false).build();
@@ -83,10 +88,57 @@ class PostServiceTest {
 
     @Test
     void createPost() {
+        //Mockito.when(postMapper.toEventDto(Mockito.any(PostDto.class))).thenReturn(new PostAchievementEventDto());
         PostDto postDto = PostDto.builder().content("content").authorId(1L).build();
         Mockito.when(postMapper.toEntity(postDto)).thenReturn(new Post());
         postService.createPost(postDto);
-        Mockito.verify(postRepository, Mockito.times(1)).save(Mockito.any(Post.class));
+        Mockito.verify(postRepository, Mockito.times(1)).save(any(Post.class));
+       // Mockito.verify(postMapper, Mockito.times(1)).toEventDto(Mockito.any(PostDto.class));
+       // Mockito.verify(postAchievementPublisher, Mockito.times(1)).publish(Mockito.any(PostAchievementEventDto.class));
+    }
+
+
+    @Test
+    void checkSchedule_Publish() {
+        PostDto postDto = PostDto.builder()
+                .id(1L)
+                .authorId(1L)
+                .build();
+        Post post = new Post();
+
+        Mockito.when(postRepository.findById(postDto.getId()))
+                .thenReturn(Optional.of(post));
+        postService.createPost(postDto);
+        Mockito.verify(postValidator, Mockito.times(1))
+                .validatePostByUser(post, postDto.getAuthorId());
+        Mockito.verify(postValidator, Mockito.times(1))
+                .isPublished(post);
+        assertTrue(post.isPublished());
+    }
+
+    @Test
+    void checkSchedule_ToCache() {
+        PostDto postDto = PostDto.builder()
+                .id(1L)
+                .authorId(1L)
+                .scheduledAt(LocalDateTime.now())
+                .build();
+
+        postService.createPost(postDto);
+
+        Mockito.verify(postMap, Mockito.times(1))
+                .putIfAbsent(any(LocalDateTime.class), any(HashSet.class));
+        Mockito.verify(postMap, Mockito.times(1))
+                .get(any(LocalDateTime.class));
+    }
+
+    @Test
+    void findAllPostsByTimeAndStatus() {
+        Mockito.when(postRepository.findAllPostsByTimeAndStatus(any(LocalDateTime.class)))
+                .thenReturn(new ArrayList<>());
+        postService.findAllPostsByTimeAndStatus();
+        Mockito.verify(postRepository, Mockito.times(1))
+                .findAllPostsByTimeAndStatus(any(LocalDateTime.class));
     }
 
     @Test

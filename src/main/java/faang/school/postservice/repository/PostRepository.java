@@ -1,10 +1,13 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -36,4 +39,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Post> findReadyToPublish();
 
     List<Post> findByVerifiedIsFalse();
+
+    @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= :time")
+    List<Post> findAllPostsByTimeAndStatus(@Param("time") LocalDateTime time);
 }
