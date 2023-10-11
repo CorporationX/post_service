@@ -1,0 +1,2 @@
+ALTER TABLE post
+    ADD COLUMN fileName VARCHAR;

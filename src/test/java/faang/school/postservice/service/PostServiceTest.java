@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.s3.AmazonS3Config;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
@@ -64,6 +65,8 @@ class PostServiceTest {
     @Mock
     private LikeRepository likeRepository;
     @Mock
+    private AmazonS3Config amazonS3Config;
+    @Mock
     private LikeEventPublisher likeEventPublisher;
     private final Integer batchSize = 100;
     private final String userBannerChannel = "user_banner_channel";
@@ -80,7 +83,7 @@ class PostServiceTest {
                 userServiceClient, projectServiceClient, moderationDictionary,
                 batchSize, redisPublisher, likeRepository, likeEventPublisher,
                 userBannerChannel, restTemplate,
-                postCorrectorApiKey, postCorrectorUrl);
+                postCorrectorApiKey, postCorrectorUrl, amazonS3Config);
     }
 
     @Test
@@ -269,7 +272,7 @@ class PostServiceTest {
         ResponsePostDto responsePostDto = postService.likePost(updatePostDto, userId);
 
         verify(likeRepository, times(1)).save(any());
-        verify(likeEventPublisher, times(1)).publishMessage(LikeEventDto.builder().postId(1L).postAuthor(2L).likeAuthor(2L).dateTime(any()).build());
+        verify(likeEventPublisher, times(1)).publishMessage(LikeEventDto.builder().postId(1L).postAuthor(2L).likeAuthorId(2L).dateTime(any()).build());
 
         assertNotNull(responsePostDto);
     }

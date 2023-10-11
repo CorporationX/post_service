@@ -32,6 +32,10 @@ spring:
           name: comment-channel
   aop:
     proxy-target-class: true
+  task:
+    execution:
+      shutdown:
+        await-termination: true
 
 server:
   port: 8081
@@ -71,6 +75,19 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+servlet:
+  multipart:
+    max-file-size: 5MB
+
+aws:
+  accessKey: access_key
+  secretKey: secret_key
+  region: bucket_region
+
+services:
+  s3:
+    bucketName: bucketName
 
 springfox:
   documentation:

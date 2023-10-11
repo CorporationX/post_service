@@ -39,6 +39,9 @@ public class Post {
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments;
 
+    @ElementCollection
+    private List<String> fileName;
+
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;
 

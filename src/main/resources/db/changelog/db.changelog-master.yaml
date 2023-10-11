@@ -15,3 +15,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V007__alter_album.sql
   - include:
       file: db/changelog/changeset/post_V008__user_album_access.sql
+  - include:
+      file: db/changelog/changeset/post_V009__alter_post.sql
