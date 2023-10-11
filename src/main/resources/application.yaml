@@ -35,7 +35,7 @@ spring:
   task:
     execution:
       shutdown:
-        await-termination:
+        await-termination: true
 
 server:
   port: 8081
@@ -87,7 +87,7 @@ aws:
 
 services:
   s3:
-    bucketName: projectbucket
+    bucketName: bucketName
 
 springfox:
   documentation:

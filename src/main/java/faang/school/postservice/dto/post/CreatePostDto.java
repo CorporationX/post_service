@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,4 +17,5 @@ public class CreatePostDto {
     private Long authorId;
     private Long projectId;
     private List<String> hashtags;
+    private List<MultipartFile> images;
 }

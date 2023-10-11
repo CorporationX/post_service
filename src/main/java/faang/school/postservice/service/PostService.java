@@ -1,7 +1,9 @@
 package faang.school.postservice.service;
 
+import com.amazonaws.SdkClientException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.s3.AmazonS3Config;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
@@ -19,6 +21,8 @@ import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.ModerationDictionary;
 import faang.school.postservice.util.RedisPublisher;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
@@ -29,13 +33,15 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +49,7 @@ import java.util.stream.Collectors;
 
 @Service
 @CacheConfig(cacheNames = "postsCache")
+@Slf4j
 public class PostService {
     private final PostRepository postRepository;
     private final ResponsePostMapper responsePostMapper;
@@ -58,6 +65,7 @@ public class PostService {
     private final String postCorrectorUrl;
     private final LikeRepository likeRepository;
     private final LikeEventPublisher likeEventPublisher;
+    private final AmazonS3Config amazonS3Config;
 
     public PostService(PostRepository postRepository, ResponsePostMapper responsePostMapper,
                        UserServiceClient userServiceClient, ProjectServiceClient projectServiceClient,
@@ -65,7 +73,7 @@ public class PostService {
                        RedisPublisher redisPublisher, LikeRepository likeRepository, LikeEventPublisher likeEventPublisher,
                        @Value("${spring.data.redis.channels.user_banner_channel.name}") String userBannerChannel,
                        RestTemplate restTemplate, @Value("${post.corrector.api-key}") String postCorrectorApiKey,
-                       @Value("${post.corrector.url}") String postCorrectorUrl) {
+                       @Value("${post.corrector.url}") String postCorrectorUrl, AmazonS3Config amazonS3Config) {
         this.postRepository = postRepository;
         this.responsePostMapper = responsePostMapper;
         this.userServiceClient = userServiceClient;
@@ -79,6 +87,7 @@ public class PostService {
         this.postCorrectorUrl = postCorrectorUrl;
         this.likeRepository = likeRepository;
         this.likeEventPublisher = likeEventPublisher;
+        this.amazonS3Config = amazonS3Config;
     }
 
     @Transactional(readOnly = true)
@@ -177,7 +186,43 @@ public class PostService {
 
         extractHashtagsWhileCreating(dto);
 
+        List<String> imageUrls = new ArrayList<>();
+
+        if (dto.getImages() != null) {
+            for (MultipartFile image : dto.getImages()) {
+                try {
+                    String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+                    String imageUrl = uploadImageToMinio(image, fileName);
+                    imageUrls.add(imageUrl);
+                } catch (IOException e) {
+                    log.error("Failed to upload one or more images " + e.getMessage());
+                    throw new RuntimeException("Failed to upload one or more images.");
+                }
+            }
+        }
+        post.setFileName(imageUrls);
+
         return responsePostMapper.toDto(postRepository.save(post));
+    }
+
+    private String uploadImageToMinio(MultipartFile image, String fileName) throws IOException {
+        String bucketName = amazonS3Config.getBucketName();
+        try {
+            S3Client s3Client = amazonS3Config.s3Client();
+            PutObjectResponse response = s3Client.putObject(PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(fileName)
+                            .build(),
+                    RequestBody.fromInputStream(image.getInputStream(), image.getSize())
+            );
+
+            String imageUrl = "https://" + bucketName + ".s3.amazonaws.com/" + fileName;
+            return imageUrl;
+        } catch (SdkClientException e) {
+            e.printStackTrace();
+            log.error("Error while interacting with Minio/S3: " + e.getMessage(), e);
+            return "Failed to upload the image.";
+        }
     }
 
     @Transactional
