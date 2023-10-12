@@ -1,6 +1,7 @@
 package faang.school.postservice.sheduler;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,11 +80,9 @@ public class ScheduledPostPublisher {
         List<PostDto> currentGroup = new ArrayList<>();
 
         for (int i = 0; i < posts.size(); i += quantityElements) {
-            for (int j = i; j < i + quantityElements && j < posts.size(); j++) {
-                currentGroup.add(posts.get(j));
-            }
+            int endIndex = Math.min(i + quantityElements, posts.size());
+            currentGroup = posts.subList(i, endIndex);
             addDataToFuturesSave(futuresSave, new ArrayList<>(currentGroup));
-            currentGroup.clear();
         }
 
         CompletableFuture.allOf(futuresSave.toArray(new CompletableFuture[0]))
