@@ -47,6 +47,7 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+      batchSize: 100
   moderator:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
