@@ -1,6 +1,7 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
@@ -50,8 +51,8 @@ public class PostService {
     @Transactional
     public void createPost(PostDto postDto) {
         definitionId(postDto);
-        postRepository.save(postMapper.toEntity(postDto));
-        checkSchedule(postDto);
+        PostDto newPostDto = postMapper.toDto(postRepository.save(postMapper.toEntity(postDto)));
+        checkSchedule(newPostDto);
     }
 
     private void checkSchedule(PostDto postDto) {
@@ -80,6 +81,7 @@ public class PostService {
         Post post = getPostById(postId);
         postValidator.validatePostByUser(post, userId);
         postValidator.isPublished(post);
+        post.setPublishedAt(LocalDateTime.now());
         post.setPublished(true);
     }
 
@@ -168,6 +170,10 @@ public class PostService {
             postValidator.validateUser(postDto.getAuthorId());
         } else {
             postValidator.validateProject(postDto.getProjectId());
+        }
+        if (postDto.getScheduledAt() != null &&
+                postDto.getScheduledAt().isBefore(LocalDateTime.now())) {
+            throw new DataValidationException("Post cannot be scheduled in the past");
         }
     }
 }

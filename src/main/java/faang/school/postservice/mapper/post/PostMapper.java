@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, injectionStrategy = InjectionStrategy.FIELD)
@@ -24,6 +25,6 @@ public interface PostMapper {
 
     @Named("getLikes")
     default List<Long> getLikes(List<Like> likes) {
-        return likes.stream().map(Like::getId).toList();
+        return likes==null ? new ArrayList<>() : likes.stream().map(Like::getId).toList();
     }
 }

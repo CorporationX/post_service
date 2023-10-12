@@ -31,7 +31,7 @@ class ScheduledPostPublisherTest {
     private PostService postService;
     @Spy
     private ConcurrentHashMap<LocalDateTime, Set<PostDto>> postMap;
-    private int quantityElementInList = 5;
+    private int quantityElementInList = 10;
 
 
     @BeforeEach

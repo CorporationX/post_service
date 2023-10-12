@@ -44,19 +44,18 @@ post:
     # SERVICE ANF SCHEDULER MUST BE EQUALS
     update: 60 # minutes
     scheduler:
-      #cron: "0 0 * * * ?" #evry hour
-      cron: "0/20 * * * * ?" #evry 20 sec for testing
+      cron: "0 0 * * * ?" #evry hour
+      #cron: "1 * * * * ?" #evry 1 min for testing
 
   publisher:
     scheduler:
-      #cron: "0 0/1 * 1/1 * ?" # every minute
-      cron: "0/5 * * * * ?" #evry 5 sec for testing
+      cron: "1 * * * * ?" # every minute
 
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
-  quantity_elements: 3 #quantity element for async
+  quantity_elements: 3 #quantity element for group in pushing
 
 user-service:
   host: localhost

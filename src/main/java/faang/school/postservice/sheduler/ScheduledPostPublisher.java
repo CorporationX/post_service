@@ -30,7 +30,6 @@ public class ScheduledPostPublisher {
     public void publishPosts() {
         LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
         Set<PostDto> postDtoSet = postMap.get(now);
-
         if (postDtoSet != null) {
             publishPostsFromSet(postDtoSet, now);
         }
@@ -49,19 +48,21 @@ public class ScheduledPostPublisher {
         }
 
         if (!currentGroup.isEmpty()) {
-            addDataToFuturesPush(futuresPush, currentGroup);
+            addDataToFuturesPush(futuresPush, new ArrayList<>(currentGroup));
         }
 
         CompletableFuture.allOf(futuresPush.toArray(new CompletableFuture[0]))
-                .thenRun(() -> postMap.remove(now))
-                .thenRun(() -> log.info("publish posts"));
+                .thenRun(() -> {
+                    postMap.remove(now);
+                    log.info("publish posts");
+                });
     }
 
     private void addDataToFuturesPush(List<CompletableFuture<Void>> futures, List<PostDto> currentGroup) {
+        log.info("{}", currentGroup.get(0).getId());
         futures.add(CompletableFuture.runAsync(() -> {
             currentGroup.forEach(postDto -> {
                 postService.publishPost(postDto.getId(), postDto.getAuthorId());
-                log.info("publish post {}", postDto.getId());
             });
         }));
     }

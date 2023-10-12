@@ -16,10 +16,12 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.test.util.ReflectionTestUtils;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -40,7 +42,7 @@ class PostServiceTest {
     List<Post> publishedPosts;
     Post post;
     Post post2;
-  
+
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(postService, "countOffensiveContentForBan", 1);
@@ -88,13 +90,27 @@ class PostServiceTest {
 
     @Test
     void createPost() {
-        //Mockito.when(postMapper.toEventDto(Mockito.any(PostDto.class))).thenReturn(new PostAchievementEventDto());
-        PostDto postDto = PostDto.builder().content("content").authorId(1L).build();
-        Mockito.when(postMapper.toEntity(postDto)).thenReturn(new Post());
+        PostDto postDto = PostDto.builder()
+                .id(1L)
+                .content("content")
+                .authorId(1L).build();
+        Mockito.when(postMapper.toEntity(postDto))
+                .thenReturn(new Post());
+        Mockito.when(postRepository.save(any(Post.class)))
+                .thenReturn(new Post());
+        Mockito.when(postMapper.toDto(any(Post.class)))
+                .thenReturn(postDto);
+        Mockito.when(postRepository.findById(any(Long.class)))
+                .thenReturn(Optional.of(new Post()));
+
         postService.createPost(postDto);
-        Mockito.verify(postRepository, Mockito.times(1)).save(any(Post.class));
-       // Mockito.verify(postMapper, Mockito.times(1)).toEventDto(Mockito.any(PostDto.class));
-       // Mockito.verify(postAchievementPublisher, Mockito.times(1)).publish(Mockito.any(PostAchievementEventDto.class));
+
+        Mockito.verify(postMapper, Mockito.times(1))
+                .toEntity(any(PostDto.class));
+        Mockito.verify(postRepository, Mockito.times(1))
+                .save(any(Post.class));
+        Mockito.verify(postMapper, Mockito.times(1))
+                .toDto(any(Post.class));
     }
 
 
@@ -106,8 +122,15 @@ class PostServiceTest {
                 .build();
         Post post = new Post();
 
+        Mockito.when(postMapper.toEntity(postDto))
+                .thenReturn(new Post());
+        Mockito.when(postRepository.save(any(Post.class)))
+                .thenReturn(new Post());
+        Mockito.when(postMapper.toDto(any(Post.class)))
+                .thenReturn(postDto);
         Mockito.when(postRepository.findById(postDto.getId()))
                 .thenReturn(Optional.of(post));
+
         postService.createPost(postDto);
         Mockito.verify(postValidator, Mockito.times(1))
                 .validatePostByUser(post, postDto.getAuthorId());
@@ -121,8 +144,15 @@ class PostServiceTest {
         PostDto postDto = PostDto.builder()
                 .id(1L)
                 .authorId(1L)
-                .scheduledAt(LocalDateTime.now())
+                .scheduledAt(LocalDateTime.now().plus(1, ChronoUnit.MINUTES))
                 .build();
+
+        Mockito.when(postMapper.toEntity(postDto))
+                .thenReturn(new Post());
+        Mockito.when(postRepository.save(any(Post.class)))
+                .thenReturn(new Post());
+        Mockito.when(postMapper.toDto(any(Post.class)))
+                .thenReturn(postDto);
 
         postService.createPost(postDto);
 
@@ -228,6 +258,7 @@ class PostServiceTest {
         Mockito.verify(postRepository, Mockito.times(1)).findAllProjectPublished(1L);
         assertEquals(2, publishedPosts.size());
     }
+
     @Test
     void testGetByPostIsVerifiedFalse() {
         Mockito.when(postRepository.findByVerifiedIsFalse()).thenReturn(listFindByVerifiedIsFalse);
