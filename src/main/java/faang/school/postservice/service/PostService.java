@@ -21,14 +21,13 @@ import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PictureRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ScheduledTaskRepository;
-import faang.school.postservice.util.ConvertFile;
 import faang.school.postservice.util.CoverHandler;
+import faang.school.postservice.util.FileConverter;
 import faang.school.postservice.util.exception.PostNotFoundException;
 import faang.school.postservice.util.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,7 +58,7 @@ public class PostService {
     private final PictureRepository pictureRepository;
     private final UserBanEventPublisher userBanEventPublisher;
     private final AmazonS3 s3Client;
-    private final ConvertFile convertFile;
+    private final FileConverter convertFile;
     private final CoverHandler coverHandler;
     @Value("${services.s3.bucketName}")
     private String bucketName;
@@ -214,36 +213,29 @@ public class PostService {
 
     @Transactional
     public Picture uploadPicture(long postId, MultipartFile file) {
-        Optional<Post> postById = postRepository.findById(postId);
-        coverHandler.resizeCover(file);
+        Post postById = postRepository.findById(postId).orElseThrow();
+        byte[] bytes = coverHandler.resizeCover(file);
         String fileName = getFileName(file);
 
-        File convertedFile = convertFile.convertMultiPartFileToFile(file);
+        File convertedFile = convertFile.convert(bytes, fileName).orElseThrow();
         putFile(file, convertedFile, fileName);
 
-        Post post = postById.get();
         Picture picture = new Picture();
         picture.setPictureName(fileName);
+        picture.setPost(postById);
 
-        post.getPictures().add(picture);
+        postById.getPictures().add(picture);
         pictureRepository.save(picture);
-        postRepository.save(post);
         return picture;
     }
 
-    public void deletePicture(long postId, PictureDto pictureName) {
-        Optional<Post> postById = postRepository.findById(postId);
-        Post post = postById.get();
-        for (Picture picture : post.getPictures()) {
-            if (Objects.equals(picture.getPictureName(), pictureName.getPictureName())) {
-                deletePicture(pictureName.getPictureName());
-                pictureRepository.deletePictureByName(picture.getPictureName());
-                postRepository.deletePictureByName(picture.getPictureName());
-            }
-        }
+    public void deletePicture(PictureDto pictureDto) {
+        Picture postById = pictureRepository.findById(pictureDto.getPictureId()).orElseThrow();
+        deletePictureS3(pictureDto.getPictureName());
+        pictureRepository.delete(postById);
     }
 
-    public void deletePicture(String key) {
+    private void deletePictureS3(String key) {
         try {
             s3Client.deleteObject(bucketName, key);
         } catch (AmazonClientException e) {

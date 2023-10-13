@@ -35,7 +35,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
-
-    @Query("DELETE FROM Post WHERE pictures = :pictureName")
-    void deletePictureByName(@Param("pictureName") String pictureName);
 }

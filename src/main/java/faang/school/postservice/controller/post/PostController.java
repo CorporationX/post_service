@@ -93,14 +93,14 @@ public class PostController {
         return hashtagService.getPostByHashtag(hashtag);
     }
 
-    @PutMapping("/{postId}/")
+    @PutMapping("/{postId}/image")
     public Picture addPicture(@PathVariable long postId, @RequestParam("file") MultipartFile file) {
         return postService.uploadPicture(postId, file);
     }
 
-    @DeleteMapping("/{postId}/")
-    public void deletePicture(@PathVariable long postId, @RequestBody PictureDto pictureDto) {
-        postService.deletePicture(postId, pictureDto);
+    @DeleteMapping("/image")
+    public void deletePicture(@RequestBody PictureDto pictureDto) {
+        postService.deletePicture(pictureDto);
     }
 }
 

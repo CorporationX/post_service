@@ -8,17 +8,19 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @Slf4j
-public class ConvertFile {
-    public File convertMultiPartFileToFile(MultipartFile file) {
-        File convertFile = new File(Objects.requireNonNull(file.getOriginalFilename()));
+public class FileConverter {
+    public Optional<File> convert(byte[] bytes, String fileName) {
+        File convertFile = new File(fileName);
         try (FileOutputStream fileOutputStream = new FileOutputStream(convertFile)) {
-            fileOutputStream.write(file.getBytes());
+            fileOutputStream.write(bytes);
         } catch (IOException e) {
             log.error("Error converting multipartFile to file ", e);
+            return Optional.empty();
         }
-        return convertFile;
+        return Optional.of(convertFile);
     }
 }
