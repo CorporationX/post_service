@@ -1,20 +1,18 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.DtosResponse;
+import faang.school.postservice.dto.post.PictureDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.Picture;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.util.exception.DataValidationException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.cloud.client.loadbalancer.Response;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -93,6 +91,16 @@ public class PostController {
     public List<PostDto> getByHashtag(@PathVariable String hashtag) {
         if (hashtag.length() > 255) throw new DataValidationException("Hashtag in too long");
         return hashtagService.getPostByHashtag(hashtag);
+    }
+
+    @PutMapping("/{postId}/image")
+    public Picture addPicture(@PathVariable long postId, @RequestParam("file") MultipartFile file) {
+        return postService.uploadPicture(postId, file);
+    }
+
+    @DeleteMapping("/image")
+    public void deletePicture(@RequestBody PictureDto pictureDto) {
+        postService.deletePicture(pictureDto);
     }
 }
 

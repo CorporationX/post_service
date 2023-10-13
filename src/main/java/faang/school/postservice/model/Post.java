@@ -76,4 +76,7 @@ public class Post {
     @Column(name = "verified_date")
     @Builder.Default
     private LocalDateTime verifiedDate = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "post")
+    private List<Picture> pictures;
 }
