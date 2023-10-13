@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003__add_spell_check_column.sql
   - include:
       file: db/changelog/changeset/post_V004__add_column_verified_to_table_post.sql
+  - include:
+      file: db/changelog/changeset/post_V005__add_column_verified_date_to_table_post.sql

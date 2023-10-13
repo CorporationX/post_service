@@ -80,4 +80,10 @@ public class Post {
     @Column(name = "verified")
     private boolean verified;
 
+    @Column(name = "verified_date")
+    private LocalDateTime verifiedDate;
+
+    public boolean isVerified() {
+        return verified;
+    }
 }

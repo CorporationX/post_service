@@ -15,17 +15,22 @@ import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.UserBannerPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.async.PostAsyncService;
+import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +48,10 @@ public class PostService {
     private final UserContext userContext;
     private final PostEventPublisher postEventPublisher;
     private final UserBannerPublisher userBannerPublisher;
+    private final ModerationDictionary moderationDictionary;
+
+    @Value("${moderation.chunkSize:100}")
+    private int chunkSize;
 
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
@@ -241,5 +250,48 @@ public class PostService {
                 .filter(entry -> entry.getValue().size() > 5)
                 .forEach(entry -> userBannerPublisher.publish(entry.getKey()));
 
+    }
+
+    @Transactional
+    @Async
+    public void moderatePosts() {
+        List<Post> postsToModerate = postRepository.findAllByVerifiedDateIsNull();
+        if (postsToModerate.isEmpty() || chunkSize <= 0) {
+            log.info("No posts to moderate");
+            CompletableFuture.completedFuture(null);
+            return;
+        }
+
+        Map<Integer, List<Post>> chunks = postsToModerate.stream()
+                .collect(Collectors.groupingBy(post -> postsToModerate.indexOf(post) / chunkSize));
+
+        List<CompletableFuture<Void>> futures = chunks.values().stream()
+                .map(this::moderateChunkAsync).toList();
+
+        CompletableFuture<?>[] futuresArray = futures.toArray(new CompletableFuture[0]);
+        CompletableFuture.allOf(futuresArray);
+    }
+
+    @Async
+    public CompletableFuture<Void> moderateChunkAsync(List<Post> posts) {
+        List<Post> moderatedPosts = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        if (posts.isEmpty()) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        posts.forEach(post -> {
+            boolean containsBadWords = moderationDictionary.containsBadWords(post.getContent());
+            post.setVerified(!containsBadWords);
+            if (post.isVerified()) {
+                post.setVerifiedDate(now);
+            }
+            moderatedPosts.add(post);
+        });
+
+        postRepository.saveAll(moderatedPosts);
+
+        return CompletableFuture.completedFuture(null);
     }
 }
