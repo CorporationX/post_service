@@ -23,7 +23,6 @@ import java.util.concurrent.Executor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 public class PostService {
 
@@ -33,9 +32,11 @@ public class PostService {
     private final ModerationDictionary moderationDictionary;
     private final Executor threadPoolForPostModeration;
     private final PublisherService publisherService;
+    private final RedisCacheService redisCacheService;
     @Value("${post.moderation.scheduler.sublist-size}")
     private int sublistSize;
 
+    @Transactional
     public PostDto crateDraftPost(PostDto postDto) {
         postValidator.validateData(postDto);
 
@@ -44,6 +45,7 @@ public class PostService {
         return postMapper.toDto(savedPost);
     }
 
+    @Transactional
     public PostDto publishPost(long postId) {
         Post post = postValidator.validatePostId(postId);
 
@@ -57,11 +59,13 @@ public class PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        redisCacheService.putPostAndAuthorInCache(post);
         publisherService.publishPostEventToRedis(post);
         log.info("Post was published successfully, postId={}", post.getId());
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostDto updatePost(PostDto updatePost) {
         long postId = updatePost.getId();
         Post post = postValidator.validatePostId(postId);
@@ -78,6 +82,7 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostDto softDelete(long postId) {
         Post post = postValidator.validatePostId(postId);
 
@@ -104,6 +109,7 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public List<PostDto> getUserDrafts(long userId) {
         postValidator.validateUserId(userId);
 
@@ -117,6 +123,7 @@ public class PostService {
         return userDrafts;
     }
 
+    @Transactional
     public List<PostDto> getProjectDrafts(long projectId) {
         postValidator.validateProjectId(projectId);
 
@@ -130,6 +137,7 @@ public class PostService {
         return projectDrafts;
     }
 
+    @Transactional
     public List<PostDto> getUserPosts(long userId) {
         postValidator.validateUserId(userId);
 
@@ -147,6 +155,7 @@ public class PostService {
         return userPosts;
     }
 
+    @Transactional
     public List<PostDto> getProjectPosts(long projectId) {
         postValidator.validateProjectId(projectId);
 
@@ -163,6 +172,7 @@ public class PostService {
         return projectPosts;
     }
 
+    @Transactional
     public void doPostModeration() {
         log.info("<doPostModeration> was called successfully");
         List<Post> notVerifiedPost = postRepository.findNotVerified();

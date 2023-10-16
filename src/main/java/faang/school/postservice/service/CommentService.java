@@ -39,7 +39,7 @@ public class CommentService {
 
     @Transactional
     public CommentEventDto create() {
-        CommentEventDto commentEventDto =CommentEventDto.builder()
+        CommentEventDto commentEventDto = CommentEventDto.builder()
                 .authorId(new Random().nextLong(100))
                 .postId(new Random().nextLong(10))
                 .createdAt(LocalDateTime.now())
