@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -45,6 +46,17 @@ public class Album {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Builder.Default
+    @Column(name = "visibility", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AlbumVisibility visibility = AlbumVisibility.PUBLIC;
+
+    @Builder.Default
+    @ElementCollection
+    @CollectionTable(name = "user_album_access", joinColumns = @JoinColumn(name = "album_id"))
+    @Column(name = "user_id")
+    private List<Long> idUsersWithAccess = new ArrayList<>();
 
     public void addPost(Post post) {
         posts.add(post);

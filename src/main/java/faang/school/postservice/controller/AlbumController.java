@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumDtoResponse;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.album.AlbumService;
@@ -54,7 +55,7 @@ public class AlbumController {
     @GetMapping("/{albumId}")
     @Operation(summary = "Get Album by Id")
     @ResponseStatus(HttpStatus.OK)
-    public AlbumDto getAlbum(@PathVariable Long albumId) {
+    public AlbumDtoResponse getAlbum(@PathVariable Long albumId) {
         validateIds(albumId);
         return albumService.getAlbum(albumId);
     }
@@ -62,21 +63,21 @@ public class AlbumController {
     @PostMapping("/my/filter")
     @Operation(summary = "Get my Albums by Filter")
     @ResponseStatus(HttpStatus.OK)
-    public List<AlbumDto> getMyAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
+    public List<AlbumDtoResponse> getMyAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
         return albumService.getMyAlbums(albumFilterDto);
     }
 
     @PostMapping("/my/favourites/filter")
     @Operation(summary = "Get my Favourites Albums by Filter")
     @ResponseStatus(HttpStatus.OK)
-    public List<AlbumDto> getMyFavouritesAlbums(@Valid @RequestBody AlbumFilterDto albumFilterDto) {
+    public List<AlbumDtoResponse> getMyFavouritesAlbums(@Valid @RequestBody AlbumFilterDto albumFilterDto) {
         return albumService.getMyFavouritesAlbums(albumFilterDto);
     }
 
     @PostMapping("/filter")
     @Operation(summary = "Get Albums by Filter")
     @ResponseStatus(HttpStatus.OK)
-    public List<AlbumDto> getAlbums(@Valid @RequestBody AlbumFilterDto albumFilterDto) {
+    public List<AlbumDtoResponse> getAlbums(@Valid @RequestBody AlbumFilterDto albumFilterDto) {
         return albumService.getAlbumsByFilter(albumFilterDto);
     }
 
