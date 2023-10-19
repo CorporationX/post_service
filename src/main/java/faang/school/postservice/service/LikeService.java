@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.messaging.likeevent.LikeEventConsumer;
 import faang.school.postservice.messaging.likeevent.LikeEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -32,6 +33,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final LikeMapper likeMapper;
     private final LikeEventPublisher likeEventPublisher;
+    private final LikeEventConsumer likeEventConsumer;
 
     @Value("${batch-size-from-like}")
     private int BATCH_SIZE;
@@ -47,6 +49,7 @@ public class LikeService {
                 post.getLikes().add(postLike);
                 postLike.setPost(post);
                 likeEventPublisher.publish(likeMapper.toEvent(postLike));
+                likeEventConsumer.publish(likeDto);
             });
             likeRepository.save(postLike);
             return likeMapper.toDto(postLike);
