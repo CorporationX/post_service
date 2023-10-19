@@ -1,5 +1,8 @@
 package faang.school.postservice.config.kafka;
 
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEventDto;
 import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.post.PostViewEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -49,5 +52,23 @@ public class KafkaProducerConfig {
         return new KafkaTemplate<>(producerFactoryPostViewEvent());
     }
 
+    @Bean
+    public ProducerFactory<String, LikeDto> producerFactoryLike() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs());
+    }
 
+    @Bean
+    public KafkaTemplate<String, LikeDto> kafkaTemplateForLike() {
+        return new KafkaTemplate<>(producerFactoryLike());
+    }
+
+    @Bean
+    public ProducerFactory<String, CommentDto> producerFactoryComment() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs());
+    }
+
+    @Bean
+    public KafkaTemplate<String, CommentDto> kafkaTemplateForComment() {
+        return new KafkaTemplate<>(producerFactoryComment());
+    }
 }
