@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEventDto;
+import faang.school.postservice.messaging.commentevent.CommentEventConsumer;
 import faang.school.postservice.messaging.commentevent.CommentEventPublisher;
 import faang.school.postservice.messaging.userbanevent.UserBanEventPublisher;
 import faang.school.postservice.util.exception.NotFoundException;
@@ -27,6 +28,7 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final CommentEventPublisher commentEventPublisher;
     private final UserBanEventPublisher userBanEventPublisher;
+    private final CommentEventConsumer commentEventConsumer;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
@@ -35,6 +37,7 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(commentDto);
         CommentEventDto commentEventDto = commentMapper.toEvent(comment);
         commentEventPublisher.publish(commentEventDto);
+        commentEventConsumer.publish(commentDto);
         return commentMapper.toDto(commentRepository.save(comment));
     }
 

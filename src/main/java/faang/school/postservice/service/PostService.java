@@ -17,7 +17,7 @@ import faang.school.postservice.messaging.userbanevent.UserBanEventPublisher;
 import faang.school.postservice.model.Picture;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.scheduled.ScheduledTask;
-import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.messaging.postevent.PostViewEventPublisher;
 import faang.school.postservice.repository.PictureRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ScheduledTaskRepository;

@@ -1,4 +1,4 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.messaging.postevent;
 
 import faang.school.postservice.dto.post.PostViewEvent;
 import faang.school.postservice.mapper.PostViewEventMapper;

@@ -48,6 +48,8 @@ spring:
       group-id: group
     topics:
       post-publication: post-publication
+      like-publication: like-publication
+      comment-publication: comment-publication
 
 
 

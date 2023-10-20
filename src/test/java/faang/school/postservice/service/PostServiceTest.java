@@ -11,7 +11,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.scheduled.ScheduledEntityType;
 import faang.school.postservice.model.scheduled.ScheduledTask;
 import faang.school.postservice.model.scheduled.ScheduledTaskType;
-import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.messaging.postevent.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ScheduledTaskRepository;
 import faang.school.postservice.util.exception.CreatePostException;

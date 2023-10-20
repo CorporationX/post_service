@@ -19,6 +19,12 @@ public class KafkaTopicConfig {
     @Value("${spring.kafka.topics.post-publication}")
     private String postPublicationTopic;
 
+    @Value("${spring.kafka.topics.like-publication}")
+    private String likePublicationTopic;
+
+    @Value("${spring.kafka.topics.comment-publication}")
+    private String commentPublicationTopic;
+
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> configs = new HashMap<>();
@@ -34,5 +40,15 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic postPublicationTopic() {
         return new NewTopic(postPublicationTopic, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic likePublicationTopic() {
+        return new NewTopic(likePublicationTopic, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic commentPublicationTopic() {
+        return new NewTopic(commentPublicationTopic, 1, (short) 1);
     }
 }
