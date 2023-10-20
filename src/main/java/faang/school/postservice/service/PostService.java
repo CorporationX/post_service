@@ -5,15 +5,20 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.redis.PostCashedDto;
 import faang.school.postservice.dto.redis.PostEventDto;
 import faang.school.postservice.dto.redis.PostViewEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.PostForRedis;
+import faang.school.postservice.model.redis.UserForRedis;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.UserBannerPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.service.async.PostAsyncService;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +48,8 @@ public class PostService {
     private final UserContext userContext;
     private final PostEventPublisher postEventPublisher;
     private final UserBannerPublisher userBannerPublisher;
+    private final RedisPostRepository redisPostRepository;
+    private final RedisUserRepository redisUserRepository;
 
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
@@ -78,9 +85,27 @@ public class PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-
-        return postMapper.toDto(postRepository.save(post));
+        PostDto publishedPost = postMapper.toDto(postRepository.save(post));
+        PostCashedDto postCashedDto = postMapper.toPostCashedDto(post);
+        sendPostInCashRedis(postCashedDto);
+        sendAuthorPostInCashRedis(postId);
+        return publishedPost;
     }
+
+    private void sendPostInCashRedis(PostCashedDto postCashedDto)  {
+        PostForRedis postForRedis = PostForRedis.builder().id(postCashedDto.getId()).post(postCashedDto).build();
+        log.info("Send post in redis: {}", postForRedis);
+        redisPostRepository.save(postForRedis);
+
+    }
+
+    private void sendAuthorPostInCashRedis(Long id)  {
+        UserDto user = userServiceClient.getUser(id);
+        UserForRedis userForRedis = UserForRedis.builder().id(id).user(user).build();
+        log.info("Send author in redis: {}", userForRedis);
+        redisUserRepository.save(userForRedis);
+    }
+
 
     @Transactional
     public PostDto updatePost(PostDto postUpdateDto) {

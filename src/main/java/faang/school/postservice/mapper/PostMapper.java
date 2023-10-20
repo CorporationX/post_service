@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.redis.PostCashedDto;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 
@@ -10,4 +11,6 @@ public interface PostMapper {
     PostDto toDto(Post post);
 
     Post toPost(PostDto postDto);
+
+    PostCashedDto toPostCashedDto(Post post);
 }
