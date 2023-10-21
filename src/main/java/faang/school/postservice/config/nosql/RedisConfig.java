@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.nosql;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

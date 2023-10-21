@@ -1,8 +1,8 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.messaging.redis.publisher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.publisher.events.BanEvent;
+import faang.school.postservice.messaging.redis.events.BanEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,8 +1,10 @@
 package faang.school.postservice.publisher;
 
+import faang.school.postservice.messaging.redis.publisher.CommentEventPublisher;
+import faang.school.postservice.messaging.redis.publisher.RedisMessagePublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.events.CommentEvent;
+import faang.school.postservice.messaging.redis.events.CommentEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

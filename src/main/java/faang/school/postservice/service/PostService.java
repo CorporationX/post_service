@@ -7,13 +7,13 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.messaging.events.PostEvent;
-import faang.school.postservice.messaging.publishing.PostProducer;
+import faang.school.postservice.messaging.kafka.events.PostEvent;
+import faang.school.postservice.messaging.kafka.publishing.PostProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderation.ModerationDictionary;
-import faang.school.postservice.publisher.BanEventPublisher;
+import faang.school.postservice.messaging.redis.publisher.BanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
@@ -260,7 +260,7 @@ public class PostService {
     }
 
     @Async
-    private void distributePostToFollowers(Long postId, Long userId, List<Long> allFollowers) {
+    public void distributePostToFollowers(Long postId, Long userId, List<Long> allFollowers) {
         int start = 0;
         while (start < allFollowers.size()) {
             int end = Math.min(start + batchSize, allFollowers.size());

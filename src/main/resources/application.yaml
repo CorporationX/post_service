@@ -32,9 +32,7 @@ spring:
           name: like_events_channel
 
   kafka:
-    bootstrap-servers:
-      host: localhost
-      port: 9092
+    bootstrap-servers: "localhost:9092"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -46,6 +44,10 @@ spring:
     channels:
       post_event_channel:
         name: post_event_channel
+      like_event_channel:
+        name: like_event_channel
+      unlike_event_channel:
+        name: unlike_events_channel
 
 server:
   port: 8081
