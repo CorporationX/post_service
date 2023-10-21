@@ -1,7 +1,7 @@
 package faang.school.postservice.messaging.kafka.publisher;
 
 import faang.school.postservice.messaging.kafka.events.LikeEvent;
-import faang.school.postservice.messaging.kafka.publishing.like.LikeProducer;
+import faang.school.postservice.messaging.kafka.publishing.like.UnlikeProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,19 +11,19 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.concurrent.CompletableFuture;
 
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
 
 @ExtendWith(MockitoExtension.class)
-public class LikeProducerTest {
-    private final String topic = "like_event_channel";
+public class UnlikeProducerTest {
+    private final String topic = "unlike_event_channel";
 
     @Mock
     private KafkaTemplate<String, Object> kafkaTemplate;
     @InjectMocks
-    private LikeProducer likeProducer;
+    private UnlikeProducer unlikeProducer;
 
     @Test
     public void shouldPublishEvent() {
@@ -31,12 +31,12 @@ public class LikeProducerTest {
                 .id(0L)
                 .postId(2L)
                 .build();
-        likeProducer.setTopic(topic);
+        unlikeProducer.setTopic(topic);
         CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
 
         when(kafkaTemplate.send(any(String.class), any(Object.class)))
                 .thenAnswer(invocation -> future);
-        likeProducer.publish(event);
+        unlikeProducer.publish(event);
 
         verify(kafkaTemplate, times(1))
                 .send(topic, event);
