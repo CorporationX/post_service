@@ -30,6 +30,10 @@ spring:
           name: comment_events_channel
         like_events_channel:
           name: like_events_channel
+    kafka:
+      bootstrap-servers: localhost:9092
+      channels:
+        comment_channel: comment_channel
 
 server:
   port: 8081
