@@ -7,17 +7,19 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.messaging.kafka.events.PostEvent;
+import faang.school.postservice.messaging.kafka.publishing.PostProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderation.ModerationDictionary;
-import faang.school.postservice.publisher.BanEventPublisher;
+import faang.school.postservice.messaging.redis.publisher.BanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,8 +42,12 @@ public class PostService {
     private final BanEventPublisher banEventPublisher;
     private final PostImageService postImageService;
     private final ModerationDictionary moderationDictionary;
+    private final PostProducer postProducer;
     @Value("${comment.ban.numberOfCommentsToBan}")
     private int numberOfCommentsToBan;
+    @Value("${post-service.post-distribution.batch-size}")
+    private int batchSize;
+
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
@@ -64,6 +70,10 @@ public class PostService {
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+
+        List<Long> followersIds = userServiceClient.getFollowersIds(post.getAuthorId());
+        distributePostToFollowers(id, post.getAuthorId(), followersIds);
+
         return postMapper.toDto(post);
     }
 
@@ -246,6 +256,24 @@ public class PostService {
             post.setVerified(!containsBannedWord);
             post.setVerifiedDate(LocalDateTime.now());
             postRepository.save(post);
+        }
+    }
+
+    @Async
+    public void distributePostToFollowers(Long postId, Long userId, List<Long> allFollowers) {
+        int start = 0;
+        while (start < allFollowers.size()) {
+            int end = Math.min(start + batchSize, allFollowers.size());
+            List<Long> batch = allFollowers.subList(start, end);
+
+            PostEvent event = PostEvent.builder()
+                    .id(postId)
+                    .userId(userId)
+                    .followersIds(batch)
+                    .build();
+
+            postProducer.publish(event);
+            start += batchSize;
         }
     }
 }

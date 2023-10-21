@@ -20,8 +20,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("org.apache.kafka:kafka-clients:3.5.1")
-    implementation("org.springframework.kafka:spring-kafka:3.0.11")
+    implementation("org.springframework.kafka:spring-kafka:3.0.12")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
@@ -32,6 +31,7 @@ dependencies {
      */
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
+    implementation("org.springframework.kafka:spring-kafka:3.0.11")
     runtimeOnly("org.postgresql:postgresql")
 
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
