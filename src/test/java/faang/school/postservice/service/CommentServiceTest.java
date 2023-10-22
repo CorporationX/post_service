@@ -5,12 +5,11 @@ import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.messaging.kafka.publishing.CommentProducer;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validation.CommentValidator;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -44,7 +43,6 @@ import static org.mockito.Mockito.when;
 public class CommentServiceTest {
     @Mock
     private CommentRepository commentRepository;
-
     @Mock
     private ModerationDictionary moderationDictionary;
     @Mock
@@ -57,7 +55,8 @@ public class CommentServiceTest {
     private CommentValidator commentValidator;
     @Spy
     private CommentMapper commentMapper;
-
+    @Mock
+    private CommentProducer commentProducer;
 
     @Test
     void testFindExistingComment_ExistingId() {
@@ -143,6 +142,7 @@ public class CommentServiceTest {
     @Test
     public void testCreateComment_ValidComment() {
         CommentDto commentDto = new CommentDto();
+        commentDto.setPostId(1L);
 
         Comment createdComment = mock(Comment.class);
 
