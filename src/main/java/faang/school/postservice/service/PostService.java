@@ -9,11 +9,9 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.messaging.kafka.events.PostEvent;
 import faang.school.postservice.messaging.kafka.publishing.PostProducer;
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderation.ModerationDictionary;
-import faang.school.postservice.messaging.redis.publisher.BanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
@@ -27,8 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,13 +34,10 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final TextGearsAPIService textGearsAPIService;
-    private final CommentService commentService;
-    private final BanEventPublisher banEventPublisher;
     private final PostImageService postImageService;
     private final ModerationDictionary moderationDictionary;
     private final PostProducer postProducer;
-    @Value("${comment.ban.numberOfCommentsToBan}")
-    private int numberOfCommentsToBan;
+
     @Value("${post-service.post-distribution.batch-size}")
     private int batchSize;
 
@@ -224,23 +217,6 @@ public class PostService {
             String correctedText = textGearsAPIService.correctText(post.getContent());
             post.setContent(correctedText);
             postRepository.save(post);
-        }
-    }
-
-
-    public void findCommentersAndPublishBanEvent() {
-        List<Comment> unverifiedComments = commentService.getUnverifiedComments();
-
-        Map<Long, List<Comment>> commentsByAuthor = unverifiedComments.stream()
-                .collect(Collectors.groupingBy(Comment::getAuthorId));
-
-        for (Map.Entry<Long, List<Comment>> entry : commentsByAuthor.entrySet()) {
-            Long authorId = entry.getKey();
-            List<Comment> authorComments = entry.getValue();
-
-            if (authorComments.size() > numberOfCommentsToBan) {
-                banEventPublisher.publishBanEvent(authorId);
-            }
         }
     }
 
