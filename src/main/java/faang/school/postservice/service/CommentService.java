@@ -1,10 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.messaging.commentevent.CommentEventConsumer;
 import faang.school.postservice.messaging.commentevent.CommentEventPublisher;
 import faang.school.postservice.messaging.userbanevent.UserBanEventPublisher;
+import faang.school.postservice.repository.RedisUserRepository;
 import faang.school.postservice.util.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -29,16 +31,22 @@ public class CommentService {
     private final CommentEventPublisher commentEventPublisher;
     private final UserBanEventPublisher userBanEventPublisher;
     private final CommentEventConsumer commentEventConsumer;
+    private final RedisUserRepository redisUserRepository;
+    private final UserServiceClient userServiceClient;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
         validator.validateExistingUserAtCommentDto(commentDto);
 
         Comment comment = commentMapper.toEntity(commentDto);
+        commentRepository.save(comment);
         CommentEventDto commentEventDto = commentMapper.toEvent(comment);
         commentEventPublisher.publish(commentEventDto);
         commentEventConsumer.publish(commentDto);
-        return commentMapper.toDto(commentRepository.save(comment));
+
+        redisUserRepository.save(comment.getAuthorId(), userServiceClient.getUser(comment.getAuthorId()));
+
+        return commentMapper.toDto(comment);
     }
 
     public List<CommentDto> getCommentsByPostId(long postId) {

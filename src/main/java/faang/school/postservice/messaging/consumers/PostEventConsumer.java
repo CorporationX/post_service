@@ -11,7 +11,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class PostEventConsumer {
 
-    @KafkaListener(topics = "post-publication")
+    @KafkaListener(
+            topics = "post-publication",
+            groupId = "group"
+    )
     public void listen() {
 
     }

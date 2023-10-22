@@ -18,9 +18,7 @@ import faang.school.postservice.model.Picture;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.scheduled.ScheduledTask;
 import faang.school.postservice.messaging.postevent.PostViewEventPublisher;
-import faang.school.postservice.repository.PictureRepository;
-import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.ScheduledTaskRepository;
+import faang.school.postservice.repository.*;
 import faang.school.postservice.util.CoverHandler;
 import faang.school.postservice.util.FileConverter;
 import faang.school.postservice.util.exception.PostNotFoundException;
@@ -44,7 +42,6 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 @Slf4j
 public class PostService {
-
     private final PostServiceValidator validator;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
@@ -60,6 +57,10 @@ public class PostService {
     private final AmazonS3 s3Client;
     private final FileConverter convertFile;
     private final CoverHandler coverHandler;
+    private final RedisPostRepository redisPostRepository;
+    private final RedisUserRepository redisUserRepository;
+
+
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
@@ -84,6 +85,7 @@ public class PostService {
     @Transactional
     public PostDto publishPost(Long id) {
         Post postById = getPostById(id);
+        PostDto postDto = postMapper.toDto(postById);
 
         validator.validateToPublish(postById);
 
@@ -91,10 +93,11 @@ public class PostService {
         postById.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
-
+        redisPostRepository.save(postDto.getId(), postDto);
+        redisUserRepository.save(postById.getAuthorId(), userServiceClient.getUser(postById.getAuthorId()));
         postEventPublisher.send(postById);
 
-        return postMapper.toDto(postById);
+        return postDto;
     }
 
     @Transactional
