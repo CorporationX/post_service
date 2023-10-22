@@ -44,9 +44,9 @@ class LikeServiceTest {
         );
 
         expectedUsers = Arrays.asList(
-                new UserDto(1L, "Mike", "Smith@mail.com"),
-                new UserDto(2L, "John", "Doe@mail.com"),
-                new UserDto(3L, "Jane", "Dory@mail.com")
+                new UserDto(1L, "Mike", "Smith@mail.com", List.of(1L, 2L, 3L)),
+                new UserDto(2L, "John", "Doe@mail.com", List.of(1L, 2L, 3L)),
+                new UserDto(3L, "Jane", "Dory@mail.com", List.of(1L, 2L, 3L))
         );
     }
 

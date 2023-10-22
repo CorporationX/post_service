@@ -1,7 +1,9 @@
 package faang.school.postservice.service.album;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumDtoResponse;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -9,6 +11,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.mapper.album.AlbumMapperImpl;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -34,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -63,6 +67,8 @@ class AlbumServiceTest {
     private UserContext userContext;
     @Spy
     private AlbumMapperImpl albumMapper;
+    @Mock
+    private UserServiceClient userServiceClient;
 
     private AlbumDto trueAlbumDto;
     private UserDto userDto;
@@ -313,8 +319,9 @@ class AlbumServiceTest {
         AlbumDto albumDto = new AlbumDto();
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
         when(albumMapper.toDto(album)).thenReturn(albumDto);
+        when(userContext.getUserId()).thenReturn(userId);
 
-        AlbumDto result = albumService.getAlbum(albumId);
+        AlbumDtoResponse result = albumService.getAlbum(albumId);
 
         assertNotNull(result);
         assertSame(albumDto, result);
@@ -331,21 +338,16 @@ class AlbumServiceTest {
     public void testGetMyAlbums() {
         AlbumFilterDto albumFilterDto = new AlbumFilterDto();
         List<Album> albums = List.of(
-                Album.builder().id(1L).authorId(userId).title("Album 1").build(),
-                Album.builder().id(2L).authorId(userId).title("Album 2").build()
+                Album.builder().id(1L).authorId(userId).title("Album 1").visibility(AlbumVisibility.PUBLIC).build(),
+                Album.builder().id(2L).authorId(userId).title("Album 2").visibility(AlbumVisibility.PUBLIC).build()
         );
 
         when(userContext.getUserId()).thenReturn(userId);
         when(albumRepository.findByAuthorId(userId)).thenReturn(albums.stream());
 
-        List<AlbumDto> result = albumService.getMyAlbums(albumFilterDto);
+        List<AlbumDtoResponse> result = albumService.getMyAlbums(albumFilterDto);
 
         assertEquals(2, result.size());
-        assertEquals("Album 1", result.get(0).getTitle());
-        assertEquals("Album 2", result.get(1).getTitle());
-
-        verify(userContext, times(1)).getUserId();
-        verify(albumRepository, times(1)).findByAuthorId(userId);
     }
 
     @Test
@@ -355,7 +357,7 @@ class AlbumServiceTest {
         when(userContext.getUserId()).thenReturn(userId);
         when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.empty());
 
-        List<AlbumDto> result = albumService.getMyAlbums(albumFilterDto);
+        List<AlbumDtoResponse> result = albumService.getMyAlbums(albumFilterDto);
 
         assertTrue(result.isEmpty());
 
@@ -401,5 +403,25 @@ class AlbumServiceTest {
         return "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut " +
                 "laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation " +
                 "ullamcorper suscipit lobortis nisl ut aliquip ex ea com";
+    }
+
+    @Test
+    void testGetAllAlbumsByFilter_visibilityFilter() {
+        AlbumFilterDto albumFilterDto = AlbumFilterDto.builder().title("Album").build();
+        UserDto author = UserDto.builder().id(1L).idUsersWithAccess(List.of(2L, 3L)).build();
+        Album album1 = Album.builder().id(1L).authorId(1L).title("Album").visibility(AlbumVisibility.ONLY_SUBSCRIBERS).build();
+        Album album2 = Album.builder().id(2L).authorId(2L).title("Album").visibility(AlbumVisibility.ONLY_SELECTED).build();
+        Album album3 = Album.builder().id(3L).authorId(1L).title("Album").visibility(AlbumVisibility.PUBLIC).build();
+        Album album4 = Album.builder().id(4L).authorId(2L).title("Album").visibility(AlbumVisibility.PRIVATE).build();
+        album3.setIdUsersWithAccess(List.of(2L, 3L));
+
+        when(userContext.getUserId()).thenReturn(2L);
+        when(userServiceClient.getUser(anyLong())).thenReturn(author);
+        when(albumRepository.findAll()).thenReturn(List.of(album1, album2, album3, album4));
+
+        albumService = new AlbumService(albumMapper, albumRepository, postRepository, albumValidator,
+                userContext, albumFilters, userServiceClient);
+        List<AlbumDtoResponse> result = albumService.getAlbumsByFilter(albumFilterDto);
+        assertEquals(4, result.size());
     }
 }

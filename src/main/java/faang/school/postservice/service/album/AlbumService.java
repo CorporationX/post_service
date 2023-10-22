@@ -1,12 +1,15 @@
 package faang.school.postservice.service.album;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumDtoResponse;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -29,10 +32,12 @@ public class AlbumService {
     private final AlbumValidator albumValidator;
     private final UserContext userContext;
     private final List<AlbumFilter> albumFilters;
+    private final UserServiceClient userServiceClient;
 
     @Transactional(readOnly = true)
-    public AlbumDto getAlbum(Long albumId) {
-        return albumMapper.toDto(getAlbumById(albumId));
+    public AlbumDtoResponse getAlbum(Long albumId) {
+        Album album = getAlbumById(albumId);
+        return processAlbumToDto(album);
     }
 
     @Transactional
@@ -92,30 +97,37 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlbumDto> getMyAlbums(AlbumFilterDto albumFilterDto) {
+    public List<AlbumDtoResponse> getMyAlbums(AlbumFilterDto albumFilterDto) {
         long userId = userContext.getUserId();
         Stream<Album> albums = albumRepository.findByAuthorId(userId);
         return getFilteredAlbums(albumFilterDto, new ArrayList<>(albums.toList()));
     }
 
     @Transactional(readOnly = true)
-    public List<AlbumDto> getMyFavouritesAlbums(AlbumFilterDto albumFilterDto) {
+    public List<AlbumDtoResponse> getMyFavouritesAlbums(AlbumFilterDto albumFilterDto) {
         long userId = userContext.getUserId();
         Stream<Album> albums = albumRepository.findFavoriteAlbumsByUserId(userId);
         return getFilteredAlbums(albumFilterDto, new ArrayList<>(albums.toList()));
     }
 
     @Transactional(readOnly = true)
-    public List<AlbumDto> getAlbumsByFilter(AlbumFilterDto albumFilterDto){
+    public List<AlbumDtoResponse> getAlbumsByFilter(AlbumFilterDto albumFilterDto){
         List<Album> albums = albumRepository.findAll();
         return getFilteredAlbums(albumFilterDto, albums);
     }
 
-    private List<AlbumDto> getFilteredAlbums(AlbumFilterDto albumFilterDto, List<Album> albums) {
+    private List<AlbumDtoResponse> getFilteredAlbums(AlbumFilterDto albumFilterDto, List<Album> albums) {
+        applyFilters(albumFilterDto, albums);
+        return albums.stream()
+                .map(this::visibilityCheck)
+                .map(this::processAlbumToDto)
+                .toList();
+    }
+
+    private void applyFilters(AlbumFilterDto albumFilterDto, List<Album> albums) {
         albumFilters.stream()
-                .filter(albumFilter -> albumFilter.isApplicable(albumFilterDto))
-                .forEach(albumFilter -> albumFilter.apply(albums, albumFilterDto));
-        return albums.stream().map(albumMapper::toDto).toList();
+                .filter(filter -> filter.isApplicable(albumFilterDto))
+                .forEach(filter -> filter.apply(albums, albumFilterDto));
     }
 
     @Transactional
@@ -151,5 +163,41 @@ public class AlbumService {
 
     private boolean isExistsByTitleAndAuthorId(String title, Long userId) {
         return albumRepository.existsByTitleAndAuthorId(title, userId);
+    }
+
+    private Album visibilityCheck(Album album) {
+        long userId = userContext.getUserId();
+        AlbumVisibility visibility = album.getVisibility();
+        long authorId = album.getAuthorId();
+
+        if (visibility.equals(AlbumVisibility.PRIVATE)) {
+            if (userId != authorId) {
+                album = null;
+            }
+        }
+        if (visibility.equals(AlbumVisibility.ONLY_SUBSCRIBERS)) {
+            List<Long> usersWithAccess = userServiceClient.getUser(authorId).getIdUsersWithAccess();
+            if (!usersWithAccess.contains(userId) && authorId != userId) {
+                album = null;
+            }
+        }
+        if (visibility.equals(AlbumVisibility.ONLY_SELECTED)) {
+            List<Long> usersWithAccess = album.getIdUsersWithAccess();
+            if (!usersWithAccess.contains(userId) && authorId != userId) {
+                album = null;
+            }
+        }
+        return album;
+    }
+
+    private AlbumDtoResponse processAlbumToDto(Album album) {
+        long userId = userContext.getUserId();
+        AlbumDtoResponse albumDtoResponse;
+        if(album.getAuthorId() == userId){
+            albumDtoResponse = albumMapper.toAuthorDto(album);
+        }else{
+            albumDtoResponse = albumMapper.toDto(album);
+        }
+        return albumDtoResponse;
     }
 }
