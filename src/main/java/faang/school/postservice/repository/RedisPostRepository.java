@@ -30,9 +30,9 @@ public class RedisPostRepository {
         PostCacheDto post = redisTemplate.opsForValue().get(postId);
 
         if (post != null) {
-            log.info("User with ID {} found in cache", postId);
+            log.warn("User with ID {} found in cache", postId);
         } else {
-            log.info("User with ID {} not found in cache", postId);
+            log.warn("User with ID {} not found in cache", postId);
         }
         return post;
     }

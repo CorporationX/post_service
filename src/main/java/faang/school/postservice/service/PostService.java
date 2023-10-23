@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PictureDto;
+import faang.school.postservice.dto.post.PostCacheDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.mapper.PostMapper;
@@ -86,6 +87,7 @@ public class PostService {
     public PostDto publishPost(Long id) {
         Post postById = getPostById(id);
         PostDto postDto = postMapper.toDto(postById);
+        PostCacheDto postCacheDto = postMapper.toPostCacheDto(postDto);
 
         validator.validateToPublish(postById);
 
@@ -93,7 +95,7 @@ public class PostService {
         postById.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
-        redisPostRepository.save(postDto.getId(), postDto);
+        redisPostRepository.save(postDto.getId(), postCacheDto);
         redisUserRepository.save(postById.getAuthorId(), userServiceClient.getUser(postById.getAuthorId()));
         postEventPublisher.send(postById);
 

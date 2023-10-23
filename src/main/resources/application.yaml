@@ -122,7 +122,7 @@ moderation-properties:
   secondsBetweenModeration: 18000
   batchSize: 1000
 
-
+linked-hash-set-size: 500
 
 thread-pool:
   queueCapacity: 100

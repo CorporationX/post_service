@@ -12,9 +12,16 @@ import java.util.LinkedHashSet;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostCacheDto {
+
     private long postId;
+
     private LinkedHashSet<CommentDto> comments;
+
     private long likeCounter;
+
     private long views;
+
     private LocalDateTime createdAt;
+
+    private long authorId;
 }
