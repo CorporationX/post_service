@@ -5,30 +5,30 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.LocalDateTime;
-
-import static org.mockito.Mockito.verify;
-
 @ExtendWith(MockitoExtension.class)
-public class CommentEventPublisherTest {
+class CommentPublisherTest {
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
 
-    @Value("${spring.data.redis.channels.comment_event_channel}")
-    private String commentEventChannelName;
+    @Value("${spring.data.redis.channels.comment_channel}")
+    private String commentChannelName;
     @InjectMocks
-    private CommentEventPublisher commentEventPublisher;
-
+    private CommentPublisher commentPublisher;
     @Test
-    public void testPublish() throws Exception {
-        CommentEventDto expectedEvent = CommentEventDto.builder().receivedAt(LocalDateTime.now()).build();
+    public void TestPublish() {
+        CommentEventDto expectedEvent = CommentEventDto
+                .builder()
+                .receivedAt(LocalDateTime.now())
+                .build();
 
-        redisTemplate.convertAndSend(commentEventChannelName, expectedEvent);
+        redisTemplate.convertAndSend(commentChannelName, expectedEvent);
 
-        verify(redisTemplate).convertAndSend(commentEventChannelName, expectedEvent);
+        Mockito.verify(redisTemplate).convertAndSend(commentChannelName, expectedEvent);
     }
 }
