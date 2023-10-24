@@ -16,7 +16,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentProducerTest {
-    private final String commentEventChannel = "comment_event_channel";
 
     @InjectMocks
     private CommentProducer commentProducer;
@@ -29,6 +28,7 @@ class CommentProducerTest {
                 .id(1L)
                 .postId(1L)
                 .build();
+        String commentEventChannel = "comment_event_channel";
         commentProducer.setCommentEventChannel(commentEventChannel);
         CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
 
