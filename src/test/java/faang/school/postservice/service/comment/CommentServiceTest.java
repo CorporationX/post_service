@@ -5,6 +5,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.publisher.CommentPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
@@ -34,6 +35,10 @@ class CommentServiceTest {
     private PostService postService;
     @Mock
     private CommentValidator commentValidator;
+    @Mock
+    private CommentPublisher commentPublisher;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
     private long rightId;
     private long wrongId;
