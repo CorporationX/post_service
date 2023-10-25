@@ -51,6 +51,8 @@ public class LikeService {
         return likeMapper.toDto(like);
     }
 
+
+
     @Transactional
     public LikeDto likeComment(LikeDto likeDto) {
         long commentId = likeDto.getCommentId();

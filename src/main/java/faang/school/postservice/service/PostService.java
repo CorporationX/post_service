@@ -5,6 +5,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.corrector.external_service.TextGearsAPIService;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
@@ -18,10 +19,12 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.messaging.redis.publisher.BanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,6 +52,8 @@ public class PostService {
     private final PostProducer postProducer;
     private final PostViewProducer postViewProducer;
     private final UserContext userContext;
+    private final RedisTemplate<Long, Object> redisCacheTemplate;
+    private final RedisPostRepository redisPostRepository;
     @Value("${comment.ban.numberOfCommentsToBan}")
     private int numberOfCommentsToBan;
     @Value("${post-service.post-distribution.batch-size}")
@@ -78,6 +84,7 @@ public class PostService {
 
         List<Long> followersIds = userServiceClient.getFollowersIds(post.getAuthorId());
         distributePostToFollowers(id, post.getAuthorId(), followersIds);
+        savePostToRedis(post);
 
         return postMapper.toDto(post);
     }
@@ -280,6 +287,23 @@ public class PostService {
 
             postProducer.publish(event);
             start += batchSize;
+        }
+    }
+
+    private boolean savePostToRedis(Post post) {
+        PostRedisDto postRedisDto = postMapper.toRedisDto(post);
+        while (true) {
+            redisCacheTemplate.watch(postRedisDto.getId());  // Наблюдение за ключом
+            Optional<PostRedisDto> redisPost = redisPostRepository.findById(postRedisDto.getId());
+            // ... определите новое значение на основе текущего значения, если требуется
+            redisCacheTemplate.multi();  // Начало транзакции
+            redisPostRepository.save(redisPost.get());
+            List<Object> results = redisCacheTemplate.exec();  // Завершение транзакции
+            if (results != null) {
+                // Транзакция была успешной
+                return true;
+            }
+            // Транзакция не удалась из-за изменения ключа, повторите
         }
     }
 }
