@@ -15,9 +15,9 @@ public class CommentPublisher extends AbstractEventPublisher<CommentEventDto>{
     private final CommentMapper commentMapper;
     public CommentPublisher(RedisTemplate<String, Object> redisTemplate,
                             ObjectMapper objectMapper,
-                            String topicChannelName,
-                            @Value("${spring.data.redis.channels.comment_channel}") String commentChannelName, CommentMapper commentMapper) {
-        super(redisTemplate, objectMapper, topicChannelName);
+                            @Value("${spring.data.redis.channels.comment_channel}") String commentChannelName,
+                            CommentMapper commentMapper) {
+        super(redisTemplate, objectMapper, commentChannelName);
         this.commentMapper = commentMapper;
     }
 
