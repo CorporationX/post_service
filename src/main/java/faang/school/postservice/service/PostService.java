@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.kafka.PostEventKafka;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.redis.PostCashedDto;
@@ -16,6 +17,7 @@ import faang.school.postservice.model.redis.PostForRedis;
 import faang.school.postservice.model.redis.UserForRedis;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.UserBannerPublisher;
+import faang.school.postservice.publisher.kafka.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.repository.redis.RedisUserRepository;
@@ -50,6 +52,7 @@ public class PostService {
     private final UserBannerPublisher userBannerPublisher;
     private final RedisPostRepository redisPostRepository;
     private final RedisUserRepository redisUserRepository;
+    private final KafkaPostProducer kafkaPostProducer;
 
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
@@ -89,6 +92,7 @@ public class PostService {
         PostCashedDto postCashedDto = postMapper.toPostCashedDto(post);
         sendPostInCashRedis(postCashedDto);
         sendAuthorPostInCashRedis(postId);
+        sendEventToKafka(publishedPost);
         return publishedPost;
     }
 
@@ -104,6 +108,18 @@ public class PostService {
         UserForRedis userForRedis = UserForRedis.builder().id(id).user(user).build();
         log.info("Send author in redis: {}", userForRedis);
         redisUserRepository.save(userForRedis);
+    }
+
+    private void sendEventToKafka(PostDto postDto) {
+        List<Long> followersIds = userServiceClient.getFollowersIdsByAuthorId(postDto.getAuthorId());
+        PostEventKafka postEventKafka = PostEventKafka.builder()
+                .id(postDto.getId())
+                .content(postDto.getContent())
+                .authorId(postDto.getAuthorId())
+                .followersIds(followersIds)
+                .build();
+        log.info("Send post event to kafka: {}", postEventKafka);
+        kafkaPostProducer.publish(postEventKafka);
     }
 
 

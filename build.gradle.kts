@@ -36,6 +36,7 @@ dependencies {
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
+    implementation("org.springframework.kafka:spring-kafka:3.0.11")
 
     /**
      * Utils & Logging

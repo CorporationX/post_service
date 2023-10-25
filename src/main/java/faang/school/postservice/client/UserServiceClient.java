@@ -20,6 +20,6 @@ public interface UserServiceClient {
 
     @GetMapping("/users/{authorId}/followers")
     List<UserDto> gerFollowersById(@RequestBody Long authorId);
-    @GetMapping("/users/{authorId}/following")
+    @GetMapping("subscription/{authorId}")
     List<Long> getFollowersIdsByAuthorId(@PathVariable Long authorId);
 }
