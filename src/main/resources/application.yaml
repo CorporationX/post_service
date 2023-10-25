@@ -27,6 +27,12 @@ spring:
         user_ban: user-ban
         like_channel: like-channel
 
+  kafka:
+    bootstrap-servers: localhost:29092
+    group-id: my-group
+    auto-offset-reset: earliest
+    enable-auto-commit: true
+    auto-commit-interval-ms: 1000
 
   config:
     import: classpath:values/values.yaml
