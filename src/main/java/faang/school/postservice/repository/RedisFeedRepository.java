@@ -18,8 +18,8 @@ public class RedisFeedRepository {
     private int size;
     private final RedisTemplate<Long, LinkedHashSet<Long>> redisTemplate;
 
-    public void save(long postId, long postDto) {
-        LinkedHashSet<Long> postIds = redisTemplate.opsForValue().get(postId);
+    public void save(long userId, long postDto) {
+        LinkedHashSet<Long> postIds = redisTemplate.opsForValue().get(userId);
         if (postIds == null) {
             postIds = new LinkedHashSet<>(size);
         }
@@ -29,23 +29,23 @@ public class RedisFeedRepository {
         }
 
         postIds.add(postDto);
-        boolean updated = redisTemplate.opsForValue().setIfPresent(postId, postIds);
+        boolean updated = redisTemplate.opsForValue().setIfPresent(userId, postIds);
 
         if (updated) {
-            redisTemplate.expire(postId, 1, TimeUnit.DAYS);
+            redisTemplate.expire(userId, 1, TimeUnit.DAYS);
             log.info("Post was successfully saved {}", postDto);
         } else {
-            log.warn("Optimistic lock failed for post {}", postId);
+            log.warn("Optimistic lock failed for post {}", postDto);
         }
     }
 
-    @Cacheable(value = "postCache", key = "#postId")
-    public LinkedHashSet<Long> getPostById(long postId) {
-        LinkedHashSet<Long> postIds = redisTemplate.opsForValue().get(postId);
+    @Cacheable(value = "userCache", key = "#userId")
+    public LinkedHashSet<Long> getPostByUserId(long userId) {
+        LinkedHashSet<Long> postIds = redisTemplate.opsForValue().get(userId);
         if (postIds != null) {
-            log.warn("Post with ID {} found in cache", postId);
+            log.warn("Post with ID {} found in cache", userId);
         } else {
-            log.warn("Post with ID {} not found in cache", postId);
+            log.warn("Post with ID {} not found in cache", userId);
         }
         return postIds;
     }
