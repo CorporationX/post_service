@@ -1,14 +1,15 @@
 package faang.school.postservice.dto.redis;
 
 import jakarta.persistence.Id;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.util.LinkedHashSet;
-import java.util.Queue;
 
 @RedisHash("Post")
 @Data
+@Builder
 public class PostRedisDto {
 
     @Id

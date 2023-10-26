@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 class CommentProducerTest {
 
     @InjectMocks
-    private CommentProducer commentProducer;
+    private KafkaCommentProducer commentProducer;
     @Mock
     private KafkaTemplate<String, Object> kafkaTemplate;
 

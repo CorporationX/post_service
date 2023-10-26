@@ -11,7 +11,7 @@ import org.springframework.kafka.support.Acknowledgment;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CommentConsumer {
+public class KafkaCommentConsumer {
 
     private final RedisCommentService redisCommentService;
 

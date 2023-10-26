@@ -10,14 +10,14 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class CommentProducer extends AbstractProducer<CommentEvent> {
+public class KafkaCommentProducer extends AbstractProducer<CommentEvent> {
 
     @Setter
     @Value("${spring.kafka.channels.comment_event_channel.name}")
     private String commentEventChannel;
 
     @Autowired
-    public CommentProducer(KafkaTemplate<String, Object> kafkaTemplate) {
+    public KafkaCommentProducer(KafkaTemplate<String, Object> kafkaTemplate) {
         super(kafkaTemplate);
     }
 
