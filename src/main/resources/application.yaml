@@ -19,6 +19,7 @@ spring:
 
   data:
     redis:
+      comments_size: 3
       port: 6379
       host: localhost
       channels:

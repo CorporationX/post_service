@@ -8,11 +8,9 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
 import faang.school.postservice.messaging.kafka.publishing.PostProducer;
 import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
-import faang.school.postservice.messaging.redis.publisher.BanEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.s3.PostImageService;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,12 +53,6 @@ public class PostViewProducerTest {
     private TextGearsAPIService textGearsAPIService;
 
     @Mock
-    private CommentService commentService;
-
-    @Mock
-    private BanEventPublisher banEventPublisher;
-
-    @Mock
     private PostImageService postImageService;
 
     @Mock
@@ -83,8 +75,6 @@ public class PostViewProducerTest {
                 userServiceClient,
                 projectServiceClient,
                 textGearsAPIService,
-                commentService,
-                banEventPublisher,
                 postImageService,
                 moderationDictionary,
                 postProducer,

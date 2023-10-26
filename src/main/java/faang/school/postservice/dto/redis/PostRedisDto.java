@@ -14,9 +14,8 @@ public class PostRedisDto {
     @Id
     private Long id;
     private String content;
-    private Queue<CommentDto> comments;
+    private LinkedHashSet<CommentRedisDto> comments;
     private long likeCounterId;
     private long postViewCounterId;
     private LinkedHashSet<Long> followersIds;
-
 }

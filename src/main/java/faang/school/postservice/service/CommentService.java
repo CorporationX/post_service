@@ -56,6 +56,8 @@ public class CommentService {
 
         commentProducer.publish(CommentEvent.builder()
                 .id(savedComment.getId())
+                .content(savedComment.getContent())
+                .authorId(savedComment.getAuthorId())
                 .postId(commentDto.getPostId())
                 .build());
 
