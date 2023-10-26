@@ -45,7 +45,7 @@ class RedisCommentServiceTest {
                 .postId(3L)
                 .build();
         PostRedisDto post = PostRedisDto.builder()
-                .comments(new LinkedHashSet<CommentRedisDto>() {{
+                .comments(new LinkedHashSet<>() {{
                     add(comment);
                 }})
                 .build();
