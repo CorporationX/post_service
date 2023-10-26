@@ -23,6 +23,7 @@ spring:
       feed-topic: news_feed
       comment-topic: comment_topic
       like-topic: like_topic
+      feed-heater-topic: news_feed_heater
     client-id: news_feed_events
     partitions: 1
     replicas: 1
@@ -72,6 +73,9 @@ post:
     scheduler:
       cron: "0 0 0 * * ?" # every day at 00:00:00
       sublist-size: 100
+  feed:
+    feed-size: 500
+    batch-size: 5
 
 async:
   thread-pool:
@@ -87,6 +91,8 @@ comment:
       cron: "0 0 12 * * ?" # every day 12:00
   batch:
     size: 50
+  cache:
+    max-comments: 3
 
 user-service:
   host: localhost

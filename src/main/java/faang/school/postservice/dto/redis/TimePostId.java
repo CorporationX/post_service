@@ -7,17 +7,25 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TimePostId implements Comparable<TimePostId> {
 
-    private long id;
+    private long postId;
     private LocalDateTime publishedAt;
 
     @Override
     public int compareTo(TimePostId o) {
-        return publishedAt.compareTo(o.publishedAt);
+        int value;
+        value = publishedAt.compareTo(o.publishedAt);
+
+        if (value != 0) {
+            return value;
+        }
+        value = Long.compare(postId, o.getPostId());
+
+        return value;
     }
 }

@@ -49,6 +49,8 @@ public class PostServiceTest {
     private Executor threadPoolForPostModeration;
     @Mock
     private PublisherService publisherService;
+    @Mock
+    private RedisCacheService redisCacheService;
     private PostValidator postValidator;
     private PostService postService;
 
@@ -65,7 +67,8 @@ public class PostServiceTest {
     @BeforeEach
     void initData() {
         postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration, publisherService);
+        postService = new PostService(postRepository, postValidator, postMapper,
+                moderationDictionary, threadPoolForPostModeration, publisherService,redisCacheService);
         incorrectPostDto = PostDto.builder()
                 .id(INCORRECT_ID)
                 .content("content")
@@ -166,10 +169,13 @@ public class PostServiceTest {
     void testUpdatePost() {
         correctPostDto.setContent("other content");
         correctPostDto.setScheduledAt(LocalDateTime.now().plusMonths(1));
+        LocalDateTime now = LocalDateTime.now();
+        correctPostDto.setUpdatedAt(now);
         correctPost.setScheduledAt(LocalDateTime.now());
         returnCorrectPostForPostRepository();
 
         PostDto actualPostDto = postService.updatePost(correctPostDto);
+        actualPostDto.setUpdatedAt(now);
         assertEquals(correctPostDto, actualPostDto);
     }
 

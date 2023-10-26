@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface RedisPostRepository extends CrudRepository<RedisPost, Long> {
 
     Optional<RedisPost> findByContent(String content);
+
 }

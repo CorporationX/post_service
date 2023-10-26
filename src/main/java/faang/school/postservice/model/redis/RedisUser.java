@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -19,4 +20,7 @@ public class RedisUser implements Serializable {
     @Id
     private long id;
     private String username;
+    private String smallFileId;
+    private List<Long> followerIds;
+    private List<Long> followeeIds;
 }

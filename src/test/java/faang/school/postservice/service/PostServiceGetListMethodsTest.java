@@ -45,6 +45,8 @@ public class PostServiceGetListMethodsTest {
     private ModerationDictionary moderationDictionary;
     @Mock
     private Executor threadPoolForPostModeration;
+    @Mock
+    RedisCacheService redisCacheService;
 
     private PostValidator postValidator;
 
@@ -58,7 +60,8 @@ public class PostServiceGetListMethodsTest {
     @BeforeEach
     void setUp() {
         postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration, publisherService);
+        postService = new PostService(postRepository, postValidator, postMapper,
+                moderationDictionary, threadPoolForPostModeration, publisherService, redisCacheService);
     }
 
     @Test

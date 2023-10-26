@@ -20,4 +20,12 @@ public class RedisCommentDto {
     private long postId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public void likeIncrement(){
+        likes++;
+    }
+
+    public void likeDecrement(){
+        likes--;
+    }
 }

@@ -4,10 +4,9 @@ import faang.school.postservice.dto.redis.TimePostId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
@@ -24,5 +23,6 @@ public class RedisFeed implements Serializable {
     @Id
     private long userId;
     private SortedSet<TimePostId> postIds;
+    @Version
     private Long version;
 }

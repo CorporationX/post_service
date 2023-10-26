@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
 
@@ -30,8 +31,17 @@ public class RedisPost implements Serializable {
     private Long authorId;
     private Long projectId;
     private Integer likes;
-    private List<RedisCommentDto> comments;
-    private boolean corrected;
+    private List<RedisCommentDto> redisCommentDtos;
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
+    @Version
+    private Long version;
+
+    public void likeIncrement(){
+        likes++;
+    }
+
+    public void likeDecrement(){
+        likes--;
+    }
 }

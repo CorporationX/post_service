@@ -10,6 +10,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.service.moderation.ModerationDictionary;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +37,8 @@ public class PostService {
     private final RedisCacheService redisCacheService;
     @Value("${post.moderation.scheduler.sublist-size}")
     private int sublistSize;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Transactional
     public PostDto crateDraftPost(PostDto postDto) {
@@ -59,10 +63,11 @@ public class PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        redisCacheService.putPostAndAuthorInCache(post);
+        PostDto dto = postMapper.toDto(post);
+        redisCacheService.putPostAndAuthorInCache(dto);
         publisherService.publishPostEventToRedis(post);
         log.info("Post was published successfully, postId={}", post.getId());
-        return postMapper.toDto(post);
+        return dto;
     }
 
     @Transactional
@@ -78,8 +83,10 @@ public class PostService {
 
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
+        PostDto dto = postMapper.toDto(post);
+        redisCacheService.updatePostInCache(dto);
         log.info("Post was updated successfully, postId={}", post.getId());
-        return postMapper.toDto(post);
+        return dto;
     }
 
     @Transactional
@@ -90,10 +97,13 @@ public class PostService {
             throw new AlreadyDeletedException("Post has been already deleted");
         }
         post.setDeleted(true);
+        PostDto dto = postMapper.toDto(post);
+        redisCacheService.deletePostFromCache(dto);
         log.info("Post was soft-deleted successfully, postId={}", postId);
-        return postMapper.toDto(post);
+        return dto;
     }
 
+    @Transactional
     public PostDto getPost(long postId) {
         Post post = postValidator.validatePostId(postId);
 
@@ -156,6 +166,21 @@ public class PostService {
     }
 
     @Transactional
+    public List<PostDto> getFirstPostsForFeed(List<Long> followees, int postQuantity) {
+        return postRepository.getPostsByFollowees(followees, postQuantity, entityManager).stream()
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    @Transactional
+    public List<PostDto> getNextPostsForFeed(List<Long> followees, int postQuantity, LocalDateTime previousPostDate) {
+        return postRepository.getNextPostsByFollowees(followees, postQuantity,
+                        entityManager, previousPostDate).stream()
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    @Transactional
     public List<PostDto> getProjectPosts(long projectId) {
         postValidator.validateProjectId(projectId);
 
@@ -197,4 +222,13 @@ public class PostService {
         });
         postRepository.saveAll(list);
     }
+
+//    private List<Post> getPostsByFollowees(List<Long> followees, int postQuantity) {
+//        TypedQuery<Post> query = entityManager.createQuery(
+//                "SELECT p FROM Post p WHERE p.authorId IN :followees ORDER BY p.publishedAt DESC", Post.class);
+//        query.setParameter("followees", followees);
+//        query.setMaxResults(postQuantity);
+//
+//        return query.getResultList();
+//    }
 }

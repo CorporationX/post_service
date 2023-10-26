@@ -1,5 +1,6 @@
 package faang.school.postservice.config;
 
+import faang.school.postservice.dto.client.UserDto;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -30,13 +31,13 @@ public class KafkaConfig {
     private String bootstrapServer;
     @Value("${spring.kafka.topics.feed-topic}")
     private String feedTopicName;
-    @Value("${spring.kafka.topics.feed-topic}")
+    @Value("${spring.kafka.topics.like-topic}")
     private String likeTopicName;
-    @Value("${spring.kafka.topics.feed-topic}")
+    @Value("${spring.kafka.topics.comment-topic}")
     private String commentTopicName;
-    @Value("${spring.kafka.producer.partitions}")
+    @Value("${spring.kafka.partitions}")
     private int partitionCount;
-    @Value("${spring.kafka.producer.replicas}")
+    @Value("${spring.kafka.replicas}")
     private int replicaCount;
 
     @Bean
@@ -46,6 +47,7 @@ public class KafkaConfig {
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         return new DefaultKafkaProducerFactory<>(props);
     }
+
 
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory) {
@@ -85,14 +87,34 @@ public class KafkaConfig {
         props.put(
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                 JsonDeserializer.class);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(KafkaProperties kafkaProperties) {
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory
+            (KafkaProperties kafkaProperties) {
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory(kafkaProperties));
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, UserDto> consumerUserFactory(KafkaProperties kafkaProperties) {
+        Map<String, Object> props = kafkaProperties.buildProducerProperties();
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        return new DefaultKafkaConsumerFactory<>(props,
+                new StringDeserializer(), new JsonDeserializer<>(UserDto.class, false));
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UserDto> kafkaListenerUserContainerFactory
+            (KafkaProperties kafkaProperties) {
+        ConcurrentKafkaListenerContainerFactory<String, UserDto> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerUserFactory(kafkaProperties));
         return factory;
     }
 }

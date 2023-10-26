@@ -1,11 +1,14 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -29,4 +32,25 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.corrected = false")
     List<Post> findNotPublished();
+
+    default List<Post> getPostsByFollowees(List<Long> followees, int postQuantity, EntityManager entityManager) {
+        TypedQuery<Post> query = entityManager.createQuery(
+                "SELECT p FROM Post p WHERE p.authorId IN :followees ORDER BY p.publishedAt DESC", Post.class);
+        query.setParameter("followees", followees);
+        query.setMaxResults(postQuantity);
+
+        return query.getResultList();
+    }
+
+    default List<Post> getNextPostsByFollowees(List<Long> followees, int postQuantity,
+                                           EntityManager entityManager, LocalDateTime previousPostDate) {
+        TypedQuery<Post> query = entityManager.createQuery(
+                "SELECT p FROM Post p WHERE p.authorId IN (:followees) " +
+                        "AND p.publishedAt < :previousPostDate ORDER BY p.publishedAt DESC", Post.class);
+        query.setParameter("followees", followees);
+        query.setParameter("previousPostDate", previousPostDate);
+        query.setMaxResults(postQuantity);
+
+        return query.getResultList();
+    }
 }

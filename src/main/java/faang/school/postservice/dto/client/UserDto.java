@@ -26,4 +26,5 @@ public class UserDto {
     private String preference;
     private String smallFileId;
     private List<Long> followerIds;
+    private List<Long> followeeIds;
 }
