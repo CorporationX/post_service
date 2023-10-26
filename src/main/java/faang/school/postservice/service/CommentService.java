@@ -28,7 +28,7 @@ public class CommentService {
 
     public Comment findExistingComment(long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+            .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
     }
 
     @Transactional(readOnly = true)

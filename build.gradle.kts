@@ -35,6 +35,8 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+    implementation("org.apache.kafka:kafka-clients:3.5.1")
+    implementation("org.springframework.kafka:spring-kafka:3.0.11")
 
 
     /**

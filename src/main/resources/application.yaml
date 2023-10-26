@@ -48,6 +48,8 @@ spring:
         name: like_event_channel
       unlike_event_channel:
         name: unlike_events_channel
+      post_view_event_channel:
+        name: post_view_event_channel
       comment_event_channel:
         name: comment_event_channel
 
