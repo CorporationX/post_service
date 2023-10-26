@@ -30,6 +30,13 @@ spring:
           name: post_channel
         comment_event_channel:
           name: comment_topic
+    kafka:
+      topics:
+        like: like
+        post: post
+        comment: comment
+        post-view: post_view
+        feed-heater: feed_heater
 
 server:
   port: 8081

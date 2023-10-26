@@ -29,4 +29,14 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.corrected = false")
     List<Post> findNotPublished();
+
+    @Query("SELECT p FROM Post p WHERE p.author.id IN :subscribers")
+    List<Post> getFirstsPostsBySubscribers(@Param("subscribers") List<Long> subscribers, int sizeOfPosts);
+
+    @Query("SELECT p FROM Post p " +
+            "WHERE p.author.id IN :subscribers " +
+            "AND p.id > :point " +
+            "ORDER BY p.createdAt DESC")
+    List<Post> getPostsBySubscribersFromPoint(@Param("subscribers") List<Long> subscribers,
+                                              @Param("point") int sizeOfPosts, Long point);
 }

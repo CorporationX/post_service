@@ -1,13 +1,27 @@
 package faang.school.postservice.service;
 
 import com.google.common.collect.Lists;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.client.UserDto;
+import faang.school.postservice.dto.kafka.KafkaPostEvent;
+import faang.school.postservice.dto.kafka.KafkaPostViewEvent;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.NoPublishedPostException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.redis.RedisPostMapper;
+import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.RedisFeed;
+import faang.school.postservice.model.redis.RedisPost;
+import faang.school.postservice.model.redis.RedisUser;
+import faang.school.postservice.publisher.KafkaPostProducer;
+import faang.school.postservice.publisher.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisFeedRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.service.moderation.ModerationDictionary;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +31,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,11 +42,19 @@ import java.util.concurrent.Executor;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final RedisPostRepository redisPostRepository;
+    private final RedisUserRepository redisUserRepository;
+    private final RedisFeedRepository redisFeedRepository;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
+    private final RedisPostMapper redisPostMapper;
+    private final RedisUserMapper redisUserMapper;
     private final ModerationDictionary moderationDictionary;
     private final Executor threadPoolForPostModeration;
     private final PublisherService publisherService;
+    private final KafkaPostProducer kafkaPostProducer;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
+    private final UserServiceClient userServiceClient;
     @Value("${post.moderation.scheduler.sublist-size}")
     private int sublistSize;
 
@@ -58,6 +80,16 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         publisherService.publishPostEventToRedis(post);
+        savePostToRedis(post);
+        UserDto userDto = userServiceClient.getUser(post.getAuthorId());
+        saveUserToRedis(userDto);
+        saveFeedToRedis(post.getId(), userDto);
+        KafkaPostEvent kafkaPostEvent = KafkaPostEvent.builder()
+                .postId(postId)
+                .counterLikes(0L)
+                .counterComments(0L)
+                .build();
+        kafkaPostProducer.publishPostEvent(kafkaPostEvent);
         log.info("Post was published successfully, postId={}", post.getId());
         return postMapper.toDto(post);
     }
@@ -99,7 +131,14 @@ public class PostService {
             throw new NoPublishedPostException("This post hasn't been published yet");
         }
         publisherService.publishPostEventToRedis(post);
-
+        saveViewToRedis(postId);
+        RedisPost redisPost = redisPostRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        KafkaPostViewEvent kafkaPostViewEvent = KafkaPostViewEvent.builder()
+                .postId(postId)
+                .authorId(redisPost.getAuthorId())
+                .build();
+        kafkaPostViewProducer.publishPostViewEvent(kafkaPostViewEvent);
         log.info("Post has taken from DB successfully, postId={}", postId);
         return postMapper.toDto(post);
     }
@@ -186,5 +225,53 @@ public class PostService {
             post.setVerifiedDate(LocalDateTime.now());
         });
         postRepository.saveAll(list);
+    }
+
+    public void saveViewToRedis(long postId) {
+        RedisPost redisPost = redisPostRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found in Redis by id: {}" + postId));
+        redisPost.setPostViews(redisPost.getPostViews() + 1);
+        redisPostRepository.save(redisPost);
+    }
+
+    public void savePostToRedis(Post post) {
+        RedisPost redisPost = redisPostMapper.toRedisPost(post);
+        redisPost.setPostViews(0L);
+        redisPost.setPostLikes(0L);
+        redisPost.setComments(new ArrayDeque<>());
+        redisPost.setVersion(1L);
+        redisPost.setAuthorId(post.getAuthorId());
+        redisPostRepository.save(redisPost);
+    }
+
+    private void saveUserToRedis(UserDto userDto) {
+        RedisUser redisUser = redisUserMapper.toRedisUser(userDto);
+        redisUserRepository.save(redisUser);
+    }
+
+    public void saveFeedToRedis(long userId, UserDto userDto) {
+        List<Long> listFollowers = userDto.getFollowers();
+        if (listFollowers.contains(userId)) {
+            LinkedHashSet<Long> postIds = postRepository.findByAuthorId(userDto.getId()).stream()
+                    .map(Post::getId)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            RedisFeed redisFeed = RedisFeed.builder()
+                    .userId(userId)
+                    .postIds(postIds)
+                    .build();
+            redisFeedRepository.save(redisFeed);
+        }
+    }
+
+    public List<PostDto> getPostsFromBeginning(List<Long> followees, int sizeOfPosts) {
+        return postRepository.getFirstsPostsBySubscribers(followees, sizeOfPosts).stream()
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    public List<PostDto> getPostsFromPoint(List<Long> followees, int sizeOfPosts, Long point) {
+        return postRepository.getPostsBySubscribersFromPoint(followees, sizeOfPosts, point).stream()
+                .map(postMapper::toDto)
+                .toList();
     }
 }
