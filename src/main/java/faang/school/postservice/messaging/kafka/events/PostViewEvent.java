@@ -1,4 +1,4 @@
-package faang.school.postservice.publisher.events;
+package faang.school.postservice.messaging.kafka.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,9 +11,8 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentEvent implements Serializable {
-    private Long authorId;
+public class PostViewEvent implements Serializable {
+    private Long userId;
     private Long postId;
-    private Long commentId;
-    private String commentText;
+    private Long views;
 }

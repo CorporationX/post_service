@@ -2,22 +2,30 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.corrector.external_service.TextGearsAPIService;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.messaging.kafka.events.PostEvent;
+import faang.school.postservice.messaging.kafka.events.PostViewEvent;
+import faang.school.postservice.messaging.kafka.publishing.PostProducer;
+import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderation.ModerationDictionary;
-import faang.school.postservice.publisher.BanEventPublisher;
+import faang.school.postservice.messaging.redis.publisher.BanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,8 +49,18 @@ public class PostService {
     private final BanEventPublisher banEventPublisher;
     private final PostImageService postImageService;
     private final ModerationDictionary moderationDictionary;
+    private final PostProducer postProducer;
+    private final PostViewProducer postViewProducer;
+    private final UserContext userContext;
+    private final RedisTemplate<Long, Object> redisCacheTemplate;
+    private final RedisPostRepository redisPostRepository;
     @Value("${comment.ban.numberOfCommentsToBan}")
     private int numberOfCommentsToBan;
+    @Value("${post-service.post-distribution.batch-size}")
+    private int batchSize;
+
+    @Value("${post-service.post-views.batch-size}")
+    private int postViewsBatchSize;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
@@ -64,6 +83,11 @@ public class PostService {
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+
+        List<Long> followersIds = userServiceClient.getFollowersIds(post.getAuthorId());
+        distributePostToFollowers(id, post.getAuthorId(), followersIds);
+        savePostToRedis(post);
+
         return postMapper.toDto(post);
     }
 
@@ -95,7 +119,7 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PostDto getPostById(Long id) {
         Post post = getPostIfExist(id);
         validatePostIsDeleted(post);
@@ -103,6 +127,8 @@ public class PostService {
         if (!post.isPublished()) {
             throw new DataValidationException("Post is not published");
         }
+        long postViews = processViews(post.getViews(), post.getId());
+        post.setViews(postViews);
         return postMapper.toDto(post);
     }
 
@@ -247,5 +273,69 @@ public class PostService {
             post.setVerifiedDate(LocalDateTime.now());
             postRepository.save(post);
         }
+    }
+
+    @Async
+    public void distributePostToFollowers(Long postId, Long userId, List<Long> allFollowers) {
+        int start = 0;
+        while (start < allFollowers.size()) {
+            int end = Math.min(start + batchSize, allFollowers.size());
+            List<Long> batch = allFollowers.subList(start, end);
+
+            PostEvent event = PostEvent.builder()
+                    .id(postId)
+                    .userId(userId)
+                    .followersIds(batch)
+                    .build();
+
+            postProducer.publish(event);
+            start += batchSize;
+        }
+    }
+
+    private void savePostToRedis(Post post) {
+        PostRedisDto postRedisDto = postMapper.toRedisDto(post);
+        while (true) {
+            redisCacheTemplate.watch(postRedisDto.getId());  // Наблюдение за ключом
+            Optional<PostRedisDto> redisPost = redisPostRepository.findById(postRedisDto.getId());
+            // ... определите новое значение на основе текущего значения, если требуется
+            redisCacheTemplate.multi();  // Начало транзакции
+            redisPostRepository.save(redisPost.get());
+            List<Object> results = redisCacheTemplate.exec();  // Завершение транзакции
+            if (results != null) {
+                // Транзакция была успешной
+                break;
+            }
+            // Транзакция не удалась из-за изменения ключа, повторите
+        }
+    }
+
+    public void incrementView(long postId, long views) {
+        redisCacheTemplate.watch(postId);
+        Optional<PostRedisDto> optionalPost = redisPostRepository.findById(postId);
+        if (optionalPost.isPresent()) {
+            while (true) {
+                PostRedisDto post = optionalPost.get();
+                redisCacheTemplate.multi();
+                post.postViewIncrement(views);
+                redisPostRepository.save(post);
+                List<Object> results = redisCacheTemplate.exec();
+                if (results != null && !results.isEmpty()) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private Long processViews(Long viewCount, Long postId) {
+        int currentBatchSize = 1;
+        viewCount++;
+        while (viewCount >= currentBatchSize && currentBatchSize <= postViewsBatchSize) {
+            currentBatchSize *= 2;
+        }
+        if (viewCount >= currentBatchSize) {
+            postViewProducer.publish(new PostViewEvent(userContext.getUserId(), postId, viewCount));
+        }
+        return viewCount;
     }
 }

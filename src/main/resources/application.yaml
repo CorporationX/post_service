@@ -31,6 +31,27 @@ spring:
         like_events_channel:
           name: like_events_channel
 
+  kafka:
+    bootstrap-servers: "localhost:9092"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group: unicorn
+      auto-offset-reset: earliest
+    channels:
+      post_event_channel:
+        name: post_event_channel
+      like_event_channel:
+        name: like_event_channel
+      unlike_event_channel:
+        name: unlike_events_channel
+      post_view_event_channel:
+        name: post_view_event_channel
+    max-retries: 3
+
 server:
   port: 8081
 
@@ -65,6 +86,11 @@ thread-pool:
   coreThreadPoolSize: 5
   queueCapacity: 100
 
+post-service:
+  post-distribution:
+    batch-size: 2000
+  post-views:
+    batch-size: 1024
 
 correcter:
   scheduler:

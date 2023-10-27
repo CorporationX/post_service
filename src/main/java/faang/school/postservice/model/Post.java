@@ -77,4 +77,11 @@ public class Post {
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Resource> resources;
+
+    @Column(name = "views")
+    private Long views;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private int version;
 }

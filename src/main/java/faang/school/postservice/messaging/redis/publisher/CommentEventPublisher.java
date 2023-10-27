@@ -1,7 +1,7 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.messaging.redis.publisher;
 
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.publisher.events.CommentEvent;
+import faang.school.postservice.messaging.redis.events.CommentEvent;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

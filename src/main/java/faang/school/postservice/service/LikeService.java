@@ -6,10 +6,13 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.integration.UserService;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.messaging.kafka.events.LikeEvent;
+import faang.school.postservice.messaging.kafka.publishing.like.LikeProducer;
+import faang.school.postservice.messaging.kafka.publishing.like.UnlikeProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.messaging.redis.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,8 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
     private final LikeEventPublisher likeEventPublisher;
+    private final LikeProducer likeProducer;
+    private final UnlikeProducer unlikeProducer;
 
 
     @Transactional
@@ -38,13 +43,15 @@ public class LikeService {
         Like like = new Like();
         like.setUserId(userDto.getId());
         like.setPost(existingPost);
-        Like savedLike = likeRepository.save(like);
+        like = likeRepository.save(like);
 
-        likeEventPublisher.publishLikeEvent
-                (postId, existingPost.getAuthorId(), savedLike.getUserId(), savedLike.getCreatedAt());
+        likeEventPublisher.publishLikeEvent(like, existingPost);
+        likeProducer.publish(parseLikeEvent(like, postId));
 
-        return likeMapper.toDto(savedLike);
+        return likeMapper.toDto(like);
     }
+
+
 
     @Transactional
     public LikeDto likeComment(LikeDto likeDto) {
@@ -66,7 +73,9 @@ public class LikeService {
     public void unlikePost(long postId) {
         UserDto userDto = userService.getUser();
         Like like = getExistingLikeForPost(postId, userDto.getId());
+
         likeRepository.delete(like);
+        unlikeProducer.publish(parseLikeEvent(like, postId));
     }
 
     @Transactional
@@ -94,5 +103,12 @@ public class LikeService {
         if (isLikedPost || isLikedComment) {
             throw new DataValidationException("User has already liked this post/comment");
         }
+    }
+
+    private LikeEvent parseLikeEvent(Like like, Long postId) {
+        return LikeEvent.builder()
+                .id(like.getId())
+                .postId(postId)
+                .build();
     }
 }
