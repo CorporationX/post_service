@@ -12,6 +12,7 @@ import faang.school.postservice.messaging.redis.publisher.BanEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.s3.PostImageService;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.Optional;
@@ -69,6 +71,12 @@ public class PostViewProducerTest {
     @Mock
     private PostProducer postProducer;
 
+    @Mock
+    private RedisTemplate<Long, Object> redisCacheTemplate;
+
+    @Mock
+    private RedisPostRepository redisPostRepository;
+
     @InjectMocks
     private PostViewProducer postViewProducer;
 
@@ -89,7 +97,9 @@ public class PostViewProducerTest {
                 moderationDictionary,
                 postProducer,
                 postViewProducer,
-                userContext);
+                userContext,
+                redisCacheTemplate,
+                redisPostRepository);
     }
 
     @Test
@@ -117,6 +127,7 @@ public class PostViewProducerTest {
                 .id(postId)
                 .deleted(false)
                 .published(true)
+                .views(0L)
                 .build();
         when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
         when(userContext.getUserId()).thenReturn(userId);
@@ -124,6 +135,7 @@ public class PostViewProducerTest {
         PostViewEvent event = PostViewEvent.builder()
                 .userId(userId)
                 .postId(postId)
+                .views(1L)
                 .build();
         postViewProducer.setTopic(topic);
         CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
@@ -133,7 +145,7 @@ public class PostViewProducerTest {
 
         postService.getPostById(postId);
 
-        verify(kafkaTemplate, times(1))
+        verify(kafkaTemplate)
                 .send(topic, event);
     }
 }

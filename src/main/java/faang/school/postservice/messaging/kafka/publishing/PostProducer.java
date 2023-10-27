@@ -21,4 +21,5 @@ public class PostProducer extends AbstractProducer<PostEvent> {
     public void publish(PostEvent event) {
         kafkaTemplate.send(topic, event);
     }
+
 }

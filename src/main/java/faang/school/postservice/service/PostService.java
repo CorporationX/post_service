@@ -59,6 +59,8 @@ public class PostService {
     @Value("${post-service.post-distribution.batch-size}")
     private int batchSize;
 
+    @Value("${post-service.post-views.batch-size}")
+    private int postViewsBatchSize;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
@@ -117,7 +119,7 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PostDto getPostById(Long id) {
         Post post = getPostIfExist(id);
         validatePostIsDeleted(post);
@@ -125,7 +127,8 @@ public class PostService {
         if (!post.isPublished()) {
             throw new DataValidationException("Post is not published");
         }
-        postViewProducer.publish(new PostViewEvent(userContext.getUserId(), id));
+        long postViews = processViews(post.getViews(), post.getId());
+        post.setViews(postViews);
         return postMapper.toDto(post);
     }
 
@@ -290,7 +293,7 @@ public class PostService {
         }
     }
 
-    private boolean savePostToRedis(Post post) {
+    private void savePostToRedis(Post post) {
         PostRedisDto postRedisDto = postMapper.toRedisDto(post);
         while (true) {
             redisCacheTemplate.watch(postRedisDto.getId());  // Наблюдение за ключом
@@ -301,9 +304,38 @@ public class PostService {
             List<Object> results = redisCacheTemplate.exec();  // Завершение транзакции
             if (results != null) {
                 // Транзакция была успешной
-                return true;
+                break;
             }
             // Транзакция не удалась из-за изменения ключа, повторите
         }
+    }
+
+    public void incrementView(long postId, long views) {
+        redisCacheTemplate.watch(postId);
+        Optional<PostRedisDto> optionalPost = redisPostRepository.findById(postId);
+        if (optionalPost.isPresent()) {
+            while (true) {
+                PostRedisDto post = optionalPost.get();
+                redisCacheTemplate.multi();
+                post.postViewIncrement(views);
+                redisPostRepository.save(post);
+                List<Object> results = redisCacheTemplate.exec();
+                if (results != null && !results.isEmpty()) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private Long processViews(Long viewCount, Long postId) {
+        int currentBatchSize = 1;
+        viewCount++;
+        while (viewCount >= currentBatchSize && currentBatchSize <= postViewsBatchSize) {
+            currentBatchSize *= 2;
+        }
+        if (viewCount >= currentBatchSize) {
+            postViewProducer.publish(new PostViewEvent(userContext.getUserId(), postId, viewCount));
+        }
+        return viewCount;
     }
 }
