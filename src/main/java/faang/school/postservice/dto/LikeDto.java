@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class LikeDto {
-    private Long id;
 
+    private Long id;
     @NotNull(message = "User ID must be specified")
     private Long userId;
     private Long postId;

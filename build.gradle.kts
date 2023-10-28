@@ -44,6 +44,8 @@ dependencies {
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
     implementation ("com.google.guava:guava:32.1.2-jre")
+    implementation("org.springframework.kafka:spring-kafka:3.0.11")
+    implementation("org.apache.kafka:kafka-clients:3.5.1")
 
     /**
      * Test containers
