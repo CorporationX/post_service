@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class PostProducer implements Publishable<PostPublishedEvent> {
 
     @Value("${spring.kafka.channels.post_event_channel.name}")
-    private final String topic;
+    private String topic;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Override
