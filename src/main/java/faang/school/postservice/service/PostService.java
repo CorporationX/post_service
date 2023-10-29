@@ -2,13 +2,16 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.corrector.external_service.TextGearsAPIService;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.messaging.kafka.events.PostEvent;
+import faang.school.postservice.messaging.kafka.events.PostViewEvent;
 import faang.school.postservice.messaging.kafka.publishing.PostProducer;
+import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -43,6 +46,8 @@ public class PostService {
     private final PostImageService postImageService;
     private final ModerationDictionary moderationDictionary;
     private final PostProducer postProducer;
+    private final PostViewProducer postViewProducer;
+    private final UserContext userContext;
     @Value("${comment.ban.numberOfCommentsToBan}")
     private int numberOfCommentsToBan;
     @Value("${post-service.post-distribution.batch-size}")
@@ -113,6 +118,7 @@ public class PostService {
         if (!post.isPublished()) {
             throw new DataValidationException("Post is not published");
         }
+        postViewProducer.publish(new PostViewEvent(userContext.getUserId(), id));
         return postMapper.toDto(post);
     }
 
