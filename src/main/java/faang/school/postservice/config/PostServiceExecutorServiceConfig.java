@@ -14,7 +14,7 @@ public class PostServiceExecutorServiceConfig {
     private int threadCount;
 
     @Bean
-    public ExecutorService postServiceExecutorService(int threadCount) {
+    public ExecutorService postServiceExecutorService() {
         return Executors.newFixedThreadPool(threadCount);
     }
 }
