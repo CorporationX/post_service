@@ -2,18 +2,19 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.corrector.external_service.TextGearsAPIService;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.messaging.events.PostPublishedEvent;
+import faang.school.postservice.messaging.kafka.events.PostViewEvent;
 import faang.school.postservice.messaging.publishing.PostProducer;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderation.ModerationDictionary;
-import faang.school.postservice.publisher.BanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
@@ -28,9 +29,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -41,17 +40,16 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final TextGearsAPIService textGearsAPIService;
-    private final CommentService commentService;
-    private final BanEventPublisher banEventPublisher;
     private final PostImageService postImageService;
     private final ModerationDictionary moderationDictionary;
     private final PostProducer postProducer;
     private final ExecutorService postServiceExecutorService;
+    private final PostViewProducer postViewProducer;
+    private final UserContext userContext;
 
-    @Value("${comment.ban.numberOfCommentsToBan}")
-    private int numberOfCommentsToBan;
     @Value("${post-service.post-distribution.batch-size}")
     private int batchSize;
+
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
@@ -117,6 +115,7 @@ public class PostService {
         if (!post.isPublished()) {
             throw new DataValidationException("Post is not published");
         }
+        postViewProducer.publish(new PostViewEvent(userContext.getUserId(), id));
         return postMapper.toDto(post);
     }
 
@@ -228,23 +227,6 @@ public class PostService {
             String correctedText = textGearsAPIService.correctText(post.getContent());
             post.setContent(correctedText);
             postRepository.save(post);
-        }
-    }
-
-
-    public void findCommentersAndPublishBanEvent() {
-        List<Comment> unverifiedComments = commentService.getUnverifiedComments();
-
-        Map<Long, List<Comment>> commentsByAuthor = unverifiedComments.stream()
-                .collect(Collectors.groupingBy(Comment::getAuthorId));
-
-        for (Map.Entry<Long, List<Comment>> entry : commentsByAuthor.entrySet()) {
-            Long authorId = entry.getKey();
-            List<Comment> authorComments = entry.getValue();
-
-            if (authorComments.size() > numberOfCommentsToBan) {
-                banEventPublisher.publishBanEvent(authorId);
-            }
         }
     }
 

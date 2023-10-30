@@ -19,4 +19,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     List<Comment> findByVerifiedTrue();
 
     List<Comment> findByVerifiedDateBeforeAndVerifiedFalse(LocalDateTime date);
+
+    List<Comment> findAllByPostIdOrderByCreatedAtDesc(Long postId);
+
 }

@@ -2,11 +2,13 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.corrector.external_service.TextGearsAPIService;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import feign.FeignException;
@@ -49,6 +51,10 @@ class PostServiceTest {
     private TextGearsAPIService textGearsAPIService;
     @Mock
     private ModerationDictionary moderationDictionary;
+    @Mock
+    private PostViewProducer postViewProducer;
+    @Mock
+    private UserContext userContext;
 
     @Test
     void testCreateDraftPostValidData() {

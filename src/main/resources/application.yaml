@@ -19,6 +19,8 @@ spring:
 
   data:
     redis:
+      ttl: 86400
+      comments_size: 3
       port: 6379
       host: localhost
       channels:
@@ -32,7 +34,7 @@ spring:
           name: like_events_channel
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: "localhost:9092"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -44,6 +46,14 @@ spring:
     channels:
       post_event_channel:
         name: post_event_channel
+      like_event_channel:
+        name: like_event_channel
+      unlike_event_channel:
+        name: unlike_events_channel
+      post_view_event_channel:
+        name: post_view_event_channel
+      comment_event_channel:
+        name: comment_event_channel
 
 server:
   port: 8081

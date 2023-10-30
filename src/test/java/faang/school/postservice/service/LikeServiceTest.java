@@ -6,10 +6,12 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.integration.UserService;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.messaging.kafka.publishing.like.LikeProducer;
+import faang.school.postservice.messaging.kafka.publishing.like.UnlikeProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.messaging.redis.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,6 +57,12 @@ class LikeServiceTest {
 
     @Mock
     private LikeEventPublisher likeEventPublisher;
+
+    @Mock
+    private UnlikeProducer unlikeProducer;
+
+    @Mock
+    private LikeProducer likeProducer;
 
     private UserDto userDto;
     private LikeDto likeDto;
