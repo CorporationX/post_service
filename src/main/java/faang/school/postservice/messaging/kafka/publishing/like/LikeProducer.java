@@ -24,11 +24,15 @@ public class LikeProducer extends AbstractProducer<LikeEvent> {
     @Override
     public void publish(LikeEvent event) {
         kafkaTemplate.send(topic, event)
-                .thenAccept(ack -> log.info("LikeEvent (id: {}; postId: {}) has been delivered (Kafka)",
-                                event.getId(), event.getPostId()))
+                .thenAccept(ack -> {
+                    log.info("LikeEvent (id: {}; postId: {}) has been delivered (Kafka)",
+                            event.getId(), event.getPostId());
+                    retryCount.set(0);
+                })
                 .exceptionally(ex -> {
                     log.error("Failed to publish LikeEvent (id: {}; postId: {}) (Kafka). Message: {}",
                             event.getId(), event.getPostId(), ex.getMessage());
+                    retryPublish(event);
                     return null;
                 });
     }

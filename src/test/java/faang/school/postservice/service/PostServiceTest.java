@@ -2,13 +2,18 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.corrector.external_service.TextGearsAPIService;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.messaging.kafka.events.PostViewEvent;
+import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import feign.FeignException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import faang.school.postservice.repository.PostRepository;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -28,10 +34,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -49,6 +52,15 @@ class PostServiceTest {
     private TextGearsAPIService textGearsAPIService;
     @Mock
     private ModerationDictionary moderationDictionary;
+    @Mock
+    private PostViewProducer postViewProducer;
+    @Mock
+    private UserContext userContext;
+    @Mock
+    private RedisTemplate<Long, Object> redisCacheTemplate;
+    @Mock
+    private RedisPostRepository redisPostRepository;
+
 
     @Test
     void testCreateDraftPostValidData() {
@@ -125,8 +137,15 @@ class PostServiceTest {
                 .deleted(false)
                 .build();
 
+        PostRedisDto postRedisDto = PostRedisDto.builder().id(1L).build();
+        List<Object> mockResultList = Arrays.asList(new Object(), new Object());
 
         when(postRepository.findById(id)).thenReturn(Optional.of(post));
+        doNothing().when(redisCacheTemplate).watch((Long) any());
+        when(redisPostRepository.findById(any())).thenReturn(Optional.of(postRedisDto));
+        doNothing().when(redisCacheTemplate).multi();
+        when(redisCacheTemplate.exec()).thenReturn(mockResultList);
+        when(redisPostRepository.save(any())).thenReturn(postRedisDto);
 
         PostDto actualDto = postService.publishPost(id);
 
@@ -229,9 +248,12 @@ class PostServiceTest {
                 .content("Content")
                 .authorId(1L)
                 .published(true)
+                .views(0L)
                 .build();
+        postService.setPostViewsBatchSize(50);
 
         when(postRepository.findById(id)).thenReturn(Optional.of(post));
+        doNothing().when(postViewProducer).publish((PostViewEvent) any(Object.class));
 
         PostDto actualDto = postService.getPostById(id);
 
