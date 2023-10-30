@@ -24,6 +24,7 @@ spring:
       channels:
         calculations_channel: calculations-channel
         comment_event_channel: comment-event-channel
+        comment_channel: comment-channel
         user_ban: user-ban
         like_channel: like-channel
 

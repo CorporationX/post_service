@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.CommentPublisher;
 import faang.school.postservice.repository.CommentRepository;
 
 import faang.school.postservice.service.post.PostService;
@@ -25,6 +26,7 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final PostService postService;
     private final CommentEventPublisher commentEventPublisher;
+    private final CommentPublisher commentPublisher;
 
     public CommentDto createComment(CommentDto commentDto) {
         if (commentDto.getCreatedAt() == null) {
@@ -34,6 +36,7 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(commentDto);
         commentRepository.save(comment);
         commentEventPublisher.publish(comment);
+        commentPublisher.publish(comment);
         return commentDto;
     }
 
