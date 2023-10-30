@@ -23,6 +23,7 @@ import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -59,6 +60,7 @@ public class PostService {
     @Value("${post-service.post-distribution.batch-size}")
     private int batchSize;
 
+    @Setter
     @Value("${post-service.post-views.batch-size}")
     private int postViewsBatchSize;
 

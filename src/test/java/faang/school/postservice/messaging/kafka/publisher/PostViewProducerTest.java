@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.corrector.external_service.TextGearsAPIService;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
 import faang.school.postservice.messaging.kafka.publishing.PostProducer;
@@ -129,13 +130,19 @@ public class PostViewProducerTest {
                 .published(true)
                 .views(0L)
                 .build();
+        postService.setPostViewsBatchSize(50);
         when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
         when(userContext.getUserId()).thenReturn(userId);
+        when(redisPostRepository.findById(postId))
+                .thenReturn(Optional.ofNullable(
+                        PostRedisDto
+                                .builder()
+                                .postViewCounter(1L)
+                                .build()));
 
         PostViewEvent event = PostViewEvent.builder()
                 .userId(userId)
                 .postId(postId)
-                .views(1L)
                 .build();
         postViewProducer.setTopic(topic);
         CompletableFuture<Void> future = CompletableFuture.completedFuture(null);

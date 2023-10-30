@@ -250,6 +250,7 @@ class PostServiceTest {
                 .published(true)
                 .views(0L)
                 .build();
+        postService.setPostViewsBatchSize(50);
 
         when(postRepository.findById(id)).thenReturn(Optional.of(post));
         doNothing().when(postViewProducer).publish((PostViewEvent) any(Object.class));
