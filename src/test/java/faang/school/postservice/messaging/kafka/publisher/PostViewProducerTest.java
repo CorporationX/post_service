@@ -6,13 +6,14 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.corrector.external_service.TextGearsAPIService;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
-import faang.school.postservice.messaging.kafka.publishing.PostProducer;
+import faang.school.postservice.messaging.publishing.PostProducer;
 import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.s3.PostImageService;
+import java.util.concurrent.ExecutorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,6 +62,9 @@ public class PostViewProducerTest {
     @Mock
     private PostProducer postProducer;
 
+    @Mock
+    private ExecutorService executorService;
+
     @InjectMocks
     private PostViewProducer postViewProducer;
 
@@ -78,6 +82,7 @@ public class PostViewProducerTest {
                 postImageService,
                 moderationDictionary,
                 postProducer,
+                executorService,
                 postViewProducer,
                 userContext);
     }

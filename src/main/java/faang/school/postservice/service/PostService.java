@@ -9,9 +9,8 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.messaging.events.PostPublishedEvent;
-import faang.school.postservice.messaging.kafka.events.PostEvent;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
-import faang.school.postservice.messaging.kafka.publishing.PostProducer;
+import faang.school.postservice.messaging.publishing.PostProducer;
 import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -30,9 +29,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
