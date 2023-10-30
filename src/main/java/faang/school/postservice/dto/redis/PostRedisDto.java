@@ -26,6 +26,10 @@ public class PostRedisDto {
     private LocalDateTime publishedAt;
 
     public void postViewIncrement() {
-        postViewCounter ++;
+        postViewCounter++;
+    }
+
+    public void likeIncrement() {
+        likeCounter++;
     }
 }
