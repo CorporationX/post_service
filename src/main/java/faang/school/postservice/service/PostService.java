@@ -8,6 +8,7 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.messaging.events.PostPublishedEvent;
 import faang.school.postservice.messaging.kafka.events.PostEvent;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
 import faang.school.postservice.messaging.kafka.publishing.PostProducer;
@@ -19,16 +20,21 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -40,6 +46,7 @@ public class PostService {
     private final PostImageService postImageService;
     private final ModerationDictionary moderationDictionary;
     private final PostProducer postProducer;
+    private final ExecutorService postServiceExecutorService;
     private final PostViewProducer postViewProducer;
     private final UserContext userContext;
 
@@ -69,8 +76,8 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
-        List<Long> followersIds = userServiceClient.getFollowersIds(post.getAuthorId());
-        distributePostToFollowers(id, post.getAuthorId(), followersIds);
+        List<Long> followersIds = userServiceClient.getFollowersIdsByAuthorId(post.getAuthorId());
+        dispatchPostToFollowers(post, followersIds);
 
         return postMapper.toDto(post);
     }
@@ -241,21 +248,18 @@ public class PostService {
         }
     }
 
-    @Async
-    public void distributePostToFollowers(Long postId, Long userId, List<Long> allFollowers) {
-        int start = 0;
-        while (start < allFollowers.size()) {
-            int end = Math.min(start + batchSize, allFollowers.size());
-            List<Long> batch = allFollowers.subList(start, end);
+    private void dispatchPostToFollowers(Post post, List<Long> followersIds) {
+        for (int i = 0; i < followersIds.size(); i += batchSize) {
+            int startIdx = i;
+            int endIdx = Math.min(i + batchSize, followersIds.size());
 
-            PostEvent event = PostEvent.builder()
-                    .id(postId)
-                    .userId(userId)
-                    .followersIds(batch)
-                    .build();
+            List<Long> followersIdsBatch = new ArrayList<>(followersIds.subList(startIdx, endIdx));
 
-            postProducer.publish(event);
-            start += batchSize;
+            postServiceExecutorService.submit(() -> {
+                PostPublishedEvent eventToSend = postMapper.toPostPublishedEvent(post);
+                eventToSend.setFollowersIds(followersIdsBatch);
+                postProducer.publish(eventToSend);
+            });
         }
     }
 }

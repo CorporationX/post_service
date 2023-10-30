@@ -92,6 +92,7 @@ thread-pool:
 post-service:
   post-distribution:
     batch-size: 2000
+    thread-count: 8
 
 correcter:
   scheduler:
