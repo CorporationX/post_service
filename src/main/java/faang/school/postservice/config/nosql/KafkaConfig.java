@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.nosql;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Value;
