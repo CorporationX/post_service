@@ -27,7 +27,7 @@ public class LikeProducer extends AbstractProducer<LikeEvent> {
                 .thenAccept(ack -> {
                     log.info("LikeEvent (id: {}; postId: {}) has been delivered (Kafka)",
                             event.getId(), event.getPostId());
-                    retryCount = 0;
+                    retryCount.set(0);
                 })
                 .exceptionally(ex -> {
                     log.error("Failed to publish LikeEvent (id: {}; postId: {}) (Kafka). Message: {}",

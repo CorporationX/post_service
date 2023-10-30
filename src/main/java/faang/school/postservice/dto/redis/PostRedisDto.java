@@ -25,7 +25,7 @@ public class PostRedisDto {
     private List<Resource> resources;
     private LocalDateTime publishedAt;
 
-    public void postViewIncrement(long views) {
-        postViewCounter += views;
+    public void postViewIncrement() {
+        postViewCounter ++;
     }
 }

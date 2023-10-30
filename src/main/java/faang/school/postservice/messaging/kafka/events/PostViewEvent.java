@@ -14,5 +14,4 @@ import java.io.Serializable;
 public class PostViewEvent implements Serializable {
     private Long userId;
     private Long postId;
-    private Long views;
 }

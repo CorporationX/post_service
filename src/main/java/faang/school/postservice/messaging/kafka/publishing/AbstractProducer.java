@@ -11,7 +11,7 @@ public abstract class AbstractProducer<T> {
 
     protected final KafkaTemplate<String, Object> kafkaTemplate;
 
-    protected int retryCount = 0;
+    protected ThreadLocal<Integer> retryCount = ThreadLocal.withInitial(() -> 0);
 
     @Value("${spring.kafka.max-retries}")
     protected int maxRetries;
@@ -19,13 +19,13 @@ public abstract class AbstractProducer<T> {
     public abstract void publish(T event);
 
     protected void retryPublish(T event) {
-        if (retryCount < maxRetries) {
-            retryCount++;
-            log.info("Retrying... Attempt {}/{}", retryCount , maxRetries);
+        if (retryCount.get() < maxRetries) {
+            retryCount.set(retryCount.get() + 1);
+            log.info("Retrying... Attempt {}/{}", retryCount, maxRetries);
             publish(event);
         } else {
             log.error("Max retry attempts reached. Failed to publish event: {}", event);
-            retryCount = 0;
+            retryCount.set(0);
         }
     }
 }

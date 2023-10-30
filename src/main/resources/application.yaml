@@ -90,7 +90,7 @@ post-service:
   post-distribution:
     batch-size: 2000
   post-views:
-    batch-size: 1024
+    batch-size: 50
 
 correcter:
   scheduler:

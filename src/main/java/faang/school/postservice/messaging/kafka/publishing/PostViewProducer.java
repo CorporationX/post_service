@@ -26,7 +26,7 @@ public class PostViewProducer extends AbstractProducer<PostViewEvent> {
         kafkaTemplate.send(topic, event)
                 .thenAccept(ack -> {
                     log.info("Post view event has published to kafka {}, {}", topic, event);
-                    retryCount = 0;
+                    retryCount.set(0);
                 })
                 .exceptionally(e -> {
                     log.error("Failed to publish on topic {}, event {}", topic, event);

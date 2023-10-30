@@ -84,4 +84,8 @@ public class Post {
     @Version
     @Column(name = "version", nullable = false)
     private int version;
+
+    public void incrementViews(Long viewsCount) {
+        views += viewsCount;
+    }
 }

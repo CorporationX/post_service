@@ -127,8 +127,10 @@ public class PostService {
         if (!post.isPublished()) {
             throw new DataValidationException("Post is not published");
         }
-        long postViews = processViews(post.getViews(), post.getId());
-        post.setViews(postViews);
+        Long views = getPostViews(id);
+        if (views % postViewsBatchSize == 0)
+            post.incrementViews(views);
+        postViewProducer.publish(new PostViewEvent(userContext.getUserId(), id));
         return postMapper.toDto(post);
     }
 
@@ -310,14 +312,14 @@ public class PostService {
         }
     }
 
-    public void incrementView(long postId, long views) {
+    public void incrementView(long postId) {
         redisCacheTemplate.watch(postId);
         Optional<PostRedisDto> optionalPost = redisPostRepository.findById(postId);
         if (optionalPost.isPresent()) {
             while (true) {
                 PostRedisDto post = optionalPost.get();
                 redisCacheTemplate.multi();
-                post.postViewIncrement(views);
+                post.postViewIncrement();
                 redisPostRepository.save(post);
                 List<Object> results = redisCacheTemplate.exec();
                 if (results != null && !results.isEmpty()) {
@@ -327,15 +329,9 @@ public class PostService {
         }
     }
 
-    private Long processViews(Long viewCount, Long postId) {
-        int currentBatchSize = 1;
-        viewCount++;
-        while (viewCount >= currentBatchSize && currentBatchSize <= postViewsBatchSize) {
-            currentBatchSize *= 2;
-        }
-        if (viewCount >= currentBatchSize) {
-            postViewProducer.publish(new PostViewEvent(userContext.getUserId(), postId, viewCount));
-        }
-        return viewCount;
+    private Long getPostViews(Long postId) {
+        return redisPostRepository.findById(postId)
+                .map(PostRedisDto::getPostViewCounter)
+                .orElseGet(() -> 0L);
     }
 }

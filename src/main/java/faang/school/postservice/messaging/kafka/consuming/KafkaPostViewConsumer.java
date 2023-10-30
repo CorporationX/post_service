@@ -18,7 +18,7 @@ public class KafkaPostViewConsumer {
     @KafkaListener(topics = "${spring.kafka.channels.post_view_event_channel.name}", groupId = "${spring.kafka.consumer.group}")
     public void listen(PostViewEvent event, Acknowledgment acknowledgment) {
         log.info("event from kafka: " + event);
-        postService.incrementView(event.getPostId(), event.getViews());
+        postService.incrementView(event.getPostId());
         acknowledgment.acknowledge();
     }
 }
