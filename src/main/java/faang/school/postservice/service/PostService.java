@@ -212,11 +212,16 @@ public class PostService {
     }
 
     public void sendKafkaPostEvent(Post post) {
-        KafkaPostEvent kafkaPostEvent = KafkaPostEvent.builder()
-                .postId(post.getId())
-                .followersId(userServiceClient.getFollowersId(post.getAuthorId()))
-                .build();
-        kafkaPostProducer.sendMessage(kafkaPostEvent);
+        List<Long> followersId = userServiceClient.getFollowersId(post.getAuthorId());
+        for (int i = 0; i < followersId.size(); i += 1000) {
+            int toIndex = (followersId.size() < i + 1000) ? (followersId.size() - 1) : (i + 1000);
+            List<Long> usersId = followersId.subList(i, toIndex);
+            KafkaPostEvent kafkaPostEvent = KafkaPostEvent.builder()
+                    .postId(post.getId())
+                    .followersId(usersId)
+                    .build();
+            kafkaPostProducer.sendMessage(kafkaPostEvent);
+        }
     }
 
     public void cachePostAuthor(long authorId) {

@@ -46,28 +46,28 @@ public class KafkaConfig {
     }
 
     @Bean
-    public NewTopic commentTopic() {
-        return new NewTopic(commentTopicName, null, null);
+    public NewTopic kafkaCommentTopic() {
+        return new NewTopic(commentTopicName, 1, (short) 1);
     }
 
     @Bean
-    public NewTopic postTopic() {
-        return new NewTopic(postTopicName, null, null);
+    public NewTopic kafkaPostTopic() {
+        return new NewTopic(postTopicName, 1, (short) 1);
     }
 
     @Bean
-    public NewTopic likeTopic() {
-        return new NewTopic(likeTopicName, null, null);
+    public NewTopic kafkaLikeTopic() {
+        return new NewTopic(likeTopicName, 1, (short) 1);
     }
 
     @Bean
-    public NewTopic viewTopic() {
-        return new NewTopic(postViewTopicName, null, null);
+    public NewTopic kafkaViewTopic() {
+        return new NewTopic(postViewTopicName, 1, (short) 1);
     }
 
     @Bean
     public NewTopic feedHeatTopic() {
-        return new NewTopic(feedHeatTopicName, null, null);
+        return new NewTopic(feedHeatTopicName, 1, (short) 1);
     }
 
     @Bean

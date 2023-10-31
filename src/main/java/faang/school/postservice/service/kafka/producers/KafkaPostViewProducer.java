@@ -15,14 +15,14 @@ import org.springframework.stereotype.Component;
 public class KafkaPostViewProducer implements KafkaProducer {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final NewTopic viewTopic;
+    private final NewTopic kafkaViewTopic;
     private final ObjectMapper objectMapper;
 
     public void sendMessage(KafkaPostViewEvent event) {
         log.info("KafkaPostViewProducer method sendMessage(KafkaPostViewEvent event) was called.");
         try {
             String message = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send(viewTopic.name(), message);
+            kafkaTemplate.send(kafkaViewTopic.name(), message);
         } catch (JsonProcessingException e) {
             log.error("JsonProcessingException in KafkaPostViewProducer method sendMessage(KafkaPostViewEvent event). ", e);
             throw new RuntimeException(e);
@@ -32,6 +32,6 @@ public class KafkaPostViewProducer implements KafkaProducer {
     @Override
     public void sendMessage(String message){
         log.info("KafkaPostViewProducer method sendMessage(String message) was called.");
-        kafkaTemplate.send(viewTopic.name(), message);
+        kafkaTemplate.send(kafkaViewTopic.name(), message);
     }
 }

@@ -26,12 +26,11 @@ public interface RedisPostMapper {
 
     @Named("mapPostComments")
     default PriorityQueue<RedisComment> mapPostComments(List<Comment> comments){
-//        RedisCommentMapper redisCommentMapper = new RedisCommentMapperImpl();
-//        return comments.stream()
-//                .map(comment -> redisCommentMapper.toRedisEntity(comment))
-//                .sorted((c1, c2) -> c1.getCreatedAt().compareTo(c2.getCreatedAt()))
-//                .limit(3)
-//                .collect(Collectors.toCollection(() -> new PriorityQueue<RedisComment>()));
-        return  new PriorityQueue<>();
+        RedisCommentMapper redisCommentMapper = new RedisCommentMapperImpl();
+        return comments.stream()
+                .map(comment -> redisCommentMapper.toRedisEntity(comment))
+                .sorted((c1, c2) -> c1.getCreatedAt().compareTo(c2.getCreatedAt()))
+                .limit(3)
+                .collect(Collectors.toCollection(() -> new PriorityQueue<RedisComment>()));
     }
 }
