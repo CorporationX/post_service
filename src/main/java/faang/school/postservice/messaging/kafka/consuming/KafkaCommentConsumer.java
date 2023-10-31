@@ -1,4 +1,4 @@
-package faang.school.postservice.messaging.kafka.listener;
+package faang.school.postservice.messaging.kafka.consuming;
 
 import faang.school.postservice.messaging.kafka.events.CommentEvent;
 import faang.school.postservice.service.RedisCommentService;
