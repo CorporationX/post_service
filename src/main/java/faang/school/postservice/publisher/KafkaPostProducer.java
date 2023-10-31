@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class KafkaPostProducer {
     private final KafkaTemplate<String, KafkaPostEvent> kafkaTemplate;
-    @Value("${spring.data.kafka.topics.post}")
+    @Value("${spring.kafka.topics.post-topic}")
     private String postsTopic;
 
     public void publishPostEvent(KafkaPostEvent kafkaPostEvent) {

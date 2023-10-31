@@ -237,39 +237,39 @@ public class PostService {
     public void savePostToRedis(Post post) {
         RedisPost redisPost = redisPostMapper.toRedisPost(post);
         redisPost.setPostViews(0L);
-        redisPost.setPostLikes(0L);
-        redisPost.setComments(new ArrayDeque<>());
         redisPost.setVersion(1L);
-        redisPost.setAuthorId(post.getAuthorId());
         redisPostRepository.save(redisPost);
     }
 
-    private void saveUserToRedis(UserDto userDto) {
+    public void saveUserToRedis(UserDto userDto) {
         RedisUser redisUser = redisUserMapper.toRedisUser(userDto);
+        redisUser.setVersion(1L);
         redisUserRepository.save(redisUser);
     }
 
-    public void saveFeedToRedis(long userId, UserDto userDto) {
+    public void saveFeedToRedis(long postId, UserDto userDto) {
         List<Long> listFollowers = userDto.getFollowers();
-        if (listFollowers.contains(userId)) {
+        for (Long followerId : listFollowers) {
             LinkedHashSet<Long> postIds = postRepository.findByAuthorId(userDto.getId()).stream()
                     .map(Post::getId)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
+            postIds.add(postId);
             RedisFeed redisFeed = RedisFeed.builder()
-                    .userId(userId)
+                    .userId(followerId)
                     .postIds(postIds)
+                    .version(1L)
                     .build();
             redisFeedRepository.save(redisFeed);
         }
     }
 
-    public List<PostDto> getPostsFromBeginning(List<Long> followees, int sizeOfPosts) {
+    public List<PostDto> getPostsFromBeginningInDb(List<Long> followees, int sizeOfPosts) {
         return postRepository.getFirstsPostsBySubscribers(followees, sizeOfPosts).stream()
                 .map(postMapper::toDto)
                 .toList();
     }
 
-    public List<PostDto> getPostsFromPoint(List<Long> followees, int sizeOfPosts, Long point) {
+    public List<PostDto> getPostsAfterPostInDb(List<Long> followees, int sizeOfPosts, Long point) {
         return postRepository.getPostsBySubscribersFromPoint(followees, sizeOfPosts, point).stream()
                 .map(postMapper::toDto)
                 .toList();

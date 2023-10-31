@@ -6,8 +6,15 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.client.ProjectDto;
 import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.mapper.redis.RedisPostMapperImpl;
+import faang.school.postservice.mapper.redis.RedisUserMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.KafkaPostProducer;
+import faang.school.postservice.publisher.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisFeedRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.validator.PostValidator;
 import feign.FeignException;
@@ -31,24 +38,37 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class PostServiceGetListMethodsTest {
 
-    @Spy
-    private PostMapperImpl postMapper;
     @Mock
     private PostRepository postRepository;
     @Mock
-    private UserServiceClient userService;
+    private RedisPostRepository redisPostRepository;
     @Mock
-    private ProjectServiceClient projectService;
+    private RedisUserRepository redisUserRepository;
     @Mock
-    private PublisherService publisherService;
+    private RedisFeedRepository redisFeedRepository;
+    @Spy
+    private PostMapperImpl postMapper;
+    @Spy
+    private RedisPostMapperImpl redisPostMapper;
+    @Spy
+    private RedisUserMapperImpl redisUserMapper;
     @Mock
     private ModerationDictionary moderationDictionary;
     @Mock
     private Executor threadPoolForPostModeration;
-
+    @Mock
+    private PublisherService publisherService;
+    @Mock
+    private KafkaPostProducer kafkaPostProducer;
+    @Mock
+    private KafkaPostViewProducer kafkaPostViewProducer;
+    @Mock
+    private UserServiceClient userService;
+    @Mock
+    private ProjectServiceClient projectService;
     private PostValidator postValidator;
-
     private PostService postService;
+
 
     private final long CORRECT_ID = 1L;
     private final LocalDateTime TEST_TIME = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
@@ -58,7 +78,8 @@ public class PostServiceGetListMethodsTest {
     @BeforeEach
     void setUp() {
         postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration, publisherService);
+        postService = new PostService(postRepository, redisPostRepository, redisUserRepository, redisFeedRepository, postValidator,
+                postMapper, redisPostMapper, redisUserMapper, moderationDictionary, threadPoolForPostModeration, publisherService, kafkaPostProducer, kafkaPostViewProducer, userService);
     }
 
     @Test

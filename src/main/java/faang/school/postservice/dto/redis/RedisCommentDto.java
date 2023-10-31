@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.relational.core.sql.In;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +16,7 @@ public class RedisCommentDto {
     private Long id;
     private Long authorId;
     private Long postId;
-    private Long likes;
+    private Integer likes;
     private String content;
     private LocalDateTime createdAt;
 }

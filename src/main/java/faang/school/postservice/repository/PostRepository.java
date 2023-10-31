@@ -1,6 +1,8 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -36,7 +38,16 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p " +
             "WHERE p.author.id IN :subscribers " +
             "AND p.id > :point " +
-            "ORDER BY p.createdAt DESC")
+            "ORDER BY p.createdAt ASC")
     List<Post> getPostsBySubscribersFromPoint(@Param("subscribers") List<Long> subscribers,
-                                              @Param("point") int sizeOfPosts, Long point);
+                                              @Param("sizeOfPosts") int sizeOfPosts,
+                                              @Param("point") Long point);
+
+    default List<Long> getMissingPostIds(int missingPostCount, Long postId, EntityManager entityManager) {
+        TypedQuery<Long> query = entityManager.createQuery(
+                "SELECT id FROM posts WHERE id < :postId ORDER BY id DESC LIMIT :missingPostCount", Long.class);
+        query.setParameter("postId", postId);
+        query.setParameter("missingPostCount", missingPostCount);
+        return query.getResultList();
+    }
 }

@@ -17,14 +17,14 @@ import java.util.Map;
 public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
-    @Value("${spring.data.kafka.topics.like}")
-    private String likesTopic;
-    @Value("${spring.data.kafka.topics.post}")
+    @Value("${spring.kafka.topics.post-topic}")
     private String postsTopic;
-    @Value("${spring.data.kafka.topics.comment}")
-    private String commentsTopic;
-    @Value("${spring.data.kafka.topics.post-view}")
+    @Value("${spring.kafka.topics.post-view-topic}")
     private String postViewTopic;
+    @Value("${spring.kafka.topics.comments-topic}")
+    private String commentsTopic;
+    @Value("${spring.kafka.topics.likes-topic}")
+    private String likesTopic;
     @Value("${spring.data.kafka.topics.feed-heater}")
     private String feedHeaterTopic;
 

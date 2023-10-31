@@ -1,26 +1,48 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.redis.RedisCommentDto;
-import faang.school.postservice.dto.redis.CommentEventDto;
+import faang.school.postservice.dto.client.CommentDto;
 import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/comments")
 public class CommentController {
 
-    private final CommentService service;
+    private final CommentService commentService;
 
     @PostMapping("/{postId}")
-    public RedisCommentDto createComment(@PathVariable long postId, @RequestBody RedisCommentDto commentDto) {
-        return service.createComment(postId, commentDto);
+    public CommentDto createComment(@PathVariable long postId, @RequestBody CommentDto commentDto) {
+        return commentService.createComment(postId, commentDto);
     }
 
-    @PostMapping
-    public ResponseEntity<CommentEventDto> create() {
-        return ResponseEntity.ok(service.create());
+    @GetMapping("/{id}")
+    public CommentDto getComment(@PathVariable("id") long commentId) {
+        return commentService.getComment(commentId);
+    }
+
+    @PutMapping
+    public CommentDto updateComment(@RequestBody CommentDto commentDto) {
+        return commentService.updateComment(commentDto);
+    }
+
+    @GetMapping("/all")
+    public List<CommentDto> getAllComments() {
+        return commentService.getAllComments();
+    }
+
+    @GetMapping("/all-by/{postId}")
+    public List<CommentDto> getAllCommentsById(@PathVariable("postId") long postId) {
+        return commentService.getAllCommentsById(postId);
+    }
+
+    @DeleteMapping("/{id}/delete")
+    public void deleteComment(@PathVariable("id") long commentId) {
+        commentService.deleteComment(commentId);
     }
 }

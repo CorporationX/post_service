@@ -20,5 +20,6 @@ public class UserDto {
     private String city;
     private Integer experience;
     private List<Long> followers;
+    private List<Long> followees;
     private Locale locale;
 }

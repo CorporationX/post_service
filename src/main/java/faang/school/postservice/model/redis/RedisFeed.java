@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.util.LinkedHashSet;
@@ -18,4 +19,6 @@ public class RedisFeed {
     @Id
     private Long userId;
     private LinkedHashSet<Long> postIds;
+    @Version
+    private Long version;
 }

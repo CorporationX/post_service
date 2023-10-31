@@ -22,7 +22,7 @@ public class RedisPost implements Serializable {
     private String content;
     private Long authorId;
     private Long postViews;
-    private Long postLikes;
+    private Integer postLikes;
     private ArrayDeque<RedisCommentDto> comments;
     @Version
     private Long version;

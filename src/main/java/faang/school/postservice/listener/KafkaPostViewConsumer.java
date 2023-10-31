@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component;
 public class KafkaPostViewConsumer {
     private final PostService postService;
 
-    @KafkaListener(topics = "${spring.data.kafka.topics.post-view}", groupId = "post-group")
+    @KafkaListener(topics = "${spring.data.kafka.topics.post-view}", groupId = "${spring.kafka.client-id}")
     public void listenerPostViewEvent(KafkaPostViewEvent kafkaPostViewEvent, Acknowledgment acknowledgment) {
-        postService.saveView(kafkaPostViewEvent.getPostId());
+        postService.saveViewToRedis(kafkaPostViewEvent.getPostId());
         acknowledgment.acknowledge();
     }
 }

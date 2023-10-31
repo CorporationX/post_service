@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class KafkaLikeConsumer {
     private final LikeService likeService;
 
-    @KafkaListener(topics = "${spring.data.kafka.topics.like}", groupId = "like-group")
+    @KafkaListener(topics = "${spring.kafka.topics.likes-topic}", groupId = "${spring.kafka.client-id}")
     public void listenerLikeEvent(KafkaLikeEvent kafkaLikeEvent, Acknowledgment acknowledgment) {
         likeService.incrementLike(kafkaLikeEvent.getPostId());
         acknowledgment.acknowledge();

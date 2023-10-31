@@ -19,7 +19,9 @@ public interface CommentMapper {
 
     @Named("mapPostIdToPost")
     default Post mapPostIdToPost(Long postId) {
-        return Post.builder().id(postId).build();
+        return Post.builder()
+                .id(postId)
+                .build();
     }
 
     @Named("mapLikesToDto")

@@ -1,10 +1,10 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.redis.RedisCommentDto;
+import faang.school.postservice.dto.client.CommentDto;
 import faang.school.postservice.dto.kafka.KafkaCommentEvent;
-import faang.school.postservice.dto.redis.CommentEventDto;
 import faang.school.postservice.exception.DataNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.redis.RedisCommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.publisher.KafkaCommentProducer;
@@ -14,12 +14,11 @@ import faang.school.postservice.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Random;
 
 @Slf4j
 @Setter
@@ -31,13 +30,70 @@ public class CommentService {
     private final CommentEventPublisher commentEventPublisher;
     private final KafkaCommentProducer kafkaCommentProducer;
     private final CommentMapper commentMapper;
+    private final RedisCommentMapper redisCommentMapper;
 
-    private final static int MAX_COMMENTS = 3;
+    @Value("${comment.batch.size}")
+    private int commentSize;
 
-    public Comment getComment(long commentId) {
-        return commentRepository.findById(commentId)
-                .orElseThrow(() -> new DataNotFoundException(String
-                        .format("Comment with id:%d doesn't exist", commentId)));
+    @Transactional
+    public CommentDto createComment(long postId, CommentDto commentDto) {
+        Comment comment = commentMapper.toEntity(commentDto);
+        commentRepository.save(comment);
+        commentEventPublisher.publish(commentDto);
+        KafkaCommentEvent kafkaCommentEvent = KafkaCommentEvent.builder()
+                .postId(postId)
+                .authorId(commentDto.getAuthorId())
+                .comment(comment)
+                .build();
+        kafkaCommentProducer.publishCommentEvent(kafkaCommentEvent);
+        log.info("Comment created with id: {} to post: {}", commentDto.getId(), postId);
+        return commentMapper.toDto(comment);
+    }
+
+    @Transactional
+    public CommentDto getComment(long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new DataNotFoundException("Comment not found with id: " + commentId));
+        return commentMapper.toDto(comment);
+    }
+
+    @Transactional
+    public CommentDto updateComment(CommentDto commentDto) {
+        Comment comment = commentRepository.findById(commentDto.getId())
+                .orElseThrow(() -> new DataNotFoundException("Comment not found with id: " + commentDto.getId()));
+        comment.setContent(commentDto.getContent());
+        commentRepository.save(comment);
+        kafkaCommentProducer.publishCommentEvent(KafkaCommentEvent.builder()
+                .postId(commentDto.getPostId())
+                .authorId(commentDto.getAuthorId())
+                .comment(comment)
+                .build());
+        return commentMapper.toDto(comment);
+    }
+
+    @Transactional
+    public List<CommentDto> getAllComments() {
+        List<Comment> comments = commentRepository.findAll();
+        return comments.stream()
+                .map(commentMapper::toDto)
+                .toList();
+    }
+
+    @Transactional
+    public List<CommentDto> getAllCommentsById(long postId) {
+        return commentRepository.findAllByPostId(postId).stream()
+                .map(commentMapper::toDto)
+                .toList();
+    }
+
+    @Transactional
+    public void deleteComment(long commentId) {
+        commentRepository.deleteById(commentId);
+        kafkaCommentProducer.publishCommentEvent(KafkaCommentEvent.builder()
+                .postId(commentId)
+                .authorId(commentId)
+                .comment(null)
+                .build());
     }
 
     public List<Comment> findUnverifiedComments() {
@@ -48,34 +104,11 @@ public class CommentService {
         commentRepository.saveAll(comments);
     }
 
-    @Transactional
-    public RedisCommentDto createComment(long postId, RedisCommentDto commentDto) {
-        Comment comment = commentMapper.toEntity(commentDto);
-        commentRepository.save(comment);
-        KafkaCommentEvent kafkaCommentEvent = KafkaCommentEvent.builder()
-                .postId(postId)
-                .authorId(commentDto.getAuthorId())
-                .comment(comment)
-                .build();
-        kafkaCommentProducer.publishCommentEvent(kafkaCommentEvent);
-        return commentMapper.toDto(comment);
-    }
-    @Transactional
-    public CommentEventDto create() {
-        CommentEventDto commentEventDto =CommentEventDto.builder()
-                .authorId(new Random().nextLong(100))
-                .postId(new Random().nextLong(10))
-                .createdAt(LocalDateTime.now())
-                .build();
-        commentEventPublisher.publish(commentEventDto);
-        return commentEventDto;
-    }
-
-    public void changeListComments(Comment content, long postId) {
+    public void changeListComments(Comment comment, long postId) {
         RedisPost redisPost = redisPostRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        redisPost.getComments().add(content);
-        if (redisPost.getComments().size() > MAX_COMMENTS) {
+        redisPost.getComments().add(redisCommentMapper.toRedisCommentDto(comment));
+        if (redisPost.getComments().size() > commentSize) {
             redisPost.getComments().remove();
         }
     }

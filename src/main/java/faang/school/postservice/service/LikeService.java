@@ -1,8 +1,10 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.dto.client.CommentDto;
 import faang.school.postservice.dto.kafka.KafkaLikeEvent;
 import faang.school.postservice.listener.KafkaLikeConsumer;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
@@ -32,6 +34,7 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
     private final PostMapper postMapper;
+    private final CommentMapper commentMapper;
     private final LikeEventPublisher likeEventPublisher;
 
     public LikeDto likePost(LikeDto likeDto) {
@@ -65,13 +68,13 @@ public class LikeService {
         likeValidator.validateLike(likeDto);
         Long commentId = likeDto.getCommentId();
         Long userId = likeDto.getUserId();
-        Comment comment = commentService.getComment(likeDto.getCommentId());
         Optional<Like> existingLike = likeRepository.findByCommentIdAndUserId(commentId, userId);
         if (existingLike.isPresent()) {
             return likeMapper.toDto(existingLike.get());
         }
+        CommentDto comment = commentService.getComment(likeDto.getCommentId());
         Like like = likeMapper.toModel(likeDto);
-        like.setComment(comment);
+        like.setComment(commentMapper.toEntity(comment));
         likeRepository.save(like);
         log.info("Comment id={} was liked by user id={}", likeDto.getCommentId(), likeDto.getUserId());
         return likeMapper.toDto(like);

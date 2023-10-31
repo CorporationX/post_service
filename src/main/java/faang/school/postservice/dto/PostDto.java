@@ -35,7 +35,6 @@ public class PostDto {
     private boolean published;
     private boolean deleted;
     private List<LikeDto> likes;
-    private ArrayDeque<CommentDto> comments;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime scheduledAt;
 }

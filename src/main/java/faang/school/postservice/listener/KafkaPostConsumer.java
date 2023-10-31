@@ -18,7 +18,7 @@ public class KafkaPostConsumer {
     private final PostService postService;
     private final PostMapper postMapper;
 
-    @KafkaListener(topics = "${spring.data.kafka.topics.post}", groupId = "post-group")
+    @KafkaListener(topics = "${spring.kafka.topics.post-topic}", groupId = "${spring.kafka.client-id}")
     public void listenerPostEvent(KafkaPostEvent kafkaPostEvent, Acknowledgment acknowledgment) {
         PostDto postDto = postService.getPost(kafkaPostEvent.getPostId());
         Post post = postMapper.toEntity(postDto);
