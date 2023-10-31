@@ -29,4 +29,15 @@ public class SpringAsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    @Bean("kafkaThreadPool")
+    public Executor kafkaThreadPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        executor.setCorePoolSize(corePoolSize);
+        executor.setMaxPoolSize(maxPoolSize);
+        executor.setQueueCapacity(queueCapacity);
+        executor.initialize();
+        return executor;
+    }
 }

@@ -4,16 +4,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.client.CommentDto;
 import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.exception.DataNotFoundException;
 import faang.school.postservice.exception.SameTimeActionException;
-import faang.school.postservice.mapper.LikeMapper;
-import faang.school.postservice.mapper.LikeMapperImpl;
-import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.mapper.*;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.publisher.KafkaLikeProducer;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.redis.LikeEventPublisher;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
@@ -39,11 +39,15 @@ class LikeServiceTest {
     @Mock
     private LikeRepository likeRepository;
     @Mock
+    private RedisPostRepository redisPostRepository;
+    @Mock
     private PostService postService;
     @Mock
     private CommentService commentService;
     @Mock
     LikeEventPublisher likeEventPublisher;
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
     @Mock
     private UserServiceClient userServiceClient;
     private LikeValidator likeValidator;
@@ -51,6 +55,8 @@ class LikeServiceTest {
     private UserDto userDto;
     LikeMapper likeMapper;
     PostMapper postMapper;
+    @Mock
+    CommentMapper commentMapper;
 
     @BeforeEach
     void setUp() {
@@ -58,9 +64,9 @@ class LikeServiceTest {
         userDto = UserDto.builder().id(1L).username("Andrey").email("gmail@gmail.com").build();
         likeMapper = new LikeMapperImpl();
         postMapper = new PostMapperImpl();
+
         likeValidator = new LikeValidator(userServiceClient);
-        likeService = new LikeService(likeValidator, likeMapper, likeRepository, postService, commentService,
-                postMapper,likeEventPublisher);
+        likeService = new LikeService(likeValidator, likeMapper, likeRepository, redisPostRepository, kafkaLikeProducer, postService, commentService, postMapper, commentMapper, likeEventPublisher);
     }
 
     @Test
@@ -113,9 +119,10 @@ class LikeServiceTest {
 
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
 
-        Comment comment = Comment.builder().id(1L).build();
-        when(commentService.getComment(1L)).thenReturn(comment);
-
+        CommentDto commentDto = CommentDto.builder().id(1L).build();
+        Comment comment = Comment.builder().id(1L).authorId(2L).build();
+        when(commentService.getComment(1L)).thenReturn(commentDto);
+        when(commentMapper.toEntity(commentDto)).thenReturn(comment);
 
         Like like = Like.builder().id(0L).userId(1L).comment(comment).build();
 

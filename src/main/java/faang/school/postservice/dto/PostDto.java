@@ -1,6 +1,7 @@
 package faang.school.postservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import faang.school.postservice.dto.client.CommentDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayDeque;
 import java.util.List;
 
 @Data
