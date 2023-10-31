@@ -9,9 +9,9 @@ import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.messaging.kafka.events.PostEvent;
+import faang.school.postservice.messaging.events.PostPublishedEvent;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
-import faang.school.postservice.messaging.kafka.publishing.PostProducer;
+import faang.school.postservice.messaging.publishing.PostProducer;
 import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -24,6 +24,7 @@ import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -32,12 +33,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.concurrent.ExecutorService;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -51,12 +52,10 @@ public class PostService {
     private final PostImageService postImageService;
     private final ModerationDictionary moderationDictionary;
     private final PostProducer postProducer;
+    private final ExecutorService postServiceExecutorService;
     private final PostViewProducer postViewProducer;
     private final UserContext userContext;
-    private final RedisTemplate<Long, Object> redisCacheTemplate;
-    private final RedisPostRepository redisPostRepository;
-    @Value("${comment.ban.numberOfCommentsToBan}")
-    private int numberOfCommentsToBan;
+
     @Value("${post-service.post-distribution.batch-size}")
     private int batchSize;
 
@@ -86,9 +85,8 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
-        List<Long> followersIds = userServiceClient.getFollowersIds(post.getAuthorId());
-        distributePostToFollowers(id, post.getAuthorId(), followersIds);
-        savePostToRedis(post);
+        List<Long> followersIds = userServiceClient.getFollowersIdsByAuthorId(post.getAuthorId());
+        dispatchPostToFollowers(post, followersIds);
 
         return postMapper.toDto(post);
     }
@@ -247,23 +245,6 @@ public class PostService {
         }
     }
 
-
-    public void findCommentersAndPublishBanEvent() {
-        List<Comment> unverifiedComments = commentService.getUnverifiedComments();
-
-        Map<Long, List<Comment>> commentsByAuthor = unverifiedComments.stream()
-                .collect(Collectors.groupingBy(Comment::getAuthorId));
-
-        for (Map.Entry<Long, List<Comment>> entry : commentsByAuthor.entrySet()) {
-            Long authorId = entry.getKey();
-            List<Comment> authorComments = entry.getValue();
-
-            if (authorComments.size() > numberOfCommentsToBan) {
-                banEventPublisher.publishBanEvent(authorId);
-            }
-        }
-    }
-
     @Transactional(readOnly = true)
     public List<Post> getUnverifiedPosts() {
         return postRepository.findByVerifiedDateBeforeAndVerifiedFalse(LocalDateTime.now());
@@ -279,38 +260,18 @@ public class PostService {
         }
     }
 
-    @Async
-    public void distributePostToFollowers(Long postId, Long userId, List<Long> allFollowers) {
-        int start = 0;
-        while (start < allFollowers.size()) {
-            int end = Math.min(start + batchSize, allFollowers.size());
-            List<Long> batch = allFollowers.subList(start, end);
+    private void dispatchPostToFollowers(Post post, List<Long> followersIds) {
+        for (int i = 0; i < followersIds.size(); i += batchSize) {
+            int startIdx = i;
+            int endIdx = Math.min(i + batchSize, followersIds.size());
 
-            PostEvent event = PostEvent.builder()
-                    .id(postId)
-                    .userId(userId)
-                    .followersIds(batch)
-                    .build();
+            List<Long> followersIdsBatch = new ArrayList<>(followersIds.subList(startIdx, endIdx));
 
-            postProducer.publish(event);
-            start += batchSize;
-        }
-    }
-
-    private void savePostToRedis(Post post) {
-        PostRedisDto postRedisDto = postMapper.toRedisDto(post);
-        while (true) {
-            redisCacheTemplate.watch(postRedisDto.getId());  // Наблюдение за ключом
-            Optional<PostRedisDto> redisPost = redisPostRepository.findById(postRedisDto.getId());
-            // ... определите новое значение на основе текущего значения, если требуется
-            redisCacheTemplate.multi();  // Начало транзакции
-            redisPostRepository.save(redisPost.get());
-            List<Object> results = redisCacheTemplate.exec();  // Завершение транзакции
-            if (results != null) {
-                // Транзакция была успешной
-                break;
-            }
-            // Транзакция не удалась из-за изменения ключа, повторите
+            postServiceExecutorService.submit(() -> {
+                PostPublishedEvent eventToSend = postMapper.toPostPublishedEvent(post);
+                eventToSend.setFollowersIds(followersIdsBatch);
+                postProducer.publish(eventToSend);
+            });
         }
     }
 

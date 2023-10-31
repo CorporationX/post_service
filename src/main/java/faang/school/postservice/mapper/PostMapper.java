@@ -2,6 +2,7 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.redis.PostRedisDto;
+import faang.school.postservice.messaging.events.PostPublishedEvent;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import org.mapstruct.Mapper;
@@ -24,6 +25,9 @@ public interface PostMapper {
     PostRedisDto toRedisDto(Post post);
 
     List<PostDto> toDtoList(List<Post> posts);
+
+    @Mapping(target = "followersIds", ignore = true)
+    PostPublishedEvent toPostPublishedEvent(Post post);
 
     @Named("toResourceId")
     default List<Long> toResourceId(List<Resource> resources) {

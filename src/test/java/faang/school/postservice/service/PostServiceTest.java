@@ -11,6 +11,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
 import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
+import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.redis.RedisPostRepository;
@@ -137,15 +138,8 @@ class PostServiceTest {
                 .deleted(false)
                 .build();
 
-        PostRedisDto postRedisDto = PostRedisDto.builder().id(1L).build();
-        List<Object> mockResultList = Arrays.asList(new Object(), new Object());
 
         when(postRepository.findById(id)).thenReturn(Optional.of(post));
-        doNothing().when(redisCacheTemplate).watch((Long) any());
-        when(redisPostRepository.findById(any())).thenReturn(Optional.of(postRedisDto));
-        doNothing().when(redisCacheTemplate).multi();
-        when(redisCacheTemplate.exec()).thenReturn(mockResultList);
-        when(redisPostRepository.save(any())).thenReturn(postRedisDto);
 
         PostDto actualDto = postService.publishPost(id);
 
@@ -248,12 +242,9 @@ class PostServiceTest {
                 .content("Content")
                 .authorId(1L)
                 .published(true)
-                .views(0L)
                 .build();
-        postService.setPostViewsBatchSize(50);
 
         when(postRepository.findById(id)).thenReturn(Optional.of(post));
-        doNothing().when(postViewProducer).publish((PostViewEvent) any(Object.class));
 
         PostDto actualDto = postService.getPostById(id);
 

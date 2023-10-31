@@ -21,7 +21,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name="Post Controller")
+@Tag(name = "Post Controller")
 @RequestMapping("/api/v1/posts")
 public class PostController {
     private final PostService postService;

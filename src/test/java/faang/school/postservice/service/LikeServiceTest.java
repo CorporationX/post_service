@@ -6,7 +6,6 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.integration.UserService;
 import faang.school.postservice.mapper.LikeMapper;
-import faang.school.postservice.messaging.kafka.events.LikeEvent;
 import faang.school.postservice.messaging.kafka.publishing.like.LikeProducer;
 import faang.school.postservice.messaging.kafka.publishing.like.UnlikeProducer;
 import faang.school.postservice.model.Comment;
@@ -28,8 +27,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceTest {
@@ -57,13 +56,13 @@ class LikeServiceTest {
     private CommentService commentService;
 
     @Mock
+    private LikeEventPublisher likeEventPublisher;
+
+    @Mock
     private UnlikeProducer unlikeProducer;
 
     @Mock
     private LikeProducer likeProducer;
-
-    @Mock
-    private LikeEventPublisher likeEventPublisher;
 
     private UserDto userDto;
     private LikeDto likeDto;
@@ -108,7 +107,6 @@ class LikeServiceTest {
                 when(likeRepository.findByPostIdAndUserId(POST_ID, userDto.getId())).thenReturn(Optional.empty());
                 when(likeRepository.save(like)).thenReturn(like);
                 when(likeMapper.toDto(like)).thenReturn(likeDto);
-                doNothing().when(likeProducer).publish((LikeEvent) any(Object.class));
 
                 LikeDto result = likeService.likePost(likeDto);
                 assertNotNull(result);
@@ -130,7 +128,6 @@ class LikeServiceTest {
             @Test
             public void whenLikeIsExistThenUnlikePost() {
                 when(likeRepository.findByPostIdAndUserId(POST_ID, userDto.getId())).thenReturn(Optional.of(like));
-                doNothing().when(unlikeProducer).publish((LikeEvent) any(Object.class));
                 likeService.unlikePost(POST_ID);
                 verify(likeRepository).delete(like);
             }

@@ -19,6 +19,8 @@ spring:
 
   data:
     redis:
+      ttl: 86400
+      comments_size: 3
       port: 6379
       host: localhost
       channels:
@@ -50,6 +52,8 @@ spring:
         name: unlike_events_channel
       post_view_event_channel:
         name: post_view_event_channel
+      comment_event_channel:
+        name: comment_event_channel
     max-retries: 3
 
 server:
@@ -89,8 +93,6 @@ thread-pool:
 post-service:
   post-distribution:
     batch-size: 2000
-  post-views:
-    batch-size: 50
 
 correcter:
   scheduler:

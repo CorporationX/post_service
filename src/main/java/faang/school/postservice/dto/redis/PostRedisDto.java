@@ -16,8 +16,7 @@ import java.util.List;
 public class PostRedisDto {
 
     @Id
-    private long id;
-    private long authorId;
+    private Long id;
     private String content;
     private LinkedHashSet<CommentRedisDto> comments;
     private long likeCounter;
