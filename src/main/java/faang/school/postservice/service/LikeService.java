@@ -1,12 +1,14 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.dto.kafka.KafkaPostLikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.kafka.producers.KafkaPostLikeProducer;
 import faang.school.postservice.service.redis.LikeEventPublisher;
 import faang.school.postservice.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class LikeService {
     private final CommentService commentService;
     private final PostMapper postMapper;
     private final LikeEventPublisher likeEventPublisher;
+    private final KafkaPostLikeProducer kafkaPostLikeProducer;
 
     public LikeDto likePost(LikeDto likeDto) {
         likeValidator.validateLike(likeDto);
@@ -41,6 +44,13 @@ public class LikeService {
         likeRepository.save(like);
         likeEventPublisher.publish(like);
         log.info("Post id={} was liked by user id={}", likeDto.getPostId(), likeDto.getUserId());
+
+        KafkaPostLikeEvent kafkaPostLikeEvent = KafkaPostLikeEvent.builder()
+                .authorId(postId)
+                .postId(userId)
+                .build();
+        kafkaPostLikeProducer.sendMessage(kafkaPostLikeEvent);
+
         return likeMapper.toDto(like);
     }
 

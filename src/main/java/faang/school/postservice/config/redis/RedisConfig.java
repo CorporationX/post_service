@@ -1,13 +1,20 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.redis;
 
+import faang.school.postservice.model.redis.RedisComment;
+import faang.school.postservice.model.redis.RedisFeed;
+import faang.school.postservice.model.redis.RedisPost;
+import faang.school.postservice.model.redis.RedisUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -37,6 +44,20 @@ public class RedisConfig {
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
         return redisTemplate;
+    }
+
+    @Bean
+    public RedisTemplate<Long, Object> feedRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<Long, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        return redisTemplate;
+    }
+
+    @Bean
+    public ZSetOperations<Long, Object> feeds(RedisTemplate<Long, Object> feedRedisTemplate) {
+        return feedRedisTemplate.opsForZSet();
     }
 
     @Bean

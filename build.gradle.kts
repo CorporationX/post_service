@@ -27,6 +27,11 @@ dependencies {
     implementation("org.springframework.retry:spring-retry:2.0.2")
 
     /**
+     * Kafka
+     */
+    implementation("org.springframework.kafka:spring-kafka:3.0.12")
+
+    /**
      * Database
      */
     implementation("org.liquibase:liquibase-core")

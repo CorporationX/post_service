@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.service.CommentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,11 +16,13 @@ class CommentControllerTest {
     private CommentService service;
     @InjectMocks
     private CommentController controller;
+    private CommentDto commentDto;
 
 
     @Test
     void testCreate() {
-        controller.create();
-        verify(service).create();
+        commentDto = CommentDto.builder().build();
+        controller.create(commentDto);
+        verify(service).create(commentDto);
     }
 }

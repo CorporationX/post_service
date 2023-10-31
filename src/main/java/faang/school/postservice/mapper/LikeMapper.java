@@ -7,6 +7,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface LikeMapper {
     @Mapping(target = "postId", source = "post.id")
@@ -14,4 +16,6 @@ public interface LikeMapper {
     LikeDto toDto(Like like);
 
     Like toModel(LikeDto likeDto);
+
+    List<Like> toModelList(List<LikeDto> likeDtoList);
 }
