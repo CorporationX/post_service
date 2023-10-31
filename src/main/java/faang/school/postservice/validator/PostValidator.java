@@ -6,7 +6,6 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.SamePostAuthorException;
 import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ public class PostValidator {
 
     private final UserServiceClient userService;
     private final ProjectServiceClient projectService;
-    private final PostRepository postRepository;
 
     public void validateData(PostDto postDto) {
         Long userId = postDto.getAuthorId();
@@ -65,10 +63,5 @@ public class PostValidator {
         } catch (FeignException e) {
             throw new EntityNotFoundException("This project is not found");
         }
-    }
-
-    public Post validatePostId(long postId) {
-        return postRepository.findById(postId).orElseThrow(
-                () -> new EntityNotFoundException("This post does not exist"));
     }
 }

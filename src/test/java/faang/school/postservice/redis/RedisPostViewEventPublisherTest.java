@@ -14,7 +14,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class PostViewEventPublisherTest {
+public class RedisPostViewEventPublisherTest {
 
     @Mock
     private RedisTemplate<String, Object> redisTemplate;

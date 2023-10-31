@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LikeMapperTest {
+class RedisLikeMapperTest {
 
     private LikeMapper likeMapper = new LikeMapperImpl();
     LikeDto likeDto;

@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-public class PostControllerTest {
+public class RedisPostControllerTest {
 
     @Mock
     private PostService postService;
