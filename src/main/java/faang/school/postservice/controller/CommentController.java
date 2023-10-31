@@ -1,10 +1,11 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.redis.CommentEventDto;
+import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.service.CommentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,7 +17,7 @@ public class CommentController {
     private final CommentService service;
 
     @PostMapping
-    public ResponseEntity<CommentEventDto> create() {
-        return ResponseEntity.ok(service.create());
+    public CommentDto create(@RequestBody @Valid CommentDto commentDto) {
+        return service.create(commentDto);
     }
 }

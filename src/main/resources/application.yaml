@@ -18,6 +18,20 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
   data:
+    kafka:
+      bootstrap-servers: localhost:9092
+      groupId: 1
+      topics:
+        feedHeatTopic:
+          name: feedHeatTopic
+        postViewTopic:
+          name: postViewTopic
+        commentTopic:
+          name: commentTopic
+        postTopic:
+          name: postTopic
+        likeTopic:
+          name: likeTopic
     redis:
       port: 6379
       host: localhost
@@ -64,11 +78,18 @@ post:
       sublist-size: 100
 
 async:
-  thread-pool:
-    settings:
-      core-pool-size: 4
-      max-pool-size: 8
-      queue-capacity: 100
+  post-moderation:
+    thread-pool:
+      settings:
+        core-pool-size: 4
+        max-pool-size: 8
+        queue-capacity: 100
+  feed-heating:
+    thread-pool:
+      settings:
+        core-pool-size: 4
+        max-pool-size: 8
+        queue-capacity: 100
 
 
 comment:

@@ -12,20 +12,37 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class SpringAsyncConfig {
 
-    @Value("${async.thread-pool.settings.core-pool-size}")
-    private int corePoolSize;
-    @Value("${async.thread-pool.settings.max-pool-size}")
-    private int maxPoolSize;
-    @Value("${async.thread-pool.settings.queue-capacity}")
-    private int queueCapacity;
+    @Value("${async.post-moderation.thread-pool.settings.core-pool-size}")
+    private int postModCorePoolSize;
+    @Value("${async.post-moderation.thread-pool.settings.max-pool-size}")
+    private int postModMaxPoolSize;
+    @Value("${async.post-moderation.thread-pool.settings.queue-capacity}")
+    private int postModQueueCapacity;
+    @Value("${async.feed-heating.thread-pool.settings.core-pool-size}")
+    private int feedHeaterCorePoolSize;
+    @Value("${async.feed-heating.thread-pool.settings.max-pool-size}")
+    private int feedHeaterMaxPoolSize;
+    @Value("${async.feed-heating.thread-pool.settings.queue-capacity}")
+    private int feedHeaterQueueCapacity;
 
     @Bean("threadPoolForPostModeration")
     public Executor threadPoolForPostModeration() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
-        executor.setCorePoolSize(corePoolSize);
-        executor.setMaxPoolSize(maxPoolSize);
-        executor.setQueueCapacity(queueCapacity);
+        executor.setCorePoolSize(postModCorePoolSize);
+        executor.setMaxPoolSize(postModMaxPoolSize);
+        executor.setQueueCapacity(postModQueueCapacity);
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean("feedHeaterThreadPool")
+    public Executor feedHeaterThreadPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        executor.setCorePoolSize(feedHeaterCorePoolSize);
+        executor.setMaxPoolSize(feedHeaterMaxPoolSize);
+        executor.setQueueCapacity(feedHeaterQueueCapacity);
         executor.initialize();
         return executor;
     }

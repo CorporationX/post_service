@@ -1,13 +1,25 @@
 package faang.school.postservice.service;
 
 import com.google.common.collect.Lists;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.client.UserDto;
+import faang.school.postservice.dto.kafka.KafkaPostEvent;
+import faang.school.postservice.dto.kafka.KafkaPostViewEvent;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.NoPublishedPostException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.redis.RedisPostMapper;
+import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.RedisComment;
+import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
+import faang.school.postservice.service.kafka.producers.KafkaPostProducer;
+import faang.school.postservice.service.kafka.producers.KafkaPostViewProducer;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.service.moderation.ModerationDictionary;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.concurrent.Executor;
 
 @Service
@@ -30,9 +44,16 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
+    private final RedisPostMapper redisPostMapper;
     private final ModerationDictionary moderationDictionary;
     private final Executor threadPoolForPostModeration;
     private final PublisherService publisherService;
+    private final RedisPostRepository redisPostRepository;
+    private final KafkaPostProducer kafkaPostProducer;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
+    private final UserServiceClient userServiceClient;
+    private final RedisUserRepository redisUserRepository;
+    private final RedisUserMapper redisUserMapper;
     @Value("${post.moderation.scheduler.sublist-size}")
     private int sublistSize;
 
@@ -59,6 +80,11 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         publisherService.publishPostEventToRedis(post);
         log.info("Post was published successfully, postId={}", post.getId());
+
+        cachePost(post, (c1, c2) -> c1.getCreatedAt().compareTo(c2.getCreatedAt()));
+        sendKafkaPostEvent(post);
+        cachePostAuthor(post.getAuthorId());
+
         return postMapper.toDto(post);
     }
 
@@ -176,6 +202,37 @@ public class PostService {
 
         partitionList.forEach(list -> threadPoolForPostModeration.execute(() -> checkListForObsceneWords(list)));
         log.info("All posts have checked successfully");
+    }
+
+    public void sendKafkaPostViewEvent(Post post) {
+        KafkaPostViewEvent kafkaPostViewEvent = KafkaPostViewEvent.builder()
+                .postId(post.getId())
+                .build();
+        kafkaPostViewProducer.sendMessage(kafkaPostViewEvent);
+    }
+
+    public void sendKafkaPostEvent(Post post) {
+        List<Long> followersId = userServiceClient.getFollowersId(post.getAuthorId());
+        for (int i = 0; i < followersId.size(); i += 1000) {
+            int toIndex = (followersId.size() < i + 1000) ? (followersId.size() - 1) : (i + 1000);
+            List<Long> usersId = followersId.subList(i, toIndex);
+            KafkaPostEvent kafkaPostEvent = KafkaPostEvent.builder()
+                    .postId(post.getId())
+                    .followersId(usersId)
+                    .build();
+            kafkaPostProducer.sendMessage(kafkaPostEvent);
+        }
+    }
+
+    public void cachePostAuthor(long authorId) {
+        UserDto author = userServiceClient.getUser(authorId);
+        redisUserRepository.save(redisUserMapper.toRedisEntity(author));
+    }
+
+    public void cachePost(Post post, Comparator<RedisComment> commentComparator) {
+        RedisPost redisPost = redisPostMapper.toRedisEntity(post);
+        redisPost.setComments(new PriorityQueue<>(commentComparator));
+        redisPostRepository.save(redisPost);
     }
 
     private void checkListForObsceneWords(List<Post> list) {
