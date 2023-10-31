@@ -6,7 +6,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.corrector.external_service.TextGearsAPIService;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
-import faang.school.postservice.messaging.publishing.PostProducer;
+import faang.school.postservice.messaging.kafka.publishing.PostProducer;
 import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;

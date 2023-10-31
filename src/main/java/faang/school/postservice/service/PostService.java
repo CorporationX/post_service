@@ -8,9 +8,9 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.messaging.events.PostPublishedEvent;
+import faang.school.postservice.messaging.kafka.events.PostEvent;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
-import faang.school.postservice.messaging.publishing.PostProducer;
+import faang.school.postservice.messaging.kafka.publishing.PostProducer;
 import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -253,7 +253,7 @@ public class PostService {
             List<Long> followersIdsBatch = new ArrayList<>(followersIds.subList(startIdx, endIdx));
 
             postServiceExecutorService.submit(() -> {
-                PostPublishedEvent eventToSend = postMapper.toPostPublishedEvent(post);
+                PostEvent eventToSend = postMapper.toPostPublishedEvent(post);
                 eventToSend.setFollowersIds(followersIdsBatch);
                 postProducer.publish(eventToSend);
             });
