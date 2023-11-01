@@ -30,7 +30,39 @@ spring:
           name: post_channel
         comment_event_channel:
           name: comment_topic
+      util:
+        response-size: 20
+        cache-size: 500
+        comments-amount: 3
 
+    kafka:
+      bootstrap-servers: localhost:29092
+      topics:
+        post: posts
+        post-views: post-views
+        likes: likes
+        comments: comments
+      async:
+        thread-pool-settings:
+          post:
+            core-pool-size: 2
+            max-pool-size: 4
+            queue-capacity: 100
+          post-view:
+            core-pool-size: 2
+            max-pool-size: 6
+            queue-capacity: 150
+          comment:
+            core-pool-size: 2
+            max-pool-size: 4
+            queue-capacity: 100
+          like:
+            core-pool-size: 2
+            max-pool-size: 4
+            queue-capacity: 100
+
+      util:
+        batch-size: 100
 server:
   port: 8081
 

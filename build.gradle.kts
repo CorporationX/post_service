@@ -32,7 +32,9 @@ dependencies {
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
-
+    implementation ("org.apache.kafka:kafka-clients:2.8.0")
+    implementation ("org.springframework.kafka:spring-kafka:2.8.0")
+    implementation ("org.apache.kafka:kafka-streams:2.8.0")
     /**
      * Utils & Logging
      */
