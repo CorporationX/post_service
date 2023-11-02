@@ -21,7 +21,7 @@ public class KafkaCommentListener extends KafkaAbstractListener {
     public void consume(ConsumerRecord<String, Object> message) {
         KafkaKey key = Enum.valueOf(KafkaKey.class, message.key());
         CommentDto commentDto = (CommentDto) message.value();
-        log.info("KafkaCommentListener consume message with key={}", key.name());
+        log.info("KafkaCommentListener consume message with key={}, comment id ={}", key.name(), commentDto.getId());
 
         if (key == KafkaKey.CREATE) {
             redisCacheService.addCommentToPost(commentDto);

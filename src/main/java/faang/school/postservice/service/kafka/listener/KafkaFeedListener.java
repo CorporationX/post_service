@@ -21,7 +21,7 @@ public class KafkaFeedListener extends KafkaAbstractListener {
     public void consume(ConsumerRecord<String, Object> message) {
         KafkaKey key = Enum.valueOf(KafkaKey.class, message.key());
         KafkaPostDto kafkaDto = (KafkaPostDto) message.value();
-        log.info("KafkaFeedListener consume message with key={}", key.name());
+        log.info("KafkaFeedListener consume message with key={}, post id={}", key.name(), kafkaDto.getTimePostId().getPostId());
 
         if (key == KafkaKey.CREATE) {
             redisCacheService.saveFeed(kafkaDto);

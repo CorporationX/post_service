@@ -21,7 +21,7 @@ public class KafkaLikeListener extends KafkaAbstractListener {
     public void consume(ConsumerRecord<String, Object> message) {
         KafkaKey key = Enum.valueOf(KafkaKey.class, message.key());
         LikeDto likeDto = (LikeDto) message.value();
-        log.info("KafkaLikeListener consume message with key={}", key.name());
+        log.info("KafkaLikeListener consume message with key={}, like id ={}", key.name(), likeDto.getId());
 
         if (key == KafkaKey.CREATE) {
             addLike(likeDto);

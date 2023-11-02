@@ -43,13 +43,13 @@ public class CommentController {
         return commentService.updateComment(commentDto);
     }
 
-    @DeleteMapping("/{id}/delete")
+    @DeleteMapping("/{id}")
     public void deleteComment(@PathVariable("id") Long commentId) {
         log.info("Received request to delete comment from post, commentId={}",commentId );
         commentService.deleteComment(commentId);
     }
 
-    @GetMapping("/post/{id}")
+    @GetMapping("/by-post-id/{id}")
     public List<CommentDto> getAllComments(@PathVariable("id") Long postId) {
         log.info("Received request to get all comments from post with id={}", postId);
         return commentService.getAllComments(postId);
