@@ -35,7 +35,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     default List<Post> getPostsByFollowees(List<Long> followees, int postQuantity, EntityManager entityManager) {
         TypedQuery<Post> query = entityManager.createQuery(
-                "SELECT p FROM Post p WHERE p.authorId IN :followees ORDER BY p.publishedAt DESC", Post.class);
+                "SELECT p FROM Post p WHERE p.authorId IN :followees AND p.deleted = false ORDER BY p.publishedAt DESC", Post.class);
         query.setParameter("followees", followees);
         query.setMaxResults(postQuantity);
 
@@ -45,7 +45,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     default List<Post> getNextPostsByFollowees(List<Long> followees, int postQuantity,
                                            EntityManager entityManager, LocalDateTime previousPostDate) {
         TypedQuery<Post> query = entityManager.createQuery(
-                "SELECT p FROM Post p WHERE p.authorId IN (:followees) " +
+                "SELECT p FROM Post p WHERE p.authorId IN (:followees) AND p.deleted = false " +
                         "AND p.publishedAt < :previousPostDate ORDER BY p.publishedAt DESC", Post.class);
         query.setParameter("followees", followees);
         query.setParameter("previousPostDate", previousPostDate);
