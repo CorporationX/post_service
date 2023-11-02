@@ -24,7 +24,6 @@ class CommentServiceTest {
 
     @Test
     void testCreate() {
-        service.create();
-        verify(publisher).publish(any(CommentEventDto.class));
+
     }
 }

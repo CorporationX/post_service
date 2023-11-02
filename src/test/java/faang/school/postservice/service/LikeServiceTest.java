@@ -1,12 +1,14 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.client.UserDto;
+import faang.school.postservice.dto.kafka.KafkaKey;
 import faang.school.postservice.exception.DataNotFoundException;
 import faang.school.postservice.exception.SameTimeActionException;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.mapper.PostMapper;
@@ -14,6 +16,7 @@ import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.kafka.producer.KafkaLikeProducer;
 import faang.school.postservice.service.redis.LikeEventPublisher;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
@@ -24,6 +27,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -46,7 +51,10 @@ class LikeServiceTest {
     LikeEventPublisher likeEventPublisher;
     @Mock
     private UserServiceClient userServiceClient;
-    private LikeValidator likeValidator;
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
+    @Mock
+    private CommentMapper commentMapper;
     private LikeDto likeDto;
     private UserDto userDto;
     LikeMapper likeMapper;
@@ -58,13 +66,13 @@ class LikeServiceTest {
         userDto = UserDto.builder().id(1L).username("Andrey").email("gmail@gmail.com").build();
         likeMapper = new LikeMapperImpl();
         postMapper = new PostMapperImpl();
-        likeValidator = new LikeValidator(userServiceClient);
+        LikeValidator likeValidator = new LikeValidator(userServiceClient);
         likeService = new LikeService(likeValidator, likeMapper, likeRepository, postService, commentService,
-                postMapper,likeEventPublisher);
+                postMapper, likeEventPublisher, commentMapper, kafkaLikeProducer);
     }
 
     @Test
-    void testLikePost() throws JsonProcessingException {
+    void testLikePost() {
         likeDto.setPostId(1L);
 
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
@@ -76,12 +84,13 @@ class LikeServiceTest {
 
         assertEquals(likeMapper.toDto(like), likeService.likePost(likeDto));
         verify(likeRepository).save(like);
+        verify(kafkaLikeProducer).sendMessage(KafkaKey.CREATE, likeDto);
         verify(likeEventPublisher).publish(like);
     }
 
     @Test
     void testWhenUserDoesNotExistOnLikingPost() {
-        Long userId = 1L;
+        long userId = 1L;
         when(userServiceClient.getUser(userId)).thenThrow(FeignException.class);
         DataNotFoundException dataNotExistingException =
                 assertThrows(DataNotFoundException.class, () -> likeService.likePost(likeDto));
@@ -105,6 +114,7 @@ class LikeServiceTest {
     void testUnlikePost() {
         likeService.unlikePost(1L, 1L);
         verify(likeRepository).deleteByPostIdAndUserId(1L, 1L);
+        verify(kafkaLikeProducer).sendMessage(KafkaKey.DELETE, LikeDto.builder().postId(1L).build());
     }
 
     @Test
@@ -113,19 +123,24 @@ class LikeServiceTest {
 
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
 
+        CommentDto commentDto = CommentDto.builder().id(1L).build();
         Comment comment = Comment.builder().id(1L).build();
-        when(commentService.getComment(1L)).thenReturn(comment);
-
-
+        when(commentService.getComment(1L)).thenReturn(commentDto);
+        when(commentMapper.toEntity(commentDto)).thenReturn(comment);
         Like like = Like.builder().id(0L).userId(1L).comment(comment).build();
 
         assertEquals(likeMapper.toDto(like), likeService.likeComment(likeDto));
         verify(likeRepository).save(like);
+        verify(kafkaLikeProducer).sendMessage(KafkaKey.CREATE, LikeDto.builder()
+                .commentId(1L)
+                .userId(1L)
+                .postId(0L)
+                .build());
     }
 
     @Test
     void testWhenUserDoesNotExistOnLikingComment() {
-        Long userId = 1L;
+        long userId = 1L;
         when(userServiceClient.getUser(userId)).thenThrow(FeignException.class);
         DataNotFoundException dataNotExistingException =
                 assertThrows(DataNotFoundException.class, () -> likeService.likeComment(likeDto));
@@ -135,7 +150,18 @@ class LikeServiceTest {
 
     @Test
     void testUnlikeComment() {
+        Comment comment = Comment.builder().id(1L).build();
+        Like like = Like.builder().id(0L).userId(1L).comment(comment).build();
+        CommentDto commentDto = CommentDto.builder().id(1L).build();
+        when(likeRepository.findByCommentIdAndUserId(1L, 1L)).thenReturn(Optional.of(like));
+        when(commentService.getComment(1L)).thenReturn(commentDto);
         likeService.unlikeComment(1L, 1L);
         verify(likeRepository).deleteByCommentIdAndUserId(1L, 1L);
+        verify(kafkaLikeProducer).sendMessage(KafkaKey.DELETE, LikeDto.builder()
+                .id(0L)
+                .commentId(1L)
+                .userId(1L)
+                .postId(0L)
+                .build());
     }
 }

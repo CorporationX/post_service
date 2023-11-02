@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class LikeEventPublisher {
+public class LikeEventPublisher implements MessagePublisher {
 
     private final ObjectMapper objectMapper;
     private final LikeEventMapper likeEventMapper;
@@ -22,8 +22,8 @@ public class LikeEventPublisher {
     private final RedisTemplate<String, Object> redisTemplate;
 
 
-    public void publish(Like like) {
-        LikeEventDto likeEventDto = likeEventMapper.toDto(like);
+    public void publish(Object object) {
+        LikeEventDto likeEventDto = likeEventMapper.toDto((Like) object);
         try {
             String likeEvent = objectMapper.writeValueAsString(likeEventDto);
             redisTemplate.convertAndSend(likeTopic.getTopic(), likeEvent);

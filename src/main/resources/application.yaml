@@ -17,6 +17,27 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      feed-topic:
+        name: news_feed
+        partitions: 1
+        replicas: 1
+      comment-topic:
+        name: comment_topic
+        partitions: 1
+        replicas: 1
+      like-topic:
+        name: like_topic
+        partitions: 1
+        replicas: 1
+      feed-heater-topic:
+        name: news_feed_heater
+        partitions: 1
+        replicas: 1
+    client-id: news_feed_events
+
   data:
     redis:
       port: 6379
@@ -62,6 +83,9 @@ post:
     scheduler:
       cron: "0 0 0 * * ?" # every day at 00:00:00
       sublist-size: 100
+  feed:
+    feed-size: 500
+    batch-size: 5
 
 async:
   thread-pool:
@@ -77,6 +101,8 @@ comment:
       cron: "0 0 12 * * ?" # every day 12:00
   batch:
     size: 50
+  cache:
+    max-comments: 3
 
 user-service:
   host: localhost
