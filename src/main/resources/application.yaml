@@ -20,13 +20,23 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     topics:
-      feed-topic: news_feed
-      comment-topic: comment_topic
-      like-topic: like_topic
-      feed-heater-topic: news_feed_heater
+      feed-topic:
+        name: news_feed
+        partitions: 1
+        replicas: 1
+      comment-topic:
+        name: comment_topic
+        partitions: 1
+        replicas: 1
+      like-topic:
+        name: like_topic
+        partitions: 1
+        replicas: 1
+      feed-heater-topic:
+        name: news_feed_heater
+        partitions: 1
+        replicas: 1
     client-id: news_feed_events
-    partitions: 1
-    replicas: 1
 
   data:
     redis:

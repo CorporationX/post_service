@@ -11,13 +11,13 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TimePostId implements Comparable<TimePostId> {
+public class TimedPostId implements Comparable<TimedPostId> {
 
     private long postId;
     private LocalDateTime publishedAt;
 
     @Override
-    public int compareTo(TimePostId o) {
+    public int compareTo(TimedPostId o) {
         int value;
         value = publishedAt.compareTo(o.publishedAt);
 

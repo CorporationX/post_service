@@ -20,7 +20,7 @@ public class KafkaFeedHeaterListener extends KafkaAbstractListener {
     }
 
     @Override
-    @KafkaListener(topics = "${spring.kafka.topics.feed-heater-topic}", groupId = "${spring.kafka.client-id}"
+    @KafkaListener(topics = "${spring.kafka.topics.feed-heater-topic.name}", groupId = "${spring.kafka.client-id}"
             ,containerFactory = "kafkaListenerUserContainerFactory")
     void consume(ConsumerRecord<String, Object> record) {
         UserDto userDto = (UserDto) record.value();

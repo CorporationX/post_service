@@ -16,19 +16,19 @@ public class KafkaCommentListener extends KafkaAbstractListener {
         super(redisCacheService);
     }
 
-    @KafkaListener(topics = "${spring.kafka.topics.comment-topic}", groupId = "${spring.kafka.client-id}")
+    @KafkaListener(topics = "${spring.kafka.topics.comment-topic.name}", groupId = "${spring.kafka.client-id}")
     public void consume(ConsumerRecord<String, Object> record) {
         log.info("Kafka Comment Listener consume message with key = {}", record.key());
         KafkaKey key = Enum.valueOf(KafkaKey.class, record.key());
         CommentDto commentDto = (CommentDto) record.value();
         if (key == KafkaKey.CREATE) {
             redisCacheService.addCommentToPost(commentDto);
-        }
-        if (key == KafkaKey.UPDATE) {
+        } else if (key == KafkaKey.UPDATE) {
             redisCacheService.updateCommentOnPost(commentDto);
-        }
-        if (key == KafkaKey.DELETE) {
+        } else if (key == KafkaKey.DELETE) {
             redisCacheService.deleteCommentFromPost(commentDto);
+        } else {
+            log.info("Unexpected key in Kafka Comment Listener, no actions completed  = {}", record.key());
         }
     }
 }

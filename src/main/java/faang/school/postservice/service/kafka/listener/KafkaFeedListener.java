@@ -18,7 +18,7 @@ public class KafkaFeedListener extends KafkaAbstractListener {
         super(redisCacheService);
     }
 
-    @KafkaListener(topics = "${spring.kafka.topics.feed-topic}", groupId = "${spring.kafka.client-id}")
+    @KafkaListener(topics = "${spring.kafka.topics.feed-topic.name}", groupId = "${spring.kafka.client-id}")
     public void consume(ConsumerRecord<String, Object> record) {
         KafkaKey key = Enum.valueOf(KafkaKey.class, record.key());
         KafkaPostDto kafkaPostDto = (KafkaPostDto) record.value();
@@ -26,11 +26,12 @@ public class KafkaFeedListener extends KafkaAbstractListener {
             redisCacheService.addPostInFeed(kafkaPostDto);
             log.info("Post with id: {} add at feed to user: {}",
                     kafkaPostDto.getPost().getPostId(), kafkaPostDto.getUserId());
-        }
-        if (key == KafkaKey.DELETE) {
+        } else if (key == KafkaKey.DELETE) {
             redisCacheService.deletePostFromFeed(kafkaPostDto);
             log.info("Post with id: {} delete from feed to user: {}",
                     kafkaPostDto.getPost().getPostId(), kafkaPostDto.getUserId());
+        } else {
+            log.info("Unexpected key in Kafka Feed Listener, no actions completed  = {}", record.key());
         }
     }
 }

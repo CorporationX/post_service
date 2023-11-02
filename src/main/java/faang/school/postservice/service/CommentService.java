@@ -46,10 +46,7 @@ public class CommentService {
     @Transactional
     public CommentDto getComment(long commentId) {
         Comment comment = commentValidator.validCommentId(commentId);
-        CommentDto dto = commentMapper.toDto(comment);
-
-        log.info("Comment with id:{} was taken from DB successfully", commentId);
-        return dto;
+        return commentMapper.toDto(comment);
     }
 
     @Transactional

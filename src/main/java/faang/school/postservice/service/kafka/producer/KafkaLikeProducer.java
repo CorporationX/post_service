@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaLikeProducer extends KafkaAbstractProducer {
 
-    @Value("${spring.kafka.topics.like-topic}")
+    @Value("${spring.kafka.topics.like-topic.name}")
     private String likeTopicName;
 
     public KafkaLikeProducer(KafkaTemplate<String, Object> kafkaTemplate) {

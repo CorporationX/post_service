@@ -9,7 +9,7 @@ import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.dto.feed.FeedDto;
 import faang.school.postservice.dto.kafka.KafkaPostDto;
 import faang.school.postservice.dto.redis.RedisCommentDto;
-import faang.school.postservice.dto.redis.TimePostId;
+import faang.school.postservice.dto.redis.TimedPostId;
 import faang.school.postservice.mapper.redis.RedisPostMapper;
 import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.redis.RedisFeed;
@@ -65,7 +65,7 @@ class FeedServiceTest {
     UserDto userDto;
     PostDto postDto;
     RedisPost redisPost;
-    TimePostId timePostId;
+    TimedPostId timedPostId;
     CommentDto commentDto;
     RedisCommentDto redisCommentDto;
     KafkaPostDto kafkaPostDto;
@@ -77,7 +77,7 @@ class FeedServiceTest {
     @BeforeEach
     void setUp() {
         localDateTime = LocalDateTime.of(2023, 10, 10, 10, 10);
-        SortedSet<TimePostId> feed = new TreeSet<>();
+        SortedSet<TimedPostId> feed = new TreeSet<>();
         redisUser = RedisUser.builder()
                 .id(USER_ID)
                 .followeeIds(List.of(2L, 3L))
@@ -103,7 +103,7 @@ class FeedServiceTest {
                 .publishedAt(localDateTime)
                 .likes(1)
                 .build();
-        timePostId = TimePostId.builder()
+        timedPostId = TimedPostId.builder()
                 .postId(redisPost.getId())
                 .publishedAt(redisPost.getPublishedAt())
                 .build();
@@ -117,7 +117,7 @@ class FeedServiceTest {
                 .likes(1)
                 .build();
         kafkaPostDto = KafkaPostDto.builder()
-                .post(timePostId)
+                .post(timedPostId)
                 .userId(USER_ID)
                 .build();
         redisFeed = RedisFeed.builder()
@@ -128,7 +128,7 @@ class FeedServiceTest {
                 .commentId(1L)
                 .postId(1L)
                 .build();
-        feed.add(timePostId);
+        feed.add(timedPostId);
     }
 
     @Test

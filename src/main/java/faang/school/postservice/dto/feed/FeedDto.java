@@ -1,7 +1,6 @@
 package faang.school.postservice.dto.feed;
 
 import faang.school.postservice.dto.redis.RedisCommentDto;
-import faang.school.postservice.dto.redis.TimePostId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FeedDto implements Comparable<FeedDto> {
+public class FeedDto {
 
     private long postId;
     private String content;
@@ -26,16 +25,16 @@ public class FeedDto implements Comparable<FeedDto> {
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
 
-    @Override
-    public int compareTo(FeedDto o) {
-        int value;
-        value = publishedAt.compareTo(o.publishedAt);
-
-        if (value != 0) {
-            return value;
-        }
-        value = Long.compare(postId, o.getPostId());
-
-        return value;
-    }
+//    @Override
+//    public int compareTo(FeedDto o) {
+//        int value;
+//        value = publishedAt.compareTo(o.publishedAt);
+//
+//        if (value != 0) {
+//            return value;
+//        }
+//        value = Long.compare(postId, o.getPostId());
+//
+//        return value;
+//    }
 }

@@ -21,11 +21,11 @@ public class RedisCommentDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public void likeIncrement(){
+    public synchronized void likeIncrement(){
         likes++;
     }
 
-    public void likeDecrement(){
+    public synchronized void likeDecrement(){
         likes--;
     }
 }

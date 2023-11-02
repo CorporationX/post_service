@@ -8,7 +8,7 @@ import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.dto.kafka.KafkaKey;
 import faang.school.postservice.dto.kafka.KafkaPostDto;
 import faang.school.postservice.dto.redis.RedisCommentDto;
-import faang.school.postservice.dto.redis.TimePostId;
+import faang.school.postservice.dto.redis.TimedPostId;
 import faang.school.postservice.mapper.redis.RedisCommentMapper;
 import faang.school.postservice.mapper.redis.RedisPostMapper;
 import faang.school.postservice.mapper.redis.RedisUserMapper;
@@ -70,7 +70,7 @@ class RedisCacheServiceTest {
     UserDto userDto;
     PostDto postDto;
     RedisPost redisPost;
-    TimePostId timePostId;
+    TimedPostId timedPostId;
     CommentDto commentDto;
     RedisCommentDto redisCommentDto;
     KafkaPostDto kafkaPostDto;
@@ -82,7 +82,7 @@ class RedisCacheServiceTest {
     @BeforeEach
     void setUp() {
         localDateTime = LocalDateTime.of(2023, 10, 10, 10, 10);
-        SortedSet<TimePostId> feed = new TreeSet<>();
+        SortedSet<TimedPostId> feed = new TreeSet<>();
         redisUser = RedisUser.builder()
                 .id(USER_ID)
                 .followeeIds(List.of(2L, 3L))
@@ -108,7 +108,7 @@ class RedisCacheServiceTest {
                 .publishedAt(localDateTime)
                 .likes(1)
                 .build();
-        timePostId = TimePostId.builder()
+        timedPostId = TimedPostId.builder()
                 .postId(redisPost.getId())
                 .publishedAt(redisPost.getPublishedAt())
                 .build();
@@ -122,7 +122,7 @@ class RedisCacheServiceTest {
                 .likes(1)
                 .build();
         kafkaPostDto = KafkaPostDto.builder()
-                .post(timePostId)
+                .post(timedPostId)
                 .userId(USER_ID)
                 .build();
         redisFeed = RedisFeed.builder()
@@ -133,7 +133,7 @@ class RedisCacheServiceTest {
                 .commentId(1L)
                 .postId(1L)
                 .build();
-        feed.add(timePostId);
+        feed.add(timedPostId);
     }
 
     @Test
@@ -142,7 +142,7 @@ class RedisCacheServiceTest {
         when(redisPostMapper.toRedisPost(postDto)).thenReturn(redisPost);
         redisCacheService.putPostAndAuthorInCache(postDto);
         verify(redisPostRepository).save(redisPost);
-        verify(kafkaFeedProducer).sendFeed(KafkaKey.CREATE, redisUser.getFollowerIds(), timePostId);
+        verify(kafkaFeedProducer).sendFeed(KafkaKey.CREATE, redisUser.getFollowerIds(), timedPostId);
     }
 
     @Test
@@ -155,7 +155,7 @@ class RedisCacheServiceTest {
         redisCacheService.putPostAndAuthorInCache(postDto);
         verify(redisUserRepository).save(redisUser);
         verify(redisPostRepository).save(redisPost);
-        verify(kafkaFeedProducer).sendFeed(KafkaKey.CREATE, redisUser.getFollowerIds(), timePostId);
+        verify(kafkaFeedProducer).sendFeed(KafkaKey.CREATE, redisUser.getFollowerIds(), timedPostId);
     }
 
     @Test
@@ -167,7 +167,7 @@ class RedisCacheServiceTest {
         ReflectionTestUtils.setField(redisCacheService, "maxCommentsInCache", 3);
         redisCacheService.putPostAndAuthorInCache(postDto);
         verify(redisPostRepository).save(redisPost);
-        verify(kafkaFeedProducer).sendFeed(KafkaKey.CREATE, redisUser.getFollowerIds(), timePostId);
+        verify(kafkaFeedProducer).sendFeed(KafkaKey.CREATE, redisUser.getFollowerIds(), timedPostId);
     }
 
     @Test
@@ -179,13 +179,13 @@ class RedisCacheServiceTest {
         ReflectionTestUtils.setField(redisCacheService, "maxCommentsInCache", 3);
         redisCacheService.putPostAndAuthorInCache(postDto);
         verify(redisPostRepository).save(redisPost);
-        verify(kafkaFeedProducer).sendFeed(KafkaKey.CREATE, redisUser.getFollowerIds(), timePostId);
+        verify(kafkaFeedProducer).sendFeed(KafkaKey.CREATE, redisUser.getFollowerIds(), timedPostId);
     }
 
     @Test
     void testPostInExistingNotFullFeedIsAdded() {
-        SortedSet<TimePostId> feed = new TreeSet<>();
-        feed.add(timePostId);
+        SortedSet<TimedPostId> feed = new TreeSet<>();
+        feed.add(timedPostId);
         redisFeed.setPostIds(feed);
         when(redisFeedRepository.findById(USER_ID)).thenReturn(Optional.of(redisFeed));
         ReflectionTestUtils.setField(redisCacheService, "postsFeedSize", 2);
@@ -195,9 +195,9 @@ class RedisCacheServiceTest {
 
     @Test
     void testPostInExistingFullFeedIsAdded() {
-        SortedSet<TimePostId> feed = new TreeSet<>();
-        feed.add(timePostId);
-        feed.add(TimePostId.builder().postId(2L).publishedAt(localDateTime).build());
+        SortedSet<TimedPostId> feed = new TreeSet<>();
+        feed.add(timedPostId);
+        feed.add(TimedPostId.builder().postId(2L).publishedAt(localDateTime).build());
         redisFeed.setPostIds(feed);
         when(redisFeedRepository.findById(USER_ID)).thenReturn(Optional.of(redisFeed));
         ReflectionTestUtils.setField(redisCacheService, "postsFeedSize", 2);
@@ -224,7 +224,7 @@ class RedisCacheServiceTest {
     void testPostFromCacheIsDeleted() {
         when(redisUserRepository.findById(1L)).thenReturn(Optional.of(redisUser));
         redisCacheService.deletePostFromCache(postDto);
-        verify(kafkaFeedProducer).sendFeed(KafkaKey.DELETE, redisUser.getFollowerIds(),timePostId);
+        verify(kafkaFeedProducer).sendFeed(KafkaKey.DELETE, redisUser.getFollowerIds(), timedPostId);
     }
 
     @Test

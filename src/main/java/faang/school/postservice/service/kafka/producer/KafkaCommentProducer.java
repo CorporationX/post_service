@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class KafkaCommentProducer extends KafkaAbstractProducer {
-    @Value("${spring.kafka.topics.comment-topic}")
+    @Value("${spring.kafka.topics.comment-topic.name}")
     private String commentTopicName;
 
     public KafkaCommentProducer(KafkaTemplate<String, Object> kafkaTemplate) {

@@ -222,13 +222,4 @@ public class PostService {
         });
         postRepository.saveAll(list);
     }
-
-//    private List<Post> getPostsByFollowees(List<Long> followees, int postQuantity) {
-//        TypedQuery<Post> query = entityManager.createQuery(
-//                "SELECT p FROM Post p WHERE p.authorId IN :followees ORDER BY p.publishedAt DESC", Post.class);
-//        query.setParameter("followees", followees);
-//        query.setMaxResults(postQuantity);
-//
-//        return query.getResultList();
-//    }
 }

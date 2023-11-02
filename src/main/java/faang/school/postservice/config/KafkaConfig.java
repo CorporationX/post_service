@@ -29,16 +29,24 @@ public class KafkaConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServer;
-    @Value("${spring.kafka.topics.feed-topic}")
+    @Value("${spring.kafka.topics.feed-topic.name}")
     private String feedTopicName;
-    @Value("${spring.kafka.topics.like-topic}")
+    @Value("${spring.kafka.topics.like-topic.name}")
     private String likeTopicName;
-    @Value("${spring.kafka.topics.comment-topic}")
+    @Value("${spring.kafka.topics.comment-topic.name}")
     private String commentTopicName;
-    @Value("${spring.kafka.partitions}")
-    private int partitionCount;
-    @Value("${spring.kafka.replicas}")
-    private int replicaCount;
+    @Value("${spring.kafka.topics.feed-topic.partitions}")
+    private int feedPartitionCount;
+    @Value("${spring.kafka.topics.feed-topic.replicas}")
+    private int feedReplicaCount;
+    @Value("${spring.kafka.topics.like-topic.partitions}")
+    private int likePartitionCount;
+    @Value("${spring.kafka.topics.like-topic.replicas}")
+    private int likeReplicaCount;
+    @Value("${spring.kafka.topics.comment-topic.partitions}")
+    private int commentPartitionCount;
+    @Value("${spring.kafka.topics.comment-topic.replicas}")
+    private int commentReplicaCount;
 
     @Bean
     public ProducerFactory<String, Object> producerFactory(KafkaProperties kafkaProperties) {
@@ -57,24 +65,24 @@ public class KafkaConfig {
     @Bean
     public NewTopic topicFeed() {
         return TopicBuilder.name(feedTopicName)
-                .partitions(partitionCount)
-                .replicas(replicaCount)
+                .partitions(feedPartitionCount)
+                .replicas(feedReplicaCount)
                 .build();
     }
 
     @Bean
     public NewTopic topicLike() {
         return TopicBuilder.name(likeTopicName)
-                .partitions(partitionCount)
-                .replicas(replicaCount)
+                .partitions(likePartitionCount)
+                .replicas(likePartitionCount)
                 .build();
     }
 
     @Bean
     public NewTopic topicComment() {
         return TopicBuilder.name(commentTopicName)
-                .partitions(partitionCount)
-                .replicas(replicaCount)
+                .partitions(commentPartitionCount)
+                .replicas(commentReplicaCount)
                 .build();
     }
 

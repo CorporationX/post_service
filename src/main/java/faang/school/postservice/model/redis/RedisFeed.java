@@ -1,6 +1,6 @@
 package faang.school.postservice.model.redis;
 
-import faang.school.postservice.dto.redis.TimePostId;
+import faang.school.postservice.dto.redis.TimedPostId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +11,6 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 @Data
 @AllArgsConstructor
@@ -22,7 +21,7 @@ public class RedisFeed implements Serializable {
 
     @Id
     private long userId;
-    private SortedSet<TimePostId> postIds;
+    private SortedSet<TimedPostId> postIds;
     @Version
     private Long version;
 }

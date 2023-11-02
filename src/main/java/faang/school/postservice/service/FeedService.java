@@ -5,7 +5,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.dto.feed.FeedDto;
-import faang.school.postservice.dto.redis.TimePostId;
+import faang.school.postservice.dto.redis.TimedPostId;
 import faang.school.postservice.mapper.redis.RedisPostMapper;
 import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.redis.RedisFeed;
@@ -88,39 +88,39 @@ public class FeedService {
             getOrSaveRedisUser(postDto.getAuthorId());
         });
         if (redisFeedRepository.findById(userDto.getId()).isEmpty()) {
-            List<TimePostId> list = firstPostsForFeed.stream().map(postDto -> TimePostId.builder()
+            List<TimedPostId> list = firstPostsForFeed.stream().map(postDto -> TimedPostId.builder()
                     .publishedAt(postDto.getPublishedAt())
                     .postId(postDto.getId())
                     .build()).toList();
-            SortedSet<TimePostId> feed = new TreeSet<>(list);
+            SortedSet<TimedPostId> feed = new TreeSet<>(list);
             RedisFeed redisFeed = RedisFeed.builder().postIds(feed).userId(userDto.getId()).build();
             redisFeedRepository.save(redisFeed);
         }
     }
 
     private List<Long> getNextPosts(Long postId, RedisFeed feed) {
-        TreeSet<TimePostId> currentFeedPostIds;
+        TreeSet<TimedPostId> currentFeedPostIds;
         if (postId == null) {
-            currentFeedPostIds = (TreeSet<TimePostId>) feed.getPostIds();
-            Iterator<TimePostId> iterator = currentFeedPostIds.descendingIterator();
+            currentFeedPostIds = (TreeSet<TimedPostId>) feed.getPostIds();
+            Iterator<TimedPostId> iterator = currentFeedPostIds.descendingIterator();
             return getPostsList(iterator);
         }
 
         RedisPost redisPost = getOrSaveRedisPost(postId);
-        TimePostId prevPostId = TimePostId.builder()
+        TimedPostId prevPostId = TimedPostId.builder()
                 .postId(postId)
                 .publishedAt(redisPost.getPublishedAt())
                 .build();
 
         if (feed.getPostIds().contains(prevPostId)) {
-            currentFeedPostIds = (TreeSet<TimePostId>) feed.getPostIds().headSet(prevPostId);
-            Iterator<TimePostId> iterator = currentFeedPostIds.descendingIterator();
+            currentFeedPostIds = (TreeSet<TimedPostId>) feed.getPostIds().headSet(prevPostId);
+            Iterator<TimedPostId> iterator = currentFeedPostIds.descendingIterator();
             return getPostsList(iterator);
         }
         return new ArrayList<>();
     }
 
-    private List<Long> getPostsList(Iterator<TimePostId> iterator) {
+    private List<Long> getPostsList(Iterator<TimedPostId> iterator) {
         List<Long> nextTwentyPostIds = new ArrayList<>(postsBatchSize);
         int count = 0;
         while (iterator.hasNext() && count < postsBatchSize) {

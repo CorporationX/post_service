@@ -37,11 +37,11 @@ public class RedisPost implements Serializable {
     @Version
     private Long version;
 
-    public void likeIncrement(){
+    public synchronized void likeIncrement(){
         likes++;
     }
 
-    public void likeDecrement(){
+    public synchronized void likeDecrement(){
         likes--;
     }
 }

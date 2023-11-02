@@ -16,16 +16,17 @@ public class KafkaLikeListener extends KafkaAbstractListener {
         super(redisCacheService);
     }
 
-    @KafkaListener(topics = "${spring.kafka.topics.like-topic}", groupId = "${spring.kafka.client-id}")
+    @KafkaListener(topics = "${spring.kafka.topics.like-topic.name}", groupId = "${spring.kafka.client-id}")
     public void consume(ConsumerRecord<String, Object> record) {
         log.info("Kafka Like Listener consume message with key = {}", record.key());
         KafkaKey key = Enum.valueOf(KafkaKey.class, record.key());
         LikeDto likeDto = (LikeDto) record.value();
         if (key == KafkaKey.CREATE) {
             addLike(likeDto);
-        }
-        if (key == KafkaKey.DELETE) {
+        }else if (key == KafkaKey.DELETE) {
             deleteLike(likeDto);
+        } else {
+            log.info("Unexpected key in Kafka Like Listener, no actions completed  = {}", record.key());
         }
     }
 

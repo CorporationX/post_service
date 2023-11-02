@@ -7,7 +7,7 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.kafka.KafkaKey;
 import faang.school.postservice.dto.kafka.KafkaPostDto;
 import faang.school.postservice.dto.redis.RedisCommentDto;
-import faang.school.postservice.dto.redis.TimePostId;
+import faang.school.postservice.dto.redis.TimedPostId;
 import faang.school.postservice.mapper.redis.RedisCommentMapper;
 import faang.school.postservice.mapper.redis.RedisPostMapper;
 import faang.school.postservice.mapper.redis.RedisUserMapper;
@@ -66,11 +66,11 @@ public class RedisCacheService {
         redisPost.setRedisCommentDtos(getCachedComments(post.getComments()));
 
         redisPostRepository.save(redisPost);
-        TimePostId timePostId = TimePostId.builder()
+        TimedPostId timedPostId = TimedPostId.builder()
                 .postId(post.getId())
                 .publishedAt(post.getPublishedAt())
                 .build();
-        kafkaFeedProducer.sendFeed(KafkaKey.CREATE, redisUser.getFollowerIds(), timePostId);
+        kafkaFeedProducer.sendFeed(KafkaKey.CREATE, redisUser.getFollowerIds(), timedPostId);
     }
 
     @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
@@ -78,7 +78,7 @@ public class RedisCacheService {
         Optional<RedisFeed> optional = redisFeedRepository.findById(kafkaPostDto.getUserId());
         if (optional.isPresent()) {
             RedisFeed redisFeed = optional.get();
-            SortedSet<TimePostId> postIds = redisFeed.getPostIds();
+            SortedSet<TimedPostId> postIds = redisFeed.getPostIds();
             if (postIds.size() >= postsFeedSize) {
                 postIds.remove(postIds.first());
             }
@@ -86,7 +86,7 @@ public class RedisCacheService {
             redisFeed.setPostIds(postIds);
             redisTemplate.update(redisFeed);
         } else {
-            SortedSet<TimePostId> postIds = new TreeSet<>();
+            SortedSet<TimedPostId> postIds = new TreeSet<>();
             postIds.add(kafkaPostDto.getPost());
             RedisFeed newFeed = RedisFeed.builder()
                     .userId(kafkaPostDto.getUserId())
@@ -99,7 +99,7 @@ public class RedisCacheService {
     @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public void deletePostFromFeed(KafkaPostDto kafkaPostDto) {
         redisFeedRepository.findById(kafkaPostDto.getUserId()).ifPresent(redisFeed -> {
-            SortedSet<TimePostId> postIds = redisFeed.getPostIds();
+            SortedSet<TimedPostId> postIds = redisFeed.getPostIds();
             postIds.remove(kafkaPostDto.getPost());
             redisFeed.setPostIds(postIds);
             redisTemplate.update(redisFeed);
@@ -109,11 +109,11 @@ public class RedisCacheService {
     public void deletePostFromCache(PostDto post) {
         RedisUser redisUser = getOrSaveUserInCache(post.getAuthorId());
 
-        TimePostId timePostId = TimePostId.builder()
+        TimedPostId timedPostId = TimedPostId.builder()
                 .postId(post.getId())
                 .publishedAt(post.getPublishedAt())
                 .build();
-        kafkaFeedProducer.sendFeed(KafkaKey.DELETE, redisUser.getFollowerIds(), timePostId);
+        kafkaFeedProducer.sendFeed(KafkaKey.DELETE, redisUser.getFollowerIds(), timedPostId);
     }
 
     @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
