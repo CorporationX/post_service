@@ -31,6 +31,20 @@ spring:
         comment_event_channel:
           name: comment_topic
 
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+    consumer:
+      bootstrap-servers: localhost:9092
+    topics:
+      post-topic: news_feed_post_events
+      like-topic: news_feed_like_events
+      comment-topic: news_feed_comment_events
+      feed-heater-topic: news_feed_heater
+    client-id: news_feed_events
+    partitions: 1
+    replicas: 1
+
 server:
   port: 8081
 
@@ -48,6 +62,7 @@ post:
         time-unit: MILLISECONDS
       batch_size: 1000
       cron: "0 0/1 * 1/1 * ?" # every minute
+
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
@@ -58,10 +73,15 @@ post:
         queue-capacity: 1000
     batch:
       size: 1000
+
   moderation:
     scheduler:
       cron: "0 0 0 * * ?" # every day at 00:00:00
       sublist-size: 100
+
+  feed:
+    batch-size: 20
+    feed-size: 500
 
 async:
   thread-pool:
@@ -77,6 +97,8 @@ comment:
       cron: "0 0 12 * * ?" # every day 12:00
   batch:
     size: 50
+  cache:
+    max-comments: 3
 
 user-service:
   host: localhost

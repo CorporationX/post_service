@@ -10,10 +10,13 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.service.moderation.ModerationDictionary;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -23,7 +26,6 @@ import java.util.concurrent.Executor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 public class PostService {
 
@@ -33,9 +35,13 @@ public class PostService {
     private final ModerationDictionary moderationDictionary;
     private final Executor threadPoolForPostModeration;
     private final PublisherService publisherService;
+    private final RedisCacheService redisCacheService;
+    @PersistenceContext
+    private final EntityManager entityManager;
     @Value("${post.moderation.scheduler.sublist-size}")
     private int sublistSize;
 
+    @Transactional
     public PostDto crateDraftPost(PostDto postDto) {
         postValidator.validateData(postDto);
 
@@ -44,6 +50,7 @@ public class PostService {
         return postMapper.toDto(savedPost);
     }
 
+    @Transactional
     public PostDto publishPost(long postId) {
         Post post = postValidator.validatePostId(postId);
 
@@ -57,11 +64,18 @@ public class PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+
+        PostDto postDto = postMapper.toDto(post);
         publisherService.publishPostEventToRedis(post);
+        if (postDto.getAuthorId() != null) {
+            redisCacheService.savePublishedPost(postDto);
+        }
+
         log.info("Post was published successfully, postId={}", post.getId());
-        return postMapper.toDto(post);
+        return postDto;
     }
 
+    @Transactional
     public PostDto updatePost(PostDto updatePost) {
         long postId = updatePost.getId();
         Post post = postValidator.validatePostId(postId);
@@ -74,10 +88,14 @@ public class PostService {
 
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
+        if (updatePost.getAuthorId() != null) {
+            redisCacheService.updatePostInCache(updatePost);
+        }
         log.info("Post was updated successfully, postId={}", post.getId());
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostDto softDelete(long postId) {
         Post post = postValidator.validatePostId(postId);
 
@@ -85,10 +103,16 @@ public class PostService {
             throw new AlreadyDeletedException("Post has been already deleted");
         }
         post.setDeleted(true);
+
+        PostDto deletedPostDto = postMapper.toDto(post);
+        if (deletedPostDto.getAuthorId() != null) {
+            redisCacheService.deletePostFromCache(deletedPostDto);
+        }
         log.info("Post was soft-deleted successfully, postId={}", postId);
-        return postMapper.toDto(post);
+        return deletedPostDto;
     }
 
+    @Transactional(readOnly = true)
     public PostDto getPost(long postId) {
         Post post = postValidator.validatePostId(postId);
 
@@ -104,6 +128,7 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional(readOnly = true)
     public List<PostDto> getUserDrafts(long userId) {
         postValidator.validateUserId(userId);
 
@@ -117,6 +142,7 @@ public class PostService {
         return userDrafts;
     }
 
+    @Transactional(readOnly = true)
     public List<PostDto> getProjectDrafts(long projectId) {
         postValidator.validateProjectId(projectId);
 
@@ -130,6 +156,7 @@ public class PostService {
         return projectDrafts;
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
     public List<PostDto> getUserPosts(long userId) {
         postValidator.validateUserId(userId);
 
@@ -147,6 +174,7 @@ public class PostService {
         return userPosts;
     }
 
+    @Transactional(readOnly = true)
     public List<PostDto> getProjectPosts(long projectId) {
         postValidator.validateProjectId(projectId);
 
@@ -163,6 +191,21 @@ public class PostService {
         return projectPosts;
     }
 
+    @Transactional(readOnly = true)
+    public List<PostDto> getFirstPostsForFeed(List<Long> followees, int postQuantity) {
+        return postRepository.getPostsByFollowees(entityManager, followees, postQuantity).stream()
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostDto> getNextPostsForFeed(List<Long> followees, LocalDateTime previousPostDate, int postQuantity) {
+        return postRepository.getNextPostsByFollowees(entityManager, followees, postQuantity, previousPostDate).stream()
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    @Transactional
     public void doPostModeration() {
         log.info("<doPostModeration> was called successfully");
         List<Post> notVerifiedPost = postRepository.findNotVerified();

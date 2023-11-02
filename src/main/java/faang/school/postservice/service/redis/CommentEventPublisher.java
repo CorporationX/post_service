@@ -19,6 +19,7 @@ public class CommentEventPublisher implements MessagePublisher {
         redisTemplate.convertAndSend(commentTopic.getTopic(), message);
     }
 
+    @Override
     public void publish(Object object) {
         String message = null;
         try {

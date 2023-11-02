@@ -11,6 +11,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.validator.PostValidator;
 import feign.FeignException;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,9 +46,12 @@ public class PostServiceGetListMethodsTest {
     private ModerationDictionary moderationDictionary;
     @Mock
     private Executor threadPoolForPostModeration;
+    @Mock
+    private RedisCacheService redisCacheService;
+    @Mock
+    private EntityManager entityManager;
 
     private PostValidator postValidator;
-
     private PostService postService;
 
     private final long CORRECT_ID = 1L;
@@ -58,7 +62,8 @@ public class PostServiceGetListMethodsTest {
     @BeforeEach
     void setUp() {
         postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration, publisherService);
+        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary,
+                threadPoolForPostModeration, publisherService, redisCacheService, entityManager);
     }
 
     @Test

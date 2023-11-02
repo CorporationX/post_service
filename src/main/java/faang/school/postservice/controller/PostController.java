@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class PostController {
     @PostMapping("/drafts")
     public PostDto createDraftPost(@RequestBody @Valid PostDto postDto) {
         log.info("Endpoint <createDraftPost>, uri='/posts/drafts' was called successfully");
+        checkAuthorOfPost(postDto);
         return postService.crateDraftPost(postDto);
     }
 
@@ -75,5 +77,11 @@ public class PostController {
     public List<PostDto> getProjectPosts(@PathVariable("id") long projectId) {
         log.info("Endpoint <getProjectPosts>, uri='/posts/projects/{}' was called successfully", projectId);
         return postService.getProjectPosts(projectId);
+    }
+
+    private void checkAuthorOfPost(PostDto postDto) {
+        if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
+            throw new DataValidationException("Post can't be created without any author");
+        }
     }
 }

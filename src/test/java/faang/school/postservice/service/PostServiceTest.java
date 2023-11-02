@@ -14,6 +14,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.validator.PostValidator;
 import feign.FeignException;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,11 @@ public class PostServiceTest {
     private Executor threadPoolForPostModeration;
     @Mock
     private PublisherService publisherService;
+    @Mock
+    private RedisCacheService redisCacheService;
+    @Mock
+    private EntityManager entityManager;
+
     private PostValidator postValidator;
     private PostService postService;
 
@@ -65,7 +71,8 @@ public class PostServiceTest {
     @BeforeEach
     void initData() {
         postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration, publisherService);
+        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary,
+                threadPoolForPostModeration, publisherService, redisCacheService, entityManager);
         incorrectPostDto = PostDto.builder()
                 .id(INCORRECT_ID)
                 .content("content")
@@ -166,10 +173,13 @@ public class PostServiceTest {
     void testUpdatePost() {
         correctPostDto.setContent("other content");
         correctPostDto.setScheduledAt(LocalDateTime.now().plusMonths(1));
+        LocalDateTime now = LocalDateTime.now();
+        correctPostDto.setUpdatedAt(now);
         correctPost.setScheduledAt(LocalDateTime.now());
         returnCorrectPostForPostRepository();
 
         PostDto actualPostDto = postService.updatePost(correctPostDto);
+        actualPostDto.setUpdatedAt(now);
         assertEquals(correctPostDto, actualPostDto);
     }
 

@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003__comment.sql
   - include:
       file: db/changelog/changeset/post_V004__corrected.sql
+  - include:
+      file: db/changelog/changeset/post_V005__insert-test-posts.sql
