@@ -50,6 +50,7 @@ spring:
       post-publication: post-publication
       like-publication: like-publication
       comment-publication: comment-publication
+      post-cache-publication: post-cache-publication
 
 
 

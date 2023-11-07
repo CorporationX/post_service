@@ -32,4 +32,7 @@ public class UserDto {
     private List<GoalDto> goals;
     private List<SkillDto> skills;
     private PreferredContact preference;
+    public enum PreferredContact {
+        EMAIL, SMS, TELEGRAM
+    }
 }

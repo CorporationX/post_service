@@ -38,5 +38,6 @@ public interface PostMapper {
     }
     List<PostDto> toDtos(List<Post> entities);
 
+    @Mapping(target = "postId", source = "id")
     PostCacheDto toPostCacheDto(PostDto postDto);
 }

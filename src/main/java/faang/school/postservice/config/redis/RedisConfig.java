@@ -9,7 +9,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -18,7 +17,7 @@ public class RedisConfig {
     @Value("${spring.data.redis.host}")
     private String host;
     @Value("${spring.data.redis.port}")
-    private int post;
+    private int port;
     @Value("${spring.data.redis.channels.comment_channel.name}")
     private String commentEvent;
     @Value("${spring.data.redis.channels.user_ban_channel.name}")
@@ -27,10 +26,10 @@ public class RedisConfig {
     private String likeEvent;
 
     @Bean
-    RedisConnectionFactory jedisConnectionFactory() {
+    public RedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
         configuration.setHostName(host);
-        configuration.setPort(post);
+        configuration.setPort(port);
         return new JedisConnectionFactory(configuration);
     }
 

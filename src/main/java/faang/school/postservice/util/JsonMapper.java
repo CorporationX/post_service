@@ -23,4 +23,14 @@ public class JsonMapper {
         }
         return Optional.ofNullable(result);
     }
+
+    public <T> Optional<Object> mapper(T event) {
+        Object result = null;
+        try {
+            result = objectMapper.readValue(event.toString(), event.getClass());
+        } catch (IOException e) {
+            log.error("Exception with json mapping: " + e.getMessage());
+        }
+        return Optional.ofNullable(result);
+    }
 }

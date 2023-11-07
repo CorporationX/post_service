@@ -1,7 +1,7 @@
 package faang.school.postservice.dto.feed;
 
 import faang.school.postservice.dto.post.PostCacheDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.model.RedisUser;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +12,6 @@ import java.util.LinkedHashSet;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FeedDto {
-    private UserDto userDto;
-    private LinkedHashSet<PostCacheDto> postCache;
+    private RedisUser redisUser;
+    private LinkedHashSet<PostCacheDto> posts;
 }

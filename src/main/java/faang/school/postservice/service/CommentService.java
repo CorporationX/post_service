@@ -3,9 +3,10 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEventDto;
-import faang.school.postservice.messaging.commentevent.CommentEventConsumer;
+import faang.school.postservice.messaging.commentevent.CommentProducer;
 import faang.school.postservice.messaging.commentevent.CommentEventPublisher;
 import faang.school.postservice.messaging.userbanevent.UserBanEventPublisher;
+import faang.school.postservice.model.RedisUser;
 import faang.school.postservice.repository.RedisUserRepository;
 import faang.school.postservice.util.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
@@ -30,7 +31,7 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final CommentEventPublisher commentEventPublisher;
     private final UserBanEventPublisher userBanEventPublisher;
-    private final CommentEventConsumer commentEventConsumer;
+    private final CommentProducer commentProducer;
     private final RedisUserRepository redisUserRepository;
     private final UserServiceClient userServiceClient;
 
@@ -42,11 +43,18 @@ public class CommentService {
         commentRepository.save(comment);
         CommentEventDto commentEventDto = commentMapper.toEvent(comment);
         commentEventPublisher.publish(commentEventDto);
-        commentEventConsumer.publish(commentDto);
+        commentProducer.publish(commentDto);
 
-        redisUserRepository.save(comment.getAuthorId(), userServiceClient.getUser(comment.getAuthorId()));
+        saveUserInCache(comment);
 
         return commentMapper.toDto(comment);
+    }
+
+    private void saveUserInCache(Comment comment) {
+        RedisUser redisUser = new RedisUser();
+        redisUser.setUserId(comment.getAuthorId());
+        redisUser.setUserDto(userServiceClient.getUser(comment.getAuthorId()));
+        redisUserRepository.save(redisUser);
     }
 
     public List<CommentDto> getCommentsByPostId(long postId) {

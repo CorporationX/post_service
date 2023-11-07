@@ -19,6 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentDto {
+    @NotNull
     private Long id;
 
     @NotBlank(message = "Content cannot be empty!")

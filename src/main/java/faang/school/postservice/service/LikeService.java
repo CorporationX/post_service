@@ -4,7 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
-import faang.school.postservice.messaging.likeevent.LikeEventConsumer;
+import faang.school.postservice.messaging.likeevent.LikeProducer;
 import faang.school.postservice.messaging.likeevent.LikeEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -33,7 +33,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final LikeMapper likeMapper;
     private final LikeEventPublisher likeEventPublisher;
-    private final LikeEventConsumer likeEventConsumer;
+    private final LikeProducer likeEventConsumer;
 
     @Value("${batch-size-from-like}")
     private int BATCH_SIZE;
@@ -42,15 +42,19 @@ public class LikeService {
         isUserExist(likeDto);
         long postId = likeDto.getPostId();
         Optional<Like> byPostIdAndUserId = likeRepository.findByPostIdAndUserId(postId, likeDto.getUserId());
+
         if (byPostIdAndUserId.isEmpty()) {
             Like postLike = likeMapper.toEntity(likeDto);
             Optional<Post> postById = postRepository.findById(postId);
+
             postById.ifPresent(post -> {
                 post.getLikes().add(postLike);
                 postLike.setPost(post);
+
                 likeEventPublisher.publish(likeMapper.toEvent(postLike));
                 likeEventConsumer.publish(likeDto);
             });
+
             likeRepository.save(postLike);
             return likeMapper.toDto(postLike);
         }
@@ -61,13 +65,16 @@ public class LikeService {
         isUserExist(likeDto);
         long commentId = likeDto.getCommentId();
         Optional<Like> byCommentIdAndUserId = likeRepository.findByCommentIdAndUserId(commentId, likeDto.getUserId());
+
         if (byCommentIdAndUserId.isEmpty()) {
             Like commentLike = likeMapper.toEntity(likeDto);
             Optional<Comment> commentById = commentRepository.findById(commentId);
+
             commentById.ifPresent(comment -> {
                 comment.getLikes().add(commentLike);
                 commentLike.setComment(comment);
             });
+
             likeRepository.save(commentLike);
             return likeMapper.toDto(commentLike);
         }

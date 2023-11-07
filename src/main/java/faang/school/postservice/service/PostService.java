@@ -14,11 +14,14 @@ import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ScheduledTaskMapper;
 import faang.school.postservice.messaging.postevent.PostEventPublisher;
+import faang.school.postservice.messaging.postevent.PostProducer;
+import faang.school.postservice.messaging.postevent.PostViewPublisher;
 import faang.school.postservice.messaging.userbanevent.UserBanEventPublisher;
 import faang.school.postservice.model.Picture;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.RedisPost;
+import faang.school.postservice.model.RedisUser;
 import faang.school.postservice.model.scheduled.ScheduledTask;
-import faang.school.postservice.messaging.postevent.PostViewEventPublisher;
 import faang.school.postservice.repository.*;
 import faang.school.postservice.util.CoverHandler;
 import faang.school.postservice.util.FileConverter;
@@ -51,7 +54,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final HashtagService hashtagService;
     private final PostEventPublisher postEventPublisher;
-    private final PostViewEventPublisher postViewEventPublisher;
+    private final PostViewPublisher postViewEventPublisher;
     private final ScheduledTaskRepository scheduledTaskRepository;
     private final PictureRepository pictureRepository;
     private final UserBanEventPublisher userBanEventPublisher;
@@ -60,6 +63,7 @@ public class PostService {
     private final CoverHandler coverHandler;
     private final RedisPostRepository redisPostRepository;
     private final RedisUserRepository redisUserRepository;
+    private final PostProducer postProducer;
 
 
     @Value("${services.s3.bucketName}")
@@ -89,17 +93,31 @@ public class PostService {
         PostDto postDto = postMapper.toDto(postById);
         PostCacheDto postCacheDto = postMapper.toPostCacheDto(postDto);
 
+
         validator.validateToPublish(postById);
 
         postById.setPublished(true);
         postById.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
-        redisPostRepository.save(postDto.getId(), postCacheDto);
-        redisUserRepository.save(postById.getAuthorId(), userServiceClient.getUser(postById.getAuthorId()));
-        postEventPublisher.send(postById);
+        postProducer.send(postCacheDto);
 
+        saveRedisEntity(postById, postDto, postCacheDto);
+
+        postEventPublisher.send(postById);
         return postDto;
+    }
+
+    private void saveRedisEntity(Post postById, PostDto postDto, PostCacheDto postCacheDto) {
+        RedisPost redisPost = new RedisPost();
+        redisPost.setPostId(postDto.getId());
+        redisPost.setPostCacheDto(postCacheDto);
+        redisPostRepository.save(redisPost);
+
+        RedisUser redisUser = new RedisUser();
+        redisUser.setUserId(postById.getAuthorId());
+        redisUser.setUserDto(userServiceClient.getUser(postById.getAuthorId()));
+        redisUserRepository.save(redisUser);
     }
 
     @Transactional
