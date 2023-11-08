@@ -50,6 +50,8 @@ spring:
       post-publication: post-publication
       like-publication: like-publication
       comment-publication: comment-publication
+      post-cache-publication: post-cache-publication
+      post-view: post-view
 
 
 
@@ -112,6 +114,8 @@ ad-remover:
 bad-words:
   path: files/bad-words.csv
 
+initial-capacity: 500
+
 moderation-thread-pool:
   queueCapacity: 100
   maxPoolSize: 4
@@ -122,7 +126,7 @@ moderation-properties:
   secondsBetweenModeration: 18000
   batchSize: 1000
 
-
+linked-hash-set-size: 500
 
 thread-pool:
   queueCapacity: 100

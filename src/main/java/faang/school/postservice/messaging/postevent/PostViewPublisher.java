@@ -15,16 +15,16 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PostViewEventPublisher {
+public class PostViewPublisher {
 
-    private final KafkaTemplate<String, PostViewEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     private final PostViewEventMapper mapper;
 
     @SneakyThrows
     public void publish(Post post) {
         PostViewEvent event = mapper.toEvent(post);
 
-        CompletableFuture<SendResult<String, PostViewEvent>> future = kafkaTemplate.send("post-view", event);
+        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send("post-view", event);
 
         future.whenComplete((result, e) -> {
             if (e == null) {

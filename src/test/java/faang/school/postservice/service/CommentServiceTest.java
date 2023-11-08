@@ -1,7 +1,10 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.messaging.commentevent.CommentEventPublisher;
+import faang.school.postservice.messaging.commentevent.CommentProducer;
+import faang.school.postservice.repository.RedisUserRepository;
 import faang.school.postservice.util.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -32,6 +35,15 @@ class CommentServiceTest {
     @Mock
     private CommentEventPublisher redisCommentEventPublisher;
 
+    @Mock
+    private CommentProducer commentProducer;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private RedisUserRepository redisUserRepository;
+
     @InjectMocks
     private CommentService commentService;
 
@@ -48,6 +60,7 @@ class CommentServiceTest {
 
     @Test
     public void testCreateComment() {
+        Mockito.when(commentMapper.toEntity(commentDto)).thenReturn(comment);
         commentService.createComment(commentDto);
         Mockito.verify(commentRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(commentMapper, Mockito.times(1)).toEntity(commentDto);

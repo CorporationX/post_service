@@ -3,6 +3,7 @@ package faang.school.postservice.mapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.post.PostCacheDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
@@ -36,4 +37,7 @@ public interface PostMapper {
         return ids;
     }
     List<PostDto> toDtos(List<Post> entities);
+
+    @Mapping(target = "postId", source = "id")
+    PostCacheDto toPostCacheDto(PostDto postDto);
 }

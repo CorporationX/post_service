@@ -29,6 +29,10 @@ public class PostDto {
 
         Long projectId;
 
+        Long views;
+
+        Long likeCounter;
+
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         List<LikeDto> likes;
 

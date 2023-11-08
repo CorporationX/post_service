@@ -8,19 +8,21 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PictureDto;
+import faang.school.postservice.dto.post.PostCacheDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.ScheduledTaskDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ScheduledTaskMapper;
 import faang.school.postservice.messaging.postevent.PostEventPublisher;
+import faang.school.postservice.messaging.postevent.PostProducer;
+import faang.school.postservice.messaging.postevent.PostViewPublisher;
 import faang.school.postservice.messaging.userbanevent.UserBanEventPublisher;
 import faang.school.postservice.model.Picture;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.RedisPost;
+import faang.school.postservice.model.RedisUser;
 import faang.school.postservice.model.scheduled.ScheduledTask;
-import faang.school.postservice.messaging.postevent.PostViewEventPublisher;
-import faang.school.postservice.repository.PictureRepository;
-import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.ScheduledTaskRepository;
+import faang.school.postservice.repository.*;
 import faang.school.postservice.util.CoverHandler;
 import faang.school.postservice.util.FileConverter;
 import faang.school.postservice.util.exception.PostNotFoundException;
@@ -44,7 +46,6 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 @Slf4j
 public class PostService {
-
     private final PostServiceValidator validator;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
@@ -53,13 +54,18 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final HashtagService hashtagService;
     private final PostEventPublisher postEventPublisher;
-    private final PostViewEventPublisher postViewEventPublisher;
+    private final PostViewPublisher postViewEventPublisher;
     private final ScheduledTaskRepository scheduledTaskRepository;
     private final PictureRepository pictureRepository;
     private final UserBanEventPublisher userBanEventPublisher;
     private final AmazonS3 s3Client;
     private final FileConverter convertFile;
     private final CoverHandler coverHandler;
+    private final RedisPostRepository redisPostRepository;
+    private final RedisUserRepository redisUserRepository;
+    private final PostProducer postProducer;
+
+
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
@@ -84,6 +90,9 @@ public class PostService {
     @Transactional
     public PostDto publishPost(Long id) {
         Post postById = getPostById(id);
+        PostDto postDto = postMapper.toDto(postById);
+        PostCacheDto postCacheDto = postMapper.toPostCacheDto(postDto);
+
 
         validator.validateToPublish(postById);
 
@@ -91,10 +100,24 @@ public class PostService {
         postById.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         postRepository.save(postById);
+        postProducer.send(postCacheDto);
+
+        saveRedisEntity(postById, postDto, postCacheDto);
 
         postEventPublisher.send(postById);
+        return postDto;
+    }
 
-        return postMapper.toDto(postById);
+    private void saveRedisEntity(Post postById, PostDto postDto, PostCacheDto postCacheDto) {
+        RedisPost redisPost = new RedisPost();
+        redisPost.setPostId(postDto.getId());
+        redisPost.setPostCacheDto(postCacheDto);
+        redisPostRepository.save(redisPost);
+
+        RedisUser redisUser = new RedisUser();
+        redisUser.setUserId(postById.getAuthorId());
+        redisUser.setUserDto(userServiceClient.getUser(postById.getAuthorId()));
+        redisUserRepository.save(redisUser);
     }
 
     @Transactional
@@ -253,12 +276,6 @@ public class PostService {
 
     private String getFileName(MultipartFile file) {
         return System.currentTimeMillis() + "_" + file.getOriginalFilename();
-    }
-
-
-    @Async()
-    public CompletableFuture<Void> publishScheduledPosts() {
-        return null; // TODO: 08.08.2023
     }
 
     private Post getPostById(Long id) {

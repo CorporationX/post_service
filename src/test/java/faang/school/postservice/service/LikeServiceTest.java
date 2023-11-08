@@ -2,10 +2,10 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.like.LikeEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.*;
 import faang.school.postservice.messaging.likeevent.LikeEventPublisher;
+import faang.school.postservice.messaging.likeevent.LikeProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -16,6 +16,7 @@ import faang.school.postservice.util.exception.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class LikeServiceTest {
 
+    @InjectMocks
     private LikeService likeService;
 
     @Mock
@@ -50,6 +52,9 @@ class LikeServiceTest {
     @Mock
     private LikeEventPublisher likeEventPublisher;
 
+    @Mock
+    private LikeProducer likeProducer;
+
     private LikeDto likeDto;
     private Like like;
     private UserDto userDto;
@@ -69,7 +74,6 @@ class LikeServiceTest {
         likeDto = new LikeDto(1L, 2L, comment.getId(), post.getId());
         like = likeMapper.toEntity(likeDto);
 
-        likeService = new LikeService(likeRepository, userServiceClient, postRepository, commentRepository, likeMapper, likeEventPublisher);
         likeService.setBATCH_SIZE(100);
     }
 
@@ -92,6 +96,7 @@ class LikeServiceTest {
 
         Mockito.verify(likeRepository).save(Mockito.any());
         Mockito.verify(likeEventPublisher).publish(Mockito.any());
+        Mockito.verify(likeProducer).publish(Mockito.any());
     }
 
     @Test

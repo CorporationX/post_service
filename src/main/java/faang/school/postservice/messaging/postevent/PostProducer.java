@@ -1,8 +1,7 @@
 package faang.school.postservice.messaging.postevent;
 
-import faang.school.postservice.dto.post.PostEvent;
-import faang.school.postservice.mapper.PostEventMapper;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.dto.post.PostCacheDto;
+import faang.school.postservice.util.JsonMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,18 +14,13 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PostEventPublisher {
-
+public class PostProducer {
+    @Value("${spring.kafka.topics.post-cache-publication}")
+    private String postCachePublicationTopic;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final PostEventMapper mapper;
 
-    @Value("${spring.kafka.topics.post-publication}")
-    private String postPublicationTopic;
-
-    public void send(Post post) {
-        PostEvent event = mapper.toPostEvent(post);
-
-        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(postPublicationTopic, event);
+    public void send(PostCacheDto post) {
+        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(postCachePublicationTopic, post);
 
         future.whenComplete((result, e) -> {
             if (e == null) {

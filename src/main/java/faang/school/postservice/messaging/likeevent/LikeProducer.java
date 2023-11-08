@@ -1,6 +1,7 @@
-package faang.school.postservice.messaging.commentevent;
+package faang.school.postservice.messaging.likeevent;
 
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.util.JsonMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,14 +14,13 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class CommentEventConsumer {
-    private final KafkaTemplate<String, CommentDto> kafkaTemplate;
+public class LikeProducer {
+    @Value("${spring.kafka.topics.like-publication}")
+    private String likePublicationTopic;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${spring.kafka.topics.comment-publication}")
-    private String commentPublicationTopic;
-
-    public void publish(CommentDto commentDto) {
-       CompletableFuture<SendResult<String, CommentDto>> future = kafkaTemplate.send(commentPublicationTopic, commentDto);
+    public void publish(LikeDto likeDto) {
+        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(likePublicationTopic, likeDto);
 
         future.whenComplete((result, e) -> {
             if (e == null) {
