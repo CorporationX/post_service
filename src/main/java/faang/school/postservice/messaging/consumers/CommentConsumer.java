@@ -29,6 +29,7 @@ public class CommentConsumer {
     public void listen(CommentDto commentDto) {
         log.info("PostConsumer has received: {}", commentDto);
         addComment(commentDto.getPostId(), commentDto);
+        log.info("{} was successfully added", commentDto);
     }
 
     @Retryable(value = {OptimisticLockingFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 100))

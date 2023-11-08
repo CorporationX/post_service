@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +43,7 @@ public class FeedService {
             for (PostPair postPair : feedByUserId) {
                 long pairPostId = postPair.getPostId();
 
-                PostCacheDto postRedisDtoByPostId = getPostRedisDtoByPostId(pairPostId);
+                PostCacheDto postRedisDtoByPostId = getPostCacheDtoByPostId(pairPostId);
                 feedDto.getPosts().add(postRedisDtoByPostId);
                  postsFetched++;
 
@@ -59,7 +58,8 @@ public class FeedService {
                     List<Post> postByAuthorId = postRepository.findByAuthorId(followee);
                     for (Post post : postByAuthorId) {
                         PostDto postDto = postMapper.toDto(post);
-                        feedDto.getPosts().add(postMapper.toPostCacheDto(postDto));
+                        PostCacheDto postCacheDto = postMapper.toPostCacheDto(postDto);
+                        feedDto.getPosts().add(postCacheDto);
                         postsFetched++;
 
                         if (postsFetched >= 20) {
@@ -77,7 +77,7 @@ public class FeedService {
     }
 
     private FeedDto findPostById(Long postId, FeedDto feedDto) {
-        PostCacheDto postCacheDto = getPostRedisDtoByPostId(postId);
+        PostCacheDto postCacheDto = getPostCacheDtoByPostId(postId);
         feedDto.getPosts().add(postCacheDto);
 
         if (postCacheDto == null) {
@@ -90,9 +90,9 @@ public class FeedService {
         return feedDto;
     }
 
-    private PostCacheDto getPostRedisDtoByPostId(Long postId) {
-        Optional<RedisPost> redisPost = redisPostRepository.findById(postId);
-        return redisPost.get().getPostCacheDto();
+    private PostCacheDto getPostCacheDtoByPostId(Long postId) {
+        RedisPost redisPost = redisPostRepository.findById(postId).orElseThrow();
+        return redisPost.getPostCacheDto();
     }
 
     private LinkedHashSet<PostPair> getFeedByUserId(Long userId) {

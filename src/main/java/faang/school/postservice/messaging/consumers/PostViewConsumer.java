@@ -27,6 +27,7 @@ public class PostViewConsumer {
     public void listen(PostViewEvent postView) {
         log.info("PostConsumer has received: {}", postView);
         increasePostView(postView.getPostId());
+        log.info("View: {} was successfully added to the post", postView);
     }
 
     @Retryable(value = {OptimisticLockingFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 100))

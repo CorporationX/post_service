@@ -35,6 +35,9 @@ public class KafkaConfig {
     @Value("${spring.kafka.topics.post-cache-publication}")
     private String postCachePublicationTopic;
 
+    @Value("${spring.kafka.topics.post-view}")
+    private String postViewPublicationTopic;
+
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -55,6 +58,7 @@ public class KafkaConfig {
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
 
         return new DefaultKafkaConsumerFactory<>(configProps);
     }
@@ -81,7 +85,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic postViewTopic() {
-        return new NewTopic("post-view", 1, (short) 1);
+        return new NewTopic(postViewPublicationTopic, 1, (short) 1);
     }
 
     @Bean

@@ -51,6 +51,7 @@ spring:
       like-publication: like-publication
       comment-publication: comment-publication
       post-cache-publication: post-cache-publication
+      post-view: post-view
 
 
 
@@ -112,6 +113,8 @@ ad-remover:
 
 bad-words:
   path: files/bad-words.csv
+
+initial-capacity: 500
 
 moderation-thread-pool:
   queueCapacity: 100

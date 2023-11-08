@@ -28,6 +28,7 @@ public class LikeConsumer {
     public void listen(LikeDto likeDto) {
         log.info("PostConsumer has received: {}", likeDto);
         increaseLikeCounter(likeDto.getPostId());
+        log.info("Post with ID: {} successfully received the like", likeDto.getPostId());
     }
 
     @Retryable(value = {OptimisticLockingFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 100))

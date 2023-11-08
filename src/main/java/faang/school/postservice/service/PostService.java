@@ -278,12 +278,6 @@ public class PostService {
         return System.currentTimeMillis() + "_" + file.getOriginalFilename();
     }
 
-
-    @Async()
-    public CompletableFuture<Void> publishScheduledPosts() {
-        return null; // TODO: 08.08.2023
-    }
-
     private Post getPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with id " + String.format("%d", id) + " not found"));

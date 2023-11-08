@@ -33,6 +33,12 @@ public class Post {
     @Column(name = "project_id")
     private Long projectId;
 
+    @Column(name = "views")
+    private Long views;
+
+    @Column(name = "like_counter")
+    private Long likeCounter;
+
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Like> likes;
 
