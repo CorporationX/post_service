@@ -29,6 +29,7 @@ public class KafkaCommentProducer extends AbstractProducer<CommentEvent> {
                 .exceptionally(ex -> {
                     log.error("Failed to publish CommentEvent (id: {}; postId: {}) (Kafka). Message: {}",
                             event.getId(), event.getPostId(), ex.getMessage());
+                    retryPublish(event);
                     return null;
                 });
     }

@@ -54,6 +54,7 @@ spring:
         name: post_view_event_channel
       comment_event_channel:
         name: comment_event_channel
+    max-retries: 3
 
 server:
   port: 8081
