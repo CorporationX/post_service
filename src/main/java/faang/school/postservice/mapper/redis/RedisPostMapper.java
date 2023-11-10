@@ -18,6 +18,7 @@ public interface RedisPostMapper {
     @Mapping(target = "postViews", source = "views")
     RedisPost toRedisPost(Post post);
 
+    @Mapping(target = "comments", source = "commentsDto")
     RedisPostDto toRedisPostDto(RedisPost post);
 
     PostPair toPostPair(RedisPost redisPost);

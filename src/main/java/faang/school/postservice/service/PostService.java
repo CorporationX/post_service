@@ -4,33 +4,32 @@ import com.google.common.collect.Lists;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostPair;
 import faang.school.postservice.dto.client.UserDto;
-import faang.school.postservice.dto.kafka.KafkaPostEvent;
-import faang.school.postservice.dto.kafka.KafkaPostViewEvent;
+import faang.school.postservice.dto.kafka.EventAction;
+import faang.school.postservice.dto.kafka.PostEvent;
+import faang.school.postservice.dto.kafka.PostViewEvent;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.NoPublishedPostException;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.mapper.redis.RedisPostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.model.redis.RedisUser;
 import faang.school.postservice.publisher.KafkaPostProducer;
 import faang.school.postservice.publisher.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -45,9 +44,7 @@ public class PostService {
     private final PublisherService publisherService;
     private final RedisCacheService redisCacheService;
     private final PostRepository postRepository;
-    private final RedisPostRepository redisPostRepository;
     private final PostMapper postMapper;
-    private final RedisPostMapper redisPostMapper;
     private final ModerationDictionary moderationDictionary;
     private final KafkaPostProducer kafkaPostPublishEventPublisher;
     private final KafkaPostViewProducer kafkaPostViewEventPublisher;
@@ -89,6 +86,7 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostDto updatePost(PostDto updatePost) {
         long postId = updatePost.getId();
         Post post = findPostBy(postId);
@@ -101,7 +99,20 @@ public class PostService {
 
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
-        log.info("Post was updated successfully, postId={}", post.getId());
+        log.info("Post with ID: {} has been updated successfully", postId);
+
+        if (post.isDeleted()) {
+            publishPostDeleteEventToKafka(post);
+        } else if (post.isPublished()) {
+            PostPair postPair = buildPostPair(postId, null);
+            PostEvent event = buildPostEvent(Collections.emptyList(), postPair, EventAction.UPDATE);
+
+            UserDto userDto = redisCacheService.findUserBy(post.getAuthorId());
+            redisCacheService.updateOrCacheUser(userDto);
+
+            kafkaPostPublishEventPublisher.publish(event);
+        }
+
         return postMapper.toDto(post);
     }
 
@@ -109,10 +120,15 @@ public class PostService {
         Post post = findPostBy(postId);
 
         if (post.isDeleted()) {
-            throw new AlreadyDeletedException("Post has been already deleted");
+            throw new AlreadyDeletedException(String.format("Post with ID: %d has been already deleted", postId));
         }
+
         post.setDeleted(true);
         log.info("Post was soft-deleted successfully, postId={}", postId);
+
+        if (post.isPublished()) {
+            publishPostDeleteEventToKafka(post);
+        }
         return postMapper.toDto(post);
     }
 
@@ -127,7 +143,7 @@ public class PostService {
             throw new NoPublishedPostException("This post hasn't been published yet");
         }
         publisherService.publishPostEventToRedis(post);
-        publishPostViewEventToKafka(postId);
+        publishPostViewEventToKafka(List.of(postId));
 
         log.info("Post has taken from DB successfully, postId={}", postId);
         return postMapper.toDto(post);
@@ -162,18 +178,21 @@ public class PostService {
     public List<PostDto> getUserPosts(long userId) {
         postValidator.validateUserId(userId);
 
-        List<PostDto> userPosts = postRepository.findByAuthorIdWithLikes(userId).stream()
+        List<Post> userPosts = postRepository.findByAuthorIdWithLikes(userId).stream()
                 .filter(post -> post.isPublished() && !post.isDeleted())
                 .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
-                .map(post -> {
-                    publisherService.publishPostEventToRedis(post);
-                    return postMapper.toDto(post);
-                })
+                .peek(publisherService::publishPostEventToRedis)
                 .toList();
 
+        List<Long> postIds = userPosts.stream()
+                .map(Post::getId)
+                .toList();
 
-        log.info("User's posts have taken from DB successfully, userId={}", userId);
-        return userPosts;
+        publishPostViewEventToKafka(postIds);
+
+        return userPosts.stream()
+                .map(postMapper::toDto)
+                .toList();
     }
 
     public List<PostDto> getProjectPosts(long projectId) {
@@ -213,33 +232,10 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post with ID: %d, doesn't exist", postId)));
     }
 
-    @Async("postViewsTaskExecutor")
-    public void incrementPostView(long postId) {
-        Optional<RedisPost> redisPost = redisCacheService.findByRedisPostBy(postId);
-
-        postRepository.incrementPostViewByPostId(postId);
-        log.info("Post with ID: {}, has been successfully incremented his view", postId);
-
-        if (redisPost.isPresent()) {
-            RedisPost post = redisPost.get();
-
-            log.info("Post with ID: {} exist in Redis. Amount of Post views {}", postId, post.getPostViews());
-            post.incrementPostView();
-            post.incrementPostVersion();
-
-            redisCacheService.updateRedisPost(postId, post);
-        } else {
-            log.warn("Post with ID {} are not exist in Redis. Attempting to retrieve it from the database.", postId);
-            RedisPost post = mapPostToRedisPost(findPostBy(postId));
-
-            redisCacheService.saveRedisPost(post);
-        }
-    }
-
     @Transactional
-    public Post findAlredyPublishedAndNotDeletedPost(long postId) {
-        return postRepository.findPublishedAndNotDeletedBy(postId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Post with ID: %d, are not published yet or already deleted", postId)));
+    public Optional<Post> findAlreadyPublishedAndNotDeletedPost(long postId) {
+        return postRepository.findPublishedAndNotDeletedBy(postId);
+
     }
 
     @Transactional
@@ -248,8 +244,8 @@ public class PostService {
     }
 
     @Transactional
-    public List<Post> findSortedPostsByAuthorIdsNotInPostIdsLimit(List<Long> userIds, List<Long> usedPostIds, int amount) {
-        return postRepository.findSortedPostsByAuthorIdsNotInPostIdsLimit(userIds, usedPostIds, amount);
+    public List<Post> findSortedPostsByAuthorIdsNotInPostIdsLimit(List<Long> authorIds, List<Long> usedPostIds, int amount) {
+        return postRepository.findSortedPostsByAuthorIdsNotInPostIdsLimit(authorIds, usedPostIds, amount);
     }
 
     @Transactional
@@ -265,21 +261,43 @@ public class PostService {
 
     @Transactional
     public RedisPost findRedisPostAndCacheHimIfNotExist(long postId) {
-        return redisPostRepository.findById(postId)
-                .orElseGet(() -> mapPostToRedisPost(findPostBy(postId)));
+        return redisCacheService.findRedisPostBy(postId)
+                .orElseGet(() -> findPostByIdAndCacheHim(postId));
     }
 
-    @Transactional
-    public RedisPost findRedisPostBy(long postId) {
-        return redisPostRepository.findById(postId)
-                .orElseGet(() -> mapPostToRedisPost(findPostBy(postId)));
+    public void incrementPostViewByPostId(long postId) {
+        postRepository.incrementPostViewByPostId(postId);
     }
 
-    private RedisPost findPostAndCacheHim(long postId) {
+    public void publishPostViewEventToKafka(List<Long> postIds) {
+        postEventTaskExecutor.execute(() -> {
+            postIds.forEach(postId -> {
+                PostViewEvent event = buildPostViewEvent(postId);
+
+                kafkaPostViewEventPublisher.publish(event);
+            });
+        });
+    }
+
+    private void publishPostPublishOrDeleteEventToKafka(List<Long> followersIds, PostPair postPair, EventAction eventAction) {
+        postEventTaskExecutor.execute(() -> {
+            for (int i = 0; i < followersIds.size(); i += batchSize) {
+                int endIndex = Math.min(i + batchSize, followersIds.size());
+                List<Long> sublist = followersIds.subList(i, endIndex);
+
+                PostEvent event = buildPostEvent(sublist, postPair, eventAction);
+
+                kafkaPostPublishEventPublisher.publish(event);
+            }
+        });
+    }
+
+    private RedisPost findPostByIdAndCacheHim(long postId) {
         log.warn("Post with ID: {} was not found in Redis. Attempting to retrieve from the database and cache in Redis.", postId);
 
-        RedisPost redisPost = mapPostToRedisPost(findAlredyPublishedAndNotDeletedPost(postId));
-        return redisCacheService.saveRedisPost(redisPost);
+        Post post = findAlreadyPublishedAndNotDeletedPost(postId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Post with ID: %d not published yet or already deleted", postId)));
+        return redisCacheService.cachePost(post);
     }
 
     private void checkListForObsceneWords(List<Post> list) {
@@ -296,17 +314,38 @@ public class PostService {
         long postId = post.getId();
         long authorId = post.getAuthorId();
 
-        UserDto authorDto = redisCacheService.findUserBy(authorId);
+        UserDto userDto = redisCacheService.findUserBy(authorId);
+        RedisUser redisUser = redisCacheService.updateOrCacheUser(userDto);
 
-        redisCacheService.saveRedisPost(mapPostToRedisPost(post));
-        log.info("Post with ID: {}, were successfully save to Redis", postId);
+        RedisPost redisPost = redisCacheService.mapPostToRedisPostAndSetDefaultVersion(post);
+        redisCacheService.saveRedisPost(redisPost);
 
-        RedisUser redisUser = redisCacheService.mapUserToRedisUser(authorDto);
-        redisCacheService.saveRedisUser(redisUser);
-        log.info("User with ID: {}, were successfully save or updated in Redis", authorId);
-
+        List<Long> followerIds = redisUser.getFollowerIds();
         PostPair postPair = buildPostPair(postId, post.getPublishedAt());
-        publishPostEventToKafka(authorDto.getFollowerIds(), postPair);
+
+        publishPostPublishOrDeleteEventToKafka(followerIds, postPair, EventAction.CREATE);
+    }
+
+    private void publishPostDeleteEventToKafka(Post post) {
+        long postId = post.getId();
+        long authorId = post.getAuthorId();
+
+        UserDto userDto = redisCacheService.findUserBy(authorId);
+        RedisUser redisUser = redisCacheService.updateOrCacheUser(userDto);
+
+        List<Long> followerIds = redisUser.getFollowerIds();
+        PostPair postPair = buildPostPair(postId, post.getPublishedAt());
+
+        if (followerIds != null && !followerIds.isEmpty()) {
+            log.info("Author of Post with ID: {} has {} amount of followeers", authorId, followerIds.size());
+
+            publishPostPublishOrDeleteEventToKafka(followerIds, postPair, EventAction.DELETE);
+        } else {
+            log.warn("Author of Post with ID: {} does not have any followers", authorId);
+
+            PostEvent event = buildPostEvent(Collections.emptyList(), postPair, EventAction.DELETE);
+            kafkaPostPublishEventPublisher.publish(event);
+        }
     }
 
     private PostPair buildPostPair(long postId, LocalDateTime publishedAt) {
@@ -316,34 +355,17 @@ public class PostService {
                 .build();
     }
 
-    public RedisPost mapPostToRedisPost(Post post) {
-        RedisPost redisPost = redisPostMapper.toRedisPost(post);
-        redisPost.setVersion(1);
-
-        return redisPost;
+    private PostEvent buildPostEvent(List<Long> followerIds, PostPair postPair, EventAction eventAction) {
+        return PostEvent.builder()
+                .postPair(postPair)
+                .followersIds(followerIds)
+                .eventAction(eventAction)
+                .build();
     }
 
-    private void publishPostEventToKafka(List<Long> followersIds, PostPair postPair) {
-        postEventTaskExecutor.execute(() -> {
-            for (int i = 0; i < followersIds.size(); i += batchSize) {
-                int endIndex = Math.min(i + batchSize, followersIds.size());
-                List<Long> sublist = followersIds.subList(i, endIndex);
-
-                KafkaPostEvent event = KafkaPostEvent.builder()
-                        .postPair(postPair)
-                        .followersIds(sublist)
-                        .build();
-
-                kafkaPostPublishEventPublisher.publish(event);
-            }
-        });
-    }
-
-    public void publishPostViewEventToKafka(long postId) {
-        KafkaPostViewEvent event = KafkaPostViewEvent.builder()
+    private PostViewEvent buildPostViewEvent(long postId) {
+        return PostViewEvent.builder()
                 .postId(postId)
                 .build();
-
-        kafkaPostViewEventPublisher.publish(event);
     }
 }

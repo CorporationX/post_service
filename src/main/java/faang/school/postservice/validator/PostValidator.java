@@ -44,7 +44,7 @@ public class PostValidator {
             }
         } else {
             if (updateProjectId == null || !updateProjectId.equals(projectId)) {
-                throw new UpdatePostException("Author of the post cannot be deleted or changed");
+                throw new UpdatePostException("Project id cannot be deleted or changed");
             }
         }
     }

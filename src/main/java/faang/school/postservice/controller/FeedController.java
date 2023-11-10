@@ -20,7 +20,7 @@ public class FeedController {
 
     @GetMapping
     public FeedDto getFeedBy(@RequestParam(value = "postId", required = false) @Min(value = 1) Long postId) {
-        log.info("Received request to retrieve news feed");
+        log.info("Received request to retrieve News feed");
         return feedService.getUserFeedBy(postId);
     }
 }

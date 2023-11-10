@@ -28,7 +28,7 @@ public class Ad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @OneToOne
     @JoinColumn(name = "post_id")

@@ -15,10 +15,10 @@ import java.util.LinkedHashSet;
 @NoArgsConstructor
 @Builder
 @Data
-@RedisHash(value = "Feed")
+@RedisHash(value = "Feed", timeToLive = 86400)
 public class RedisFeed implements Serializable {
 
     @Id
-    private long userId;
+    private Long userId;
     private LinkedHashSet<PostPair> posts;
 }

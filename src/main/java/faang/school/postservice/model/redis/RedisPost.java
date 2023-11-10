@@ -28,7 +28,7 @@ public class RedisPost implements Serializable {
     private Long postLikes;
     private List<RedisCommentDto> commentsDto;
     @Version
-    private int version; // нету в мапере
+    private int version;
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
 
@@ -39,6 +39,8 @@ public class RedisPost implements Serializable {
     public synchronized void incrementPostLike() {
         postLikes++;
     }
+
+    public synchronized void decrementPostLike(){postLikes--;}
 
     public synchronized void incrementPostVersion() {
         version++;

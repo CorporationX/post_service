@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.dto.kafka.KafkaPostViewEvent;
+import faang.school.postservice.dto.kafka.PostViewEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,12 +13,11 @@ import org.springframework.stereotype.Component;
 public class KafkaPostViewProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    @Value("${spring.data.kafka.topics.post-views}")
+    @Value("${spring.data.kafka.topics.post-views.name}")
     private String postViewsTopic;
 
-    public void publish(KafkaPostViewEvent event){
+    public void publish(PostViewEvent event){
         kafkaTemplate.send(postViewsTopic, event);
-
-        log.info("Post event was published to kafka with post ID: {}", event.getPostId());
+        log.info("Post event was published to kafka with post ID: {}", event.postId());
     }
 }

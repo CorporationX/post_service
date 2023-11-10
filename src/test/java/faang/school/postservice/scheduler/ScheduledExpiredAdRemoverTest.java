@@ -37,13 +37,13 @@ class ScheduledExpiredAdRemoverTest {
     @Test
     void scheduledExpiredAdRemoverTest() {
         Ad firstAd = Ad.builder()
-                .id(1)
+                .id(1L)
                 .build();
         Ad secondAd = Ad.builder()
-                .id(2)
+                .id(2L)
                 .build();
         Ad thirddAd = Ad.builder()
-                .id(3)
+                .id(3L)
                 .build();
         List<Ad> returnList = List.of(firstAd, secondAd, thirddAd);
 

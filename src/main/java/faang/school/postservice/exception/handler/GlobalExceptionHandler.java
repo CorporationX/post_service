@@ -1,4 +1,4 @@
-package faang.school.postservice.controller.handler;
+package faang.school.postservice.exception.handler;
 
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
@@ -6,8 +6,10 @@ import faang.school.postservice.exception.DataNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EmptyContentInPostException;
 import faang.school.postservice.exception.NoPublishedPostException;
+import faang.school.postservice.exception.NotCommentAuthorException;
 import faang.school.postservice.exception.SamePostAuthorException;
 import faang.school.postservice.exception.SameTimeActionException;
+import faang.school.postservice.exception.UpdateCommentException;
 import faang.school.postservice.exception.UpdatePostException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -74,21 +76,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleDataValidationException(DataValidationException e){
+    public ErrorResponse handleDataValidationException(DataValidationException e) {
         log.error("Data validation exception", e);
         return new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
     }
 
     @ExceptionHandler(DataNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleDataNotFoundException(DataNotFoundException e){
+    public ErrorResponse handleDataNotFoundException(DataNotFoundException e) {
         log.error("Data not found exception", e);
         return new ErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND, LocalDateTime.now());
     }
 
     @ExceptionHandler(SameTimeActionException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleSameTimeActionException(SameTimeActionException e){
+    public ErrorResponse handleSameTimeActionException(SameTimeActionException e) {
         log.error("Same time action exception", e);
         return new ErrorResponse(e.getMessage(), HttpStatus.CONFLICT, LocalDateTime.now());
     }
@@ -98,5 +100,19 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleException(Exception e) {
         log.error("EXCEPTION", e);
         return new ErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now());
+    }
+
+    @ExceptionHandler(UpdateCommentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleUpdateCommentException(UpdateCommentException e) {
+        log.error("EXCEPTION", e);
+        return new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
+    }
+
+    @ExceptionHandler(NotCommentAuthorException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleNotCommentAuthorException(NotCommentAuthorException e) {
+        log.error("EXCEPTION", e);
+        return new ErrorResponse(e.getMessage(), HttpStatus.CONFLICT, LocalDateTime.now());
     }
 }

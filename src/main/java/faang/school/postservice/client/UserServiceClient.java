@@ -1,7 +1,9 @@
 package faang.school.postservice.client;
 
 import faang.school.postservice.dto.client.UserDto;
+import faang.school.postservice.util.SimplePageImpl;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,4 +19,7 @@ public interface UserServiceClient {
 
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
+    @GetMapping("/users")
+    SimplePageImpl<UserDto> getAllUsers(Pageable pageable);
 }

@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.dto.kafka.KafkaCommentEvent;
+import faang.school.postservice.dto.kafka.CommentPostEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,12 +13,11 @@ import org.springframework.stereotype.Component;
 public class KafkaCommentProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    @Value("${spring.data.kafka.topics.comments}")
+    @Value("${spring.data.kafka.topics.comments.name}")
     private String commentsTopic;
 
-    public void publish(KafkaCommentEvent event){
+    public void publish(CommentPostEvent event){
         kafkaTemplate.send(commentsTopic, event);
-
-        log.info("Comment event was published to kafka with post ID: {}, and comment ID: {}", event.getPostId(), event.getCommentDto().getId());
+        log.info("Comment event was published to kafka with post ID: {}, and comment ID: {}", event.postId(), event.commentDto().getId());
     }
 }
