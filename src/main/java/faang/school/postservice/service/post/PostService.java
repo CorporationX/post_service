@@ -2,8 +2,8 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
@@ -12,11 +12,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,9 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final ConcurrentHashMap<LocalDateTime, Set<PostDto>> postMap;
+    @Value("${post.cache.update}")
+    private long timeForCacheUpdate;
     @Value("${author_banner.count_offensive_content_for_ban}")
     private long countOffensiveContentForBan;
 
@@ -45,7 +51,29 @@ public class PostService {
     @Transactional
     public void createPost(PostDto postDto) {
         definitionId(postDto);
-        postRepository.save(postMapper.toEntity(postDto));
+        PostDto newPostDto = postMapper.toDto(postRepository.save(postMapper.toEntity(postDto)));
+        checkSchedule(newPostDto);
+    }
+
+    private void checkSchedule(PostDto postDto) {
+        if (postDto.getScheduledAt() == null) {
+            publishPost(postDto.getId(), postDto.getAuthorId());
+        } else {
+            LocalDateTime scheduleTime = postDto.getScheduledAt().truncatedTo(ChronoUnit.MINUTES);
+            if (scheduleTime.isBefore(LocalDateTime.now().plus(timeForCacheUpdate, ChronoUnit.MINUTES))) {
+                postMap.putIfAbsent(scheduleTime, new HashSet<>());
+                postMap.get(scheduleTime).add(postDto);
+            }
+        }
+    }
+
+    @Transactional
+    public List<PostDto> findAllPostsByTimeAndStatus() {
+        // add 5% of the time to eliminate moment when cache is empty
+        LocalDateTime time = LocalDateTime.now().plus((long) (timeForCacheUpdate * 1.05), ChronoUnit.MINUTES);
+        return postRepository.findAllPostsByTimeAndStatus(time).stream()
+                .map(postMapper::toDto)
+                .toList();
     }
 
     @Transactional
@@ -53,6 +81,7 @@ public class PostService {
         Post post = getPostById(postId);
         postValidator.validatePostByUser(post, userId);
         postValidator.isPublished(post);
+        post.setPublishedAt(LocalDateTime.now());
         post.setPublished(true);
     }
 
@@ -141,6 +170,10 @@ public class PostService {
             postValidator.validateUser(postDto.getAuthorId());
         } else {
             postValidator.validateProject(postDto.getProjectId());
+        }
+        if (postDto.getScheduledAt() != null &&
+                postDto.getScheduledAt().isBefore(LocalDateTime.now())) {
+            throw new DataValidationException("Post cannot be scheduled in the past");
         }
     }
 }
