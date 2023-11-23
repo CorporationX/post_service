@@ -3,14 +3,18 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
+import faang.school.postservice.dto.post.KafkaPostView;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostViewEventDto;
+import faang.school.postservice.dto.post.RedisPostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.messaging.KafkaPostViewProducer;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.messaging.publishing.NewPostPublisher;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRedisRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ad.AdRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +41,8 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final NewPostPublisher newPostPublisher;
     private final PostViewEventPublisher postViewEventPublisher;
+    private final PostRedisRepository postRedisRepository;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
 
     @Transactional
     public PostDto createPost(CreatePostDto createPostDto) {
@@ -56,6 +62,7 @@ public class PostService {
         post.setPublished(false);
         PostDto result = postMapper.toDto(postRepository.save(post));
         newPostPublisher.publish(result);
+        postRedisRepository.save(postMapper.toRedisPostDto(result));
         return result;
     }
 
@@ -110,7 +117,8 @@ public class PostService {
                 .build();
 
         postViewEventPublisher.publish(eventDto);
-
+        KafkaPostView kafkaPostView = KafkaPostView.builder().postId(id).authorId(postById.getAuthorId()).build();
+        kafkaPostViewProducer.sendMessage(kafkaPostView);
         return postMapper.toDto(postById);
     }
     @Transactional(readOnly = true)

@@ -33,6 +33,17 @@ spring:
           name: calculations_channel
         post_view_channel:
           name: post_view_channel
+        post_save_cache:
+          name: post_save_cache
+
+    kafka:
+      port: 9092
+      topics:
+        post-views:
+          name: post_views
+      client-id: news_feed_events
+      partition-count: 1
+      replicas: 1
 
 server:
   port: 8081
