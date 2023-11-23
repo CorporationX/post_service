@@ -31,6 +31,9 @@ public class RedisConfig {
     private String likeChannelName;
     @Value("${spring.data.redis.channels.post_view_channel.name}")
     private String postViewTopic;
+    @Value("${spring.data.redis.channels.post_save_cache.name}")
+    private String postSaveCache;
+
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -51,7 +54,7 @@ public class RedisConfig {
     ChannelTopic likeTopic() {
         return new ChannelTopic(likeChannelName);
     }
-}
+
     public ChannelTopic hashtagTopic(){
         return new ChannelTopic("${port.hashtags}");
     }
@@ -72,4 +75,6 @@ public class RedisConfig {
     public ChannelTopic viewProfileTopic() {
         return new ChannelTopic(postViewTopic);
     }
+
+    public ChannelTopic postSaveCache(){return new ChannelTopic(postSaveCache);}
 }

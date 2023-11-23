@@ -3,15 +3,19 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
+import faang.school.postservice.dto.post.KafkaPostView;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.RedisPostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.messaging.KafkaPostViewProducer;
 import faang.school.postservice.messaging.publishing.NewPostPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.repository.PostRedisRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ad.AdRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -30,6 +35,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,7 +54,11 @@ class PostServiceTest {
     @Mock
     private ProjectServiceClient projectServiceClient;
     @Mock
+    private PostRedisRepository postRedisRepository;
+    @Mock
     private NewPostPublisher newPostPublisher;
+    @Mock
+    private KafkaPostViewProducer kafkaPostViewProducer;
     @InjectMocks
     private PostService postService;
     private Post postOne;
@@ -116,9 +126,11 @@ class PostServiceTest {
                 .authorId(null).projectId(1L)
                 .deleted(false).published(false).build();
         CreatePostDto createPostDto = CreatePostDto.builder().authorId(null).projectId(1L).build();
+        RedisPostDto redisPostDto = RedisPostDto.builder().id(1L).content("test").authorId(1L).build();
 
         when(projectServiceClient.getProject(1L)).thenReturn(new ProjectDto());
         postService.createPost(createPostDto);
+        postRedisRepository.save(redisPostDto);
         verify(postRepository).save(post);
     }
 
@@ -204,7 +216,7 @@ class PostServiceTest {
     void getPostById() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(postOne));
         when(postMapper.toDto(postOne)).thenReturn(postDtoOne);
-
+        doNothing().when(kafkaPostViewProducer).sendMessage(Mockito.any(KafkaPostView.class));
         assertEquals(postDtoOne, postService.getPostById(1L));
     }
 

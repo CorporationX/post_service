@@ -2,6 +2,7 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.RedisPostDto;
 import faang.school.postservice.model.album.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -23,6 +24,8 @@ public interface PostMapper {
     List<PostDto> toDtoList(List<Post> posts);
 
     Post toEntity(CreatePostDto createPostDto);
+
+    RedisPostDto toRedisPostDto(PostDto postDto);
 
     @Mapping(target = "likesId", source = "likes", qualifiedByName = "toLikesId")
     @Mapping(target = "commentsId", source = "comments", qualifiedByName = "toCommentsId")
