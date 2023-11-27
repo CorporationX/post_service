@@ -15,5 +15,7 @@ public interface LikeEventMapper {
     @Mapping(target = "receivedAt", source = "createdAt")
     LikeEventDto toDto(Like like);
 
+    @Mapping(target = "userId", source = "actorId")
+    @Mapping(target = "createdAt", source = "receivedAt")
     Like toModel(LikeEventDto likeDto);
 }
