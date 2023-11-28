@@ -2,8 +2,10 @@ package faang.school.postservice.service.post;
 
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.redis.PostAchievementEventDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostAchievementPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +31,8 @@ class PostServiceTest {
     private PostMapper postMapper;
     @Mock
     private PostValidator postValidator;
+    @Mock
+    private PostAchievementPublisher postAchievementPublisher;
     @InjectMocks
     private PostService postService;
     List<Post> listFindByVerifiedIsFalse;
@@ -83,10 +87,13 @@ class PostServiceTest {
 
     @Test
     void createPost() {
+        Mockito.when(postMapper.toEventDto(Mockito.any(PostDto.class))).thenReturn(new PostAchievementEventDto());
         PostDto postDto = PostDto.builder().content("content").authorId(1L).build();
         Mockito.when(postMapper.toEntity(postDto)).thenReturn(new Post());
         postService.createPost(postDto);
         Mockito.verify(postRepository, Mockito.times(1)).save(Mockito.any(Post.class));
+        Mockito.verify(postMapper, Mockito.times(1)).toEventDto(Mockito.any(PostDto.class));
+        Mockito.verify(postAchievementPublisher, Mockito.times(1)).publish(Mockito.any(PostAchievementEventDto.class));
     }
 
     @Test

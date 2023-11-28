@@ -1,10 +1,10 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostAchievementPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -16,14 +16,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final PostAchievementPublisher postAchievementPublisher;
     @Value("${author_banner.count_offensive_content_for_ban}")
     private long countOffensiveContentForBan;
 
@@ -46,6 +45,7 @@ public class PostService {
     public void createPost(PostDto postDto) {
         definitionId(postDto);
         postRepository.save(postMapper.toEntity(postDto));
+        postAchievementPublisher.publish(postMapper.toEventDto(postDto));
     }
 
     @Transactional

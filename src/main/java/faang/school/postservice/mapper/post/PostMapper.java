@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.redis.PostAchievementEventDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import org.mapstruct.InjectionStrategy;
@@ -21,6 +22,9 @@ public interface PostMapper {
 
     @Mapping(target = "likes", ignore = true)
     Post toEntity(PostDto postDto);
+
+    @Mapping(target = "postId", source = "id")
+    PostAchievementEventDto toEventDto(PostDto postDto);
 
     @Named("getLikes")
     default List<Long> getLikes(List<Like> likes) {
