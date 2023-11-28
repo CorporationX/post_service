@@ -159,10 +159,12 @@ public class RedisCacheService {
     }
 
     public RedisPost cachePost(Post post) {
-        RedisPost newPost = mapPostToRedisPostAndSetDefaultVersion(post);
+        long postId = post.getId();
+        log.warn("Post with ID: {} doesn't exist in Redis. Attempting to cache Post", postId);
 
+        RedisPost newPost = mapPostToRedisPostAndSetDefaultVersion(post);
         RedisPost redisPost = saveRedisPost(newPost);
-        log.info("Post with ID: {} has been successfully save into a Redis", post.getId());
+        log.info("Post with ID: {} has been successfully save into a Redis", postId);
 
         return redisPost;
     }

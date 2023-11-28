@@ -40,7 +40,6 @@ public class FeedHeaterService {
         int page = 0;
 
         while (true) {
-
             SimplePageImpl<UserDto> userDtos = userServiceClient.getAllUsers(PageRequest.of(page, usersBatchSize));
             List<UserDto> response = userDtos.getContent();
 

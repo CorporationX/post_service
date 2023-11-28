@@ -72,7 +72,7 @@ public class CommentService {
 
         redisCacheService.updateOrCacheUser(redisCacheService.findUserBy(authorId));
 
-        return commentMapper.toDto(comment);
+        return commentMapper.toDto(entity);
     }
 
     @Transactional
@@ -163,6 +163,7 @@ public class CommentService {
 
     private void publishKafkaCommentEvent(Comment comment, EventAction eventAction) {
         long postId = comment.getPost().getId();
+        long authorId = comment.getAuthorId();
 
         CommentPostEvent event = CommentPostEvent.builder()
                 .postId(postId)
@@ -170,7 +171,7 @@ public class CommentService {
                 .eventAction(eventAction)
                 .build();
         kafkaCommentEventPublisher.publish(event);
-        log.info("Comment event with Post ID: {}, and Author ID: {}, has been successfully published", postId, comment.getAuthorId());
+        log.info("Comment event with Post ID: {}, and Author ID: {}, has been successfully published", postId, authorId);
     }
 
     private Comment buildCommentExampleBy(long postId) {

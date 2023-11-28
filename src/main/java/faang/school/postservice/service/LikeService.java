@@ -44,7 +44,6 @@ public class LikeService {
         if (post.isDeleted()) {
             throw new AlreadyDeletedException(String.format("Post with ID: %d has been already deleted", postId));
         }
-
         Optional<Like> existingLike = likeRepository.findByPostIdAndUserId(postId, userId);
         if (existingLike.isPresent()) {
             return likeMapper.toDto(existingLike.get());
@@ -80,7 +79,6 @@ public class LikeService {
         Optional<Like> existingLike = likeRepository.findByCommentIdAndUserId(commentId, userId);
         if (existingLike.isPresent()) {
             log.warn("User with ID: {} has already liked the comment in Post with ID: {}. Ignoring duplicate like.", userId, postId);
-
             return likeMapper.toDto(existingLike.get());
         }
 
@@ -88,7 +86,7 @@ public class LikeService {
         like.setComment(comment);
 
         Like entity = likeRepository.save(like);
-        log.info("Comment id={} was liked by user id={}", likeDto.getCommentId(), likeDto.getUserId());
+        log.info("Comment id={} was liked by user id={}", commentId, userId);
 
         publishLikeEventToKafka(postId, commentId, userId, LikeAction.ADD);
 
@@ -109,9 +107,7 @@ public class LikeService {
                             likeRepository.deleteByCommentIdAndUserId(commentId, userId);
                             log.info("Comment id={} was unliked by user id={}", commentId, userId);
                         },
-                        () -> {
-                            log.info("Like is already removed from the Comment with ID: {}", commentId);
-                        }
+                        () -> log.info("Like is already removed from the Comment with ID: {}", commentId)
                 );
     }
 

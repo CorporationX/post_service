@@ -13,7 +13,6 @@ import faang.school.postservice.exception.NoPublishedPostException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.RedisPost;
-import faang.school.postservice.model.redis.RedisUser;
 import faang.school.postservice.publisher.KafkaPostProducer;
 import faang.school.postservice.publisher.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
@@ -37,7 +36,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 public class PostService {
 
@@ -51,6 +49,7 @@ public class PostService {
     private final Executor threadPoolForPostModeration;
     private final ThreadPoolTaskExecutor postEventTaskExecutor;
     private final PostValidator postValidator;
+
     @Value("${post.moderation.scheduler.sublist-size}")
     private int sublistSize;
     @Value("${spring.data.kafka.util.batch-size}")
@@ -70,7 +69,7 @@ public class PostService {
         Post post = findPostBy(postId);
 
         if (post.isPublished() || (post.getScheduledAt() != null
-                && post.getScheduledAt().isAfter(LocalDateTime.now()))) {
+                && post.getScheduledAt().isBefore(LocalDateTime.now()))) {
             throw new AlreadyPostedException("You cannot published post, that had been already published");
         }
         if (post.isDeleted()) {
@@ -315,12 +314,12 @@ public class PostService {
         long authorId = post.getAuthorId();
 
         UserDto userDto = redisCacheService.findUserBy(authorId);
-        RedisUser redisUser = redisCacheService.updateOrCacheUser(userDto);
+        redisCacheService.updateOrCacheUser(userDto);
 
         RedisPost redisPost = redisCacheService.mapPostToRedisPostAndSetDefaultVersion(post);
         redisCacheService.saveRedisPost(redisPost);
 
-        List<Long> followerIds = redisUser.getFollowerIds();
+        List<Long> followerIds = userDto.getFollowerIds();
         PostPair postPair = buildPostPair(postId, post.getPublishedAt());
 
         publishPostPublishOrDeleteEventToKafka(followerIds, postPair, EventAction.CREATE);
@@ -331,9 +330,9 @@ public class PostService {
         long authorId = post.getAuthorId();
 
         UserDto userDto = redisCacheService.findUserBy(authorId);
-        RedisUser redisUser = redisCacheService.updateOrCacheUser(userDto);
+        redisCacheService.updateOrCacheUser(userDto);
 
-        List<Long> followerIds = redisUser.getFollowerIds();
+        List<Long> followerIds = userDto.getFollowerIds();
         PostPair postPair = buildPostPair(postId, post.getPublishedAt());
 
         if (followerIds != null && !followerIds.isEmpty()) {

@@ -121,7 +121,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic likesTopic() {
-        return  TopicBuilder.name(likesTopic)
+        return TopicBuilder.name(likesTopic)
                 .partitions(likesPartitions)
                 .replicas(likesReplicas)
                 .build();
@@ -137,7 +137,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic commentsTopic() {
-        return  TopicBuilder.name(commentsTopic)
+        return TopicBuilder.name(commentsTopic)
                 .partitions(commentsPartitions)
                 .replicas(commentsReplicas)
                 .build();
@@ -145,7 +145,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic heaterTopic() {
-        return  TopicBuilder.name(heaterTopic)
+        return TopicBuilder.name(heaterTopic)
                 .partitions(heaterPartitions)
                 .replicas(heaterReplicas)
                 .build();

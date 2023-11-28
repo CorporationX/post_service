@@ -34,7 +34,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -90,7 +92,7 @@ public class FeedService {
                             LinkedHashSet<PostPair> posts = redisFeed.getPosts();
 
                             log.info("Redis Feed exist in Redis, User with ID: {}, has {} amount of posts in feed", userId, posts.size());
-                            List<PostPair> postPairs = new ArrayList<>(posts);
+                            LinkedList<PostPair> postPairs = new LinkedList<>(posts);
 
                             int amountOfPosts = postPairs.size();
 
@@ -99,7 +101,7 @@ public class FeedService {
 
                                 postPairs.subList(maxFeedInRedis - 1, amountOfPosts).clear();
                             }
-                            postPairs.add(0, postPair);
+                            postPairs.addFirst(postPair);
                             redisFeed.setPosts(new LinkedHashSet<>(postPairs));
 
                             updateFeed(userId, redisFeed);
@@ -122,16 +124,14 @@ public class FeedService {
                     .ifPresent(redisFeed -> {
                         log.info("Feed for User with ID: {} exist in Redis. Attempting to delete Post with ID: {} from user feed", userId, postId);
 
-                        List<PostPair> postPairs = new ArrayList<>(redisFeed.getPosts());
+                        LinkedHashSet<PostPair> postPairs = redisFeed.getPosts();
 
                         postPairs.stream()
                                 .filter(postPair -> postPair.postId() == postId)
                                 .findFirst()
                                 .ifPresent(postPair -> {
-
                                     redisFeed.getPosts().remove(postPair);
                                     updateFeed(userId, redisFeed);
-
                                 });
                     });
         });
@@ -200,7 +200,7 @@ public class FeedService {
                             List<RedisCommentDto> commentDtos = redisPost.getCommentsDto();
 
                             commentDtos.stream()
-                                    .filter(comment -> comment.getId() == updatedComment.getId())
+                                    .filter(comment -> Objects.equals(comment.getId(), updatedComment.getId()))
                                     .findFirst()
                                     .ifPresent(oldComment -> {
                                         log.info("Comment with ID: {} is present in Post. Attempting to update", postId);
@@ -249,17 +249,18 @@ public class FeedService {
         redisCacheService.findRedisPostBy(postId)
                 .ifPresentOrElse(
                         redisPost -> {
-                            log.info("Attempting to decrement post like to Post with ID: {}", postId);
 
                             if (likeAction.equals(LikeAction.ADD)) {
+                                log.info("Attempting to increment post like to Post with ID: {}", postId);
                                 redisPost.incrementPostLike();
                             } else {
+                                log.info("Attempting to decrement post like to Post with ID: {}", postId);
                                 redisPost.decrementPostLike();
                             }
 
                             redisPost.incrementPostVersion();
                             redisCacheService.updateRedisPost(postId, redisPost);
-                            log.info("Post with ID: {} has been successfully decremented his like and updated. Amount of likes {}", postId, redisPost.getPostLikes());
+                            log.info("Post with ID: {} has been successfully updated. Amount of likes {}", postId, redisPost.getPostLikes());
                         },
                         () -> {
                             log.warn("Post with ID {} not found in Redis, attempting to retrieve it from the Database and save it in Redis", postId);
@@ -283,8 +284,10 @@ public class FeedService {
                                     .ifPresent(commentDto -> {
 
                                         if (likeAction.equals(LikeAction.ADD)) {
+                                            log.info("Attempting to increment comment like to Comment with ID: {}", commentId);
                                             commentDto.incrementCommentLikes();
                                         } else {
+                                            log.info("Attempting to decrement comment like to Comment with ID: {}", commentId);
                                             commentDto.decrementCommentLikes();
                                         }
 
@@ -295,7 +298,7 @@ public class FeedService {
                                         redisPost.incrementPostVersion();
 
                                         redisCacheService.updateRedisPost(postId, redisPost);
-                                        log.info("Comment with ID: {} has been successfully incremented his like and updated. Amount of likes {}", postId, commentDto.getAmountOfLikes());
+                                        log.info("Comment with ID: {} has been successfully updated. Amount of likes {}", postId, commentDto.getAmountOfLikes());
                                     });
                         },
                         () -> {
@@ -347,9 +350,9 @@ public class FeedService {
                     .collect(Collectors.toList());
 
             List<RedisPost> redisPosts = postService.findRedisPostsByAndCacheThemIfNotExist(postIds);
-            log.info("Found {} posts for User with ID: {}", redisPosts.size(), userId);
 
             int amountOfPosts = redisPosts.size();
+            log.info("Found {} posts for User with ID: {}", amountOfPosts, userId);
 
             if (amountOfPosts < responseFeedSize) {
                 log.warn("Current amount of posts in the feed are less then needed. Current amount: {}. Required amount: {}.", amountOfPosts, responseFeedSize);
@@ -357,7 +360,10 @@ public class FeedService {
                 List<RedisPost> missingPosts = findMissingPostsAndCacheThem(postIds, userId, amountOfPosts);
                 redisPosts.addAll(missingPosts);
 
-                log.info("Added missing posts to user feed. Number of missing posts: {}", missingPosts.size());
+                int amountOfMissingPosts = missingPosts.size();
+                int required = responseFeedSize - (amountOfPosts + amountOfMissingPosts);
+                log.info("Added {} missing posts to the user feed. Current post count: {}. Additional posts required: {}",
+                        amountOfMissingPosts, redisPosts.size(), required);
             }
             List<Long> postViewIds = redisPosts.stream()
                     .map(RedisPost::getPostId)
@@ -424,7 +430,7 @@ public class FeedService {
                 int startIndex = indexOfPost + 1;
                 int endIndex = Math.min(startIndex + responseFeedSize, amountOfPostsInRedis);
 
-                List<Long> nextTwentyPostsIds = postIds.subList(startIndex, endIndex); //1
+                List<Long> nextTwentyPostsIds = postIds.subList(startIndex, endIndex);
                 log.info("Found {} posts starting from the post with ID: {}", nextTwentyPostsIds.size(), postId);
 
                 List<RedisPost> responseList = nextTwentyPostsIds.stream()
@@ -444,11 +450,9 @@ public class FeedService {
             }
             log.warn("The index of the Post with ID: {} was not found in the Redis feed." +
                     " Attempting to find posts based on the user's subscriptions, starting from required Post", postId);
-
             return buildFeedFromDatabaseFromPostBy(postId, userId, maxRequiredAmount);
         }
         log.warn("Redis Feed doesn't exist in Redis for User with ID: {}. Attempting to build feed from database", userId);
-
         return buildFeedFromDatabaseFromPostBy(postId, userId, maxFeedInRedis);
     }
 
