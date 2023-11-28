@@ -40,24 +40,24 @@ spring:
       topics:
         post:
           name: posts
-          partitions: 6
-          replicas: 2
+          partitions: 5
+          replicas: 1
         post-views:
           name: post-views
-          partitions: 9
-          replicas: 2
+          partitions: 6
+          replicas: 1
         likes:
           name: likes
-          partitions: 9
-          replicas: 2
+          partitions: 6
+          replicas: 1
         comments:
           name: comments
           partitions: 3
-          replicas: 2
+          replicas: 1
         heater:
           name: heater
           partitions: 3
-          replicas: 2
+          replicas: 1
       async:
         thread-pool-settings:
           post:
