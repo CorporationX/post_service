@@ -1,20 +1,24 @@
-package faang.school.postservice.dto.user;
+package faang.school.postservice.dto.redis.cash;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Version;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
 @Builder
 @NoArgsConstructor
-public class UserDto {
-    private Long id;
+@AllArgsConstructor
+public class UserCache implements Serializable {
+
+    private String id;
     private String username;
-    private String email;
     private List<Long> followedUserIds;
     private List<Long> followersUserIds;
+    @Version
+    private long version;
 }
