@@ -1,0 +1,12 @@
+author_banner:
+  count_offensive_content_for_ban: 5
+  start_scheduler_cron: 0 0 0 * * * # every day at 00:00
+
+news_feed:
+  redis:
+    cache:
+      post_ttl: 3600 # 1 hour
+      user_ttl: 3600 # 1 hour
+      comment_size: 3
+      key_name_post: "Post: "
+      key_name_user: "User: "

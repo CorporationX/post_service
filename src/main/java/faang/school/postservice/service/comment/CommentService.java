@@ -1,14 +1,16 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.redis.CommentEventDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
-
+import faang.school.postservice.service.cache.UserCacheService;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,9 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final PostService postService;
     private final CommentEventPublisher commentEventPublisher;
+    private final UserServiceClient userServiceClient;
+    private final UserCacheService userCacheService;
+    private final UserContext userContext;
 
     public CommentDto createComment(CommentDto commentDto) {
         if (commentDto.getCreatedAt() == null) {
@@ -34,6 +39,9 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(commentDto);
         commentRepository.save(comment);
         commentEventPublisher.publish(comment);
+
+        UserDto user = userServiceClient.getUser(userContext.getUserId());
+        userCacheService.save(user);
         return commentDto;
     }
 

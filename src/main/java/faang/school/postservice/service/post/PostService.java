@@ -1,11 +1,16 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.dto.redis.cash.PostCache;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.redis.PostCacheMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.cache.PostCacheService;
+import faang.school.postservice.service.cache.UserCacheService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -26,6 +29,10 @@ public class PostService {
     private final PostValidator postValidator;
     @Value("${author_banner.count_offensive_content_for_ban}")
     private long countOffensiveContentForBan;
+    private final PostCacheService postCacheService;
+    private final PostCacheMapper postCacheMapper;
+    private final UserServiceClient userServiceClient;
+    private final UserCacheService userCacheService;
 
     public Post getPostById(long postId) {
         return postRepository.findById(postId)
@@ -54,6 +61,12 @@ public class PostService {
         postValidator.validatePostByUser(post, userId);
         postValidator.isPublished(post);
         post.setPublished(true);
+
+        PostCache postCache = postCacheMapper.toDto(post);
+        postCacheService.save(postCache);
+
+        UserDto user = userServiceClient.getUser(userId);
+        userCacheService.save(user);
     }
 
     @Transactional
@@ -62,6 +75,7 @@ public class PostService {
         postValidator.validatePostByProject(post, projectId);
         postValidator.isPublished(post);
         post.setPublished(true);
+        postCacheService.save(postCacheMapper.toDto(post));
     }
 
     @Transactional
@@ -70,7 +84,10 @@ public class PostService {
         definitionId(postDto);
         postValidator.validatePostToUpdate(post, postDto);
 
-        postRepository.save(postMapper.toEntity(postDto));
+        Post save = postRepository.save(postMapper.toEntity(postDto));
+        if (save.isPublished()) {
+            postCacheService.update(postCacheMapper.toDto(save));
+        }
     }
 
     @Transactional
@@ -81,6 +98,8 @@ public class PostService {
         post.setDeleted(true);
 
         postRepository.save(post);
+
+        postCacheService.delete(postId);
     }
 
     @Transactional
