@@ -5,6 +5,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.messaging.kafka.events.CommentEvent;
 import faang.school.postservice.messaging.kafka.publishing.KafkaCommentProducer;
+import faang.school.postservice.messaging.redis.publisher.CommentEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
@@ -24,6 +25,7 @@ public class CommentService {
     private final ModerationDictionary moderationDictionary;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
+    private final CommentEventPublisher commentEventPublisher;
     private final KafkaCommentProducer commentProducer;
 
     public Comment findExistingComment(long commentId) {
@@ -53,6 +55,8 @@ public class CommentService {
 
         Comment comment = commentMapper.toEntity(commentDto);
         Comment savedComment = commentRepository.save(comment);
+
+        commentEventPublisher.publishCommentEvent(savedComment);
 
         commentProducer.publish(CommentEvent.builder()
                 .id(savedComment.getId())
