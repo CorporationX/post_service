@@ -77,7 +77,7 @@ class PostServiceTest {
                 .authorId(1L)
                 .build();
 
-        doThrow(FeignException.class).when(userServiceClient).getUser(1L);
+        doThrow(FeignException.class).when(userServiceClient).getUserById(1L);
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> postService.createDraftPost(postDto));

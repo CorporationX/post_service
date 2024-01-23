@@ -23,6 +23,14 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
+
+    @Transactional(readOnly = true)
+    public PostDto getPostById(long postId) {
+        Post post = postRepository.findByIdAndPublishedIsTrueAndDeletedIsFalse(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not published or deleted"));
+        return postMapper.toDto(post);
+    }
+
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
         validateIdPostDto(postDto);
@@ -35,7 +43,7 @@ public class PostService {
 
     @Transactional
     public PostDto publishPost(Long id) {
-        Post post = validatePostExist(id);
+        Post post = getPostIfExist(id);
 
         if (post.isPublished() || post.isDeleted()) {
             throw new DataValidationException("Post is already published or deleted");
@@ -50,7 +58,7 @@ public class PostService {
     public PostDto updatePost(PostDto postDto) {
         validateIdPostDto(postDto);
         validateAuthorExist(postDto);
-        Post post = validatePostExist(postDto.getId());
+        Post post = getPostIfExist(postDto.getId());
 
         post.setContent(postDto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
@@ -68,7 +76,7 @@ public class PostService {
     private void validateAuthorExist(PostDto postDto) {
         if (postDto.getAuthorId() != null) {
             try {
-                userServiceClient.getUser(postDto.getAuthorId());
+                userServiceClient.getUserById(postDto.getAuthorId());
             } catch (FeignException e) {
                 throw new EntityNotFoundException("User with the specified authorId does not exist");
             }
@@ -81,7 +89,7 @@ public class PostService {
         }
     }
 
-    private Post validatePostExist(Long id) {
+    public Post getPostIfExist(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Post with the specified id does not exist"));
     }
