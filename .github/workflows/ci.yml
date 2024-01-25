@@ -1,13 +1,26 @@
-name: learn-github-actions
-run-name: ${{ github.actor }} is learning GitHub Actions
-on: [push]
+name: Run Tests
+
+on:
+  pull_request:
+    branches:
+      - cerberus-master-bc2
+
 jobs:
-  check-bats-version:
+  test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Java
+        uses: actions/setup-java@v2
         with:
-          node-version: '14'
-      - run: npm install -g bats
-      - run: bats -v
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Run Tests
+        run: ./gradlew test
