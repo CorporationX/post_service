@@ -3,24 +3,19 @@ name: Run Tests
 on:
   pull_request:
     branches:
-      - cerberus-master-bc2
+      - feature/pipline-BC-tasknumber-BJS2-1676
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
+      - uses: actions/checkout@v3
       - name: Set up Java
         uses: actions/setup-java@v2
         with:
           distribution: 'temurin'
           java-version: '17'
-
       - name: Build with Gradle
         run: ./gradlew build
-
       - name: Run Tests
         run: ./gradlew test
