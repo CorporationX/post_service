@@ -3,7 +3,7 @@ name: Run Tests
 on:
   pull_request:
     branches:
-      - feature/pipline-BC-tasknumber-BJS2-1676
+      - feature/pipeline-BC-tasknumber-BJS2-1676
 
 jobs:
   test:
