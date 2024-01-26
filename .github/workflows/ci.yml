@@ -3,7 +3,7 @@ name: Run Tests
 on:
   pull_request:
     branches:
-      - feature/pipeline-BC-tasknumber-BJS2-1676
+      - cerberus-master-bc2
 
 jobs:
   test:
