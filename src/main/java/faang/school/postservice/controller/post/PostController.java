@@ -13,11 +13,9 @@ public class PostController {
     private final PostValidator postValidator;
 
     public PostDto createDraftPost(PostDto postDto) {
-        postValidator.validateAuthor(postDto);
+        postValidator.validateAuthorCount(postDto);
         postValidator.validateContentExists(postDto);
 
-
-
-        return null;
+        return postService.createDraftPost(postDto);
     }
 }
