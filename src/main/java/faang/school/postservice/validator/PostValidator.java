@@ -12,4 +12,13 @@ public class PostValidator {
             throw new IllegalArgumentException("Post content cannot be empty");
         }
     }
+
+    public void validateOwnerPost(PostDto postDto) {
+        if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
+            throw new IllegalArgumentException("Post cannot belong to both author and project");
+        }
+        if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
+            throw new IllegalArgumentException("Post must belong to either author or project");
+        }
+    }
 }

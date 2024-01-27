@@ -16,12 +16,15 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
 
+    @Transactional
     public void createPostDraft(PostDto postDto) {
         postValidator.validatePostContent(postDto);
+        postValidator.validateOwnerPost(postDto);
         postRepository.save(postMapper.toEntity(postDto));
     }
 
@@ -29,11 +32,13 @@ public class PostService {
     public void publishPost(long postId) {
         Post post = getPostById(postId);
         post.setPublished(true);
+        postRepository.save(post);
     }
 
     @Transactional
     public void updatePost(long postId, PostDto postDto) {
         Post post = getPostById(postId);
+        postValidator.validatePostContent(postDto);
         post.setContent(postDto.getContent());
         postRepository.save(post);
     }
@@ -51,38 +56,38 @@ public class PostService {
     }
 
     @Transactional
-    public List<Post> getAllAuthorDrafts(long authorId) {
-        List<Post> authorPosts = postRepository.findByAuthorId(authorId);
-        return authorPosts.stream()
-                .filter(post ->!post.isPublished())
-                .filter(post ->!post.isDeleted())
+    public List<PostDto> getAuthorDrafts(long authorId) {
+        List<Post> sortedPosts = postRepository.findByAuthorId(authorId).stream()
+                .filter(post -> !post.isPublished())
+                .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getPublishedAt)).toList();
+        return postMapper.toDtoList(sortedPosts);
     }
 
     @Transactional
-    public List<Post> getAllProjectDrafts(long projectId) {
-        List<Post> authorPosts = postRepository.findByProjectId(projectId);
-        return authorPosts.stream()
-                .filter(post ->!post.isPublished())
-                .filter(post ->!post.isDeleted())
+    public List<PostDto> getProjectDrafts(long projectId) {
+        List<Post> sortedPosts = postRepository.findByProjectId(projectId).stream()
+                .filter(post -> !post.isPublished())
+                .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getPublishedAt)).toList();
+        return postMapper.toDtoList(sortedPosts);
     }
 
     @Transactional
-    public List<Post> getAllAuthorPosts(long authorId) {
-        List<Post> authorPosts = postRepository.findByAuthorId(authorId);
-        return authorPosts.stream()
+    public List<PostDto> getAuthorPosts(long authorId) {
+        List<Post> sortedPosts = postRepository.findByAuthorId(authorId).stream()
                 .filter(Post::isPublished)
-                .filter(post ->!post.isDeleted())
+                .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getPublishedAt)).toList();
+        return postMapper.toDtoList(sortedPosts);
     }
 
     @Transactional
-    public List<Post> getAllProjectPosts(long projectId) {
-        List<Post> authorPosts = postRepository.findByProjectId(projectId);
-        return authorPosts.stream()
+    public List<PostDto> getProjectPosts(long projectId) {
+        List<Post> sortedPosts = postRepository.findByProjectId(projectId).stream()
                 .filter(Post::isPublished)
-                .filter(post ->!post.isDeleted())
+                .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getPublishedAt)).toList();
+        return postMapper.toDtoList(sortedPosts);
     }
 }
