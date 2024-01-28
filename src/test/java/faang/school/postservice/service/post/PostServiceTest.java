@@ -5,7 +5,9 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.post.PostMapperImpl;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.Test;
@@ -16,26 +18,27 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
     @Mock
-    private  PostValidator postValidator;
+    private PostValidator postValidator;
     @Mock
-    private  PostRepository postRepository;
+    private PostRepository postRepository;
     @Mock
-    private  UserServiceClient userServiceClient;
+    private UserServiceClient userServiceClient;
     @Mock
-    private  ProjectServiceClient projectServiceClient;
+    private ProjectServiceClient projectServiceClient;
     @Spy
     private PostMapperImpl postMapper = new PostMapperImpl();
 
     @InjectMocks
-    private  PostService postService;
+    private PostService postService;
 
     private final PostDto postDto = new PostDto();
-
 
 
     @Test
@@ -65,12 +68,12 @@ class PostServiceTest {
         Mockito.doThrow(new DataValidationException("У поста должен быть только один автор"))
                 .when(postValidator).validateAuthorExists(Mockito.any(), Mockito.any());
 
-        assertThrows(DataValidationException.class, ()-> postService.createDraftPost(postDto));
+        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto));
     }
 
     @Test
     void CreateDraftWithNonExistingCreatorTest() {
-        assertThrows(IllegalArgumentException.class, ()-> postService.createDraftPost(postDto));
+        assertThrows(IllegalArgumentException.class, () -> postService.createDraftPost(postDto));
     }
 
     @Test
@@ -82,5 +85,37 @@ class PostServiceTest {
         postService.createDraftPost(postDto);
 
         Mockito.verify(postRepository, Mockito.times(1)).save(Mockito.any());
+    }
+
+    @Test
+    void publishPostIncorrectIdTest() {
+        long id = 1L;
+        Mockito.when(postRepository.findById(1L))
+                .thenThrow(new EntityNotFoundException("Пост с указанным ID не существует"));
+        assertThrows(EntityNotFoundException.class, () -> postService.publishPost(id));
+    }
+
+    @Test
+    void publishAPublishedPostTest() {
+        long id = 1L;
+        Post post = new Post();
+        post.setId(id);
+
+        Mockito.when(postRepository.findById(id)).thenReturn(Optional.of(post));
+        Mockito.doThrow(new DataValidationException("Пост уже опубликован"))
+                .when(postValidator).validateIsNotPublished(Mockito.any());
+
+        assertThrows(DataValidationException.class, () -> postService.publishPost(id));
+    }
+
+    @Test
+    void publishCorrectPostTest() {
+        long id = 1L;
+        Post post = new Post();
+        post.setId(id);
+
+        Mockito.when(postRepository.findById(id)).thenReturn(Optional.of(post));
+        postService.publishPost(id);
+        Mockito.verify(postRepository, Mockito.times(1)).save(post);
     }
 }

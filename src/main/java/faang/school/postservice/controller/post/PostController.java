@@ -4,7 +4,6 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,5 +20,9 @@ public class PostController {
         postValidator.validateContentExists(postDto);
 
         return postService.createDraftPost(postDto);
+    }
+
+    public PostDto publishPost(long id) {
+        return postService.publishPost(id);
     }
 }
