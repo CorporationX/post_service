@@ -29,6 +29,8 @@ public class PostService {
             author = userServiceClient.getUser(postDto.getAuthorId());
         } else if (postDto.getProjectId() != null) {
             project = projectServiceClient.getProject(postDto.getProjectId());
+        } else {
+            throw new IllegalArgumentException("Необходимо указать автора или проект");
         }
         postValidator.validateAuthorExists(author, project);
 
