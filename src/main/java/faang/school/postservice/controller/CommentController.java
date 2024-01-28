@@ -24,7 +24,6 @@ public class CommentController {
     private final CommentService commentService;
     private final CommentValidator commentValidator;
 
-
     @PostMapping("/{postId}/comments")
     public CommentDto createComment(@PathVariable Long postId, @RequestBody CommentDto commentDto) {
         commentValidator.validateIdIsNotNull(postId);
@@ -42,7 +41,7 @@ public class CommentController {
     }
 
     @GetMapping("/{postId}/comments")
-    public List<CommentDto> getComments(@PathVariable Long postId) {
+    public List<CommentDto> getCommentsByPostId(@PathVariable Long postId) {
         commentValidator.validateIdIsNotNull(postId);
         return commentService.getCommentsByPostId(postId);
     }

@@ -18,5 +18,4 @@ public class CommentDto {
     private Long authorId;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long postId;
-
 }

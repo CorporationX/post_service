@@ -27,7 +27,7 @@ public class CommentService {
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
 
-// не забыть логи
+    // не забыть логи
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         userServiceClient.getUser(userContext.getUserId()); // проверка на существование юзера
@@ -42,7 +42,9 @@ public class CommentService {
     public CommentDto updateComment(Long postId, Long commentId, CommentEditDto commentEditDto) {
         var commentToUpdate = getCommentFromPost(postId, commentId);
         commentValidator.validateOwnerComment(commentToUpdate.getAuthorId(), userContext.getUserId());
-        return commentMapper.toDto(commentMapper.update(commentToUpdate, commentEditDto));
+        var comment = commentMapper.update(commentToUpdate, commentEditDto);
+        commentRepository.save(comment);
+        return commentMapper.toDto(comment);
     }
 
     @Transactional(readOnly = true)
@@ -64,9 +66,9 @@ public class CommentService {
         var post = postService.getPostById(postId);
         List<Comment> comments = post.getComments();
         return comments.stream()
-                .filter(commentFromList-> commentId.equals(commentFromList.getId()))
-                        .findAny()
-                .orElseThrow(()-> new DataValidationException("Comment has not been found"));
+                .filter(commentFromList -> commentId.equals(commentFromList.getId()))
+                .findAny()
+                .orElseThrow(() -> new DataValidationException("Comment has not been found"));
     }
 }
 

@@ -11,6 +11,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -47,10 +48,36 @@ class CommentServiceTest {
     private CommentService commentService;
     @Captor
     private ArgumentCaptor<Comment> commentCaptor;
+    private Long postId = 1L;
+    private Long commentId = 1L;
+    private Comment comment;
+    private Comment commentForTestException;
+    private List<Comment> comments;
+    private List<Comment> someCommentsForException;
+    private Post post;
+    private Post postForTestException;
+
+    @BeforeEach
+    void setUp() {
+        postId = 1L;
+        commentId = 1L;
+        comment = Comment.builder()
+                .id(commentId)
+                .content("afsd").build();
+        commentForTestException = Comment.builder()
+                .id(2).build();
+        comments = List.of(comment);
+        someCommentsForException = List.of(commentForTestException);
+        post = Post.builder()
+                .id(postId)
+                .comments(comments).build();
+        postForTestException = Post.builder()
+                .id(postId)
+                .comments(someCommentsForException).build();
+    }
 
     @Test
     void testCreateCommentSavesComment() {
-        var postId = 1L;
         var userId = 1L;
         var commentDto = CommentDto.builder()
                 .content("afsd").build();
@@ -67,57 +94,33 @@ class CommentServiceTest {
 
     @Test
     void testCreateCommentReturnsCommentDto() {
-        var comment = Comment.builder()
-                .content("afsd").build();
         var commentDto = CommentDto.builder()
+                .id(commentId)
                 .content("afsd").build();
         var returnedcommentDto = CommentDto.builder()
-                .id(0L)
+                .id(commentId)
                 .authorId(0L)
                 .content("afsd").build();
-
         when(commentRepository.save(comment)).thenReturn(comment);
-
-        assertEquals(returnedcommentDto, commentService.createComment(1L, commentDto));
+        assertEquals(returnedcommentDto, commentService.createComment(postId, commentDto));
     }
 
     @Test
     void testUpdateComment() {
-        var postId = 1L;
-        var commentId = 1L;
-        var comment = Comment.builder()
-                .id(commentId)
-                .content("afsd").build();
-        List<Comment> comments = List.of(comment);
-        var post = Post.builder()
-                .id(postId)
-                .comments(comments).build();
         var commentEditDto = CommentEditDto.builder()
                 .content("qwerty").build();
         var returnedcommentDto = CommentDto.builder()
                 .id(commentId)
                 .authorId(0L)
                 .content("qwerty").build();
-
         when(postService.getPostById(postId)).thenReturn(post);
-
         assertEquals(returnedcommentDto, commentService.updateComment(postId, commentId, commentEditDto));
     }
 
     @Test
     void testUpdateCommentThrowsDataValidationException() {
-        var postId = 1L;
-        var commentId = 1L;
         var commentEditDto = CommentEditDto.builder().build();
-        var comment = Comment.builder()
-                .id(2).build();
-        List<Comment> comments = List.of(comment);
-        var post = Post.builder()
-                .id(postId)
-                .comments(comments).build();
-
-        when(postService.getPostById(postId)).thenReturn(post);
-
+        when(postService.getPostById(postId)).thenReturn(postForTestException);
         assertThrows(DataValidationException.class, () -> {
             commentService.updateComment(postId, commentId, commentEditDto);
         });
@@ -126,7 +129,6 @@ class CommentServiceTest {
     @Test
     void testSortAndGetCommentsByPostId() {
         var dtoId = 0L;
-        var postId = 1L;
         LocalDateTime createdAt = LocalDateTime.now();
         List<CommentDto> returnedComments = List.of(CommentDto.builder()
                         .id(dtoId)
@@ -138,44 +140,20 @@ class CommentServiceTest {
                         .createdAt(createdAt).build(),
                 Comment.builder()
                         .createdAt(createdAt).build());
-
         when(commentRepository.findAllByPostId(postId)).thenReturn(comments);
-
         assertEquals(returnedComments, commentService.getCommentsByPostId(postId));
     }
 
     @Test
     void testDeleteComment() {
-        var postId = 1L;
-        var commentId = 1L;
-        var comment = Comment.builder()
-                .id(commentId)
-                .content("afsd").build();
-        List<Comment> comments = List.of(comment);
-        var post = Post.builder()
-                .id(postId)
-                .comments(comments).build();
-
         when(postService.getPostById(postId)).thenReturn(post);
         commentService.deleteComment(postId, commentId);
-
         verify(commentRepository, times(1)).delete(comment);
     }
 
     @Test
     void testDeleteCommentThrowsDataValidationException() {
-        var postId = 1L;
-        var commentId = 1L;
-        var comment = Comment.builder()
-                .id(2)
-                .build();
-        List<Comment> comments = List.of(comment);
-        var post = Post.builder()
-                .id(postId)
-                .comments(comments).build();
-
-        when(postService.getPostById(postId)).thenReturn(post);
-
+        when(postService.getPostById(postId)).thenReturn(postForTestException);
         assertThrows(DataValidationException.class, () -> {
             commentService.deleteComment(postId, commentId);
         });

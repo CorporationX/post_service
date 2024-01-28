@@ -42,7 +42,7 @@ class CommentControllerTest {
     @Test
     void testGetCommentsShouldCallServiceMethod() {
         var postId = 1L;
-        commentController.getComments(postId);
+        commentController.getCommentsByPostId(postId);
         verify(commentService, times(1)).getCommentsByPostId(postId);
     }
 
