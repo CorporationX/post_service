@@ -39,7 +39,7 @@ class PostServiceTest {
 
 
     @Test
-    void CreateDraftWithAuthorTest() {
+    void createDraftWithAuthorTest() {
         postDto.setAuthorId(1L);
         Mockito.when(userServiceClient.getUser(postDto.getAuthorId())).thenReturn(null);
 
@@ -48,7 +48,7 @@ class PostServiceTest {
     }
 
     @Test
-    void CreateDraftWithProjectTest() {
+    void createDraftWithProjectTest() {
         postDto.setProjectId(1L);
         Mockito.when(projectServiceClient.getProject(postDto.getProjectId())).thenReturn(null);
 
@@ -57,7 +57,7 @@ class PostServiceTest {
     }
 
     @Test
-    void CreateDraftWithAuthorAndProjectTest() {
+    void createDraftWithAuthorAndProjectTest() {
         postDto.setAuthorId(1L);
         postDto.setProjectId(1L);
 
@@ -69,12 +69,12 @@ class PostServiceTest {
     }
 
     @Test
-    void CreateDraftWithNonExistingCreatorTest() {
+    void createDraftWithNonExistingCreatorTest() {
         assertThrows(IllegalArgumentException.class, ()-> postService.createDraftPost(postDto));
     }
 
     @Test
-    void CreateDraftWithCorrectDataTest() {
+    void createDraftWithCorrectDataTest() {
         postDto.setAuthorId(1L);
 
         Mockito.when(userServiceClient.getUser(postDto.getAuthorId()))
