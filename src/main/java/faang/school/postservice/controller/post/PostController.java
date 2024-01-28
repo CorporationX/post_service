@@ -5,14 +5,18 @@ import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
     private final PostValidator postValidator;
 
-    public PostDto createDraftPost(PostDto postDto) {
+    @PostMapping("/post")
+    public PostDto createDraftPost(@RequestBody PostDto postDto) {
         postValidator.validateAuthorCount(postDto);
         postValidator.validateContentExists(postDto);
 
