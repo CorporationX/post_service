@@ -9,10 +9,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(MockitoExtension.class)
 class PostControllerTest {
@@ -28,7 +29,7 @@ class PostControllerTest {
     void createDraftPostWithNoAuthorTest() {
         PostDto postDto = new PostDto();
         Mockito.doThrow(new DataValidationException("У поста должен быть автор")).when(postValidator).validateAuthorCount(postDto);
-        assertThrows(DataValidationException.class, ()-> postController.createDraftPost(postDto));
+        assertThrows(DataValidationException.class, () -> postController.createDraftPost(postDto));
     }
 
     @Test
@@ -37,7 +38,7 @@ class PostControllerTest {
         postDto.setAuthorId(1L);
         postDto.setProjectId(1L);
         Mockito.doThrow(new DataValidationException("У поста должен быть только один автор")).when(postValidator).validateAuthorCount(postDto);
-        assertThrows(DataValidationException.class, ()-> postController.createDraftPost(postDto));
+        assertThrows(DataValidationException.class, () -> postController.createDraftPost(postDto));
     }
 
     @Test
@@ -45,18 +46,66 @@ class PostControllerTest {
         PostDto postDto = new PostDto();
         postDto.setAuthorId(1L);
         Mockito.doThrow(new DataValidationException("Пост не может быть пустым")).when(postValidator).validateContentExists(postDto);
-        assertThrows(DataValidationException.class, ()-> postController.createDraftPost(postDto));
+        assertThrows(DataValidationException.class, () -> postController.createDraftPost(postDto));
 
         postDto.setContent("");
-        assertThrows(DataValidationException.class, ()-> postController.createDraftPost(postDto));
+        assertThrows(DataValidationException.class, () -> postController.createDraftPost(postDto));
     }
 
     @Test
-    void shouldCreateDraftPost(){
+    void shouldCreateDraftPost() {
         PostDto postDto = new PostDto();
         postDto.setAuthorId(1L);
         postDto.setContent("test");
         postController.createDraftPost(postDto);
         Mockito.verify(postService, Mockito.times(1)).createDraftPost(postDto);
+    }
+
+    @Test
+    void updatePostWithEmptyContentTest() {
+        PostDto postDto = new PostDto();
+        postDto.setContent("");
+        doThrow(new DataValidationException("Пост не может быть пустым"))
+                .when(postValidator).validateContentExists(postDto);
+        assertThrows(DataValidationException.class, () -> postController.updatePost(postDto));
+    }
+
+    @Test
+    void updatePostWithNoAuthorTest() {
+        PostDto postDto = new PostDto();
+        postDto.setContent("test");
+        doThrow(new DataValidationException("У поста должен быть автор"))
+                .when(postValidator).validateAuthorCount(postDto);
+        assertThrows(DataValidationException.class, () -> postController.updatePost(postDto));
+    }
+
+    @Test
+    void updatePostWithoutIdTest() {
+        PostDto postDto = new PostDto();
+        postDto.setAuthorId(1L);
+        postDto.setContent("test");
+        doThrow(new DataValidationException("Такого поста не существует"))
+                .when(postValidator).validateIdExists(postDto);
+        assertThrows(DataValidationException.class, () -> postController.updatePost(postDto));
+    }
+
+    @Test
+    void updatePostWithTwoAuthorsTest() {
+        PostDto postDto = new PostDto();
+        postDto.setAuthorId(1L);
+        postDto.setContent("test");
+        postDto.setProjectId(1L);
+        doThrow(new DataValidationException("У поста должен быть только один автор"))
+                .when(postValidator).validateAuthorCount(postDto);
+        assertThrows(DataValidationException.class, () -> postController.updatePost(postDto));
+    }
+
+    @Test
+    void updateCorrectPostTest() {
+        PostDto postDto = new PostDto();
+        postDto.setAuthorId(1L);
+        postDto.setContent("test");
+        postController.updatePost(postDto);
+        Mockito.verify(postService, Mockito.times(1)).updatePost(postDto);
     }
 }

@@ -54,4 +54,16 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         return postMapper.toDto(postRepository.save(post));
     }
+
+    public PostDto updatePost(PostDto postDto) {
+        Post post = findById(postDto.getId());
+        postValidator.validateCreatorNotChanged(postDto, post);
+
+        return savePost(postDto);
+    }
+
+    private Post findById(long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Пост с указанным ID не существует"));
+    }
 }

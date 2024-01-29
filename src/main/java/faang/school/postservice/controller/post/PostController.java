@@ -5,6 +5,7 @@ import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,5 +25,14 @@ public class PostController {
 
     public PostDto publishPost(long id) {
         return postService.publishPost(id);
+    }
+
+    @PutMapping("/post")
+    public PostDto updatePost(@RequestBody PostDto postDto) {
+        postValidator.validateIdExists(postDto);
+        postValidator.validateContentExists(postDto);
+        postValidator.validateAuthorCount(postDto);
+
+        return postService.updatePost(postDto);
     }
 }
