@@ -11,17 +11,15 @@ class CommentValidatorTest {
     CommentValidator commentValidator = new CommentValidator();
 
     @Test
-    void testValidateIdIsNotNull() {
+    void testValidateIdIsNotLessOne() {
         assertThrows(DataValidationException.class, () -> {
-            commentValidator.validateIdIsNotNull(0L);
-            commentValidator.validateIdIsNotNull(null);
+            commentValidator.validateIdIsNotLessOne(0L);
         });
     }
 
     @Test
     void testValidateComment() {
         assertThrows(DataValidationException.class, () -> {
-            commentValidator.validateComment((CommentDto) null);
             commentValidator.validateComment(CommentDto.builder()
                     .content("  ")
                     .build());
@@ -31,7 +29,6 @@ class CommentValidatorTest {
     @Test
     void testValidateCommentEdit() {
         assertThrows(DataValidationException.class, () -> {
-            commentValidator.validateComment((CommentEditDto) null);
             commentValidator.validateComment(CommentEditDto.builder()
                     .content("  ")
                     .build());
@@ -39,9 +36,9 @@ class CommentValidatorTest {
     }
 
     @Test
-    void testValidateOwnerComment() {
+    void testCheckOwnerComment() {
         assertThrows(DataValidationException.class, () -> {
-            commentValidator.validateOwnerComment(1L, 2L);
+            commentValidator.checkOwnerComment(1L, 2L);
         });
     }
 }

@@ -19,37 +19,37 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/posts")
+@RequestMapping("/post")
 public class CommentController {
     private final CommentService commentService;
     private final CommentValidator commentValidator;
 
-    @PostMapping("/{postId}/comments")
+    @PostMapping("/{postId}/comment")
     public CommentDto createComment(@PathVariable Long postId, @RequestBody CommentDto commentDto) {
-        commentValidator.validateIdIsNotNull(postId);
+        commentValidator.validateIdIsNotLessOne(postId);
         commentValidator.validateComment(commentDto);
         return commentService.createComment(postId, commentDto);
     }
 
-    @PutMapping("/{postId}/comments/{commentId}")
+    @PutMapping("/{postId}/comment/{commentId}")
     public CommentDto updateComment(@PathVariable Long postId, @PathVariable Long commentId,
                                     @RequestBody CommentEditDto commentEditDto) {
-        commentValidator.validateIdIsNotNull(postId);
-        commentValidator.validateIdIsNotNull(commentId);
+        commentValidator.validateIdIsNotLessOne(postId);
+        commentValidator.validateIdIsNotLessOne(commentId);
         commentValidator.validateComment(commentEditDto);
         return commentService.updateComment(postId, commentId, commentEditDto);
     }
 
     @GetMapping("/{postId}/comments")
     public List<CommentDto> getCommentsByPostId(@PathVariable Long postId) {
-        commentValidator.validateIdIsNotNull(postId);
+        commentValidator.validateIdIsNotLessOne(postId);
         return commentService.getCommentsByPostId(postId);
     }
 
-    @DeleteMapping("/{postId}/comments/{commentId}")
+    @DeleteMapping("/{postId}/comment/{commentId}")
     public void deleteComment(@PathVariable Long postId, @PathVariable Long commentId) {
-        commentValidator.validateIdIsNotNull(postId);
-        commentValidator.validateIdIsNotNull(commentId);
+        commentValidator.validateIdIsNotLessOne(postId);
+        commentValidator.validateIdIsNotLessOne(commentId);
         commentService.deleteComment(postId, commentId);
     }
 }

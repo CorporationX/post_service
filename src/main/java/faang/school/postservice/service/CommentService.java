@@ -41,10 +41,12 @@ public class CommentService {
     @Transactional
     public CommentDto updateComment(Long postId, Long commentId, CommentEditDto commentEditDto) {
         var commentToUpdate = getCommentFromPost(postId, commentId);
-        commentValidator.validateOwnerComment(commentToUpdate.getAuthorId(), userContext.getUserId());
-        var comment = commentMapper.update(commentToUpdate, commentEditDto);
-        commentRepository.save(comment);
-        return commentMapper.toDto(comment);
+        commentValidator.checkOwnerComment(commentToUpdate.getAuthorId(), userContext.getUserId());
+        if (!commentEditDto.getContent().isBlank()) {
+            commentToUpdate.setContent(commentEditDto.getContent());
+        }
+        commentRepository.save(commentToUpdate);
+        return commentMapper.toDto(commentToUpdate);
     }
 
     @Transactional(readOnly = true)
@@ -58,7 +60,7 @@ public class CommentService {
     @Transactional //is it reading?
     public void deleteComment(Long postId, Long commentId) {
         var comment = getCommentFromPost(postId, commentId);
-        commentValidator.validateOwnerComment(comment.getAuthorId(), userContext.getUserId());
+        commentValidator.checkOwnerComment(comment.getAuthorId(), userContext.getUserId());
         commentRepository.delete(comment);
     }
 

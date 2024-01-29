@@ -45,11 +45,6 @@ class CommentMapperTest {
     }
 
     @Test
-    void testUpdate() {
-        assertEquals(commentUpdated, commentMapper.update(comment, commentEditDto));
-    }
-
-    @Test
     void testToDtoList() {
         assertEquals(commentsDto, commentMapper.toDtoList(comments));
     }
