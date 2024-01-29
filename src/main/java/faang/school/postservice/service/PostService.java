@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -52,42 +53,42 @@ public class PostService {
 
     public Post getPostById(long postId) {
         Optional<Post> postOpt = postRepository.findById(postId);
-        return postOpt.orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        return postOpt.orElseThrow(() -> new DataValidationException("Post not found"));
     }
 
     @Transactional
     public List<PostDto> getAuthorDrafts(long authorId) {
+        postValidator.validateAuthor(authorId);
         List<Post> sortedPosts = postRepository.findByAuthorId(authorId).stream()
-                .filter(post -> !post.isPublished())
-                .filter(post -> !post.isDeleted())
-                .sorted(Comparator.comparing(Post::getPublishedAt)).toList();
+                .filter(post -> !post.isPublished() && !post.isDeleted())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed()).toList();
         return postMapper.toDtoList(sortedPosts);
     }
 
     @Transactional
     public List<PostDto> getProjectDrafts(long projectId) {
+        postValidator.validateProject(projectId);
         List<Post> sortedPosts = postRepository.findByProjectId(projectId).stream()
-                .filter(post -> !post.isPublished())
-                .filter(post -> !post.isDeleted())
-                .sorted(Comparator.comparing(Post::getPublishedAt)).toList();
+                .filter(post -> !post.isPublished() && !post.isDeleted())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed()).toList();
         return postMapper.toDtoList(sortedPosts);
     }
 
     @Transactional
     public List<PostDto> getAuthorPosts(long authorId) {
+        postValidator.validateAuthor(authorId);
         List<Post> sortedPosts = postRepository.findByAuthorId(authorId).stream()
-                .filter(Post::isPublished)
-                .filter(post -> !post.isDeleted())
-                .sorted(Comparator.comparing(Post::getPublishedAt)).toList();
+                .filter(post -> post.isPublished() && !post.isDeleted())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed()).toList();
         return postMapper.toDtoList(sortedPosts);
     }
 
     @Transactional
     public List<PostDto> getProjectPosts(long projectId) {
+        postValidator.validateProject(projectId);
         List<Post> sortedPosts = postRepository.findByProjectId(projectId).stream()
-                .filter(Post::isPublished)
-                .filter(post -> !post.isDeleted())
-                .sorted(Comparator.comparing(Post::getPublishedAt)).toList();
+                .filter(post -> post.isPublished() && !post.isDeleted())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed()).toList();
         return postMapper.toDtoList(sortedPosts);
     }
 }
