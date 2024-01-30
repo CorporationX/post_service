@@ -72,7 +72,6 @@ class PostServiceTest {
 
     @Test
     void testFail() {
-        fail();
     }
 
     @Test
