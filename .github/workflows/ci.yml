@@ -8,8 +8,6 @@
 name: Java CI with Gradle
 
 on:
-  push:
-    branches: [ "feature/pipeline-test-BC-tasknumber" ]
   pull_request:
     branches: [ "feature/pipline-BC-tasknumber" ]
 
