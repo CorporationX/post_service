@@ -103,4 +103,23 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
     }
+
+    private List<PostDto> getSortedPublished(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isDeleted())
+                .filter(Post::isPublished)
+                .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    public List<PostDto> getPublishedPostsByUser(long userId) {
+        List<Post> foundedPosts = postRepository.findByAuthorIdWithLikes(userId);
+        return getSortedPublished(foundedPosts);
+    }
+
+    public List<PostDto> getPublishedPostsByProject(long projectId) {
+        List<Post> foundedPosts = postRepository.findByProjectIdWithLikes(projectId);
+        return getSortedPublished(foundedPosts);
+    }
 }
