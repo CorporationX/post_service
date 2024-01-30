@@ -134,4 +134,33 @@ class PostServiceTest {
 
         verify(postRepository, Mockito.times(1)).save(post);
     }
+
+    @Test
+    void deleteIncorrectPostTest() {
+        when(postRepository.findById(1L))
+                .thenThrow(new EntityNotFoundException("Пост с указанным ID не существует"));
+        assertThrows(EntityNotFoundException.class, () -> postService.deletePost(1L));
+    }
+
+    @Test
+    void deleteAlreadyDeletedPostTest() {
+        Post post = new Post();
+        post.setId(1L);
+        post.setDeleted(true);
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        assertThrows(DataValidationException.class, () -> postService.deletePost(1L));
+    }
+
+    @Test
+    void deleteCorrectPostTest() {
+        Post post = new Post();
+        post.setId(1L);
+        post.setDeleted(false);
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        postService.deletePost(1L);
+
+        assertTrue(post.isDeleted());
+    }
 }

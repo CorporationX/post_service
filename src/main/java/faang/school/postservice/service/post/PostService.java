@@ -5,6 +5,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
@@ -65,5 +66,16 @@ public class PostService {
     private Post findById(long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Пост с указанным ID не существует"));
+    }
+
+    public boolean deletePost(long id) {
+        Post post = findById(id);
+        if (post.isDeleted()) {
+            throw new DataValidationException("Поста уже удален");
+        } else {
+            post.setDeleted(true);
+            postRepository.save(post);
+            return true;
+        }
     }
 }

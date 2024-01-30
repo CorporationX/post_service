@@ -4,10 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,5 +31,10 @@ public class PostController {
         postValidator.validateAuthorCount(postDto);
 
         return postService.updatePost(postDto);
+    }
+
+    @DeleteMapping("/{id}")
+    public boolean deletePost(@PathVariable long id) {
+        return postService.deletePost(id);
     }
 }
