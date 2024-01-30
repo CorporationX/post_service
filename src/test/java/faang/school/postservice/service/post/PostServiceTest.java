@@ -18,6 +18,8 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -162,5 +164,45 @@ class PostServiceTest {
         postService.deletePost(1L);
 
         assertTrue(post.isDeleted());
+    }
+
+    @Test
+    void shouldGetDraftPostsByUser() {
+        Post deletedPost = new Post();
+        deletedPost.setDeleted(true);
+        Post publishedPost = new Post();
+        publishedPost.setPublished(true);
+        Post newDraftPost = new Post();
+        newDraftPost.setCreatedAt(LocalDateTime.of(2024, 1, 1, 0, 0));
+        Post oldDraftPost = new Post();
+        oldDraftPost.setCreatedAt(LocalDateTime.of(2021, 1, 1, 0, 0));
+        List<Post> AllUserPosts = List.of(deletedPost, publishedPost, newDraftPost, oldDraftPost);
+
+        when(postRepository.findByAuthorId(1L)).thenReturn(AllUserPosts);
+        List<PostDto> result = postService.getDraftsByUser(1L);
+
+        assertEquals(2, result.size());
+        assertEquals(postMapper.toDto(newDraftPost), result.get(0));
+        assertEquals(postMapper.toDto(oldDraftPost), result.get(1));
+    }
+
+    @Test
+    void shouldGetDraftPostsByProject() {
+        Post deletedPost = new Post();
+        deletedPost.setDeleted(true);
+        Post publishedPost = new Post();
+        publishedPost.setPublished(true);
+        Post newDraftPost = new Post();
+        newDraftPost.setCreatedAt(LocalDateTime.of(2024, 1, 1, 0, 0));
+        Post oldDraftPost = new Post();
+        oldDraftPost.setCreatedAt(LocalDateTime.of(2021, 1, 1, 0, 0));
+        List<Post> AllProjectPosts = List.of(deletedPost, publishedPost, newDraftPost, oldDraftPost);
+
+        when(postRepository.findByProjectId(1L)).thenReturn(AllProjectPosts);
+        List<PostDto> result = postService.getDraftsByProject(1L);
+
+        assertEquals(2, result.size());
+        assertEquals(postMapper.toDto(newDraftPost), result.get(0));
+        assertEquals(postMapper.toDto(oldDraftPost), result.get(1));
     }
 }

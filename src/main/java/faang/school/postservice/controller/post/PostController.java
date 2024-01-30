@@ -6,6 +6,8 @@ import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class PostController {
@@ -42,4 +44,15 @@ public class PostController {
     public PostDto getPost(@PathVariable long id) {
         return postService.getPost(id);
     }
+
+    @GetMapping("/drafts/{userId}")
+    public List<PostDto> getDraftsByUser(@PathVariable long userId) {
+        return postService.getDraftsByUser(userId);
+    }
+
+    @GetMapping("/drafts/{projectId}")
+    public List<PostDto> getDraftsByProject(@PathVariable long projectId) {
+        return postService.getDraftsByProject(projectId);
+    }
+
 }

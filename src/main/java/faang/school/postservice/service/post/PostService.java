@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -82,5 +83,24 @@ public class PostService {
     public PostDto getPost(long id) {
         Post post = findById(id);
         return postMapper.toDto(post);
+    }
+
+    public List<PostDto> getDraftsByUser(long userId) {
+        List<Post> foundedPosts = postRepository.findByAuthorId(userId);
+        return getSortedDrafts(foundedPosts);
+    }
+
+    public List<PostDto> getDraftsByProject(long projectId) {
+        List<Post> foundedPosts = postRepository.findByProjectId(projectId);
+        return getSortedDrafts(foundedPosts);
+    }
+
+    private List<PostDto> getSortedDrafts(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isDeleted())
+                .filter(post -> !post.isPublished())
+                .sorted((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()))
+                .map(postMapper::toDto)
+                .toList();
     }
 }
