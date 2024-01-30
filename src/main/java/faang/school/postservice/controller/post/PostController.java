@@ -37,4 +37,9 @@ public class PostController {
     public boolean deletePost(@PathVariable long id) {
         return postService.deletePost(id);
     }
+
+    @GetMapping("/post/{id}")
+    public PostDto getPost(@PathVariable long id) {
+        return postService.getPost(id);
+    }
 }

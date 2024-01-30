@@ -78,4 +78,9 @@ public class PostService {
             return true;
         }
     }
+
+    public PostDto getPost(long id) {
+        Post post = findById(id);
+        return postMapper.toDto(post);
+    }
 }
