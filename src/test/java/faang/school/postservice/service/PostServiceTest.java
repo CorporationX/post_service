@@ -71,6 +71,11 @@ class PostServiceTest {
     }
 
     @Test
+    void testFail() {
+        fail();
+    }
+
+    @Test
     void testCreateDraftPostValidateUserExist() {
         PostDto postDto = PostDto.builder()
                 .content("Content")
