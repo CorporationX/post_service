@@ -86,8 +86,8 @@ public class PostServiceTest {
     @Test
     public void testGetPostByIdSuccess() {
         Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-        postService.getPostById(1L);
-        Assertions.assertSame(post, postService.getPostById(1L));
+        postService.getPost(1L);
+        Assertions.assertSame(post, postService.getPost(1L));
     }
 
     // не проходят тесты при получении списка черновиков/постов,

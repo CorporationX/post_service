@@ -31,14 +31,19 @@ public class PostController {
         postService.publishPost(postId);
     }
 
-    @PutMapping("/update/{postId}")
+    @PutMapping("/{postId}")
     public void updatePost(@PathVariable long postId, @RequestBody PostDto dto) {
         postService.updatePost(postId, dto);
     }
 
-    @DeleteMapping("/delete/{postId}")
+    @DeleteMapping("/{postId}")
     public void deletePost(@PathVariable long postId) {
         postService.deletePost(postId);
+    }
+
+    @GetMapping("/{postId}")
+    public PostDto getPostById(@PathVariable long postId) {
+        return postService.getPostById(postId);
     }
 
     @GetMapping("/author/drafts/{authorId}")

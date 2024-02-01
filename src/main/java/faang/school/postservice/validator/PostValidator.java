@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,15 +14,19 @@ public class PostValidator {
 
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final PostRepository postRepo;
 
     public void validatePostContent(PostDto postDto) {
         String postContent = postDto.getContent();
-        if (postContent.isEmpty() || postContent.isBlank()) {
-            throw new DataValidationException("Post content cannot be empty");
+        if (postContent != null) {
+            if (postContent.isBlank()) {
+                throw new DataValidationException("Post content cannot be empty");
+            }
         }
+
     }
 
-    public void validateOwnerPost(PostDto postDto) {
+    public void validatePost(PostDto postDto) {
         if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
             throw new DataValidationException("Post cannot belong to both author and project");
         }

@@ -46,7 +46,7 @@ public class PostValidatorTest {
         postDto.setAuthorId(1L);
         postDto.setProjectId(1L);
         Assertions.assertThrows(DataValidationException.class, () ->
-                postValidator.validateOwnerPost(postDto));
+                postValidator.validatePost(postDto));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class PostValidatorTest {
         postDto.setAuthorId(null);
         postDto.setProjectId(null);
         Assertions.assertThrows(DataValidationException.class, () ->
-                postValidator.validateOwnerPost(postDto));
+                postValidator.validatePost(postDto));
     }
 
     @Test
@@ -63,6 +63,6 @@ public class PostValidatorTest {
         PostDto postDto = new PostDto();
         postDto.setAuthorId(1L);
         postDto.setProjectId(null);
-        Assertions.assertDoesNotThrow(() -> postValidator.validateOwnerPost(postDto));
+        Assertions.assertDoesNotThrow(() -> postValidator.validatePost(postDto));
     }
 }

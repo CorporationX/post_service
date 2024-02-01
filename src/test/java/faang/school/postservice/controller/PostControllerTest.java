@@ -76,5 +76,10 @@ public class PostControllerTest {
                 .getProjectPosts(1L);
     }
 
-
+    @Test
+    public void testPostById() {
+        postController.getPostById(1L);
+        Mockito.verify(postService, Mockito.times(1))
+                .getPostById(1L);
+    }
 }
