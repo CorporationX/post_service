@@ -7,16 +7,16 @@ import faang.school.postservice.model.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 
-@Service
+@Component
 @Slf4j
 @RequiredArgsConstructor
 public class S3Service {
-    private final AmazonS3 s3Client;
+    private final AmazonS3 amazonS3;
 
     @Value("$(services.s3.bucketName)")
     private String bucketName;
@@ -29,7 +29,7 @@ public class S3Service {
         String key = folder + file.getOriginalFilename();
         try {
             PutObjectRequest request = new PutObjectRequest(bucketName, key, file.getInputStream(), metadata);
-            s3Client.putObject(request);
+            amazonS3.putObject(request);
         }catch (Exception e){
             log.error(e.getMessage());
             throw new RuntimeException(e);
@@ -43,12 +43,12 @@ public class S3Service {
     }
 
     public void deleteFile(String key){
-        s3Client.deleteObject(bucketName, key);
+        amazonS3.deleteObject(bucketName, key);
     }
 
     public InputStream downloadFile(String key){
         try {
-            return s3Client.getObject(bucketName, key).getObjectContent();
+            return amazonS3.getObject(bucketName, key).getObjectContent();
         }catch (Exception e){
             log.error(e.getMessage());
             throw new RuntimeException(e);
