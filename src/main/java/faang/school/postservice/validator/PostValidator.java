@@ -39,4 +39,19 @@ public class PostValidator {
             throw new DataValidationException("Такого автора не существует");
         }
     }
+
+    public void validateIdExists(PostDto postDto){
+        if (postDto.getId() == null) {
+            throw new DataValidationException("Такого поста не существует");
+        }
+    }
+
+    public boolean validateCreatorNotChanged(PostDto postDto, Post post) {
+        if (postDto.getAuthorId().equals(post.getAuthorId())
+         && postDto.getProjectId().equals(post.getProjectId())) {
+            return true;
+        } else {
+            throw new DataValidationException("Создатель поста не может быть изменен");
+        }
+    }
 }
