@@ -13,7 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PostControllerTest {
@@ -107,5 +107,11 @@ class PostControllerTest {
         postDto.setContent("test");
         postController.updatePost(postDto);
         Mockito.verify(postService, Mockito.times(1)).updatePost(postDto);
+    }
+
+    @Test
+    void shouldDeletePost() {
+        postController.deletePost(1L);
+        verify(postService, times(1)).deletePost(1L);
     }
 }

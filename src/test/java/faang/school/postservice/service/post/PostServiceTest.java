@@ -18,6 +18,9 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -133,5 +136,126 @@ class PostServiceTest {
         postService.updatePost(postDto);
 
         verify(postRepository, Mockito.times(1)).save(post);
+    }
+
+    @Test
+    void deleteIncorrectPostTest() {
+        when(postRepository.findById(1L))
+                .thenThrow(new EntityNotFoundException("Пост с указанным ID не существует"));
+        assertThrows(EntityNotFoundException.class, () -> postService.deletePost(1L));
+    }
+
+    @Test
+    void deleteAlreadyDeletedPostTest() {
+        Post post = new Post();
+        post.setId(1L);
+        post.setDeleted(true);
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        assertThrows(DataValidationException.class, () -> postService.deletePost(1L));
+    }
+
+    @Test
+    void deleteCorrectPostTest() {
+        Post post = new Post();
+        post.setId(1L);
+        post.setDeleted(false);
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        postService.deletePost(1L);
+
+        assertTrue(post.isDeleted());
+    }
+
+    @Test
+    void shouldGetDraftPostsByUser() {
+        Post deletedPost = new Post();
+        deletedPost.setDeleted(true);
+        Post publishedPost = new Post();
+        publishedPost.setPublished(true);
+        Post newDraftPost = new Post();
+        newDraftPost.setCreatedAt(LocalDateTime.of(2024, 1, 1, 0, 0));
+        Post oldDraftPost = new Post();
+        oldDraftPost.setCreatedAt(LocalDateTime.of(2021, 1, 1, 0, 0));
+        List<Post> AllUserPosts = List.of(deletedPost, publishedPost, newDraftPost, oldDraftPost);
+
+        when(postRepository.findByAuthorId(1L)).thenReturn(AllUserPosts);
+        List<PostDto> result = postService.getDraftsByUser(1L);
+
+        assertEquals(2, result.size());
+        assertEquals(postMapper.toDto(newDraftPost), result.get(0));
+        assertEquals(postMapper.toDto(oldDraftPost), result.get(1));
+    }
+
+    @Test
+    void shouldGetDraftPostsByProject() {
+        Post deletedPost = new Post();
+        deletedPost.setDeleted(true);
+        Post publishedPost = new Post();
+        publishedPost.setPublished(true);
+        Post newDraftPost = new Post();
+        newDraftPost.setCreatedAt(LocalDateTime.of(2024, 1, 1, 0, 0));
+        Post oldDraftPost = new Post();
+        oldDraftPost.setCreatedAt(LocalDateTime.of(2021, 1, 1, 0, 0));
+        List<Post> AllProjectPosts = List.of(deletedPost, publishedPost, newDraftPost, oldDraftPost);
+
+        when(postRepository.findByProjectId(1L)).thenReturn(AllProjectPosts);
+        List<PostDto> result = postService.getDraftsByProject(1L);
+
+        assertEquals(2, result.size());
+        assertEquals(postMapper.toDto(newDraftPost), result.get(0));
+        assertEquals(postMapper.toDto(oldDraftPost), result.get(1));
+    }
+
+    @Test
+    void shouldGetPublishedPostsByUser() {
+        Post deletedPost = new Post();
+        deletedPost.setDeleted(true);
+        Post draftPost = new Post();
+        draftPost.setPublished(false);
+        Post newPublishedPost = new Post();
+        newPublishedPost.setPublished(true);
+        newPublishedPost.setPublishedAt(LocalDateTime.of(2024, 1, 1, 0, 0));
+        newPublishedPost.setLikes(new ArrayList<>());
+        Post oldPublishedPost = new Post();
+        oldPublishedPost.setPublished(true);
+        oldPublishedPost.setPublishedAt(LocalDateTime.of(2021, 1, 1, 0, 0));
+        oldPublishedPost.setLikes(new ArrayList<>());
+        List<Post> AllProjectPosts = List.of(deletedPost, newPublishedPost, draftPost, oldPublishedPost);
+
+        when(postRepository.findByAuthorIdWithLikes(1L)).thenReturn(AllProjectPosts);
+        List<PostDto> result = postService.getPublishedPostsByUser(1L);
+
+        assertEquals(2, result.size());
+        assertEquals(postMapper.toDto(newPublishedPost), result.get(0));
+        assertEquals(postMapper.toDto(oldPublishedPost), result.get(1));
+    }
+
+    @Test
+    void shouldGetPublishedPostsByProject() {
+        Post deletedPost = new Post();
+        deletedPost.setDeleted(true);
+
+        Post draftPost = new Post();
+        draftPost.setPublished(false);
+
+        Post newPublishedPost = new Post();
+        newPublishedPost.setPublished(true);
+        newPublishedPost.setPublishedAt(LocalDateTime.of(2024, 1, 1, 0, 0));
+        newPublishedPost.setLikes(new ArrayList<>());
+
+        Post oldPublishedPost = new Post();
+        oldPublishedPost.setPublished(true);
+        oldPublishedPost.setPublishedAt(LocalDateTime.of(2021, 1, 1, 0, 0));
+        oldPublishedPost.setLikes(new ArrayList<>());
+
+        List<Post> AllProjectPosts = List.of(deletedPost, newPublishedPost, draftPost, oldPublishedPost);
+
+        when(postRepository.findByProjectIdWithLikes(1L)).thenReturn(AllProjectPosts);
+        List<PostDto> result = postService.getPublishedPostsByProject(1L);
+
+        assertEquals(2, result.size());
+        assertEquals(postMapper.toDto(newPublishedPost), result.get(0));
+        assertEquals(postMapper.toDto(oldPublishedPost), result.get(1));
     }
 }
