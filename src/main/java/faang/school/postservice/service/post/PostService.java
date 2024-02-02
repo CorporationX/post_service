@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -77,5 +78,48 @@ public class PostService {
             postRepository.save(post);
             return true;
         }
+    }
+
+    public PostDto getPost(long id) {
+        Post post = findById(id);
+        return postMapper.toDto(post);
+    }
+
+    public List<PostDto> getDraftsByUser(long userId) {
+        List<Post> foundedPosts = postRepository.findByAuthorId(userId);
+        return getSortedDrafts(foundedPosts);
+    }
+
+    public List<PostDto> getDraftsByProject(long projectId) {
+        List<Post> foundedPosts = postRepository.findByProjectId(projectId);
+        return getSortedDrafts(foundedPosts);
+    }
+
+    private List<PostDto> getSortedDrafts(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isDeleted())
+                .filter(post -> !post.isPublished())
+                .sorted((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()))
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    private List<PostDto> getSortedPublished(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isDeleted())
+                .filter(Post::isPublished)
+                .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    public List<PostDto> getPublishedPostsByUser(long userId) {
+        List<Post> foundedPosts = postRepository.findByAuthorIdWithLikes(userId);
+        return getSortedPublished(foundedPosts);
+    }
+
+    public List<PostDto> getPublishedPostsByProject(long projectId) {
+        List<Post> foundedPosts = postRepository.findByProjectIdWithLikes(projectId);
+        return getSortedPublished(foundedPosts);
     }
 }
