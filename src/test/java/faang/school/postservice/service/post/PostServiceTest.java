@@ -176,8 +176,10 @@ class PostServiceTest {
         publishedPost.setPublished(true);
         Post newDraftPost = new Post();
         newDraftPost.setCreatedAt(LocalDateTime.of(2024, 1, 1, 0, 0));
+        newDraftPost.setLikes(new ArrayList<>());
         Post oldDraftPost = new Post();
         oldDraftPost.setCreatedAt(LocalDateTime.of(2021, 1, 1, 0, 0));
+        oldDraftPost.setLikes(new ArrayList<>());
         List<Post> AllUserPosts = List.of(deletedPost, publishedPost, newDraftPost, oldDraftPost);
 
         when(postRepository.findByAuthorId(1L)).thenReturn(AllUserPosts);
@@ -196,8 +198,10 @@ class PostServiceTest {
         publishedPost.setPublished(true);
         Post newDraftPost = new Post();
         newDraftPost.setCreatedAt(LocalDateTime.of(2024, 1, 1, 0, 0));
+        newDraftPost.setLikes(new ArrayList<>());
         Post oldDraftPost = new Post();
         oldDraftPost.setCreatedAt(LocalDateTime.of(2021, 1, 1, 0, 0));
+        oldDraftPost.setLikes(new ArrayList<>());
         List<Post> AllProjectPosts = List.of(deletedPost, publishedPost, newDraftPost, oldDraftPost);
 
         when(postRepository.findByProjectId(1L)).thenReturn(AllProjectPosts);
