@@ -6,13 +6,10 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.PostRepository;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.ReactiveTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -81,27 +78,28 @@ public class PostService {
     }
 
     @Transactional
-    public List<PostDto> getDraftsByAuthorId(long authorId) {
-        List<Post> posts = postRepository.findByAuthorId(authorId);
-        return filter(posts, false, false);
+    public List<PostDto> getDraftsByAuthorId(long id) {
+        List<Post> posts = postRepository.findByAuthorId(id);
+        return filterPosts(posts, false);
     }
 
     @Transactional
-    public List<PostDto> getDraftsByProjectId(long projectId) {
-        List<Post> posts = postRepository.findByProjectId(projectId);
-        return filter(posts, false, false);
+    public List<PostDto> getDraftsByProjectId(long id) {
+        List<Post> posts = postRepository.findByProjectId(id);
+        return filterPosts(posts, false);
 
     }
 
     @Transactional
-    public List<PostDto> getPublishedPostsByAuthor(long authorId){
-        List<Post> posts = postRepository.findByAuthorId(authorId);
-        return posts.stream()
-                .filter(Post::isPublished)
-                .filter(post -> !post.isDeleted())
-                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .map(postMapper::toPostDto)
-                .toList();
+    public List<PostDto> getPublishedPostsByAuthorId(long id) {
+        List<Post> posts = postRepository.findByAuthorId(id);
+        return filterPosts(posts,true);
+    }
+
+    @Transactional
+    public List<PostDto> getPublishedPostsByProjectId(long id) {
+        List<Post> posts = postRepository.findByProjectId(id);
+        return filterPosts(posts, true);
     }
 
     private Post searchPostById(long id) {
@@ -112,12 +110,20 @@ public class PostService {
         return optionalPost.get();
     }
 
-    private List<PostDto> filter(List<Post> posts, boolean isPublished, boolean isDeleted){
+    private List<PostDto> filterPosts(List<Post> posts, boolean isPublished) {
         return posts.stream()
                 .filter(post -> post.isPublished() == isPublished)
-                .filter(post -> post.isDeleted() == isDeleted)
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .filter(post -> !post.isDeleted())
+                .sorted((post1, post2) -> {
+                    LocalDateTime date1 = isPublished ? post1.getPublishedAt() : post1.getCreatedAt();
+                    LocalDateTime date2 = isPublished ? post2.getPublishedAt() : post2.getCreatedAt();
+                    if (date1 == null || date2 == null) {
+                        throw new DataValidationException("Invalid date");
+                    }
+                    return date2.compareTo(date1);
+                })
                 .map(postMapper::toPostDto)
                 .toList();
     }
+
 }
