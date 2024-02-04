@@ -4,7 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.PostService;
-import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,39 +17,39 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
 
-    @PostMapping("/create")
-    public ResponseEntity<Post> createDraft(@Valid @RequestBody PostDto postDto) {
+    @PostMapping
+    public ResponseEntity<Post> createDraft(@NotNull @RequestBody PostDto postDto) {
         validatePostDto(postDto);
         Post post = postService.createDraft(postDto);
         return ResponseEntity.ok(post);
     }
 
-    @PutMapping("/publish/{postId} ")
+    @PutMapping("/{postId}")
     public String publishPost(@PathVariable long postId) {
         validateId(postId);
         postService.publish(postId);
         return "Post published";
     }
 
-    @PutMapping("/update")
-    public String updatePost(@Valid @RequestBody PostDto postDto) {
+    @PutMapping
+    public String updatePost(@NotNull @RequestBody PostDto postDto) {
         validatePostDto(postDto);
         validateId(postDto.getId());
         postService.update(postDto);
         return "Post updated";
     }
 
-    @DeleteMapping("/remove/{postId}")
+    @DeleteMapping("/{postId}")
     public String removePostSoftly(@PathVariable long postId) {
         validateId(postId);
         postService.removeSoftly(postId);
         return "Post deleted";
     }
 
-    @GetMapping("/{id}")
-    public PostDto getPostById(@PathVariable long id) {
-        validateId(id);
-        return postService.getPostById(id);
+    @GetMapping("/{postId}")
+    public PostDto getPostById(@PathVariable long postId) {
+        validateId(postId);
+        return postService.getPostById(postId);
     }
 
     @GetMapping("/{authorId}")

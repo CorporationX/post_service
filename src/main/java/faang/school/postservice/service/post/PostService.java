@@ -87,7 +87,6 @@ public class PostService {
     public List<PostDto> getDraftsByProjectId(long id) {
         List<Post> posts = postRepository.findByProjectId(id);
         return filterPosts(posts, false);
-
     }
 
     @Transactional
