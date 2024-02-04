@@ -24,23 +24,6 @@ public class PostValidatorTest {
     private PostValidator postValidator;
 
     @Test
-    public void testValidatePostContentFailed() {
-        String postContent = "";
-        PostDto postDto = new PostDto();
-        postDto.setContent(postContent);
-        Assertions.assertThrows(DataValidationException.class, () ->
-                postValidator.validatePostContent(postDto));
-    }
-
-    @Test
-    public void testValidatePostContentSuccess() {
-        String postContent = "Content";
-        PostDto postDto = new PostDto();
-        postDto.setContent(postContent);
-        Assertions.assertDoesNotThrow(() -> postValidator.validatePostContent(postDto));
-    }
-
-    @Test
     public void testValidateOwnerPostAuthorAndProjectExists() {
         PostDto postDto = new PostDto();
         postDto.setAuthorId(1L);

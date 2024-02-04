@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +26,6 @@ public class PostService {
 
     @Transactional
     public void createPostDraft(PostDto postDto) {
-        postValidator.validatePostContent(postDto);
         postValidator.validatePost(postDto);
         postRepository.save(postMapper.toEntity(postDto));
     }
@@ -42,7 +42,6 @@ public class PostService {
     @Transactional
     public void updatePost(long postId, PostDto postDto) {
         Post post = getPost(postId);
-        postValidator.validatePostContent(postDto);
         post.setContent(postDto.getContent());
         postRepository.save(post);
     }
@@ -92,17 +91,19 @@ public class PostService {
 
     @Transactional
     public List<PostDto> sortDrafts(long ownerId) {
-        List<Post> sortedPosts = postRepository.findByProjectId(ownerId).stream()
-                .filter(post -> !post.isPublished() && !post.isDeleted())
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed()).toList();
-        return postMapper.toDtoList(sortedPosts);
+        return postRepository.findByAuthorId(ownerId).stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .map(postMapper::toDto)
+                .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
+                .collect(Collectors.toList());
     }
 
     @Transactional
     public List<PostDto> sortPosts(long ownerId) {
-        List<Post> sortedPosts = postRepository.findByProjectId(ownerId).stream()
+        return postRepository.findByProjectId(ownerId).stream()
                 .filter(post -> post.isPublished() && !post.isDeleted())
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed()).toList();
-        return postMapper.toDtoList(sortedPosts);
+                .map(postMapper::toDto)
+                .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
+                .collect(Collectors.toList());
     }
 }

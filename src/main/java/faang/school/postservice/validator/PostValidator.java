@@ -16,16 +16,6 @@ public class PostValidator {
     private final ProjectServiceClient projectServiceClient;
     private final PostRepository postRepo;
 
-    public void validatePostContent(PostDto postDto) {
-        String postContent = postDto.getContent();
-        if (postContent != null) {
-            if (postContent.isBlank()) {
-                throw new DataValidationException("Post content cannot be empty");
-            }
-        }
-
-    }
-
     public void validatePost(PostDto postDto) {
         if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
             throw new DataValidationException("Post cannot belong to both author and project");
