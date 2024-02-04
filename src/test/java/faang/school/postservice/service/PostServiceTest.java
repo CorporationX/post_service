@@ -123,8 +123,6 @@ public class PostServiceTest {
         assertSame(post1, postService.getPost(1L));
     }
 
-    // не проходят тесты при получении списка черновиков/постов,
-    // при это при дебаге сервис отдает верное значение
     @Test
     public void testGetAuthorDraftsSuccess() {
         List<Post> posts = List.of(post1, post2, post3);
