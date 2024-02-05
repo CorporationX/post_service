@@ -5,9 +5,12 @@ import faang.school.postservice.model.Comment;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.List;
+
 @Mapper(componentModel = "Spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
-    Comment CommentDtoToEntity(CommentDto commentDto);
+    Comment commentDtoToEntity(CommentDto commentDto);
 
-    CommentDto EntityToCommentDto(Comment comment);
+    CommentDto entityToCommentDto(Comment comment);
+
 }

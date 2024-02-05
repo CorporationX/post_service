@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping
@@ -18,7 +20,15 @@ public class CommentController {
         return commentService.create(commentDto);
     }
 
-    public CommentDto change(CommentDto commentDto) {
-        return
+    public CommentDto update(CommentDto commentDto, long id) {
+        return commentService.update(commentDto, id);
+    }
+
+    public void delete(CommentDto commentDto, long id) {
+        commentService.delete(commentDto, id);
+    }
+
+    public List<CommentDto> getAllCommentsById(long id) {
+        return commentService.getAllCommentsById(id);
     }
 }
