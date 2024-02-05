@@ -1,15 +1,18 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class PostControllerTest {
@@ -17,42 +20,85 @@ class PostControllerTest {
     private PostController postController;
     @Mock
     private PostService postService;
+    private PostDto postDto;
+    private long ID = 1L;
+    private long NO_VALID_ID = -5;
 
     @BeforeEach
     void setUp() {
+        postDto = PostDto.builder()
+                .authorId(1L)
+                .build();
     }
 
     @Test
     void testCreateDraftSuccessful() {
-        PostDto postDto = PostDto.builder()
-                .authorId(1L)
-                .content("Hello, world!")
-                .build();
+        postDto.setContent("Hello, world!");
         postController.createDraft(postDto);
-
+        Mockito.verify(postService).createDraft(postDto);
     }
 
     @Test
-    void publishPost() {
+    void testCreateDraftFailed() {
+        DataValidationException exception = assertThrows(DataValidationException.class,
+                () -> postController.createDraft(postDto));
+        assertEquals("A post with this content cannot be created", exception.getMessage());
     }
 
     @Test
-    void updatePost() {
+    void testPublishPostSuccessful() {
+        postController.publishPost(ID);
+        Mockito.verify(postService).publish(ID);
     }
 
     @Test
-    void removePostSoftly() {
+    void testPublishPostFailed() {
+        DataValidationException exception = assertThrows(DataValidationException.class,
+                () -> postController.publishPost(NO_VALID_ID));
+        assertEquals("Invalid ID", exception.getMessage());
     }
 
     @Test
-    void getPostById() {
+    void testUpdatePostSuccessful() {
+        postDto.setId(5L);
+        postDto.setContent("Hello");
+        postController.updatePost(postDto);
+        Mockito.verify(postService).update(postDto);
     }
 
     @Test
-    void getPostDraftsByAuthorId() {
+    void testRemovePostSoftlySuccessful() {
+        postController.removePostSoftly(ID);
+        Mockito.verify(postService).removeSoftly(ID);
     }
 
     @Test
-    void getPostDraftsByProjectId() {
+    void testGetPostByIdSuccessful() {
+        postController.getPostById(ID);
+        Mockito.verify(postService).getPostById(ID);
+    }
+
+    @Test
+    void testGetPostDraftsByAuthorIdSuccessful() {
+        postController.getDraftsByAuthorId(ID);
+        Mockito.verify(postService).getDraftsByAuthorId(ID);
+    }
+
+    @Test
+    void testGetPostDraftsByProjectIdSuccessful() {
+        postController.getDraftsByProjectId(ID);
+        Mockito.verify(postService).getDraftsByProjectId(ID);
+    }
+
+    @Test
+    void testGetPublishedPostsByAuthorId() {
+        postController.getPublishedPostsByAuthorId(ID);
+        Mockito.verify(postService).getPublishedPostsByAuthorId(ID);
+    }
+
+    @Test
+    void testGetPublishedPostsByProjectId() {
+        postController.getPublishedPostsByProjectId(ID);
+        Mockito.verify(postService).getPublishedPostsByProjectId(ID);
     }
 }

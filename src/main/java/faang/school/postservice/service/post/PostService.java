@@ -38,19 +38,19 @@ public class PostService {
         }
         Post post = postMapper.toEntity(postDto);
         post.setPublished(false);
+        post.setDeleted(false);
         post.setCreatedAt(LocalDateTime.now());
         postRepository.save(post);
         return post;
     }
 
     @Transactional
-    public void publish(long postId) {
-        Post post = searchPostById(postId);
+    public void publish(long id) {
+        Post post = searchPostById(id);
         if (post.isPublished()) {
-            throw new IllegalArgumentException("The post has already been published");
+            throw new DataValidationException("The post has already been published");
         }
         post.setPublished(true);
-        post.setDeleted(false);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
     }
@@ -104,7 +104,7 @@ public class PostService {
     private Post searchPostById(long id) {
         Optional<Post> optionalPost = postRepository.findById(id);
         if (optionalPost.isEmpty()) {
-            throw new EntityNotFoundException("Post with id " + id + " not found.");
+            throw new DataValidationException("Post with id " + id + " not found.");
         }
         return optionalPost.get();
     }

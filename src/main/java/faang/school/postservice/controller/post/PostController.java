@@ -6,32 +6,31 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/post")
+@RequestMapping("api/v1/post")
 public class PostController {
     private final PostService postService;
 
-    @PostMapping
-    public ResponseEntity<Post> createDraft(@NotNull @RequestBody PostDto postDto) {
+    @PostMapping("/create")
+    public String createDraft(@NotNull @RequestBody PostDto postDto) {
         validatePostDto(postDto);
         Post post = postService.createDraft(postDto);
-        return ResponseEntity.ok(post);
+        return "Post created";
     }
 
-    @PutMapping("/{postId}")
+    @PutMapping("/published/{postId}")
     public String publishPost(@PathVariable long postId) {
         validateId(postId);
         postService.publish(postId);
         return "Post published";
     }
 
-    @PutMapping
+    @PutMapping("/update")
     public String updatePost(@NotNull @RequestBody PostDto postDto) {
         validatePostDto(postDto);
         validateId(postDto.getId());
@@ -39,29 +38,41 @@ public class PostController {
         return "Post updated";
     }
 
-    @DeleteMapping("/{postId}")
+    @DeleteMapping("/delete/{postId}")
     public String removePostSoftly(@PathVariable long postId) {
         validateId(postId);
         postService.removeSoftly(postId);
         return "Post deleted";
     }
 
-    @GetMapping("/{postId}")
-    public PostDto getPostById(@PathVariable long postId) {
-        validateId(postId);
-        return postService.getPostById(postId);
+    @GetMapping("/{id}")
+    public PostDto getPostById(@PathVariable long id) {
+        validateId(id);
+        return postService.getPostById(id);
     }
 
-    @GetMapping("/{authorId}")
-    public List<PostDto> getPostDraftsByAuthorId(@PathVariable long authorId) {
-        validateId(authorId);
-        return postService.getDraftsByAuthorId(authorId);
+    @GetMapping("/authors/{id}/drafts")
+    public List<PostDto> getDraftsByAuthorId(@PathVariable long id) {
+        validateId(id);
+        return postService.getDraftsByAuthorId(id);
     }
 
-    @GetMapping("/{projectId}")
-    public List<PostDto> getPostDraftsByProjectId(@PathVariable long projectId) {
-        validateId(projectId);
-        return postService.getDraftsByProjectId(projectId);
+    @GetMapping("/projects/{id}")
+    public List<PostDto> getDraftsByProjectId(@PathVariable long id) {
+        validateId(id);
+        return postService.getDraftsByProjectId(id);
+    }
+
+    @GetMapping("/authors/{id}")
+    public List<PostDto> getPublishedPostsByAuthorId(@PathVariable long id) {
+        validateId(id);
+        return postService.getPublishedPostsByAuthorId(id);
+    }
+
+    @GetMapping("/projects/{id}")
+    public List<PostDto> getPublishedPostsByProjectId(@PathVariable long id) {
+        validateId(id);
+        return postService.getPublishedPostsByProjectId(id);
     }
 
     private void validatePostDto(PostDto postDto) {
