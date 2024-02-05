@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -34,8 +35,6 @@ public class PostService {
             author = userServiceClient.getUser(postDto.getAuthorId());
         } else if (postDto.getProjectId() != null) {
             project = projectServiceClient.getProject(postDto.getProjectId());
-        } else {
-            throw new IllegalArgumentException("Необходимо указать автора или проект");
         }
         postValidator.validateAuthorExists(author, project);
 
@@ -57,22 +56,17 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public PostDto updatePost(PostDto postDto) {
-        Post post = findById(postDto.getId());
-        postValidator.validateCreatorNotChanged(postDto, post);
+    public PostDto updatePost(UpdatePostDto postDto, long id) {
+        Post post = findById(id);
+        post.setContent(postDto.getContent());
 
-        return savePost(postDto);
-    }
-
-    private Post findById(long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Пост с указанным ID не существует"));
+        return postMapper.toDto(postRepository.save(post));
     }
 
     public boolean deletePost(long id) {
         Post post = findById(id);
         if (post.isDeleted()) {
-            throw new DataValidationException("Поста уже удален");
+            throw new DataValidationException("Пост уже удален");
         } else {
             post.setDeleted(true);
             postRepository.save(post);
@@ -95,6 +89,21 @@ public class PostService {
         return getSortedDrafts(foundedPosts);
     }
 
+    public List<PostDto> getPublishedPostsByUser(long userId) {
+        List<Post> foundedPosts = postRepository.findByAuthorIdWithLikes(userId);
+        return getSortedPublished(foundedPosts);
+    }
+
+    public List<PostDto> getPublishedPostsByProject(long projectId) {
+        List<Post> foundedPosts = postRepository.findByProjectIdWithLikes(projectId);
+        return getSortedPublished(foundedPosts);
+    }
+
+    private Post findById(long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Пост с указанным ID не существует"));
+    }
+
     private List<PostDto> getSortedDrafts(List<Post> posts) {
         return posts.stream()
                 .filter(post -> !post.isDeleted())
@@ -111,15 +120,5 @@ public class PostService {
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .map(postMapper::toDto)
                 .toList();
-    }
-
-    public List<PostDto> getPublishedPostsByUser(long userId) {
-        List<Post> foundedPosts = postRepository.findByAuthorIdWithLikes(userId);
-        return getSortedPublished(foundedPosts);
-    }
-
-    public List<PostDto> getPublishedPostsByProject(long projectId) {
-        List<Post> foundedPosts = postRepository.findByProjectIdWithLikes(projectId);
-        return getSortedPublished(foundedPosts);
     }
 }

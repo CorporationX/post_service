@@ -1,6 +1,7 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.PostValidator;
@@ -63,50 +64,20 @@ class PostControllerTest {
 
     @Test
     void updatePostWithEmptyContentTest() {
-        PostDto postDto = new PostDto();
+        UpdatePostDto postDto = new UpdatePostDto();
         postDto.setContent("");
         doThrow(new DataValidationException("Пост не может быть пустым"))
                 .when(postValidator).validateContentExists(postDto);
-        assertThrows(DataValidationException.class, () -> postController.updatePost(postDto));
-    }
-
-    @Test
-    void updatePostWithNoAuthorTest() {
-        PostDto postDto = new PostDto();
-        postDto.setContent("test");
-        doThrow(new DataValidationException("У поста должен быть автор"))
-                .when(postValidator).validateAuthorCount(postDto);
-        assertThrows(DataValidationException.class, () -> postController.updatePost(postDto));
-    }
-
-    @Test
-    void updatePostWithoutIdTest() {
-        PostDto postDto = new PostDto();
-        postDto.setAuthorId(1L);
-        postDto.setContent("test");
-        doThrow(new DataValidationException("Такого поста не существует"))
-                .when(postValidator).validateIdExists(postDto);
-        assertThrows(DataValidationException.class, () -> postController.updatePost(postDto));
-    }
-
-    @Test
-    void updatePostWithTwoAuthorsTest() {
-        PostDto postDto = new PostDto();
-        postDto.setAuthorId(1L);
-        postDto.setContent("test");
-        postDto.setProjectId(1L);
-        doThrow(new DataValidationException("У поста должен быть только один автор"))
-                .when(postValidator).validateAuthorCount(postDto);
-        assertThrows(DataValidationException.class, () -> postController.updatePost(postDto));
+        assertThrows(DataValidationException.class,
+                () -> postController.updatePost(postDto, 1L));
     }
 
     @Test
     void updateCorrectPostTest() {
-        PostDto postDto = new PostDto();
-        postDto.setAuthorId(1L);
+        UpdatePostDto postDto = new UpdatePostDto();
         postDto.setContent("test");
-        postController.updatePost(postDto);
-        Mockito.verify(postService, Mockito.times(1)).updatePost(postDto);
+        postController.updatePost(postDto, 1L);
+        Mockito.verify(postService, Mockito.times(1)).updatePost(postDto, 1L);
     }
 
     @Test

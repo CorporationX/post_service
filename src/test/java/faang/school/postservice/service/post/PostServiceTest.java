@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -46,7 +47,6 @@ class PostServiceTest {
     private final PostDto postDto = new PostDto();
 
 
-
     @Test
     void createDraftWithAuthorTest() {
         postDto.setAuthorId(1L);
@@ -75,11 +75,6 @@ class PostServiceTest {
                 .when(postValidator).validateAuthorExists(Mockito.any(), Mockito.any());
 
         assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto));
-    }
-
-    @Test
-    void createDraftWithNonExistingCreatorTest() {
-        assertThrows(IllegalArgumentException.class, ()-> postService.createDraftPost(postDto));
     }
 
     @Test
@@ -127,14 +122,14 @@ class PostServiceTest {
 
     @Test
     void updateCorrectPostTest() {
+        UpdatePostDto updatedPostDto = new UpdatePostDto();
         Post post = new Post();
         post.setId(1L);
         post.setAuthorId(1L);
-        postDto.setAuthorId(1L);
-        postDto.setId(1L);
+        updatedPostDto.setId(1L);
 
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-        postService.updatePost(postDto);
+        postService.updatePost(updatedPostDto, 1L);
 
         verify(postRepository, Mockito.times(1)).save(post);
     }

@@ -14,7 +14,7 @@ class PostValidatorTest {
 
     private final PostValidator postValidator = new PostValidator();
 
-     PostDto postDto = new PostDto();
+    PostDto postDto = new PostDto();
     Post post = new Post();
 
     @BeforeEach
@@ -70,40 +70,6 @@ class PostValidatorTest {
             postValidator.validateAuthorExists(userDto, projectDto);
         } catch (DataValidationException e) {
             assertEquals("Такого автора не существует", e.getMessage());
-        }
-    }
-
-    @Test
-    void validateIdExistsTest() {
-        postDto.setId(null);
-        try {
-            postValidator.validateIdExists(postDto);
-        } catch (DataValidationException e) {
-            assertEquals("Такого поста не существует", e.getMessage());
-        }
-    }
-
-    @Test
-    void validateAuthorChangedTest() {
-        postDto.setAuthorId(1L);
-        post.setAuthorId(2L);
-        try {
-            postValidator.validateCreatorNotChanged(postDto, post);
-        } catch (DataValidationException e) {
-            assertEquals("Создатель поста не может быть изменен", e.getMessage());
-        }
-    }
-
-    @Test
-    void validateProjectChangedTest() {
-        postDto.setAuthorId(1L);
-        post.setAuthorId(1L);
-        postDto.setProjectId(1L);
-        post.setProjectId(2L);
-        try {
-            postValidator.validateCreatorNotChanged(postDto, post);
-        } catch (DataValidationException e) {
-            assertEquals("Создатель поста не может быть изменен", e.getMessage());
         }
     }
 }

@@ -1,6 +1,7 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -10,11 +11,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/posts")
 public class PostController {
     private final PostService postService;
     private final PostValidator postValidator;
 
-    @PostMapping("/post")
+    @PostMapping("/drafts")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
         postValidator.validateAuthorCount(postDto);
         postValidator.validateContentExists(postDto);
@@ -22,17 +24,16 @@ public class PostController {
         return postService.createDraftPost(postDto);
     }
 
-    public PostDto publishPost(long id) {
+    @PutMapping("/drafts/{id}")
+    public PostDto publishPost(@PathVariable long id) {
         return postService.publishPost(id);
     }
 
-    @PutMapping("/post")
-    public PostDto updatePost(@RequestBody PostDto postDto) {
-        postValidator.validateIdExists(postDto);
+    @PutMapping("/{id}")
+    public PostDto updatePost(@RequestBody UpdatePostDto postDto, @PathVariable long id) {
         postValidator.validateContentExists(postDto);
-        postValidator.validateAuthorCount(postDto);
 
-        return postService.updatePost(postDto);
+        return postService.updatePost(postDto, id);
     }
 
     @DeleteMapping("/{id}")
@@ -40,27 +41,27 @@ public class PostController {
         return postService.deletePost(id);
     }
 
-    @GetMapping("/post/{id}")
+    @GetMapping("/{id}")
     public PostDto getPost(@PathVariable long id) {
         return postService.getPost(id);
     }
 
-    @GetMapping("/drafts/{userId}")
+    @GetMapping("/drafts/user/{userId}")
     public List<PostDto> getDraftsByUser(@PathVariable long userId) {
         return postService.getDraftsByUser(userId);
     }
 
-    @GetMapping("/drafts/{projectId}")
+    @GetMapping("/drafts/project/{projectId}")
     public List<PostDto> getDraftsByProject(@PathVariable long projectId) {
         return postService.getDraftsByProject(projectId);
     }
 
-    @GetMapping("/posts/{userId}")
+    @GetMapping("/user/{userId}")
     public List<PostDto> getPublishedPostsByUser(@PathVariable long userId) {
-    return postService.getPublishedPostsByUser(userId);
+        return postService.getPublishedPostsByUser(userId);
     }
 
-    @GetMapping("/posts/{projectId}")
+    @GetMapping("/project/{projectId}")
     public List<PostDto> getPublishedPostsByProject(@PathVariable long projectId) {
         return postService.getPublishedPostsByProject(projectId);
     }

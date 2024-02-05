@@ -1,6 +1,7 @@
 package faang.school.postservice.validator;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -29,7 +30,13 @@ public class PostValidator {
     }
 
     public void validateContentExists(PostDto postDto) {
-        if (postDto.getContent() == null || postDto.getContent().isEmpty()) {
+        if (postDto.getContent() == null || postDto.getContent().isBlank()) {
+            throw new DataValidationException("Пост не может быть пустым");
+        }
+    }
+
+    public void validateContentExists(UpdatePostDto postDto) {
+        if (postDto.getContent() == null || postDto.getContent().isBlank()) {
             throw new DataValidationException("Пост не может быть пустым");
         }
     }
@@ -37,21 +44,6 @@ public class PostValidator {
     public void validateAuthorExists(UserDto author, ProjectDto project) {
         if (author == null && project == null) {
             throw new DataValidationException("Такого автора не существует");
-        }
-    }
-
-    public void validateIdExists(PostDto postDto){
-        if (postDto.getId() == null) {
-            throw new DataValidationException("Такого поста не существует");
-        }
-    }
-
-    public boolean validateCreatorNotChanged(PostDto postDto, Post post) {
-        if (postDto.getAuthorId().equals(post.getAuthorId())
-         && postDto.getProjectId().equals(post.getProjectId())) {
-            return true;
-        } else {
-            throw new DataValidationException("Создатель поста не может быть изменен");
         }
     }
 }
