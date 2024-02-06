@@ -5,7 +5,6 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import feign.FeignException;
 import org.junit.jupiter.api.Test;
@@ -28,8 +27,6 @@ class PostServiceTest {
     private PostService postService;
     @Mock
     private PostRepository postRepository;
-    @Spy
-    private PostMapperImpl postMapper;
     @Mock
     private UserServiceClient userServiceClient;
     @Mock

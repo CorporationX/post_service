@@ -3,32 +3,33 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping
+@RequestMapping("api/v1/comment")
 public class CommentController {
     private final CommentService commentService;
 
-    @PostMapping
-    public CommentDto create(CommentDto commentDto) {
+    @PostMapping("/create")
+    public CommentDto create(@RequestBody CommentDto commentDto) {
         return commentService.create(commentDto);
     }
 
-    public CommentDto update(CommentDto commentDto, long id) {
+    @PutMapping("/update/{id}")
+    public CommentDto update(@RequestBody CommentDto commentDto, @PathVariable long id) {
         return commentService.update(commentDto, id);
     }
 
-    public void delete(CommentDto commentDto, long id) {
+    @DeleteMapping("/delete/{id}")
+    public void delete(@RequestBody CommentDto commentDto, @PathVariable long id) {
         commentService.delete(commentDto, id);
     }
 
-    public List<CommentDto> getAllCommentsById(long id) {
-        return commentService.getAllCommentsById(id);
+    @GetMapping("/comments/{id}")
+    public List<CommentDto> getAllCommentsByPostId(@PathVariable long id) {
+        return commentService.getAllCommentsByPostId(id);
     }
 }

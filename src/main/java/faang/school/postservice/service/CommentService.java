@@ -43,8 +43,13 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
-    public List<CommentDto> getAllCommentsById(long id) {
+    public List<CommentDto> getAllCommentsByPostId(long id) {
         List<Comment> commentList = commentRepository.findAllByPostId(id);
+
+        if (commentList == null) {
+            throw new IllegalArgumentException("There are no comments or post's id is invalid");
+        }
+
         return commentList.stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
                 .map(commentMapper::entityToCommentDto).toList();
@@ -52,8 +57,8 @@ public class CommentService {
 
     private void validateAuthorExists(CommentDto commentDto) {
         UserDto userDto = userServiceClient.getUser(commentDto.getAuthorId());
-        if (userDto == null) {
-            throw new IllegalArgumentException("There are no author of comment");
+        if (userDto == null || userDto.getId() == null) {
+            throw new IllegalArgumentException("There are no author with id "+commentDto.getAuthorId());
         }
 
         if (commentDto.getContent().isBlank() || commentDto.getContent().length() > 4096) {
