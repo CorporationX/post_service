@@ -24,15 +24,14 @@ public class ResourceService {
     @Transactional
     public ResourceDto addResource(Long postId, MultipartFile file) {
         Post post = postService.getPostById(postId);
-        if(post.getResources().size() ==10){
+        if (post.getResources().size() == 10) {
             log.error("Can't add more than 10 resources");
             throw new IllegalStateException("Can't add more than 10 resources");
         }
-
         String folder = "files";
         Resource resource = s3Service.uploadFile(file, folder);
         resource.setPost(post);
-        resource =resourceRepository.save(resource);
+        resource = resourceRepository.save(resource);
         return resourceMapper.toResourceDto(resource);
     }
 }

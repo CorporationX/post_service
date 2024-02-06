@@ -32,11 +32,9 @@ public class AmazonS3Config {
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, null))
                 .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
                 .build();
-
         if (!clientAmazonS3.doesBucketExistV2(bucketName)) {
             clientAmazonS3.createBucket(bucketName);
         }
-
         return clientAmazonS3;
     }
 }
