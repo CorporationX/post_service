@@ -11,13 +11,11 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Slf4j
-@Service
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
@@ -27,7 +25,6 @@ public class CommentService {
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
 
-    // не забыть логи
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         userServiceClient.getUser(userContext.getUserId()); // проверка на существование юзера
@@ -40,11 +37,12 @@ public class CommentService {
 
     @Transactional
     public CommentDto updateComment(Long postId, Long commentId, CommentEditDto commentEditDto) {
-        var commentToUpdate = getCommentFromPost(postId, commentId);
-        commentValidator.checkOwnerComment(commentToUpdate.getAuthorId(), userContext.getUserId());
-        if (!commentEditDto.getContent().isBlank()) {
-            commentToUpdate.setContent(commentEditDto.getContent());
+        if (commentEditDto.getContent().isBlank()) {
+            return null;
         }
+        Comment commentToUpdate = getCommentFromPost(postId, commentId);
+        commentValidator.checkOwnerComment(commentToUpdate.getAuthorId(), userContext.getUserId());
+        commentToUpdate.setContent(commentEditDto.getContent());
         commentRepository.save(commentToUpdate);
         return commentMapper.toDto(commentToUpdate);
     }

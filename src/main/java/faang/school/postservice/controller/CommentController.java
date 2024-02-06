@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/post")
+@RequestMapping("/posts")
 public class CommentController {
     private final CommentService commentService;
     private final CommentValidator commentValidator;
@@ -27,7 +27,7 @@ public class CommentController {
     @PostMapping("/{postId}/comment")
     public CommentDto createComment(@PathVariable Long postId, @RequestBody CommentDto commentDto) {
         commentValidator.validateIdIsNotLessOne(postId);
-        commentValidator.validateComment(commentDto);
+        commentValidator.validateContent(commentDto.getContent());
         return commentService.createComment(postId, commentDto);
     }
 
@@ -36,7 +36,7 @@ public class CommentController {
                                     @RequestBody CommentEditDto commentEditDto) {
         commentValidator.validateIdIsNotLessOne(postId);
         commentValidator.validateIdIsNotLessOne(commentId);
-        commentValidator.validateComment(commentEditDto);
+        commentValidator.validateContent(commentEditDto.getContent());
         return commentService.updateComment(postId, commentId, commentEditDto);
     }
 

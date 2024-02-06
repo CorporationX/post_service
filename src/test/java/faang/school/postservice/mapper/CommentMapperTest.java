@@ -3,6 +3,7 @@ package faang.school.postservice.mapper;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.CommentEditDto;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,7 @@ class CommentMapperTest {
     @Spy
     CommentMapperImpl commentMapper;
     private Comment comment;
+    private Post post;
     private Comment commentUpdated;
     private CommentDto commentDto;
     List<Comment> comments;
@@ -26,12 +28,11 @@ class CommentMapperTest {
 
     @BeforeEach
     void setUp() {
-        comment = Comment.builder().id(1L).authorId(1L).content("comment").build();
-        commentDto = CommentDto.builder().id(1L).authorId(1L).content("comment").build();
+        post = Post.builder().id(1L).build();
+        comment = Comment.builder().id(1L).authorId(1L).post(post).content("comment").build();
+        commentDto = CommentDto.builder().id(1L).authorId(1L).postId(1L).content("comment").build();
         comments = List.of(comment);
         commentsDto = List.of(commentDto);
-        commentEditDto = CommentEditDto.builder().content("asdfas").build();
-        commentUpdated = Comment.builder().id(1L).authorId(1L).content("asdfas").build();
     }
 
     @Test

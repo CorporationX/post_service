@@ -1,7 +1,5 @@
 package faang.school.postservice.validator;
 
-import faang.school.postservice.dto.CommentDto;
-import faang.school.postservice.dto.CommentEditDto;
 import faang.school.postservice.exceptions.DataValidationException;
 import org.junit.jupiter.api.Test;
 
@@ -18,20 +16,9 @@ class CommentValidatorTest {
     }
 
     @Test
-    void testValidateComment() {
+    void testValidateContent() {
         assertThrows(DataValidationException.class, () -> {
-            commentValidator.validateComment(CommentDto.builder()
-                    .content("  ")
-                    .build());
-        });
-    }
-
-    @Test
-    void testValidateCommentEdit() {
-        assertThrows(DataValidationException.class, () -> {
-            commentValidator.validateComment(CommentEditDto.builder()
-                    .content("  ")
-                    .build());
+            commentValidator.validateContent("   ");
         });
     }
 
