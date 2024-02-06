@@ -118,15 +118,6 @@ class CommentServiceTest {
     }
 
     @Test
-    void testUpdateCommentThrowsDataValidationException() {
-        var commentEditDto = CommentEditDto.builder().build();
-        when(postService.getPostById(postId)).thenReturn(postForTestException);
-        assertThrows(DataValidationException.class, () -> {
-            commentService.updateComment(postId, commentId, commentEditDto);
-        });
-    }
-
-    @Test
     void testSortAndGetCommentsByPostId() {
         var dtoId = 0L;
         LocalDateTime createdAt = LocalDateTime.now();

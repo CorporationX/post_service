@@ -37,9 +37,6 @@ public class CommentService {
 
     @Transactional
     public CommentDto updateComment(Long postId, Long commentId, CommentEditDto commentEditDto) {
-        if (commentEditDto.getContent().isBlank()) {
-            return null;
-        }
         Comment commentToUpdate = getCommentFromPost(postId, commentId);
         commentValidator.checkOwnerComment(commentToUpdate.getAuthorId(), userContext.getUserId());
         commentToUpdate.setContent(commentEditDto.getContent());
