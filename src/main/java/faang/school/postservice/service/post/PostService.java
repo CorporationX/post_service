@@ -27,7 +27,7 @@ public class PostService {
     private final PostRepository postRepository;
 
     @Transactional
-    public Post createDraft(PostDto postDto) {
+    public void createDraft(PostDto postDto) {
         if (postDto.getAuthorId() == null && postDto.getProjectId() != null) {
             projectServiceClient.getProject(postDto.getProjectId());
         }
@@ -41,7 +41,6 @@ public class PostService {
         post.setDeleted(false);
         post.setCreatedAt(LocalDateTime.now());
         postRepository.save(post);
-        return post;
     }
 
     @Transactional
@@ -58,6 +57,8 @@ public class PostService {
     @Transactional
     public void update(PostDto postDto) {
         Post post = searchPostById(postDto.getId());
+        if(post.getContent().equals(postDto.getContent()))
+            throw new DataValidationException("No content changes");
         post.setContent(postDto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
@@ -73,8 +74,7 @@ public class PostService {
 
     @Transactional
     public PostDto getPostById(long id) {
-        Post post = searchPostById(id);
-        return postMapper.toPostDto(post);
+        return postMapper.toPostDto(searchPostById(id));
     }
 
     @Transactional

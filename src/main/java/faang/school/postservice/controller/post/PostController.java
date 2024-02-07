@@ -19,7 +19,7 @@ public class PostController {
     @PostMapping("/create")
     public String createDraft(@NotNull @RequestBody PostDto postDto) {
         validatePostDto(postDto);
-        Post post = postService.createDraft(postDto);
+        postService.createDraft(postDto);
         return "Post created";
     }
 
@@ -57,7 +57,7 @@ public class PostController {
         return postService.getDraftsByAuthorId(id);
     }
 
-    @GetMapping("/projects/{id}")
+    @GetMapping("/projects/{id}/drafts")
     public List<PostDto> getDraftsByProjectId(@PathVariable long id) {
         validateId(id);
         return postService.getDraftsByProjectId(id);
