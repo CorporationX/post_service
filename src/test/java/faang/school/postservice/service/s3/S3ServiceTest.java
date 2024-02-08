@@ -2,7 +2,6 @@ package faang.school.postservice.service.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import faang.school.postservice.model.Resource;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,10 +26,6 @@ class S3ServiceTest {
     private AmazonS3 clientAmazonS3;
     @InjectMocks
     private S3Service s3Service;
-
-    @BeforeEach
-    void setUp() {
-    }
 
     @Test
     void uploadFile_Success() throws Exception {

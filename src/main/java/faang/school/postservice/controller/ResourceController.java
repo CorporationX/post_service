@@ -19,13 +19,13 @@ public class ResourceController {
 
     @PostMapping("/{postId}/resources")
     public String addResource(@PathVariable Long postId, @RequestParam("file") MultipartFile file) {
-         resourceService.addResource(postId, file);
+        resourceService.addResource(postId, file);
         return "File uploaded successfully";
     }
 
     @DeleteMapping("/{postId}/resources/{resourceId}")
     public String deleteResource(@PathVariable Long postId, @PathVariable Long resourceId) {
-        resourceService.deleteResource(postId,resourceId);
+        resourceService.deleteResource(postId, resourceId);
         return "File deleted successfully";
     }
 }

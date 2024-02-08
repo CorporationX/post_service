@@ -6,7 +6,6 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.s3.S3Service;
 import faang.school.postservice.validator.ResourceValidator;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -41,9 +40,6 @@ class ResourceServiceTest {
     @Captor
     private ArgumentCaptor<Resource> resourceArgumentCaptor;
 
-    @BeforeEach
-    void setUp() {
-    }
 
     @Test
     void testAddResourceSavesResource() {

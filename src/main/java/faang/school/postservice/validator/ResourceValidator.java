@@ -22,7 +22,7 @@ public class ResourceValidator {
     }
 
     public void validateUserIsPostAuthor(long authorId, long userId) {
-        if (authorId != userId){
+        if (authorId != userId) {
             throw new DataValidationException("You are not the author of this post");
         }
     }

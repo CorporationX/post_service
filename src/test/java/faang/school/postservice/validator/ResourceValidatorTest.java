@@ -3,7 +3,6 @@ package faang.school.postservice.validator;
 import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -11,10 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ResourceValidatorTest {
     private ResourceValidator resourceValidator = new ResourceValidator();
-
-    @BeforeEach
-    void setUp() {
-    }
 
     @Test
     void testValidateResourceLimitWhenCountIsGreaterThan10() {
