@@ -11,10 +11,11 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
+@Service
 @Slf4j
 @RequiredArgsConstructor
 public class CommentService {
@@ -27,7 +28,9 @@ public class CommentService {
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
-        userServiceClient.getUser(userContext.getUserId()); // проверка на существование юзера
+        if(!userServiceClient.isUserExists(userContext.getUserId())){
+            throw new DataValidationException("User does not exist");// проверка на существование юзера
+        }
         var comment = commentMapper.toEntity(commentDto);
         var post = postService.getPostById(postId);
         comment.setAuthorId(userContext.getUserId());// владелец запроса становится владельцем комментария

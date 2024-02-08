@@ -4,7 +4,6 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.CommentEditDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
@@ -79,13 +78,10 @@ class CommentServiceTest {
 
     @Test
     void testCreateCommentSavesComment() {
-        var userId = 1L;
         var commentDto = CommentDto.builder()
                 .content("afsd").build();
-        var userDto = UserDto.builder()
-                .id(userId).build();
 
-        when(userServiceClient.getUser(userContext.getUserId())).thenReturn(userDto);
+        when(userServiceClient.isUserExists(userContext.getUserId())).thenReturn(true);
         commentService.createComment(postId, commentDto);
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
@@ -103,6 +99,7 @@ class CommentServiceTest {
                 .authorId(0L)
                 .content("afsd").build();
         when(commentRepository.save(comment)).thenReturn(comment);
+        when(userServiceClient.isUserExists(userContext.getUserId())).thenReturn(true);
         assertEquals(returnedcommentDto, commentService.createComment(postId, commentDto));
     }
 
