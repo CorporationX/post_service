@@ -46,10 +46,11 @@ class PostControllerTest {
     void createDraftPostWithEmptyContent() {
         PostDto postDto = new PostDto();
         postDto.setAuthorId(1L);
-        Mockito.doThrow(new DataValidationException("Пост не может быть пустым")).when(postValidator).validateContentExists(postDto);
+        Mockito.doThrow(new DataValidationException("Пост не может быть пустым")).when(postValidator).validateContentExists(postDto.getContent());
         assertThrows(DataValidationException.class, () -> postController.createDraftPost(postDto));
 
         postDto.setContent("");
+        Mockito.doThrow(new DataValidationException("Пост не может быть пустым")).when(postValidator).validateContentExists(postDto.getContent());
         assertThrows(DataValidationException.class, () -> postController.createDraftPost(postDto));
     }
 
@@ -67,7 +68,7 @@ class PostControllerTest {
         UpdatePostDto postDto = new UpdatePostDto();
         postDto.setContent("");
         doThrow(new DataValidationException("Пост не может быть пустым"))
-                .when(postValidator).validateContentExists(postDto);
+                .when(postValidator).validateContentExists(postDto.getContent());
         assertThrows(DataValidationException.class,
                 () -> postController.updatePost(postDto, 1L));
     }

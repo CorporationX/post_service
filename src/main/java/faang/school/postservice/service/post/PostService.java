@@ -41,14 +41,13 @@ public class PostService {
         return savePost(postDto);
     }
 
-    public PostDto savePost(PostDto postDto) {
+    private PostDto savePost(PostDto postDto) {
         Post post = postMapper.toEntity(postDto);
         return postMapper.toDto(postRepository.save(post));
     }
 
     public PostDto publishPost(long id) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Пост с указанным ID не существует"));
+        Post post = findById(id);
         postValidator.validateIsNotPublished(post);
 
         post.setPublished(true);
@@ -63,14 +62,13 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public boolean deletePost(long id) {
+    public void deletePost(long id) {
         Post post = findById(id);
         if (post.isDeleted()) {
             throw new DataValidationException("Пост уже удален");
         } else {
             post.setDeleted(true);
             postRepository.save(post);
-            return true;
         }
     }
 
@@ -106,8 +104,7 @@ public class PostService {
 
     private List<PostDto> getSortedDrafts(List<Post> posts) {
         return posts.stream()
-                .filter(post -> !post.isDeleted())
-                .filter(post -> !post.isPublished())
+                .filter(post -> !post.isDeleted() && !post.isPublished())
                 .sorted((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()))
                 .map(postMapper::toDto)
                 .toList();
@@ -115,8 +112,7 @@ public class PostService {
 
     private List<PostDto> getSortedPublished(List<Post> posts) {
         return posts.stream()
-                .filter(post -> !post.isDeleted())
-                .filter(Post::isPublished)
+                .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .map(postMapper::toDto)
                 .toList();

@@ -56,7 +56,7 @@ class PostValidatorTest {
     @Test
     void validateContentExistsTest() {
         try {
-            postValidator.validateContentExists(postDto);
+            postValidator.validateContentExists(postDto.getContent());
         } catch (DataValidationException e) {
             assertEquals("Пост не может быть пустым", e.getMessage());
         }

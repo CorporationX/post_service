@@ -19,7 +19,7 @@ public class PostController {
     @PostMapping("/drafts")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
         postValidator.validateAuthorCount(postDto);
-        postValidator.validateContentExists(postDto);
+        postValidator.validateContentExists(postDto.getContent());
 
         return postService.createDraftPost(postDto);
     }
@@ -31,14 +31,14 @@ public class PostController {
 
     @PutMapping("/{id}")
     public PostDto updatePost(@RequestBody UpdatePostDto postDto, @PathVariable long id) {
-        postValidator.validateContentExists(postDto);
+        postValidator.validateContentExists(postDto.getContent());
 
         return postService.updatePost(postDto, id);
     }
 
     @DeleteMapping("/{id}")
-    public boolean deletePost(@PathVariable long id) {
-        return postService.deletePost(id);
+    public void deletePost(@PathVariable long id) {
+        postService.deletePost(id);
     }
 
     @GetMapping("/{id}")
