@@ -2,6 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.service.ResourceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +23,7 @@ public class ResourceController {
         return "File uploaded successfully";
     }
 
-    @PostMapping("/{postId}/resources/{resourceId}")
+    @DeleteMapping("/{postId}/resources/{resourceId}")
     public String deleteResource(@PathVariable Long postId, @PathVariable Long resourceId) {
         resourceService.deleteResource(postId,resourceId);
         return "File deleted successfully";

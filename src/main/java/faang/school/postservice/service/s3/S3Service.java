@@ -34,7 +34,7 @@ public class S3Service {
         String key = folder + "/" + file.getOriginalFilename();
         try {
             PutObjectRequest request = new PutObjectRequest(bucketName, key, file.getInputStream(), metadata);
-            processAndPutImage(request);
+            clientAmazonS3.putObject(request);
         } catch (IOException e) {
             log.error("Failed to upload file: ", e);
             throw new RuntimeException("Failed to upload file: " + e.getMessage());
