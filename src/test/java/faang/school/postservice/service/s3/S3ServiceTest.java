@@ -17,6 +17,7 @@ import java.io.InputStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -30,7 +31,7 @@ class S3ServiceTest {
     @Test
     void uploadFile_Success() throws Exception {
         // Создаем тестовый файл
-        InputStream inputStream = new FileInputStream("C:\\Users\\Kergshi\\Pictures\\kitty.jpg");
+        InputStream inputStream = mock(InputStream.class);
         int availableStream = inputStream.available();
         MultipartFile file = new MockMultipartFile("file.txt", "file.txt", "text/plain", inputStream);
 
