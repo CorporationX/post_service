@@ -36,8 +36,8 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentDto updateComment(Long postId, Long commentId, CommentEditDto commentEditDto) {
-        Comment commentToUpdate = getCommentFromPost(postId, commentId);
+    public CommentDto updateComment(Long commentId, CommentEditDto commentEditDto) {
+        Comment commentToUpdate = getComment(commentId);
         commentValidator.checkOwnerComment(commentToUpdate.getAuthorId(), userContext.getUserId());
         commentToUpdate.setContent(commentEditDto.getContent());
         commentRepository.save(commentToUpdate);
@@ -52,19 +52,15 @@ public class CommentService {
                 .toList());
     }
 
-    @Transactional //is it reading?
-    public void deleteComment(Long postId, Long commentId) {
-        var comment = getCommentFromPost(postId, commentId);
+    @Transactional
+    public void deleteComment(Long commentId) {
+        Comment comment = getComment(commentId);
         commentValidator.checkOwnerComment(comment.getAuthorId(), userContext.getUserId());
         commentRepository.delete(comment);
     }
 
-    private Comment getCommentFromPost(Long postId, Long commentId) {
-        var post = postService.getPostById(postId);
-        List<Comment> comments = post.getComments();
-        return comments.stream()
-                .filter(commentFromList -> commentId.equals(commentFromList.getId()))
-                .findAny()
+    private Comment getComment(Long commentId) {
+        return commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Comment has not been found"));
     }
 }

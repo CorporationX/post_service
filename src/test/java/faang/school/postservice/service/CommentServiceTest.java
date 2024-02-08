@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -113,8 +114,8 @@ class CommentServiceTest {
                 .id(commentId)
                 .authorId(0L)
                 .content("qwerty").build();
-        when(postService.getPostById(postId)).thenReturn(post);
-        assertEquals(returnedcommentDto, commentService.updateComment(postId, commentId, commentEditDto));
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+        assertEquals(returnedcommentDto, commentService.updateComment(commentId, commentEditDto));
     }
 
     @Test
@@ -137,16 +138,15 @@ class CommentServiceTest {
 
     @Test
     void testDeleteComment() {
-        when(postService.getPostById(postId)).thenReturn(post);
-        commentService.deleteComment(postId, commentId);
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+        commentService.deleteComment(commentId);
         verify(commentRepository, times(1)).delete(comment);
     }
 
     @Test
     void testDeleteCommentThrowsDataValidationException() {
-        when(postService.getPostById(postId)).thenReturn(postForTestException);
         assertThrows(DataValidationException.class, () -> {
-            commentService.deleteComment(postId, commentId);
+            commentService.deleteComment(commentId);
         });
     }
 }

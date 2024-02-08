@@ -31,13 +31,12 @@ public class CommentController {
         return commentService.createComment(postId, commentDto);
     }
 
-    @PutMapping("/{postId}/comment/{commentId}")
-    public CommentDto updateComment(@PathVariable Long postId, @PathVariable Long commentId,
+    @PutMapping("/comments/{commentId}")
+    public CommentDto updateComment(@PathVariable Long commentId,
                                     @RequestBody CommentEditDto commentEditDto) {
-        commentValidator.validateIdIsNotLessOne(postId);
         commentValidator.validateIdIsNotLessOne(commentId);
         commentValidator.validateContent(commentEditDto.getContent());
-        return commentService.updateComment(postId, commentId, commentEditDto);
+        return commentService.updateComment(commentId, commentEditDto);
     }
 
     @GetMapping("/{postId}/comments")
@@ -46,10 +45,9 @@ public class CommentController {
         return commentService.getCommentsByPostId(postId);
     }
 
-    @DeleteMapping("/{postId}/comment/{commentId}")
-    public void deleteComment(@PathVariable Long postId, @PathVariable Long commentId) {
-        commentValidator.validateIdIsNotLessOne(postId);
+    @DeleteMapping("/comments/{commentId}")
+    public void deleteComment(@PathVariable Long commentId) {
         commentValidator.validateIdIsNotLessOne(commentId);
-        commentService.deleteComment(postId, commentId);
+        commentService.deleteComment(commentId);
     }
 }
