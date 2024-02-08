@@ -63,14 +63,4 @@ class S3ServiceTest {
         s3Service.deleteFile("test_folder/file.txt");
         verify(clientAmazonS3, times(1)).deleteObject(null, "test_folder/file.txt");
     }
-
-//    @Test
-//    void testDownloadFileSuccess() throws FileNotFoundException {
-//        String key = "test_folder/file.txt";
-//        InputStream inputStream = mock(InputStream.class);
-//        S3Object s3Object = mock(S3Object.class);
-//        //s3Object.setObjectContent(inputStream);
-//        when(clientAmazonS3.getObject(null, key)).thenReturn(s3Object);
-//        assertEquals(inputStream, s3Service.downloadFile(key));
-//    }
 }

@@ -51,15 +51,6 @@ public class S3Service {
         clientAmazonS3.deleteObject(bucketName, key);
     }
 
-    public InputStream downloadFile(String key) {
-        try {
-            return clientAmazonS3.getObject(bucketName, key).getObjectContent();
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
     private void processAndPutImage(PutObjectRequest request) throws IOException {
         BufferedImage image = ImageIO.read(request.getInputStream());
         int width = image.getWidth();
