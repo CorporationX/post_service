@@ -40,7 +40,7 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
-services:services:
+services:
   s3:
     endpoint: http://127.0.0.1:9000
     accessKey: user
