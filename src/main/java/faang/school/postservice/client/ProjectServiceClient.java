@@ -12,12 +12,12 @@ import java.util.List;
 @FeignClient(name = "project-service", url = "${project-service.host}:${project-service.port}")
 public interface ProjectServiceClient {
 
-    @GetMapping("/project/{projectId}")
+    @GetMapping("/api/v1/project/{projectId}")
     ProjectDto getProject(@PathVariable("projectId") long projectId);
 
-    @PostMapping("/projects")
+    @PostMapping("/api/v1/projects")
     List<ProjectDto> getProjectsByIds(@RequestBody List<Long> ids);
 
-    @PostMapping("/projects/exists/{projectId}")
+    @PostMapping("/api/v1/projects/exists/{projectId}")
     void existsProjectById(@PathVariable("projectId") long projectId);
 }
