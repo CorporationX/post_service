@@ -14,6 +14,7 @@ import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -95,6 +96,11 @@ public class PostService {
     public List<PostDto> getPublishedPostsByProject(long projectId) {
         List<Post> foundedPosts = postRepository.findByProjectIdWithLikes(projectId);
         return getSortedPublished(foundedPosts);
+    }
+
+    @Transactional(readOnly = true)
+    public Post getPostById(Long postId) {
+        return findById(postId);
     }
 
     private Post findById(long id) {

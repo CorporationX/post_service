@@ -7,13 +7,16 @@ import faang.school.postservice.dto.CommentEditDto;
 import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.moderator.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 @Service
 @Slf4j
@@ -25,6 +28,7 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
+    private final ModerationDictionary moderationDictionary;
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
@@ -62,9 +66,23 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
+    public void moderateComment(){
+        List<Comment> comments = commentRepository.findAllCommentsByNotVerified();
+        comments.forEach(comment -> {
+            if(moderationDictionary.checkWord(comment.getContent())){
+                comment.setVerifiedDate(LocalDateTime.now());
+                comment.setVerified(false);
+                commentRepository.save(comment);
+            }
+        });
+
+    }
+
     private Comment getComment(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Comment has not been found"));
     }
+
+
 }
 

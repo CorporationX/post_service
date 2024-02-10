@@ -52,3 +52,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+cron:
+  schedule: "0 49 4 * * *"

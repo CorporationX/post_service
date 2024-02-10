@@ -7,8 +7,8 @@ import faang.school.postservice.dto.CommentEditDto;
 import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,11 +51,6 @@ class CommentServiceTest {
     private Long postId = 1L;
     private Long commentId = 1L;
     private Comment comment;
-    private Comment commentForTestException;
-    private List<Comment> comments;
-    private List<Comment> someCommentsForException;
-    private Post post;
-    private Post postForTestException;
 
     @BeforeEach
     void setUp() {
@@ -64,16 +59,6 @@ class CommentServiceTest {
         comment = Comment.builder()
                 .id(commentId)
                 .content("afsd").build();
-        commentForTestException = Comment.builder()
-                .id(2).build();
-        comments = List.of(comment);
-        someCommentsForException = List.of(commentForTestException);
-        post = Post.builder()
-                .id(postId)
-                .comments(comments).build();
-        postForTestException = Post.builder()
-                .id(postId)
-                .comments(someCommentsForException).build();
     }
 
     @Test
