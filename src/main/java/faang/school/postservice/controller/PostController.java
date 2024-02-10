@@ -1,7 +1,9 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,25 +22,26 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final UserContext userContext;
 
     @PostMapping("/draft")
-    public void createPostDraft(@RequestBody PostDto dto) {
+    public void createPostDraft(@RequestBody @Valid PostDto dto) {
         postService.createPostDraft(dto);
     }
 
     @PostMapping("/publish/{postId}")
     public void publishPost(@PathVariable long postId) {
-        postService.publishPost(postId);
+        postService.publishPost(postId, userContext.getUserId());
     }
 
     @PutMapping("/{postId}")
     public void updatePost(@PathVariable long postId, @RequestBody PostDto dto) {
-        postService.updatePost(postId, dto);
+        postService.updatePost(postId, userContext.getUserId(), dto);
     }
 
     @DeleteMapping("/{postId}")
     public void deletePost(@PathVariable long postId) {
-        postService.deletePost(postId);
+        postService.deletePost(postId, userContext.getUserId());
     }
 
     @GetMapping("/{postId}")

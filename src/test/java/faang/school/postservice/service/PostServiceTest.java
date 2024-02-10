@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.lenient;
@@ -34,7 +38,7 @@ public class PostServiceTest {
     @Mock
     private PostRepository postRepository;
 
-    @Mock
+    @Spy
     private PostMapperImpl postMapper;
 
     @Mock
@@ -51,6 +55,7 @@ public class PostServiceTest {
     @BeforeEach
     public void init() {
         postDto.setContent("content");
+        postDto.setId(10L);
         postDto.setAuthorId(1L);
         postDto.setProjectId(2L);
 
@@ -89,14 +94,26 @@ public class PostServiceTest {
     public void testCreateDraftSuccess() {
         postService.createPostDraft(postDto);
         Post post = postMapper.toEntity(postDto);
+        when(postRepository.save(post)).thenReturn(post);
         Post savedPost = postRepository.save(post);
+
         assertSame(post, savedPost);
+    }
+
+    @Test
+    public void testCreateDraftFailed() {
+        postService.createPostDraft(postDto);
+        Post post = postMapper.toEntity(postDto);
+        post.setId(30L);
+        when(postRepository.save(post1)).thenReturn(post1);
+        Post savedPost = postRepository.save(post1);
+        assertNotEquals(post.getId(), savedPost.getId());
     }
 
     @Test
     public void testPublishPostSuccess() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
-        postService.publishPost(1L);
+        postService.publishPost(1L, 1L);
         assertTrue(post1.isPublished());
     }
 
@@ -105,14 +122,23 @@ public class PostServiceTest {
         PostDto updatedDto = new PostDto();
         updatedDto.setContent("updated content");
         when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
-        postService.updatePost(1L, updatedDto);
+        postService.updatePost(1L, 1L, updatedDto);
         assertSame("updated content", post1.getContent());
+    }
+
+    @Test
+    public void testUpdatePostFailed() {
+        PostDto updatedDto = new PostDto();
+        updatedDto.setContent("updated content");
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
+        postService.updatePost(1L, 1L, updatedDto);
+        assertNotEquals("not updated content", post1.getContent());
     }
 
     @Test
     public void testDeletePostSuccess() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
-        postService.deletePost(1L);
+        postService.deletePost(1L, 1L);
         assertTrue(post1.isDeleted());
     }
 
@@ -133,6 +159,15 @@ public class PostServiceTest {
     }
 
     @Test
+    public void testGetAuthorDraftsFailed() {
+        List<Post> posts = List.of(post1, post2, post3);
+        when(postRepository.findByAuthorId(1L)).thenReturn(posts);
+        List<PostDto> postDtos = postService.getAuthorDrafts(1L);
+        verify(postRepository, Mockito.times(1)).findByAuthorId(1L);
+        assertNotEquals(3, postDtos.size());
+    }
+
+    @Test
     public void testGetProjectDraftsSuccess() {
         post1.setAuthorId(null);
         post1.setProjectId(1L);
@@ -143,7 +178,21 @@ public class PostServiceTest {
         List<Post> posts = List.of(post1, post2, post3);
         lenient().when(postRepository.findByProjectId(1L)).thenReturn(posts);
         List<PostDto> postDtos = postService.getProjectDrafts(1L);
-        assertEquals(0, postDtos.size());
+        assertEquals(1, postDtos.size());
+    }
+
+    @Test
+    public void testGetProjectDraftsFailed() {
+        post1.setAuthorId(null);
+        post1.setProjectId(1L);
+        post2.setAuthorId(null);
+        post2.setProjectId(1L);
+        post3.setAuthorId(null);
+        post3.setProjectId(1L);
+        List<Post> posts = List.of(post1, post2, post3);
+        lenient().when(postRepository.findByProjectId(1L)).thenReturn(posts);
+        List<PostDto> postDtos = postService.getProjectDrafts(1L);
+        assertNotEquals(2, postDtos.size());
     }
 
     @Test
@@ -152,6 +201,14 @@ public class PostServiceTest {
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
         List<PostDto> postDtos = postService.getAuthorDrafts(1L);
         assertEquals(1, postDtos.size());
+    }
+
+    @Test
+    public void testGetAuthorPostsFailed() {
+        List<Post> posts = List.of(post1, post2, post3);
+        when(postRepository.findByAuthorId(1L)).thenReturn(posts);
+        List<PostDto> postDtos = postService.getAuthorDrafts(1L);
+        assertNotEquals(5, postDtos.size());
     }
 
     @Test
@@ -169,25 +226,61 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testSortDrafts() {
+    public void testGetProjectPostsFailed() {
+        post1.setAuthorId(null);
+        post1.setProjectId(1L);
+        post2.setAuthorId(null);
+        post2.setProjectId(1L);
+        post3.setAuthorId(null);
+        post3.setProjectId(1L);
+        List<Post> posts = List.of(post1, post2, post3);
+        when(postRepository.findByProjectId(1L)).thenReturn(posts);
+        List<PostDto> postDtos = postService.getProjectPosts(1L);
+        assertNotEquals(3, postDtos.size());
+    }
+
+    @Test
+    public void testSortDraftsSuccess() {
         long ownerId = 1;
         List<Post> posts = List.of(post1, post2, post3);
         lenient().when(postRepository.findByProjectId(ownerId)).thenReturn(posts);
-        List<PostDto> expectedSortedDrafts = postMapper.toDtoList(List.of(post3, post2, post1));
-        List<PostDto> sortedDrafts = postService.sortDrafts(ownerId);
+        List<PostDto> expectedSortedDrafts = postMapper.toDtoList(List.of(post2));
+        List<PostDto> sortedDrafts = postService.sortDrafts(posts);
 
         assertEquals(expectedSortedDrafts, sortedDrafts);
     }
 
     @Test
-    public void testSortPosts() {
+    public void testSortDraftsFailed() {
         long ownerId = 1;
         List<Post> posts = List.of(post1, post2, post3);
         lenient().when(postRepository.findByProjectId(ownerId)).thenReturn(posts);
-        List<PostDto> expectedSortedDrafts = postMapper.toDtoList(List.of(post3, post2, post1));
-        List<PostDto> sortedDrafts = postService.sortDrafts(ownerId);
+        List<PostDto> expectedSortedDrafts = postMapper.toDtoList(List.of(post2, post3));
+        List<PostDto> sortedDrafts = postService.sortDrafts(posts);
+
+        assertNotEquals(expectedSortedDrafts, sortedDrafts);
+    }
+
+    @Test
+    public void testSortPostsSuccess() {
+        long ownerId = 1;
+        List<Post> posts = List.of(post1, post2, post3);
+        lenient().when(postRepository.findByProjectId(ownerId)).thenReturn(posts);
+        List<PostDto> expectedSortedDrafts = postMapper.toDtoList(List.of(post1));
+        List<PostDto> sortedDrafts = postService.sortPosts(posts);
 
         assertEquals(expectedSortedDrafts, sortedDrafts);
+    }
+
+    @Test
+    public void testSortPostsFailed() {
+        long ownerId = 1;
+        List<Post> posts = List.of(post1, post2, post3);
+        lenient().when(postRepository.findByProjectId(ownerId)).thenReturn(posts);
+        List<PostDto> expectedSortedDrafts = postMapper.toDtoList(List.of(post1, post2));
+        List<PostDto> sortedDrafts = postService.sortPosts(posts);
+
+        assertNotEquals(expectedSortedDrafts, sortedDrafts);
     }
 
 

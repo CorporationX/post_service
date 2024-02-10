@@ -1,7 +1,9 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,10 +17,19 @@ public class PostControllerTest {
     @Mock
     private PostService postService;
 
+    @Mock
+    private UserContext userContext;
+
     @InjectMocks
     private PostController postController;
 
-    private final PostDto postDto = new PostDto();
+    private PostDto postDto;
+
+    @BeforeEach
+    public void init() {
+        userContext.setUserId(1L);
+        postDto = new PostDto();
+    }
 
     @Test
     public void testCreatePostDraft() {
@@ -31,21 +42,21 @@ public class PostControllerTest {
     public void testPublishPost() {
         postController.publishPost(1L);
         Mockito.verify(postService, Mockito.times(1))
-                .publishPost(1L);
+                .publishPost(1L, userContext.getUserId());
     }
 
     @Test
     public void testUpdatePost() {
         postController.updatePost(1L, postDto);
         Mockito.verify(postService, Mockito.times(1))
-                .updatePost(1L, postDto);
+                .updatePost(1L, userContext.getUserId(), postDto);
     }
 
     @Test
     public void testDeletePost() {
         postController.deletePost(1L);
         Mockito.verify(postService, Mockito.times(1))
-                .deletePost(1L);
+                .deletePost(1L, userContext.getUserId());
     }
 
     @Test

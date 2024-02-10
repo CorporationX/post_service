@@ -42,7 +42,7 @@ post:
 
 user-service:
   host: localhost
-  port: 8080
+  port: 8083
 project-service:
   host: localhost
   port: 8082

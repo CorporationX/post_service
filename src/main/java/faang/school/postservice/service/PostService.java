@@ -6,6 +6,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,83 +25,76 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostValidator postValidator;
 
-    @Transactional
     public void createPostDraft(PostDto postDto) {
+        postValidator.validatePostOwnerExists(postDto);
         postValidator.validatePost(postDto);
         postRepository.save(postMapper.toEntity(postDto));
     }
 
     @Transactional
-    public void publishPost(long postId) {
+    public void publishPost(long postId, long ownerId) {
+        postValidator.validatePostByOwner(postId, ownerId);
         Post post = getPost(postId);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        postRepository.save(post);
-
     }
-
     @Transactional
-    public void updatePost(long postId, PostDto postDto) {
+    public void updatePost(long postId, long ownerId, PostDto postDto) {
+        postValidator.validatePostByOwner(postId, ownerId);
         Post post = getPost(postId);
         post.setContent(postDto.getContent());
-        postRepository.save(post);
     }
 
     @Transactional
-    public void deletePost(long postId) {
+    public void deletePost(long postId, long ownerId) {
+        postValidator.validatePostByOwner(postId, ownerId);
         Post post = getPost(postId);
         post.setDeleted(true);
-        postRepository.save(post);
     }
 
     public PostDto getPostById(long postId) {
-        Optional<Post> postOpt = postRepository.findById(postId);
-        Post post = postOpt.orElseThrow(() -> new DataValidationException("Post not found"));
-
-        return postMapper.toDto(post);
+        return postMapper.toDto(getPost(postId));
     }
 
     public Post getPost(long postId) {
-        Optional<Post> postOpt = postRepository.findById(postId);
-        return postOpt.orElseThrow(() -> new DataValidationException("Post not found"));
+        return postRepository.findById(postId).orElseThrow(() ->
+                new EntityNotFoundException("Post not found"));
     }
 
     @Transactional
     public List<PostDto> getAuthorDrafts(long authorId) {
         postValidator.validateAuthor(authorId);
-        return sortDrafts(authorId);
+        return sortDrafts(postRepository.findByAuthorId(authorId));
     }
 
     @Transactional
     public List<PostDto> getProjectDrafts(long projectId) {
         postValidator.validateProject(projectId);
-        return sortDrafts(projectId);
+        return sortDrafts(postRepository.findByProjectId(projectId));
     }
 
     @Transactional
     public List<PostDto> getAuthorPosts(long authorId) {
         postValidator.validateAuthor(authorId);
-        return sortPosts(authorId);
+        return sortPosts(postRepository.findByAuthorId(authorId));
     }
 
     @Transactional
     public List<PostDto> getProjectPosts(long projectId) {
         postValidator.validateProject(projectId);
-        return sortPosts(projectId);
+        return sortPosts(postRepository.findByProjectId(projectId));
     }
 
-    @Transactional
-    public List<PostDto> sortDrafts(long ownerId) {
-        return postRepository.findByAuthorId(ownerId).stream()
+    public List<PostDto> sortDrafts(List<Post> posts) {
+        return posts.stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public List<PostDto> sortPosts(long ownerId) {
-        return postRepository.findByProjectId(ownerId).stream()
+    public List<PostDto> sortPosts(List<Post> posts) {
+        return posts.stream()
                 .filter(post -> post.isPublished() && !post.isDeleted())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
