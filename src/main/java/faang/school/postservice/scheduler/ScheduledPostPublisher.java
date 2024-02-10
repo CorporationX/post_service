@@ -12,6 +12,6 @@ public class ScheduledPostPublisher {
 
     @Scheduled(cron = "0 0/1 * * * *")
     public void postPublisher() {
-
+        postService.publishScheduledPosts();
     }
 }

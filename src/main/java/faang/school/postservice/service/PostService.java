@@ -118,9 +118,17 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
     }
+
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
                 new faang.school.postservice.exceptions.DataValidationException("Post has not found"));
+    }
+
+    public void publishScheduledPosts() {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        List<Post> postsToPublish = postRepository.findReadyToPublish().stream()
+                .filter((post -> currentDateTime.isBefore(post.getPublishedAt())))
+                .toList();
     }
 }
