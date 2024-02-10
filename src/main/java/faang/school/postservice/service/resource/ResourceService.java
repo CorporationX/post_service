@@ -7,6 +7,7 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.s3.MyMultipartFile;
 import faang.school.postservice.service.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,9 +35,24 @@ public class ResourceService {
             throw new DataValidationException("Post with id " + postId + " not found.");
         }
         Post post = optionalPost.get();
-        long fileSize = file.getSize();
+        byte[] compressedImage = null;
+        // Проверяем размер файла до сжатия
+//        if (file.getSize() > 5 * 1024 * 1024) {
+//            compressedImage = s3Service.compressImageSize(file);
+//        }
+//        if(){}
         String folder = post.getId() + "/" + file.getName();
         Resource resource = s3Service.uploadFile(file, folder);
+        // Используем сжатые данные, если они доступны, иначе используем оригинальный файл
+//        if (compressedImage != null) {
+//            // Создаем MultipartFile из сжатых данных
+//            MultipartFile compressedFile = new MyMultipartFile(
+//                    file.getName(), file.getOriginalFilename(), file.getContentType(), compressedImage);
+//            resource = s3Service.uploadFile(compressedFile, folder);
+//        } else {
+//            resource = ;
+//        }
+
         resource.setPost(post);
         resource = resourceRepository.save(resource);
         log.info("File saved");

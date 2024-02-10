@@ -61,6 +61,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+
+    implementation ("net.coobird:thumbnailator:0.4.8")
+ //   testImplementation ("org.springframework:spring-test:5.3.13")
 }
 
 tasks.withType<Test> {
@@ -71,4 +75,19 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+
+///repositories {
+//    maven {
+//        url = uri("https://repository.aspose.com/repo/")
+//        name = "Aspose Java API"
+//        // Необязательно указывать id, но если требуется, можно добавить
+//        // id = 'AsposeJavaAPI'
+//    }
+//}
+
+dependencies {
+   // implementation("com.aspose:aspose-imaging:20.12:jdk16")
+
 }
