@@ -22,8 +22,8 @@ public class CommentValidator {
 
     public void validateCommentAuthor(CommentDto comment) {
         UserDto user = userServiceClient.getUser(comment.getAuthorId());
-        if(user == null) {
-            throw new DataValidationException("User data is not correct");
+        if (user == null) {
+            throw new DataValidationException("User from user service is null");
         }
         if (user.getId() == null || user.getUsername() == null || user.getEmail() == null) {
             throw new DataValidationException("User data is not correct");
