@@ -13,6 +13,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -133,6 +134,9 @@ public class PostService {
         List<Post> postsToPublish = postRepository.findReadyToPublish().stream()
                 .filter((post -> currentDateTime.isBefore(post.getPublishedAt())))
                 .toList();
+
+        List<List<Post>> subLists = ListUtils.partition(postsToPublish, 10);
+
 
 
 
