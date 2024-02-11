@@ -13,6 +13,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -30,6 +32,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
     private final ExecutorService publishedPostThreadPool;
+    private final AsyncPostPublishService asyncPostPublishService;
 
     public PostDto createDraftPost(PostDto postDto) {
         UserDto author = null;
@@ -130,14 +133,16 @@ public class PostService {
 
     @Transactional
     public void publishScheduledPosts() {
+        log.info("Started publish posts from scheduler");
         LocalDateTime currentDateTime = LocalDateTime.now();
         List<Post> postsToPublish = postRepository.findReadyToPublish().stream()
                 .filter((post -> currentDateTime.isBefore(post.getPublishedAt())))
                 .toList();
+        log.debug("Size of posts list o publish is {}", postsToPublish.size());
 
         List<List<Post>> subLists = ListUtils.partition(postsToPublish, 10);
 
-
+        subLists.forEach(list -> asyncPostPublishService.publishPost(list));
 
 
     }

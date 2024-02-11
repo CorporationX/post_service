@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 public class ThreadPoolConfig {
     @Bean
     public ExecutorService publishedPostThreadPool() {
-        ExecutorService service = Executors.newFixedThreadPool(10);
         return Executors.newFixedThreadPool(10);
     }
 }
