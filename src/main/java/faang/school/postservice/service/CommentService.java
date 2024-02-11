@@ -9,17 +9,24 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderator.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 @Service
 @Slf4j
+@Setter
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
@@ -30,9 +37,12 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final ModerationDictionary moderationDictionary;
 
+    @Value("${moderation.batchSize}")
+    private int batchSize;
+
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
-        if(!userServiceClient.isUserExists(userContext.getUserId())){
+        if (!userServiceClient.isUserExists(userContext.getUserId())) {
             throw new DataValidationException("User does not exist");// проверка на существование юзера
         }
         var comment = commentMapper.toEntity(commentDto);
@@ -66,23 +76,45 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
-    public void moderateComment(){
-        List<Comment> comments = commentRepository.findAllCommentsByNotVerified();
-        comments.forEach(comment -> {
-            if(moderationDictionary.checkWord(comment.getContent())){
-                comment.setVerifiedDate(LocalDateTime.now());
-                comment.setVerified(false);
-                commentRepository.save(comment);
-            }
-        });
+    @Transactional
+    public void moderateComment() {
+        List<Comment> unverifiedComments = commentRepository.findAllCommentsByNotVerified();
+        List<List<Comment>> commentSubLists = splitList(unverifiedComments, batchSize);
+        log.info("Starting moderation for {} comments", unverifiedComments.size());
+        ExecutorService executorService = Executors.newFixedThreadPool(commentSubLists.size());
+        for (List<Comment> subList : commentSubLists) {
+            executorService.submit(() -> {
+                subList.forEach(comment -> {
+                    giveStatusToComment(comment, !moderationDictionary.checkCommentForInsults(comment.getContent()));
+                });
+            });
+        }
+        log.info("Moderation for {} comments finished", unverifiedComments.size());
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(10, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    private void giveStatusToComment(Comment comment, boolean verified) {
+        comment.setVerifiedDate(LocalDateTime.now());
+        comment.setVerified(verified);
+        commentRepository.save(comment);
+    }
+
+    private List<List<Comment>> splitList(List<Comment> list, int batchSize) {
+        List<List<Comment>> lists = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += batchSize) {
+            lists.add(list.subList(i, Math.min(i + batchSize, list.size())));
+        }
+        return lists;
     }
 
     private Comment getComment(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Comment has not been found"));
     }
-
-
 }
 

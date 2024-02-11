@@ -1,4 +1,4 @@
-package faang.school.postservice.moderator;
+package faang.school.postservice.moderator.comment;
 
 import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;

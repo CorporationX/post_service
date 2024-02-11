@@ -54,4 +54,7 @@ payment-service:
   port: 9080
 
 cron:
-  schedule: "0 49 4 * * *"
+  schedule: "0 0 0 * * *"
+
+moderation:
+  batchSize: 100

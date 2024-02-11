@@ -7,8 +7,8 @@ import faang.school.postservice.dto.CommentEditDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.moderator.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +21,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +45,8 @@ class CommentServiceTest {
     private UserContext userContext;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private ModerationDictionary moderationDictionary;
     @InjectMocks
     private CommentService commentService;
     @Captor
@@ -130,5 +133,18 @@ class CommentServiceTest {
         assertThrows(DataValidationException.class, () -> {
             commentService.deleteComment(commentId);
         });
+    }
+
+    @Test
+    public void testModerateComment() {
+        commentService.setBatchSize(1);
+        List<Comment> unverifiedComments = Arrays.asList(new Comment(), new Comment());
+        when(commentRepository.findAllCommentsByNotVerified()).thenReturn(unverifiedComments);
+
+        commentService.moderateComment();
+
+        verify(commentRepository).findAllCommentsByNotVerified();
+        verify(moderationDictionary, times(unverifiedComments.size()))
+                .checkCommentForInsults(null);
     }
 }

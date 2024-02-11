@@ -18,16 +18,15 @@ public class ModerationDictionaryConfig {
 
     @Bean
     public ModerationDictionary moderationDictionary() {
-        Set<String> words=loadDictionary(insultsDictionary);
+        Set<String> words = loadDictionary(insultsDictionary);
         return new ModerationDictionary(words);
     }
 
-    private  Set<String> loadDictionary(String filePath) {
+    private Set<String> loadDictionary(String filePath) {
         Set<String> words = new HashSet<>();
-        try(BufferedReader reader = new BufferedReader(new FileReader(ResourceUtils.getFile(filePath)))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(ResourceUtils.getFile(filePath)))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                // метод для удаления случайных пробелов в начале и конце строки
                 words.add(line.trim());
             }
         } catch (Exception e) {
