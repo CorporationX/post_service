@@ -135,16 +135,13 @@ public class PostService {
     public void publishScheduledPosts() {
         log.info("Started publish posts from scheduler");
         LocalDateTime currentDateTime = LocalDateTime.now();
-        List<Post> postsToPublish = postRepository.findReadyToPublish().stream()
-                .filter((post -> currentDateTime.isBefore(post.getPublishedAt())))
-                .toList();
-        log.debug("Size of posts list o publish is {}", postsToPublish.size());
-
-        List<List<Post>> subLists = ListUtils.partition(postsToPublish, 10);
-
-        subLists.forEach(list -> asyncPostPublishService.publishPost(list));
-
-
+        List<Post> postsToPublish = postRepository.findReadyToPublish();
+        log.info("Size of posts list publish is {}", postsToPublish.size());
+        if (!postsToPublish.isEmpty()) {
+            List<List<Post>> subLists = ListUtils.partition(postsToPublish, 1);
+            subLists.forEach(asyncPostPublishService::publishPost);
+        }
+        log.info("Finished publish all posts at {}", currentDateTime);
     }
 
 }

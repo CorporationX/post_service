@@ -9,21 +9,23 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AsyncPostPublishService {
     private final PostRepository postRepository;
+//    private final ExecutorService publishedPostThreadPool;
 
     @Async("publishedPostThreadPool")
     public void publishPost(List<Post> posts) {
-        log.debug("Started async publish sublist of size {} on {}", posts.size(), Thread.currentThread().getName());
+        log.info("Started async publish sublist of size {} on Thread - {}", posts.size(), Thread.currentThread().getName());
         posts.forEach(post -> {
             post.setPublished(true);
             post.setPublishedAt(LocalDateTime.now());
         });
         postRepository.saveAll(posts);
-        log.debug("Finished publish {} posts on {}", posts.size(), Thread.currentThread().getName());
+        log.info("Finished publish {} posts on Thread - {}", posts.size(), Thread.currentThread().getName());
     }
 }
