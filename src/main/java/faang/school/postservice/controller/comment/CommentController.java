@@ -1,42 +1,43 @@
 package faang.school.postservice.controller.comment;
 
-import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.comment.CommentService;
-import faang.school.postservice.validation.comment.CommentValidation;
+import faang.school.postservice.validation.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/comments")
 public class CommentController {
 
     private final CommentService commentService;
-    private final CommentValidation commentValidation;
+    private final CommentValidator commentValidator;
 
 
-    @PostMapping
-    private void addNewComment(Long id, CommentDto comment) {
-        commentValidation.validateCommentData(comment);
-        commentService.addNewComment(id, comment);
+    @PostMapping("/add/{id}")
+    private CommentDto addNewComment(@PathVariable Long id, @RequestBody CommentDto comment) {
+        commentValidator.validateCommentData(comment);
+        return commentService.addNewComment(id, comment);
     }
 
-    @PutMapping
-    private void changeComment(Long id, CommentDto comment) {
-        commentValidation.validateCommentData(comment);
-        commentService.changeComment(id, comment);
+    @PutMapping("/change")
+    private CommentDto changeComment(@RequestBody CommentDto comment) {
+        commentValidator.validateCommentData(comment);
+        return commentService.changeComment(comment);
     }
 
-    @PutMapping
-    private void deleteComment(Long id, CommentDto comment) {
-        commentService.deleteComment(id, comment);
+    @GetMapping("/getAll/{id}")
+    private List<CommentDto> getAllComments(@PathVariable Long id) {
+        return commentService.getAllComments(id);
     }
 
-    @GetMapping
-    private void getAllComments(Long id) {
-        commentService.getAllComments(id);
+
+    @PostMapping("/delete")
+    private CommentDto deleteComment(@RequestBody CommentDto comment) {
+        return commentService.deleteComment(comment);
     }
+
 }

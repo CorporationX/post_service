@@ -1,12 +1,13 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.exception.comment.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validation.comment.CommentValidation;
+import faang.school.postservice.validation.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,31 +19,29 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final CommentValidation commentValidation;
+    private final CommentValidator commentValidator;
     private final CommentMapper commentMapper;
 
 
     public CommentDto addNewComment(Long id, CommentDto commentDto) {
-        commentValidation.validateCommentAuthor(commentDto);
+        commentValidator.validateCommentAuthor(commentDto);
         Comment comment = commentMapper.toEntity(commentDto);
-        Post post = postRepository.findById(commentDto.getAuthorId()).orElseThrow(null);
-        Post post = getPostById(post, id);
+        Post post = getPostById(id);
         comment.setPost(post);
         commentRepository.save(comment);
-        return commentDto;
+        return commentMapper.toDTO(comment);
     }
 
-    public CommentDto changeComment(Long id, CommentDto commentDto) {
-        commentValidation.validateCommentAuthor(commentDto);
+    public CommentDto changeComment(CommentDto commentDto) {
+        commentValidator.validateCommentAuthor(commentDto);
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setContent(commentDto.getContent());
         commentRepository.save(comment);
-        return commentDto;
+        return commentMapper.toDTO(comment);
     }
 
-    public CommentDto deleteComment(Long id, CommentDto commentDto) {
-        Comment comment = commentMapper.toEntity(commentDto);
-        commentRepository.deleteById(id);
+    public CommentDto deleteComment(CommentDto commentDto) {
+        commentRepository.deleteById(commentDto.getId());
         return commentDto;
     }
 
@@ -51,10 +50,8 @@ public class CommentService {
         return commentMapper.toDtoList(allByPostId);
     }
 
-    public Post getPostById(List<Post> posts, Long id) {
-        return posts.stream()
-                .filter(p -> p.getAuthorId().equals(id))
-                .findFirst()
-                .orElseThrow(null);
+    public Post getPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new DataValidationException("There are no posts with that ID"));
     }
 }
