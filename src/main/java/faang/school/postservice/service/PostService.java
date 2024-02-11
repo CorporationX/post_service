@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
+    private final ExecutorService publishedPostThreadPool;
 
     public PostDto createDraftPost(PostDto postDto) {
         UserDto author = null;
@@ -125,10 +127,15 @@ public class PostService {
                 new faang.school.postservice.exceptions.DataValidationException("Post has not found"));
     }
 
+    @Transactional
     public void publishScheduledPosts() {
         LocalDateTime currentDateTime = LocalDateTime.now();
         List<Post> postsToPublish = postRepository.findReadyToPublish().stream()
                 .filter((post -> currentDateTime.isBefore(post.getPublishedAt())))
                 .toList();
+
+
+
     }
+
 }
