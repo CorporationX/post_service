@@ -1,6 +1,6 @@
 package faang.school.postservice.validator;
 
-import faang.school.postservice.exceptions.DataValidationException;
+import faang.school.postservice.exception.DataValidationException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
