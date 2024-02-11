@@ -15,11 +15,13 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 @Slf4j
@@ -31,7 +33,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
-    private final ExecutorService publishedPostThreadPool;
+    private final Executor publishedPostThreadPool;
     private final AsyncPostPublishService asyncPostPublishService;
 
     public PostDto createDraftPost(PostDto postDto) {
@@ -136,12 +138,13 @@ public class PostService {
         log.info("Started publish posts from scheduler");
         LocalDateTime currentDateTime = LocalDateTime.now();
         List<Post> postsToPublish = postRepository.findReadyToPublish();
-        log.info("Size of posts list publish is {}", postsToPublish.size());
         if (!postsToPublish.isEmpty()) {
+            log.info("Size of posts list publish is {}", postsToPublish.size());
             List<List<Post>> subLists = ListUtils.partition(postsToPublish, 1);
             subLists.forEach(asyncPostPublishService::publishPost);
+            log.info("Finished publish all posts at {}", currentDateTime);
+        } else {
+            log.info("Unpublished posts at {} not found", currentDateTime);
         }
-        log.info("Finished publish all posts at {}", currentDateTime);
     }
-
 }

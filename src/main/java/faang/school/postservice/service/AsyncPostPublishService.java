@@ -9,14 +9,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AsyncPostPublishService {
     private final PostRepository postRepository;
-//    private final ExecutorService publishedPostThreadPool;
 
     @Async("publishedPostThreadPool")
     public void publishPost(List<Post> posts) {
@@ -26,6 +24,11 @@ public class AsyncPostPublishService {
             post.setPublishedAt(LocalDateTime.now());
         });
         postRepository.saveAll(posts);
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         log.info("Finished publish {} posts on Thread - {}", posts.size(), Thread.currentThread().getName());
     }
 }
