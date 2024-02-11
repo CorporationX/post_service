@@ -18,17 +18,12 @@ public class AsyncPostPublishService {
 
     @Async("publishedPostThreadPool")
     public void publishPost(List<Post> posts) {
-        log.info("Started async publish sublist of size {} on Thread - {}", posts.size(), Thread.currentThread().getName());
+        log.info("Started async publish sublist of size {}", posts.size());
         posts.forEach(post -> {
             post.setPublished(true);
             post.setPublishedAt(LocalDateTime.now());
         });
         postRepository.saveAll(posts);
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        log.info("Finished publish {} posts on Thread - {}", posts.size(), Thread.currentThread().getName());
+        log.info("Finished publish {} post(s)", posts.size());
     }
 }

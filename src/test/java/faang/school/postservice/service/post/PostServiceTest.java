@@ -10,6 +10,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.AsyncPostPublishService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +46,8 @@ class PostServiceTest {
     private ProjectServiceClient projectServiceClient;
     @Spy
     private PostMapperImpl postMapper = new PostMapperImpl();
+    @Mock
+    private AsyncPostPublishService asyncPostPublishService;
 
     @InjectMocks
     private PostService postService;
@@ -73,7 +80,7 @@ class PostServiceTest {
 
         when(userServiceClient.getUser(postDto.getAuthorId())).thenReturn(null);
         Mockito.doThrow(new DataValidationException("У поста должен быть только один автор"))
-                .when(postValidator).validateAuthorExists(Mockito.any(), Mockito.any());
+                .when(postValidator).validateAuthorExists(any(), any());
 
         assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto));
     }
@@ -86,7 +93,7 @@ class PostServiceTest {
                 .thenReturn(new UserDto(1L, "user1", "user1@mail"));
         postService.createDraftPost(postDto);
 
-        Mockito.verify(postRepository, Mockito.times(1)).save(Mockito.any());
+        Mockito.verify(postRepository, Mockito.times(1)).save(any());
     }
 
     @Test
@@ -105,7 +112,7 @@ class PostServiceTest {
 
         when(postRepository.findById(id)).thenReturn(Optional.of(post));
         Mockito.doThrow(new DataValidationException("Пост уже опубликован"))
-                .when(postValidator).validateIsNotPublished(Mockito.any());
+                .when(postValidator).validateIsNotPublished(any());
 
         assertThrows(DataValidationException.class, () -> postService.publishPost(id));
     }
@@ -258,5 +265,22 @@ class PostServiceTest {
         assertEquals(2, result.size());
         assertEquals(postMapper.toDto(newPublishedPost), result.get(0));
         assertEquals(postMapper.toDto(oldPublishedPost), result.get(1));
+    }
+
+    @Test
+    public void publishScheduledPosts_when() {
+        //Arrange
+        List<Post> posts = List.of(
+                Post.builder().content("text").authorId(1L).published(false).build()
+        );
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+
+        //Act
+        postService.publishScheduledPosts();
+
+        //Assert
+        verify(postRepository, times(1)).findReadyToPublish();
+        verify(asyncPostPublishService, times(1)).publishPost(any());
+
     }
 }

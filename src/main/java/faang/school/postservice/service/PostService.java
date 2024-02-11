@@ -15,14 +15,11 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 
 @Slf4j
 @Service
@@ -33,8 +30,9 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
-    private final Executor publishedPostThreadPool;
     private final AsyncPostPublishService asyncPostPublishService;
+
+    public static final int SIZE_SUBLIST = 100;
 
     public PostDto createDraftPost(PostDto postDto) {
         UserDto author = null;
@@ -140,7 +138,7 @@ public class PostService {
         List<Post> postsToPublish = postRepository.findReadyToPublish();
         if (!postsToPublish.isEmpty()) {
             log.info("Size of posts list publish is {}", postsToPublish.size());
-            List<List<Post>> subLists = ListUtils.partition(postsToPublish, 1);
+            List<List<Post>> subLists = ListUtils.partition(postsToPublish, SIZE_SUBLIST);
             subLists.forEach(asyncPostPublishService::publishPost);
             log.info("Finished publish all posts at {}", currentDateTime);
         } else {
