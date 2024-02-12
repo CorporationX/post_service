@@ -101,7 +101,7 @@ public class PostService {
         return filterPosts(posts, true);
     }
 
-    private Post searchPostById(long id) {
+    public Post searchPostById(long id) {
         Optional<Post> optionalPost = postRepository.findById(id);
         if (optionalPost.isEmpty()) {
             throw new DataValidationException("Post with id " + id + " not found.");

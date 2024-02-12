@@ -1,13 +1,11 @@
 package faang.school.postservice.service.resource;
 
-import com.amazonaws.services.s3.AmazonS3;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.service.s3.MyMultipartFile;
 import faang.school.postservice.service.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +20,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ResourceService {
     private final PostRepository postRepository;
-    private final AmazonS3 clientAmazonS3;
     public final S3Service s3Service;
     private final ResourceRepository resourceRepository;
     private final PostService postService;
@@ -30,34 +27,38 @@ public class ResourceService {
 
     @Transactional
     public void addResource(long postId, MultipartFile file) {
-        Optional<Post> optionalPost = postRepository.findById(postId);
-        if (optionalPost.isEmpty()) {
-            throw new DataValidationException("Post with id " + postId + " not found.");
+        Post post = postService.searchPostById(postId);
+        if (post.getResources().size() == 10) {
+            log.info("There are already 10 pictures in the post");
+            throw new DataValidationException("A post can only have 10 images");
         }
-        Post post = optionalPost.get();
-        byte[] compressedImage = null;
-        // Проверяем размер файла до сжатия
-//        if (file.getSize() > 5 * 1024 * 1024) {
-//            compressedImage = s3Service.compressImageSize(file);
-//        }
-//        if(){}
         String folder = post.getId() + "/" + file.getName();
         Resource resource = s3Service.uploadFile(file, folder);
-        // Используем сжатые данные, если они доступны, иначе используем оригинальный файл
-//        if (compressedImage != null) {
-//            // Создаем MultipartFile из сжатых данных
-//            MultipartFile compressedFile = new MyMultipartFile(
-//                    file.getName(), file.getOriginalFilename(), file.getContentType(), compressedImage);
-//            resource = s3Service.uploadFile(compressedFile, folder);
-//        } else {
-//            resource = ;
-//        }
-
+        log.info("File {} upload", resource.getName());
         resource.setPost(post);
         resource = resourceRepository.save(resource);
-        log.info("File saved");
-
         post.getResources().add(resource);
         postRepository.save(post);
+        log.info("File {} saved", resource.getName());
+    }
+
+
+    @Transactional
+    public void deleteResource(long postId, long resourceId) {
+        Post post = postService.searchPostById(postId);
+        Resource resource = resourceRepository.getReferenceById(resourceId);
+        Optional<Resource> optionalResource = post.getResources().stream()
+                .filter(resource1 -> resource.getId() == resourceId)
+                .findFirst();
+        if (optionalResource.isEmpty()) {
+            log.info("Resource is empty");
+            throw new DataValidationException("Resource with id " + resourceId + " does not belong to post with id " + postId);
+        }
+        post.getResources().remove(resource);
+        postRepository.save(post);
+        resourceRepository.delete(resource);
+        String key = resource.getKey();
+        log.info("File {} delete", resource.getName());
+        s3Service.deleteFile(key);
     }
 }

@@ -7,12 +7,12 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,25 +29,13 @@ public class S3Service {
     private String bucketName;
 
     public Resource uploadFile(MultipartFile file, String folder) {
-        byte[] imageData = null;
-        try {
-            // Проверяем размер файла перед сжатием
-            if (file.getSize() > 5 * 1024 * 1024) {
-                // Сжимаем файл перед загрузкой
-                imageData = compressImageSize(file);
-            } else {
-                // Используем оригинальный файл без сжатия
-                imageData = file.getBytes();
-            }
-        } catch (IOException e) {
-            log.error("Error compressing image: ", e.getMessage());
-            throw new RuntimeException("Error compressing image: " + e.getMessage());
-        }
-
+        byte[] imageData = compressImage(file);
         long fileSize = imageData.length;
+
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(fileSize);
         objectMetadata.setContentType(file.getContentType());
+
         String key = String.format("%s/%d%s", folder, System.currentTimeMillis(), file.getOriginalFilename());
         try {
             PutObjectRequest putObjectRequest = new PutObjectRequest(
@@ -65,41 +53,49 @@ public class S3Service {
                 .name(file.getName())
                 .build();
         log.info("Created a new resource");
-
         return resource;
-
     }
 
-    public byte[] compressImageSize(MultipartFile file){
+    public void deleteFile(String key) {
+        clientAmazonS3.deleteObject(bucketName, key);
+        log.info("Resource deleted: {}", key);
+    }
+
+    private byte[] compressImage(MultipartFile file) {
         try {
-            // Загрузить изображение в объект BufferedImage
             BufferedImage originalImage = ImageIO.read(file.getInputStream());
 
-            // Начальное значение качества сжатия
-            float quality = 1.0f;
-            // Устанавливаем максимальный размер файла в байтах (5 Мб)
-            long maxSizeBytes = 5 * 1024 * 1024;
+            int targetWidth = 1080;
+            int targetHeight = 566;
+            int originalWidth = originalImage.getWidth();
+            int originalHeight = originalImage.getHeight();
 
-            // Применить сжатие и изменить размер
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            while (true) {
-                Thumbnails.of(originalImage)
-                        .size(1080, 1080)
-                        .outputFormat("jpg")
-                        .outputQuality(quality) // Используем текущее значение качества
-                        .toOutputStream(outputStream);
-                if (outputStream.size() <= maxSizeBytes || quality <= 0.1) { // Учтем минимальное качество
-                    break;
-                }
-                quality -= 0.1f; // Уменьшаем качество на 0.1
-                outputStream.reset(); // Очищаем поток для нового сжатия
+            if (originalWidth <= targetWidth && originalHeight <= targetHeight) {
+                return file.getBytes();
             }
+
+            int newWidth, newHeight;
+            double aspectRatio = (double) originalWidth / originalHeight;
+            if (originalWidth > originalHeight) {
+                newWidth = targetWidth;
+                newHeight = (int) (newWidth / aspectRatio);
+            } else {
+                newHeight = targetHeight;
+                newWidth = (int) (newHeight * aspectRatio);
+            }
+
+            BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
+            Graphics2D g = resizedImage.createGraphics();
+            g.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+            g.dispose();
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ImageIO.write(resizedImage, "jpg", outputStream);
+
             return outputStream.toByteArray();
         } catch (IOException e) {
-
+            log.error("Error compressing image: " + e.getMessage(), e);
             throw new RuntimeException("Error compressing image: " + e.getMessage(), e);
         }
     }
-
-
 }

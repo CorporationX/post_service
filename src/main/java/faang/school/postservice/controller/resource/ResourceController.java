@@ -5,8 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/post")
@@ -14,8 +12,14 @@ public class ResourceController {
     private final ResourceService resourceService;
 
     @PostMapping("/{postId}/image")
-    public String addResource(@PathVariable long postId,  @RequestPart(value = "file")  MultipartFile file) throws IOException {
+    public String addResource(@PathVariable long postId, @RequestPart(value = "file") MultipartFile file) {
         resourceService.addResource(postId, file);
-        return "File uploaded successfully";
+        return String.format("File %s uploaded successfully", file.getName());
+    }
+
+    @DeleteMapping("/{postId}/image/{imageId}")
+    public String deleteResource(@PathVariable long postId, @PathVariable long imageId) {
+        resourceService.deleteResource(postId, imageId);
+        return "File deleted";
     }
 }
