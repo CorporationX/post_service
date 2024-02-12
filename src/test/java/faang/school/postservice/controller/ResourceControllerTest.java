@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.service.ResourceService;
+import faang.school.postservice.validator.ResourceValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +15,8 @@ import static org.mockito.Mockito.verify;
 class ResourceControllerTest {
     @Mock
     private ResourceService resourceService;
+    @Mock
+    private ResourceValidator resourceValidator;
     @InjectMocks
     private ResourceController resourceController;
 

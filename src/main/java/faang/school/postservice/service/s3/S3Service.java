@@ -34,7 +34,7 @@ public class S3Service {
         String key = folder + "/" + file.getOriginalFilename();
         try {
             PutObjectRequest request = new PutObjectRequest(bucketName, key, file.getInputStream(), metadata);
-            clientAmazonS3.putObject(request);
+            processAndPutImage(request);
         } catch (IOException e) {
             log.error("Failed to upload file: ", e);
             throw new RuntimeException("Failed to upload file: " + e.getMessage());
@@ -57,12 +57,24 @@ public class S3Service {
         int height = image.getHeight();
         int maxValue = 1080;
         int anotherMaxValue = 566;
-        if ((width > height) && (width > maxValue) && (height > anotherMaxValue)) {
-            scaleAndPutImage(image, maxValue, anotherMaxValue, request);
-        } else if ((width == height) && (width > maxValue) && (height > maxValue)) {
+        if (width > height) {
+            if ((width > maxValue) && (height > anotherMaxValue)){
+                scaleAndPutImage(image, maxValue, anotherMaxValue, request);
+            }else if(width > maxValue){
+                scaleAndPutImage(image,maxValue,height,request);
+            } else if (height>anotherMaxValue) {
+                scaleAndPutImage(image,width,anotherMaxValue,request);
+            }
+        } else if (width == height && width > maxValue) {
             scaleAndPutImage(image, maxValue, maxValue, request);
-        } else if ((width < height) && (width > anotherMaxValue) && (height > maxValue)) {
-            scaleAndPutImage(image, anotherMaxValue, maxValue, request);
+        } else if (width < height) {
+            if ((width > anotherMaxValue) && (height > maxValue)) {
+                scaleAndPutImage(image, anotherMaxValue, maxValue, request);
+            } else if (width > anotherMaxValue) {
+                scaleAndPutImage(image, anotherMaxValue, height, request);
+            } else if (height >maxValue) {
+                scaleAndPutImage(image,width,maxValue,request);
+            }
         } else {
             clientAmazonS3.putObject(request);
         }

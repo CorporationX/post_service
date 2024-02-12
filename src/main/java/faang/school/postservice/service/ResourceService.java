@@ -38,7 +38,7 @@ public class ResourceService {
     @Transactional
     public void deleteResource(Long postId, Long resourceId) {
         resourceValidator.validateUserIsPostAuthor(postService.getPostById(postId).getAuthorId(), userContext.getUserId());
-        Resource resource = resourceRepository.findById(resourceId).orElseThrow();
+        Resource resource = resourceRepository.findById(resourceId).orElseThrow(() -> new RuntimeException("Resource not found"));
         resourceValidator.validateResourceBelongsToPost(resource, postId);
         s3Service.deleteFile(resource.getKey());
         log.info("Resource deleted: {}", resource.getKey());
