@@ -4,8 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.CommentEditDto;
-import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exceptions.DataValidationException;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -23,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -78,13 +78,10 @@ class CommentServiceTest {
 
     @Test
     void testCreateCommentSavesComment() {
-        var userId = 1L;
         var commentDto = CommentDto.builder()
                 .content("afsd").build();
-        var userDto = UserDto.builder()
-                .id(userId).build();
 
-        when(userServiceClient.getUser(userContext.getUserId())).thenReturn(userDto);
+        when(userServiceClient.isUserExists(userContext.getUserId())).thenReturn(true);
         commentService.createComment(postId, commentDto);
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
@@ -102,6 +99,7 @@ class CommentServiceTest {
                 .authorId(0L)
                 .content("afsd").build();
         when(commentRepository.save(comment)).thenReturn(comment);
+        when(userServiceClient.isUserExists(userContext.getUserId())).thenReturn(true);
         assertEquals(returnedcommentDto, commentService.createComment(postId, commentDto));
     }
 
@@ -113,17 +111,8 @@ class CommentServiceTest {
                 .id(commentId)
                 .authorId(0L)
                 .content("qwerty").build();
-        when(postService.getPostById(postId)).thenReturn(post);
-        assertEquals(returnedcommentDto, commentService.updateComment(postId, commentId, commentEditDto));
-    }
-
-    @Test
-    void testUpdateCommentThrowsDataValidationException() {
-        var commentEditDto = CommentEditDto.builder().build();
-        when(postService.getPostById(postId)).thenReturn(postForTestException);
-        assertThrows(DataValidationException.class, () -> {
-            commentService.updateComment(postId, commentId, commentEditDto);
-        });
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+        assertEquals(returnedcommentDto, commentService.updateComment(commentId, commentEditDto));
     }
 
     @Test
@@ -146,16 +135,15 @@ class CommentServiceTest {
 
     @Test
     void testDeleteComment() {
-        when(postService.getPostById(postId)).thenReturn(post);
-        commentService.deleteComment(postId, commentId);
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+        commentService.deleteComment(commentId);
         verify(commentRepository, times(1)).delete(comment);
     }
 
     @Test
     void testDeleteCommentThrowsDataValidationException() {
-        when(postService.getPostById(postId)).thenReturn(postForTestException);
         assertThrows(DataValidationException.class, () -> {
-            commentService.deleteComment(postId, commentId);
+            commentService.deleteComment(commentId);
         });
     }
 }

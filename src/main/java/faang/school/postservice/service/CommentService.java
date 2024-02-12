@@ -4,7 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.CommentEditDto;
-import faang.school.postservice.exceptions.DataValidationException;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
@@ -15,9 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-@Slf4j
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
@@ -27,10 +26,11 @@ public class CommentService {
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
 
-    // не забыть логи
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
-        userServiceClient.getUser(userContext.getUserId()); // проверка на существование юзера
+        if(!userServiceClient.isUserExists(userContext.getUserId())){
+            throw new DataValidationException("User does not exist");// проверка на существование юзера
+        }
         var comment = commentMapper.toEntity(commentDto);
         var post = postService.getPostById(postId);
         comment.setAuthorId(userContext.getUserId());// владелец запроса становится владельцем комментария
@@ -39,12 +39,10 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentDto updateComment(Long postId, Long commentId, CommentEditDto commentEditDto) {
-        var commentToUpdate = getCommentFromPost(postId, commentId);
+    public CommentDto updateComment(Long commentId, CommentEditDto commentEditDto) {
+        Comment commentToUpdate = getComment(commentId);
         commentValidator.checkOwnerComment(commentToUpdate.getAuthorId(), userContext.getUserId());
-        if (!commentEditDto.getContent().isBlank()) {
-            commentToUpdate.setContent(commentEditDto.getContent());
-        }
+        commentToUpdate.setContent(commentEditDto.getContent());
         commentRepository.save(commentToUpdate);
         return commentMapper.toDto(commentToUpdate);
     }
@@ -57,19 +55,15 @@ public class CommentService {
                 .toList());
     }
 
-    @Transactional //is it reading?
-    public void deleteComment(Long postId, Long commentId) {
-        var comment = getCommentFromPost(postId, commentId);
+    @Transactional
+    public void deleteComment(Long commentId) {
+        Comment comment = getComment(commentId);
         commentValidator.checkOwnerComment(comment.getAuthorId(), userContext.getUserId());
         commentRepository.delete(comment);
     }
 
-    private Comment getCommentFromPost(Long postId, Long commentId) {
-        var post = postService.getPostById(postId);
-        List<Comment> comments = post.getComments();
-        return comments.stream()
-                .filter(commentFromList -> commentId.equals(commentFromList.getId()))
-                .findAny()
+    private Comment getComment(Long commentId) {
+        return commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Comment has not been found"));
     }
 }

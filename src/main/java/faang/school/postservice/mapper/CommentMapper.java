@@ -10,6 +10,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
+    @Mapping(target = "post.id", source = "postId")
     Comment toEntity(CommentDto commentDto);
 
     @Mapping(target = "postId", source = "post.id")

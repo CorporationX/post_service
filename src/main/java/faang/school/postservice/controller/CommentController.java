@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/post")
+@RequestMapping("/posts")
 public class CommentController {
     private final CommentService commentService;
     private final CommentValidator commentValidator;
@@ -27,17 +27,16 @@ public class CommentController {
     @PostMapping("/{postId}/comment")
     public CommentDto createComment(@PathVariable Long postId, @RequestBody CommentDto commentDto) {
         commentValidator.validateIdIsNotLessOne(postId);
-        commentValidator.validateComment(commentDto);
+        commentValidator.validateContent(commentDto.getContent());
         return commentService.createComment(postId, commentDto);
     }
 
-    @PutMapping("/{postId}/comment/{commentId}")
-    public CommentDto updateComment(@PathVariable Long postId, @PathVariable Long commentId,
+    @PutMapping("/comments/{commentId}")
+    public CommentDto updateComment(@PathVariable Long commentId,
                                     @RequestBody CommentEditDto commentEditDto) {
-        commentValidator.validateIdIsNotLessOne(postId);
         commentValidator.validateIdIsNotLessOne(commentId);
-        commentValidator.validateComment(commentEditDto);
-        return commentService.updateComment(postId, commentId, commentEditDto);
+        commentValidator.validateContent(commentEditDto.getContent());
+        return commentService.updateComment(commentId, commentEditDto);
     }
 
     @GetMapping("/{postId}/comments")
@@ -46,10 +45,9 @@ public class CommentController {
         return commentService.getCommentsByPostId(postId);
     }
 
-    @DeleteMapping("/{postId}/comment/{commentId}")
-    public void deleteComment(@PathVariable Long postId, @PathVariable Long commentId) {
-        commentValidator.validateIdIsNotLessOne(postId);
+    @DeleteMapping("/comments/{commentId}")
+    public void deleteComment(@PathVariable Long commentId) {
         commentValidator.validateIdIsNotLessOne(commentId);
-        commentService.deleteComment(postId, commentId);
+        commentService.deleteComment(commentId);
     }
 }

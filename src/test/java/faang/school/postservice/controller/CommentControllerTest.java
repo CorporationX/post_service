@@ -32,11 +32,10 @@ class CommentControllerTest {
 
     @Test
     void testUpdateCommentShouldCallServiceMethod() {
-        var postId = 1L;
         var commentId = 1L;
         var commentEditDto = CommentEditDto.builder().content("content").build();
-        commentController.updateComment(postId, commentId, commentEditDto);
-        verify(commentService, times(1)).updateComment(postId, commentId, commentEditDto);
+        commentController.updateComment(commentId, commentEditDto);
+        verify(commentService, times(1)).updateComment(commentId, commentEditDto);
     }
 
     @Test
@@ -48,9 +47,8 @@ class CommentControllerTest {
 
     @Test
     void testDeleteCommentShouldCallServiceMethod() {
-        var postId = 1L;
         var commentId = 1L;
-        commentController.deleteComment(postId, commentId);
-        verify(commentService, times(1)).deleteComment(postId, commentId);
+        commentController.deleteComment(commentId);
+        verify(commentService, times(1)).deleteComment(commentId);
     }
 }
