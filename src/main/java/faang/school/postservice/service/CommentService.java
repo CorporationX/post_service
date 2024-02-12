@@ -13,12 +13,12 @@ import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -79,7 +79,7 @@ public class CommentService {
     @Transactional
     public void moderateComment() {
         List<Comment> unverifiedComments = commentRepository.findAllCommentsByNotVerified();
-        List<List<Comment>> commentSubLists = splitList(unverifiedComments, batchSize);
+        List<List<Comment>> commentSubLists = ListUtils.partition(unverifiedComments, batchSize);
         log.info("Starting moderation for {} comments", unverifiedComments.size());
         ExecutorService executorService = Executors.newFixedThreadPool(commentSubLists.size());
         for (List<Comment> subList : commentSubLists) {
@@ -102,14 +102,6 @@ public class CommentService {
         comment.setVerifiedDate(LocalDateTime.now());
         comment.setVerified(verified);
         commentRepository.save(comment);
-    }
-
-    private List<List<Comment>> splitList(List<Comment> list, int batchSize) {
-        List<List<Comment>> lists = new ArrayList<>();
-        for (int i = 0; i < list.size(); i += batchSize) {
-            lists.add(list.subList(i, Math.min(i + batchSize, list.size())));
-        }
-        return lists;
     }
 
     private Comment getComment(Long commentId) {
