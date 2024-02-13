@@ -4,9 +4,11 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.CommentEditDto;
+import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -25,17 +28,20 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
-        if(!userServiceClient.isUserExists(userContext.getUserId())){
+        if (!userServiceClient.isUserExists(userContext.getUserId())) {
             throw new DataValidationException("User does not exist");// проверка на существование юзера
         }
         var comment = commentMapper.toEntity(commentDto);
         var post = postService.getPostById(postId);
         comment.setAuthorId(userContext.getUserId());// владелец запроса становится владельцем комментария
         comment.setPost(post); // как я понял, это и называется "проставляет этой сущности связь с сущностями Post"
-        return commentMapper.toDto(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+        commentEventPublisher.publish(commentMapper.toEventDto(savedComment));
+        return commentMapper.toDto(savedComment);
     }
 
     @Transactional

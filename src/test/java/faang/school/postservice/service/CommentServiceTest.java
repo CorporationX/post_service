@@ -8,6 +8,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,6 +46,8 @@ class CommentServiceTest {
     private UserContext userContext;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
     @InjectMocks
     private CommentService commentService;
     @Captor
@@ -85,6 +89,7 @@ class CommentServiceTest {
         commentService.createComment(postId, commentDto);
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
+        verify(commentEventPublisher, times(1)).publish(any());
         Comment capturedComment = commentCaptor.getValue();
         assertEquals(commentDto.getContent(), capturedComment.getContent());
     }
