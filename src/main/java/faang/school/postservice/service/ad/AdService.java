@@ -40,7 +40,7 @@ public class AdService {
                 .map(Ad::getId)
                 .toList();
 
-        if (adsToRemove.isEmpty()){
+        if (adsToRemove.isEmpty()) {
             log.info("Нет объявлений с истекшим сроком действия, которые можно было бы удалить");
             return;
         }
@@ -48,7 +48,13 @@ public class AdService {
         List<List<Long>> adsPartitions = ListUtils.partition(adsToRemove, batchSize);
         for (List<Long> partition : adsPartitions) {
             List<Long> partitionIds = partition.stream().toList();
-            CompletableFuture.runAsync(() -> removeExpiredAdsAsync(partitionIds), asyncConfig.taskExecutor());
+            CompletableFuture.runAsync(() -> {
+                try {
+                    removeExpiredAdsAsync(partitionIds);
+                } catch (Exception e) {
+                    log.error("Ошибка при удалении просроченной рекламы", e);
+                }
+            }, asyncConfig.taskExecutor());
         }
         log.info("Удаление просроченной рекламы задано для всех подсписков.");
     }
