@@ -40,15 +40,6 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
-user-service:
-  host: localhost
-  port: 8083
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
 
 services:
   s3:
@@ -56,3 +47,13 @@ services:
     accessKey: user
     secretKey: password
     bucketName: corpbucket
+    isMocked: false
+  user-service:
+    host: localhost
+    port: 8083
+  project-service:
+    host: localhost
+    port: 8082
+  payment-service:
+    host: localhost
+    port: 9080
