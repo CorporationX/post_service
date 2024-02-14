@@ -2,6 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.resource.PostService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -22,9 +23,8 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
 
-    //WATCH IMAGE IN RESOURCES TO KNOW HOW TEST THIS CONTROLLER
     @PostMapping("/draft")
-    public PostDto createPostDraft(@RequestPart PostDto postDto,
+    public PostDto createPostDraft(@RequestPart @Valid PostDto postDto,
                                    @RequestPart(value = "files", required = false) @Size(max = 10) List<MultipartFile> files) {
         return postService.createPostDraft(postDto, files);
     }

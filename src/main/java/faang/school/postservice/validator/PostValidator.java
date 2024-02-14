@@ -2,63 +2,65 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
 public class PostValidator {
 
-    /*private final UserServiceClient userServiceClient;
+    private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
-    private final UserContext userContext;
+    private final PostRepository postRepo;
 
-    public void fullValidation(PostDto postDto) {
-        contentValidation(postDto);
-        accessAndOwnerExistenceValidation(postDto);
-    }
-
-    public void contentValidation (PostDto postDto) {
-        String content = postDto.getContent();
-
-        if (content.isBlank()) {
-            throw new ValidationException("Content of post must not be blank or null");
+    public void validatePost(PostDto postDto) {
+        validatePostExists(postDto.getId());
+        if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
+            throw new DataValidationException("Post cannot belong to both author and project");
+        }
+        if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
+            throw new DataValidationException("Post must belong to either author or project");
         }
     }
 
-    public void accessAndOwnerExistenceValidation(PostDto postDto) {
-        Long authorId = postDto.getAuthorId();
-        Long projectId = postDto.getProjectId();
+    public void validatePostByOwner(long postId, long ownerId) {
+        Post post = postRepo.findById(postId).get();
 
-        long authorizedUser = userContext.getUserId();
-
-        boolean isAuthorOwner = authorId != null;
-        long ownerId = authorId != null ? authorId : projectId;
-
-        if (Objects.equals(authorId, projectId)) {
-            throw new IllegalArgumentException(
-                    String.format("author id = %s and project id = %s cannot be the same or both null", authorId, projectId));
-        }
-
-        if (isAuthorOwner) {
-            if (authorizedUser != ownerId) {
-                throw new SecurityException(String.format("user with id = %s has not access to this post", authorizedUser));
+        if (post.getAuthorId() != null) {
+            if (post.getAuthorId() != ownerId) {
+                throw new DataValidationException("You are not the author of the post");
             }
-            userServiceClient.getUser(ownerId);//throws
-        }
-        if (!isAuthorOwner) {
-            ProjectDto project = projectServiceClient.getProject(ownerId);//throws
-            long projectOwnerId = project.getOwnerId();
-            if (authorizedUser != projectOwnerId) {
-                throw new SecurityException(String.format("user with id = %s has not access to this post", authorizedUser));
+        } else {
+            if (post.getProjectId() != ownerId) {
+                throw new DataValidationException("Project is not the author of the post");
             }
         }
-    }*/
+    }
+
+    public void validatePostOwnerExists(PostDto postDto) {
+        if (postDto.getAuthorId() != null) {
+            userServiceClient.existsUserById(postDto.getAuthorId());
+        } else {
+            projectServiceClient.existsProjectById(postDto.getProjectId());
+        }
+
+    }
+
+    public void validateAuthor(long authorId) {
+        userServiceClient.existsUserById(authorId);
+    }
+
+    public void validateProject(long projectId) {
+        projectServiceClient.existsProjectById(projectId);
+    }
+
+    public void validatePostExists(long id) {
+        if (postRepo.existsById(id)) {
+            throw new DataValidationException("Post with id: " + id + " already exists");
+        }
+    }
 }

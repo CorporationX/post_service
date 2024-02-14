@@ -1,5 +1,6 @@
 package faang.school.postservice.service.resource;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -21,9 +22,11 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostValidator postValidator;
     private final ResourceService resourceService;
+    private final UserContext userContext;
 
     public PostDto createPostDraft(PostDto postDto, List<MultipartFile> files) {
-        //validator
+        postValidator.validatePostOwnerExists(postDto);
+        postValidator.validatePost(postDto);
 
         Post savedPost = savePostAndAddFiles(postMapper.toEntity(postDto), files);
 
@@ -31,7 +34,7 @@ public class PostService {
     }
 
     public PostDto updatePost(long postId, PostDto postDto, List<MultipartFile> files) {
-        //validator
+        postValidator.validatePostByOwner(postId, userContext.getUserId());
         Post post = getPost(postId);
         post.setContent(postDto.getContent());
         removeUnnecessaryResources(post, postDto);
@@ -41,6 +44,11 @@ public class PostService {
         return postMapper.toDto(updatedPost);
     }
 
+    public Post getPost(long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Post with id = %s not found", postId)));
+    }
+
     private void removeUnnecessaryResources(Post post, PostDto postDto) {
         List<Resource> existenceResources = post.getResources();
         List<Long> existenceResourceIds = new ArrayList<>(existenceResources.stream()
@@ -48,7 +56,7 @@ public class PostService {
                 .toList());
 
         List<Long> resourceIdsByDto = postDto.getResourceIds();
-        if (resourceIdsByDto != null){
+        if (resourceIdsByDto != null) {
             existenceResourceIds.removeAll(resourceIdsByDto);
         }
 
@@ -67,10 +75,5 @@ public class PostService {
         }
 
         return savedPost;
-    }
-
-    public Post getPost(long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Post with id = %s not found", postId)));
     }
 }
