@@ -40,6 +40,18 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+schedule:
+  cron:
+    removeExpiredAds: "0 0 0 * * ?" # Запуск каждый день в полночь
+
+async:
+  corePoolSize: 10
+  maxPoolSize: 15
+  queueCapacity: 1000
+
+batchSize:
+  batch: 100
+
 user-service:
   host: localhost
   port: 8080
