@@ -2,12 +2,16 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -16,6 +20,7 @@ public class PostValidator {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostRepository postRepo;
+    private final UserContext userContext;
 
     public void validatePost(PostDto postDto) {
         validatePostExists(postDto.getId());
@@ -27,15 +32,19 @@ public class PostValidator {
         }
     }
 
-    public void validatePostByOwner(long postId, long ownerId) {
-        Post post = postRepo.findById(postId).get();
+    public void validatePostByOwner(Post post) {
+        long userId = userContext.getUserId();
 
         if (post.getAuthorId() != null) {
-            if (post.getAuthorId() != ownerId) {
+            if (post.getAuthorId() != userId) {
                 throw new DataValidationException("You are not the author of the post");
             }
         } else {
-            if (post.getProjectId() != ownerId) {
+            List<Long> projectIdsUserHasAccess = projectServiceClient.getAll()
+                    .stream().filter(prj -> prj.getOwnerId() == userId)
+                    .map(ProjectDto::getId)
+                    .toList();
+            if (!projectIdsUserHasAccess.contains(post.getProjectId())) {
                 throw new DataValidationException("Project is not the author of the post");
             }
         }
@@ -48,14 +57,6 @@ public class PostValidator {
             projectServiceClient.existsProjectById(postDto.getProjectId());
         }
 
-    }
-
-    public void validateAuthor(long authorId) {
-        userServiceClient.existsUserById(authorId);
-    }
-
-    public void validateProject(long projectId) {
-        projectServiceClient.existsProjectById(projectId);
     }
 
     public void validatePostExists(long id) {

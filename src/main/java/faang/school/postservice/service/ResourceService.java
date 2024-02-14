@@ -1,8 +1,10 @@
-package faang.school.postservice.service.resource;
+package faang.school.postservice.service;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ResourceService {
     @Value("${post.content_to_post.max_amount}")
-    private int maxAmountFiles = 10;
+    private int maxAmountFiles;
     private final AmazonS3Service amazonService;
     private final ResourceRepository resourceRepository;
 
@@ -30,7 +32,8 @@ public class ResourceService {
         }
 
         List<Resource> savedResources = files.stream().map(file -> {
-            Resource resource = amazonService.uploadFile(file, "FOLDER");
+            String folderName = String.format("%s-%s", post.getId(), file.getContentType());
+            Resource resource = amazonService.uploadFile(file, folderName);
             resource.setPost(post);
             return resource;
         }).toList();

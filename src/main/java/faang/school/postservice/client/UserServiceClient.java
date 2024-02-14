@@ -20,5 +20,4 @@ public interface UserServiceClient {
 
     @PostMapping("/exists/{userId}")
     void existsUserById(@PathVariable("userId") long userId);
-
 }

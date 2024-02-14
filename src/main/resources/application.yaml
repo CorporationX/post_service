@@ -60,4 +60,5 @@ s3:
   accessKey: user
   secretKey: password
   bucketName: corpbucket
+  #should be changed to bucketName: user-service-bucket
   region: null

@@ -1,4 +1,4 @@
-package faang.school.postservice.service.resource;
+package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
@@ -22,7 +22,6 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostValidator postValidator;
     private final ResourceService resourceService;
-    private final UserContext userContext;
 
     public PostDto createPostDraft(PostDto postDto, List<MultipartFile> files) {
         postValidator.validatePostOwnerExists(postDto);
@@ -34,8 +33,9 @@ public class PostService {
     }
 
     public PostDto updatePost(long postId, PostDto postDto, List<MultipartFile> files) {
-        postValidator.validatePostByOwner(postId, userContext.getUserId());
         Post post = getPost(postId);
+        postValidator.validatePostByOwner(post);
+
         post.setContent(postDto.getContent());
         removeUnnecessaryResources(post, postDto);
 

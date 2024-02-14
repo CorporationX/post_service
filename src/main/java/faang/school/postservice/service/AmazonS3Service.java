@@ -1,4 +1,4 @@
-package faang.school.postservice.service.resource;
+package faang.school.postservice.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -25,8 +25,8 @@ public class AmazonS3Service {
         long fileSize = file.getSize();
         String contentType = file.getContentType();
         String originalFilename = file.getOriginalFilename();
-        String key = getKey(folder, originalFilename);
 
+        String key = getKey(folder, originalFilename);
         ObjectMetadata objectMetadata = getObjectMetadata(fileSize, contentType);
 
         try {
