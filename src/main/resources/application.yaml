@@ -43,17 +43,18 @@ post:
 
 services:
   s3:
-    endpoint: http://localhost:9000
+    endpoint: http://127.0.0.1:9000
     accessKey: user
     secretKey: password
     bucketName: corpbucket
     isMocked: false
-  user-service:
-    host: localhost
-    port: 8083
-  project-service:
-    host: localhost
-    port: 8082
-  payment-service:
-    host: localhost
-    port: 9080
+
+user-service:
+  host: localhost
+  port: 8083
+project-service:
+  host: localhost
+  port: 8082
+payment-service:
+  host: localhost
+  port: 9080

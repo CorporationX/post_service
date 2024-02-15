@@ -31,6 +31,8 @@ public class PostService {
         postRepository.save(postMapper.toEntity(postDto));
     }
 
+
+
     @Transactional
     public void publishPost(long postId, long ownerId) {
         postValidator.validatePostByOwner(postId, ownerId);
