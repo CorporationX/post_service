@@ -4,23 +4,15 @@ import faang.school.postservice.dto.project.ProjectDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
 @FeignClient(name = "project-service", url = "${project-service.host}:${project-service.port}", path = "/api/v1/projects")
 public interface ProjectServiceClient {
 
-    @GetMapping("/{projectId}")
-    ProjectDto getProject(@PathVariable("projectId") long projectId);
-
     @GetMapping
-    public List<ProjectDto> getAll();
+    List<ProjectDto> getAll();
 
-    @PostMapping()
-    List<ProjectDto> getProjectsByIds(@RequestBody List<Long> ids);
-
-    @PostMapping("/exists/{projectId}")
-    void existsProjectById(@PathVariable("projectId") long projectId);
+    @GetMapping("{projectId}/exist")
+    boolean existProjectById(@PathVariable("projectId") long projectId);
 }

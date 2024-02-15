@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,51 +24,30 @@ public class ResourceService {
     private int maxAmountFiles;
     private final AmazonS3Service amazonService;
     private final ResourceRepository resourceRepository;
-    private final PostService postService;
     private final ResourceMapper resourceMapper;
     private final PostValidator postValidator;
-
-    public List<Resource> addFilesToPostAndSaveResources(List<MultipartFile> files, Post post) {
-        /*List<Resource> postResources = Optional.ofNullable(post.getResources())
-                .orElse(new ArrayList<>());*/
-        int currentAmountPostFiles = post.getResources() == null ? 0 : post.getResources().size();
-        if (currentAmountPostFiles + files.size() > maxAmountFiles) {
-            throw new IllegalArgumentException("Post must contain 10 or less files");
-        }
-
-        List<Resource> savedResources = files.stream().map(file -> {
-            String folderName = getFolderName(post.getId(), file.getContentType());
-            Resource resource = amazonService.uploadFile(file, folderName);
-            resource.setPost(post);
-            return resource;
-        }).toList();
-
-        return resourceRepository.saveAll(savedResources);
-
-/*        postResources.addAll(resourceRepository.saveAll(savedResources));
-        return postResources;*/
-    }
 
     private String getFolderName(long postId, String contentType) {
         return String.format("%s-%s", postId, contentType);
     }
 
-    public ResourceDto deleteResource(long resourceId) {
-        Resource resource = getResourceById(resourceId);
-        postValidator.validateAccessToPost(resource.getPost());
+    public List<ResourceDto> deleteResources(List<Long> resourceIds) {
+        List<Resource> resourcesToDelete = resourceIds.stream()
+                .map(this::validateAccessAndGetResource)
+                .toList();
 
-        amazonService.deleteFile(resource.getKey());
+        resourcesToDelete.forEach(resource -> amazonService.deleteFile(resource.getKey()));
 
-        resourceRepository.delete(resource);
-        return resourceMapper.toDto(resource);
+        resourceRepository.deleteAll(resourcesToDelete);
+        return resourcesToDelete.stream()
+                .map(resourceMapper::toDto)
+                .toList();
     }
 
-    public void deleteResources (Iterable<Resource> resources) {
-        resourceRepository.deleteAll(resources);
-    }
+    public byte[] downloadResource(long resourceId) {
+        Resource resource = validateAccessAndGetResource(resourceId);
 
-    public byte[] downloadResource(long id) {
-        String key = getResourceById(id).getKey();
+        String key = resource.getKey();
         byte[] bytes;
 
         try (InputStream inputStream = amazonService.downloadFile(key)) {
@@ -79,28 +59,41 @@ public class ResourceService {
         return bytes;
     }
 
-    public Resource getResourceById(long id) {
-        return resourceRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Resource with id %s not found", id)));
-    }
-
-    public ResourceDto getResource (long id) {
-        Resource resource = getResourceById(id);
-        Post post = resource.getPost();
-        postValidator.validateAccessToPost(post);
+    public ResourceDto getResource(long resourceId) {
+        Resource resource = validateAccessAndGetResource(resourceId);
 
         return resourceMapper.toDto(resource);
     }
 
-    public ResourceDto createResource(long postId, MultipartFile file) {
-        Post post = postService.getPost(postId);
-        postValidator.validateAccessToPost(post);
+    private Resource validateAccessAndGetResource(long id) {
+        Resource resource = getResourceById(id);
+        Post post = resource.getPost();
+        postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
+        return resource;
+    }
 
-        Resource resource = amazonService.uploadFile(file, getFolderName(postId, file.getContentType()));
-        resource.setPost(post);
+    public List<ResourceDto> createResources(Post post, List<MultipartFile> files) {
+        postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
+        if (post.getResources().size() + files.size() > maxAmountFiles) {
+            throw new IllegalArgumentException("You can upload only 10 files or less");
+        }
 
-        Resource savedResource = resourceRepository.save(resource);
+        List<Resource> resources = new ArrayList<>();
+        files.forEach(file -> {
+            Resource resource = amazonService.uploadFile(file, getFolderName(post.getId(), file.getContentType()));
+            resource.setPost(post);
+            resources.add(resource);
+        });
 
-        return resourceMapper.toDto(savedResource);
+        List<Resource> savedResources = resourceRepository.saveAll(resources);
+
+        return savedResources.stream()
+                .map(resourceMapper::toDto)
+                .toList();
+    }
+
+    public Resource getResourceById(long resourceId) {
+        return resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Resource with id %s not found", resourceId)));
     }
 }

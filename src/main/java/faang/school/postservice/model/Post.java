@@ -1,6 +1,7 @@
 package faang.school.postservice.model;
 
 import faang.school.postservice.model.ad.Ad;
+import jakarta.annotation.Resources;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -71,4 +73,20 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    /*public List<Resource> add(Resource resource) {
+        if (resources == null) {
+            resources = new ArrayList<>();
+        }
+        resources.add(resource);
+        return resources;
+    }
+
+    public List<Resource> addAll(List<Resource> resources) {
+        if (this.resources == null) {
+            this.resources = new ArrayList<>();
+        }
+        this.resources.addAll(resources);
+        return this.resources;
+    }*/
 }
