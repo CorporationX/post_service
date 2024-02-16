@@ -101,6 +101,10 @@ public class PostService {
         return filterPosts(posts, true);
     }
 
+    public void checkingPostsForOffensiveContent(){
+
+    }
+
     private Post searchPostById(long id) {
         Optional<Post> optionalPost = postRepository.findById(id);
         if (optionalPost.isEmpty()) {
