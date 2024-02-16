@@ -9,36 +9,37 @@ import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.messaging.kafka.events.PostEvent;
+import faang.school.postservice.messaging.events.PostPublishedEvent;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
 import faang.school.postservice.messaging.kafka.publishing.PostProducer;
 import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderation.ModerationDictionary;
-import faang.school.postservice.messaging.redis.publisher.BanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+<<<<<<<<< Temporary merge branch 1
+import lombok.extern.slf4j.Slf4j;
+=========
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.concurrent.ExecutorService;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -52,12 +53,12 @@ public class PostService {
     private final PostImageService postImageService;
     private final ModerationDictionary moderationDictionary;
     private final PostProducer postProducer;
+    private final ExecutorService postServiceExecutorService;
     private final PostViewProducer postViewProducer;
     private final UserContext userContext;
     private final RedisTemplate<Long, Object> redisCacheTemplate;
     private final RedisPostRepository redisPostRepository;
-    @Value("${comment.ban.numberOfCommentsToBan}")
-    private int numberOfCommentsToBan;
+
     @Value("${post-service.post-distribution.batch-size}")
     private int batchSize;
 
@@ -121,7 +122,7 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PostDto getPostById(Long id) {
         Post post = getPostIfExist(id);
         validatePostIsDeleted(post);
@@ -292,6 +293,11 @@ public class PostService {
                     .followersIds(batch)
                     .build();
 
+            postServiceExecutorService.submit(() -> {
+                PostPublishedEvent eventToSend = postMapper.toPostPublishedEvent(post);
+                eventToSend.setFollowersIds(followersIdsBatch);
+                postProducer.publish(eventToSend);
+            });
             postProducer.publish(event);
             start += batchSize;
         }

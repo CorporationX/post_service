@@ -9,6 +9,9 @@ import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.messaging.kafka.events.PostViewEvent;
+import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
+import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.redis.RedisPostRepository;
@@ -54,11 +57,14 @@ class PostServiceTest {
     private PostViewProducer postViewProducer;
     @Mock
     private UserContext userContext;
+<<<<<<<<< Temporary merge branch 1
+=========
     @Mock
     private RedisTemplate<Long, Object> redisCacheTemplate;
     @Mock
     private RedisPostRepository redisPostRepository;
 
+>>>>>>>>> Temporary merge branch 2
 
     @Test
     void testCreateDraftPostValidData() {
@@ -246,7 +252,11 @@ class PostServiceTest {
                 .content("Content")
                 .authorId(1L)
                 .published(true)
+                .views(1L)
                 .build();
+
+        when(postRepository.findById(id)).thenReturn(Optional.of(post));
+        postService.setPostViewsBatchSize(50);
 
         when(postRepository.findById(id)).thenReturn(Optional.of(post));
 

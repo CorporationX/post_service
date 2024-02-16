@@ -23,6 +23,7 @@ spring:
       comments_size: 3
       port: 6379
       host: localhost
+
       channels:
         calculations_channel:
           name: calculations_channel
@@ -52,9 +53,12 @@ spring:
         name: unlike_events_channel
       post_view_event_channel:
         name: post_view_event_channel
+<<<<<<<<< Temporary merge branch 1
       comment_event_channel:
         name: comment_event_channel
+=========
     max-retries: 3
+>>>>>>>>> Temporary merge branch 2
 
 server:
   port: 8081
@@ -96,6 +100,7 @@ post-service:
     thread-count: 8
   post-views:
     batch-size: 50
+>>>>>>>>> Temporary merge branch 2
 
 correcter:
   scheduler:

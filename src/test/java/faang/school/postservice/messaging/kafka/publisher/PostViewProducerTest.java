@@ -13,8 +13,11 @@ import faang.school.postservice.messaging.redis.publisher.BanEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
+<<<<<<<<< Temporary merge branch 1
+=========
 import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.CommentService;
+>>>>>>>>> Temporary merge branch 2
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.s3.PostImageService;
 import java.util.concurrent.ExecutorService;
@@ -74,10 +77,16 @@ public class PostViewProducerTest {
     private PostProducer postProducer;
 
     @Mock
+<<<<<<<<< Temporary merge branch 1
+    private ExecutorService executorService;
+=========
     private RedisTemplate<Long, Object> redisCacheTemplate;
 
     @Mock
     private RedisPostRepository redisPostRepository;
+
+    @Mock
+    private ExecutorService postServiceExecutorService;
 
     @InjectMocks
     private PostViewProducer postViewProducer;
@@ -93,11 +102,10 @@ public class PostViewProducerTest {
                 userServiceClient,
                 projectServiceClient,
                 textGearsAPIService,
-                commentService,
-                banEventPublisher,
                 postImageService,
                 moderationDictionary,
                 postProducer,
+                postServiceExecutorService,
                 postViewProducer,
                 userContext,
                 redisCacheTemplate,
