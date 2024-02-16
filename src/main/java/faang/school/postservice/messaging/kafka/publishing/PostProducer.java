@@ -1,6 +1,5 @@
 package faang.school.postservice.messaging.kafka.publishing;
 
-import faang.school.postservice.messaging.events.PostPublishedEvent;
 import faang.school.postservice.messaging.kafka.events.PostEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class PostProducer extends AbstractProducer<PostPublishedEvent> {
+public class PostProducer extends AbstractProducer<PostEvent> {
     @Value("${spring.kafka.channels.post_event_channel.name}")
     private String topic;
 
@@ -19,7 +18,7 @@ public class PostProducer extends AbstractProducer<PostPublishedEvent> {
         super(kafkaTemplate);
     }
 
-    public void publish(PostPublishedEvent event) {
+    public void publish(PostEvent event) {
         kafkaTemplate.send(topic, event);
     }
 

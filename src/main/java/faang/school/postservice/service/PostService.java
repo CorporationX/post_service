@@ -9,10 +9,12 @@ import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.messaging.events.PostPublishedEvent;
+import faang.school.postservice.messaging.kafka.events.PostEvent;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
 import faang.school.postservice.messaging.kafka.publishing.PostProducer;
 import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
+import faang.school.postservice.messaging.redis.publisher.BanEventPublisher;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderation.ModerationDictionary;
@@ -21,23 +23,19 @@ import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.s3.PostImageService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-<<<<<<<<< Temporary merge branch 1
 import lombok.extern.slf4j.Slf4j;
-=========
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -90,7 +88,7 @@ public class PostService {
 
         List<Long> followersIds = userServiceClient.getFollowersIdsByAuthorId(post.getAuthorId());
         dispatchPostToFollowers(post, followersIds);
-
+        savePostToRedis(post);
         return postMapper.toDto(post);
     }
 
@@ -308,7 +306,6 @@ public class PostService {
         while (true) {
             redisCacheTemplate.watch(postRedisDto.getId());  // Наблюдение за ключом
             Optional<PostRedisDto> redisPost = redisPostRepository.findById(postRedisDto.getId());
-            // ... определите новое значение на основе текущего значения, если требуется
             redisCacheTemplate.multi();  // Начало транзакции
             redisPostRepository.save(redisPost.get());
             List<Object> results = redisCacheTemplate.exec();  // Завершение транзакции
@@ -316,7 +313,21 @@ public class PostService {
                 // Транзакция была успешной
                 return true;
             }
-            // Транзакция не удалась из-за изменения ключа, повторите
+        }
+    }
+
+    private void dispatchPostToFollowers(Post post, List<Long> followersIds) {
+        for (int i = 0; i < followersIds.size(); i += batchSize) {
+            int startIdx = i;
+            int endIdx = Math.min(i + batchSize, followersIds.size());
+
+            List<Long> followersIdsBatch = new ArrayList<>(followersIds.subList(startIdx, endIdx));
+
+            postServiceExecutorService.submit(() -> {
+                PostEvent eventToSend = postMapper.toPostPublishedEvent(post);
+                eventToSend.setFollowersIds(followersIdsBatch);
+                postProducer.publish(eventToSend);
+            });
         }
     }
 
