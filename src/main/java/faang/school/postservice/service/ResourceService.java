@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.ResourceDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -12,17 +13,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigInteger;
+import java.io.InputStream;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ResourceService {
-    private final PostService postService;
     private final S3Service s3Service;
     private final ResourceRepository resourceRepository;
-    private final PostRepository postRepository;
     private final ResourceMapper resourceMapper;
+    private final PostService postService;
+    private final PostRepository postRepository;
+
+    private String getFolderName(long postId, String contentType) {
+        return String.format("%s-%s", postId, contentType);
+    }
+
+//    public List<ResourceDto> deleteResources(List<Long> resourceIds) {
+//        List<Resource> resourcesToDelete = resourceIds.stream()
+//                .map(this::validateAcces)
+//    }
+
 
     @Transactional
     public ResourceDto addResource(Long postId, MultipartFile file) {
@@ -41,4 +52,16 @@ public class ResourceService {
 
         return resourceMapper.toDto(resource);
     }
+
+    public InputStream downloadResource(long resourceId) {
+        Resource resource = getResourceById(resourceId);
+        return s3Service.downloadFile(resource.getKey());
+    }
+
+    private Resource getResourceById(long resourceId) {
+        return resourceRepository.findById(resourceId).orElseThrow(
+                () -> new DataValidationException("Resource not " + "found"));
+    }
+
+
 }

@@ -4,6 +4,7 @@ import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.model.Resource;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ResourceMapper {
 
+    @Mapping(source = "post.id", target = "postId")
     ResourceDto toDto(Resource resource);
 
     Resource toEntity(ResourceDto resourceDto);

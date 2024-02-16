@@ -17,6 +17,9 @@ public class S3Config {
     private String secretKey;
     @Value("${services.s3.endpoint}")
     private String endpoint;
+    @Value("${services.s3.region}")
+    private String region;
+
 
     @Bean
     public AmazonS3 s3Client() {
@@ -24,7 +27,7 @@ public class S3Config {
 
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, null))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
                 .build();
     }
 }

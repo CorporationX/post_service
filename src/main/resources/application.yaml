@@ -47,6 +47,7 @@ services:
     accessKey: user
     secretKey: password
     bucketName: corpbucket
+    region: null
     isMocked: false
 
 user-service:

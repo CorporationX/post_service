@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +25,6 @@ import java.util.List;
 @RequestMapping("/posts")
 @RequiredArgsConstructor
 public class PostController {
-    //Сделай отдельный метод для добавления ресурса в контроллере
     private final S3Service s3Service;
     private final PostService postService;
     private final UserContext userContext;
@@ -37,10 +35,11 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/upload")
-    public ResponseEntity<String> uploadFile(@PathVariable long postId,@RequestPart("file") MultipartFile file) {
-        Resource resource = s3Service.uploadFile(file,"files");
+    public ResponseEntity<String> uploadFile(@PathVariable long postId, @RequestPart("file") MultipartFile file) {
+        Resource resource = s3Service.uploadFile(file, "files");
         return ResponseEntity.ok("File uploaded: " + resource.getName());
     }
+
 
     @PostMapping("/publish/{postId}")
     public void publishPost(@PathVariable long postId) {

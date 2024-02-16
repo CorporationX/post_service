@@ -2,6 +2,7 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
@@ -16,6 +17,11 @@ public class PostValidator {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostRepository postRepo;
+    private final UserContext userContext;
+
+    public void validateAccessAndContent(PostDto postDto) {
+        /////////////////////////
+    }
 
     public void validatePost(PostDto postDto) {
         validatePostExists(postDto.getId());

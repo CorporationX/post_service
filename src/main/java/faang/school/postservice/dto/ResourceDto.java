@@ -1,5 +1,7 @@
 package faang.school.postservice.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,10 +14,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResourceDto {
-    private String name;
+    private Long id;
     private String key;
     private Long size;
-    private String type;
-    private Long postId;
     private LocalDateTime createdAt;
+    private String name;
+    private String type;
+    @NotNull
+    @Min(1)
+    private Long postId;
 }
