@@ -8,6 +8,7 @@ import faang.school.postservice.integration.UserService;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.messaging.kafka.publishing.like.LikeProducer;
 import faang.school.postservice.messaging.kafka.publishing.like.UnlikeProducer;
+import faang.school.postservice.messaging.kafka.events.LikeEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -27,8 +28,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceTest {
@@ -57,12 +58,6 @@ class LikeServiceTest {
 
     @Mock
     private LikeEventPublisher likeEventPublisher;
-
-    @Mock
-    private UnlikeProducer unlikeProducer;
-
-    @Mock
-    private LikeProducer likeProducer;
 
     private UserDto userDto;
     private LikeDto likeDto;

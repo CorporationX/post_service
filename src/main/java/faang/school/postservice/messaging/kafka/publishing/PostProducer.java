@@ -32,4 +32,5 @@ public class PostProducer extends AbstractProducer<PostEvent> {
                     return null;
                 });
     }
+
 }

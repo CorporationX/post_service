@@ -4,13 +4,17 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.corrector.external_service.TextGearsAPIService;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.messaging.kafka.events.PostViewEvent;
 import faang.school.postservice.messaging.kafka.publishing.PostProducer;
 import faang.school.postservice.messaging.kafka.publishing.PostViewProducer;
+import faang.school.postservice.messaging.redis.publisher.BanEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.s3.PostImageService;
 import java.util.concurrent.ExecutorService;
@@ -20,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.Optional;
@@ -54,6 +59,12 @@ public class PostViewProducerTest {
     private TextGearsAPIService textGearsAPIService;
 
     @Mock
+    private CommentService commentService;
+
+    @Mock
+    private BanEventPublisher banEventPublisher;
+
+    @Mock
     private PostImageService postImageService;
 
     @Mock
@@ -63,7 +74,10 @@ public class PostViewProducerTest {
     private PostProducer postProducer;
 
     @Mock
-    private ExecutorService executorService;
+    private RedisTemplate<Long, Object> redisCacheTemplate;
+
+    @Mock
+    private RedisPostRepository redisPostRepository;
 
     @InjectMocks
     private PostViewProducer postViewProducer;
@@ -79,12 +93,15 @@ public class PostViewProducerTest {
                 userServiceClient,
                 projectServiceClient,
                 textGearsAPIService,
+                commentService,
+                banEventPublisher,
                 postImageService,
                 moderationDictionary,
                 postProducer,
-                executorService,
                 postViewProducer,
-                userContext);
+                userContext,
+                redisCacheTemplate,
+                redisPostRepository);
     }
 
     @Test
@@ -112,9 +129,17 @@ public class PostViewProducerTest {
                 .id(postId)
                 .deleted(false)
                 .published(true)
+                .views(0L)
                 .build();
+        postService.setPostViewsBatchSize(50);
         when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
         when(userContext.getUserId()).thenReturn(userId);
+        when(redisPostRepository.findById(postId))
+                .thenReturn(Optional.ofNullable(
+                        PostRedisDto
+                                .builder()
+                                .postViewCounter(1L)
+                                .build()));
 
         PostViewEvent event = PostViewEvent.builder()
                 .userId(userId)
@@ -128,7 +153,7 @@ public class PostViewProducerTest {
 
         postService.getPostById(postId);
 
-        verify(kafkaTemplate, times(1))
+        verify(kafkaTemplate)
                 .send(topic, event);
     }
 }

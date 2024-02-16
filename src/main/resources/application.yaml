@@ -94,6 +94,8 @@ post-service:
   post-distribution:
     batch-size: 2000
     thread-count: 8
+  post-views:
+    batch-size: 50
 
 correcter:
   scheduler:

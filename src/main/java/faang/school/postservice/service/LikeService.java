@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -14,9 +15,14 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.messaging.redis.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +36,8 @@ public class LikeService {
     private final LikeEventPublisher likeEventPublisher;
     private final LikeProducer likeProducer;
     private final UnlikeProducer unlikeProducer;
+    private final RedisTemplate<Long, Object> redisCacheTemplate;
+    private final RedisPostRepository redisPostRepository;
 
 
     @Transactional
@@ -83,6 +91,23 @@ public class LikeService {
         UserDto userDto = userService.getUser();
         Like like = getExistingLikeForComment(commentId, userDto.getId());
         likeRepository.delete(like);
+    }
+
+    public void redisLikeIncrement(long postId) {
+        redisCacheTemplate.watch(postId);
+        Optional<PostRedisDto> optionalPost = redisPostRepository.findById(postId);
+        if (optionalPost.isPresent()) {
+            while (true) {
+                PostRedisDto post = optionalPost.get();
+                redisCacheTemplate.multi();
+                post.likeIncrement();
+                redisPostRepository.save(post);
+                List<Object> results = redisCacheTemplate.exec();
+                if (results != null && !results.isEmpty()) {
+                    break;
+                }
+            }
+        }
     }
 
     private Like getExistingLikeForComment(long commentId, long userId) {
