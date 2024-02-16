@@ -11,7 +11,7 @@ public class ModerationScheduler {
     private PostService postService;
     @Scheduled(cron = "${post.moderation.scheduler.cron}")
     public void moderation(){
-        postService.checkingPostsForOffensiveContent();
+        postService.checkingPostsWithBadWord();
     }
 
 }

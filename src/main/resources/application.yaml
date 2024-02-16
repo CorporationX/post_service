@@ -41,7 +41,7 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   moderation:
     scheduler:
-      cron: "0 0 0 * * ?" # every day
+      cron: "0 * * * * ?" # every day
 
 user-service:
   host: localhost

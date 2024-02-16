@@ -6,14 +6,13 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +24,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
+    private final ModerationDictionary moderationDictionary;
 
     @Transactional
     public void createDraft(PostDto postDto) {
@@ -57,7 +57,7 @@ public class PostService {
     @Transactional
     public void update(PostDto postDto) {
         Post post = searchPostById(postDto.getId());
-        if(post.getContent().equals(postDto.getContent()))
+        if (post.getContent().equals(postDto.getContent()))
             throw new DataValidationException("No content changes");
         post.setContent(postDto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
@@ -92,7 +92,7 @@ public class PostService {
     @Transactional
     public List<PostDto> getPublishedPostsByAuthorId(long id) {
         List<Post> posts = postRepository.findByAuthorId(id);
-        return filterPosts(posts,true);
+        return filterPosts(posts, true);
     }
 
     @Transactional
@@ -101,8 +101,13 @@ public class PostService {
         return filterPosts(posts, true);
     }
 
-    public void checkingPostsForOffensiveContent(){
+    public void checkingPostsWithBadWord() {
 
+        List<Post> posts = postRepository.findAllByVerifiedAtNull();
+        posts.forEach(post -> {
+            post.setVerified(!moderationDictionary.containsBadWord(post.getContent()));
+            post.setVerifiedAt(LocalDateTime.now());
+        });
     }
 
     private Post searchPostById(long id) {
