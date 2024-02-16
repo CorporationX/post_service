@@ -242,9 +242,11 @@ class PostServiceTest {
                 .content("Content")
                 .authorId(1L)
                 .published(true)
+                .views(1L)
                 .build();
 
         when(postRepository.findById(id)).thenReturn(Optional.of(post));
+        postService.setPostViewsBatchSize(50);
 
         PostDto actualDto = postService.getPostById(id);
 

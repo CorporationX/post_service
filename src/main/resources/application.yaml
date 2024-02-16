@@ -23,6 +23,7 @@ spring:
       comments_size: 3
       port: 6379
       host: localhost
+
       channels:
         calculations_channel:
           name: calculations_channel
@@ -93,6 +94,8 @@ thread-pool:
 post-service:
   post-distribution:
     batch-size: 2000
+  post-views:
+    batch-size: 50
 
 correcter:
   scheduler:

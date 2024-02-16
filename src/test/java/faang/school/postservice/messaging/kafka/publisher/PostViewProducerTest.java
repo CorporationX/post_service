@@ -28,6 +28,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -78,6 +79,9 @@ public class PostViewProducerTest {
     @Mock
     private RedisPostRepository redisPostRepository;
 
+    @Mock
+    private ExecutorService postServiceExecutorService;
+
     @InjectMocks
     private PostViewProducer postViewProducer;
 
@@ -92,11 +96,10 @@ public class PostViewProducerTest {
                 userServiceClient,
                 projectServiceClient,
                 textGearsAPIService,
-                commentService,
-                banEventPublisher,
                 postImageService,
                 moderationDictionary,
                 postProducer,
+                postServiceExecutorService,
                 postViewProducer,
                 userContext,
                 redisCacheTemplate,
