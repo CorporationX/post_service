@@ -1,10 +1,11 @@
-package faang.school.postservice.service.ad;
+package faang.school.postservice.service;
 
 import faang.school.postservice.dto.AdDto;
 import faang.school.postservice.filter.ad.Filter;
 import faang.school.postservice.mapper.AdMapper;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.ad.AdRepository;
+import faang.school.postservice.validator.AdValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
@@ -23,6 +24,7 @@ import java.util.stream.StreamSupport;
 public class AdService {
     private final AdRepository adRepository;
     private final AdMapper adMapper;
+    private final AdValidator adValidator;
     private final List<Filter<Ad>> filters;
     private final Environment env;
     private final int BATCH_SIZE = Integer.parseInt(
@@ -31,6 +33,8 @@ public class AdService {
                     "0"));
 
     public AdDto create(AdDto adDto) {
+        adValidator.validate(adDto);
+
         var ad = adMapper.toEntity(adDto);
         var savedAd = adRepository.save(ad);
 
