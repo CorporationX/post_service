@@ -47,10 +47,9 @@ public class AdService {
 
         List<List<Long>> adsPartitions = ListUtils.partition(adsToRemove, batchSize);
         for (List<Long> partition : adsPartitions) {
-            List<Long> partitionIds = partition.stream().toList();
             CompletableFuture.runAsync(() -> {
                 try {
-                    removeExpiredAdsAsync(partitionIds);
+                    removeExpiredAdsAsync(partition);
                 } catch (Exception e) {
                     log.error("Ошибка при удалении просроченной рекламы", e);
                 }
