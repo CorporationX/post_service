@@ -8,6 +8,7 @@ import faang.school.postservice.repository.ad.AdRepository;
 import faang.school.postservice.validator.AdValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdService {
@@ -27,10 +29,6 @@ public class AdService {
     private final AdValidator adValidator;
     private final List<Filter<Ad>> filters;
     private final Environment env;
-    private final int BATCH_SIZE = Integer.parseInt(
-            env.getProperty(
-                    "post.ad-remover.scheduler.BATCH_SIZE",
-                    "0"));
 
     public AdDto create(AdDto adDto) {
         adValidator.validate(adDto);
@@ -51,6 +49,10 @@ public class AdService {
 
     public void removeExpiredAds() {
         ExecutorService executorService = Executors.newFixedThreadPool(5);
+        var BATCH_SIZE = Integer.parseInt(
+                env.getProperty(
+                        "post.ad-remover.scheduler.batchSize",
+                        "0"));
         var expiredAds = getExpiredAds();
         var size = expiredAds.size();
         var batch = (size - 1) / BATCH_SIZE;
@@ -69,7 +71,10 @@ public class AdService {
         List<CompletableFuture<Void>> futures = partitions
                 .stream()
                 .map(list -> CompletableFuture
-                        .runAsync(() -> removeAllById(list), executorService))
+                        .runAsync(() -> {
+                            log.info(list.toString());
+                            removeAllById(list);
+                        }, executorService))
                 .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
