@@ -9,16 +9,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/resources")
@@ -29,8 +29,8 @@ public class ResourceController {
     private final PostService postService;
 
     @PutMapping("/{postId}/add")
-    public ResourceDto addResource(@PathVariable Long postId, @RequestBody MultipartFile file) {
-        return resourceService.addResource(postId, file);
+    public List<ResourceDto> addResource(@PathVariable Long postId, @RequestPart List<MultipartFile> files) {
+        return resourceService.addResource(postId, files);
     }
 
     @GetMapping(path = "/{resourceId}", produces = "application/octet-stream")

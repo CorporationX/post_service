@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -36,21 +37,25 @@ public class ResourceService {
 
 
     @Transactional
-    public ResourceDto addResource(Long postId, MultipartFile file) {
+    public List<ResourceDto> addResource(Long postId, List<MultipartFile> files) {
         Post post = postService.getPost(postId);
 
         String folder = post.getId() + "" + post.getProjectId();
-        Resource resource = s3Service.uploadFile(file, folder);
-        resource.setPost(post);
-        resource = resourceRepository.save(resource);
+        List<Resource> resources = new ArrayList<>();
+        for (MultipartFile file : files) {
 
-        List<Resource> postResources = post.getResources();
-        postResources.add(resource);
-        post.setResources(postResources);
-
+            Resource resource = s3Service.uploadFile(file, folder);
+            resources.add(resource);
+            resource.setPost(post);
+            resource = resourceRepository.save(resource);
+            List<Resource> postResources = post.getResources();
+            postResources.add(resource);
+            post.setResources(postResources);
+        }
         postRepository.save(post);
 
-        return resourceMapper.toDto(resource);
+
+        return resourceMapper.toListDto(resources);
     }
 
     public InputStream downloadResource(long resourceId) {
