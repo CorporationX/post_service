@@ -2,8 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.AdDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.filter.ad.Filter;
 import faang.school.postservice.mapper.AdMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
@@ -20,13 +18,11 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,8 +34,6 @@ public class AdServiceTest {
     AdRepository adRepository;
     @Mock
     AdValidator adValidator;
-    @Mock
-    List<Filter<Ad>> filters;
 
     @Spy
     @InjectMocks
@@ -70,7 +64,7 @@ public class AdServiceTest {
 
     @Test
     public void shouldCreateAd() {
-        AdDto adDto = validate(true);
+        doNothing().when(adValidator).validate(adDto);
         Ad ad = adMapper.toEntity(adDto);
 
         when(adRepository.save(ad)).thenReturn(ad);
@@ -92,22 +86,6 @@ public class AdServiceTest {
     public void shouldThrowExceptionOnRemove() {
         when(adRepository.findById(2L)).thenThrow(EntityNotFoundException.class);
 
-        assertThrows(EntityNotFoundException.class, () -> {
-            adService.remove(2L);
-        });
-    }
-
-    private AdDto validate(boolean validationPassed) {
-        if (validationPassed) {
-            doNothing()
-                    .when(adValidator)
-                    .validate(adDto);
-        } else {
-            doThrow(DataValidationException.class)
-                    .when(adValidator)
-                    .validate(adDto);
-        }
-
-        return adDto;
+        assertThrows(EntityNotFoundException.class, () -> adService.remove(2L));
     }
 }
