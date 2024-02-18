@@ -38,6 +38,11 @@ logging:
     root: info
 
 post:
+  content_to_post:
+    max_amount:
+      video: 5
+      audio: 5
+      image: 10
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute

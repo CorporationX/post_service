@@ -9,6 +9,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.s3.S3Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ResourceService {
+    @Value("${post.content_to_post.max_amount.video}")
+    private int maxAmountFiles;
     private final S3Service s3Service;
     private final ResourceRepository resourceRepository;
     private final ResourceMapper resourceMapper;
@@ -30,10 +33,17 @@ public class ResourceService {
         return String.format("%s-%s", postId, contentType);
     }
 
-//    public List<ResourceDto> deleteResources(List<Long> resourceIds) {
-//        List<Resource> resourcesToDelete = resourceIds.stream()
-//                .map(this::validateAcces)
-//    }
+    public List<ResourceDto> deleteResources(List<Long> resourceIds) {
+        List<Resource> resourcesToDelete = resourceIds.stream()
+                .map(this::getResourceById)
+                .toList();
+
+        resourcesToDelete.forEach(resource -> s3Service.deleteFile(resource.getKey()));
+
+        resourceRepository.deleteAll(resourcesToDelete);
+
+        return resourceMapper.toListDto(resourcesToDelete.stream().toList());
+    }
 
 
     @Transactional
@@ -54,7 +64,6 @@ public class ResourceService {
         }
         postRepository.save(post);
 
-
         return resourceMapper.toListDto(resources);
     }
 
@@ -68,5 +77,24 @@ public class ResourceService {
                 () -> new DataValidationException("Resource not " + "found"));
     }
 
+
+    public List<ResourceDto> createResources(Post post, List<MultipartFile> files) {
+        if (post.getResources().size() + files.size() > maxAmountFiles) {
+            throw new IllegalArgumentException("You can upload only 5 files or less");
+        }
+
+        List<Resource> resources = new ArrayList<>();
+        files.forEach(file -> {
+            Resource resource = s3Service.uploadFile(file, getFolderName(post.getId(), file.getContentType()));
+            resource.setPost(post);
+            resources.add(resource);
+        });
+
+        List<Resource> savedResources = resourceRepository.saveAll(resources);
+
+        return savedResources.stream()
+                .map(resourceMapper::toDto)
+                .toList();
+    }
 
 }
