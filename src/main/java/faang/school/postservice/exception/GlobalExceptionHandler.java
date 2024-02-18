@@ -1,4 +1,4 @@
-package faang.school.postservice.handler;
+package faang.school.postservice.exception;
 
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
