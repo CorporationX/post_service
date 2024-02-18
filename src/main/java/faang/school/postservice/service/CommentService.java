@@ -99,7 +99,7 @@ public class CommentService {
     }
 
     private void giveStatusToComment(Comment comment, boolean verified) {
-        comment.setVerifiedDate(LocalDateTime.now());
+        comment.setVerificationDate(LocalDateTime.now());
         comment.setVerified(verified);
         commentRepository.save(comment);
     }

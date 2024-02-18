@@ -49,8 +49,8 @@ public class Comment {
     @Column(name = "verified")
     private Boolean verified;
 
-    @CreationTimestamp
+
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "verified_date")
-    private LocalDateTime verifiedDate;
+    @Column(name = "verification_date")
+    private LocalDateTime verificationDate;
 }
