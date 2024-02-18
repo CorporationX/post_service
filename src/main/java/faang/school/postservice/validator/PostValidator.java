@@ -22,8 +22,14 @@ public class PostValidator {
     private final UserContext userContext;
 
     public void validateAccessAndContent(PostDto postDto) {
-        /////////////////////////
         validateAccessToPost(postDto.getAuthorId(), postDto.getProjectId());
+        validatePostContent(postDto);
+    }
+
+    private void validatePostContent(PostDto postDto) {
+        if (postDto.getContent().isBlank()) {
+            throw new DataValidationException("Post content cannot be blank");
+        }
     }
 
     public void validateAccessToPost(Long postAuthorId, Long postProjectId) {
@@ -34,23 +40,31 @@ public class PostValidator {
         long userId = userContext.getUserId();
 
         if (postAuthorId != null) {
-            if (!userServiceClient.existsUserById(postAuthorId)) {
-                throw new EntityNotFoundException(String.format("User with id %s not found", postAuthorId));
-            }
-            if (postAuthorId != userId) {
-                throw new DataValidationException("You are not the author of the post");
-            }
+            validateOwnershipUserToPost(postAuthorId, userId);
         } else {
-            if (!projectServiceClient.existProjectById(postProjectId)) {
-                throw new EntityNotFoundException(String.format("Project with id %s not found", postProjectId));
-            }
-            List<Long> projectIdsUserHasAccess = projectServiceClient.getAll()
-                    .stream().filter(prj -> prj.getOwnerId() == userId)
-                    .map(ProjectDto::getId)
-                    .toList();
-            if (!projectIdsUserHasAccess.contains(postProjectId)) {
-                throw new DataValidationException("Project is not the author of the post");
-            }
+            validateOwnershipProjectToPost(postProjectId, userId);
+        }
+    }
+
+    private void validateOwnershipProjectToPost(Long postProjectId, long userId) {
+        if (!projectServiceClient.existProjectById(postProjectId)) {
+            throw new EntityNotFoundException(String.format("Project with id %s not found", postProjectId));
+        }
+        List<Long> projectIdsUserHasAccess = projectServiceClient.getAll()
+                .stream().filter(prj -> prj.getOwnerId() == userId)
+                .map(ProjectDto::getId)
+                .toList();
+        if (!projectIdsUserHasAccess.contains(postProjectId)) {
+            throw new DataValidationException("Project is not author of the post");
+        }
+    }
+
+    private void validateOwnershipUserToPost(Long postAuthorId, long userId) {
+        if (!userServiceClient.existsUserById(postAuthorId)) {
+            throw new EntityNotFoundException(String.format("User with id %s not found", postAuthorId));
+        }
+        if (postAuthorId != userId) {
+            throw new DataValidationException("You are not the author of the post");
         }
     }
 }

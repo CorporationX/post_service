@@ -73,20 +73,4 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    /*public List<Resource> add(Resource resource) {
-        if (resources == null) {
-            resources = new ArrayList<>();
-        }
-        resources.add(resource);
-        return resources;
-    }
-
-    public List<Resource> addAll(List<Resource> resources) {
-        if (this.resources == null) {
-            this.resources = new ArrayList<>();
-        }
-        this.resources.addAll(resources);
-        return this.resources;
-    }*/
 }

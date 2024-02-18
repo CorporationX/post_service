@@ -77,7 +77,7 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post with id = %s not found", postId)));
     }
 
-    private List<ResourceDto> removeUnnecessaryResources(Post post, PostDto postDto) {
+    private void removeUnnecessaryResources(Post post, PostDto postDto) {
         List<Long> resourceIdsFromDto = Optional.ofNullable(postDto.getResourceIds())
                 .orElse(new ArrayList<>());
 
@@ -89,9 +89,5 @@ public class PostService {
         resourceService.deleteResources(resourcesToDelete.stream()
                 .map(Resource::getId)
                 .toList());
-
-        return post.getResources().stream()
-                .map(resourceMapper::toDto)
-                .toList();
     }
 }
