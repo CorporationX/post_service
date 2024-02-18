@@ -13,6 +13,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.AsyncPostPublishService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
+import org.junit.BeforeClass;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,6 +21,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -51,7 +58,6 @@ class PostServiceTest {
 
     @InjectMocks
     private PostService postService;
-
     private final PostDto postDto = new PostDto();
 
 
@@ -270,6 +276,7 @@ class PostServiceTest {
     @Test
     public void publishScheduledPosts_when() {
         //Arrange
+        ReflectionTestUtils.setField(postService, "sizeSublist", 100);
         List<Post> posts = List.of(
                 Post.builder().content("text").authorId(1L).published(false).build()
         );
@@ -281,6 +288,5 @@ class PostServiceTest {
         //Assert
         verify(postRepository, times(1)).findReadyToPublish();
         verify(asyncPostPublishService, times(1)).publishPost(any());
-
     }
 }
