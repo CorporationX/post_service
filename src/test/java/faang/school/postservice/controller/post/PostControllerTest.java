@@ -2,7 +2,7 @@ package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.post.PostServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +19,7 @@ class PostControllerTest {
     @InjectMocks
     private PostController postController;
     @Mock
-    private PostService postService;
+    private PostServiceImpl postService;
     private PostDto postDto;
     private long ID = 1L;
     private long NO_VALID_ID = -5;

@@ -1,5 +1,6 @@
 package faang.school.postservice.moderation;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -8,18 +9,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @Slf4j
 public class ModerationDictionary {
     private Set<String> badWords;
-    public ModerationDictionary() {
-        collectionBadWords(); // Вызов метода collectionBadWords() при инициализации бина
-    }
-    public void collectionBadWords() {
+
+    @PostConstruct
+    private void collectionBadWords() {
         Path filePath = Path.of("src/main/resources/dictionary.txt");
-        try {
-            badWords = Files.lines(filePath)
+        try (Stream<String> lines = Files.lines(filePath)) {
+            badWords = lines
                     .map(String::trim)
                     .map(String::toLowerCase)
                     .collect(Collectors.toSet());

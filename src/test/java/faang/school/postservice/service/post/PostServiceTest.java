@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
     @InjectMocks
-    private PostService postService;
+    private PostServiceImpl postService;
     @Mock
     private UserServiceClient userServiceClient;
     @Spy
