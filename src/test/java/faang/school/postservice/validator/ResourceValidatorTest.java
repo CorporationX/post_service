@@ -26,11 +26,4 @@ class ResourceValidatorTest {
             resourceValidator.validateResourceBelongsToPost(resource, 1L);
         });
     }
-
-    @Test
-    void testValidateUserIsPostAuthorWhenUserIsNotPostAuthor() {
-        assertThrows(DataValidationException.class, () -> {
-            resourceValidator.validateUserIsPostAuthor(1L, 2L);
-        });
-    }
 }

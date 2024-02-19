@@ -30,7 +30,13 @@ class S3ServiceTest {
 //        int availableStream = inputStream.available();
 //        MultipartFile file = new MockMultipartFile("file.txt", "file.txt",
 //                "text/plain", inputStream);
+//        int width = 100;
+//        int height = 100;
+//        int imageType = BufferedImage.TYPE_INT_RGB;
+//        BufferedImage image = new BufferedImage(width, height, imageType);
 //
+//        when(inputStream.read()).thenReturn(1);
+//        when(ImageIO.read(inputStream)).thenReturn(image);
 //        Resource result = s3Service.uploadFile(file, "test_folder");
 //
 //        verify(clientAmazonS3).putObject(any());
@@ -47,7 +53,7 @@ class S3ServiceTest {
         assertThrows(IOException.class, () -> {
             InputStream inputStream = new FileInputStream("C:\\Users\\Kergshi\\Pictures\\kitt.jpg");
             MultipartFile file = new MockMultipartFile("file.txt", "file.txt", "text/plain", inputStream);
-            s3Service.uploadFile(file, "test_folder");
+            s3Service.uploadFile(file);
             inputStream.close();
         });
     }

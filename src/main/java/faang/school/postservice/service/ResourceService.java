@@ -5,6 +5,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.s3.S3Service;
+import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.validator.ResourceValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,14 +22,14 @@ public class ResourceService {
     private final PostService postService;
     private final ResourceValidator resourceValidator;
     private final UserContext userContext;
+    private final PostValidator postValidator;
 
     @Transactional
     public void addResource(Long postId, MultipartFile file) {
         Post post = postService.getPostById(postId);
-        resourceValidator.validateUserIsPostAuthor(post.getAuthorId(), userContext.getUserId());
-        resourceValidator.validateResourceLimit((post.getResources().size()));
-        String folder = "files";
-        Resource resource = s3Service.uploadFile(file, folder);
+        postValidator.validateAuthor(post.getAuthorId(), userContext.getUserId());
+        resourceValidator.validateResourceLimit(post.getResources().size());
+        Resource resource = s3Service.uploadFile(file);
         log.info("Resource uploaded: {}", resource.getName());
         resource.setPost(post);
         resourceRepository.save(resource);
@@ -37,11 +38,15 @@ public class ResourceService {
 
     @Transactional
     public void deleteResource(Long postId, Long resourceId) {
-        resourceValidator.validateUserIsPostAuthor(postService.getPostById(postId).getAuthorId(), userContext.getUserId());
-        Resource resource = resourceRepository.findById(resourceId).orElseThrow(() -> new RuntimeException("Resource not found"));
+        postValidator.validateAuthor(postService.getPostById(postId).getAuthorId(), userContext.getUserId());
+        Resource resource = getResourceById(resourceId);
         resourceValidator.validateResourceBelongsToPost(resource, postId);
         s3Service.deleteFile(resource.getKey());
         log.info("Resource deleted: {}", resource.getKey());
         resourceRepository.deleteById(resourceId);
+    }
+
+    private Resource getResourceById(Long resourceId) {
+        return resourceRepository.findById(resourceId).orElseThrow(() -> new RuntimeException("Resource not found"));
     }
 }

@@ -63,3 +63,9 @@ services:
     accessKey: user
     secretKey: password
     bucketName: corpbucket
+
+resource:
+  limit: 10
+  folder: files
+  max-width: 1080
+  max-height: 566

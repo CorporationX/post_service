@@ -25,8 +25,14 @@ public class S3Service {
     private final AmazonS3 clientAmazonS3;
     @Value("${services.s3.bucketName}")
     private String bucketName;
+    @Value("${resource.folder}")
+    private String folder;
+    @Value("${resource.max-width}")
+    private int maxWidth;
+    @Value("${resource.max-height}")
+    private int maxHeight;
 
-    public Resource uploadFile(MultipartFile file, String folder) {
+    public Resource uploadFile(MultipartFile file) {
         long fileSize = file.getSize();
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(fileSize);
@@ -55,25 +61,28 @@ public class S3Service {
         BufferedImage image = ImageIO.read(request.getInputStream());
         int width = image.getWidth();
         int height = image.getHeight();
-        int maxValue = 1080;
-        int anotherMaxValue = 566;
-        if (width > height) {
-            if ((width > maxValue) && (height > anotherMaxValue)){
+        int maxValue = maxWidth;
+        int anotherMaxValue = maxHeight;
+        boolean isHorizontal = width > height;
+        boolean isVertical = width < height;
+        boolean isSquareAndSidesBiggerMaxValue = width == height && width > maxValue;
+        if (isHorizontal) {
+            if ((width > maxValue) && (height > anotherMaxValue)) {
                 scaleAndPutImage(image, maxValue, anotherMaxValue, request);
-            }else if(width > maxValue){
-                scaleAndPutImage(image,maxValue,height,request);
-            } else if (height>anotherMaxValue) {
-                scaleAndPutImage(image,width,anotherMaxValue,request);
+            } else if (width > maxValue) {
+                scaleAndPutImage(image, maxValue, height, request);
+            } else if (height > anotherMaxValue) {
+                scaleAndPutImage(image, width, anotherMaxValue, request);
             }
-        } else if (width == height && width > maxValue) {
+        } else if (isSquareAndSidesBiggerMaxValue) {
             scaleAndPutImage(image, maxValue, maxValue, request);
-        } else if (width < height) {
+        } else if (isVertical) {
             if ((width > anotherMaxValue) && (height > maxValue)) {
                 scaleAndPutImage(image, anotherMaxValue, maxValue, request);
             } else if (width > anotherMaxValue) {
                 scaleAndPutImage(image, anotherMaxValue, height, request);
-            } else if (height >maxValue) {
-                scaleAndPutImage(image,width,maxValue,request);
+            } else if (height > maxValue) {
+                scaleAndPutImage(image, width, maxValue, request);
             }
         } else {
             clientAmazonS3.putObject(request);
@@ -101,7 +110,6 @@ public class S3Service {
         // рисуем на новом изображении наше оригинальное с нужным нам разрешением
         g.drawImage(originalImage, 0, 0, scaledWidth, scaledHeight, null);
         g.dispose(); // освобождаем ресурсы, что бы не было утечки памяти
-
         return scaledBI;
     }
 }

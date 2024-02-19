@@ -3,9 +3,12 @@ package faang.school.postservice.controller.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.ResourceService;
 import faang.school.postservice.validator.PostValidator;
+import faang.school.postservice.validator.ResourceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,6 +18,8 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
     private final PostValidator postValidator;
+    private final ResourceService resourceService;
+    private final ResourceValidator resourceValidator;
 
     @PostMapping("/drafts")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
@@ -66,4 +71,10 @@ public class PostController {
         return postService.getPublishedPostsByProject(projectId);
     }
 
+    @PostMapping("/{postId}/resources")
+    public String addResource(@PathVariable Long postId, @RequestParam("file") MultipartFile file) {
+        resourceValidator.validateResourceType(file);
+        resourceService.addResource(postId, file);
+        return "File uploader successfully";
+    }
 }
