@@ -30,7 +30,7 @@ public class PostController {
     private final UserContext userContext;
 
     @PostMapping("/draft")
-    public void createPostDraft(@RequestBody @Valid PostDto dto) {
+    public void createPostDraft(@RequestPart @Valid PostDto dto, @RequestPart("files") List<MultipartFile> file) {
         postService.createPostDraft(dto);
     }
 
