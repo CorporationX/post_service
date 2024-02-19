@@ -1,6 +1,7 @@
 package faang.school.postservice.moderation;
 
 import jakarta.annotation.PostConstruct;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import java.util.stream.Stream;
 
 @Component
 @Slf4j
+@Setter
 public class ModerationDictionary {
     private Set<String> badWords;
 
@@ -25,7 +27,7 @@ public class ModerationDictionary {
                     .map(String::toLowerCase)
                     .collect(Collectors.toSet());
         } catch (IOException e) {
-            log.error("Dictionary not created");
+            log.error("Dictionary of offensive content has not been created");
             throw new RuntimeException(e);
         }
     }
