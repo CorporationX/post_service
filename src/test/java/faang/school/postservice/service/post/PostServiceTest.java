@@ -94,7 +94,6 @@ class PostServiceTest {
         assertTrue(post1.isPublished());
         assertNotNull(post1.getPublishedAt());
         Mockito.verify(postRepository).save(post1);
-
     }
 
     @Test
