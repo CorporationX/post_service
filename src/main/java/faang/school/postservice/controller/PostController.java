@@ -24,7 +24,7 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
 
-    @PostMapping()
+    @PostMapping
     public PostDto createPost(@RequestPart @Valid PostDto postDto,
                               @RequestPart(value = "files", required = false) @Size(max = 10) List<MultipartFile> files) {
         return postService.createPost(postDto, files);

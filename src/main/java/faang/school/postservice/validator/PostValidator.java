@@ -23,13 +23,11 @@ public class PostValidator {
 
     public void validateAccessAndContent(PostDto postDto) {
         validateAccessToPost(postDto.getAuthorId(), postDto.getProjectId());
-        validatePostContent(postDto);
+        validatePostContent(postDto.getContent());
     }
 
-
-
-    private void validatePostContent(PostDto postDto) {
-        if (postDto.getContent().isBlank()) {
+    public void validatePostContent(String content) {
+        if (content == null || content.isBlank()) {
             throw new DataValidationException("Post content cannot be blank");
         }
     }
@@ -57,7 +55,7 @@ public class PostValidator {
                 .map(ProjectDto::getId)
                 .toList();
         if (!projectIdsUserHasAccess.contains(postProjectId)) {
-            throw new DataValidationException("Project is not author of the post");
+            throw new SecurityException("Project is not author of the post");
         }
     }
 
@@ -66,7 +64,7 @@ public class PostValidator {
             throw new EntityNotFoundException(String.format("User with id %s not found", postAuthorId));
         }
         if (postAuthorId != userId) {
-            throw new DataValidationException("You are not the author of the post");
+            throw new SecurityException("You are not the author of the post");
         }
     }
 }
