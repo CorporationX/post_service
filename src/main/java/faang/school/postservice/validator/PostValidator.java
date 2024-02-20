@@ -26,6 +26,8 @@ public class PostValidator {
         validatePostContent(postDto);
     }
 
+
+
     private void validatePostContent(PostDto postDto) {
         if (postDto.getContent().isBlank()) {
             throw new DataValidationException("Post content cannot be blank");
