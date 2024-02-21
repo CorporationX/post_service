@@ -74,8 +74,12 @@ public class ResourceService {
 
     public List<ResourceDto> createResources(Post post, List<MultipartFile> files) {
         postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
-        if (post.getResources().size() + files.size() > maxAmountFiles) {
-            throw new IllegalArgumentException("You can upload only 10 files or less");
+        int existFilesAmount = post.getResources().size();
+        int newFilesAmount = files.size();
+        if (existFilesAmount + newFilesAmount > maxAmountFiles) {
+            throw new IllegalArgumentException(
+                    String.format("You can upload only 10 files or less. Exist files = %s. New files = %s",
+                            existFilesAmount, newFilesAmount));
         }
 
         List<Resource> resources = new ArrayList<>();

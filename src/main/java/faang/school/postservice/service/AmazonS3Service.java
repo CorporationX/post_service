@@ -30,9 +30,7 @@ public class AmazonS3Service {
         ObjectMetadata objectMetadata = getObjectMetadata(fileSize, contentType);
 
         try {
-            PutObjectRequest putObjectRequest = new PutObjectRequest(
-                    bucketName, key, file.getInputStream(), objectMetadata);
-            s3Client.putObject(putObjectRequest);
+            s3Client.putObject(new PutObjectRequest(bucketName, key, file.getInputStream(), objectMetadata));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

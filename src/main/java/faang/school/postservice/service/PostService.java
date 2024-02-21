@@ -88,6 +88,7 @@ public class PostService {
         post.getResources().removeAll(resourcesToDelete);
         resourceService.deleteResources(resourcesToDelete.stream()
                 .map(Resource::getId)
-                .toList());
+                .toList()
+        );
     }
 }
