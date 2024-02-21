@@ -14,14 +14,22 @@ import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -30,7 +38,11 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -40,6 +52,9 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
+    private final AsyncPostPublishService asyncPostPublishService;
+    @Value("${post.publisher.scheduler.size_batch}")
+    private int sizeSublist;
     private final ModerationDictionary moderationDictionary;
     private final JdbcTemplate jdbcTemplate;
     private final  TransactionTemplate transactionTemplate;
@@ -137,10 +152,26 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
     }
+
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
                 new faang.school.postservice.exception.DataValidationException("Post has not found"));
+    }
+
+    @Transactional
+    public void publishScheduledPosts() {
+        log.info("Started publish posts from scheduler");
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        List<Post> postsToPublish = postRepository.findReadyToPublish();
+        if (!postsToPublish.isEmpty()) {
+            log.info("Size of posts list publish is {}", postsToPublish.size());
+            List<List<Post>> subLists = ListUtils.partition(postsToPublish, sizeSublist);
+            subLists.forEach(asyncPostPublishService::publishPost);
+            log.info("Finished publish all posts at {}", currentDateTime);
+        } else {
+            log.info("Unpublished posts at {} not found", currentDateTime);
+        }
     }
 
     @Transactional
