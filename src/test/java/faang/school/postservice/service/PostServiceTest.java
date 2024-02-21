@@ -3,14 +3,26 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.client.UserDto;
+import faang.school.postservice.dto.kafka.CreatePostEvent;
+import faang.school.postservice.dto.kafka.PostViewEvent;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.NoPublishedPostException;
 import faang.school.postservice.exception.SamePostAuthorException;
 import faang.school.postservice.exception.UpdatePostException;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.mapper.redis.*;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.RedisFeed;
+import faang.school.postservice.model.redis.RedisPost;
+import faang.school.postservice.model.redis.RedisUser;
+import faang.school.postservice.publisher.KafkaPostProducer;
+import faang.school.postservice.publisher.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisFeedRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.validator.PostValidator;
 import feign.FeignException;
@@ -18,15 +30,15 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executor;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,21 +47,39 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
 
-    @Spy
-    private PostMapperImpl postMapper;
     @Mock
     private PostRepository postRepository;
     @Mock
-    private UserServiceClient userService;
+    private RedisPostRepository redisPostRepository;
     @Mock
-    private ProjectServiceClient projectService;
+    private RedisUserRepository redisUserRepository;
+    @Mock
+    private RedisFeedRepository redisFeedRepository;
+    @Spy
+    private PostMapperImpl postMapper;
+    @Spy
+    private RedisCommentMapper redisCommentMapper = new RedisCommentMapperImpl();
+    @Spy
+    private RedisPostMapper redisPostMapper = new RedisPostMapperImpl(redisCommentMapper);
+    @Spy
+    private RedisUserMapperImpl redisUserMapper;
     @Mock
     private ModerationDictionary moderationDictionary;
     @Mock
     private Executor threadPoolForPostModeration;
     @Mock
     private PublisherService publisherService;
+    @Mock
+    private KafkaPostProducer kafkaPostProducer;
+    @Mock
+    private KafkaPostViewProducer kafkaPostViewProducer;
+    @Mock
+    private UserServiceClient userServiceClient;
+    @Mock
+    private ProjectServiceClient projectService;
+    @Mock
     private PostValidator postValidator;
+    @InjectMocks
     private PostService postService;
 
     private PostDto incorrectPostDto;
@@ -64,8 +94,6 @@ public class PostServiceTest {
 
     @BeforeEach
     void initData() {
-        postValidator = new PostValidator(userService, projectService, postRepository);
-        postService = new PostService(postRepository, postValidator, postMapper, moderationDictionary, threadPoolForPostModeration, publisherService);
         incorrectPostDto = PostDto.builder()
                 .id(INCORRECT_ID)
                 .content("content")
@@ -96,7 +124,7 @@ public class PostServiceTest {
     @Test
     void testCreateDaftPostWithNonExistentUser() {
         incorrectPostDto.setProjectId(null);
-        when(userService.getUser(CORRECT_ID)).thenThrow(FeignException.class);
+        when(userServiceClient.getUser(CORRECT_ID)).thenThrow(FeignException.class);
 
         assertThrows(EntityNotFoundException.class, () -> postService.crateDraftPost(incorrectPostDto));
     }
@@ -139,13 +167,43 @@ public class PostServiceTest {
 
     @Test
     void testPublishPost() {
-        correctPostDto.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
-        correctPostDto.setPublished(true);
-        when(postRepository.findById(CORRECT_ID)).thenReturn(Optional.ofNullable(correctPost));
+        RedisUser redisUser = new RedisUser();
+        redisUser.setId(2L);
+        redisUser.setFollowerIds(List.of(2L));
+        redisUser.setVersion(1L);
 
-        PostDto actualPostDto = postService.publishPost(CORRECT_ID);
-        actualPostDto.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
-        assertEquals(correctPostDto, actualPostDto);
+        RedisFeed redisFeed = new RedisFeed();
+        redisFeed.setUserId(2L);
+        redisFeed.setPostIds(new LinkedHashSet<>(Collections.singletonList(1L)));
+
+        Post post = new Post();
+        post.setId(1L);
+        post.setAuthorId(1L);
+        post.setPublished(false);
+        post.setDeleted(false);
+        //post.setScheduledAt(LocalDateTime.now().plusMinutes(30));
+
+        UserDto userDto = new UserDto();
+        userDto.setId(2L);
+        userDto.setFollowers(List.of(2L));
+
+        //Mockito.when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        Mockito.when(postValidator.validatePostId(post.getId())).thenReturn(post);
+        Mockito.when(userServiceClient.getUser(post.getAuthorId())).thenReturn(userDto);
+        Mockito.when(postRepository.findByAuthorId(userDto.getId())).thenReturn(Collections.singletonList(post));
+
+        PostDto result = postService.publishPost(post.getId());
+
+        assertNotNull(result);
+        assertTrue(result.isPublished());
+        assertNotNull(result.getPublishedAt());
+
+        verify(publisherService).publishPostEventToRedis(post);
+        verify(redisPostRepository).save(Mockito.any(RedisPost.class));
+        verify(userServiceClient).getUser(userDto.getId());
+        verify(redisUserRepository).save(redisUser);
+        verify(redisFeedRepository).save(redisFeed);
+        verify(kafkaPostProducer).publishPostEvent(Mockito.any(CreatePostEvent.class));
     }
 
     @Test
@@ -218,12 +276,39 @@ public class PostServiceTest {
 
     @Test
     void testGetPost() {
-        correctPost.setPublished(true);
-        correctPostDto.setPublished(true);
-        returnCorrectPostForPostRepository();
+        long postId = 1L;
+        UserDto userDto = new UserDto();
+        userDto.setId(1L);
 
-        PostDto actualPostDto = postService.getPost(CORRECT_ID);
-        assertEquals(correctPostDto, actualPostDto);
+        Post post = new Post();
+        post.setId(postId);
+        post.setPublished(true);
+        post.setDeleted(false);
+        post.setPublishedAt(LocalDateTime.now().minusMinutes(30));
+        post.setAuthorId(userDto.getId());
+
+        RedisPost redisPost = new RedisPost();
+        redisPost.setPostViews(10L);
+
+        PostDto postDto = new PostDto();
+        postDto.setId(postId);
+        postDto.setPublished(true);
+        postDto.setPublishedAt(post.getPublishedAt());
+
+        Mockito.when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        Mockito.when(redisPostRepository.findById(postId)).thenReturn(Optional.of(redisPost));
+        Mockito.when(postMapper.toDto(post)).thenReturn(postDto);
+        Mockito.doNothing().when(publisherService).publishPostEventToRedis(post);
+        Mockito.doNothing().when(kafkaPostViewProducer).publishPostViewEvent(Mockito.any(PostViewEvent.class));
+
+        PostService postService = new PostService(postRepository, redisPostRepository, redisUserRepository, redisFeedRepository, postValidator,
+                postMapper, redisPostMapper, redisUserMapper, moderationDictionary, threadPoolForPostModeration, publisherService, kafkaPostProducer, kafkaPostViewProducer, userServiceClient);
+
+        PostDto result = postService.getPost(postId);
+
+        assertNotNull(result);
+        assertTrue(result.isPublished());
+        assertNotNull(result.getPublishedAt());
     }
 
     @Test

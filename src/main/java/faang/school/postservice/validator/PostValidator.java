@@ -69,6 +69,6 @@ public class PostValidator {
 
     public Post validatePostId(long postId) {
         return postRepository.findById(postId).orElseThrow(
-                () -> new EntityNotFoundException("This post does not exist"));
+                () -> new EntityNotFoundException("Post does not exist by id: " + postId));
     }
 }
