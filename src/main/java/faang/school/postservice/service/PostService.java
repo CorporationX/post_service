@@ -16,20 +16,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -38,14 +31,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class PostService {
     private final PostValidator postValidator;
     private final PostRepository postRepository;
@@ -53,11 +42,12 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
     private final AsyncPostPublishService asyncPostPublishService;
-    @Value("${post.publisher.scheduler.size_batch}")
-    private int sizeSublist;
     private final ModerationDictionary moderationDictionary;
     private final JdbcTemplate jdbcTemplate;
     private final  TransactionTemplate transactionTemplate;
+
+    @Value("${post.publisher.scheduler.size_batch}")
+    private int sizeSublist;
 
     @Value("${post_moderation.batch_size}")
     int batchSize;
@@ -206,20 +196,6 @@ public class PostService {
                 });
             });
         }
-
         executorService.shutdown();
-        try {
-            executorService.awaitTermination(1, TimeUnit.HOURS);
-        } catch (InterruptedException e) {
-            log.error("Ошибка модерации постов", e);
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    private void validateIdPostDto(PostDto postDto) {
-        if ((postDto.getAuthorId() == null && postDto.getProjectId() == null) ||
-                (postDto.getAuthorId() != null && postDto.getProjectId() != null)) {
-            throw new DataValidationException("Enter one thing: authorId or projectId");
-        }
     }
 }
