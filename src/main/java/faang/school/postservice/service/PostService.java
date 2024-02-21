@@ -13,12 +13,16 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -27,6 +31,9 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
+    private final AsyncPostPublishService asyncPostPublishService;
+    @Value("${post.publisher.scheduler.size_batch}")
+    private int sizeSublist;
 
     public PostDto createDraftPost(PostDto postDto) {
         UserDto author = null;
@@ -118,9 +125,25 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
     }
+
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
                 new faang.school.postservice.exception.DataValidationException("Post has not found"));
+    }
+
+    @Transactional
+    public void publishScheduledPosts() {
+        log.info("Started publish posts from scheduler");
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        List<Post> postsToPublish = postRepository.findReadyToPublish();
+        if (!postsToPublish.isEmpty()) {
+            log.info("Size of posts list publish is {}", postsToPublish.size());
+            List<List<Post>> subLists = ListUtils.partition(postsToPublish, sizeSublist);
+            subLists.forEach(asyncPostPublishService::publishPost);
+            log.info("Finished publish all posts at {}", currentDateTime);
+        } else {
+            log.info("Unpublished posts at {} not found", currentDateTime);
+        }
     }
 }
