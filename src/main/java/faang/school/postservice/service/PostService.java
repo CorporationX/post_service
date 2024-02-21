@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.client.UserDto;
-import faang.school.postservice.dto.kafka.KafkaPostEvent;
-import faang.school.postservice.dto.kafka.KafkaPostViewEvent;
+import faang.school.postservice.dto.kafka.CreatePostEvent;
+import faang.school.postservice.dto.kafka.PostViewEvent;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.NoPublishedPostException;
@@ -59,6 +59,7 @@ public class PostService {
     private int sublistSize;
 
     public PostDto crateDraftPost(PostDto postDto) {
+
         postValidator.validateData(postDto);
 
         Post savedPost = postRepository.save(postMapper.toEntity(postDto));
@@ -84,7 +85,7 @@ public class PostService {
         UserDto userDto = userServiceClient.getUser(post.getAuthorId());
         saveUserToRedis(userDto);
         saveFeedToRedis(post.getId(), userDto);
-        KafkaPostEvent kafkaPostEvent = KafkaPostEvent.builder()
+        CreatePostEvent kafkaPostEvent = CreatePostEvent.builder()
                 .postId(postId)
                 .counterLikes(0L)
                 .counterComments(0L)
@@ -134,7 +135,7 @@ public class PostService {
         saveViewToRedis(postId);
         RedisPost redisPost = redisPostRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        KafkaPostViewEvent kafkaPostViewEvent = KafkaPostViewEvent.builder()
+        PostViewEvent kafkaPostViewEvent = PostViewEvent.builder()
                 .postId(postId)
                 .authorId(redisPost.getAuthorId())
                 .build();

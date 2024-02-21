@@ -1,11 +1,12 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.client.CommentDto;
-import faang.school.postservice.dto.kafka.KafkaCommentEvent;
+import faang.school.postservice.dto.kafka.NewCommentEvent;
 import faang.school.postservice.exception.DataNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.redis.RedisCommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.publisher.KafkaCommentProducer;
 import faang.school.postservice.repository.redis.RedisPostRepository;
@@ -15,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +44,7 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(commentDto);
         commentRepository.save(comment);
         commentEventPublisher.publish(commentDto);
-        KafkaCommentEvent kafkaCommentEvent = KafkaCommentEvent.builder()
+        NewCommentEvent kafkaCommentEvent = NewCommentEvent.builder()
                 .postId(postId)
                 .authorId(commentDto.getAuthorId())
                 .comment(comment)
@@ -63,7 +67,7 @@ public class CommentService {
                 .orElseThrow(() -> new DataNotFoundException("Comment not found with id: " + commentDto.getId()));
         comment.setContent(commentDto.getContent());
         commentRepository.save(comment);
-        kafkaCommentProducer.publishCommentEvent(KafkaCommentEvent.builder()
+        kafkaCommentProducer.publishCommentEvent(NewCommentEvent.builder()
                 .postId(commentDto.getPostId())
                 .authorId(commentDto.getAuthorId())
                 .comment(comment)
@@ -72,24 +76,19 @@ public class CommentService {
     }
 
     @Transactional
-    public List<CommentDto> getAllComments() {
-        List<Comment> comments = commentRepository.findAll();
-        return comments.stream()
-                .map(commentMapper::toDto)
-                .toList();
-    }
-
-    @Transactional
-    public List<CommentDto> getAllCommentsById(long postId) {
-        return commentRepository.findAllByPostId(postId).stream()
-                .map(commentMapper::toDto)
-                .toList();
+    public Page<CommentDto> getAllCommentsById(Pageable pageable, long postId) {
+        return commentRepository.findAll(Example.of(Comment.builder()
+                        .post(Post.builder()
+                                .id(postId)
+                                .build())
+                        .build()), pageable)
+                .map(commentMapper::toDto);
     }
 
     @Transactional
     public void deleteComment(long commentId) {
         commentRepository.deleteById(commentId);
-        kafkaCommentProducer.publishCommentEvent(KafkaCommentEvent.builder()
+        kafkaCommentProducer.publishCommentEvent(NewCommentEvent.builder()
                 .postId(commentId)
                 .authorId(commentId)
                 .comment(null)

@@ -82,6 +82,7 @@ post:
       sublist-size: 100
   feed:
     feed-size: 500
+    feed-size-heat: 100
     batch-size: 5
 
 async:

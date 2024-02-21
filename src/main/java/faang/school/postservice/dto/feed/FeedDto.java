@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Data
 @AllArgsConstructor
@@ -17,7 +18,7 @@ public class FeedDto {
     private Long postId;
     private String authorName;
     private String content;
-    private Long likes;
+    private AtomicInteger likes;
     private ArrayDeque<RedisCommentDto> comments;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

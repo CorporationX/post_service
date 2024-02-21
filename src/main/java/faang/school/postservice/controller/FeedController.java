@@ -1,10 +1,10 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.dto.feed.FeedDto;
 import faang.school.postservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.collection.SynchronizedCollection;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,11 +21,13 @@ public class FeedController {
 
     @GetMapping
     public List<FeedDto> getFeed(Long postId) {
+        log.info("Received to get feed by post id: {}", postId);
         return feedService.getFeed(postId);
     }
 
     @PostMapping("/start")
-    public void startFeed(UserDto userDto) {
-        feedService.heatFeed(userDto);
+    public void startFeed() {
+        log.info("Received to start feed for users");
+        feedService.heatFeed();
     }
 }

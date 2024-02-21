@@ -5,6 +5,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.client.UserDto;
 import faang.school.postservice.dto.feed.FeedDto;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.redis.RedisPostMapper;
 import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.redis.RedisFeed;
@@ -19,7 +20,9 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisKeyValueTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,15 +40,21 @@ public class FeedService {
     private final UserContext userContext;
     private final RedisUserMapper redisUserMapper;
     private final RedisPostMapper redisPostMapper;
+    private final RedisKeyValueTemplate redisKeyValueTemplate;
 
     @Value("{post.feed.feed-size}")
     private int feedSizeOfPosts; //500
+    @Value("${post.feed.feed-size-heat}")
+    private int feedSizeOfPostsHeat; //100
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Transactional
     public List<FeedDto> getFeed(Long postId) {
-        //TODO если приходит пост id ноль, то есть нет точки откуда начать брать посты => берем 20 первых постов
-        long userId = userContext.getUserId();
+        Long userId = userContext.getUserId();
+        if (userId == null) {
+            throw new UserNotFoundException("User's id wasn't found in user_context");
+        }
         Optional<RedisFeed> redisFeed = redisFeedRepository.findById(userId); // ищем id постов тех авторов, на которых подписан юзер
         if (redisFeed.isEmpty()) {
             return getPostsFromDb(userId, postId);
@@ -88,17 +97,14 @@ public class FeedService {
                     .limit(feedSizeOfPosts)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
-        boolean found = false;
-        for (Long id : postIds) { // берем посты до поста который есть в кэше
-            if (found) {
-                resultPostIds.add(id);
-                if (resultPostIds.size() >= feedSizeOfPosts) {
-                    break;
-                }
+        for (Long id : postIds) {
+            if (resultPostIds.size() >= feedSizeOfPosts) {
+                break;
             }
             if (id.equals(postId)) {
-                found = true;
+                continue; // skip current post
             }
+            resultPostIds.add(id);
         }
         int missingPostCount = feedSizeOfPosts - resultPostIds.size();
         if (missingPostCount > 0) {
@@ -138,28 +144,36 @@ public class FeedService {
                 .postId(redisPost.getId())
                 .authorName(redisUser.getUsername())
                 .content(redisPost.getContent())
-                .likes((long) redisPost.getPostLikes())
+                .likes(redisPost.getPostLikes())
                 .comments(redisPost.getComments())
                 .createdAt(redisPost.getPublishedAt())
                 .updatedAt(redisPost.getUpdatedAt())
                 .build();
     }
 
-     public void heatFeed(UserDto userDto) {
-        List<Long> followeeIds = userDto.getFollowees();
-        List<PostDto> firstPostsFromBeginning = postService.getPostsFromBeginningInDb(followeeIds, feedSizeOfPosts);
+     public void heatFeed() {
+        List<UserDto> userDtos = userServiceClient.getUsers();
+        List<Long> followeeIds = userDtos.stream()
+                .flatMap(userDto -> userDto.getFollowees()
+                        .stream())
+                .collect(Collectors.toList());
+        List<PostDto> firstPostsFromBeginning = postService.getPostsFromBeginningInDb(followeeIds, feedSizeOfPostsHeat);
         firstPostsFromBeginning.forEach(postDto -> {
             if (!redisPostRepository.existsById(postDto.getId())) { //чек поста в кэше
-                redisPostRepository.save(redisPostMapper.toRedisPost(postDto));
+                redisPostRepository.save(redisPostMapper.toRedisPost(postDto)); // TODO: 06/11/2023
+            } else {
+                redisKeyValueTemplate.update(postDto.getId(), redisPostMapper.toRedisPost(postDto));
             }
-            checkUserInRedis(postDto.getAuthorId()); // пост есть -> проверяем юзера в кэше, иначе сохраняем его
         });
-        if (redisFeedRepository.findById(userDto.getId()).isEmpty()) { // если у юзера пустой фид -> делаем и сохраняем фид
-            RedisFeed redisFeed = RedisFeed.builder()
-                    .userId(userDto.getId())
-                    .postIds(firstPostsFromBeginning.stream().map(PostDto::getId).collect(Collectors.toCollection(LinkedHashSet::new)))
-                    .build();
-            redisFeedRepository.save(redisFeed);
-        }
+         // если у юзера пустой фид -> делаем и сохраняем фид
+         userDtos.stream()
+                 .filter(userDto -> redisFeedRepository.findById(userDto.getId()).isEmpty())
+                 .map(userDto -> RedisFeed.builder()
+                         .userId(userDto.getId())
+                         .postIds(firstPostsFromBeginning.stream()
+                                 .map(PostDto::getId)
+                                 .collect(Collectors.toCollection(LinkedHashSet::new)))
+                         .build())
+                 .forEach(redisFeedRepository::save);
     }
 }

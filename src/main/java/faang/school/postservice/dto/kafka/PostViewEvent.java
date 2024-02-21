@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class KafkaLikeEvent {
-    private Long counter;
+public class PostViewEvent {
     private Long postId;
     private Long authorId;
 }

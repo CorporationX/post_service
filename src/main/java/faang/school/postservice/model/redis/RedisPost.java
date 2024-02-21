@@ -11,6 +11,7 @@ import org.springframework.data.redis.core.RedisHash;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Data
 @AllArgsConstructor
@@ -22,7 +23,7 @@ public class RedisPost implements Serializable {
     private String content;
     private Long authorId;
     private Long postViews;
-    private Integer postLikes;
+    private AtomicInteger postLikes;
     private ArrayDeque<RedisCommentDto> comments;
     @Version
     private Long version;

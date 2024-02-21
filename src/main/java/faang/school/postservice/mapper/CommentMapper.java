@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface CommentMapper {
     @Mapping(source = "post.id", target = "postId")
-    @Mapping(target = "likes", source = "likes", qualifiedByName = "mapLikesToDto")
+    @Mapping(target = "commentLikes", source = "likes", qualifiedByName = "mapLikesToDto")
     CommentDto toDto(Comment comment);
     @Mapping(source = "postId", target = "post", qualifiedByName = "mapPostIdToPost")
     Comment toEntity(CommentDto commentDto);

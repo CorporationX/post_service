@@ -1,14 +1,6 @@
 package faang.school.postservice.controller.handler;
 
-import faang.school.postservice.exception.AlreadyDeletedException;
-import faang.school.postservice.exception.AlreadyPostedException;
-import faang.school.postservice.exception.DataNotFoundException;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.EmptyContentInPostException;
-import faang.school.postservice.exception.NoPublishedPostException;
-import faang.school.postservice.exception.SamePostAuthorException;
-import faang.school.postservice.exception.SameTimeActionException;
-import faang.school.postservice.exception.UpdatePostException;
+import faang.school.postservice.exception.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -56,6 +48,13 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleNoPublishedPostException(NoPublishedPostException e) {
         log.error("Post isn't published exception", e);
         return new ErrorResponse(e.getMessage(), HttpStatus.METHOD_NOT_ALLOWED, LocalDateTime.now());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleUserNotFoundException(UserNotFoundException e) {
+        log.error("User not found exception", e);
+        return new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
     }
 
     @ExceptionHandler(SamePostAuthorException.class)

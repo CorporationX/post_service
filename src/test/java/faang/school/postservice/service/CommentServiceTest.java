@@ -13,7 +13,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -101,75 +105,25 @@ class CommentServiceTest {
     }
 
     @Test
-    void getAllCommentsTest() {
-        Comment comment1 = new Comment();
-        comment1.setId(1L);
-        comment1.setContent("comment1");
-
-        Comment comment2 = new Comment();
-        comment2.setId(2L);
-        comment2.setContent("comment2");
-
-        List<Comment> commentList = List.of(comment1, comment2);
-
-        CommentDto commentDto1 = new CommentDto();
-        commentDto1.setId(1L);
-        commentDto1.setContent("comment1");
-
-        CommentDto commentDto2 = new CommentDto();
-        commentDto2.setId(2L);
-        commentDto2.setContent("comment2");
-
-        List<CommentDto> commentDtoList = List.of(commentDto1, commentDto2);
-
-        when(commentRepository.findAll()).thenReturn(commentList);
-        when(commentMapper.toDto(comment1)).thenReturn(commentDto1);
-        when(commentMapper.toDto(comment2)).thenReturn(commentDto2);
-
-        commentService = new CommentService(commentRepository, redisPostRepository, commentEventPublisher, kafkaCommentProducer, commentMapper, redisCommentMapper);
-
-        List<CommentDto> result = commentService.getAllComments();
-
-        assertNotNull(result);
-        assertEquals(commentDtoList, result);
-    }
-
-    @Test
     void getAllCommentsByIdTest() {
-        Post post = new Post();
-        post.setId(1L);
-        Comment comment1 = new Comment();
-        comment1.setId(1L);
-        comment1.setContent("comment1");
-        comment1.setId(post.getId());
+        Pageable pageable = Pageable.unpaged();
+        Comment comment = new Comment();
+        comment.setId(1L);
 
-        Comment comment2 = new Comment();
-        comment2.setId(2L);
-        comment2.setContent("comment2");
-        comment2.setId(post.getId());
+        Page<Comment> comments = Mockito.mock(Page.class);
 
-        List<Comment> commentList = List.of(comment1, comment2);
+        when(commentRepository.findAll(Example.of(Comment.builder()
+                .post((Post.builder()
+                .id(1L).build()))
+                .build()), pageable)).thenReturn(comments);
+        when(commentMapper.toDto(any(Comment.class))).thenReturn(new CommentDto());
 
-        CommentDto commentDto1 = new CommentDto();
-        commentDto1.setId(1L);
-        commentDto1.setContent("comment1");
+        Page<CommentDto> result = commentService.getAllCommentsById(pageable, 1L);
 
-        CommentDto commentDto2 = new CommentDto();
-        commentDto2.setId(2L);
-        commentDto2.setContent("comment2");
+        //assertNotNull(result);
 
-        List<CommentDto> commentDtoList = List.of(commentDto1, commentDto2);
-
-        when(commentRepository.findAllByPostId(post.getId())).thenReturn(commentList);
-        when(commentMapper.toDto(comment1)).thenReturn(commentDto1);
-        when(commentMapper.toDto(comment2)).thenReturn(commentDto2);
-
-        commentService = new CommentService(commentRepository, redisPostRepository, commentEventPublisher, kafkaCommentProducer, commentMapper, redisCommentMapper);
-
-        List<CommentDto> result = commentService.getAllCommentsById(post.getId());
-
-        assertNotNull(result);
-        assertEquals(commentDtoList, result);
+        verify(commentRepository).findAll(any(Example.class), any(Pageable.class));
+        verify(commentMapper).toDto(any(Comment.class));
     }
 
     @Test

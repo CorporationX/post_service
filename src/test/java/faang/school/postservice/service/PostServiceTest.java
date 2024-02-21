@@ -4,8 +4,8 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.client.UserDto;
-import faang.school.postservice.dto.kafka.KafkaPostEvent;
-import faang.school.postservice.dto.kafka.KafkaPostViewEvent;
+import faang.school.postservice.dto.kafka.CreatePostEvent;
+import faang.school.postservice.dto.kafka.PostViewEvent;
 import faang.school.postservice.exception.AlreadyDeletedException;
 import faang.school.postservice.exception.AlreadyPostedException;
 import faang.school.postservice.exception.NoPublishedPostException;
@@ -38,7 +38,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Executor;
 
@@ -204,7 +203,7 @@ public class PostServiceTest {
         verify(userServiceClient).getUser(userDto.getId());
         verify(redisUserRepository).save(redisUser);
         verify(redisFeedRepository).save(redisFeed);
-        verify(kafkaPostProducer).publishPostEvent(Mockito.any(KafkaPostEvent.class));
+        verify(kafkaPostProducer).publishPostEvent(Mockito.any(CreatePostEvent.class));
     }
 
     @Test
@@ -300,7 +299,7 @@ public class PostServiceTest {
         Mockito.when(redisPostRepository.findById(postId)).thenReturn(Optional.of(redisPost));
         Mockito.when(postMapper.toDto(post)).thenReturn(postDto);
         Mockito.doNothing().when(publisherService).publishPostEventToRedis(post);
-        Mockito.doNothing().when(kafkaPostViewProducer).publishPostViewEvent(Mockito.any(KafkaPostViewEvent.class));
+        Mockito.doNothing().when(kafkaPostViewProducer).publishPostViewEvent(Mockito.any(PostViewEvent.class));
 
         PostService postService = new PostService(postRepository, redisPostRepository, redisUserRepository, redisFeedRepository, postValidator,
                 postMapper, redisPostMapper, redisUserMapper, moderationDictionary, threadPoolForPostModeration, publisherService, kafkaPostProducer, kafkaPostViewProducer, userServiceClient);

@@ -22,7 +22,7 @@ public interface PostMapper {
     @Named("mapLikesToDto")
     default List<LikeDto> mapLikesToDto(List<Like> likes) {
         LikeMapper likeMapper = new LikeMapperImpl();
-        if (likes == null){
+        if (likes == null) {
             return null;
         }
         return likes.stream()

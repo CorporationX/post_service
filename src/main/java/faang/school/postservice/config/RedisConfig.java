@@ -41,33 +41,6 @@ public class RedisConfig {
         return redisTemplate;
     }
 
-    @Bean("redisUsersTemplate")
-    public RedisTemplate<Long, LinkedHashSet<Long>> redisUsersTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<Long, LinkedHashSet<Long>> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
-        return redisTemplate;
-    }
-
-    @Bean("redisFeedTemplate")
-    public RedisTemplate<Long, LinkedHashSet<Long>> redisFeedTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<Long, LinkedHashSet<Long>> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
-        return redisTemplate;
-    }
-
-    @Bean("redisPostsTemplate")
-    public RedisTemplate<Long, LinkedHashSet<Long>> redisPostsTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<Long, LinkedHashSet<Long>> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
-        return redisTemplate;
-    }
-
     @Bean
     public ChannelTopic postTopic() {
         return new ChannelTopic(postTopicName);

@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.kafka;
 
+import faang.school.postservice.model.Comment;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class KafkaPostViewEvent {
+public class NewCommentEvent {
+    private Long counter;
     private Long postId;
-    private Long authorId; // who viewed the post
+    private Long authorId;
+    private Comment comment;
 }

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.ReadOnlyProperty;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,11 +16,12 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class CommentDto {
-    private long id;
+    private Long id;
     private String content;
-    private long authorId;
-    private List<LikeDto> likes;
-    private long postId;
+    private Long authorId;
+    private List<LikeDto> commentLikes;
+    private Long postId;
+    @ReadOnlyProperty
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

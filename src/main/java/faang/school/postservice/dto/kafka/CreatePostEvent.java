@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class KafkaPostEvent {
+public class CreatePostEvent {
     private Long postId;
     private Long counterLikes;
     private Long counterComments;
