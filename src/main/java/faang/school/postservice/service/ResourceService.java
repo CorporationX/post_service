@@ -6,9 +6,9 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.validator.PostValidator;
+import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,12 +20,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ResourceService {
-    @Value("${post.content_to_post.max_amount}")
-    private int maxAmountFiles;
     private final AmazonS3Service amazonService;
     private final ResourceRepository resourceRepository;
     private final ResourceMapper resourceMapper;
     private final PostValidator postValidator;
+    private final ResourceValidator resourceValidator;
 
     private String getFolderName(long postId, String contentType) {
         return String.format("%s-%s", postId, contentType);
@@ -74,16 +73,15 @@ public class ResourceService {
 
     public List<ResourceDto> createResources(Post post, List<MultipartFile> files) {
         postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
+
         int existFilesAmount = post.getResources().size();
         int newFilesAmount = files.size();
-        if (existFilesAmount + newFilesAmount > maxAmountFiles) {
-            throw new IllegalArgumentException(
-                    String.format("You can upload only 10 files or less. Exist files = %s. New files = %s",
-                            existFilesAmount, newFilesAmount));
-        }
+        resourceValidator.validateFilesAmount(existFilesAmount, newFilesAmount);
 
         List<Resource> resources = new ArrayList<>();
         files.forEach(file -> {
+            resourceValidator.validateFileSize(file.getSize());
+
             Resource resource = amazonService.uploadFile(file, getFolderName(post.getId(), file.getContentType()));
             resource.setPost(post);
             resources.add(resource);

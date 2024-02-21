@@ -39,6 +39,7 @@ logging:
 post:
   content_to_post:
     max_amount: 10
+    max_size: 5 * 1024 * 1024
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
