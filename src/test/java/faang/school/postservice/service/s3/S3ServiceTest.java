@@ -37,7 +37,7 @@ class S3ServiceTest {
 //
 //        when(inputStream.read()).thenReturn(1);
 //        when(ImageIO.read(inputStream)).thenReturn(image);
-//        Resource result = s3Service.uploadFile(file, "test_folder");
+//        Resource result = s3Service.uploadFile(file);
 //
 //        verify(clientAmazonS3).putObject(any());
 //

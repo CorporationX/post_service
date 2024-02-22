@@ -71,7 +71,7 @@ public class PostController {
         return postService.getPublishedPostsByProject(projectId);
     }
 
-    @PostMapping("/{postId}/resources")
+    @PostMapping("/{postId}/resources/add")
     public String addResource(@PathVariable Long postId, @RequestParam("file") MultipartFile file) {
         resourceValidator.validateResourceType(file);
         resourceService.addResource(postId, file);
