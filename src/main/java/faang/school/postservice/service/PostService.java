@@ -68,6 +68,7 @@ public class PostService {
 
     private PostDto savePost(PostDto postDto) {
         Post post = postMapper.toEntity(postDto);
+        post.setVerified(false);
         return postMapper.toDto(postRepository.save(post));
     }
 
