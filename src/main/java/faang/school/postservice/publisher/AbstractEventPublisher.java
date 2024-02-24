@@ -17,7 +17,7 @@ public class AbstractEventPublisher<T> {
             String json = objectMapper.writeValueAsString(event);
             redisTemplate.convertAndSend(channelTopic, json);
         } catch (JsonProcessingException e) {
-            log.error("Json processing exception", e);
+            log.error("Json processing exception ", e);
             throw new RuntimeException("Json processing exception");
         }
     }
