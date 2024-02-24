@@ -19,7 +19,7 @@ public class PostController {
     private final PostService postService;
     private final PostValidator postValidator;
 
-    @Operation(summary = "Создать пост", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "id пользователя", required = true)})
+    @Operation(summary = "Создать пост", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "id пользователя", required = false)})
     @PostMapping("/drafts")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
         postValidator.validateAuthorCount(postDto);

@@ -62,7 +62,7 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
-    private Comment getComment(Long commentId) {
+    public Comment getComment(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Comment has not been found"));
     }
