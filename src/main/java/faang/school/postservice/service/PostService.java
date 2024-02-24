@@ -3,10 +3,12 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final PostEventPublisher postEventPublisher;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
@@ -40,6 +43,8 @@ public class PostService {
         if (post.isPublished() || post.isDeleted()) {
             throw new DataValidationException("Post is already published or deleted");
         }
+
+        postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
