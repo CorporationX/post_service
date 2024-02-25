@@ -1,7 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
