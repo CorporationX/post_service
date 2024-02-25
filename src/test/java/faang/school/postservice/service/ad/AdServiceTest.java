@@ -22,7 +22,7 @@ class AdServiceTest {
     private AdService adService;
 
     @Test
-    public void testWhenNoAdsToRemoveThenNoneDeleted() {
+    void testWhenNoAdsToRemoveThenNoneDeleted() {
         adRepository.deleteAll();
         adService.removeExpiredAds();
         long count = adRepository.count();
