@@ -10,6 +10,7 @@ import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -30,6 +31,7 @@ public class ResourceService {
         return String.format("%s-%s", postId, contentType);
     }
 
+    @Transactional
     public List<ResourceDto> deleteResources(List<Long> resourceIds) {
         List<Resource> resourcesToDelete = resourceIds.stream()
                 .map(this::validateAccessAndGetResource)
@@ -43,6 +45,7 @@ public class ResourceService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public byte[] downloadResource(long resourceId) {
         Resource resource = validateAccessAndGetResource(resourceId);
 
@@ -58,6 +61,7 @@ public class ResourceService {
         return bytes;
     }
 
+    @Transactional(readOnly = true)
     public ResourceDto getResource(long resourceId) {
         Resource resource = validateAccessAndGetResource(resourceId);
 
@@ -71,6 +75,7 @@ public class ResourceService {
         return resource;
     }
 
+    @Transactional
     public List<ResourceDto> createResources(Post post, List<MultipartFile> files) {
         postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
 
@@ -94,6 +99,7 @@ public class ResourceService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public Resource getResourceById(long resourceId) {
         return resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Resource with id %s not found", resourceId)));

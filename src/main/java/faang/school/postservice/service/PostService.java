@@ -49,6 +49,7 @@ public class PostService {
         return createResourcesAndGetPostDto(updatedPost, files);
     }
 
+    @Transactional(readOnly = true)
     public PostDto getPostDto(long postId) {
         return postMapper.toDto(getPost(postId));
     }
@@ -72,6 +73,7 @@ public class PostService {
         return postDto;
     }
 
+    @Transactional(readOnly = true)
     public Post getPost(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post with id = %s not found", postId)));
