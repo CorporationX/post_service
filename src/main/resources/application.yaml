@@ -17,6 +17,10 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  mvc:
+    servlet:
+      path: /api/v1
+
   data:
     redis:
       port: 6379
@@ -38,7 +42,8 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "0 0 * * *" # every day at 00:00
+      batchSize: 5
 
 user-service:
   host: localhost
