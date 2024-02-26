@@ -5,7 +5,6 @@ import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.mapper.PostEventMapper;
 import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,13 +13,12 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class PostEventPublisher {
     private final AsyncPostEventPublisher asyncPostEventPublisher;
     private final PostEventMapper mapper;
     private final UserServiceClient userServiceClient;
 
-    @Value("${feed.batch}")
+    @Value("${feed.post_batch}")
     private int batchSize;
 
     public void publish(Post post) {
@@ -34,6 +32,5 @@ public class PostEventPublisher {
             batchEvent.setFollowerIds(batch);
             asyncPostEventPublisher.asyncPublishBatchEvent(batchEvent);
         });
-
     }
 }

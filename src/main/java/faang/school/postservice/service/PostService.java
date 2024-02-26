@@ -10,6 +10,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostEventPublisher;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -46,6 +47,7 @@ public class PostService {
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
     private final PostEventPublisher postEventPublisher;
+    private final PostViewEventPublisher postViewEventPublisher;
 
     @Value("${post.publisher.scheduler.size_batch}")
     private int sizeSublist;
@@ -105,6 +107,7 @@ public class PostService {
 
     public PostDto getPost(long id) {
         Post post = findById(id);
+        postViewEventPublisher.publish(post);
         return postMapper.toDto(post);
     }
 
@@ -120,6 +123,7 @@ public class PostService {
 
     public List<PostDto> getPublishedPostsByUser(long userId) {
         List<Post> foundedPosts = postRepository.findByAuthorIdWithLikes(userId);
+        foundedPosts.forEach(postViewEventPublisher::publish);
         return getSortedPublished(foundedPosts);
     }
 

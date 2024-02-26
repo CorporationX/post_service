@@ -49,6 +49,8 @@ spring:
         name: like_topic
       comment:
         name: comment_topic
+      post_view:
+        name: post_view_topic
 
 server:
   port: 8081
@@ -87,9 +89,10 @@ async:
   core: 10
   max: 20
   queue_capacity: 50
+  prefix: "AsyncThread-"
 
 feed:
-  batch: 100
+  post_batch: 100
   ttl: 84600 #day
   size: 500
   retry:

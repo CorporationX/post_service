@@ -15,13 +15,15 @@ public class AsyncConfig {
     private int maxSize;
     @Value("${async.queue_capacity}")
     private int queueCapacity;
-
+    @Value("${async.prefix}")
+    private String prefixThread;
     @Bean
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(corePoolSize);
         threadPoolTaskExecutor.setMaxPoolSize(maxSize);
         threadPoolTaskExecutor.setQueueCapacity(queueCapacity);
+        threadPoolTaskExecutor.setThreadNamePrefix(prefixThread);
         threadPoolTaskExecutor.initialize();
         return threadPoolTaskExecutor;
     }
