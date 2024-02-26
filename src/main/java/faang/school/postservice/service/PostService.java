@@ -51,7 +51,9 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostDto getPostDto(long postId) {
-        return postMapper.toDto(getPost(postId));
+        Post post = getPost(postId);
+        postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
+        return postMapper.toDto(post);
     }
 
     private PostDto createResourcesAndGetPostDto(Post post, List<MultipartFile> files) {
