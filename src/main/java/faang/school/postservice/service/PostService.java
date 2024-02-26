@@ -1,4 +1,4 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
@@ -27,7 +27,7 @@ public class PostService {
     private final PostRepository postRepository;
 
     @Transactional
-    public void createDraft(PostDto postDto) {
+    public PostDto createDraft(PostDto postDto) {
         if (postDto.getAuthorId() == null && postDto.getProjectId() != null) {
             projectServiceClient.getProject(postDto.getProjectId());
         }
@@ -41,10 +41,11 @@ public class PostService {
         post.setDeleted(false);
         post.setCreatedAt(LocalDateTime.now());
         postRepository.save(post);
+        return postMapper.toDto(post);
     }
 
     @Transactional
-    public void publish(long id) {
+    public PostDto publish(long id) {
         Post post = searchPostById(id);
         if (post.isPublished()) {
             throw new DataValidationException("The post has already been published");
@@ -52,29 +53,30 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+        return postMapper.toDto(post);
     }
 
     @Transactional
-    public void update(PostDto postDto) {
+    public PostDto update(PostDto postDto) {
         Post post = searchPostById(postDto.getId());
-        if(post.getContent().equals(postDto.getContent()))
-            throw new DataValidationException("No content changes");
         post.setContent(postDto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
+        return postMapper.toDto(post);
     }
 
     @Transactional
-    public void removeSoftly(long id) {
+    public PostDto removeSoftly(long id) {
         Post post = searchPostById(id);
         post.setPublished(false);
         post.setDeleted(true);
         postRepository.save(post);
+        return postMapper.toDto(post);
     }
 
     @Transactional
     public PostDto getPostById(long id) {
-        return postMapper.toPostDto(searchPostById(id));
+        return postMapper.toDto(searchPostById(id));
     }
 
     @Transactional
@@ -92,7 +94,7 @@ public class PostService {
     @Transactional
     public List<PostDto> getPublishedPostsByAuthorId(long id) {
         List<Post> posts = postRepository.findByAuthorId(id);
-        return filterPosts(posts,true);
+        return filterPosts(posts, true);
     }
 
     @Transactional
@@ -102,11 +104,8 @@ public class PostService {
     }
 
     private Post searchPostById(long id) {
-        Optional<Post> optionalPost = postRepository.findById(id);
-        if (optionalPost.isEmpty()) {
-            throw new DataValidationException("Post with id " + id + " not found.");
-        }
-        return optionalPost.get();
+        return postRepository.findById(id)
+                .orElseThrow(() -> new DataValidationException("Post with id " + id + " not found."));
     }
 
     private List<PostDto> filterPosts(List<Post> posts, boolean isPublished) {
@@ -121,7 +120,7 @@ public class PostService {
                     }
                     return date2.compareTo(date1);
                 })
-                .map(postMapper::toPostDto)
+                .map(postMapper::toDto)
                 .toList();
     }
 

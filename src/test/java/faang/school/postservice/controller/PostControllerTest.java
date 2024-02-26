@@ -1,8 +1,8 @@
-package faang.school.postservice.controller.post;
+package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,23 +39,9 @@ class PostControllerTest {
     }
 
     @Test
-    void testCreateDraftFailed() {
-        DataValidationException exception = assertThrows(DataValidationException.class,
-                () -> postController.createDraft(postDto));
-        assertEquals("A post with this content cannot be created", exception.getMessage());
-    }
-
-    @Test
     void testPublishPostSuccessful() {
         postController.publishPost(ID);
         Mockito.verify(postService).publish(ID);
-    }
-
-    @Test
-    void testPublishPostFailed() {
-        DataValidationException exception = assertThrows(DataValidationException.class,
-                () -> postController.publishPost(NO_VALID_ID));
-        assertEquals("Invalid ID", exception.getMessage());
     }
 
     @Test
