@@ -1,7 +1,6 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.dto.CommentEvent;
-import faang.school.postservice.dto.LikePostEvent;
+import faang.school.postservice.dto.event_broker.CommentEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

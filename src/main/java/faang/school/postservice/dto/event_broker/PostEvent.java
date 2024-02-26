@@ -1,5 +1,6 @@
-package faang.school.postservice.dto.post;
+package faang.school.postservice.dto.event_broker;
 
+import faang.school.postservice.dto.user.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class PostEvent {
     private Long projectAuthorId;
     private String content;
     private List<Long> followerIds;
+    private UserDto userDtoAuthor;
     private LocalDateTime publishedAt;
 
     public PostEvent(PostEvent original) {
@@ -28,5 +30,6 @@ public class PostEvent {
         this.content = original.content;
         this.followerIds = (original.followerIds != null) ? new ArrayList<>(original.followerIds) : new ArrayList<>();
         this.publishedAt = original.publishedAt;
+        this.userDtoAuthor = original.userDtoAuthor;
     }
 }

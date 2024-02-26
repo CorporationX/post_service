@@ -1,7 +1,7 @@
 package faang.school.postservice.service.hash;
 
 import faang.school.postservice.dto.hash.FeedHash;
-import faang.school.postservice.dto.post.PostEvent;
+import faang.school.postservice.dto.event_broker.PostEvent;
 import faang.school.postservice.repository.hash.FeedHashRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

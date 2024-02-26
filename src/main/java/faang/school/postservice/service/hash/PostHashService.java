@@ -1,11 +1,10 @@
 package faang.school.postservice.service.hash;
 
-import faang.school.postservice.dto.CommentEvent;
-import faang.school.postservice.dto.LikePostEvent;
-import faang.school.postservice.dto.hash.FeedHash;
+import faang.school.postservice.dto.event_broker.CommentEvent;
+import faang.school.postservice.dto.event_broker.LikePostEvent;
 import faang.school.postservice.dto.hash.PostHash;
-import faang.school.postservice.dto.post.PostEvent;
-import faang.school.postservice.dto.post.PostViewEvent;
+import faang.school.postservice.dto.event_broker.PostEvent;
+import faang.school.postservice.dto.event_broker.PostViewEvent;
 import faang.school.postservice.mapper.PostEventMapper;
 import faang.school.postservice.repository.hash.PostHashRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +18,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor

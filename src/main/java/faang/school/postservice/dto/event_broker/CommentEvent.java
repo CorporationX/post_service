@@ -1,4 +1,4 @@
-package faang.school.postservice.dto;
+package faang.school.postservice.dto.event_broker;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

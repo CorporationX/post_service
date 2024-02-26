@@ -1,7 +1,6 @@
 package faang.school.postservice.listener;
 
-import faang.school.postservice.dto.LikePostEvent;
-import faang.school.postservice.dto.post.PostViewEvent;
+import faang.school.postservice.dto.event_broker.LikePostEvent;
 import faang.school.postservice.service.hash.PostHashService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;

@@ -1,7 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.hash.PostHash;
-import faang.school.postservice.dto.post.PostEvent;
+import faang.school.postservice.dto.event_broker.PostEvent;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

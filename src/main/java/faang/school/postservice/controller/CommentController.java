@@ -27,7 +27,7 @@ public class CommentController {
     private final CommentService commentService;
     private final CommentValidator commentValidator;
 
-    @Operation(summary = "Add like to comment", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "User ID", required = true)})
+    @Operation(summary = "Create comment", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "User ID", required = true)})
     @PostMapping("/{postId}/comment")
     public CommentDto createComment(@PathVariable Long postId, @RequestBody CommentDto commentDto) {
         commentValidator.validateIdIsNotLessOne(postId);

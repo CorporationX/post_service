@@ -7,27 +7,26 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.TimeToLive;
 
 import java.io.Serializable;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-@RedisHash("feed")
-public class FeedHash {
+@RedisHash(value = "user")
+public class UserHash {
     @Id
     private Long id;
+    private String username;
+    private String email;
+    private String phone;
+    private Long countryId;
 
-    private Set<Long> postIds = new LinkedHashSet<>();
+    @TimeToLive
+    private Long ttl;
 
     @Version
     private Long version;
-
-    public FeedHash(Long id, Set<Long> postIds) {
-        this.id = id;
-        this.postIds = postIds;
-    }
 }

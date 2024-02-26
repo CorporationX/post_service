@@ -1,8 +1,8 @@
 package faang.school.postservice.dto.hash;
 
-import faang.school.postservice.dto.CommentEvent;
-import faang.school.postservice.dto.LikePostEvent;
-import faang.school.postservice.dto.post.PostViewEvent;
+import faang.school.postservice.dto.event_broker.CommentEvent;
+import faang.school.postservice.dto.event_broker.LikePostEvent;
+import faang.school.postservice.dto.event_broker.PostViewEvent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,10 +14,7 @@ import org.springframework.data.redis.core.TimeToLive;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Data
 @AllArgsConstructor

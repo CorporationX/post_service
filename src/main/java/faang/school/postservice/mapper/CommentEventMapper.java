@@ -1,6 +1,6 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.CommentEvent;
+import faang.school.postservice.dto.event_broker.CommentEvent;
 import faang.school.postservice.dto.comment.CommentDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

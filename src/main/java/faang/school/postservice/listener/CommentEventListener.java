@@ -1,8 +1,6 @@
 package faang.school.postservice.listener;
 
-import faang.school.postservice.dto.CommentEvent;
-import faang.school.postservice.dto.post.PostEvent;
-import faang.school.postservice.service.hash.FeedHashService;
+import faang.school.postservice.dto.event_broker.CommentEvent;
 import faang.school.postservice.service.hash.PostHashService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;

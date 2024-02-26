@@ -1,7 +1,7 @@
 package faang.school.postservice.client;
 
-import faang.school.postservice.dto.UserDto;
-import faang.school.postservice.dto.UserFilterDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserFilterDto;
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
