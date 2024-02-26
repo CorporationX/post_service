@@ -45,8 +45,8 @@ spring:
     topics:
       post:
         name: post_topic
-      like:
-        name: like_topic
+      like_post:
+        name: like_post_topic
       comment:
         name: comment_topic
       post_view:

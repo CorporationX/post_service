@@ -17,8 +17,8 @@ public class KafkaTopicConfig {
     private String bootstrapAddress;
     @Value("${spring.kafka.topics.post.name}")
     private String postTopic;
-    @Value("${spring.kafka.topics.like.name}")
-    private String likeTopic;
+    @Value("${spring.kafka.topics.like_post.name}")
+    private String likePostTopic;
     @Value("${spring.kafka.topics.comment.name}")
     private String commentTopic;
     @Value("${spring.kafka.topics.post_view.name}")
@@ -37,8 +37,8 @@ public class KafkaTopicConfig {
     }
 
     @Bean
-    public NewTopic topicLike() {
-        return new NewTopic(likeTopic, 1, (short) 1);
+    public NewTopic topicLikePost() {
+        return new NewTopic(likePostTopic, 1, (short) 1);
     }
 
     @Bean

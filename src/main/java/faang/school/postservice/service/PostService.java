@@ -5,8 +5,10 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.ProjectDto;
 import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.PostEventMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostEventPublisher;
@@ -48,6 +50,7 @@ public class PostService {
     private final TransactionTemplate transactionTemplate;
     private final PostEventPublisher postEventPublisher;
     private final PostViewEventPublisher postViewEventPublisher;
+    private final PostEventMapper postEventMapper;
 
     @Value("${post.publisher.scheduler.size_batch}")
     private int sizeSublist;
@@ -82,8 +85,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         Post save = postRepository.save(post);
-
-        postEventPublisher.publish(post);
+        postEventPublisher.publish(postEventMapper.toPostEvent(post));
 
         return postMapper.toDto(save);
     }
