@@ -28,6 +28,7 @@ public class PostController {
         return postService.createDraftPost(postDto);
     }
 
+    @Operation(summary = "Опубликовать пост", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "id пользователя", required = false)})
     @PutMapping("/drafts/{id}")
     public PostDto publishPost(@PathVariable long id) {
         return postService.publishPost(id);

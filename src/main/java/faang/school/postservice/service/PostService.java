@@ -9,6 +9,7 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,7 +31,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -44,7 +44,8 @@ public class PostService {
     private final AsyncPostPublishService asyncPostPublishService;
     private final ModerationDictionary moderationDictionary;
     private final JdbcTemplate jdbcTemplate;
-    private final  TransactionTemplate transactionTemplate;
+    private final TransactionTemplate transactionTemplate;
+    private final PostEventPublisher postEventPublisher;
 
     @Value("${post.publisher.scheduler.size_batch}")
     private int sizeSublist;
@@ -78,7 +79,11 @@ public class PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        return postMapper.toDto(postRepository.save(post));
+        Post save = postRepository.save(post);
+
+        postEventPublisher.publish(post);
+
+        return postMapper.toDto(save);
     }
 
     public PostDto updatePost(UpdatePostDto postDto, long id) {

@@ -19,7 +19,6 @@ public interface PostMapper {
     @Mapping(source = "likes", target = "likeIds", qualifiedByName = "toLikeIds")
     PostDto toDto(Post post);
 
-
     @Named("toLikeIds")
     default List<Long> toLikeIds(List<Like> likes) {
         if (likes == null) {

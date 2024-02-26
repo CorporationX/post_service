@@ -9,6 +9,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.AsyncPostPublishService;
 import faang.school.postservice.service.PostService;
@@ -49,6 +50,8 @@ class PostServiceTest {
     private PostRepository postRepository;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private PostEventPublisher postEventPublisher;
     @Mock
     private ProjectServiceClient projectServiceClient;
     @Spy
@@ -96,7 +99,7 @@ class PostServiceTest {
         postDto.setAuthorId(1L);
 
         when(userServiceClient.getUser(postDto.getAuthorId()))
-                .thenReturn(new UserDto(1L, "user1", "user1@mail"));
+                .thenReturn(new UserDto());
         postService.createDraftPost(postDto);
 
         Mockito.verify(postRepository, Mockito.times(1)).save(any());

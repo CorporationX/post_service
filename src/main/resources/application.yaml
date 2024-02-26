@@ -28,6 +28,29 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    listener:
+      ack-mode: MANUAL
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      bootstrap-servers: localhost:9092
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: post_service
+    properties:
+      spring.json.trusted.packages: '*'
+    topics:
+      post:
+        name: post_topic
+        batch: 100
+      like:
+        name: like_topic
+      comment:
+        name: comment_topic
+
 server:
   port: 8081
 
@@ -57,5 +80,17 @@ payment-service:
 post_moderation:
   time: 0 0 0 * * ?
   batch_size: 10_000
+
 like_service:
   batch: 100
+
+async:
+  core: 10
+  max: 20
+  queue_capacity: 50
+
+feet:
+  size: 500
+  retry:
+    maxDelay: 1
+    maxAttempts: 10
