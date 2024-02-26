@@ -37,7 +37,6 @@ public class FeedHashService {
             FeedHash feedHash = feedHashRepository.findById(userId).orElseGet(() -> {
                 FeedHash newFeedHash = new FeedHash();
                 newFeedHash.setId(userId);
-                newFeedHash.setPostIds(new LinkedHashSet<>());
                 return feedHashRepository.save(newFeedHash);
             });
 
@@ -53,7 +52,6 @@ public class FeedHashService {
             }
             redisKVTemplate.update(feedHash);
         }
-        System.out.println(feedHashRepository.findById(10L));
         acknowledgment.acknowledge();
     }
 }
