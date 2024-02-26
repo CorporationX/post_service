@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Component
 @Slf4j
 public class ResourceValidator {
@@ -27,7 +30,8 @@ public class ResourceValidator {
 
     public void validateResourceType(MultipartFile file) {
         String contentType = file.getContentType();
-        if (!contentType.equals("image/jpeg") && !contentType.equals("image/png") && !contentType.equals("image/jpg")) {
+        List<String> availableTypes  = Arrays.asList("image/jpeg", "image/jpeg", "image/jpg");
+        if (!availableTypes.contains(contentType)) {
             throw new DataValidationException("Invalid file type");
         }
     }

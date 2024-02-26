@@ -53,7 +53,7 @@ class PostServiceTest {
         postDto.setAuthorId(1L);
         when(userServiceClient.getUser(postDto.getAuthorId())).thenReturn(null);
 
-        postService.createDraftPost(postDto);
+        postService.createDraftPost(postDto,null);
         Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());
     }
 
@@ -62,7 +62,7 @@ class PostServiceTest {
         postDto.setProjectId(1L);
         when(projectServiceClient.getProject(postDto.getProjectId())).thenReturn(null);
 
-        postService.createDraftPost(postDto);
+        postService.createDraftPost(postDto,null);
         Mockito.verify(projectServiceClient, Mockito.times(1)).getProject(postDto.getProjectId());
     }
 
@@ -75,7 +75,7 @@ class PostServiceTest {
         Mockito.doThrow(new DataValidationException("У поста должен быть только один автор"))
                 .when(postValidator).validateAuthorExists(Mockito.any(), Mockito.any());
 
-        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto));
+        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto,null));
     }
 
     @Test
@@ -84,7 +84,7 @@ class PostServiceTest {
 
         when(userServiceClient.getUser(postDto.getAuthorId()))
                 .thenReturn(new UserDto(1L, "user1", "user1@mail"));
-        postService.createDraftPost(postDto);
+        postService.createDraftPost(postDto,null);
 
         Mockito.verify(postRepository, Mockito.times(1)).save(Mockito.any());
     }

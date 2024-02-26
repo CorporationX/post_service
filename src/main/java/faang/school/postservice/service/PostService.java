@@ -13,8 +13,11 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,8 +30,10 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
+    @Lazy
+    private final ResourceService resourceService;
 
-    public PostDto createDraftPost(PostDto postDto) {
+    public PostDto createDraftPost(PostDto postDto, @Nullable MultipartFile file) {
         UserDto author = null;
         ProjectDto project = null;
 
@@ -38,7 +43,9 @@ public class PostService {
             project = projectServiceClient.getProject(postDto.getProjectId());
         }
         postValidator.validateAuthorExists(author, project);
-
+        if (file != null) {
+            resourceService.addResource(postDto.getId(), file);
+        }
         return savePost(postDto);
     }
 
@@ -118,6 +125,7 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
     }
+
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->

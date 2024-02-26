@@ -22,11 +22,13 @@ public class PostController {
     private final ResourceValidator resourceValidator;
 
     @PostMapping("/drafts")
-    public PostDto createDraftPost(@RequestBody PostDto postDto) {
+    public PostDto createDraftPost(@RequestBody PostDto postDto, @RequestParam(value = "file", required = false) MultipartFile file) {
+        if (file!=null) {
+            resourceValidator.validateResourceType(file);
+        }
         postValidator.validateAuthorCount(postDto);
         postValidator.validateContentExists(postDto.getContent());
-
-        return postService.createDraftPost(postDto);
+        return postService.createDraftPost(postDto, file);
     }
 
     @PutMapping("/drafts/{id}")
