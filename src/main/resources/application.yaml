@@ -45,7 +45,6 @@ spring:
     topics:
       post:
         name: post_topic
-        batch: 100
       like:
         name: like_topic
       comment:
@@ -89,7 +88,9 @@ async:
   max: 20
   queue_capacity: 50
 
-feet:
+feed:
+  batch: 100
+  ttl: 84600 #day
   size: 500
   retry:
     maxDelay: 1

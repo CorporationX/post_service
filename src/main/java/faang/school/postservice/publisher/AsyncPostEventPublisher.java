@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AsyncEventPublisher {
+public class AsyncPostEventPublisher {
     private final KafkaTemplate<String, PostEvent> kafkaTemplate;
 
     @Value("${spring.kafka.topics.post.name}")

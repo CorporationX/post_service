@@ -16,11 +16,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class PostEventPublisher {
-    private final AsyncEventPublisher asyncEventPublisher;
+    private final AsyncPostEventPublisher asyncPostEventPublisher;
     private final PostEventMapper mapper;
     private final UserServiceClient userServiceClient;
 
-    @Value("${spring.kafka.topics.post.batch}")
+    @Value("${feed.batch}")
     private int batchSize;
 
     public void publish(Post post) {
@@ -32,7 +32,7 @@ public class PostEventPublisher {
         followerIdBatches.forEach(batch -> {
             PostEvent batchEvent = new PostEvent(originalEvent);
             batchEvent.setFollowerIds(batch);
-            asyncEventPublisher.asyncPublishBatchEvent(batchEvent);
+            asyncPostEventPublisher.asyncPublishBatchEvent(batchEvent);
         });
 
     }

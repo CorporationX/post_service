@@ -1,8 +1,8 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.hash;
 
-import faang.school.postservice.dto.post.FeedHash;
+import faang.school.postservice.dto.hash.FeedHash;
 import faang.school.postservice.dto.post.PostEvent;
-import faang.school.postservice.repository.FeedHashRepository;
+import faang.school.postservice.repository.hash.FeedHashRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -24,12 +23,12 @@ public class FeedHashService {
     private final FeedHashRepository feedHashRepository;
     private final RedisKeyValueTemplate redisKVTemplate;
 
-    @Value("${feet.size}")
+    @Value("${feed.size}")
     private int feetSize;
 
     @Async("taskExecutor")
-    @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttemptsExpression = "${feet.retry.maxAttempts}",
-            backoff = @Backoff(delayExpression = "${feet.retry.maxDelay}"))
+    @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttemptsExpression = "${feed.retry.maxAttempts}",
+            backoff = @Backoff(delayExpression = "${feed.retry.maxDelay}"))
     public void updateFeed(PostEvent postEvent, Acknowledgment acknowledgment) {
         List<Long> followerIds = postEvent.getFollowerIds();
 

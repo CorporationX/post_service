@@ -1,6 +1,7 @@
-package faang.school.postservice.dto.post;
+package faang.school.postservice.dto.hash;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -14,6 +15,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @RedisHash("feed")
 public class FeedHash implements Serializable {
     @Id
@@ -23,9 +25,4 @@ public class FeedHash implements Serializable {
 
     @Version
     private Long version;
-
-    public FeedHash(long id, Set<Long> postIds) {
-        this.id = id;
-        this.postIds = postIds;
-    }
 }
