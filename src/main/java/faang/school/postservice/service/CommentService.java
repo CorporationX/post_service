@@ -15,14 +15,12 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -43,12 +41,12 @@ public class CommentService {
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         if (!userServiceClient.isUserExists(userContext.getUserId())) {
-            throw new DataValidationException("User does not exist");// проверка на существование юзера
+            throw new DataValidationException("User does not exist");
         }
         var comment = commentMapper.toEntity(commentDto);
         var post = postService.getPostById(postId);
-        comment.setAuthorId(userContext.getUserId());// владелец запроса становится владельцем комментария
-        comment.setPost(post); // как я понял, это и называется "проставляет этой сущности связь с сущностями Post"
+        comment.setAuthorId(userContext.getUserId());
+        comment.setPost(post);
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
@@ -76,26 +74,18 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
+    @Async("executorService")
     @Transactional
     public void moderateComment() {
         List<Comment> unverifiedComments = commentRepository.findAllCommentsByNotVerified();
         List<List<Comment>> commentSubLists = ListUtils.partition(unverifiedComments, batchSize);
         log.info("Starting moderation for {} comments", unverifiedComments.size());
-        ExecutorService executorService = Executors.newFixedThreadPool(commentSubLists.size());
         for (List<Comment> subList : commentSubLists) {
-            executorService.submit(() -> {
                 subList.forEach(comment -> {
                     giveStatusToComment(comment, !moderationDictionary.checkCommentForInsults(comment.getContent()));
                 });
-            });
-        }
+            }
         log.info("Moderation for {} comments finished", unverifiedComments.size());
-        executorService.shutdown();
-        try {
-            executorService.awaitTermination(10, TimeUnit.MINUTES);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private void giveStatusToComment(Comment comment, boolean verified) {
