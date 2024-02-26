@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.hash;
 
+import faang.school.postservice.dto.post.PostViewEvent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,8 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
 import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -23,6 +26,7 @@ public class PostHash {
     private Long projectAuthorId;
     private String content;
     private LocalDateTime publishedAt;
+    private List<PostViewEvent> views = new LinkedList<>();
 
     @TimeToLive
     private Long ttl;
