@@ -2,14 +2,13 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.async.AsyncConfig;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
@@ -25,8 +25,6 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
-    private final ModerationDictionary moderationDictionary;
-    private final AsyncConfig asyncConfig;
 
     @Transactional
     public void createDraft(PostDto postDto) {
@@ -36,6 +34,7 @@ public class PostServiceImpl implements PostService {
         if (postDto.getProjectId() == null && postDto.getAuthorId() != null) {
             userServiceClient.getUser(postDto.getAuthorId());
         } else {
+            log.error("Incorrect author by post");
             throw new DataValidationException("Incorrect author");
         }
         Post post = postMapper.toEntity(postDto);
@@ -43,17 +42,20 @@ public class PostServiceImpl implements PostService {
         post.setDeleted(false);
         post.setCreatedAt(LocalDateTime.now());
         postRepository.save(post);
+        log.info("Post create");
     }
 
     @Transactional
     public void publish(long id) {
         Post post = searchPostById(id);
         if (post.isPublished()) {
+            log.error("The post has already been published");
             throw new DataValidationException("The post has already been published");
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+        log.info("Post {} published", id);
     }
 
     @Transactional
@@ -64,6 +66,7 @@ public class PostServiceImpl implements PostService {
         post.setContent(postDto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
+        log.info("Post {} update", post.getId());
     }
 
     @Transactional
@@ -72,11 +75,12 @@ public class PostServiceImpl implements PostService {
         post.setPublished(false);
         post.setDeleted(true);
         postRepository.save(post);
+        log.info("Post {} delete", id);
     }
 
     @Transactional
     public PostDto getPostById(long id) {
-        return postMapper.toPostDto(searchPostById(id));
+        return postMapper.toDto(searchPostById(id));
     }
 
     @Transactional
@@ -107,6 +111,7 @@ public class PostServiceImpl implements PostService {
     private Post searchPostById(long id) {
         Optional<Post> optionalPost = postRepository.findById(id);
         if (optionalPost.isEmpty()) {
+
             throw new DataValidationException("Post with id " + id + " not found.");
         }
         return optionalPost.get();
@@ -124,7 +129,7 @@ public class PostServiceImpl implements PostService {
                     }
                     return date2.compareTo(date1);
                 })
-                .map(postMapper::toPostDto)
+                .map(postMapper::toDto)
                 .toList();
     }
 
