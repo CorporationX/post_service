@@ -25,4 +25,9 @@ public class FeedHash implements Serializable {
 
     @Version
     private Long version;
+
+    public FeedHash(Long id, Set<Long> postIds) {
+        this.id = id;
+        this.postIds = postIds;
+    }
 }

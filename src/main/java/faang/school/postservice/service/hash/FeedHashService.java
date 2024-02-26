@@ -14,8 +14,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -32,25 +32,17 @@ public class FeedHashService {
     public void updateFeed(PostEvent postEvent, Acknowledgment acknowledgment) {
         List<Long> followerIds = postEvent.getFollowerIds();
 
-        for (Long userId : followerIds) {
-            FeedHash feedHash = feedHashRepository.findById(userId).orElseGet(() -> {
-                FeedHash newFeedHash = new FeedHash();
-                newFeedHash.setId(userId);
-                return feedHashRepository.save(newFeedHash);
-            });
+        followerIds.forEach(userId -> {
+            FeedHash feedHash = feedHashRepository.findById(userId).orElseGet(() -> new FeedHash(userId, new LinkedHashSet<>()));
+            boolean add = feedHash.getPostIds().add(postEvent.getPostId());
 
-            Set<Long> postIds = feedHash.getPostIds();
-            boolean add = postIds.add(postEvent.getPostId());
-
-            if (postIds.size() >= feetSize + 1 && add) {
-                Iterator<Long> iterator = postIds.iterator();
-                if (iterator.hasNext()) {
-                    iterator.next();
-                    iterator.remove();
-                }
+            if (add && feedHash.getPostIds().size() > feetSize) {
+                Iterator<Long> iterator = feedHash.getPostIds().iterator();
+                iterator.next();
+                iterator.remove();
             }
             redisKVTemplate.update(feedHash);
-        }
+        });
         acknowledgment.acknowledge();
     }
 }

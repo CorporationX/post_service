@@ -1,6 +1,8 @@
 package faang.school.postservice.service.hash;
 
+import faang.school.postservice.dto.CommentEvent;
 import faang.school.postservice.dto.LikePostEvent;
+import faang.school.postservice.dto.hash.FeedHash;
 import faang.school.postservice.dto.hash.PostHash;
 import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.post.PostViewEvent;
@@ -16,12 +18,19 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class PostHashService {
     private final PostHashRepository postHashRepository;
     private final PostEventMapper postEventMapper;
     private final RedisKeyValueTemplate redisKVTemplate;
+    @Value("${feed.comment_size}")
+    private int commentSize;
 
     @Value("${feed.ttl}")
     private long ttl;
@@ -70,4 +79,23 @@ public class PostHashService {
         );
     }
 
+    @Async("taskExecutor")
+    @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttemptsExpression = "${feed.retry.maxAttempts}",
+            backoff = @Backoff(delayExpression = "${feed.retry.maxDelay}"))
+    public void updateComment(CommentEvent commentEvent, Acknowledgment acknowledgment) {
+        postHashRepository.findById(commentEvent.getPostId()).ifPresentOrElse(postHash -> {
+            boolean add = postHash.getComments().add(commentEvent);
+
+            if (add && postHash.getComments().size() > commentSize) {
+                Iterator<CommentEvent> iterator = postHash.getComments().iterator();
+                if (iterator.hasNext()) {
+                    iterator.next();
+                    iterator.remove();
+                }
+            }
+            redisKVTemplate.update(postHash);
+        }, acknowledgment::acknowledge);
+
+        acknowledgment.acknowledge();
+    }
 }

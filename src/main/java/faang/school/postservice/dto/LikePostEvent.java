@@ -8,8 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 public class LikePostEvent {
-    private Long id;
-    private Long userId;
     private Long postId;
+    private Long userId;
     private LocalDateTime createdAt;
 }

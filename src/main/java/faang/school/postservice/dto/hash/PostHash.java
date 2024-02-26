@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.hash;
 
+import faang.school.postservice.dto.CommentEvent;
 import faang.school.postservice.dto.LikePostEvent;
 import faang.school.postservice.dto.post.PostViewEvent;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,7 @@ public class PostHash {
     private LocalDateTime publishedAt;
     private Set<LikePostEvent> likes = new LinkedHashSet<>();
     private Set<PostViewEvent> views = new LinkedHashSet<>();
+    private Set<CommentEvent> comments = new LinkedHashSet<>();
 
     @TimeToLive
     private Long ttl;

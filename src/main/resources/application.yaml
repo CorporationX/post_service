@@ -92,6 +92,7 @@ async:
   prefix: "AsyncThread-"
 
 feed:
+  comment_size: 3
   post_batch: 100
   ttl: 84600 #day
   size: 500
