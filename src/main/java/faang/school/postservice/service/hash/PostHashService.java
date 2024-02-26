@@ -1,5 +1,6 @@
 package faang.school.postservice.service.hash;
 
+import faang.school.postservice.dto.LikePostEvent;
 import faang.school.postservice.dto.hash.PostHash;
 import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.post.PostViewEvent;
@@ -49,14 +50,24 @@ public class PostHashService {
                 postHash -> {
                     postHash.getViews().add(postViewEvent);
                     redisKVTemplate.update(postHash);
-                    System.out.println(postHashRepository.findById(postViewEvent.getPostId()));
                     acknowledgment.acknowledge();
                 },
                 acknowledgment::acknowledge
         );
+    }
 
-        System.out.println(postHashRepository.findById(postViewEvent.getPostId()));
-
+    @Async("taskExecutor")
+    @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttemptsExpression = "${feed.retry.maxAttempts}",
+            backoff = @Backoff(delayExpression = "${feed.retry.maxDelay}"))
+    public void updateLikePost(LikePostEvent likeEvent, Acknowledgment acknowledgment) {
+        postHashRepository.findById(likeEvent.getPostId()).ifPresentOrElse(
+                postHash -> {
+                    postHash.getLikes().add(likeEvent);
+                    redisKVTemplate.update(postHash);
+                    acknowledgment.acknowledge();
+                },
+                acknowledgment::acknowledge
+        );
     }
 
 }
