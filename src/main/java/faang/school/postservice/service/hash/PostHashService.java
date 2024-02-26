@@ -1,10 +1,8 @@
 package faang.school.postservice.service.hash;
 
-import faang.school.postservice.dto.event_broker.CommentEvent;
-import faang.school.postservice.dto.event_broker.LikePostEvent;
+import faang.school.postservice.dto.event_broker.*;
 import faang.school.postservice.dto.hash.PostHash;
-import faang.school.postservice.dto.event_broker.PostEvent;
-import faang.school.postservice.dto.event_broker.PostViewEvent;
+import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.mapper.PostEventMapper;
 import faang.school.postservice.repository.hash.PostHashRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +22,7 @@ import java.util.Iterator;
 public class PostHashService {
     private final PostHashRepository postHashRepository;
     private final PostEventMapper postEventMapper;
+    private final CommentEventMapper commentEventMapper;
     private final RedisKeyValueTemplate redisKVTemplate;
     @Value("${feed.comment_size}")
     private int commentSize;
@@ -78,9 +77,9 @@ public class PostHashService {
     @Async("taskExecutor")
     @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttemptsExpression = "${feed.retry.maxAttempts}",
             backoff = @Backoff(delayExpression = "${feed.retry.maxDelay}"))
-    public void updateComment(CommentEvent commentEvent, Acknowledgment acknowledgment) {
-        postHashRepository.findById(commentEvent.getPostId()).ifPresentOrElse(postHash -> {
-            boolean add = postHash.getComments().add(commentEvent);
+    public void updateComment(CommentUserEvent commentUserEvent, Acknowledgment acknowledgment) {
+        postHashRepository.findById(commentUserEvent.getPostId()).ifPresentOrElse(postHash -> {
+            boolean add = postHash.getComments().add(commentEventMapper.toEvent(commentUserEvent));
 
             if (add && postHash.getComments().size() > commentSize) {
                 Iterator<CommentEvent> iterator = postHash.getComments().iterator();

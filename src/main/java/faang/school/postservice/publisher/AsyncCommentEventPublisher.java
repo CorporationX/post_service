@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.dto.event_broker.CommentEvent;
+import faang.school.postservice.dto.event_broker.CommentUserEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,14 +15,14 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 @Slf4j
 public class AsyncCommentEventPublisher {
-    private final KafkaTemplate<String, CommentEvent> kafkaTemplate;
+    private final KafkaTemplate<String, CommentUserEvent> kafkaTemplate;
 
     @Value("${spring.kafka.topics.comment.name}")
     private String commentTopic;
 
     @Async("taskExecutor")
-    public void asyncPublish(CommentEvent event) {
-        CompletableFuture<SendResult<String, CommentEvent>> future = kafkaTemplate.send(commentTopic, event);
+    public void asyncPublish(CommentUserEvent event) {
+        CompletableFuture<SendResult<String, CommentUserEvent>> future = kafkaTemplate.send(commentTopic, event);
 
         future.whenComplete((result, e) -> {
             if (e == null) {
