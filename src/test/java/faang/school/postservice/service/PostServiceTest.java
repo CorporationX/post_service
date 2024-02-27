@@ -10,7 +10,10 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.AsyncPostPublishService;
+import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
+import org.junit.BeforeClass;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +21,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
@@ -45,6 +53,8 @@ class PostServiceTest {
     private ProjectServiceClient projectServiceClient;
     @Spy
     private PostMapperImpl postMapper = new PostMapperImpl();
+    @Mock
+    private AsyncPostPublishService asyncPostPublishService;
 
     @InjectMocks
     private PostService postService;
@@ -277,17 +287,6 @@ class PostServiceTest {
 
         //Assert
         verify(postRepository, times(1)).findReadyToPublish();
-    }
-
-    @Test
-    void publishPost() {
-        //Arrange
-        List<Post> posts = List.of(
-                Post.builder().content("text").authorId(1L).published(false).build()
-        );
-        //Act
-        postService.publishPost(posts);
-        //Assert
-        verify(postRepository, times(1)).saveAll(posts);
+        verify(asyncPostPublishService, times(1)).publishPost(any());
     }
 }
