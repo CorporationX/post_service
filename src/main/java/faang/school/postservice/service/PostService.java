@@ -9,6 +9,7 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderator.PostModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,6 +19,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -38,19 +39,19 @@ import java.util.concurrent.TimeUnit;
 public class PostService {
     private final PostValidator postValidator;
     private final PostRepository postRepository;
+    private final AsyncPostPublishService asyncPostPublishService;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
-    private final AsyncPostPublishService asyncPostPublishService;
-    private final ModerationDictionary moderationDictionary;
+    private final PostModerationDictionary postModerationDictionary;
     private final JdbcTemplate jdbcTemplate;
     private final  TransactionTemplate transactionTemplate;
 
-    @Value("${post.publisher.scheduler.size_batch}")
+    @Value("${scheduler.post-publisher.size_batch}")
     private int sizeSublist;
 
-    @Value("${post_moderation.batch_size}")
-    int batchSize;
+    @Value("${scheduler.moderation.post.batch_size}")
+    int postBatchSize;
 
     public PostDto createDraftPost(PostDto postDto) {
         UserDto author = null;
@@ -123,27 +124,6 @@ public class PostService {
         return getSortedPublished(foundedPosts);
     }
 
-    private Post findById(long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Пост с указанным ID не существует"));
-    }
-
-    private List<PostDto> getSortedDrafts(List<Post> posts) {
-        return posts.stream()
-                .filter(post -> !post.isDeleted() && !post.isPublished())
-                .sorted((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()))
-                .map(postMapper::toDto)
-                .toList();
-    }
-
-    private List<PostDto> getSortedPublished(List<Post> posts) {
-        return posts.stream()
-                .filter(post -> !post.isDeleted() && post.isPublished())
-                .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
-                .map(postMapper::toDto)
-                .toList();
-    }
-
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
@@ -170,18 +150,18 @@ public class PostService {
         List<Post> posts = postRepository.findAllByVerifiedDateIsNull();
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-        for (int i = 0; i < posts.size(); i += batchSize) {
+        for (int i = 0; i < posts.size(); i += postBatchSize) {
             final int startIndex = i;
             executorService.submit(() -> {
                 transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
                 transactionTemplate.execute(status -> {
-                    final List<Post> batch = posts.subList(startIndex, Math.min(startIndex + batchSize, posts.size()));
+                    final List<Post> batch = posts.subList(startIndex, Math.min(startIndex + postBatchSize, posts.size()));
                     jdbcTemplate.batchUpdate("UPDATE post SET verified = ?, verified_date = ? WHERE id = ?",
                             new BatchPreparedStatementSetter() {
                                 @Override
                                 public void setValues(PreparedStatement ps, int j) throws SQLException {
                                     Post post = batch.get(j);
-                                    boolean containsForbiddenWords = moderationDictionary.containsForbiddenWordRegex(post.getContent());
+                                    boolean containsForbiddenWords = postModerationDictionary.containsForbiddenWordRegex(post.getContent());
                                     ps.setBoolean(1, !containsForbiddenWords);
                                     ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
                                     ps.setLong(3, post.getId());
@@ -198,5 +178,26 @@ public class PostService {
             });
         }
         executorService.shutdown();
+    }
+
+    private Post findById(long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Пост с указанным ID не существует"));
+    }
+
+    private List<PostDto> getSortedDrafts(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .sorted((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()))
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    private List<PostDto> getSortedPublished(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
+                .map(postMapper::toDto)
+                .toList();
     }
 }

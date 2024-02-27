@@ -4,8 +4,8 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V002__ad.sql
   - include:
-      file: db/changelog/changeset/post_V003_resource.sql
+      file: db/changelog/changeset/post_V003__resource.sql
   - include:
       file: db/changelog/changeset/post_V004__addverified.sql
   - include:
-      file: db/changelog/changeset/post_V001__add_column_into_comment.sql
+      file: db/changelog/changeset/post_V005__verification_date_into_comment.sql

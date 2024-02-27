@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.moderator;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -12,20 +12,19 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class ModerationDictionary {
+public class PostModerationDictionary {
     private final Set<String> forbiddenWords = new HashSet<>();
     private Pattern pattern;
 
     @PostConstruct
     public void init() throws IOException {
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("forbidden-words.txt");
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("dictionary/postModerationDictionary.txt");
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -36,7 +35,7 @@ public class ModerationDictionary {
             throw new IOException("Не удалось найти файл запрещенных слов: " + e.getMessage());
         }
 
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("forbidden-regex.regex")) {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("dictionary/forbidden-regex.regex")) {
             String regexContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             pattern = Pattern.compile(regexContent, Pattern.UNICODE_CHARACTER_CLASS);
         } catch (IOException e) {

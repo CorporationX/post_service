@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import java.util.Set;
 
 @AllArgsConstructor
-public class ModerationDictionary {
+public class CommentModerationDictionary {
     private Set<String> words;
 
     public boolean checkCommentForInsults(String content) {

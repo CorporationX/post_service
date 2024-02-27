@@ -1,4 +1,4 @@
-package faang.school.postservice.moderator.comment;
+package faang.school.postservice.scheduler;
 
 import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CommentModerator {
+public class ScheduledCommentModerator {
     private final CommentService commentService;
 
-    @Scheduled(cron = "${cron.schedule}")
+    @Scheduled(cron = "${scheduler.moderation.comment.time}")
     public void moderate() {
         commentService.moderateComment();
     }

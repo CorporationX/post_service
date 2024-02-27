@@ -2,12 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.CommentDto;
-import faang.school.postservice.dto.CommentEditDto;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEditDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.moderator.ModerationDictionary;
+import faang.school.postservice.moderator.CommentModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
@@ -33,10 +33,10 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
-    private final ModerationDictionary moderationDictionary;
+    private final CommentModerationDictionary commentModerationDictionary;
 
-    @Value("${moderation.batchSize}")
-    private int batchSize;
+    @Value("${scheduler.moderation.comment.batch_size}")
+    private int commentBatchSize;
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
@@ -78,11 +78,11 @@ public class CommentService {
     @Transactional
     public void moderateComment() {
         List<Comment> unverifiedComments = commentRepository.findAllCommentsByNotVerified();
-        List<List<Comment>> commentSubLists = ListUtils.partition(unverifiedComments, batchSize);
+        List<List<Comment>> commentSubLists = ListUtils.partition(unverifiedComments, commentBatchSize);
         log.info("Starting moderation for {} comments", unverifiedComments.size());
         for (List<Comment> subList : commentSubLists) {
                 subList.forEach(comment -> {
-                    giveStatusToComment(comment, !moderationDictionary.checkCommentForInsults(comment.getContent()));
+                    giveStatusToComment(comment, !commentModerationDictionary.checkCommentForInsults(comment.getContent()));
                 });
             }
         log.info("Moderation for {} comments finished", unverifiedComments.size());
