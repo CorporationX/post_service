@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +40,7 @@ public class FeedHashService {
     private final UserServiceClient userServiceClient;
 
     @Value("${feed.size}")
-    private int feetSize;
+    private int feedSize;
 
     @Async("taskExecutor")
     @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttemptsExpression = "${feed.retry.maxAttempts}",
@@ -48,46 +49,64 @@ public class FeedHashService {
         List<Long> followerIds = postEvent.getFollowerIds();
 
         followerIds.forEach(userId -> {
-            FeedHash feedHash = feedHashRepository.findById(userId).orElseGet(() -> new FeedHash(userId, new LinkedHashSet<>()));
-            boolean add = feedHash.getPostIds().add(postEvent.getPostId());
+            FeedHash feedHash = feedHashRepository.findById(userId)
+                    .orElseGet(() -> new FeedHash(userId, new TreeSet<>()));
 
-            if (add && feedHash.getPostIds().size() > feetSize) {
-                Iterator<Long> iterator = feedHash.getPostIds().iterator();
-                iterator.next();
-                iterator.remove();
+            PostIdTime newPost = new PostIdTime(postEvent.getPostId(), postEvent.getPublishedAt());
+
+            feedHash.getPostIds().add(newPost);
+
+            if (feedHash.getPostIds().size() > feedSize) {
+                feedHash.getPostIds().remove(feedHash.getPostIds().last());
             }
             redisKVTemplate.update(feedHash);
         });
+
         acknowledgment.acknowledge();
     }
 
-    public FeedDto getFeed(Long userId, Long lastPostId) {
+    public FeedPretty getFeed(Long userId, Optional<Long> lastPostIdOpt) {
         FeedHash feedHash = feedHashRepository.findById(userId)
-                .orElseGet(() -> new FeedHash(userId, new LinkedHashSet<>()));
-        List<Long> postIds = new ArrayList<>(feedHash.getPostIds());
+                .orElseGet(() -> new FeedHash(userId, new TreeSet<>()));
 
-        Collections.reverse(postIds);
+        List<PostIdTime> sortedPostIdTimes = new ArrayList<>(feedHash.getPostIds());
 
-        if (lastPostId != null) {
-            int lastIndex = postIds.indexOf(lastPostId);
-            if (lastIndex != -1) {
-                postIds = postIds.subList(lastIndex + 1, postIds.size());
-            } else {
-                postIds = Collections.emptyList();
-            }
+        int endIndex;
+        if (lastPostIdOpt.isPresent()) {
+            Long lastPostId = lastPostIdOpt.get();
+            endIndex = IntStream.range(0, sortedPostIdTimes.size())
+                    .filter(i -> sortedPostIdTimes.get(i).getId() == (lastPostId))
+                    .findFirst()
+                    .orElse(sortedPostIdTimes.size());
+        } else {
+            endIndex = Math.min(sortedPostIdTimes.size(), 20);
         }
 
-        int toIndex = Math.min(20, postIds.size());
-        List<Long> limitedPostIds = postIds.subList(0, toIndex);
+        int startIndex = Math.max(0, endIndex - 20);
 
-        List<PostHash> posts = limitedPostIds.stream()
+        List<Long> limitedPostIds = sortedPostIdTimes.subList(startIndex, endIndex).stream()
+                .map(PostIdTime::getId)
+                .toList();
+
+        List<PostPretty> posts = loadPostPretties(limitedPostIds);
+        UserPretty userPretty = loadUserPretty(userId);
+
+        return new FeedPretty(userPretty, posts);
+    }
+
+    private List<PostPretty> loadPostPretties(List<Long> postIds) {
+        List<PostHash> posts = postIds.stream()
                 .map(postId -> postHashRepository.findById(postId)
                         .orElseGet(() -> {
-                            Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Пост не найден в БД"));
+                            Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Пост не найден"));
                             return new PostHash(post.getId(), post.getAuthorId(), post.getProjectId(), post.getContent(), post.getPublishedAt(), new LinkedHashSet<>(), new LinkedHashSet<>(), new LinkedHashSet<>());
                         }))
                 .toList();
 
+        return postPrettyMapper.toPretty(posts);
+    }
+
+    private UserPretty loadUserPretty(Long userId) {
         UserHash userHash = userHashRepository.findById(userId)
                 .orElseGet(() -> {
                     UserDto userDto = userServiceClient.getUser(userId);
@@ -95,8 +114,6 @@ public class FeedHashService {
                     return userHashRepository.save(newUserHash);
                 });
 
-        UserPretty userPretty = userPrettyMapper.toPretty(userHash);
-        List<PostPretty> postPretties = postPrettyMapper.toPretty(posts);
-        return new FeedDto(userPretty, postPretties);
+        return userPrettyMapper.toPretty(userHash);
     }
 }

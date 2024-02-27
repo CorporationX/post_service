@@ -8,8 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.TreeSet;
 
 @Data
 @NoArgsConstructor
@@ -20,12 +19,12 @@ public class FeedHash {
     @Id
     private Long id;
 
-    private Set<Long> postIds = new LinkedHashSet<>();
+    private TreeSet<PostIdTime> postIds;
 
     @Version
     private Long version;
 
-    public FeedHash(Long id, Set<Long> postIds) {
+    public FeedHash(Long id, TreeSet<PostIdTime> postIds) {
         this.id = id;
         this.postIds = postIds;
     }

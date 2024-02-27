@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FeedDto {
+public class FeedPretty {
     private UserPretty userPretty;
     private List<PostPretty> postPretties;
 }
