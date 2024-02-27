@@ -123,5 +123,4 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
     }
-
 }
