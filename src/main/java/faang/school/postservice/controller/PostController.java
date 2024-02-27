@@ -1,10 +1,13 @@
-package faang.school.postservice.controller.post;
+package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.ResourceService;
 import faang.school.postservice.validator.PostValidator;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import faang.school.postservice.validator.ResourceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +24,11 @@ public class PostController {
     private final ResourceService resourceService;
     private final ResourceValidator resourceValidator;
 
+    @Operation(summary = "Создать пост", parameters = {@Parameter(in = ParameterIn.HEADER,
+            name = "x-user-id", description = "id пользователя", required = true)})
     @PostMapping("/drafts")
     public PostDto createDraftPost(@RequestBody PostDto postDto, @RequestParam(value = "file", required = false) MultipartFile file) {
-        if (file!=null) {
+        if (file != null) {
             resourceValidator.validateResourceType(file);
         }
         postValidator.validateAuthorCount(postDto);

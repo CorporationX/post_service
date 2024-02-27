@@ -5,10 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @Builder
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
-public class CommentEditDto {
-    private String content;
+@AllArgsConstructor
+public class UserDto {
+    private Long id;
+    private String username;
+    private String email;
 }
