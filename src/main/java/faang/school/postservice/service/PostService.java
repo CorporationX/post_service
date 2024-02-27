@@ -134,7 +134,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
-                new faang.school.postservice.exception.DataValidationException("Post has not found"));
+                new faang.school.postservice.exception.DataValidationException("Post was not found"));
     }
 
     @Transactional
@@ -206,11 +206,5 @@ public class PostService {
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .map(postMapper::toDto)
                 .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public Post getPostById(Long postId) {
-        return postRepository.findById(postId).orElseThrow(() ->
-                new faang.school.postservice.exception.DataValidationException("Post has not found"));
     }
 }
