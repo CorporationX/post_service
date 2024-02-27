@@ -2,10 +2,10 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.ProjectDto;
+import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
-import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -13,12 +13,26 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -27,6 +41,16 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
+    private final AsyncPostPublishService asyncPostPublishService;
+    private final ModerationDictionary moderationDictionary;
+    private final JdbcTemplate jdbcTemplate;
+    private final  TransactionTemplate transactionTemplate;
+
+    @Value("${post.publisher.scheduler.size_batch}")
+    private int sizeSublist;
+
+    @Value("${post_moderation.batch_size}")
+    int batchSize;
 
     public PostDto createDraftPost(PostDto postDto) {
         UserDto author = null;
@@ -44,6 +68,7 @@ public class PostService {
 
     private PostDto savePost(PostDto postDto) {
         Post post = postMapper.toEntity(postDto);
+        post.setVerified(false);
         return postMapper.toDto(postRepository.save(post));
     }
 
@@ -118,9 +143,60 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
     }
+
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
                 new faang.school.postservice.exception.DataValidationException("Post has not found"));
+    }
+
+    @Transactional
+    public void publishScheduledPosts() {
+        log.info("Started publish posts from scheduler");
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        List<Post> postsToPublish = postRepository.findReadyToPublish();
+        if (!postsToPublish.isEmpty()) {
+            log.info("Size of posts list publish is {}", postsToPublish.size());
+            List<List<Post>> subLists = ListUtils.partition(postsToPublish, sizeSublist);
+            subLists.forEach(asyncPostPublishService::publishPost);
+            log.info("Finished publish all posts at {}", currentDateTime);
+        } else {
+            log.info("Unpublished posts at {} not found", currentDateTime);
+        }
+    }
+
+    @Transactional
+    public void moderatePosts() {
+        List<Post> posts = postRepository.findAllByVerifiedDateIsNull();
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+        for (int i = 0; i < posts.size(); i += batchSize) {
+            final int startIndex = i;
+            executorService.submit(() -> {
+                transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+                transactionTemplate.execute(status -> {
+                    final List<Post> batch = posts.subList(startIndex, Math.min(startIndex + batchSize, posts.size()));
+                    jdbcTemplate.batchUpdate("UPDATE post SET verified = ?, verified_date = ? WHERE id = ?",
+                            new BatchPreparedStatementSetter() {
+                                @Override
+                                public void setValues(PreparedStatement ps, int j) throws SQLException {
+                                    Post post = batch.get(j);
+                                    boolean containsForbiddenWords = moderationDictionary.containsForbiddenWordRegex(post.getContent());
+                                    ps.setBoolean(1, !containsForbiddenWords);
+                                    ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                                    ps.setLong(3, post.getId());
+                                }
+
+                                @Override
+                                public int getBatchSize() {
+                                    return batch.size();
+                                }
+                            }
+                    );
+                    return null;
+                });
+            });
+        }
+        executorService.shutdown();
     }
 }

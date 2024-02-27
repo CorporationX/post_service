@@ -1,9 +1,12 @@
-package faang.school.postservice.controller.post;
+package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +19,7 @@ public class PostController {
     private final PostService postService;
     private final PostValidator postValidator;
 
+    @Operation(summary = "Создать пост", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "id пользователя", required = true)})
     @PostMapping("/drafts")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
         postValidator.validateAuthorCount(postDto);
