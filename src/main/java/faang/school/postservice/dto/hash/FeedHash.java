@@ -8,7 +8,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 
-import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 

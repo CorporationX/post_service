@@ -7,10 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
-import org.springframework.data.redis.core.RedisHash;
-import org.springframework.data.redis.core.TimeToLive;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -20,9 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@RedisHash(value = "post")
-public class PostHash {
-    @Id
+public class PostPretty {
     private Long postId;
     private Long userAuthorId;
     private Long projectAuthorId;
@@ -31,21 +25,4 @@ public class PostHash {
     private Set<LikePostEvent> likes = new LinkedHashSet<>();
     private Set<PostViewEvent> views = new LinkedHashSet<>();
     private Set<CommentEvent> comments = new LinkedHashSet<>();
-
-    @TimeToLive
-    private Long ttl;
-
-    @Version
-    private Long version;
-
-    public PostHash(Long postId, Long userAuthorId, Long projectAuthorId, String content, LocalDateTime publishedAt, Set<LikePostEvent> likes, Set<PostViewEvent> views, Set<CommentEvent> comments) {
-        this.postId = postId;
-        this.userAuthorId = userAuthorId;
-        this.projectAuthorId = projectAuthorId;
-        this.content = content;
-        this.publishedAt = publishedAt;
-        this.likes = likes;
-        this.views = views;
-        this.comments = comments;
-    }
 }
