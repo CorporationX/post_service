@@ -2,12 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.CommentDto;
-import faang.school.postservice.dto.CommentEditDto;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEditDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.moderator.CommentModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +21,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +45,8 @@ class CommentServiceTest {
     private UserContext userContext;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private CommentModerationDictionary commentModerationDictionary;
     @InjectMocks
     private CommentService commentService;
     @Captor
@@ -51,11 +54,6 @@ class CommentServiceTest {
     private Long postId = 1L;
     private Long commentId = 1L;
     private Comment comment;
-    private Comment commentForTestException;
-    private List<Comment> comments;
-    private List<Comment> someCommentsForException;
-    private Post post;
-    private Post postForTestException;
 
     @BeforeEach
     void setUp() {
@@ -64,16 +62,6 @@ class CommentServiceTest {
         comment = Comment.builder()
                 .id(commentId)
                 .content("afsd").build();
-        commentForTestException = Comment.builder()
-                .id(2).build();
-        comments = List.of(comment);
-        someCommentsForException = List.of(commentForTestException);
-        post = Post.builder()
-                .id(postId)
-                .comments(comments).build();
-        postForTestException = Post.builder()
-                .id(postId)
-                .comments(someCommentsForException).build();
     }
 
     @Test
@@ -145,5 +133,18 @@ class CommentServiceTest {
         assertThrows(DataValidationException.class, () -> {
             commentService.deleteComment(commentId);
         });
+    }
+
+    @Test
+    public void testModerateComment() {
+        commentService.setCommentBatchSize(1);
+        List<Comment> unverifiedComments = Arrays.asList(new Comment(), new Comment());
+        when(commentRepository.findAllCommentsByNotVerified()).thenReturn(unverifiedComments);
+
+        commentService.moderateComment();
+
+        verify(commentRepository).findAllCommentsByNotVerified();
+        verify(commentModerationDictionary, times(unverifiedComments.size()))
+                .checkCommentForInsults(null);
     }
 }

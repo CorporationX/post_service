@@ -7,9 +7,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Configuration
-public class ThreadPoolConfig {
+public class AsyncConfig {
+
     @Bean
-    public ExecutorService publishedPostThreadPool() {
-        return Executors.newFixedThreadPool(10);
+    public ExecutorService executorService(){
+        return Executors.newCachedThreadPool();
     }
 }
