@@ -12,12 +12,19 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class PostEventPublisher {
-    private final AsyncPostEventPublisher asyncPostEventPublisher;
+public class PostEventPublisher extends AsyncEventPublisher<PostEvent>{
     private final UserServiceClient userServiceClient;
 
     @Value("${feed.post_batch}")
     private int batchSize;
+
+    @Value("${spring.kafka.topics.post.name}")
+    private String postTopic;
+
+    @Override
+    protected String getTopicName() {
+        return postTopic;
+    }
 
     public void publish(PostEvent originalEvent) {
         long followeeId = (originalEvent.getUserAuthorId() != null) ? originalEvent.getUserAuthorId() : originalEvent.getProjectAuthorId();
@@ -30,7 +37,7 @@ public class PostEventPublisher {
         followerIdBatches.forEach(batch -> {
             PostEvent batchEvent = new PostEvent(originalEvent);
             batchEvent.setFollowerIds(batch);
-            asyncPostEventPublisher.asyncPublishBatchEvent(batchEvent);
+            asyncPublish(batchEvent);
         });
     }
 }
