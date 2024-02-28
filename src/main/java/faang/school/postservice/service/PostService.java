@@ -1,9 +1,11 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.event.PostEventDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,6 +26,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final PostEventPublisher postEventPublisher;
 
     public void createPostDraft(PostDto postDto) {
         postValidator.validatePostOwnerExists(postDto);
@@ -37,7 +40,9 @@ public class PostService {
         Post post = getPost(postId);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        postEventPublisher.publish(postMapper.toEventDto(post));
     }
+
     @Transactional
     public void updatePost(long postId, long ownerId, PostDto postDto) {
         postValidator.validatePostByOwner(postId, ownerId);
