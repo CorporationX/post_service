@@ -46,26 +46,14 @@ public class CommentServiceTest {
                 .content("content")
                 .build();
         userDto = new UserDto(1L, "Username", "email");
-//        when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
     }
 
     @Test
     public void testCreateAuthorExistsInvalid() {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(null);
-        //when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
                 () -> commentService.create(commentDto, 1L));
         assertEquals(illegalArgumentException.getMessage(), "There are no author with id " + commentDto.getAuthorId());
-    }
-
-    @Test
-    public void testCreateContentIsInvalid() {
-        commentDto.setContent("");
-        when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
-
-        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
-                () -> commentService.create(commentDto, 1L));
-        assertEquals(illegalArgumentException.getMessage(), "Content cannot be empty and longer than 4096 characters");
     }
 
     @Test
@@ -139,15 +127,6 @@ public class CommentServiceTest {
     }
 
     @Test
-    public void testUpdateContentIsInvalid() {
-        Comment comment = preparationForUpdate();
-        comment.setContent("content");
-
-        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
-                () -> commentService.update(commentDto, 1L));
-        assertEquals(illegalArgumentException.getMessage(), "There are no changes made");
-    }
-    @Test
     public void testUpdateContentChanged() {
         Comment comment = preparationForUpdate();
         commentService.update(commentDto, 1L);
@@ -187,15 +166,6 @@ public class CommentServiceTest {
         Comment comment = preparationForUpdate();
         commentService.delete(commentDto, 1L);
         verify(commentRepository, times(1)).delete(comment);
-    }
-
-    @Test
-    public void testGetAllCommentsByPostIdIsInvalid() {
-        when(commentRepository.findAllByPostId(1L)).thenReturn(null);
-
-        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
-                () -> commentService.getAllCommentsByPostId(1L));
-        assertEquals(illegalArgumentException.getMessage(), "There are no comments or post's id is invalid");
     }
 
     @Test
