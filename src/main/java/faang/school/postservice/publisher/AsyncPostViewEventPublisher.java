@@ -9,7 +9,6 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -21,9 +20,8 @@ public class AsyncPostViewEventPublisher {
     private String postViewTopic;
 
     @Async("taskExecutor")
-    public void asyncPublish(Long postId, Long viewerId) {
-        PostViewEvent event = new PostViewEvent(postId, viewerId, LocalDateTime.now());
-        CompletableFuture<SendResult<String, PostViewEvent>> future = kafkaTemplate.send(postViewTopic, event);
+    public void asyncPublish(PostViewEvent postEvent) {
+        CompletableFuture<SendResult<String, PostViewEvent>> future = kafkaTemplate.send(postViewTopic, postEvent);
 
         future.whenComplete((result, e) -> {
             if (e == null) {
