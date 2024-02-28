@@ -1,6 +1,7 @@
 package faang.school.postservice.service.hash;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event_broker.PostEvent;
 import faang.school.postservice.dto.hash.*;
 import faang.school.postservice.dto.user.UserDto;
@@ -22,8 +23,10 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
 @Service
@@ -38,6 +41,7 @@ public class FeedHashService {
     private final UserPrettyMapper userPrettyMapper;
     private final UserHashMapper userHashMapper;
     private final UserServiceClient userServiceClient;
+    private final UserContext userContext;
 
     @Value("${feed.size}")
     private int feedSize;
@@ -65,7 +69,13 @@ public class FeedHashService {
         acknowledgment.acknowledge();
     }
 
-    public FeedPretty getFeed(Long userId, Optional<Long> lastPostIdOpt) {
+    @Async("taskExecutor")
+    @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttemptsExpression = "${feed.retry.maxAttempts}",
+            backoff = @Backoff(delayExpression = "${feed.retry.maxDelay}"))
+    @Transactional
+    public CompletableFuture<FeedPretty> getFeed(Long userId, Optional<Long> lastPostIdOpt) {
+
+
         FeedHash feedHash = feedHashRepository.findById(userId)
                 .orElseGet(() -> new FeedHash(userId, new TreeSet<>()));
 
@@ -91,7 +101,7 @@ public class FeedHashService {
         List<PostPretty> posts = loadPostPretties(limitedPostIds);
         UserPretty userPretty = loadUserPretty(userId);
 
-        return new FeedPretty(userPretty, posts);
+        return CompletableFuture.completedFuture(new FeedPretty(userPretty, posts));
     }
 
     private List<PostPretty> loadPostPretties(List<Long> postIds) {
@@ -109,6 +119,7 @@ public class FeedHashService {
     private UserPretty loadUserPretty(Long userId) {
         UserHash userHash = userHashRepository.findById(userId)
                 .orElseGet(() -> {
+                    userContext.setUserId(userId);
                     UserDto userDto = userServiceClient.getUser(userId);
                     UserHash newUserHash = userHashMapper.toHash(userDto);
                     return userHashRepository.save(newUserHash);
