@@ -19,14 +19,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class ResourceService {
     private final S3Service s3Service;
     private final ResourceRepository resourceRepository;
-    private final PostService postService;
     private final ResourceValidator resourceValidator;
     private final UserContext userContext;
     private final PostValidator postValidator;
 
     @Transactional
-    public void addResource(Long postId, MultipartFile file) {
-        Post post = postService.getPostById(postId);
+    public void addResource(Post post, MultipartFile file) {
         postValidator.validateAuthor(post.getAuthorId(), userContext.getUserId());
         resourceValidator.validateResourceLimit(post.getResources().size());
         Resource resource = s3Service.uploadFile(file);
@@ -37,10 +35,10 @@ public class ResourceService {
     }
 
     @Transactional
-    public void deleteResource(Long postId, Long resourceId) {
-        postValidator.validateAuthor(postService.getPostById(postId).getAuthorId(), userContext.getUserId());
+    public void deleteResource(Post post, Long resourceId) {
+        postValidator.validateAuthor(post.getAuthorId(), userContext.getUserId());
         Resource resource = getResourceById(resourceId);
-        resourceValidator.validateResourceBelongsToPost(resource, postId);
+        resourceValidator.validateResourceBelongsToPost(resource, post.getId());
         s3Service.deleteFile(resource.getKey());
         log.info("Resource deleted: {}", resource.getKey());
         resourceRepository.deleteById(resourceId);

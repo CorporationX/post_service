@@ -19,10 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceServiceTest {
@@ -36,8 +33,6 @@ class ResourceServiceTest {
     private PostValidator postValidator;
     @Mock
     private UserContext userContext;
-    @Mock
-    private PostService postService;
     @InjectMocks
     private ResourceService resourceService;
     @Captor
@@ -54,9 +49,8 @@ class ResourceServiceTest {
 
         when(s3Service.uploadFile(null)).thenReturn(Resource.builder()
                 .name("test").build());
-        when(postService.getPostById(1L)).thenReturn(post);
 
-        resourceService.addResource(1L, null);
+        resourceService.addResource(post, null);
 
         verify(resourceRepository, times(1)).save(resourceArgumentCaptor.capture());
         Resource resource = resourceArgumentCaptor.getValue();
@@ -65,14 +59,13 @@ class ResourceServiceTest {
 
     @Test
     void testDeleteResource_shouldDeleteResourceSuccessfully() {
-        Long postId = 1L;
+        Post post = Post.builder().id(1L).authorId(1L).build();
         Long resourceId = 1L;
 
-        when(postService.getPostById(postId)).thenReturn(Post.builder().authorId(1L).build());
         when(resourceRepository.findById(resourceId)).thenReturn(Optional.of(Resource.builder().key("key").build()));
         doNothing().when(s3Service).deleteFile("key");
 
-        resourceService.deleteResource(postId, resourceId);
+        resourceService.deleteResource(post, resourceId);
 
         verify(resourceRepository).deleteById(resourceId);
         verify(s3Service).deleteFile("key");

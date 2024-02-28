@@ -17,9 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
@@ -49,13 +49,14 @@ public class PostService {
     private final JdbcTemplate jdbcTemplate;
     @Lazy
     private final ResourceService resourceService;
-    private final  TransactionTemplate transactionTemplate;
+    private final TransactionTemplate transactionTemplate;
 
     @Value("${scheduler.post-publisher.size_batch}")
     private int sizeSublist;
 
     @Value("${scheduler.moderation.post.batch_size}")
     int postBatchSize;
+
 
     public PostDto createDraftPost(PostDto postDto, @Nullable MultipartFile file) {
         UserDto author = null;
@@ -67,10 +68,12 @@ public class PostService {
             project = projectServiceClient.getProject(postDto.getProjectId());
         }
         postValidator.validateAuthorExists(author, project);
+        PostDto postDto1 = savePost(postDto);
         if (file != null) {
-            resourceService.addResource(postDto.getId(), file);
+            Post post = findById(postDto1.getId());
+            resourceService.addResource(post, file);
         }
-        return savePost(postDto);
+        return postDto1;
     }
 
     private PostDto savePost(PostDto postDto) {
@@ -88,10 +91,14 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public PostDto updatePost(UpdatePostDto postDto, long id) {
-        Post post = findById(id);
+    public PostDto updatePost(UpdatePostDto postDto, long postId, @Nullable MultipartFile file) {
+        Post post = findById(postId);
         post.setContent(postDto.getContent());
-
+        if (file != null) {
+            resourceService.addResource(post, file);
+        } else if (postDto.getResourceId() != null && file == null) {
+            resourceService.deleteResource(post, postDto.getResourceId());
+        }
         return postMapper.toDto(postRepository.save(post));
     }
 
