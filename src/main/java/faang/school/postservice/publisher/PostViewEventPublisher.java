@@ -19,7 +19,7 @@ public class PostViewEventPublisher extends AsyncEventPublisher<PostViewEvent>{
 
     @Override
     protected String getTopicName() {
-        return null;
+        return postViewTopic;
     }
 
     public void publish(Post post) {
