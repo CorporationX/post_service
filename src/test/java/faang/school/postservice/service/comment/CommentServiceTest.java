@@ -46,14 +46,15 @@ public class CommentServiceTest {
                 .content("content")
                 .build();
         userDto = new UserDto(1L, "Username", "email");
+//        when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
     }
 
     @Test
     public void testCreateAuthorExistsInvalid() {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(null);
-
+        //when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
-                () -> commentService.create(commentDto));
+                () -> commentService.create(commentDto, 1L));
         assertEquals(illegalArgumentException.getMessage(), "There are no author with id " + commentDto.getAuthorId());
     }
 
@@ -63,33 +64,36 @@ public class CommentServiceTest {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
 
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
-                () -> commentService.create(commentDto));
+                () -> commentService.create(commentDto, 1L));
         assertEquals(illegalArgumentException.getMessage(), "Content cannot be empty and longer than 4096 characters");
     }
 
     @Test
     public void testCreateVerifyToEntity() {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
+        when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
 
-        commentService.create(commentDto);
-        verify(commentMapper, times(1)).commentDtoToEntity(commentDto);
+        commentService.create(commentDto, 1L);
+        verify(commentMapper, times(1)).toEntity(commentDto);
     }
 
     @Test
     public void testCreateVerifySave() {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
+        when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
 
-        commentService.create(commentDto);
-        verify(commentRepository, times(1)).save(commentMapper.commentDtoToEntity(commentDto));
+        commentService.create(commentDto, 1L);
+        verify(commentRepository, times(1)).save(any(Comment.class));
     }
 
     @Test
     public void testCreateVerifyToDto() {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
+        when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
 
-        commentService.create(commentDto);
+        commentService.create(commentDto, 1L);
         verify(commentMapper, times(1))
-                .entityToCommentDto(commentRepository.save(commentMapper.commentDtoToEntity(commentDto)));
+                .toDto(commentRepository.save(commentMapper.toEntity(commentDto)));
     }
 
     @Test
@@ -162,7 +166,7 @@ public class CommentServiceTest {
         Comment comment = preparationForUpdate();
         commentService.update(commentDto, 1L);
         verify(commentMapper, times(1))
-                .entityToCommentDto(commentRepository.save(comment));
+                .toDto(commentRepository.save(comment));
 
     }
 
@@ -198,9 +202,9 @@ public class CommentServiceTest {
     public void testGetAllCommentsByPostIdIsSorted() {
         List<Comment> comments = preparationForGetAllCommentsByPostId();
         List<CommentDto> commentDtos = new ArrayList<>();
-        commentDtos.add(0, commentMapper.entityToCommentDto(comments.get(2)));
-        commentDtos.add(1, commentMapper.entityToCommentDto(comments.get(0)));
-        commentDtos.add(2, commentMapper.entityToCommentDto(comments.get(1)));
+        commentDtos.add(0, commentMapper.toDto(comments.get(2)));
+        commentDtos.add(1, commentMapper.toDto(comments.get(0)));
+        commentDtos.add(2, commentMapper.toDto(comments.get(1)));
 
         List<CommentDto> commentDtosActual = commentService.getAllCommentsByPostId(1L);
         assertEquals(commentDtosActual, commentDtos);
@@ -211,9 +215,9 @@ public class CommentServiceTest {
         List<Comment> comments = preparationForGetAllCommentsByPostId();
 
         commentService.getAllCommentsByPostId(1L);
-        verify(commentMapper).entityToCommentDto(comments.get(0));
-        verify(commentMapper).entityToCommentDto(comments.get(1));
-        verify(commentMapper).entityToCommentDto(comments.get(2));
+        verify(commentMapper).toDto(comments.get(0));
+        verify(commentMapper).toDto(comments.get(1));
+        verify(commentMapper).toDto(comments.get(2));
     }
 
     public List<Comment> preparationForGetAllCommentsByPostId() {

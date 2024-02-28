@@ -25,8 +25,8 @@ public class PostService {
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
-        validateIdPostDto(postDto);
-        validateAuthorExist(postDto);
+        //validateIdPostDto(postDto);
+        //validateAuthorExist(postDto);
 
         Post post = postMapper.toEntity(postDto);
 

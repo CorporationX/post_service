@@ -13,22 +13,22 @@ import java.util.List;
 public class CommentController {
     private final CommentService commentService;
 
-    @PostMapping("/create")
-    public CommentDto create(@RequestBody CommentDto commentDto) {
-        return commentService.create(commentDto);
+    @PostMapping("/{id}")
+    public CommentDto create(@RequestBody CommentDto commentDto, @PathVariable long id) {
+        return commentService.create(commentDto, id);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public CommentDto update(@RequestBody CommentDto commentDto, @PathVariable long id) {
         return commentService.update(commentDto, id);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public void delete(@RequestBody CommentDto commentDto, @PathVariable long id) {
         commentService.delete(commentDto, id);
     }
 
-    @GetMapping("/comments/{id}")
+    @GetMapping("/{id}")
     public List<CommentDto> getAllCommentsByPostId(@PathVariable long id) {
         return commentService.getAllCommentsByPostId(id);
     }

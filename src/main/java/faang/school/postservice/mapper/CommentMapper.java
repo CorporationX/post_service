@@ -9,8 +9,8 @@ import java.util.List;
 
 @Mapper(componentModel = "Spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
-    Comment commentDtoToEntity(CommentDto commentDto);
+    Comment toEntity(CommentDto commentDto);
 
-    CommentDto entityToCommentDto(Comment comment);
+    CommentDto toDto(Comment comment);
 
 }
