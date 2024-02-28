@@ -23,6 +23,8 @@ public class KafkaTopicConfig {
     private String commentTopic;
     @Value("${spring.kafka.topics.post_view.name}")
     private String postViewTopic;
+    @Value("${spring.kafka.topics.heat_feed.name}")
+    private String heatFeedTopic;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -30,7 +32,7 @@ public class KafkaTopicConfig {
         configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         return new KafkaAdmin(configs);
     }
-    
+
     @Bean
     public NewTopic topicPost() {
          return new NewTopic(postTopic, 1, (short) 1);
@@ -49,5 +51,10 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic topicPostView() {
         return new NewTopic(postViewTopic, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topicHeatFeed() {
+        return new NewTopic(heatFeedTopic, 1, (short) 1);
     }
 }

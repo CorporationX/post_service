@@ -51,6 +51,8 @@ spring:
         name: comment_topic
       post_view:
         name: post_view_topic
+      heat_feed:
+        name : heat_feed_topic
 
 server:
   port: 8081
@@ -92,6 +94,7 @@ async:
   prefix: "AsyncThread-"
 
 feed:
+  user_batch: 1000
   comment_size: 3
   post_batch: 100
   ttl: 84600 #day

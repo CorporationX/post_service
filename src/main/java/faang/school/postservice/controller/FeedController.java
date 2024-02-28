@@ -4,6 +4,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.hash.FeedPretty;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.hash.FeedHashService;
+import faang.school.postservice.service.hash.FeedHeaterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -18,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 @RequestMapping("/feed")
 public class FeedController {
     private final FeedHashService feedService;
+    private final FeedHeaterService feedHeaterService;
     private final UserContext userContext;
 
     @Operation(summary = "Get feed", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "User ID", required = true)})
@@ -31,8 +33,9 @@ public class FeedController {
         }
     }
 
+    @Operation(summary = "Heat feed", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "User ID", required = true)})
     @PostMapping("/heat")
-    public void heatCache() {
-       // messageBroker.publish("cacheHeatStart", new HeatCacheMessage());
+    public void heatFeed() {
+       feedHeaterService.heat();
     }
 }

@@ -10,15 +10,15 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class PostEventPublisher extends AsyncEventPublisher<PostEvent>{
+public class HeatFeedEventPublisher extends AsyncEventPublisher<PostEvent>{
     private final PostEventPublisherService publisherService;
 
-    @Value("${spring.kafka.topics.post.name}")
-    private String postTopic;
+    @Value("${spring.kafka.topics.heat_feed.name}")
+    private String heatFeedTopic;
 
     @Override
     protected String getTopicName() {
-        return postTopic;
+        return heatFeedTopic;
     }
 
     public void publish(PostEvent originalEvent) {

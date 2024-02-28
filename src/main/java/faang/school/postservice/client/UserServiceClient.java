@@ -4,10 +4,8 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.dto.user.UserFilterDto;
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,4 +26,7 @@ public interface UserServiceClient {
 
     @PostMapping("api/user/{id}/followersIds")
     List<Long> getFollowerIds(@PathVariable("id") long followeeId);
+
+    @GetMapping("/api/users/ids")
+    List<Long> getUserIds();
 }

@@ -5,13 +5,21 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-// кратко: кафка дубликаты не может отпрвлят а я могу
+// кратко: кафка дубликаты не может отпрвлять, а я могу
 
 // длинно: данной реализации если придут два объекта с равными id и разными publishedAt, то они
 // сохранятся в сете (не будут считаться за дубликаты)
 // цель этого такое поведение -> если кафка отправит дубликаты то у них буду одинаковые id и publishedAt
 // cледовательно они не пройдут, но если вдруг я сам захочу отправить дубликат то он пройдет
 // так как объекты будут с одиаковыми айди но разным временем
+
+// если нужна обычная реализация:
+// @Override
+// public int compareTo(PostIdTime other) {
+//         int idCompare = Long.compare(this.id, other.id);
+//         if (idCompare == 0) return 0;
+//         return other.publishedAt.compareTo(this.publishedAt);
+//         }
 
 @Data
 public class PostIdTime implements Comparable<PostIdTime> {
