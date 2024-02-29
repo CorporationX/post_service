@@ -36,15 +36,12 @@ public class CommentService {
         commentValidator.validateCommentAuthor(commentDto.getId());
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setContent(commentDto.getContent());
-        commentRepository.save(comment);
-        return commentMapper.toDTO(comment);
+        Comment savedComment = commentRepository.save(comment);
+        return commentMapper.toDTO(savedComment);
     }
 
-    public CommentDto deleteComment(long commentId) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
-                new DataValidationException("Comment doesn't exist, id = " + commentId));
+    public void deleteComment(long commentId) {
         commentRepository.deleteById(commentId);
-        return commentMapper.toDTO(comment);
     }
 
     public List<CommentDto> getAllComments(long postId) {

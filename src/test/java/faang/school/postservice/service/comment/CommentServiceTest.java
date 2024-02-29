@@ -145,8 +145,6 @@ public class CommentServiceTest {
 
     @Test
     public void whenDeleteCommentThenSuccess() {
-        Mockito.when(commentRepository.findById(anyLong()))
-                .thenReturn(Optional.of(comment));
         commentService.deleteComment(commentDto.getId());
         Mockito.verify(commentRepository, times(1))
                 .deleteById(2L);
