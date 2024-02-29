@@ -17,9 +17,9 @@ public class CommentController {
     private final CommentValidator commentValidator;
 
 
-    @PostMapping("/post/{id}")
-    private CommentDto addNewComment(@PathVariable Long id, @RequestBody CommentDto comment) {
-        return commentService.addNewComment(id, comment);
+    @PostMapping("/post/{postId}")
+    private CommentDto addNewComment(@PathVariable Long postId, @RequestBody CommentDto comment) {
+        return commentService.addNewComment(postId, comment);
     }
 
     @PutMapping()
