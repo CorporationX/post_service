@@ -68,18 +68,17 @@ public class PostService {
             project = projectServiceClient.getProject(postDto.getProjectId());
         }
         postValidator.validateAuthorExists(author, project);
-        PostDto postDto1 = savePost(postDto);
+        Post savePost = savePost(postDto);
         if (file != null) {
-            Post post = findById(postDto1.getId());
-            resourceService.addResource(post, file);
+            resourceService.addResource(savePost, file);
         }
-        return postDto1;
+        return postMapper.toDto(savePost);
     }
 
-    private PostDto savePost(PostDto postDto) {
+    private Post savePost(PostDto postDto) {
         Post post = postMapper.toEntity(postDto);
         post.setVerified(false);
-        return postMapper.toDto(postRepository.save(post));
+        return postRepository.save(post);
     }
 
     public PostDto publishPost(long id) {
@@ -96,7 +95,7 @@ public class PostService {
         post.setContent(postDto.getContent());
         if (file != null) {
             resourceService.addResource(post, file);
-        } else if (postDto.getResourceId() != null && file == null) {
+        } else if (postDto.getResourceId() != null) {
             resourceService.deleteResource(post, postDto.getResourceId());
         }
         return postMapper.toDto(postRepository.save(post));
