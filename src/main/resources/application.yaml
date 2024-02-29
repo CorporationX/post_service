@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        album:
+          name: album_channel
 
 server:
   port: 8081
