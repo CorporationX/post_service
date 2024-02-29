@@ -111,6 +111,8 @@ public class CommentServiceTest {
                 .thenReturn(Optional.of(post));
         Mockito.when(commentMapper.toEntity(commentDto))
                 .thenReturn(comment);
+        Mockito.when(commentRepository.save(comment))
+                .thenReturn(comment);
         commentService.addNewComment(1L, commentDto);
         Mockito.verify(commentRepository, times(1))
                 .save(comment);
@@ -129,6 +131,8 @@ public class CommentServiceTest {
         Mockito.when(postRepository.findById(anyLong()))
                 .thenReturn(Optional.of(post));
         Mockito.when(commentMapper.toEntity(commentDto))
+                .thenReturn(comment);
+        Mockito.when(commentRepository.save(comment))
                 .thenReturn(comment);
         commentService.addNewComment(1L, commentDto);
         Mockito.verify(commentRepository, times(1))

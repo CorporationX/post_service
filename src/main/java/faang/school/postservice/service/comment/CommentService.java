@@ -28,8 +28,8 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(commentDto);
         Post post = getPostById(postId);
         comment.setPost(post);
-        commentRepository.save(comment);
-        return commentMapper.toDTO(comment);
+        Comment savedComment = commentRepository.save(comment);
+        return commentMapper.toDTO(savedComment);
     }
 
     public CommentDto updateComment(CommentDto commentDto) {
