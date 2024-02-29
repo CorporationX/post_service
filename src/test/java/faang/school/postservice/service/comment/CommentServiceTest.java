@@ -1,8 +1,8 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.comment.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -72,20 +72,11 @@ public class CommentServiceTest {
                 .build();
         userDto = UserDto.builder()
                 .email("Email")
-                .username("Username")
                 .build();
     }
 
     @Test
     public void whenAddNewCommentThenIncorrectDataInDB() {
-        Mockito.when(userServiceClient.getUser(anyLong()))
-                .thenReturn(null);
-        try {
-            commentService.addNewComment(1L, commentDto);
-        } catch (DataValidationException e) {
-            assertThat(e).isInstanceOf(RuntimeException.class)
-                    .hasMessage("User from user service is null");
-        }
         Mockito.when(userServiceClient.getUser(anyLong()))
                 .thenReturn(userDto);
         try {
@@ -99,14 +90,6 @@ public class CommentServiceTest {
 
     @Test
     public void whenChangeCommentThenIncorrectDataInDB() {
-        Mockito.when(userServiceClient.getUser(anyLong()))
-                .thenReturn(null);
-        try {
-            commentService.changeComment(commentDto);
-        } catch (DataValidationException e) {
-            assertThat(e).isInstanceOf(RuntimeException.class)
-                    .hasMessage("User from user service is null");
-        }
         Mockito.when(userServiceClient.getUser(anyLong()))
                 .thenReturn(userDto);
         try {
@@ -123,6 +106,7 @@ public class CommentServiceTest {
         Mockito.when(userServiceClient.getUser(anyLong()))
                 .thenReturn(userDto);
         userDto.setId(1L);
+        userDto.setUsername("Ivan");
         Mockito.when(postRepository.findById(anyLong()))
                 .thenReturn(Optional.of(post));
         Mockito.when(commentMapper.toEntity(commentDto))
@@ -141,6 +125,7 @@ public class CommentServiceTest {
         Mockito.when(userServiceClient.getUser(anyLong()))
                 .thenReturn(userDto);
         userDto.setId(1L);
+        userDto.setUsername("Ivan");
         Mockito.when(postRepository.findById(anyLong()))
                 .thenReturn(Optional.of(post));
         Mockito.when(commentMapper.toEntity(commentDto))
@@ -156,7 +141,9 @@ public class CommentServiceTest {
 
     @Test
     public void whenDeleteCommentThenSuccess() {
-        commentService.deleteComment(commentDto);
+        Mockito.when(commentRepository.findById(anyLong()))
+                .thenReturn(Optional.of(comment));
+        commentService.deleteComment(commentDto.getId());
         Mockito.verify(commentRepository, times(1))
                 .deleteById(2L);
     }

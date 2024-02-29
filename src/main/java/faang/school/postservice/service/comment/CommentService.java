@@ -24,7 +24,7 @@ public class CommentService {
 
 
     public CommentDto addNewComment(Long id, CommentDto commentDto) {
-        commentValidator.validateCommentAuthor(commentDto);
+        commentValidator.validateCommentAuthor(commentDto.getId());
         Comment comment = commentMapper.toEntity(commentDto);
         Post post = getPostById(id);
         comment.setPost(post);
@@ -33,25 +33,27 @@ public class CommentService {
     }
 
     public CommentDto changeComment(CommentDto commentDto) {
-        commentValidator.validateCommentAuthor(commentDto);
+        commentValidator.validateCommentAuthor(commentDto.getId());
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setContent(commentDto.getContent());
         commentRepository.save(comment);
         return commentMapper.toDTO(comment);
     }
 
-    public CommentDto deleteComment(CommentDto commentDto) {
-        commentRepository.deleteById(commentDto.getId());
-        return commentDto;
+    public CommentDto deleteComment(Long commentId) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
+                new DataValidationException("Comment doesn't exist, id = " + commentId));
+        commentRepository.deleteById(commentId);
+        return commentMapper.toDTO(comment);
     }
 
-    public List<CommentDto> getAllComments(Long id) {
-        List<Comment> allByPostId = commentRepository.findAllByPostId(id);
+    public List<CommentDto> getAllComments(Long postId) {
+        List<Comment> allByPostId = commentRepository.findAllByPostId(postId);
         return commentMapper.toDtoList(allByPostId);
     }
 
     public Post getPostById(Long id) {
         return postRepository.findById(id)
-                .orElseThrow(() -> new DataValidationException("There are no posts with that ID"));
+                .orElseThrow(() -> new DataValidationException("There are no posts with that id: " + id));
     }
 }

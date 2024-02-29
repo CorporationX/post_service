@@ -17,27 +17,25 @@ public class CommentController {
     private final CommentValidator commentValidator;
 
 
-    @PostMapping("/add/{id}")
+    @PostMapping("/post/{id}")
     private CommentDto addNewComment(@PathVariable Long id, @RequestBody CommentDto comment) {
-        commentValidator.validateCommentData(comment);
         return commentService.addNewComment(id, comment);
     }
 
-    @PutMapping("/change")
-    private CommentDto changeComment(@RequestBody CommentDto comment) {
-        commentValidator.validateCommentData(comment);
+    @PutMapping()
+    private CommentDto updateComment(@RequestBody CommentDto comment) {
         return commentService.changeComment(comment);
     }
 
-    @GetMapping("/getAll/{id}")
-    private List<CommentDto> getAllComments(@PathVariable Long id) {
-        return commentService.getAllComments(id);
+    @GetMapping("/{postId}")
+    private List<CommentDto> getAllComments(@PathVariable Long postId) {
+        return commentService.getAllComments(postId);
     }
 
 
-    @PostMapping("/delete")
-    private CommentDto deleteComment(@RequestBody CommentDto comment) {
-        return commentService.deleteComment(comment);
+    @DeleteMapping("/{commentId}")
+    private CommentDto deleteComment(@PathVariable Long commentId) {
+        return commentService.deleteComment(commentId);
     }
 
 }

@@ -2,7 +2,7 @@ package faang.school.postservice.validator.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.exception.comment.DataValidationException;
 import faang.school.postservice.validation.comment.CommentValidator;
 import org.junit.Assert;
@@ -41,45 +41,24 @@ public class CommentValidatorTest {
                 .build();
         userDto = UserDto.builder()
                 .email("Email")
-                .username("Username")
+                .id(5L)
                 .build();
     }
 
-    @Test
-    public void testExceptionForEmptyCommentData() {
-        Assert.assertThrows(DataValidationException.class, () ->
-                commentValidator.validateCommentData(new CommentDto()));
-    }
 
     @Test
     public void testExceptionForEmptyAuthorData() {
         Mockito.when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
         Assert.assertThrows(DataValidationException.class, () ->
-                commentValidator.validateCommentAuthor(commentDto));
-    }
-
-    @Test
-    public void testExceptionFromUserService() {
-        Mockito.when(userServiceClient.getUser(anyLong())).thenReturn(null);
-        Assert.assertThrows(DataValidationException.class, () ->
-                commentValidator.validateCommentAuthor(commentDto));
-    }
-
-    @Test
-    public void testValidateCommentData() {
-        try {
-            commentValidator.validateCommentData(commentDto);
-        } catch (DataValidationException e) {
-            fail("Should not have thrown any exception");
-        }
+                commentValidator.validateCommentAuthor(commentDto.getId()));
     }
 
     @Test
     public void testValidateAuthorData() {
         Mockito.when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
-        userDto.setId(1L);
+        userDto.setUsername("Ivan");
         try {
-            commentValidator.validateCommentAuthor(commentDto);
+            commentValidator.validateCommentAuthor(commentDto.getId());
         } catch (DataValidationException e) {
             fail("Should not have thrown any exception");
         }
