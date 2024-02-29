@@ -1,10 +1,9 @@
-package faang.school.postservice.validator.comment;
+package faang.school.postservice.validator;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.UserDto;
-import faang.school.postservice.exception.comment.DataValidationException;
-import faang.school.postservice.validation.comment.CommentValidator;
+import faang.school.postservice.exception.DataValidationException;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,13 +1,13 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.service;
 
-import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.exception.comment.DataValidationException;
-import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validation.comment.CommentValidator;
+import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,6 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentValidator commentValidator;
     private final CommentMapper commentMapper;
-
 
     public CommentDto addNewComment(long postId, CommentDto commentDto) {
         commentValidator.validateCommentAuthor(commentDto.getId());

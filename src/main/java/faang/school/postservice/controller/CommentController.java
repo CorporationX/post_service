@@ -1,8 +1,7 @@
-package faang.school.postservice.controller.comment;
+package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.service.comment.CommentService;
-import faang.school.postservice.validation.comment.CommentValidator;
+import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
