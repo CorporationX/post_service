@@ -1,5 +1,6 @@
 package faang.school.postservice.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,8 +12,14 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+public class CommentDto {
+    @NotBlank
     private Long id;
-    private String username;
-    private String email;
+    @NotBlank
+    private Long postId;
+    @NotBlank
+    private Long authorId;
+    @NotBlank
+    private String content;
+
 }
