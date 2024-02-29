@@ -11,7 +11,6 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
 
-
     @Mapping(source = "post.id", target = "postId")
     CommentDto toDTO(Comment comment);
 

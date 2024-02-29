@@ -21,11 +21,9 @@ import java.util.List;
 public class CommentController {
 
     private final CommentService commentService;
-    private final CommentValidator commentValidator;
-
 
     @PostMapping("/post/{postId}")
-    private CommentDto addNewComment(@PathVariable Long postId, @RequestBody CommentDto comment) {
+    private CommentDto addNewComment(@PathVariable long postId, @RequestBody CommentDto comment) {
         return commentService.addNewComment(postId, comment);
     }
 
@@ -35,13 +33,13 @@ public class CommentController {
     }
 
     @GetMapping("/{postId}")
-    private List<CommentDto> getAllComments(@PathVariable Long postId) {
+    private List<CommentDto> getAllComments(@PathVariable long postId) {
         return commentService.getAllComments(postId);
     }
 
 
     @DeleteMapping("/{commentId}")
-    private CommentDto deleteComment(@PathVariable Long commentId) {
+    private CommentDto deleteComment(@PathVariable long commentId) {
         return commentService.deleteComment(commentId);
     }
 
