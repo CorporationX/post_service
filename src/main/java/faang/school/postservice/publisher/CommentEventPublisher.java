@@ -17,9 +17,17 @@ public class CommentEventPublisher extends AsyncEventPublisher<CommentUserEvent>
 
     @Value("${spring.kafka.topics.comment.name}")
     private String commentTopic;
+    @Value("${spring.kafka.topics.heat_feed.comment}")
+    private String heatCommentTopic;
+
     @Override
     protected String getTopicName() {
         return commentTopic;
+    }
+
+    @Override
+    protected String getHeatTopicName() {
+        return heatCommentTopic;
     }
 
     public void publish(CommentEvent event) {
@@ -27,5 +35,12 @@ public class CommentEventPublisher extends AsyncEventPublisher<CommentUserEvent>
         UserDto userDto = userServiceClient.getUser(event.getAuthorId());
         commentUserEvent.setUserDto(userDto);
         asyncPublish(commentUserEvent);
+    }
+
+    public void heaPublish(CommentEvent event) {
+        CommentUserEvent commentUserEvent = commentEventMapper.toUserEvent(event);
+        UserDto userDto = userServiceClient.getUser(event.getAuthorId());
+        commentUserEvent.setUserDto(userDto);
+        asyncHeatPublish(commentUserEvent);
     }
 }

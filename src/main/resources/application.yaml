@@ -52,7 +52,10 @@ spring:
       post_view:
         name: post_view_topic
       heat_feed:
-        name : heat_feed_topic
+        post : heat_post_topic
+        comment : heat_comment_topic
+        like_post : heat_like_post_topic
+        post_view : heat_post_view_topic
 
 server:
   port: 8081

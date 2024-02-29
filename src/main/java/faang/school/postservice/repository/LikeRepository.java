@@ -1,6 +1,7 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Like;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +15,7 @@ public interface LikeRepository extends CrudRepository<Like, Long> {
 
     void deleteByCommentIdAndUserId(long commentId, long userId);
 
+    @Query("SELECT l FROM Like l JOIN FETCH l.comment WHERE l.post.id = :postId ORDER BY l.createdAt ASC")
     List<Like> findByPostId(long postId);
 
     List<Like> findByCommentId(long commentId);
@@ -21,4 +23,7 @@ public interface LikeRepository extends CrudRepository<Like, Long> {
     Optional<Like> findByPostIdAndUserId(long postId, long userId);
 
     Optional<Like> findByCommentIdAndUserId(long commentId, long userId);
+
+
+
 }

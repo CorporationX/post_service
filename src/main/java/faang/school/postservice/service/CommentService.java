@@ -8,6 +8,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 @Service
 @Slf4j
@@ -68,9 +70,17 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
+    @Transactional(readOnly = true)
     public Comment getComment(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Comment has not been found"));
+    }
+
+    public List<Comment> findLatestCommentsForPost(Post post) {
+        return post.getComments().stream()
+                .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
+                .limit(3)
+                .toList();
     }
 }
 

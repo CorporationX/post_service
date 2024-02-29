@@ -16,15 +16,28 @@ public class PostViewEventPublisher extends AsyncEventPublisher<PostViewEvent>{
 
     @Value("${spring.kafka.topics.post_view.name}")
     private String postViewTopic;
+    @Value("${spring.kafka.topics.heat_feed.post_view}")
+    private String heatViewTopic;
 
     @Override
     protected String getTopicName() {
         return postViewTopic;
     }
 
+    @Override
+    protected String getHeatTopicName() {
+        return heatViewTopic;
+    }
+
     public void publish(Post post) {
         long viewerId = userContext.getUserId();
         PostViewEvent event = new PostViewEvent(post.getId(), viewerId, LocalDateTime.now());
         asyncPublish(event);
+    }
+
+    public void heatPublish(Post post) {
+        long viewerId = userContext.getUserId();
+        PostViewEvent event = new PostViewEvent(post.getId(), viewerId, LocalDateTime.now());
+        asyncHeatPublish(event);
     }
 }

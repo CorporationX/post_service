@@ -12,7 +12,10 @@ import org.springframework.stereotype.Component;
 public class PostViewEventListener {
     private final PostHashService postHashService;
 
-    @KafkaListener(topics = "${spring.kafka.topics.post_view.name}")
+    @KafkaListener(topics = {
+            "${spring.kafka.topics.post_view.name}",
+            "${spring.kafka.topics.heat_feed.post_view}"
+    })
     public void listen(PostViewEvent postViewEvent, Acknowledgment acknowledgment) {
         postHashService.updatePostViews(postViewEvent, acknowledgment);
     }

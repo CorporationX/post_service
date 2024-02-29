@@ -14,7 +14,10 @@ public class CommentEventListener {
     private final PostHashService postHashService;
     private final UserHashService userHashService;
 
-    @KafkaListener(topics = "${spring.kafka.topics.comment.name}")
+    @KafkaListener(topics = {
+            "${spring.kafka.topics.comment.name}",
+            "${spring.kafka.topics.heat_feed.comment}"
+    })
     public void listen(CommentUserEvent commentUserEvent, Acknowledgment acknowledgment) {
         postHashService.updateComment(commentUserEvent, acknowledgment);
         userHashService.saveUser(commentUserEvent.getUserDto(), acknowledgment);

@@ -12,7 +12,10 @@ import org.springframework.stereotype.Component;
 public class LikePostEventListener {
     private final PostHashService postHashService;
 
-    @KafkaListener(topics = "${spring.kafka.topics.like_post.name}")
+    @KafkaListener(topics = {
+            "${spring.kafka.topics.like_post.name}",
+            "${spring.kafka.topics.heat_feed.like_post}"
+    })
     public void listen(LikePostEvent postViewEvent, Acknowledgment acknowledgment) {
         postHashService.updateLikePost(postViewEvent, acknowledgment);
     }

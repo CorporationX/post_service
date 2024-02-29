@@ -23,8 +23,14 @@ public class KafkaTopicConfig {
     private String commentTopic;
     @Value("${spring.kafka.topics.post_view.name}")
     private String postViewTopic;
-    @Value("${spring.kafka.topics.heat_feed.name}")
-    private String heatFeedTopic;
+    @Value("${spring.kafka.topics.heat_feed.post}")
+    private String heatPostTopic;
+    @Value("${spring.kafka.topics.heat_feed.comment}")
+    private String heatCommentTopic;
+    @Value("${spring.kafka.topics.heat_feed.like_post}")
+    private String heatLikeTopic;
+    @Value("${spring.kafka.topics.heat_feed.post_view}")
+    private String heatViewTopic;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -54,7 +60,22 @@ public class KafkaTopicConfig {
     }
 
     @Bean
-    public NewTopic topicHeatFeed() {
-        return new NewTopic(heatFeedTopic, 1, (short) 1);
+    public NewTopic topicHeatPost() {
+        return new NewTopic(heatPostTopic, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topicHeatComment() {
+        return new NewTopic(heatCommentTopic, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topicHeatLike() {
+        return new NewTopic(heatLikeTopic, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topicHeatView() {
+        return new NewTopic(heatViewTopic, 1, (short) 1);
     }
 }

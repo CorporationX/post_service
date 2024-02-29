@@ -16,7 +16,10 @@ public class PostEventListener {
     private final PostHashService postHashService;
     private final UserHashService userHashService;
 
-    @KafkaListener(topics = "${spring.kafka.topics.post.name}")
+    @KafkaListener(topics = {
+            "${spring.kafka.topics.post.name}",
+            "${spring.kafka.topics.heat_feed.post}"
+    })
     public void listen(PostEvent postEvent, Acknowledgment acknowledgment) {
         feedHashService.updateFeed(postEvent, acknowledgment);
         postHashService.savePost(postEvent, acknowledgment);

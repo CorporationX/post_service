@@ -20,6 +20,6 @@ public class FeedHeaterService {
     public void heat() {
         List<Long> userIds = userServiceClient.getUserIds();
         List<List<Long>> followerIdBatches = ListUtils.partition(userIds, userBatch);
-        followerIdBatches.forEach(asyncFeedHeaterService::publishBatch);
+        followerIdBatches.forEach(asyncFeedHeaterService::publishBatchPost);
     }
 }
