@@ -26,7 +26,7 @@ spring:
         post_channel: post_channel
 
 server:
-  port: 8085
+  port: 8081
 
 logging:
   level:
