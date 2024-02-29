@@ -2,18 +2,15 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
-import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.AsyncPostPublishService;
-import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
-import org.junit.BeforeClass;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,11 +18,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
@@ -33,13 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -66,7 +54,7 @@ class PostServiceTest {
         postDto.setAuthorId(1L);
         when(userServiceClient.getUser(postDto.getAuthorId())).thenReturn(null);
 
-        postService.createDraftPost(postDto);
+        postService.createDraftPost(postDto,null);
         Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());
     }
 
@@ -75,7 +63,7 @@ class PostServiceTest {
         postDto.setProjectId(1L);
         when(projectServiceClient.getProject(postDto.getProjectId())).thenReturn(null);
 
-        postService.createDraftPost(postDto);
+        postService.createDraftPost(postDto,null);
         Mockito.verify(projectServiceClient, Mockito.times(1)).getProject(postDto.getProjectId());
     }
 
@@ -88,7 +76,7 @@ class PostServiceTest {
         Mockito.doThrow(new DataValidationException("У поста должен быть только один автор"))
                 .when(postValidator).validateAuthorExists(any(), any());
 
-        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto));
+        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto,null));
     }
 
     @Test
@@ -97,7 +85,7 @@ class PostServiceTest {
 
         when(userServiceClient.getUser(postDto.getAuthorId()))
                 .thenReturn(new UserDto(1L, "user1", "user1@mail"));
-        postService.createDraftPost(postDto);
+        postService.createDraftPost(postDto,null);
 
         Mockito.verify(postRepository, Mockito.times(1)).save(any());
     }
@@ -143,7 +131,7 @@ class PostServiceTest {
         updatedPostDto.setId(1L);
 
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-        postService.updatePost(updatedPostDto, 1L);
+        postService.updatePost(updatedPostDto, 1L, null);
 
         verify(postRepository, Mockito.times(1)).save(post);
     }
