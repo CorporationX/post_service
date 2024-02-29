@@ -24,7 +24,7 @@ public class CommentController {
 
     @PutMapping()
     private CommentDto updateComment(@RequestBody CommentDto comment) {
-        return commentService.changeComment(comment);
+        return commentService.updateComment(comment);
     }
 
     @GetMapping("/{postId}")

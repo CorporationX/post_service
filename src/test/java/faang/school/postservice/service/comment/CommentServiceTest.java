@@ -93,7 +93,7 @@ public class CommentServiceTest {
         Mockito.when(userServiceClient.getUser(anyLong()))
                 .thenReturn(userDto);
         try {
-            commentService.changeComment(commentDto);
+            commentService.updateComment(commentDto);
         } catch (DataValidationException e) {
             assertThat(e).isInstanceOf(RuntimeException.class)
                     .hasMessage("User data is not correct");

@@ -32,7 +32,7 @@ public class CommentService {
         return commentMapper.toDTO(comment);
     }
 
-    public CommentDto changeComment(CommentDto commentDto) {
+    public CommentDto updateComment(CommentDto commentDto) {
         commentValidator.validateCommentAuthor(commentDto.getId());
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setContent(commentDto.getContent());
