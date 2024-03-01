@@ -22,6 +22,7 @@ spring:
       port: 6379
       host: localhost
       channels:
+        comment_channel: comment_channel
         calculations_channel:
           name: calculations_channel
 
@@ -42,7 +43,7 @@ post:
 
 user-service:
   host: localhost
-  port: 8083
+  port: 8084
 project-service:
   host: localhost
   port: 8082
