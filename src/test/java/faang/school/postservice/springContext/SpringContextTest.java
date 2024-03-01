@@ -1,6 +1,6 @@
 package faang.school.postservice.springContext;
 
-import faang.school.postservice.service.s3.S3Service;
+import com.amazonaws.services.s3.AmazonS3;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -8,9 +8,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class SpringContextTest {
     @MockBean
-    private S3Service clientAmazonS3;
+    private AmazonS3 clientAmazonS3;
 
     @Test
-    void contextLoads(){
+    void contextLoads() {
     }
 }
