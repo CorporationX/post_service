@@ -8,7 +8,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class SpringContextTest {
     @MockBean
-    private S3Service s3Service;
+    private S3Service clientAmazonS3;
 
     @Test
     void contextLoads(){
