@@ -5,7 +5,9 @@ import faang.school.postservice.service.AlbumService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,7 +23,7 @@ public class AlbumController {
             description = "Получает AlbumDto и создаёт альбом"
     )
     @PostMapping
-    public AlbumDto createAlbum(AlbumDto albumDto) {
+    public AlbumDto createAlbum(@RequestBody @Validated AlbumDto albumDto) {
         return albumService.createAlbum(albumDto);
     }
 }

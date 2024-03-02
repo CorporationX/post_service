@@ -4,6 +4,7 @@ import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.publisher.AlbumCreatedEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.stream.Stream;
 public class AlbumService {
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
+    private final AlbumCreatedEventPublisher albumCreatedEventPublisher;
 
     @Transactional
     public AlbumDto createAlbum(AlbumDto albumDto) {
@@ -24,13 +26,14 @@ public class AlbumService {
         validateTitleAlbum(albumStream, albumDto);
         Album album = albumRepository.save(albumMapper.toEntity(albumDto));
         albumRepository.save(album);
+        albumCreatedEventPublisher.publish(albumDto);
         return albumMapper.toDto(album);
     }
 
 
     private void validateAlbum(AlbumDto albumDto) {
         if (albumDto.getTitle() == null)
-            throw new DataValidationException("Invalid data author or title");
+            throw new DataValidationException("Invalid title");
     }
 
     private void validateTitleAlbum(Stream<Album> albumStream, AlbumDto albumDto) {
