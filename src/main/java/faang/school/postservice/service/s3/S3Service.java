@@ -20,6 +20,7 @@ import java.io.InputStream;
 @RequiredArgsConstructor
 @ConditionalOnProperty(value = "services.s3.isMocked", havingValue = "false")
 public class S3Service {
+
     private final AmazonS3 s3Client;
 
     @Value("${services.s3.bucketName}")

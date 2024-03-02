@@ -41,7 +41,8 @@ public class ResourceController {
     }
 
     @PutMapping("/{postId}/add")
-    public List<ResourceDto> addResource(@PathVariable Long postId, @RequestPart List<MultipartFile> files) {
+    public List<ResourceDto> addResource(@PathVariable Long postId,
+                                         @RequestPart List<MultipartFile> files) {
         return resourceService.addResource(postId, files);
     }
 
@@ -51,7 +52,7 @@ public class ResourceController {
         try {
             imageBytes = resourceService.downloadResource(resourceId).readAllBytes();
         } catch (IOException e) {
-            e.getMessage();
+            throw new RuntimeException(e.getMessage());
         }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_JPEG);
