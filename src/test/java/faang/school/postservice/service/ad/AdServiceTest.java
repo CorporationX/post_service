@@ -1,6 +1,5 @@
 package faang.school.postservice.service.ad;
 
-import faang.school.postservice.config.asyng.AsyncConfig;
 import faang.school.postservice.repository.ad.AdRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,8 +14,6 @@ class AdServiceTest {
 
     @Mock
     private AdRepository adRepository;
-    @Mock
-    private AsyncConfig asyncConfig;
 
     @InjectMocks
     private AdService adService;

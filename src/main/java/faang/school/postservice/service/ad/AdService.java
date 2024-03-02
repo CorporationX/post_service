@@ -1,7 +1,6 @@
 package faang.school.postservice.service.ad;
 
 
-import faang.school.postservice.config.asyng.AsyncConfig;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.ad.AdRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -22,12 +20,11 @@ import java.util.stream.StreamSupport;
 @Slf4j
 public class AdService {
     private final AdRepository adRepository;
-    private final AsyncConfig asyncConfig;
 
     @Value("${batchSize.batch}")
-    private int batchSize;
+    private int adsBatchSize;
 
-    @Async
+    @Async("executor")
     public void removeExpiredAdsAsync(List<Long> adsToRemove) {
         adRepository.deleteAllById(adsToRemove);
     }
@@ -45,16 +42,10 @@ public class AdService {
             return;
         }
 
-        List<List<Long>> adsPartitions = ListUtils.partition(adsToRemove, batchSize);
+        List<List<Long>> adsPartitions = ListUtils.partition(adsToRemove, adsBatchSize);
         for (List<Long> partition : adsPartitions) {
-            CompletableFuture.runAsync(() -> {
-                try {
-                    removeExpiredAdsAsync(partition);
-                } catch (Exception e) {
-                    log.error("Ошибка при удалении просроченной рекламы", e);
-                }
-            }, asyncConfig.taskExecutor());
+            removeExpiredAdsAsync(partition);
+            log.info("Удаление просроченной рекламы задано для всех подсписков.");
         }
-        log.info("Удаление просроченной рекламы задано для всех подсписков.");
     }
 }
