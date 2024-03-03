@@ -9,6 +9,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -90,10 +92,9 @@ public class PostService {
     }
 
     public void checkAndBanAuthors() {
-        List<Post> unverifiedPosts = postRepository.findByVerified(false);
         Map<Long, Integer> postCountByAuthorId = new HashMap<>();
 
-        unverifiedPosts.forEach(post ->
+        postRepository.findAllNotVerified().forEach(post ->
                 postCountByAuthorId.merge(post.getAuthorId(), 1, Integer::sum)
         );
 
@@ -102,8 +103,11 @@ public class PostService {
                 userBanEventPublisher.publish(
                         UserBanEvent.builder().id(authorId).build()
                 );
+                log.debug("User ban event published with authorId = {} with amount of not verified posts = {}",
+                        authorId, postCount);
             }
         });
+        log.info("check and ban authors method completed");
     }
 
     public List<PostDto> sortDrafts(List<Post> posts) {

@@ -1,8 +1,10 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.UserBanEvent;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,12 +20,16 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,11 +44,13 @@ public class PostServiceTest {
 
     @Mock
     private PostValidator postValidator;
+    @Mock
+    private UserBanEventPublisher userBanEventPublisher;
 
     @InjectMocks
     private PostService postService;
 
-    private PostDto postDto = new PostDto();
+    private final PostDto postDto = new PostDto();
     private Post post1;
     private Post post2;
     private Post post3;
@@ -278,5 +286,40 @@ public class PostServiceTest {
         assertNotEquals(expectedSortedDrafts, sortedDrafts);
     }
 
+    @Test
+    void testCheckAndBanAuthors_moreThenFiveNotVerifiedPosts_publishUserBanEvent() {
+        long authorId = 2L;
+        int amountPosts = 6;
+        List<Post> notVerifiedPosts = getNotVerifiedPostsByAuthor(amountPosts, authorId);
+        UserBanEvent expectedUserBanEvent = UserBanEvent.builder().id(authorId).build();
 
+        when(postRepository.findAllNotVerified()).thenReturn(notVerifiedPosts);
+
+        postService.checkAndBanAuthors();
+
+        verify(userBanEventPublisher, times(1)).publish(expectedUserBanEvent);
+    }
+
+    @Test
+    void testCheckAndBanAuthors_lessThenFiveNotVerifiedPosts_nothingHappens() {
+        long authorId = 2L;
+        int amountPosts = 3;
+        List<Post> notVerifiedPosts = getNotVerifiedPostsByAuthor(amountPosts, authorId);
+
+        when(postRepository.findAllNotVerified()).thenReturn(notVerifiedPosts);
+
+        postService.checkAndBanAuthors();
+
+        verify(userBanEventPublisher, never()).publish(any());
+    }
+
+    private Post getNotVerifiedPost(long postId, long authorId) {
+        return Post.builder().id(postId).authorId(authorId).verified(false).build();
+    }
+
+    private List<Post> getNotVerifiedPostsByAuthor(int amountPosts, long authorId) {
+        return IntStream.rangeClosed(1, amountPosts).mapToObj(i ->
+                getNotVerifiedPost(i, authorId)
+        ).toList();
+    }
 }
