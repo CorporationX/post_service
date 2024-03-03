@@ -1,8 +1,10 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.UserBanEvent;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -12,7 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +26,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final UserBanEventPublisher userBanEventPublisher;
 
     public void createPostDraft(PostDto postDto) {
         postValidator.validatePostOwnerExists(postDto);
@@ -36,6 +41,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
     }
+
     @Transactional
     public void updatePost(long postId, long ownerId, PostDto postDto) {
         postValidator.validatePostByOwner(postId, ownerId);
@@ -81,6 +87,23 @@ public class PostService {
     public List<PostDto> getProjectPosts(long projectId) {
         postValidator.validateProject(projectId);
         return sortPosts(postRepository.findByProjectId(projectId));
+    }
+
+    public void checkAndBanAuthors() {
+        List<Post> unverifiedPosts = postRepository.findByVerified(false);
+        Map<Long, Integer> postCountByAuthorId = new HashMap<>();
+
+        unverifiedPosts.forEach(post ->
+                postCountByAuthorId.merge(post.getAuthorId(), 1, Integer::sum)
+        );
+
+        postCountByAuthorId.forEach((authorId, postCount) -> {
+            if (postCount > 5) {
+                userBanEventPublisher.publish(
+                        UserBanEvent.builder().id(authorId).build()
+                );
+            }
+        });
     }
 
     public List<PostDto> sortDrafts(List<Post> posts) {

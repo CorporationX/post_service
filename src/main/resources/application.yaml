@@ -21,9 +21,11 @@ spring:
     redis:
       port: 6379
       host: localhost
-      channels:
-        calculations_channel:
-          name: calculations_channel
+      channel:
+        user_ban:
+          user_ban_channel: user_ban_channel
+        calculations:
+          calculations_channel: calculations_channel
 
 server:
   port: 8085
@@ -39,6 +41,9 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  auto_banner:
+    scheduler:
+      cron: "0 0 * * *" # every day at 00:00
 
 user-service:
   host: localhost
