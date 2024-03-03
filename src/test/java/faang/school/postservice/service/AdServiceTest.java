@@ -34,7 +34,7 @@ class AdServiceTest {
     @Test
     void shouldFindExpiredAds() {
         when(adRepository.findAll()).thenReturn(ads);
-        List<Ad> expiredAds = adService.FindExpiredAds();
+        List<Ad> expiredAds = adService.findExpiredAds();
         assertEquals(2, expiredAds.size());
         assertEquals(ads.get(0).getId(), expiredAds.get(0).getId());
         assertEquals(ads.get(1).getId(), expiredAds.get(1).getId());

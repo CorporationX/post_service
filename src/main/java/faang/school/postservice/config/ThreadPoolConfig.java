@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 @Configuration
 public class ThreadPoolConfig {
     @Bean
-    public ExecutorService adRemoverThreadPool() {
+    public ExecutorService executorService() {
         return Executors.newCachedThreadPool();
     }
 }

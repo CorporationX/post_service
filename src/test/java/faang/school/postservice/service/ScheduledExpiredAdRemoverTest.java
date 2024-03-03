@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.service.scheduler.ScheduledExpiredAdRemover;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +33,7 @@ class ScheduledExpiredAdRemoverTest {
     @Test
     void shouldRemoveExpiredAds() {
         ReflectionTestUtils.setField(scheduledExpiredAdRemover, "expiredAdBatchSize", 1);
-        when(adService.FindExpiredAds()).thenReturn(ads);
+        when(adService.findExpiredAds()).thenReturn(ads);
         scheduledExpiredAdRemover.removeExpiredAds();
         verify(adService, times(2)).removeExpiredAds(any());
     }
