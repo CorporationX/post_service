@@ -291,7 +291,7 @@ public class PostServiceTest {
         long authorId = 2L;
         int amountPosts = 6;
         List<Post> notVerifiedPosts = getNotVerifiedPostsByAuthor(amountPosts, authorId);
-        UserBanEvent expectedUserBanEvent = UserBanEvent.builder().id(authorId).build();
+        UserBanEvent expectedUserBanEvent = UserBanEvent.builder().userId(authorId).build();
 
         when(postRepository.findAllNotVerified()).thenReturn(notVerifiedPosts);
 

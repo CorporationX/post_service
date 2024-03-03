@@ -101,7 +101,7 @@ public class PostService {
         postCountByAuthorId.forEach((authorId, postCount) -> {
             if (postCount > 5) {
                 userBanEventPublisher.publish(
-                        UserBanEvent.builder().id(authorId).build()
+                        UserBanEvent.builder().userId(authorId).build()
                 );
                 log.debug("User ban event published with authorId = {} with amount of not verified posts = {}",
                         authorId, postCount);
