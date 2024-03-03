@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,11 +26,8 @@ public class AdService {
 
     public Optional<List<List<Ad>>> findExpiredAds() {
         log.info("Scheduled expired ads removing");
-        List<Ad> adList = new ArrayList<>();
-        Iterable<Ad> ads = adRepository.findAll();
-        ads.forEach(adList::add);
+        List<Ad> expiredAds = adRepository.findByEndDateBefore(LocalDateTime.now());
 
-        List<Ad> expiredAds = adList.stream().filter(ad -> ad.getEndDate().isBefore(LocalDateTime.now())).toList();
         if (!expiredAds.isEmpty()) {
             return Optional.of(ListUtils.partition(expiredAds, expiredAdBatchSize));
         }

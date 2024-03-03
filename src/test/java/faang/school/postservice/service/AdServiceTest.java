@@ -33,20 +33,21 @@ class AdServiceTest {
         bucket = List.of(
                 Ad.builder().id(1L).endDate(LocalDateTime.now().minusDays(1)).build(),
                 Ad.builder().id(2L).endDate(LocalDateTime.now().minusDays(2)).build(),
-                Ad.builder().id(3L).endDate(LocalDateTime.now().plusDays(1)).build());
+                Ad.builder().id(3L).endDate(LocalDateTime.now().minusDays(1)).build());
         ads.add(bucket);
     }
 
     @Test
     void shouldFindExpiredAds() {
         ReflectionTestUtils.setField(adService, "expiredAdBatchSize", 1);
-        when(adRepository.findAll()).thenReturn(bucket);
+        when(adRepository.findByEndDateBefore(any())).thenReturn(bucket);
 
         Optional<List<List<Ad>>> expiredAds = adService.findExpiredAds();
 
-        assertEquals(2, expiredAds.get().size());
+        assertEquals(3, expiredAds.get().size());
         assertEquals(1, expiredAds.get().get(0).get(0).getId());
         assertEquals(2, expiredAds.get().get(1).get(0).getId());
+        assertEquals(3, expiredAds.get().get(2).get(0).getId());
     }
 
     @Test
