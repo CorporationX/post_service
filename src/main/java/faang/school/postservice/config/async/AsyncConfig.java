@@ -1,4 +1,4 @@
-package faang.school.postservice.config.asyng;
+package faang.school.postservice.config.async;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
