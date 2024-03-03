@@ -43,7 +43,7 @@ post:
     scheduler:
       cron: "0 0 * * * *" # every day
       zone: Europe/Moscow
-    batch-size: 5
+    batch-size: 100
 user-service:
   host: localhost
   port: 8080

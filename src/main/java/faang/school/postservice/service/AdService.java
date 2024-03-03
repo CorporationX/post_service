@@ -37,6 +37,6 @@ public class AdService {
     @Async("executorService")
     @Transactional
     public void removeExpiredAds(List<Ad> expiredAds) {
-        adRepository.deleteAll(expiredAds);
+        adRepository.deleteAllInBatch(expiredAds);
     }
 }
