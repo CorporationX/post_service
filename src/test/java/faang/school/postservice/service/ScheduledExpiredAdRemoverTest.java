@@ -8,10 +8,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
@@ -21,20 +22,20 @@ class ScheduledExpiredAdRemoverTest {
     private AdService adService;
     @InjectMocks
     private ScheduledExpiredAdRemover scheduledExpiredAdRemover;
-    private List<Ad> ads;
+    private List<List<Ad>> ads = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
-        ads = List.of(
+        List<Ad> bucket = List.of(
                 Ad.builder().id(1L).endDate(LocalDateTime.now().minusDays(1)).build(),
                 Ad.builder().id(2L).endDate(LocalDateTime.now().minusDays(2)).build());
+        ads.add(bucket);
     }
 
     @Test
     void shouldRemoveExpiredAds() {
-        ReflectionTestUtils.setField(scheduledExpiredAdRemover, "expiredAdBatchSize", 1);
-        when(adService.findExpiredAds()).thenReturn(ads);
+        when(adService.findExpiredAds()).thenReturn(Optional.of(ads));
         scheduledExpiredAdRemover.removeExpiredAds();
-        verify(adService, times(2)).removeExpiredAds(any());
+        verify(adService, times(1)).removeExpiredAds(any());
     }
 }

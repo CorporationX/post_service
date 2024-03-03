@@ -41,9 +41,9 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
     scheduler:
-      cron: "0 0 * * *" # every day
+      cron: "0 0 * * * *" # every day
       zone: Europe/Moscow
-      batch-size: 100
+    batch-size: 5
 user-service:
   host: localhost
   port: 8080

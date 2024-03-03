@@ -20,9 +20,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class AdService {
-    private AdRepository adRepository;
+    private final AdRepository adRepository;
 
-    @Value("${post-service.scheduled-expired-ad-remover.batch-size}")
+    @Value("${post.ad-remover.batch-size}")
     private int expiredAdBatchSize;
 
     public Optional<List<List<Ad>>> findExpiredAds() {
@@ -38,7 +38,7 @@ public class AdService {
         return Optional.empty();
     }
 
-    @Async("adRemoverThreadPool")
+    @Async("executorService")
     @Transactional
     public void removeExpiredAds(List<Ad> expiredAds) {
         adRepository.deleteAll(expiredAds);

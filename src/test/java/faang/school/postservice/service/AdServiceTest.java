@@ -8,9 +8,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -22,27 +25,33 @@ class AdServiceTest {
 
     @InjectMocks
     private AdService adService;
-    private List<Ad> ads;
+    private List<List<Ad>> ads = new ArrayList<>();
+    private List<Ad> bucket;
+
     @BeforeEach
     void setUp() {
-        ads = List.of(
+        bucket = List.of(
                 Ad.builder().id(1L).endDate(LocalDateTime.now().minusDays(1)).build(),
                 Ad.builder().id(2L).endDate(LocalDateTime.now().minusDays(2)).build(),
                 Ad.builder().id(3L).endDate(LocalDateTime.now().plusDays(1)).build());
+        ads.add(bucket);
     }
 
     @Test
     void shouldFindExpiredAds() {
-        when(adRepository.findAll()).thenReturn(ads);
-        List<Ad> expiredAds = adService.findExpiredAds();
-        assertEquals(2, expiredAds.size());
-        assertEquals(ads.get(0).getId(), expiredAds.get(0).getId());
-        assertEquals(ads.get(1).getId(), expiredAds.get(1).getId());
+        ReflectionTestUtils.setField(adService, "expiredAdBatchSize", 1);
+        when(adRepository.findAll()).thenReturn(bucket);
+
+        Optional<List<List<Ad>>> expiredAds = adService.findExpiredAds();
+
+        assertEquals(2, expiredAds.get().size());
+        assertEquals(1, expiredAds.get().get(0).get(0).getId());
+        assertEquals(2, expiredAds.get().get(1).get(0).getId());
     }
 
     @Test
     void shouldRemoveExpiredAds() {
-        adService.removeExpiredAds(ads);
-        verify(adRepository, times(1)).deleteAll(ads);
+        adService.removeExpiredAds(bucket);
+        verify(adRepository, times(1)).deleteAll(bucket);
     }
 }

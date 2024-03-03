@@ -15,7 +15,7 @@ public class ScheduledExpiredAdRemover {
     private final AdService adService;
 
 
-    @Scheduled(cron = "${post-service.scheduled-expired-ad-remover.cron}", zone = "${post-service.scheduled-expired-ad-remover.zone}")
+    @Scheduled(cron = "${post.ad-remover.scheduler.cron}", zone = "${post.ad-remover.scheduler.zone}")
     public void removeExpiredAds() {
         Optional<List<List<Ad>>> expiredAds = adService.findExpiredAds();
         expiredAds.ifPresent(lists -> lists.forEach(adService::removeExpiredAds));
