@@ -53,6 +53,6 @@ class AdServiceTest {
     @Test
     void shouldRemoveExpiredAds() {
         adService.removeExpiredAds(bucket);
-        verify(adRepository, times(1)).deleteAll(bucket);
+        verify(adRepository, times(1)).deleteAllInBatch(bucket);
     }
 }
