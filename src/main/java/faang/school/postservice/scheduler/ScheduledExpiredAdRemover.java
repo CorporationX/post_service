@@ -1,4 +1,4 @@
-package faang.school.postservice.service.scheduler;
+package faang.school.postservice.scheduler;
 
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.service.AdService;
@@ -15,7 +15,7 @@ public class ScheduledExpiredAdRemover {
     private final AdService adService;
 
 
-    @Scheduled(cron = "${post.ad-remover.scheduler.cron}", zone = "${post.ad-remover.scheduler.zone}")
+    @Scheduled(cron = "${scheduler.ad-remover.cron}", zone = "${scheduler.ad-remover.zone}")
     public void removeExpiredAds() {
         Optional<List<List<Ad>>> expiredAds = adService.findExpiredAds();
         expiredAds.ifPresent(lists -> lists.forEach(adService::removeExpiredAds));

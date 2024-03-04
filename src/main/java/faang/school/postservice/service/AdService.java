@@ -21,7 +21,7 @@ import java.util.Optional;
 public class AdService {
     private final AdRepository adRepository;
 
-    @Value("${post.ad-remover.batch-size}")
+    @Value("${scheduler.ad-remover.batch-size}")
     private int expiredAdBatchSize;
 
     public Optional<List<List<Ad>>> findExpiredAds() {

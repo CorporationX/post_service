@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.model.ad.Ad;
-import faang.school.postservice.service.scheduler.ScheduledExpiredAdRemover;
+import faang.school.postservice.scheduler.ScheduledExpiredAdRemover;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
