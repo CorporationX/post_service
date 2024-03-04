@@ -5,9 +5,12 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEditDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.CommentEventMapper;
+import faang.school.postservice.mapper.CommentEventMapperImpl;
 import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +39,10 @@ class CommentServiceTest {
     private CommentRepository commentRepository;
     @Spy
     private CommentMapperImpl commentMapper;
+    @Spy
+    private CommentEventMapper commentEventMapper = new CommentEventMapperImpl();
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
     @Mock
     private PostService postService;
     @Mock
@@ -46,6 +53,7 @@ class CommentServiceTest {
     private UserServiceClient userServiceClient;
     @InjectMocks
     private CommentService commentService;
+
     @Captor
     private ArgumentCaptor<Comment> commentCaptor;
     private Long postId = 1L;

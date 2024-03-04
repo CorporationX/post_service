@@ -7,9 +7,12 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.mapper.PostEventMapper;
+import faang.school.postservice.mapper.PostEventMapperImpl;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostEventPublisher;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.Test;
@@ -43,7 +46,11 @@ class PostServiceTest {
     @Mock
     private UserServiceClient userServiceClient;
     @Mock
+    private PostViewEventPublisher postViewEventPublisher;
+    @Mock
     private PostEventPublisher postEventPublisher;
+    @Spy
+    private PostEventMapper postEventMapper = new PostEventMapperImpl();
     @Mock
     private ProjectServiceClient projectServiceClient;
     @Spy
