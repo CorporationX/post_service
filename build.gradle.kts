@@ -25,6 +25,11 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
+     * Amazon S3
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+
+    /**
      * Database
      */
     implementation("org.liquibase:liquibase-core")
@@ -41,6 +46,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
     /**
      * Test containers

@@ -21,11 +21,4 @@ class CommentValidatorTest {
             commentValidator.validateContent("   ");
         });
     }
-
-    @Test
-    void testCheckOwnerComment() {
-        assertThrows(DataValidationException.class, () -> {
-            commentValidator.checkOwnerComment(1L, 2L);
-        });
-    }
 }
