@@ -89,7 +89,7 @@ class CommentServiceTest {
         commentService.createComment(postId, commentDto);
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
-        verify(commentEventPublisher, times(1)).publish(any());
+        verify(commentEventPublisher, times(1)).runPublish(any());
         Comment capturedComment = commentCaptor.getValue();
         assertEquals(commentDto.getContent(), capturedComment.getContent());
     }

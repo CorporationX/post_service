@@ -40,7 +40,7 @@ public class CommentService {
         comment.setAuthorId(userContext.getUserId());// владелец запроса становится владельцем комментария
         comment.setPost(post); // как я понял, это и называется "проставляет этой сущности связь с сущностями Post"
         Comment savedComment = commentRepository.save(comment);
-        commentEventPublisher.publish(commentMapper.toEventDto(savedComment));
+        commentEventPublisher.runPublish(commentMapper.toEventDto(savedComment));
         return commentMapper.toDto(savedComment);
     }
 
