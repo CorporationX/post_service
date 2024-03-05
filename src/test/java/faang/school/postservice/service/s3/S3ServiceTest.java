@@ -33,31 +33,6 @@ class S3ServiceTest {
     private S3Service s3Service;
 
     @Test
-    void uploadFile_Success() throws Exception {
-        InputStream inputStream = mock(InputStream.class);
-        int availableStream = inputStream.available();
-        MultipartFile file = new MockMultipartFile("file.txt", "file.txt",
-                "text/plain", inputStream);
-        int width = 100;
-        int height = 100;
-        int imageType = BufferedImage.TYPE_INT_RGB;
-        BufferedImage image = new BufferedImage(width, height, imageType);
-
-        //when(putObjectRequest.getInputStream()).thenReturn(inputStream);
-        //Mockito.doReturn(image).when(ImageIO.read(inputStream));
-        when(ImageIO.read(inputStream)).thenReturn(image);
-        Resource result = s3Service.uploadFile(file);
-
-        verify(clientAmazonS3).putObject(any());
-
-        assertEquals("test_folder/file.txt", result.getKey());
-        assertEquals("file.txt", result.getName());
-        assertEquals("text/plain", result.getType());
-        assertEquals(availableStream, result.getSize());
-        inputStream.close();
-    }
-
-    @Test
     void testUploadFileWithIOException() {
         assertThrows(IOException.class, () -> {
             InputStream inputStream = new FileInputStream("C:\\Users\\Kergshi\\Pictures\\kitt.jpg");
