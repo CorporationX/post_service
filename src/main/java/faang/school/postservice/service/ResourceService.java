@@ -8,8 +8,8 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.s3.S3Service;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,51 +21,49 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ResourceService {
-    @Value("${post.content_to_post.max_amount.video}")
-    private int maxAmountFiles;
+
     private final S3Service s3Service;
     private final ResourceRepository resourceRepository;
     private final ResourceMapper resourceMapper;
-    private final PostService postService;
     private final PostRepository postRepository;
 
-    private String getFolderName(long postId, String contentType) {
-        return String.format("%s-%s", postId, contentType);
+    @Transactional
+    public List<ResourceDto> addResources(Long postId, List<MultipartFile> files) {
+        Post post = getPostById(postId);
+        String folder = getFolderName(postId, post.getContent());
+        List<Resource> resources = new ArrayList<>();
+        for (MultipartFile file : files) {
+            Resource resource = s3Service.uploadFile(file, folder);
+            resource.setPost(post);
+            resources.add(resource);
+        }
+
+        resourceRepository.saveAll(resources);
+        post.getResources().addAll(resources);
+        postRepository.save(post);
+
+        return resourceMapper.toListDto(resources);
     }
 
-    public List<ResourceDto> deleteResources(List<Long> resourceIds) {
+    public List<ResourceDto> deleteResources(long postId, List<Long> resourceIds) {
+        Post post = getPostById(postId);
         List<Resource> resourcesToDelete = resourceIds.stream()
                 .map(this::getResourceById)
                 .toList();
 
         resourcesToDelete.forEach(resource -> s3Service.deleteFile(resource.getKey()));
-
         resourceRepository.deleteAll(resourcesToDelete);
-
-        return resourceMapper.toListDto(resourcesToDelete.stream().toList());
-    }
-
-
-    @Transactional
-    public List<ResourceDto> addResource(Long postId, List<MultipartFile> files) {
-        Post post = postService.getPost(postId);
-
-        String folder = post.getId() + "" + post.getProjectId();
-        List<Resource> resources = new ArrayList<>();
-        for (MultipartFile file : files) {
-
-            Resource resource = s3Service.uploadFile(file, folder);
-            resources.add(resource);
-            resource.setPost(post);
-            resource = resourceRepository.save(resource);
-            List<Resource> postResources = post.getResources();
-            postResources.add(resource);
-            post.setResources(postResources);
-        }
+        post.getResources().removeAll(resourcesToDelete);
         postRepository.save(post);
 
-        return resourceMapper.toListDto(resources);
+        return resourceMapper.toListDto(resourcesToDelete);
     }
+
+    private Post getPostById(Long postId) {
+        return postRepository.findById(postId).orElseThrow(
+                () -> new EntityNotFoundException("Post not found"));
+    }
+
 
     public InputStream downloadResource(long resourceId) {
         Resource resource = getResourceById(resourceId);
@@ -77,24 +75,8 @@ public class ResourceService {
                 () -> new DataValidationException("Resource not " + "found"));
     }
 
-
-    public List<ResourceDto> createResources(Post post, List<MultipartFile> files) {
-        if (post.getResources().size() + files.size() > maxAmountFiles) {
-            throw new IllegalArgumentException("You can upload only 5 files or less");
-        }
-
-        List<Resource> resources = new ArrayList<>();
-        files.forEach(file -> {
-            Resource resource = s3Service.uploadFile(file, getFolderName(post.getId(), file.getContentType()));
-            resource.setPost(post);
-            resources.add(resource);
-        });
-
-        List<Resource> savedResources = resourceRepository.saveAll(resources);
-
-        return savedResources.stream()
-                .map(resourceMapper::toDto)
-                .toList();
+    private String getFolderName(long postId, String contentType) {
+        return String.format("%s-%s", postId, contentType);
     }
 
 }

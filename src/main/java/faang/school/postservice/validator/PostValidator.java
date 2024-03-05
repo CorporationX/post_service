@@ -19,10 +19,6 @@ public class PostValidator {
     private final PostRepository postRepo;
     private final UserContext userContext;
 
-    public void validateAccessAndContent(PostDto postDto) {
-        /////////////////////////
-    }
-
     public void validatePost(PostDto postDto) {
         validatePostExists(postDto.getId());
         if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {

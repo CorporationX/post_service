@@ -25,10 +25,9 @@ spring:
         calculations_channel:
           name: calculations_channel
 
-  servlet:
-    multipart:
-      max-video_file-size: 100MB
-      max-request-size: 500MB
+multipart:
+  max_video_file_size: 104857600 #100MB
+  max_request_size: 524288000 #500MB
 
 server:
   port: 8085

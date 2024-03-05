@@ -2,6 +2,7 @@ package faang.school.postservice.model;
 
 import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,6 +46,7 @@ public class Post {
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private Ad ad;
 
+    @Size(max = 5)
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Resource> resources;
 

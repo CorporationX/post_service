@@ -1,11 +1,11 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.model.Resource;
 import faang.school.postservice.service.PostService;
-import faang.school.postservice.service.s3.S3Service;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,19 +25,25 @@ import java.util.List;
 @RequestMapping("/posts")
 @RequiredArgsConstructor
 public class PostController {
-    private final S3Service s3Service;
     private final PostService postService;
     private final UserContext userContext;
 
     @PostMapping("/draft")
-    public void createPostDraft(@RequestPart @Valid PostDto dto, @RequestPart("files") List<MultipartFile> file) {
+    public void createPostDraft(@RequestPart @Valid PostDto dto) {
         postService.createPostDraft(dto);
     }
 
-    @PostMapping("/{postId}/upload")
-    public ResponseEntity<String> uploadFile(@PathVariable long postId, @RequestPart("file") MultipartFile file) {
-        Resource resource = s3Service.uploadFile(file, "files");
-        return ResponseEntity.ok("File uploaded: " + resource.getName());
+    @PostMapping("/{postId}/video")
+    public ResponseEntity<String> uploadVideo(@PathVariable long postId,
+                                              @RequestPart("files") @Size(max = 5) List<MultipartFile> files) {
+        List<ResourceDto> resourceDtos = postService.addVideo(postId, files);
+        return ResponseEntity.ok("Files uploaded: " + resourceDtos);
+    }
+
+    @DeleteMapping("/{postId}/video")
+    public void deleteVideos(@PathVariable long postId,
+                             @RequestPart List<Long> resourceIds) {
+        postService.deleteVideo(postId, resourceIds);
     }
 
 
@@ -80,4 +86,6 @@ public class PostController {
     public List<PostDto> getProjectPosts(@PathVariable long projectId) {
         return postService.getProjectPosts(projectId);
     }
+
+
 }

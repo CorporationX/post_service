@@ -9,6 +9,7 @@ import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostService {
 
+    @Value("${post.content_to_post.max_amount.video}")
+    private int maxVideo;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
@@ -106,13 +109,25 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    public List<ResourceDto> addVideos(long postId, List<MultipartFile> files) {
+    @Transactional
+    public List<ResourceDto> addVideo(long postId, List<MultipartFile> files) {
+        Post post = getPost(postId);
+        int resourcesSize = post.getResources().size();
+
         List<MultipartFile> validFiles = new ArrayList<>();
         for (MultipartFile file : files) {
-            resourceValidator.videoIsValid(file);
-            validFiles.add(file);
+            if (resourcesSize < maxVideo) {
+                resourceValidator.videoIsValid(file);
+                validFiles.add(file);
+                resourcesSize++;
+            }
         }
-        return resourceService.addResource(postId, validFiles);
+        return resourceService.addResources(postId, validFiles);
+    }
+
+    @Transactional
+    public void deleteVideo(long postId, List<Long> resourceIds) {
+        resourceService.deleteResources(postId, resourceIds);
     }
 
 }
