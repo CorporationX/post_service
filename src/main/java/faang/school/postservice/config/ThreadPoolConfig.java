@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 @Configuration
 public class ThreadPoolConfig {
 
-    @Bean
+    @Bean(name = "poolForScheduled")
     public ExecutorService poolForScheduled() {
         return Executors.newFixedThreadPool(10);
     }
