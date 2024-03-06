@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "project-service", url = "${project-service.host}:${project-service.port}")
+@FeignClient(name = "project-service", url = "${project-service.host}:${project-service.port}/api/v1")
 public interface ProjectServiceClient {
 
-    @GetMapping("api/v1/project/{projectId}")
+    @GetMapping("/project/{projectId}")
     ProjectDto getProject(@PathVariable long projectId);
 
-    @PostMapping("api/v1/projects")
+    @PostMapping("/projects")
     List<ProjectDto> getProjectsByIds(@RequestBody List<Long> ids);
 }

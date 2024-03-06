@@ -1,7 +1,6 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +54,7 @@ class PostControllerTest {
     @Test
     void testRemovePostSoftlySuccessful() {
         postController.removePostSoftly(ID);
-        Mockito.verify(postService).removeSoftly(ID);
+        Mockito.verify(postService).deletePost(ID);
     }
 
     @Test
@@ -78,13 +77,13 @@ class PostControllerTest {
 
     @Test
     void testGetPublishedPostsByAuthorId() {
-        postController.getPublishedPostsByAuthorId(ID);
+        postController.getPostsByAuthorId(ID);
         Mockito.verify(postService).getPublishedPostsByAuthorId(ID);
     }
 
     @Test
     void testGetPublishedPostsByProjectId() {
-        postController.getPublishedPostsByProjectId(ID);
+        postController.getPostsByProjectId(ID);
         Mockito.verify(postService).getPublishedPostsByProjectId(ID);
     }
 }

@@ -7,15 +7,13 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import jakarta.persistence.EntityNotFoundException;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,18 +26,8 @@ public class PostService {
 
     @Transactional
     public PostDto createDraft(PostDto postDto) {
-        if (postDto.getAuthorId() == null && postDto.getProjectId() != null) {
-            projectServiceClient.getProject(postDto.getProjectId());
-        }
-        if (postDto.getProjectId() == null && postDto.getAuthorId() != null) {
-            userServiceClient.getUser(postDto.getAuthorId());
-        } else {
-            throw new DataValidationException("Incorrect author");
-        }
+        validIdByAuthorPost(postDto);
         Post post = postMapper.toEntity(postDto);
-        post.setPublished(false);
-        post.setDeleted(false);
-        post.setCreatedAt(LocalDateTime.now());
         postRepository.save(post);
         return postMapper.toDto(post);
     }
@@ -60,17 +48,15 @@ public class PostService {
     public PostDto update(PostDto postDto) {
         Post post = searchPostById(postDto.getId());
         post.setContent(postDto.getContent());
-        post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
         return postMapper.toDto(post);
     }
 
     @Transactional
-    public PostDto removeSoftly(long id) {
+    public PostDto deletePost(long id) {
         Post post = searchPostById(id);
         post.setPublished(false);
         post.setDeleted(true);
-        postRepository.save(post);
         return postMapper.toDto(post);
     }
 
@@ -101,6 +87,19 @@ public class PostService {
     public List<PostDto> getPublishedPostsByProjectId(long id) {
         List<Post> posts = postRepository.findByProjectId(id);
         return filterPosts(posts, true);
+    }
+
+    private void validIdByAuthorPost(PostDto postDto) {
+        if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
+            throw new DataValidationException("The author of the post is not specified");
+        }
+        if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
+            throw new DataValidationException("A post cannot have two authors");
+        }
+        if (postDto.getAuthorId() != null && !userServiceClient.existById(postDto.getAuthorId())) {
+            throw new DataValidationException("There is no author with this id " + postDto.getAuthorId());
+        }
+
     }
 
     private Post searchPostById(long id) {

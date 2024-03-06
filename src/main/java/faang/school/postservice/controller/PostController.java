@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Tag(name = "PostController", description = "Посылаем запросы в PostController")
 @RestController
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("api/v1/post")
 public class PostController {
@@ -31,16 +33,15 @@ public class PostController {
             @ApiResponse(responseCode = "200", description = "Пост создан"),
             @ApiResponse(responseCode = "500", description = "Нет доступа к базе данных пользователей или проектов")
     })
-    @PostMapping("/create")
-    public PostDto createDraft(@Validated @RequestBody PostDto postDto) {
-
+    @PostMapping("/draft")
+    public PostDto createDraft(@Valid @RequestBody PostDto postDto) {
         return postService.createDraft(postDto);
     }
 
     @Operation(
             summary = "Публикация поста по id"
     )
-    @PutMapping("/published/{postId}")
+    @PutMapping("/publish/{postId}")
     public PostDto publishPost(@PathVariable @Positive(message = "Id must be greater than zero") long postId) {
         return postService.publish(postId);
     }
@@ -49,8 +50,8 @@ public class PostController {
             summary = "Обновление поста",
             description = "Получает PostDto и обновляет post"
     )
-    @PutMapping("/update")
-    public PostDto updatePost(@Validated @RequestBody PostDto postDto) {
+    @PutMapping
+    public PostDto updatePost(@Valid @RequestBody PostDto postDto) {
         return postService.update(postDto);
     }
 
@@ -58,9 +59,9 @@ public class PostController {
             summary = "Удаление поста по id",
             description = "Помечает пост как удаленный"
     )
-    @DeleteMapping("/delete/{postId}")
+    @DeleteMapping("/{postId}")
     public PostDto removePostSoftly(@PathVariable @Positive(message = "Id must be greater than zero") long postId) {
-        return postService.removeSoftly(postId);
+        return postService.deletePost(postId);
     }
 
     @Operation(
@@ -74,7 +75,7 @@ public class PostController {
     @Operation(
             summary = "Получение черновиков по id пользователя"
     )
-    @GetMapping("/authors/{id}/drafts")
+    @GetMapping("/author/{id}/drafts")
     public List<PostDto> getDraftsByAuthorId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
         return postService.getDraftsByAuthorId(id);
     }
@@ -82,7 +83,7 @@ public class PostController {
     @Operation(
             summary = "Получение черновиков по id проекта"
     )
-    @GetMapping("/projects/{id}/drafts")
+    @GetMapping("/project/{id}/drafts")
     public List<PostDto> getDraftsByProjectId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
         return postService.getDraftsByProjectId(id);
     }
@@ -90,16 +91,16 @@ public class PostController {
     @Operation(
             summary = "Получение опубликованных постов по id пользователя"
     )
-    @GetMapping("/authors/{id}")
-    public List<PostDto> getPublishedPostsByAuthorId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
+    @GetMapping("/author/{id}")
+    public List<PostDto> getPostsByAuthorId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
         return postService.getPublishedPostsByAuthorId(id);
     }
 
     @Operation(
             summary = "Получение опубликованных постов по id проекта"
     )
-    @GetMapping("/projects/{id}")
-    public List<PostDto> getPublishedPostsByProjectId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
+    @GetMapping("/project/{id}")
+    public List<PostDto> getPostsByProjectId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
         return postService.getPublishedPostsByProjectId(id);
     }
 }

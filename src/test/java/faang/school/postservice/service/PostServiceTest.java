@@ -125,7 +125,7 @@ class PostServiceTest {
     @Test
     void testRemoveSoftlySuccessful() {
         Mockito.when(postRepository.findById(6L)).thenReturn(Optional.ofNullable(post2));
-        postService.removeSoftly(6);
+        postService.deletePost(6);
         assertFalse(post2.isPublished());
         assertTrue(post2.isDeleted());
         Mockito.verify(postRepository).save(post2);
