@@ -11,8 +11,8 @@ public class ScheduledPostPublisher {
 
     private final PostService postService;
 
-    @Scheduled()
-    public void publishScheduledPosts(){
+    @Scheduled(fixedRate = 60000)
+    public void publishScheduledPosts() {
         postService.publishScheduledPosts();
     }
 
