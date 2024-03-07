@@ -8,7 +8,6 @@ import faang.school.postservice.repository.ad.AdRepository;
 import faang.school.postservice.validator.AdValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdService {
@@ -72,8 +70,8 @@ public class AdService {
                 .stream()
                 .map(list -> CompletableFuture
                         .runAsync(() -> {
-                            log.info(list.toString());
-                            removeAllById(list);
+                            var ids = list.stream().map(AdDto::getId).toList();
+                            removeAllById(ids);
                         }, executorService))
                 .toList();
 
@@ -81,8 +79,7 @@ public class AdService {
         executorService.shutdown();
     }
 
-    private void removeAllById(List<AdDto> adDtos) {
-        var ids = adDtos.stream().map(AdDto::getId).toList();
+    private void removeAllById(List<Long> ids) {
         adRepository.deleteAllById(ids);
     }
 
