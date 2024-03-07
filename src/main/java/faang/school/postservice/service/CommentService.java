@@ -4,7 +4,6 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.CommentEditDto;
-import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -40,7 +39,7 @@ public class CommentService {
         comment.setAuthorId(userContext.getUserId());// владелец запроса становится владельцем комментария
         comment.setPost(post); // как я понял, это и называется "проставляет этой сущности связь с сущностями Post"
         Comment savedComment = commentRepository.save(comment);
-        commentEventPublisher.runPublish(commentMapper.toEventDto(savedComment));
+        commentEventPublisher.publish(commentMapper.toEventDto(savedComment));
         return commentMapper.toDto(savedComment);
     }
 
