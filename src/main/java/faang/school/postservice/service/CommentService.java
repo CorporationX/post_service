@@ -8,6 +8,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderator.CommentModerationDictionary;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class CommentService {
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
     private final CommentModerationDictionary commentModerationDictionary;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Value("${scheduler.moderation.comment.batch_size}")
     private int commentBatchSize;
@@ -47,7 +49,9 @@ public class CommentService {
         var post = postService.getPostById(postId);
         comment.setAuthorId(userContext.getUserId());
         comment.setPost(post);
-        return commentMapper.toDto(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+        commentEventPublisher.publish(commentMapper.toEventDto(savedComment));
+        return commentMapper.toDto(savedComment);
     }
 
     @Transactional

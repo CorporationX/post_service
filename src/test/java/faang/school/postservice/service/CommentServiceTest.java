@@ -6,6 +6,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEditDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapperImpl;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderator.CommentModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
@@ -40,6 +41,8 @@ class CommentServiceTest {
     @Mock
     private UserServiceClient userServiceClient;
     @Mock
+    private CommentEventPublisher commentEventPublisher;
+    @Mock
     private CommentModerationDictionary commentModerationDictionary;
     @InjectMocks
     private CommentService commentService;
@@ -67,6 +70,7 @@ class CommentServiceTest {
         commentService.createComment(postId, commentDto);
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
+        verify(commentEventPublisher, times(1)).publish(any());
         Comment capturedComment = commentCaptor.getValue();
         assertEquals(commentDto.getContent(), capturedComment.getContent());
     }
