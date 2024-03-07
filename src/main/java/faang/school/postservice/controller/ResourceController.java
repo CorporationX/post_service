@@ -48,7 +48,7 @@ public class ResourceController {
         return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{resourceIds}")
+    @DeleteMapping("/{postId}")
     public List<ResourceDto> deleteResource(@PathVariable long postId,
                                             @RequestPart List<Long> resourceIds) {
         return resourceService.deleteResources(postId, resourceIds);
