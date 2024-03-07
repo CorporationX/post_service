@@ -1,8 +1,8 @@
 package faang.school.postservice.validator;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.ProjectDto;
+import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +37,12 @@ public class PostValidator {
     public void validateAuthorExists(UserDto author, ProjectDto project) {
         if (author == null && project == null) {
             throw new DataValidationException("Такого автора не существует");
+        }
+    }
+
+    public void validateAuthor(long authorId, long userId) {
+        if (authorId != userId) {
+            throw new DataValidationException("You are not the author");
         }
     }
 }
