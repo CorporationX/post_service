@@ -27,7 +27,6 @@ spring:
         like_event_channel:
           name: like_event_channel
 
-
 server:
   port: 8081
 
@@ -58,9 +57,11 @@ batchSize:
 user-service:
   host: localhost
   port: 8080
+
 project-service:
   host: localhost
   port: 8082
+
 payment-service:
   host: localhost
   port: 9080
