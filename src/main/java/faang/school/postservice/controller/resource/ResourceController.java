@@ -1,9 +1,14 @@
 package faang.school.postservice.controller.resource;
 
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.service.resource.ResourceService;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -11,15 +16,16 @@ import org.springframework.web.multipart.MultipartFile;
 public class ResourceController {
     private final ResourceService resourceService;
 
-    @PostMapping("/{postId}/image")
-    public String addResource(@PathVariable long postId, @RequestPart(value = "file") MultipartFile file) {
-        resourceService.addResource(postId, file);
-        return String.format("File %s uploaded successfully", file.getName());
+    @PostMapping("/{postId}/file")
+    public List<ResourceDto> addResource(@PathVariable @Positive(message = "Id must be greater than zero") long postId,
+                                         @RequestPart(value = "file") @Size(max = 10) List<MultipartFile> files) {
+        return resourceService.addResource(postId, files);
+
     }
 
-    @DeleteMapping("/{postId}/image/{imageId}")
-    public String deleteResource(@PathVariable long postId, @PathVariable long imageId) {
-        resourceService.deleteResource(postId, imageId);
+    @DeleteMapping("/{postId}/file/{fileId}")
+    public String deleteResource(@PathVariable @Positive(message = "Id must be greater than zero") long postId, @PathVariable long fileId) {
+        resourceService.deleteResource(postId, fileId);
         return "File deleted";
     }
 }
