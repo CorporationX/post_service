@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.PostDto;
+
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

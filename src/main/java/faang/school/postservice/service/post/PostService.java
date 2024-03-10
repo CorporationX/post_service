@@ -74,7 +74,7 @@ public class PostService {
     @Transactional
     public PostDto getPostById(long id) {
         Post post = searchPostById(id);
-        return postMapper.toPostDto(post);
+        return postMapper.toDto(post);
     }
 
     @Transactional
@@ -121,7 +121,7 @@ public class PostService {
                     }
                     return date2.compareTo(date1);
                 })
-                .map(postMapper::toPostDto)
+                .map(postMapper::toDto)
                 .toList();
     }
 

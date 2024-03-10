@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostDto {
-    private Long id;
+    private long id;
     private String content;
     private Long authorId;
     private Long projectId;

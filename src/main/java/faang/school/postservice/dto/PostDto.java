@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-
+/*
 @Data
 @Builder
 @NoArgsConstructor
@@ -25,3 +25,4 @@ public class PostDto {
     private boolean published;
     private boolean deleted;
 }
+*/
