@@ -1,6 +1,8 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.event.LikeEventDto;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
 
     private final PostService postService;
+    private final LikeEventPublisher likeEventPublisher;
 
     @Operation(
             summary = "Создаём draft post",
@@ -46,5 +49,15 @@ public class PostController {
     @PutMapping
     public PostDto updatePost(@RequestBody @Validated PostDto postDto) {
         return postService.updatePost(postDto);
+    }
+
+    @PutMapping("/{id}/like")   //<-------- Mock для теста
+    public LikeEventDto likePost(@PathVariable Long id) {
+        LikeEventDto testEvent = new LikeEventDto();
+        testEvent.setPostId(1L);
+        testEvent.setAuthorId(1L);
+        testEvent.setUserId(33L);
+        likeEventPublisher.publish(testEvent);
+        return testEvent;
     }
 }
