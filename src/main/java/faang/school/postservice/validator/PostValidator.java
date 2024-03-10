@@ -2,7 +2,6 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -10,12 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.ProjectDto;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
@@ -57,7 +53,7 @@ public class PostValidator {
         if (postDto.getAuthorId() != null) {
             userServiceClient.existsUserById(postDto.getAuthorId());
         } else {
-            projectServiceClient.existsProjectById(postDto.getProjectId());
+            projectServiceClient.existProjectById(postDto.getProjectId());
         }
 
     }
@@ -67,7 +63,7 @@ public class PostValidator {
     }
 
     public void validateProject(long projectId) {
-        projectServiceClient.existsProjectById(projectId);
+        projectServiceClient.existProjectById(projectId);
     }
 
     public void validatePostExists(long id) {

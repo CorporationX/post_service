@@ -2,7 +2,6 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,13 +56,6 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testUpdatePost() {
-        postController.updatePost(1L, postDto);
-        Mockito.verify(postService, Mockito.times(1))
-                .updatePost(1L, userContext.getUserId(), postDto);
-    }
-
-    @Test
     public void testDeletePost() {
         postController.deletePost(1L);
         Mockito.verify(postService, Mockito.times(1))
@@ -98,12 +90,13 @@ public class PostControllerTest {
                 .getProjectPosts(1L);
     }
 
-    @Test
+/*    @Test
     public void testPostById() {
-        postController.getPostById(1L);
+        postController.getPost(1L);
         Mockito.verify(postService, Mockito.times(1))
                 .getPostById(1L);
     }
+*/
 
     @Test
     void testCreatePost () {

@@ -1,8 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
@@ -154,12 +153,6 @@ public class PostService {
         postDto.setResourceIds(allResources.stream().map(ResourceDto::getId).toList());
 
         return postDto;
-    }
-
-    @Transactional(readOnly = true)
-    public Post getPost(long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Post with id = %s not found", postId)));
     }
 
     private void removeUnnecessaryResources(Post post, PostDto postDto) {
