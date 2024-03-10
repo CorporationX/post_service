@@ -15,12 +15,11 @@ public abstract class AbstractEventPublisher<T> {
     private final ObjectMapper mapper;
 
     public void publish(T event) {
-        String json;
         try {
-            json = mapper.writeValueAsString(event);
+            redisTemplate.convertAndSend(topic.getTopic(), mapper.writeValueAsString(event));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Can't converting object to string");
         }
-        redisTemplate.convertAndSend(topic.getTopic(), json);
+
     }
 }
