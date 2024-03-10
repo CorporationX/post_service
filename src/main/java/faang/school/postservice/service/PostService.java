@@ -48,6 +48,7 @@ public class PostService {
     public PostDto update(PostDto postDto) {
         Post post = searchPostById(postDto.getId());
         post.setContent(postDto.getContent());
+        post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
         return postMapper.toDto(post);
     }

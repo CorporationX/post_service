@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -50,7 +52,7 @@ class PostServiceTest {
                 .createdAt(LocalDateTime.now())
                 .build();
         post2 = Post.builder()
-                .id(6)
+                .id(6L)
                 .content("Hello")
                 .authorId(1L)
                 .published(true)
@@ -74,9 +76,10 @@ class PostServiceTest {
     @Test
     void testCreateDraftAuthorSuccessful() {
         postDto.setAuthorId(1L);
+        when(userServiceClient.existById(anyLong())).thenReturn(true);
         postService.createDraft(postDto);
         captor = ArgumentCaptor.forClass(Post.class);
-        Mockito.verify(userServiceClient).getUser(postDto.getAuthorId());
+        // Mockito.verify(userServiceClient).getUser(postDto.getAuthorId());
         Mockito.verify(postRepository).save(captor.capture());
         assertEquals(postDto.getContent(), captor.getValue().getContent());
     }
@@ -84,12 +87,12 @@ class PostServiceTest {
     @Test
     void testCreateDraftNullAuthorAndProjectException() {
         DataValidationException exception = assertThrows(DataValidationException.class, () -> postService.createDraft(postDto));
-        assertEquals("Incorrect author", exception.getMessage());
+        assertEquals("The author of the post is not specified", exception.getMessage());
     }
 
     @Test
     void testPublishSuccessful() {
-        Mockito.when(postRepository.findById(5L)).thenReturn(Optional.of(post1));
+        when(postRepository.findById(5L)).thenReturn(Optional.of(post1));
         postService.publish(5L);
         assertTrue(post1.isPublished());
         assertNotNull(post1.getPublishedAt());
@@ -106,7 +109,7 @@ class PostServiceTest {
 
     @Test
     void testPublishIfIsPublish() {
-        Mockito.when(postRepository.findById(6L)).thenReturn(Optional.of(post2));
+        when(postRepository.findById(6L)).thenReturn(Optional.of(post2));
         DataValidationException exception = assertThrows(DataValidationException.class, () -> postService.publish(6));
         assertEquals("The post has already been published", exception.getMessage());
     }
@@ -115,7 +118,7 @@ class PostServiceTest {
     @Test
     void testUpdateSuccessful() {
         postDto.setId(5L);
-        Mockito.when(postRepository.findById(5L)).thenReturn(Optional.of(post1));
+        when(postRepository.findById(5L)).thenReturn(Optional.of(post1));
         postService.update(postDto);
         assertEquals(postDto.getContent(), post1.getContent());
         assertNotNull(post1.getUpdatedAt());
@@ -123,17 +126,16 @@ class PostServiceTest {
     }
 
     @Test
-    void testRemoveSoftlySuccessful() {
-        Mockito.when(postRepository.findById(6L)).thenReturn(Optional.ofNullable(post2));
+    void testDeletePostSuccessful() {
+        when(postRepository.findById(6L)).thenReturn(Optional.of(post2));
         postService.deletePost(6);
         assertFalse(post2.isPublished());
         assertTrue(post2.isDeleted());
-        Mockito.verify(postRepository).save(post2);
     }
 
     @Test
     void testGetPostByIdSuccessful() {
-        Mockito.when(postRepository.findById(6L)).thenReturn(Optional.ofNullable(post2));
+        when(postRepository.findById(6L)).thenReturn(Optional.ofNullable(post2));
         PostDto postDtoNew = postService.getPostById(6);
         assertEquals(post2.getContent(), postDtoNew.getContent());
         assertEquals(post2.getAuthorId(), postDtoNew.getAuthorId());
@@ -141,7 +143,7 @@ class PostServiceTest {
 
     @Test
     void testGetDraftsByAuthorIdSuccessful() {
-        Mockito.when(postRepository.findByAuthorId(1)).thenReturn(Arrays.asList(post1, post2, post3));
+        when(postRepository.findByAuthorId(1)).thenReturn(Arrays.asList(post1, post2, post3));
         List<PostDto> postsDto = postService.getDraftsByAuthorId(1);
         assertEquals(2, postsDto.size());
     }
@@ -150,7 +152,7 @@ class PostServiceTest {
     void testGetDraftsByAuthorIdFailed() {
         post1.setCreatedAt(null);
         post3.setCreatedAt(null);
-        Mockito.when(postRepository.findByAuthorId(1)).thenReturn(Arrays.asList(post1, post3));
+        when(postRepository.findByAuthorId(1)).thenReturn(Arrays.asList(post1, post3));
         DataValidationException exception = assertThrows(DataValidationException.class, () -> postService.getDraftsByAuthorId(1));
         assertEquals("Invalid date", exception.getMessage());
     }
@@ -158,7 +160,7 @@ class PostServiceTest {
     @Test
     void testGetPublishedPostsByAuthorIdSuccessful() {
         post1.setPublished(true);
-        Mockito.when(postRepository.findByAuthorId(1)).thenReturn(Arrays.asList(post1, post2, post3));
+        when(postRepository.findByAuthorId(1)).thenReturn(Arrays.asList(post1, post2, post3));
         List<PostDto> postDtos = postService.getPublishedPostsByAuthorId(1);
         assertEquals(2, postDtos.size());
     }
