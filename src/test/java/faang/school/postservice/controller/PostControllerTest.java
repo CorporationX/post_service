@@ -10,6 +10,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 public class PostControllerTest {
@@ -25,17 +29,20 @@ public class PostControllerTest {
 
     private PostDto postDto;
 
+    private List<MultipartFile> files;
+
     @BeforeEach
     public void init() {
         userContext.setUserId(1L);
         postDto = new PostDto();
+        files = new ArrayList<>();
     }
 
     @Test
     public void testCreatePostDraft() {
-        postController.createPostDraft(postDto);
+        postController.createPostDraft(postDto, files);
         Mockito.verify(postService, Mockito.times(1))
-                .createPostDraft(postDto);
+                .createPostDraft(postDto, files);
     }
 
     @Test
@@ -47,9 +54,9 @@ public class PostControllerTest {
 
     @Test
     public void testUpdatePost() {
-        postController.updatePost(1L, postDto);
+        postController.updatePost(1L, postDto, files);
         Mockito.verify(postService, Mockito.times(1))
-                .updatePost(1L, userContext.getUserId(), postDto);
+                .updatePost(1L, userContext.getUserId(), postDto, files);
     }
 
     @Test

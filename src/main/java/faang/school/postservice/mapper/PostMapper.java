@@ -16,5 +16,4 @@ public interface PostMapper {
     List<PostDto> toDtoList(List<Post> postList);
 
     List<Post> toEntityList(List<PostDto> postDtoList);
-
 }

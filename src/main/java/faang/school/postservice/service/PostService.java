@@ -1,17 +1,22 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
+import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -24,11 +29,37 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final ResourceValidator resourceValidator;
+    private final ResourceService resourceService;
+    private final ResourceMapper resourceMapper;
 
-    public void createPostDraft(PostDto postDto) {
+    public PostDto createPostDraft(PostDto postDto, List<MultipartFile> files) {
         postValidator.validatePostOwnerExists(postDto);
         postValidator.validatePost(postDto);
-        postRepository.save(postMapper.toEntity(postDto));
+        resourceValidator.validateFiles(postDto, files);
+
+        Post saveDraftPost = postRepository.save(postMapper.toEntity(postDto));
+        return createResourcesAndGetPostDto(saveDraftPost, files);
+    }
+
+    private PostDto createResourcesAndGetPostDto(Post post, List<MultipartFile> files) {
+        if (files == null) {
+            return postMapper.toDto(post);
+        }
+        List<ResourceDto> savedResources = resourceService.createResources(post, files);
+        List<ResourceDto> resourcesByPost = new ArrayList<>();
+        if (post.getResources() != null) {
+            resourcesByPost = post.getResources().stream()
+                    .map(resourceMapper::toDto)
+                    .toList();
+        }
+        List<ResourceDto> allResources = new ArrayList<>(resourcesByPost);
+        allResources.addAll(savedResources);
+
+        PostDto postDto = postMapper.toDto(post);
+        postDto.setResourceIds(allResources.stream().map(ResourceDto::getId).toList());
+
+        return postDto;
     }
 
     @Transactional
@@ -38,11 +69,35 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
     }
+
     @Transactional
-    public void updatePost(long postId, long ownerId, PostDto postDto) {
+    public PostDto updatePost(long postId, long ownerId, PostDto postDto, List<MultipartFile> files) {
         postValidator.validatePostByOwner(postId, ownerId);
+        if (files != null) {
+            resourceValidator.validateFiles(getPostById(postId), files);
+        }
         Post post = getPost(postId);
         post.setContent(postDto.getContent());
+
+        if (post.getResources() != null) {
+            removeUnnecessaryResources(post, postDto);
+        }
+
+        Post updatedPost = postRepository.save(post);
+
+        return createResourcesAndGetPostDto(updatedPost, files);
+    }
+
+    private void removeUnnecessaryResources(Post post, PostDto postDto) {
+        List<Long> resourceIdsFromDto = Optional.ofNullable(postDto.getResourceIds()).orElse(new ArrayList<>());
+        List<Resource> resourcesToDelete = post.getResources().stream()
+                .filter(resource -> !resourceIdsFromDto.contains(resource.getId()))
+                .toList();
+
+        post.getResources().removeAll(resourcesToDelete);
+        resourceService.deleteResources(resourcesToDelete.stream()
+                .map(Resource::getId)
+                .toList());
     }
 
     @Transactional

@@ -4,6 +4,10 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 250MB
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -33,6 +37,9 @@ logging:
     root: info
 
 post:
+  content_to_post:
+    max_amount_audio: 5
+    max_size_audio: 52428800
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
@@ -42,10 +49,17 @@ post:
 
 user-service:
   host: localhost
-  port: 8083
+  port: 8080
 project-service:
   host: localhost
   port: 8082
 payment-service:
   host: localhost
   port: 9080
+
+s3:
+  endpoint: http://127.0.0.1:9000/
+  accessKey: user
+  secretKey: password
+  bucketName: corpbucket
+  region: null

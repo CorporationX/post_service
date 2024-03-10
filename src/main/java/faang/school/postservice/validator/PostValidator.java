@@ -18,7 +18,10 @@ public class PostValidator {
     private final PostRepository postRepo;
 
     public void validatePost(PostDto postDto) {
-        validatePostExists(postDto.getId());
+        Long postId = postDto.getId();
+        if (postId != null) {
+            validatePostExists(postDto.getId());
+        }
         if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
             throw new DataValidationException("Post cannot belong to both author and project");
         }
@@ -47,7 +50,6 @@ public class PostValidator {
         } else {
             projectServiceClient.existsProjectById(postDto.getProjectId());
         }
-
     }
 
     public void validateAuthor(long authorId) {
