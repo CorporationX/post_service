@@ -24,6 +24,10 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+  mvc:
+    servlet:
+      path: /api/v1
+
 
 server:
   port: 8085
@@ -33,6 +37,9 @@ logging:
     root: info
 
 post:
+  content_to_post:
+    max_amount: 10
+    max_size: 20000
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
@@ -49,3 +56,10 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+s3:
+  endpoint: http://127.0.0.1:9000/
+  accessKey: user
+  secretKey: password
+  bucketName: corpbucket
+  #should be changed to bucketName: user-service-bucket
+  region: null

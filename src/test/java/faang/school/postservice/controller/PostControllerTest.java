@@ -10,6 +10,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostControllerTest {
@@ -23,12 +30,15 @@ public class PostControllerTest {
     @InjectMocks
     private PostController postController;
 
-    private PostDto postDto;
+    private final PostDto postDto = PostDto.builder().id(1L).build();
+    private List<MultipartFile> files;
 
     @BeforeEach
     public void init() {
         userContext.setUserId(1L);
-        postDto = new PostDto();
+        MultipartFile multipartFileMock = mock(MultipartFile.class);
+        files = new ArrayList<>(List.of(multipartFileMock, multipartFileMock, multipartFileMock));
+
     }
 
     @Test
@@ -43,13 +53,6 @@ public class PostControllerTest {
         postController.publishPost(1L);
         Mockito.verify(postService, Mockito.times(1))
                 .publishPost(1L, userContext.getUserId());
-    }
-
-    @Test
-    public void testUpdatePost() {
-        postController.updatePost(1L, postDto);
-        Mockito.verify(postService, Mockito.times(1))
-                .updatePost(1L, userContext.getUserId(), postDto);
     }
 
     @Test
@@ -87,10 +90,45 @@ public class PostControllerTest {
                 .getProjectPosts(1L);
     }
 
-    @Test
+/*    @Test
     public void testPostById() {
-        postController.getPostById(1L);
+        postController.getPost(1L);
         Mockito.verify(postService, Mockito.times(1))
                 .getPostById(1L);
+    }
+*/
+
+    @Test
+    void testCreatePost () {
+        when(postService.createPost(postDto, files)).thenReturn(postDto);
+
+        PostDto postByController = postController.createPost(postDto, files);
+
+        assertEquals (postDto, postByController);
+        verify(postService, times(1)).createPost(postDto, files);
+    }
+
+    @Test
+    void testUpdatePost () {
+        Long postId = postDto.getId();
+
+        when(postService.updatePost(postId, postDto, files)).thenReturn(postDto);
+
+        PostDto postByController = postController.updatePost(postId, postDto, files);
+
+        assertEquals (postDto, postByController);
+        verify(postService, times(1)).updatePost(postId, postDto, files);
+    }
+
+    @Test
+    void testGetPost () {
+        Long postId = postDto.getId();
+
+        when(postService.getPostDto(postId)).thenReturn(postDto);
+
+        PostDto postByController = postController.getPost(postId);
+
+        assertEquals (postDto, postByController);
+        verify(postService, times(1)).getPostDto(postId);
     }
 }
