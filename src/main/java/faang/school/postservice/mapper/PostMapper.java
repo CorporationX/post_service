@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -12,10 +13,15 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
+
     @Mapping(target = "resourceIds", source = "resources", qualifiedByName = "getResourceIds")
     PostDto toDto(Post project);
 
-    Post toEntity(PostDto projectDto);
+    Post toEntity(PostDto postDto);
+
+    List<PostDto> toDtoList(List<Post> postList);
+
+    List<Post> toEntityList(List<PostDto> postDtoList);
 
     @Named("getResourceIds")
     default List<Long> getResourceIds(List<Resource> resources) {

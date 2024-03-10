@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.project;
+package faang.school.postservice.dto;
 
 import faang.school.postservice.model.ProjectStatus;
 import faang.school.postservice.model.ProjectVisibility;
