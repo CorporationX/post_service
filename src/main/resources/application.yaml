@@ -35,6 +35,8 @@ logging:
     root: info
 
 post:
+  rule:
+    unverified_posts_limit: 5
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
