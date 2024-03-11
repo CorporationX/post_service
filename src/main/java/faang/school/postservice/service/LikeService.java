@@ -24,7 +24,7 @@ public class LikeService {
     private final LikeMapper likeMapper;
 
     @Value("${like_service.batch}")
-    private int BATCH_SIZE;
+    private int likeServiceBatchSize;
 
     @Transactional
     public LikeDto addLikeToPost(LikeDto likeDto) {
@@ -38,7 +38,8 @@ public class LikeService {
     public LikeDto addLikeToComment(LikeDto like) {
         likeServiceValidator.validateLikeOnComment(like);
         Like likeEntity = likeMapper.toEntity(like);
-        return likeMapper.toDto(likeRepository.save(likeEntity));
+        Like saved = likeRepository.save(likeEntity);
+        return likeMapper.toDto(saved);
     }
 
     @Transactional
@@ -72,8 +73,8 @@ public class LikeService {
         List<UserDto> users = new ArrayList<>(userIds.size());
         final int totalUserIds = userIds.size();
 
-        for (int startIndex = 0; startIndex < totalUserIds; startIndex += BATCH_SIZE) {
-            int endIndex = Math.min(startIndex + BATCH_SIZE, totalUserIds);
+        for (int startIndex = 0; startIndex < totalUserIds; startIndex += likeServiceBatchSize) {
+            int endIndex = Math.min(startIndex + likeServiceBatchSize, totalUserIds);
             List<Long> batchIds = userIds.subList(startIndex, endIndex);
 
             List<UserDto> batchUsers = userServiceClient.getUsersByIds(batchIds);
