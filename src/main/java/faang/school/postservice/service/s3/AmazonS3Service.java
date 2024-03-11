@@ -3,7 +3,6 @@ package faang.school.postservice.service.s3;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,9 +21,10 @@ import java.time.LocalDateTime;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class S3Service {
+public class AmazonS3Service {
     private final AmazonS3 clientAmazonS3;
-
+   private final int TARGET_WIDTH = 1080;
+   private final int TARGET_HEIGHT = 566;
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
@@ -41,9 +41,9 @@ public class S3Service {
             PutObjectRequest putObjectRequest = new PutObjectRequest(
                     bucketName, key, new ByteArrayInputStream(imageData), objectMetadata);
             clientAmazonS3.putObject(putObjectRequest);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.error("Error uploading file " + e.getMessage());
-            throw new DataValidationException("Error uploading file " + e.getMessage());
+            throw new RuntimeException("Error uploading file " + e.getMessage());
         }
         Resource resource = Resource.builder()
                 .key(key)
@@ -65,22 +65,20 @@ public class S3Service {
         try {
             BufferedImage originalImage = ImageIO.read(file.getInputStream());
 
-            int targetWidth = 1080;
-            int targetHeight = 566;
             int originalWidth = originalImage.getWidth();
             int originalHeight = originalImage.getHeight();
 
-            if (originalWidth <= targetWidth && originalHeight <= targetHeight) {
+            if (originalWidth <= TARGET_WIDTH && originalHeight <= TARGET_HEIGHT) {
                 return file.getBytes();
             }
 
             int newWidth, newHeight;
             double aspectRatio = (double) originalWidth / originalHeight;
-            if (originalWidth > originalHeight) {
-                newWidth = targetWidth;
+            if (originalWidth >= originalHeight) {
+                newWidth = TARGET_WIDTH;
                 newHeight = (int) (newWidth / aspectRatio);
             } else {
-                newHeight = targetHeight;
+                newHeight = TARGET_HEIGHT;
                 newWidth = (int) (newHeight * aspectRatio);
             }
 

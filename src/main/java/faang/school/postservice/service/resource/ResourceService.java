@@ -8,7 +8,7 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.service.s3.S3Service;
+import faang.school.postservice.service.s3.AmazonS3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,24 +24,24 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ResourceService {
     private final PostRepository postRepository;
-    public final S3Service s3Service;
+    public final AmazonS3Service amazonS3Service;
     private final ResourceRepository resourceRepository;
     private final PostService postService;
     private final ResourceMapper resourceMapper;
-
+    private final static int MAX_FILES_AMOUNT = 10;
 
     @Transactional
     public List<ResourceDto> addResource(long postId, List<MultipartFile> files) {
         Post post = postService.searchPostById(postId);
-        if (post.getResources().size() == 10) {
-            log.info("There are already 10 pictures in the post");
-            throw new DataValidationException("A post can only have 10 images");
+        if (post.getResources().size() == MAX_FILES_AMOUNT) {
+            log.info("There are already {} pictures in the post", MAX_FILES_AMOUNT);
+            throw new DataValidationException("The maximum number of images for the post has been exceeded");
         }
 
         List<Resource> resources = new ArrayList<>();
         files.forEach(file -> {
             String folder = post.getId() + "/" + file.getName();
-            Resource resource = s3Service.uploadFile(file, folder);
+            Resource resource = amazonS3Service.uploadFile(file, folder);
             log.info("File {} upload", resource.getName());
             resource.setPost(post);
             resources.add(resource);
@@ -64,10 +64,6 @@ public class ResourceService {
             Optional<Resource> optionalResource = post.getResources().stream()
                     .filter(resource1 -> resource.getId() == resourceId)
                     .findFirst();
-//            if (optionalResource.isEmpty()) {
-//                log.info("Resource is empty");
-//                throw new DataValidationException("Resource with id " + resourceId + " does not belong to post with id " + postId);
-//            }
             Resource resource1 = optionalResource.orElseThrow(() -> {
                 log.info("Resource is empty");
                 return new DataValidationException("Resource with id " + resourceId + " does not belong to post with id " + postId);
@@ -77,6 +73,6 @@ public class ResourceService {
             resourceRepository.delete(resource);
             String key = resource.getKey();
             log.info("File {} delete", resource.getName());
-            s3Service.deleteFile(key);
+            amazonS3Service.deleteFile(key);
         }
     }

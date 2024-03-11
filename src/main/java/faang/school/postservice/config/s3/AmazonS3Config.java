@@ -27,7 +27,7 @@ public class AmazonS3Config {
     private String endpoint;
 
     @Bean(name = "clientAmazonS3")
-    public AmazonS3 amazons3() {
+    public AmazonS3 s3Client() {
         AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
 
         AmazonS3 clientAmazonS3 = AmazonS3ClientBuilder.standard()

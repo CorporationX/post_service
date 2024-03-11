@@ -10,6 +10,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -22,11 +24,11 @@ class ResourceControllerTest {
     private MultipartFile file;
     long postId = 1L;
     long imageId = 5L;
-
+    private List<MultipartFile> files;
     @Test
     void addResourceSuccessful() {
-        resourceController.addResource(postId, file);
-        Mockito.verify(resourceService).addResource(postId, file);
+        resourceController.addResource(postId, files);
+        Mockito.verify(resourceService).addResource(postId, files);
     }
 
     @Test

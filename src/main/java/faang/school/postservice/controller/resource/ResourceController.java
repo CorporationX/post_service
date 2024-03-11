@@ -24,7 +24,8 @@ public class ResourceController {
     }
 
     @DeleteMapping("/{postId}/file/{fileId}")
-    public String deleteResource(@PathVariable @Positive(message = "Id must be greater than zero") long postId, @PathVariable long fileId) {
+    public String deleteResource(@PathVariable @Positive(message = "Id must be greater than zero") long postId,
+                                 @PathVariable @Positive(message = "Id must be greater than zero") long fileId) {
         resourceService.deleteResource(postId, fileId);
         return "File deleted";
     }
