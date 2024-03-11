@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.dto.UserBanEvent;
+import faang.school.postservice.dto.UserBanEventDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.UserBanEventPublisher;
@@ -102,7 +102,7 @@ public class PostService {
         postCountByAuthorId.forEach((authorId, postCount) -> {
             if (postCount > 5) {
                 userBanEventPublisher.publish(
-                        UserBanEvent.builder().userId(authorId).build()
+                        UserBanEventDto.builder().userId(authorId).build()
                 );
                 log.debug("User ban event published with authorId = {} with amount of not verified posts = {}",
                         authorId, postCount);
@@ -115,7 +115,7 @@ public class PostService {
         postRepository.findAuthorIdsByNotVerifiedPosts(unverifiedPostsLimit).forEach(
                 authorId -> {
                     log.debug("User with id = {} has more then {} unverified posts", authorId, unverifiedPostsLimit);
-                    userBanEventPublisher.publish(new UserBanEvent(authorId));
+                    userBanEventPublisher.publish(new UserBanEventDto(authorId));
                 }
         );
         log.info("check and ban authors method completed");

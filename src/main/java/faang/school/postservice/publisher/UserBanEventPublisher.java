@@ -1,8 +1,7 @@
 package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.UserBanEvent;
-import lombok.RequiredArgsConstructor;
+import faang.school.postservice.dto.UserBanEventDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -10,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class UserBanEventPublisher extends AbstractEventPublisher<UserBanEvent> {
+public class UserBanEventPublisher extends AbstractEventPublisher<UserBanEventDto> {
     @Value("${spring.data.redis.channel.user_ban.user_ban_channel}")
     private String userBanChannelName;
 
@@ -19,8 +18,8 @@ public class UserBanEventPublisher extends AbstractEventPublisher<UserBanEvent> 
     }
 
     @Override
-    public void publish(UserBanEvent event) {
+    public void publish(UserBanEventDto event) {
         convertAndSend(event, userBanChannelName);
-        log.info("UserBanEvent published with userId = {}", event.getUserId());
+        log.info("UserBanEventDto published with userId = {}", event.getUserId());
     }
 }

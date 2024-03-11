@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.dto.UserBanEvent;
+import faang.school.postservice.dto.UserBanEventDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.UserBanEventPublisher;
@@ -292,15 +292,15 @@ public class PostServiceTest {
         long firstAuthorId = 2L;
         long secondAuthorId = 3L;
         List<Long> expectedAuthorIdsToBan = List.of(firstAuthorId, secondAuthorId);
-        UserBanEvent firstExpectedUserBanEvent = new UserBanEvent(firstAuthorId);
-        UserBanEvent secondExpectedUserBanEvent = new UserBanEvent(secondAuthorId);
+        UserBanEventDto firstExpectedUserBanEventDto = new UserBanEventDto(firstAuthorId);
+        UserBanEventDto secondExpectedUserBanEventDto = new UserBanEventDto(secondAuthorId);
 
         when(postRepository.findAuthorIdsByNotVerifiedPosts(anyInt())).thenReturn(expectedAuthorIdsToBan);
 
         postService.checkAndBanAuthors();
 
-        verify(userBanEventPublisher, times(1)).publish(firstExpectedUserBanEvent);
-        verify(userBanEventPublisher, times(1)).publish(secondExpectedUserBanEvent);
+        verify(userBanEventPublisher, times(1)).publish(firstExpectedUserBanEventDto);
+        verify(userBanEventPublisher, times(1)).publish(secondExpectedUserBanEventDto);
     }
 
     @Test

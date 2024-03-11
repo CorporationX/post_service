@@ -15,15 +15,14 @@ public abstract class AbstractEventPublisher<EventType> {
     abstract public void publish(EventType event);
 
     protected void convertAndSend(EventType event, String channelTopicName) {
-        String json;
         try {
-            json = objectMapper.writeValueAsString(event);
+            String json = objectMapper.writeValueAsString(event);
             log.debug("converted event {} to json", event);
+            redisTemplate.convertAndSend(channelTopicName, json);
+            log.debug("json with event {} sent to topic {}", event, channelTopicName);
         } catch (JsonProcessingException e) {
             log.debug("JsonProcessingException with event {}", event);
             throw new RuntimeException("Cannot serialize event to json");
         }
-        redisTemplate.convertAndSend(channelTopicName, json);
-        log.debug("json with event {} sent to topic {}", event, channelTopicName);
     }
 }

@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserBanEvent {
+public class UserBanEventDto {
     private long userId;
 }
