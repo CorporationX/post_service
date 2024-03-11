@@ -74,7 +74,7 @@ public class PostService {
     @Transactional
     public PostDto getPostById(long id) {
         Post post = searchPostById(id);
-        return postMapper.toDto(post);
+        return postMapper.toPostDto(post);
     }
 
     @Transactional
@@ -101,7 +101,7 @@ public class PostService {
         return filterPosts(posts, true);
     }
 
-    public Post searchPostById(long id) {
+    private Post searchPostById(long id) {
         Optional<Post> optionalPost = postRepository.findById(id);
         if (optionalPost.isEmpty()) {
             throw new DataValidationException("Post with id " + id + " not found.");
@@ -121,7 +121,7 @@ public class PostService {
                     }
                     return date2.compareTo(date1);
                 })
-                .map(postMapper::toDto)
+                .map(postMapper::toPostDto)
                 .toList();
     }
 
