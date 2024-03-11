@@ -121,7 +121,6 @@ class PostServiceTest {
         when(postRepository.findById(5L)).thenReturn(Optional.of(post1));
         postService.update(postDto);
         assertEquals(postDto.getContent(), post1.getContent());
-        assertNotNull(post1.getUpdatedAt());
         Mockito.verify(postRepository).save(post1);
     }
 

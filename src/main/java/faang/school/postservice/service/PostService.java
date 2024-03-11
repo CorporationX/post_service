@@ -7,7 +7,6 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +25,7 @@ public class PostService {
 
     @Transactional
     public PostDto createDraft(PostDto postDto) {
-        validIdByAuthorPost(postDto);
+        validatedAuthor(postDto);
         Post post = postMapper.toEntity(postDto);
         postRepository.save(post);
         return postMapper.toDto(post);
@@ -90,7 +89,7 @@ public class PostService {
         return filterPosts(posts, true);
     }
 
-    private void validIdByAuthorPost(PostDto postDto) {
+    private void validatedAuthor(PostDto postDto) {
         if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
             throw new DataValidationException("The author of the post is not specified");
         }
