@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -14,13 +15,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceServiceTest {
@@ -66,13 +71,12 @@ class ResourceServiceTest {
         assertNotNull(mockFile);
     }
 
-
     @Test
     public void testAddResourceMaxFiles() {
-        Mockito.when(postService.searchPostById(1L)).thenReturn(post);
+        ReflectionTestUtils.setField(resourceService, "maxFilesAmount", 10);
         post.getResources().add(resource);
         post.getResources().add(resource);
-
+        Mockito.when(postService.searchPostById(anyLong())).thenReturn(post);
         DataValidationException exception = assertThrows(DataValidationException.class,
                 () -> resourceService.addResource(1L, List.of(mockFile)));
         assertEquals("The maximum number of images for the post has been exceeded", exception.getMessage());
@@ -99,7 +103,7 @@ class ResourceServiceTest {
     void testDeleteResourceResourceNotFound() {
         Mockito.when(postService.searchPostById(1L)).thenReturn(post);
         Mockito.when(resourceRepository.getReferenceById(2L)).thenReturn(resource);
-        DataValidationException exception = assertThrows(DataValidationException.class, () ->
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
                 resourceService.deleteResource(1, 2));
         assertEquals("Resource with id 2 does not belong to post with id 1", exception.getMessage());
 

@@ -62,6 +62,9 @@ services:
     accessKey: user
     secretKey: password
     bucketName: corpbucket
+    targetWidth: 1080
+    targetHeight: 566
+    maxFilesAmount: 10
 
 user-service:
   host: localhost

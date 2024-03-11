@@ -23,8 +23,11 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class AmazonS3Service {
     private final AmazonS3 clientAmazonS3;
-   private final int TARGET_WIDTH = 1080;
-   private final int TARGET_HEIGHT = 566;
+
+    @Value("${services.s3.targetWidth}")
+    private int targetWidth;
+    @Value("${services.s3.targetHeight}")
+    private int targetHeight;
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
@@ -68,17 +71,17 @@ public class AmazonS3Service {
             int originalWidth = originalImage.getWidth();
             int originalHeight = originalImage.getHeight();
 
-            if (originalWidth <= TARGET_WIDTH && originalHeight <= TARGET_HEIGHT) {
+            if (originalWidth <= targetWidth && originalHeight <= targetHeight) {
                 return file.getBytes();
             }
 
             int newWidth, newHeight;
             double aspectRatio = (double) originalWidth / originalHeight;
             if (originalWidth >= originalHeight) {
-                newWidth = TARGET_WIDTH;
+                newWidth = targetWidth;
                 newHeight = (int) (newWidth / aspectRatio);
             } else {
-                newHeight = TARGET_HEIGHT;
+                newHeight = targetHeight;
                 newWidth = (int) (newHeight * aspectRatio);
             }
 

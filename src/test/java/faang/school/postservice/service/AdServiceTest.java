@@ -1,7 +1,6 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.repository.ad.AdRepository;
-import faang.school.postservice.service.AdService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
