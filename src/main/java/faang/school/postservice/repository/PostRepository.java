@@ -18,8 +18,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p.authorId, COUNT(p) FROM Post p WHERE p.verified = false " +
             "AND p.authorId IS NOT NULL GROUP BY p.authorId HAVING COUNT(p) > :count")
     List<Long> findAuthorIdsByNotVerifiedPosts(int count);
-    @Query("SELECT p FROM Post p WHERE p.verified = false")
-    List<Post> findAllNotVerified();
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
     List<Post> findByProjectIdWithLikes(long projectId);

@@ -18,15 +18,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -288,38 +289,28 @@ public class PostServiceTest {
 
     @Test
     void testCheckAndBanAuthors_moreThenFiveNotVerifiedPosts_publishUserBanEvent() {
-        long authorId = 2L;
-        int amountPosts = 6;
-        List<Post> notVerifiedPosts = getNotVerifiedPostsByAuthor(amountPosts, authorId);
-        UserBanEvent expectedUserBanEvent = UserBanEvent.builder().userId(authorId).build();
+        long firstAuthorId = 2L;
+        long secondAuthorId = 3L;
+        List<Long> expectedAuthorIdsToBan = List.of(firstAuthorId, secondAuthorId);
+        UserBanEvent firstExpectedUserBanEvent = new UserBanEvent(firstAuthorId);
+        UserBanEvent secondExpectedUserBanEvent = new UserBanEvent(secondAuthorId);
 
-        when(postRepository.findAllNotVerified()).thenReturn(notVerifiedPosts);
+        when(postRepository.findAuthorIdsByNotVerifiedPosts(anyInt())).thenReturn(expectedAuthorIdsToBan);
 
         postService.checkAndBanAuthors();
 
-        verify(userBanEventPublisher, times(1)).publish(expectedUserBanEvent);
+        verify(userBanEventPublisher, times(1)).publish(firstExpectedUserBanEvent);
+        verify(userBanEventPublisher, times(1)).publish(secondExpectedUserBanEvent);
     }
 
     @Test
     void testCheckAndBanAuthors_lessThenFiveNotVerifiedPosts_nothingHappens() {
-        long authorId = 2L;
-        int amountPosts = 3;
-        List<Post> notVerifiedPosts = getNotVerifiedPostsByAuthor(amountPosts, authorId);
+        List<Long> expectedAuthorIdsToBan = Collections.emptyList();
 
-        when(postRepository.findAllNotVerified()).thenReturn(notVerifiedPosts);
+        when(postRepository.findAuthorIdsByNotVerifiedPosts(anyInt())).thenReturn(expectedAuthorIdsToBan);
 
         postService.checkAndBanAuthors();
 
         verify(userBanEventPublisher, never()).publish(any());
-    }
-
-    private Post getNotVerifiedPost(long postId, long authorId) {
-        return Post.builder().id(postId).authorId(authorId).verified(false).build();
-    }
-
-    private List<Post> getNotVerifiedPostsByAuthor(int amountPosts, long authorId) {
-        return IntStream.rangeClosed(1, amountPosts).mapToObj(i ->
-                getNotVerifiedPost(i, authorId)
-        ).toList();
     }
 }
