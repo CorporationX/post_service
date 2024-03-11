@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "resource")
+@Table(name = "resource_id")
 public class Resource {
 
     @Id
