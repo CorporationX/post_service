@@ -10,14 +10,13 @@ import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -29,6 +28,8 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostValidator postValidator;
     private final UserBanEventPublisher userBanEventPublisher;
+    @Value("${post.rule.unverified_posts_limit}")
+    private int unverifiedPostsLimit;
 
     public void createPostDraft(PostDto postDto) {
         postValidator.validatePostOwnerExists(postDto);
@@ -91,7 +92,7 @@ public class PostService {
         return sortPosts(postRepository.findByProjectId(projectId));
     }
 
-    public void checkAndBanAuthors() {
+    /*public void checkAndBanAuthors() {
         Map<Long, Integer> postCountByAuthorId = new HashMap<>();
 
         postRepository.findAllNotVerified().forEach(post ->
@@ -107,6 +108,16 @@ public class PostService {
                         authorId, postCount);
             }
         });
+        log.info("check and ban authors method completed");
+    }*/
+
+    public void checkAndBanAuthors() {
+        postRepository.findAuthorIdsByNotVerifiedPosts(unverifiedPostsLimit).forEach(
+                authorId -> {
+                    log.debug("User with id = {} has more then {} unverified posts", authorId, unverifiedPostsLimit);
+                    userBanEventPublisher.publish(new UserBanEvent(authorId));
+                }
+        );
         log.info("check and ban authors method completed");
     }
 
