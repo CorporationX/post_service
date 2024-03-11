@@ -4,18 +4,24 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.PostService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "PostController", description = "Посылаем запросы в PostController")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/post")
 public class PostController {
     private final PostService postService;
-
+    @Operation(
+            summary = "Создаём draft post",
+            description = "Получает PostDto и создаёт draft post"
+    )
     @PostMapping("/create")
     public String createDraft(@NotNull @RequestBody PostDto postDto) {
         validatePostDto(postDto);
@@ -87,5 +93,3 @@ public class PostController {
         }
     }
 }
-
-
