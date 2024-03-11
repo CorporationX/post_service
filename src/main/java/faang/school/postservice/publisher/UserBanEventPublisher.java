@@ -21,5 +21,6 @@ public class UserBanEventPublisher extends AbstractEventPublisher<UserBanEvent> 
     @Override
     public void publish(UserBanEvent event) {
         convertAndSend(event, userBanChannelName);
+        log.info("UserBanEvent published with userId = {}", event.getUserId());
     }
 }
