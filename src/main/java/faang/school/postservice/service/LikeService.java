@@ -44,7 +44,8 @@ public class LikeService {
     public LikeDto addLikeToComment(LikeDto like) {
         likeServiceValidator.validateLikeOnComment(like);
         Like likeEntity = likeMapper.toEntity(like);
-        return likeMapper.toDto(likeRepository.save(likeEntity));
+        Like saved = likeRepository.save(likeEntity);
+        return likeMapper.toDto(saved);
     }
 
     @Transactional
