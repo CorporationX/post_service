@@ -1,4 +1,4 @@
-package faang.school.postservice.service.ad;
+package faang.school.postservice.service;
 
 import faang.school.postservice.repository.ad.AdRepository;
 import org.junit.jupiter.api.Test;

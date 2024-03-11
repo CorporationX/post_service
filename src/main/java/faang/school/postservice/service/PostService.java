@@ -102,7 +102,7 @@ public class PostService {
 
     }
 
-    private Post searchPostById(long id) {
+    public Post searchPostById(long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("Post with id " + id + " not found."));
     }
