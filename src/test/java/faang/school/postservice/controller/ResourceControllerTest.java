@@ -1,7 +1,7 @@
-package faang.school.postservice.controller.resource;
+package faang.school.postservice.controller;
 
-import faang.school.postservice.service.resource.ResourceService;
-import org.junit.jupiter.api.BeforeEach;
+import faang.school.postservice.controller.ResourceController;
+import faang.school.postservice.service.ResourceService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,8 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceControllerTest {

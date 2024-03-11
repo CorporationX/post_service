@@ -1,7 +1,7 @@
-package faang.school.postservice.controller.resource;
+package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.resource.ResourceDto;
-import faang.school.postservice.service.resource.ResourceService;
+import faang.school.postservice.service.ResourceService;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;

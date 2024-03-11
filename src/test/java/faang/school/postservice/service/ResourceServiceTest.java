@@ -1,4 +1,4 @@
-package faang.school.postservice.service.resource;
+package faang.school.postservice.service;
 
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.ResourceMapper;
@@ -6,19 +6,18 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.service.s3.AmazonS3Service;
+import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.ResourceService;
+import faang.school.postservice.service.AmazonS3Service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
