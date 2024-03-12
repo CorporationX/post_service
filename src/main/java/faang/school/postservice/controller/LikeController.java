@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Validated
 public class LikeController {
-
-
     private final LikeService likeService;
 
     @PostMapping("/post")
