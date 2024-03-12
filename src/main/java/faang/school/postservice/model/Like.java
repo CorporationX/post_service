@@ -36,4 +36,12 @@ public class Like {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Override
+    public String toString() {
+        return "Like{" +
+                "id=" + id +
+                ", userId=" + userId +
+                '}';
+    }
 }
