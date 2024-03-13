@@ -69,7 +69,7 @@ class PostControllerTest {
     @Test
     void testRemovePostSoftlySuccessful() {
         postController.removePostSoftly(ID);
-        Mockito.verify(postService).removeSoftly(ID);
+        Mockito.verify(postService).deletePost(ID);
     }
 
     @Test
@@ -92,13 +92,13 @@ class PostControllerTest {
 
     @Test
     void testGetPublishedPostsByAuthorId() {
-        postController.getPublishedPostsByAuthorId(ID);
+        postController.getPostsByAuthorId(ID);
         Mockito.verify(postService).getPublishedPostsByAuthorId(ID);
     }
 
     @Test
     void testGetPublishedPostsByProjectId() {
-        postController.getPublishedPostsByProjectId(ID);
+        postController.getPostsByProjectId(ID);
         Mockito.verify(postService).getPublishedPostsByProjectId(ID);
     }
 }
