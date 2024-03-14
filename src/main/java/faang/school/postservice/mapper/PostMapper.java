@@ -14,7 +14,6 @@ import java.util.List;
 @Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.FIELD, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
 
-    PostDto toDto(Post post);
     @Mapping(target = "likeCount", source = "likes", qualifiedByName = "toLikeCount")
     PostDto toDto(Post post);
 

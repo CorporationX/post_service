@@ -1,4 +1,4 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
@@ -8,16 +8,13 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
@@ -27,55 +24,38 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
 
     @Transactional
-    public void createDraft(PostDto postDto) {
-        if (postDto.getAuthorId() == null && postDto.getProjectId() != null) {
-            projectServiceClient.getProject(postDto.getProjectId());
-        }
-        if (postDto.getProjectId() == null && postDto.getAuthorId() != null) {
-            userServiceClient.getUser(postDto.getAuthorId());
-        } else {
-            log.error("Incorrect author by post");
-            throw new DataValidationException("Incorrect author");
-        }
+    public PostDto createDraft(PostDto postDto) {
+        validateAuthor(postDto);
         Post post = postMapper.toEntity(postDto);
-        post.setPublished(false);
-        post.setDeleted(false);
-        post.setCreatedAt(LocalDateTime.now());
         postRepository.save(post);
-        log.info("Post create");
+        return postMapper.toDto(post);
     }
 
     @Transactional
-    public void publish(long id) {
+    public PostDto publish(long id) {
         Post post = searchPostById(id);
-        if (post.isPublished()) {
-            log.error("The post has already been published");
-            throw new DataValidationException("The post has already been published");
-        }
+        postIsPublished(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
-        log.info("Post {} published", id);
+        return postMapper.toDto(post);
     }
 
     @Transactional
-    public void update(PostDto postDto) {
+    public PostDto update(PostDto postDto) {
         Post post = searchPostById(postDto.getId());
-        if (post.getContent().equals(postDto.getContent()))
-            throw new DataValidationException("No content changes");
         post.setContent(postDto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
-        log.info("Post {} update", post.getId());
+        return postMapper.toDto(post);
     }
 
     @Transactional
-    public void removeSoftly(long id) {
+    public PostDto deletePost(long id) {
         Post post = searchPostById(id);
         post.setPublished(false);
         post.setDeleted(true);
-        postRepository.save(post);
-        log.info("Post {} delete", id);
+        return postMapper.toDto(post);
     }
 
     @Transactional
@@ -96,25 +76,38 @@ public class PostServiceImpl implements PostService {
     }
 
     @Transactional
-    public List<PostDto> getPublishedPostsByAuthorId(long id) {
+    public List<PostDto> getPostsByAuthorId(long id) {
         List<Post> posts = postRepository.findByAuthorId(id);
         return filterPosts(posts, true);
     }
 
     @Transactional
-    public List<PostDto> getPublishedPostsByProjectId(long id) {
+    public List<PostDto> getPostsByProjectId(long id) {
         List<Post> posts = postRepository.findByProjectId(id);
         return filterPosts(posts, true);
     }
 
+    public Post searchPostById(long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new DataValidationException("Post with id " + id + " not found."));
+    }
 
-    private Post searchPostById(long id) {
-        Optional<Post> optionalPost = postRepository.findById(id);
-        if (optionalPost.isEmpty()) {
-
-            throw new DataValidationException("Post with id " + id + " not found.");
+    private void validateAuthor(PostDto postDto) {
+        if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
+            throw new DataValidationException("The author of the post is not specified");
         }
-        return optionalPost.get();
+        if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
+            throw new DataValidationException("A post cannot have two authors");
+        }
+        if (postDto.getAuthorId() != null && !userServiceClient.existById(postDto.getAuthorId())) {
+            throw new DataValidationException("There is no author with this id " + postDto.getAuthorId());
+        }
+    }
+
+    private void postIsPublished(Post post) {
+        if (post.isPublished()) {
+            throw new DataValidationException("The post has already been published");
+        }
     }
 
     private List<PostDto> filterPosts(List<Post> posts, boolean isPublished) {
@@ -132,5 +125,4 @@ public class PostServiceImpl implements PostService {
                 .map(postMapper::toDto)
                 .toList();
     }
-
 }

@@ -7,16 +7,11 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.PostService;
-import faang.school.postservice.service.ResourceService;
-import faang.school.postservice.service.AmazonS3Service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -33,7 +28,7 @@ class ResourceServiceTest {
     @InjectMocks
     private ResourceService resourceService;
     @Mock
-    private PostService postService;
+    private PostServiceImpl postServiceImpl;
     @Mock
     private AmazonS3Service amazonS3Service;
     @Mock
@@ -76,7 +71,7 @@ class ResourceServiceTest {
         ReflectionTestUtils.setField(resourceService, "maxFilesAmount", 10);
         post.getResources().add(resource);
         post.getResources().add(resource);
-        Mockito.when(postService.searchPostById(anyLong())).thenReturn(post);
+        Mockito.when(postServiceImpl.searchPostById(anyLong())).thenReturn(post);
         DataValidationException exception = assertThrows(DataValidationException.class,
                 () -> resourceService.addResource(1L, List.of(mockFile)));
         assertEquals("The maximum number of images for the post has been exceeded", exception.getMessage());
@@ -84,7 +79,7 @@ class ResourceServiceTest {
 
     @Test
     public void testAddResourceSuccessful() {
-        Mockito.when(postService.searchPostById(1L)).thenReturn(post);
+        Mockito.when(postServiceImpl.searchPostById(1L)).thenReturn(post);
         Mockito.when(amazonS3Service.uploadFile(Mockito.any(), Mockito.anyString())).thenReturn(resource);
         resourceService.addResource(1, List.of(mockFile));
         assertEquals(10, post.getResources().size() + 1);
@@ -92,7 +87,7 @@ class ResourceServiceTest {
 
     @Test
     void testDeleteResourceSuccessful() {
-        Mockito.when(postService.searchPostById(1L)).thenReturn(post);
+        Mockito.when(postServiceImpl.searchPostById(1L)).thenReturn(post);
         Mockito.when(resourceRepository.getReferenceById(5L)).thenReturn(resource);
         resourceService.deleteResource(1, resource.getId());
         Mockito.verify(resourceRepository).delete(resource);
@@ -101,7 +96,7 @@ class ResourceServiceTest {
 
     @Test
     void testDeleteResourceResourceNotFound() {
-        Mockito.when(postService.searchPostById(1L)).thenReturn(post);
+        Mockito.when(postServiceImpl.searchPostById(1L)).thenReturn(post);
         Mockito.when(resourceRepository.getReferenceById(2L)).thenReturn(resource);
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
                 resourceService.deleteResource(1, 2));

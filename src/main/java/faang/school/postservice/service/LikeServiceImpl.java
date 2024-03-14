@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
 
-    private final PostService postService;
+    private final PostServiceImpl postServiceImpl;
     private final CommentService commentService;
     private final UserServiceClient userServiceClient;
     private final LikeRepository likeRepository;
@@ -27,7 +27,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeMapper likeMapper;
 
     public LikeDto likePost(LikeDto likeDto) {
-        Post post = postService.searchPostById(likeDto.getPostId());
+        Post post = postServiceImpl.searchPostById(likeDto.getPostId());
         UserDto userDto = getUserFromUserService();
         verifyPostLikeUniqueness(post.getId(), userDto.getId());
         Like like = Like.builder()

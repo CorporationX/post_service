@@ -27,7 +27,7 @@ public class ModerationDictionary {
                     .map(String::toLowerCase)
                     .collect(Collectors.toSet());
         } catch (IOException e) {
-            log.error("Dictionary of offensive content has not been created");
+            log.error("Dictionary of offensive content has not been created", e);
             throw new RuntimeException(e);
         }
     }

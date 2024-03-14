@@ -1,7 +1,8 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.PostServiceImpl;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -22,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("api/v1/post")
 public class PostController {
-    private final PostService postService;
+    private final PostServiceImpl postServiceImpl;
 
     @Operation(
             summary = "Создание черновика поста",
@@ -35,7 +36,7 @@ public class PostController {
     })
     @PostMapping("/draft")
     public PostDto createDraft(@Valid @RequestBody PostDto postDto) {
-        return postService.createDraft(postDto);
+        return postServiceImpl.createDraft(postDto);
     }
 
     @Operation(
@@ -43,7 +44,7 @@ public class PostController {
     )
     @PutMapping("/publish/{postId}")
     public PostDto publishPost(@PathVariable @Positive(message = "Id must be greater than zero") long postId) {
-        return postService.publish(postId);
+        return postServiceImpl.publish(postId);
     }
 
     @Operation(
@@ -52,7 +53,7 @@ public class PostController {
     )
     @PutMapping
     public PostDto updatePost(@Valid @RequestBody PostDto postDto) {
-        return postService.update(postDto);
+        return postServiceImpl.update(postDto);
     }
 
     @Operation(
@@ -60,8 +61,8 @@ public class PostController {
             description = "Помечает пост как удаленный"
     )
     @DeleteMapping("/{postId}")
-    public PostDto removePostSoftly(@PathVariable @Positive(message = "Id must be greater than zero") long postId) {
-        return postService.deletePost(postId);
+    public PostDto deletePost(@PathVariable @Positive(message = "Id must be greater than zero") long postId) {
+        return postServiceImpl.deletePost(postId);
     }
 
     @Operation(
@@ -69,7 +70,7 @@ public class PostController {
     )
     @GetMapping("/{id}")
     public PostDto getPostById(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
-        return postService.getPostById(id);
+        return postServiceImpl.getPostById(id);
     }
 
     @Operation(
@@ -77,7 +78,7 @@ public class PostController {
     )
     @GetMapping("/author/{id}/drafts")
     public List<PostDto> getDraftsByAuthorId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
-        return postService.getDraftsByAuthorId(id);
+        return postServiceImpl.getDraftsByAuthorId(id);
     }
 
     @Operation(
@@ -85,7 +86,7 @@ public class PostController {
     )
     @GetMapping("/project/{id}/drafts")
     public List<PostDto> getDraftsByProjectId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
-        return postService.getDraftsByProjectId(id);
+        return postServiceImpl.getDraftsByProjectId(id);
     }
 
     @Operation(
@@ -93,7 +94,7 @@ public class PostController {
     )
     @GetMapping("/author/{id}")
     public List<PostDto> getPostsByAuthorId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
-        return postService.getPublishedPostsByAuthorId(id);
+        return postServiceImpl.getPostsByAuthorId(id);
     }
 
     @Operation(
@@ -101,6 +102,6 @@ public class PostController {
     )
     @GetMapping("/project/{id}")
     public List<PostDto> getPostsByProjectId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
-        return postService.getPublishedPostsByProjectId(id);
+        return postServiceImpl.getPostsByProjectId(id);
     }
 }
