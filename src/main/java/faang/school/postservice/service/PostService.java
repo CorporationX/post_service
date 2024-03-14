@@ -5,11 +5,9 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.ProjectDto;
 import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.moderator.PostModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,22 +16,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import faang.school.postservice.dto.post.UpdatePostDto;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
@@ -45,11 +36,10 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
-    private final PostModerationDictionary postModerationDictionary;
-    private final JdbcTemplate jdbcTemplate;
     @Lazy
     private final ResourceService resourceService;
     private final TransactionTemplate transactionTemplate;
+    private final ModeratePostService moderatePostService;
 
     @Value("${scheduler.post-publisher.size_batch}")
     private int sizeSublist;
@@ -139,7 +129,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
-                new faang.school.postservice.exception.DataValidationException("Post was not found"));
+                new faang.school.postservice.exception.DataValidationException("Post has not found"));
     }
 
     @Transactional
@@ -157,39 +147,10 @@ public class PostService {
         }
     }
 
-    @Transactional
     public void moderatePosts() {
         List<Post> posts = postRepository.findAllByVerifiedDateIsNull();
-        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
-        for (int i = 0; i < posts.size(); i += postBatchSize) {
-            final int startIndex = i;
-            executorService.submit(() -> {
-                transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-                transactionTemplate.execute(status -> {
-                    final List<Post> batch = posts.subList(startIndex, Math.min(startIndex + postBatchSize, posts.size()));
-                    jdbcTemplate.batchUpdate("UPDATE post SET verified = ?, verified_date = ? WHERE id = ?",
-                            new BatchPreparedStatementSetter() {
-                                @Override
-                                public void setValues(PreparedStatement ps, int j) throws SQLException {
-                                    Post post = batch.get(j);
-                                    boolean containsForbiddenWords = postModerationDictionary.containsForbiddenWordRegex(post.getContent());
-                                    ps.setBoolean(1, !containsForbiddenWords);
-                                    ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-                                    ps.setLong(3, post.getId());
-                                }
-
-                                @Override
-                                public int getBatchSize() {
-                                    return batch.size();
-                                }
-                            }
-                    );
-                    return null;
-                });
-            });
-        }
-        executorService.shutdown();
+        List<List<Post>> postBathes = ListUtils.partition(posts, postBatchSize);
+        postBathes.forEach(moderatePostService::moderatePostBatch);
     }
 
     private Post findById(long id) {
