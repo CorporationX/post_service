@@ -25,14 +25,14 @@ public class ResourceService {
     private final PostRepository postRepository;
     private final AmazonS3Service amazonS3Service;
     private final ResourceRepository resourceRepository;
-    private final PostService postService;
+    private final PostServiceImpl postServiceImpl;
     private final ResourceMapper resourceMapper;
     @Value("${services.s3.maxFilesAmount}")
     private int maxFilesAmount;
 
     @Transactional
     public List<ResourceDto> addResource(long postId, List<MultipartFile> files) {
-        Post post = postService.searchPostById(postId);
+        Post post = postServiceImpl.searchPostById(postId);
         if (post.getResources().size() == maxFilesAmount) {
             log.info("There are already {} pictures in the post", maxFilesAmount);
             throw new DataValidationException("The maximum number of images for the post has been exceeded");
@@ -59,7 +59,7 @@ public class ResourceService {
 
     @Transactional
     public void deleteResource(long postId, long resourceId) {
-        Post post = postService.searchPostById(postId);
+        Post post = postServiceImpl.searchPostById(postId);
         Resource resource = resourceRepository.getReferenceById(resourceId);
         Resource optionalResource = post.getResources().stream()
                 .filter(resource1 -> resource.getId() == resourceId)

@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
     @Mock
-    private PostService postService;
+    private PostServiceImpl postServiceImpl;
 
     @Mock
     private CommentService commentService;
@@ -48,7 +48,7 @@ public class LikeServiceTest {
 
 
     @InjectMocks
-    private LikeService likeService;
+    private LikeServiceImpl likeService;
 
     private UserDto userDto;
 
@@ -97,7 +97,7 @@ public class LikeServiceTest {
 
     @Test
     public void testShouldLikePost() {
-        when(postService.searchPostById(likeDto.getPostId())).thenReturn(post);
+        when(postServiceImpl.searchPostById(likeDto.getPostId())).thenReturn(post);
         when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.empty());
         when(likeRepository.save(any(Like.class))).thenReturn(like);
         assertEquals(likeDto, likeService.likePost(likeDto));
@@ -115,7 +115,7 @@ public class LikeServiceTest {
 
     @Test
     public void testShouldThrowDataValidationExceptionOnDuplicateLikePost() {
-        when(postService.searchPostById(likeDto.getPostId())).thenReturn(post);
+        when(postServiceImpl.searchPostById(likeDto.getPostId())).thenReturn(post);
         when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.of(like));
         assertThrows(DataValidationException.class, () -> likeService.likePost(likeDto));
     }
