@@ -5,7 +5,6 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.ProjectDto;
 import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -17,13 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import faang.school.postservice.dto.post.UpdatePostDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,8 +36,6 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
-    private final PostModerationDictionary postModerationDictionary;
-    private final JdbcTemplate jdbcTemplate;
     @Lazy
     private final ResourceService resourceService;
     private final TransactionTemplate transactionTemplate;
