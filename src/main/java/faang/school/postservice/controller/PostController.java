@@ -4,11 +4,13 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
+import faang.school.postservice.validator.ResourceValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -18,14 +20,18 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
     private final PostValidator postValidator;
+    private final ResourceValidator resourceValidator;
 
-    @Operation(summary = "Создать пост", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "id пользователя", required = false)})
+    @Operation(summary = "Создать пост", parameters = {@Parameter(in = ParameterIn.HEADER,
+            name = "x-user-id", description = "id пользователя", required = true)})
     @PostMapping("/drafts")
-    public PostDto createDraftPost(@RequestBody PostDto postDto) {
+    public PostDto createDraftPost(@RequestBody PostDto postDto, @RequestParam(value = "file", required = false) MultipartFile file) {
+        if (file != null) {
+            resourceValidator.validateResourceType(file);
+        }
         postValidator.validateAuthorCount(postDto);
         postValidator.validateContentExists(postDto.getContent());
-
-        return postService.createDraftPost(postDto);
+        return postService.createDraftPost(postDto, file);
     }
 
     @PutMapping("/drafts/{id}")
@@ -34,10 +40,13 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public PostDto updatePost(@RequestBody UpdatePostDto postDto, @PathVariable long id) {
+    public PostDto updatePost(@RequestBody UpdatePostDto postDto, @PathVariable long id,
+                              @RequestParam(value = "file", required = false) MultipartFile file) {
         postValidator.validateContentExists(postDto.getContent());
-
-        return postService.updatePost(postDto, id);
+        if (file != null) {
+            resourceValidator.validateResourceType(file);
+        }
+        return postService.updatePost(postDto, id, file);
     }
 
     @DeleteMapping("/{id}")
@@ -69,5 +78,4 @@ public class PostController {
     public List<PostDto> getPublishedPostsByProject(@PathVariable long projectId) {
         return postService.getPublishedPostsByProject(projectId);
     }
-
 }
