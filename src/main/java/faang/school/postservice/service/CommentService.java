@@ -8,8 +8,9 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderator.CommentModerationDictionary;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.validator.CommentValidator;
+import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +31,11 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final PostService postService;
-    private final CommentValidator commentValidator;
+    private final PostValidator postValidator;
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
     private final CommentModerationDictionary commentModerationDictionary;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Value("${scheduler.moderation.comment.batch_size}")
     private int commentBatchSize;
@@ -47,13 +49,15 @@ public class CommentService {
         var post = postService.getPostById(postId);
         comment.setAuthorId(userContext.getUserId());
         comment.setPost(post);
-        return commentMapper.toDto(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+        commentEventPublisher.publish(commentMapper.toEventDto(savedComment));
+        return commentMapper.toDto(savedComment);
     }
 
     @Transactional
     public CommentDto updateComment(Long commentId, CommentEditDto commentEditDto) {
         Comment commentToUpdate = getComment(commentId);
-        commentValidator.checkOwnerComment(commentToUpdate.getAuthorId(), userContext.getUserId());
+        postValidator.validateAuthor(commentToUpdate.getAuthorId(), userContext.getUserId());
         commentToUpdate.setContent(commentEditDto.getContent());
         commentRepository.save(commentToUpdate);
         return commentMapper.toDto(commentToUpdate);
@@ -70,7 +74,7 @@ public class CommentService {
     @Transactional
     public void deleteComment(Long commentId) {
         Comment comment = getComment(commentId);
-        commentValidator.checkOwnerComment(comment.getAuthorId(), userContext.getUserId());
+        postValidator.validateAuthor(comment.getAuthorId(), userContext.getUserId());
         commentRepository.delete(comment);
     }
 
@@ -94,7 +98,7 @@ public class CommentService {
         commentRepository.save(comment);
     }
 
-    private Comment getComment(Long commentId) {
+    public Comment getComment(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Comment has not been found"));
     }
