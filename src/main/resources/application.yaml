@@ -82,3 +82,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+post_moderation:
+  time: 0 0 0 * * ?
+  batch_size: 10_000
+like_service:
+  batch: 100
