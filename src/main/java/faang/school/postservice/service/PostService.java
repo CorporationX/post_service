@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.utils.Spelling;
 import faang.school.postservice.dto.ProjectDto;
 import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.dto.post.PostDto;
@@ -31,7 +32,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -50,6 +55,7 @@ public class PostService {
     @Lazy
     private final ResourceService resourceService;
     private final TransactionTemplate transactionTemplate;
+    private final Spelling spelling;
 
     @Value("${scheduler.post-publisher.size_batch}")
     private int sizeSublist;
@@ -211,5 +217,31 @@ public class PostService {
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    @Transactional
+    public void correctPost() {
+        log.info("Start checking the spelling of unpublished posts");
+        List<Post> postsToPublish = postRepository.findReadyToPublish();
+        HashMap<CompletableFuture<Optional<String>>, Post> futures = new HashMap<>();
+
+        postsToPublish.forEach(post -> {
+                    String content = post.getContent();
+                    CompletableFuture<Optional<String>> future = spelling.check(content);
+                    futures.put(future, post);
+                }
+        );
+        futures.forEach((future, post) -> {
+            try {
+                Optional<String> result = future.get();
+                result.ifPresent(updatedContent -> {
+                    post.setContent(updatedContent);
+                    log.info("Updated content of post {}", post.getId());
+                });
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("Error updating of post {} in Thread {}", post.getId(), future, e);
+                throw new RuntimeException("Failed thread - " + Thread.currentThread().getName());
+            }
+        });
     }
 }

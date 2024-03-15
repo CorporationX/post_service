@@ -44,8 +44,8 @@ logging:
 
 scheduler:
   post-publisher:
-    cron: "0 0/1 * 1/1 * ?" # every minute
-    size_batch: 1
+    cron: "0 0/5 * * * ?" # every 5 minute
+    size_batch: 10
   ad-remover:
     cron: "0 0/1 * 1/1 * ?" # every minute
     zone: Europe/Moscow
@@ -57,6 +57,8 @@ scheduler:
     comment:
       time: "0 * * * * *"
       batch_size: 100
+  post-correcter:
+    cron: "0 0/1 * 1/1 * ?" # every minute
 
 services:
   s3:
