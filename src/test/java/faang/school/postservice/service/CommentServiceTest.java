@@ -7,6 +7,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -39,6 +40,9 @@ public class CommentServiceTest {
     @Mock
     private UserServiceClient userServiceClient;
 
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
+
     private CommentValidator commentValidator;
 
     @Mock
@@ -63,7 +67,7 @@ public class CommentServiceTest {
     @BeforeEach
     public void init() {
         commentValidator = new CommentValidator(userServiceClient);
-        commentService = new CommentService(commentRepository, postRepository, commentValidator, commentMapper);
+        commentService = new CommentService(commentRepository, postRepository, commentValidator, commentMapper, commentEventPublisher);
         commentDto = CommentDto.builder()
                 .authorId(1L)
                 .id(2L)
