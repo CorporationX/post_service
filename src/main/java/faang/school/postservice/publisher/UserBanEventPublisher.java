@@ -5,21 +5,22 @@ import faang.school.postservice.dto.UserBanEventDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
 public class UserBanEventPublisher extends AbstractEventPublisher<UserBanEventDto> {
-    @Value("${spring.data.redis.channel.user_ban.user_ban_channel}")
-    private String userBanChannelName;
 
-    public UserBanEventPublisher(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
-        super(redisTemplate, objectMapper);
+    public UserBanEventPublisher(RedisTemplate<String, Object> redisTemplate,
+                                 @Value("${spring.data.redis.channel.user_ban.name}") ChannelTopic channelTopic,
+                                 ObjectMapper objectMapper) {
+        super(redisTemplate, channelTopic, objectMapper);
     }
 
     @Override
     public void publish(UserBanEventDto event) {
-        convertAndSend(event, userBanChannelName);
+        publish(event);
         log.info("UserBanEventDto published with userId = {}", event.getUserId());
     }
 }

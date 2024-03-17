@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class CommentEventPublisher extends AbstractEventPublisher<CommentEventDto> {
 
     public CommentEventPublisher(RedisTemplate<String, Object> redisTemplate,
-                                 @Value("${spring.data.redis.channels.comment_channels.name}") ChannelTopic topic,
+                                 @Value("${spring.data.redis.channel.comment}") ChannelTopic topic,
                                  ObjectMapper mapper) {
         super(redisTemplate, topic, mapper);
     }
