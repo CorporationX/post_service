@@ -1,9 +1,12 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
@@ -13,10 +16,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,6 +33,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final ResourceMapper resourceMapper;
+    private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
     @Value("${post.rule.unverified_posts_limit}")
     private int unverifiedPostsLimit;
@@ -92,35 +100,6 @@ public class PostService {
         return sortPosts(postRepository.findByProjectId(projectId));
     }
 
-    /*public void checkAndBanAuthors() {
-        Map<Long, Integer> postCountByAuthorId = new HashMap<>();
-
-        postRepository.findAllNotVerified().forEach(post ->
-                postCountByAuthorId.merge(post.getAuthorId(), 1, Integer::sum)
-        );
-
-        postCountByAuthorId.forEach((authorId, postCount) -> {
-            if (postCount > 5) {
-                userBanEventPublisher.publish(
-                        UserBanEventDto.builder().userId(authorId).build()
-                );
-                log.debug("User ban event published with authorId = {} with amount of not verified posts = {}",
-                        authorId, postCount);
-            }
-        });
-        log.info("check and ban authors method completed");
-    }*/
-
-    public void checkAndBanAuthors() {
-        postRepository.findAuthorIdsByNotVerifiedPosts(unverifiedPostsLimit).forEach(
-                authorId -> {
-                    log.debug("User with id = {} has more then {} unverified posts", authorId, unverifiedPostsLimit);
-                    userBanEventPublisher.publish(new UserBanEventDto(authorId));
-                }
-        );
-        log.info("check and ban authors method completed");
-    }
-
     public List<PostDto> sortDrafts(List<Post> posts) {
         return posts.stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
@@ -135,5 +114,78 @@ public class PostService {
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public PostDto createPost(PostDto postDto, List<MultipartFile> files) {
+        postValidator.validateAccessAndContent(postDto);
+
+        Post savedPost = postRepository.save(postMapper.toEntity(postDto));
+
+        return createResourcesAndGetPostDto(savedPost, files);
+    }
+
+    @Transactional
+    public PostDto updatePost(long postId, PostDto postDto, List<MultipartFile> files) {
+        Post post = getPost(postId);
+        postValidator.validateAccessAndContent(postDto);
+
+        post.setContent(postDto.getContent());
+        removeUnnecessaryResources(post, postDto);
+
+        Post updatedPost = postRepository.save(post);
+
+        return createResourcesAndGetPostDto(updatedPost, files);
+    }
+
+    @Transactional(readOnly = true)
+    public PostDto getPostDto(long postId) {
+        Post post = getPost(postId);
+        postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
+        return postMapper.toDto(post);
+    }
+
+    private PostDto createResourcesAndGetPostDto(Post post, List<MultipartFile> files) {
+        if (files == null) {
+            return postMapper.toDto(post);
+        }
+
+        List<ResourceDto> savedResources = resourceService.createResources(post, files);
+        List<ResourceDto> resourcesByPost = post.getResources().stream()
+                .map(resourceMapper::toDto)
+                .toList();
+
+        List<ResourceDto> allResources = new ArrayList<>(resourcesByPost);
+        allResources.addAll(savedResources);
+
+        PostDto postDto = postMapper.toDto(post);
+        postDto.setResourceIds(allResources.stream().map(ResourceDto::getId).toList());
+
+        return postDto;
+    }
+
+    private void removeUnnecessaryResources(Post post, PostDto postDto) {
+        List<Long> resourceIdsFromDto = Optional.ofNullable(postDto.getResourceIds())
+                .orElse(new ArrayList<>());
+
+        List<Resource> resourcesToDelete = post.getResources().stream()
+                .filter(resource -> !resourceIdsFromDto.contains(resource.getId()))
+                .toList();
+
+        post.getResources().removeAll(resourcesToDelete);
+        resourceService.deleteResources(resourcesToDelete.stream()
+                .map(Resource::getId)
+                .toList()
+        );
+    }
+
+    public void checkAndBanAuthors() {
+        postRepository.findAuthorIdsByNotVerifiedPosts(unverifiedPostsLimit).forEach(
+                authorId -> {
+                    log.debug("User with id = {} has more then {} unverified posts", authorId, unverifiedPostsLimit);
+                    userBanEventPublisher.publish(new UserBanEventDto(authorId));
+                }
+        );
+        log.info("check and ban authors method completed");
     }
 }

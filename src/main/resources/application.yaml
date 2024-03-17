@@ -22,10 +22,15 @@ spring:
       port: 6379
       host: localhost
       channel:
+        comment: comment_channel
+        calculations_channel:
+          name: calculations_channel
         user_ban:
-          user_ban_channel: user_ban_channel
-        calculations:
-          calculations_channel: calculations_channel
+          name: user_ban_channel
+  mvc:
+    servlet:
+      path: /api/v1
+
 
 server:
   port: 8085
@@ -35,6 +40,9 @@ logging:
     root: info
 
 post:
+  content_to_post:
+    max_amount: 10
+    max_size: 20000
   rule:
     unverified_posts_limit: 5
   publisher:
@@ -49,10 +57,18 @@ post:
 
 user-service:
   host: localhost
-  port: 8083
+  port: 8084
 project-service:
   host: localhost
   port: 8082
 payment-service:
   host: localhost
   port: 9080
+
+s3:
+  endpoint: http://127.0.0.1:9000/
+  accessKey: user
+  secretKey: password
+  bucketName: corpbucket
+  #should be changed to bucketName: user-service-bucket
+  region: null

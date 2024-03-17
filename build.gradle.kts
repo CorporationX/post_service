@@ -40,6 +40,11 @@ dependencies {
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.464")
 
     /**
+     * Amazon S3
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.656") // Update to the latest version
+
+    /**
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
