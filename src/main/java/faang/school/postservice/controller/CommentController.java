@@ -3,7 +3,6 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +27,7 @@ public class CommentController {
     }
 
     @PutMapping("/comment")
-    public CommentDto updateComment(@RequestParam Long commentId, @RequestBody CommentDto commentDto) {
+    public CommentDto updateComment(@RequestParam("id") Long commentId, @RequestBody CommentDto commentDto) {
         return commentService.updateComment(commentId, commentDto);
     }
 
@@ -38,8 +37,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comment")
-    public HttpStatus deleteComment(@RequestParam Long commentId) {
+    public void deleteComment(@RequestParam("id") Long commentId) {
         commentService.deleteComment(commentId);
-        return HttpStatus.NO_CONTENT;
     }
 }

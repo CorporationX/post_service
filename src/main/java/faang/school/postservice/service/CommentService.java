@@ -35,10 +35,10 @@ public class CommentService {
 
     @Transactional
     public CommentDto updateComment(Long commentId, CommentDto commentDto) {
-        commentValidator.validateCommentUpdate(commentId, commentDto);
-        Comment comment = commentMapper.toEntity(commentDto);
-        comment.setId(commentId);
-        return commentMapper.toDto(commentRepository.save(comment));
+        commentValidator.validateCommentFields(commentDto);
+        Comment comment = validateOptional(commentRepository.findById(commentId), "Comment not found");
+        comment.setContent(commentDto.getContent());
+        return commentMapper.toDto(comment);
     }
 
     @Transactional(readOnly = true)
@@ -49,7 +49,7 @@ public class CommentService {
         return commentMapper.toDto(comments);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void deleteComment(Long commentId) {
         commentRepository.deleteById(commentId);
     }
