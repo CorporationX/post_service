@@ -19,6 +19,8 @@ public interface CommentMapper {
 
     Comment toEntity(CommentDto commentDto);
 
+    List<CommentDto> toDto(List<Comment> comments);
+
     @Named("likesToLikeIds")
     default List<Long> likesToLikeIds(List<Like> likes) {
         return likes.stream()
