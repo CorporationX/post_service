@@ -2,10 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
+import faang.school.postservice.dto.UserBanEventDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.ResourceMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,12 +21,24 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -37,6 +51,8 @@ public class PostServiceTest {
 
     @Mock
     private PostValidator postValidator;
+    @Mock
+    private UserBanEventPublisher userBanEventPublisher;
 
     @InjectMocks
     private PostService postService;
@@ -349,6 +365,33 @@ public class PostServiceTest {
                 EntityNotFoundException.class,
                 () -> postService.getPostDto(notExistencePostId)
         );
+    }
+
+    @Test
+    void testCheckAndBanAuthors_moreThenFiveNotVerifiedPosts_publishUserBanEvent() {
+        long firstAuthorId = 2L;
+        long secondAuthorId = 3L;
+        List<Long> expectedAuthorIdsToBan = List.of(firstAuthorId, secondAuthorId);
+        UserBanEventDto firstExpectedUserBanEventDto = new UserBanEventDto(firstAuthorId);
+        UserBanEventDto secondExpectedUserBanEventDto = new UserBanEventDto(secondAuthorId);
+
+        when(postRepository.findAuthorIdsByNotVerifiedPosts(anyInt())).thenReturn(expectedAuthorIdsToBan);
+
+        postService.checkAndBanAuthors();
+
+        verify(userBanEventPublisher, times(1)).publish(firstExpectedUserBanEventDto);
+        verify(userBanEventPublisher, times(1)).publish(secondExpectedUserBanEventDto);
+    }
+
+    @Test
+    void testCheckAndBanAuthors_lessThenFiveNotVerifiedPosts_nothingHappens() {
+        List<Long> expectedAuthorIdsToBan = Collections.emptyList();
+
+        when(postRepository.findAuthorIdsByNotVerifiedPosts(anyInt())).thenReturn(expectedAuthorIdsToBan);
+
+        postService.checkAndBanAuthors();
+
+        verify(userBanEventPublisher, never()).publish(any());
     }
 
     @Test

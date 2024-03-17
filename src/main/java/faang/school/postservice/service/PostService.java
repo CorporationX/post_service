@@ -2,14 +2,18 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
+import faang.school.postservice.dto.UserBanEventDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -30,6 +35,9 @@ public class PostService {
     private final PostValidator postValidator;
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
+    private final UserBanEventPublisher userBanEventPublisher;
+    @Value("${post.rule.unverified_posts_limit}")
+    private int unverifiedPostsLimit;
 
     public void createPostDraft(PostDto postDto) {
         postValidator.validatePostOwnerExists(postDto);
@@ -44,6 +52,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
     }
+
     @Transactional
     public void updatePost(long postId, long ownerId, PostDto postDto) {
         postValidator.validatePostByOwner(postId, ownerId);
@@ -168,5 +177,15 @@ public class PostService {
                 .map(Resource::getId)
                 .toList()
         );
+    }
+
+    public void checkAndBanAuthors() {
+        postRepository.findAuthorIdsByNotVerifiedPosts(unverifiedPostsLimit).forEach(
+                authorId -> {
+                    log.debug("User with id = {} has more then {} unverified posts", authorId, unverifiedPostsLimit);
+                    userBanEventPublisher.publish(new UserBanEventDto(authorId));
+                }
+        );
+        log.info("check and ban authors method completed");
     }
 }
