@@ -25,8 +25,8 @@ public class CommentValidator {
         }
     }
 
-    public void validateCommentUpdate(CommentDto commentDto) {
-        CommentDto existingComment = commentMapper.toDto(validateOptional(commentRepository.findById(commentDto.getId()), "Comment does not exist"));
+    public void validateCommentUpdate(Long commentId, CommentDto commentDto) {
+        CommentDto existingComment = commentMapper.toDto(validateOptional(commentRepository.findById(commentId), "Comment does not exist"));
         if (!existingComment.getAuthorId().equals(commentDto.getAuthorId())) {
             throw new DataValidationException(commentDto.getAuthorId() + " is not the author of this comment");
         }

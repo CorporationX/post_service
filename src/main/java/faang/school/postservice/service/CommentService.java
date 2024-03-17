@@ -27,9 +27,10 @@ public class CommentService {
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
-    public CommentDto updateComment(CommentDto commentDto) {
-        commentValidator.validateCommentUpdate(commentDto);
+    public CommentDto updateComment(Long commentId, CommentDto commentDto) {
+        commentValidator.validateCommentUpdate(commentId, commentDto);
         Comment comment = commentMapper.toEntity(commentDto);
+        comment.setId(commentId);
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
