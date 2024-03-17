@@ -187,7 +187,9 @@ public class PostService {
         List<Post> postsToPublish = postRepository.findReadyToPublish();
         HashMap<CompletableFuture<Optional<String>>, Post> futures = new HashMap<>();
 
-        postsToPublish.forEach(post -> {
+        postsToPublish.stream()
+                .filter(post-> !post.getCheckSpelling())
+                .forEach(post -> {
                     String content = post.getContent();
                     CompletableFuture<Optional<String>> future = spelling.check(content);
                     futures.put(future, post);
@@ -198,6 +200,7 @@ public class PostService {
                 Optional<String> result = future.get();
                 result.ifPresent(updatedContent -> {
                     post.setContent(updatedContent);
+                    post.setCheckSpelling(true);
                     log.info("Updated content of post {}", post.getId());
                 });
             } catch (InterruptedException | ExecutionException e) {

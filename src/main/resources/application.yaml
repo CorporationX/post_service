@@ -88,3 +88,6 @@ post_moderation:
   batch_size: 10_000
 like_service:
   batch: 100
+
+ai_spelling:
+  url: https://speller.yandex.net/services/spellservice.json/checkText?text=

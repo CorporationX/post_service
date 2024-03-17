@@ -287,7 +287,7 @@ class PostServiceTest {
         //Arrange
         String content = "Прывет";
         String correctContent = "Привет";
-        Post post = Post.builder().content(content).authorId(1L).published(false).build();
+        Post post = Post.builder().content(content).authorId(1L).published(false).checkSpelling(false).build();
 
         List<Post> posts = List.of(post);
         when(postRepository.findReadyToPublish()).thenReturn(posts);
