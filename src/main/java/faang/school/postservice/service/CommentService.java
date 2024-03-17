@@ -49,6 +49,11 @@ public class CommentService {
         return commentMapper.toDto(comments);
     }
 
+    @Transactional(readOnly = true)
+    public void deleteComment(Long commentId) {
+        commentRepository.deleteById(commentId);
+    }
+
     private Comment getComment(Long userId, Long postId, CommentDto commentDto) {
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setAuthorId(userId);

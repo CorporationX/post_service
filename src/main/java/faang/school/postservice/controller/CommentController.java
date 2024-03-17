@@ -3,6 +3,8 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,8 +32,14 @@ public class CommentController {
         return commentService.updateComment(commentId, commentDto);
     }
 
-    @GetMapping("/post/{postId}/comments")
+    @GetMapping("/post/{postId}/comment")
     public List<CommentDto> getCommentsByPostId(@PathVariable Long postId) {
         return commentService.getCommentsByPostId(postId);
+    }
+
+    @DeleteMapping("/comment")
+    public HttpStatus deleteComment(@RequestParam Long commentId) {
+        commentService.deleteComment(commentId);
+        return HttpStatus.NO_CONTENT;
     }
 }
