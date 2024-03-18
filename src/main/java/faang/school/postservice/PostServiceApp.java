@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
 @OpenAPIDefinition(info = @Info(
         title = "Post service",
+        description = "Service provides endpoints for managing posts",
         version = "1.0.0"
 ))
 public class PostServiceApp {
