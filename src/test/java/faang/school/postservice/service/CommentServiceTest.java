@@ -7,6 +7,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.validation.user.UserValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,6 +36,8 @@ class CommentServiceTest {
     private CommentMapperImpl commentMapper;
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private UserValidator userValidator;
     @InjectMocks
     private CommentService commentService;
 

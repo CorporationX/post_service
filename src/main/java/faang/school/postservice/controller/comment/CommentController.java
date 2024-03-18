@@ -1,5 +1,6 @@
 package faang.school.postservice.controller.comment;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.comment.CommentService;
 import jakarta.validation.Valid;
@@ -21,12 +22,13 @@ import java.util.List;
 public class CommentController {
 
     private final CommentService commentService;
+    private final UserContext userContext;
 
     @PostMapping("/posts/{postId}/comments")
-    public CommentDto createComment(@RequestHeader Long userId,
+    public CommentDto createComment(@RequestHeader("x-user-id") Long userId,
                                     @PathVariable Long postId,
                                     @RequestBody @Valid CommentDto commentDto) {
-        return commentService.createComment(userId, postId, commentDto);
+        return commentService.createComment(userContext.getUserId(), postId, commentDto);
     }
 
     @PutMapping("/comments")

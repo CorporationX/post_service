@@ -6,6 +6,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validation.user.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +23,11 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
+    private final UserValidator userValidator;
 
     @Transactional
     public CommentDto createComment(Long userId, Long postId, CommentDto commentDto) {
+        userValidator.validateUserExist(userId);
         Comment comment = getComment(userId, postId, commentDto);
         return commentMapper.toDto(commentRepository.save(comment));
     }
