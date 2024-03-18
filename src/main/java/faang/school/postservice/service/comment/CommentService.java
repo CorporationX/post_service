@@ -1,21 +1,20 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validation.CommentValidator;
+import faang.school.postservice.validation.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static faang.school.postservice.utils.GlobalValidator.validateOptional;
+import static faang.school.postservice.util.GlobalValidator.validateOptional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +43,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<CommentDto> getCommentsByPostId(Long postId) {
         List<Comment> comments = commentRepository.findAllByPostId(postId).stream()
-                .sorted(Comparator.comparing(Comment::getUpdatedAt))
+                .sorted((comm1, comm2) -> comm2.getUpdatedAt().compareTo(comm1.getUpdatedAt()))
                 .collect(Collectors.toList());
         return commentMapper.toDto(comments);
     }

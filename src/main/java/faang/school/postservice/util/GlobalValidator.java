@@ -1,4 +1,4 @@
-package faang.school.postservice.utils;
+package faang.school.postservice.util;
 
 import faang.school.postservice.exception.EntityNotFoundException;
 
