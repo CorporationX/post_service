@@ -1,5 +1,7 @@
 package faang.school.postservice.dto.comment;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,8 +16,14 @@ import java.time.LocalDateTime;
 public class CommentDto {
 
     private Long id;
+
+    @NotBlank(message = "Comment must have a content")
+    @Size(max = 4096, message = "Comment length must be less than 4096 symbols")
     private String content;
+
     private Long authorId;
+
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 }

@@ -6,7 +6,6 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validation.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,20 +20,17 @@ import static faang.school.postservice.util.GlobalValidator.validateOptional;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final CommentValidator commentValidator;
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
 
     @Transactional
     public CommentDto createComment(Long userId, Long postId, CommentDto commentDto) {
-        commentValidator.validateCommentFields(commentDto);
         Comment comment = getComment(userId, postId, commentDto);
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
     @Transactional
     public CommentDto updateComment(Long commentId, CommentDto commentDto) {
-        commentValidator.validateCommentFields(commentDto);
         Comment comment = validateOptional(commentRepository.findById(commentId), "Comment not found");
         comment.setContent(commentDto.getContent());
         return commentMapper.toDto(comment);

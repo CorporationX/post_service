@@ -7,7 +7,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentService;
-import faang.school.postservice.validation.comment.CommentValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,8 +31,6 @@ class CommentServiceTest {
 
     @Mock
     private CommentRepository commentRepository;
-    @Mock
-    private CommentValidator commentValidator;
     @Spy
     private CommentMapperImpl commentMapper;
     @Mock
@@ -50,7 +47,6 @@ class CommentServiceTest {
         CommentDto actual = commentService.createComment(getId(), getId(), expected);
 
         assertEquals(expected, actual);
-        verify(commentValidator, times(1)).validateCommentFields(any(CommentDto.class));
         verify(postRepository, times(1)).findById(anyLong());
         verify(commentMapper, times(1)).toEntity(any(CommentDto.class));
         verify(commentMapper, times(1)).toDto(any(Comment.class));
@@ -64,7 +60,6 @@ class CommentServiceTest {
         CommentDto actual = commentService.updateComment(getId(), expected);
 
         assertEquals(expected, actual);
-        verify(commentValidator, times(1)).validateCommentFields(any(CommentDto.class));
         verify(commentRepository, times(1)).findById(anyLong());
         verify(commentMapper, times(1)).toDto(any(Comment.class));
     }
@@ -76,6 +71,7 @@ class CommentServiceTest {
 
         List<CommentDto> actual = commentService.getCommentsByPostId(getId());
 
+        assertEquals(expected, actual);
         verify(commentRepository, times(1)).findAllByPostId(anyLong());
         verify(commentMapper, times(1)).toDto(anyList());
     }
@@ -93,19 +89,19 @@ class CommentServiceTest {
                         .id(1L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(LocalDateTime.now().plusSeconds(10))
+                        .updatedAt(LocalDateTime.MIN)
                         .build(),
                 Comment.builder()
                         .id(2L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(LocalDateTime.now().plusSeconds(5))
+                        .updatedAt(LocalDateTime.MIN.plusSeconds(5))
                         .build(),
                 Comment.builder()
                         .id(3L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.MIN.plusSeconds(10))
                         .build()
         );
     }
@@ -116,19 +112,19 @@ class CommentServiceTest {
                         .id(3L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(LocalDateTime.now())
+                        .updatedAt(getComments().get(2).getUpdatedAt())
                         .build(),
                 CommentDto.builder()
                         .id(2L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(LocalDateTime.now().plusSeconds(5))
+                        .updatedAt(getComments().get(1).getUpdatedAt())
                         .build(),
                 CommentDto.builder()
                         .id(1L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(LocalDateTime.now().plusSeconds(10))
+                        .updatedAt(getComments().get(0).getUpdatedAt())
                         .build()
         );
     }

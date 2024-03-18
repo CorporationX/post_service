@@ -1,6 +1,6 @@
 package faang.school.postservice.util;
 
-import faang.school.postservice.exception.EntityNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.Optional;
 

@@ -1,6 +1,6 @@
 package faang.school.postservice.util;
 
-import faang.school.postservice.exception.EntityNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
