@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +61,38 @@ public class PostService {
         Post post = getPost(postId);
         post.setDeleted(true);
         postRepository.save(post);
+    }
+
+    public List<PostDto> getCreatedPostsByUserId(long userId) {
+        List<Post> posts = postRepository.findByAuthorId(userId).stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .sorted((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()))
+                .toList();
+        return postMapper.toDto(posts);
+    }
+
+    public List<PostDto> getCreatedPostsByProjectId(long projectId) {
+        List<Post> posts = postRepository.findByProjectId(projectId).stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .sorted((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()))
+                .toList();
+        return postMapper.toDto(posts);
+    }
+
+    public List<PostDto> getPublishedPostsByUserId(long userId) {
+        List<Post> posts = postRepository.findByAuthorId(userId).stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
+                .toList();
+        return postMapper.toDto(posts);
+    }
+
+    public List<PostDto> getPublishedPostsByProjectId(long projectId) {
+        List<Post> posts = postRepository.findByProjectId(projectId).stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
+                .toList();
+        return postMapper.toDto(posts);
     }
 
     private Post getPost(long postId) {

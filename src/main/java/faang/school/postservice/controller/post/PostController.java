@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")
@@ -45,5 +47,24 @@ public class PostController {
         postService.delete(postId);
     }
 
+    @GetMapping("/user/{userId}")
+    public List<PostDto> getCreatedPostsByUserId(@PathVariable @Min(1) long userId) {
+        return postService.getCreatedPostsByUserId(userId);
+    }
+
+    @GetMapping("/project/{projectId}")
+    public List<PostDto> getCreatedPostsByProjectId(@PathVariable @Min(1) long projectId) {
+        return postService.getCreatedPostsByProjectId(projectId);
+    }
+
+    @GetMapping("/user/{userId}/published")
+    public List<PostDto> getPublishedPostsByUserId(@PathVariable @Min(1) long userId) {
+        return postService.getPublishedPostsByUserId(userId);
+    }
+
+    @GetMapping("/project/{projectId}/published")
+    public List<PostDto> getPublishedPostsByProjectId(@PathVariable @Min(1) long projectId) {
+        return postService.getPublishedPostsByProjectId(projectId);
+    }
 
 }
