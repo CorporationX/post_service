@@ -69,11 +69,12 @@ tasks.bootJar {
     archiveFileName.set("service.jar")
 }
 
+val mainDir = sourceSets.main.get().output.asFileTree
+
 val jacocoPackages = listOf(
     "**/service/**",
-    "**/validation/**",
+    "**/validation/**"
 )
-val mainDir = sourceSets.main.get().output.asFileTree
 
 tasks.jacocoTestCoverageVerification {
     violationRules {
