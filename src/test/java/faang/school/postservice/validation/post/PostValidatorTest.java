@@ -3,8 +3,12 @@ package faang.school.postservice.validation.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
+import feign.FeignException;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PostValidatorTest {
@@ -26,6 +31,8 @@ class PostValidatorTest {
 
     private Post post;
     private PostDto postDto;
+    private UserDto userDto;
+    private ProjectDto projectDto;
 
     @BeforeEach
     void setUp() {
@@ -38,6 +45,15 @@ class PostValidatorTest {
                 .id(post.getId())
                 .content(post.getContent())
                 .authorId(post.getAuthorId())
+                .build();
+        userDto = UserDto.builder()
+                .id(2L)
+                .username("Valid username")
+                .email("valid@email.com")
+                .build();
+        projectDto = ProjectDto.builder()
+                .id(3L)
+                .title("Valid title")
                 .build();
     }
 
@@ -62,6 +78,43 @@ class PostValidatorTest {
 
         assertThrows(DataValidationException.class, () ->
                 postValidator.validatePostAuthor(postDto));
+    }
+
+    @Test
+    void validateIfAuthorExists_AuthorExists_ShouldNotThrow() {
+        when(userServiceClient.getUser(postDto.getAuthorId())).thenReturn(userDto);
+
+        assertDoesNotThrow(() ->
+                postValidator.validateIfAuthorExists(postDto));
+    }
+
+    @Test
+    void validateIfAuthorExists_ProjectExists_ShouldNotThrow() {
+        postDto.setAuthorId(null);
+        postDto.setProjectId(17L);
+        when(projectServiceClient.findProjectById(postDto.getProjectId())).thenReturn(projectDto);
+
+        assertDoesNotThrow(() ->
+                postValidator.validateIfAuthorExists(postDto));
+    }
+
+    @Test
+    void validateIfAuthorExists_AuthorDoesntExist_ShouldThrowEntityNotFoundException() {
+        when(userServiceClient.getUser(postDto.getAuthorId())).thenThrow(FeignException.class);
+
+        assertThrows(EntityNotFoundException.class, () ->
+                postValidator.validateIfAuthorExists(postDto));
+    }
+
+    @Test
+    void validateIfAuthorExists_ProjectDoesntExist_ShouldThrowEntityNotFoundException() {
+        postDto.setAuthorId(null);
+        postDto.setProjectId(17L);
+        when(projectServiceClient.findProjectById(postDto.getProjectId())).thenThrow(FeignException.class);
+
+        assertThrows(EntityNotFoundException.class, () ->
+                postValidator.validateIfAuthorExists(postDto));
+
     }
 
     @Test
