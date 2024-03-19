@@ -20,16 +20,8 @@ public class PostService {
     private final PostMapper postMapper;
 
     public PostDto create(PostDto postDto) {
-        Long authorId = postDto.getAuthorId();
-        Long projectId = postDto.getProjectId();
-
-        postValidator.validatePostAuthor(authorId, projectId);
-        if (authorId != null) {
-            postValidator.validateIfAuthorExistsById(authorId);
-        }
-        if (projectId != null) {
-            postValidator.validateIfProjectExistsById(projectId);
-        }
+        postValidator.validatePostAuthor(postDto);
+        postValidator.validateIfAuthorExists(postDto);
 
         Post savedPost = postRepository.save(postMapper.toEntity(postDto));
         return postMapper.toDto(savedPost);

@@ -14,7 +14,10 @@ public class PostValidator {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
-    public void validatePostAuthor(Long authorId, Long projectId) {
+    public void validatePostAuthor(PostDto postDto) {
+        Long authorId = postDto.getAuthorId();
+        Long projectId = postDto.getProjectId();
+
         if (authorId == null && projectId == null) {
             throw new DataValidationException("Post must have user or project as author");
         }
@@ -23,12 +26,16 @@ public class PostValidator {
         }
     }
 
-    public void validateIfAuthorExistsById(long authorId) {
-        userServiceClient.getUser(authorId);
-    }
+    public void validateIfAuthorExists(PostDto postDto) {
+        Long authorId = postDto.getAuthorId();
+        Long projectId = postDto.getProjectId();
 
-    public void validateIfProjectExistsById(long projectId) {
-        projectServiceClient.findProjectById(projectId);
+        if (authorId != null) {
+            userServiceClient.getUser(authorId);
+        }
+        if (projectId != null) {
+            projectServiceClient.findProjectById(projectId);
+        }
     }
 
     public void validateIfPostIsPublished(Post post) {
@@ -38,7 +45,7 @@ public class PostValidator {
     }
 
     public void validateUpdatedPost(Post post, PostDto updatedPostDto) {
-        validatePostAuthor(updatedPostDto.getAuthorId(), updatedPostDto.getProjectId());
+        validatePostAuthor(updatedPostDto);
 
         Long authorId = post.getAuthorId() != null ? post.getAuthorId() : post.getProjectId();
         Long updatedPostAuthorId = updatedPostDto.getAuthorId() != null ?

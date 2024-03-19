@@ -25,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -78,15 +77,12 @@ class PostServiceTest {
         PostDto returned = postService.create(firstPostDto);
 
         assertAll(
-                () -> verify(postValidator, times(1)).validatePostAuthor(
-                        firstPostDto.getAuthorId(), firstPost.getProjectId()),
-                () -> verify(postValidator, times(1)).validateIfAuthorExistsById(
-                        firstPost.getAuthorId()),
-                () -> verify(postValidator, never()).validateIfProjectExistsById(anyLong()),
+                () -> verify(postValidator, times(1)).validatePostAuthor(firstPostDto),
+                () -> verify(postValidator, times(1)).validateIfAuthorExists(firstPostDto),
                 () -> verify(postRepository, times(1)).save(firstPost),
                 () -> verify(postMapper, times(1)).toEntity(firstPostDto),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
-                () -> assertEquals(returned, firstPostDto)
+                () -> assertEquals(firstPostDto, returned)
         );
     }
 
@@ -99,7 +95,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postRepository, times(1)).findById(firstPost.getId()),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
-                () -> assertEquals(returned, firstPostDto)
+                () -> assertEquals(firstPostDto, returned)
         );
     }
 
@@ -124,7 +120,7 @@ class PostServiceTest {
                 () -> verify(postMapper, times(1)).toDto(firstPost),
                 () -> assertTrue(returned.isPublished()),
                 () -> assertNotNull(returned.getPublishedAt()),
-                () -> assertNotEquals(returned, firstPostDto)
+                () -> assertNotEquals(firstPostDto, returned)
         );
     }
 
@@ -141,7 +137,7 @@ class PostServiceTest {
                 () -> verify(postRepository, times(1)).findById(firstPost.getId()),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
                 () -> verify(postRepository, times(1)).save(firstPost),
-                () -> assertEquals(returned, firstPostDto),
+                () -> assertEquals(firstPostDto, returned),
                 () -> assertNotEquals("Old content", firstPost.getContent())
         );
     }

@@ -44,7 +44,7 @@ class PostValidatorTest {
     @Test
     void validatePostAuthor_PostAuthorIsValid_ShouldNotThrow() {
         assertDoesNotThrow(() ->
-                postValidator.validatePostAuthor(postDto.getAuthorId(), postDto.getProjectId()));
+                postValidator.validatePostAuthor(postDto));
 
     }
 
@@ -53,7 +53,7 @@ class PostValidatorTest {
         postDto.setAuthorId(null);
 
         assertThrows(DataValidationException.class, () ->
-                postValidator.validatePostAuthor(postDto.getAuthorId(), postDto.getProjectId()));
+                postValidator.validatePostAuthor(postDto));
     }
 
     @Test
@@ -61,7 +61,7 @@ class PostValidatorTest {
         postDto.setProjectId(7L);
 
         assertThrows(DataValidationException.class, () ->
-                postValidator.validatePostAuthor(postDto.getAuthorId(), postDto.getProjectId()));
+                postValidator.validatePostAuthor(postDto));
     }
 
     @Test
