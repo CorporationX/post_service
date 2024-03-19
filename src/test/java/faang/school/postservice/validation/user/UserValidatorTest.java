@@ -1,7 +1,6 @@
-package faang.school.postservice.user;
+package faang.school.postservice.validation.user;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.validation.user.UserValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
