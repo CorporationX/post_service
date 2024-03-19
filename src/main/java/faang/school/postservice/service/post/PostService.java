@@ -99,5 +99,4 @@ public class PostService {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
     }
-
 }

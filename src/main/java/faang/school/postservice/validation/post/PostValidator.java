@@ -38,15 +38,15 @@ public class PostValidator {
     }
 
     public void validateUpdatedPost(Post post, PostDto updatedPostDto) {
-        if (updatedPostDto.getAuthorId() == null && updatedPostDto.getProjectId() == null) {
-            throw new DataValidationException("Post author can't be deleted");
-        }
+        validatePostAuthor(updatedPostDto.getAuthorId(), updatedPostDto.getProjectId());
 
         Long authorId = post.getAuthorId() != null ? post.getAuthorId() : post.getProjectId();
         Long updatedPostAuthorId = updatedPostDto.getAuthorId() != null ?
                 updatedPostDto.getAuthorId() : updatedPostDto.getProjectId();
 
-        if (!authorId.equals(updatedPostAuthorId)) {
+        if (!authorId.equals(updatedPostAuthorId) ||
+           (post.getAuthorId() == null && updatedPostDto.getAuthorId() != null) ||
+           (post.getProjectId() == null && updatedPostDto.getProjectId() != null)) {
             throw new DataValidationException("Post author can't be changed");
         }
     }
