@@ -5,6 +5,8 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
+import feign.FeignException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -31,10 +33,18 @@ public class PostValidator {
         Long projectId = postDto.getProjectId();
 
         if (authorId != null) {
-            userServiceClient.getUser(authorId);
+            try {
+                userServiceClient.getUser(authorId);
+            } catch (FeignException exception) {
+                throw new EntityNotFoundException("User hasn't been found by id: " + authorId);
+            }
         }
         if (projectId != null) {
-            projectServiceClient.findProjectById(projectId);
+            try {
+                projectServiceClient.findProjectById(projectId);
+            } catch (FeignException exception) {
+                throw new EntityNotFoundException("Project hasn't been found by id: " + projectId);
+            }
         }
     }
 
