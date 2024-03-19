@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AlbumController {
     private final AlbumService albumService;
 
-    @Operation(summary = "Create album")
+    @Operation(summary = "Create an album")
     @PostMapping
     public AlbumDto create(@Valid @RequestBody AlbumDto albumDto) {
         return albumService.create(albumDto);
