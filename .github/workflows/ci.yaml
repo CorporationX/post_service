@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - unicorn-master-bc3
-      - feature/pipline-BC-BJS2-3506
 
 jobs:
   test:
