@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,13 +24,12 @@ public class CommentController {
     private final UserContext userContext;
 
     @PostMapping("/posts/{postId}/comments")
-    public CommentDto createComment(@PathVariable Long postId,
-                                    @RequestBody @Valid CommentDto commentDto) {
+    public CommentDto createComment(@PathVariable Long postId, @RequestBody @Valid CommentDto commentDto) {
         return commentService.createComment(userContext.getUserId(), postId, commentDto);
     }
 
-    @PutMapping("/comments")
-    public CommentDto updateComment(@RequestParam("id") Long commentId, @RequestBody @Valid CommentDto commentDto) {
+    @PutMapping("/comments/{commentId}")
+    public CommentDto updateComment(@PathVariable Long commentId, @RequestBody @Valid CommentDto commentDto) {
         return commentService.updateComment(commentId, commentDto);
     }
 

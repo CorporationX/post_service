@@ -23,7 +23,7 @@ public class CommentDto {
 
     private Long authorId;
 
-    private LocalDateTime createdAt;
+    private Long postId;
 
-    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
 }
