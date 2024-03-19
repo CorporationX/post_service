@@ -68,3 +68,33 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 tasks.bootJar {
     archiveFileName.set("service.jar")
 }
+
+val jacocoPackages = listOf(
+    "**/service/**",
+    "**/validation/**",
+)
+val mainDir = sourceSets.main.get().output.asFileTree
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "CLASS"
+            classDirectories.setFrom(
+                mainDir.matching {
+                    include(jacocoPackages)
+                }
+            )
+            limit {
+                minimum = "0.70".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.jacocoTestReport {
+    classDirectories.setFrom(
+        mainDir.matching {
+            include(jacocoPackages)
+        }
+    )
+}
