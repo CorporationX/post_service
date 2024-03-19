@@ -7,14 +7,13 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.user.UserValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static faang.school.postservice.util.GlobalValidator.validateOptional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +33,8 @@ public class CommentService {
 
     @Transactional
     public CommentDto updateComment(Long commentId, CommentDto commentDto) {
-        Comment comment = validateOptional(commentRepository.findById(commentId), "Comment not found");
+        Comment comment = commentRepository.findById(commentId).orElseThrow(()
+                -> new EntityNotFoundException(String.format("Comment with id %d not found", commentId)));
         comment.setContent(commentDto.getContent());
         return commentMapper.toDto(comment);
     }
@@ -60,6 +60,7 @@ public class CommentService {
     }
 
     private Post getPost(Long postId) {
-        return validateOptional(postRepository.findById(postId), "Post not found");
+        return postRepository.findById(postId).orElseThrow(()
+                -> new EntityNotFoundException(String.format("Post with id %d not found", postId)));
     }
 }
