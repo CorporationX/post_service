@@ -42,7 +42,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<CommentDto> getCommentsByPostId(Long postId) {
         List<Comment> comments = commentRepository.findAllByPostId(postId).stream()
-                .sorted((comm1, comm2) -> comm2.getUpdatedAt().compareTo(comm1.getUpdatedAt()))
+                .sorted((comm1, comm2) -> comm2.getCreatedAt().compareTo(comm1.getCreatedAt()))
                 .collect(Collectors.toList());
         return commentMapper.toDto(comments);
     }

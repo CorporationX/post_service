@@ -92,19 +92,19 @@ class CommentServiceTest {
                         .id(1L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(LocalDateTime.MIN)
+                        .createdAt(LocalDateTime.MIN)
                         .build(),
                 Comment.builder()
                         .id(2L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(LocalDateTime.MIN.plusSeconds(5))
+                        .createdAt(LocalDateTime.MIN.plusSeconds(5))
                         .build(),
                 Comment.builder()
                         .id(3L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(LocalDateTime.MIN.plusSeconds(10))
+                        .createdAt(LocalDateTime.MIN.plusSeconds(10))
                         .build()
         );
     }
@@ -115,19 +115,19 @@ class CommentServiceTest {
                         .id(3L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(getComments().get(2).getUpdatedAt())
+                        .createdAt(LocalDateTime.MIN.plusSeconds(10))
                         .build(),
                 CommentDto.builder()
                         .id(2L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(getComments().get(1).getUpdatedAt())
+                        .createdAt(LocalDateTime.MIN.plusSeconds(5))
                         .build(),
                 CommentDto.builder()
                         .id(1L)
                         .authorId(0L)
                         .content("content")
-                        .updatedAt(getComments().get(0).getUpdatedAt())
+                        .createdAt(LocalDateTime.MIN)
                         .build()
         );
     }
