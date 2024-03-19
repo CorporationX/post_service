@@ -66,5 +66,4 @@ public class PostController {
     public List<PostDto> getPublishedPostsByProjectId(@PathVariable @Min(1) long projectId) {
         return postService.getPublishedPostsByProjectId(projectId);
     }
-
 }

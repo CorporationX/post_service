@@ -162,7 +162,7 @@ class PostServiceTest {
 
     @Test
     void getCreatedPostsByUserId_PostsFilteredAndSorted_ThenReturnedAsDto() {
-                setPostsCreationDates();
+        setPostsCreationDates();
         firstPost.setPublished(true);
         when(postRepository.findByAuthorId(anyLong())).thenReturn(List.of(firstPost, secondPost, thirdPost));
 
