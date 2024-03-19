@@ -25,8 +25,7 @@ public class CommentController {
     private final UserContext userContext;
 
     @PostMapping("/posts/{postId}/comments")
-    public CommentDto createComment(@RequestHeader("x-user-id") Long userId,
-                                    @PathVariable Long postId,
+    public CommentDto createComment(@PathVariable Long postId,
                                     @RequestBody @Valid CommentDto commentDto) {
         return commentService.createComment(userContext.getUserId(), postId, commentDto);
     }
