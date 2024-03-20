@@ -1,5 +1,6 @@
-package faang.school.postservice.dto;
+package faang.school.postservice.dto.post;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,8 +11,9 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PostDto {
     private Long id;
 
@@ -24,4 +26,5 @@ public class PostDto {
     private LocalDateTime updatedAt;
     private boolean published;
     private boolean deleted;
+    private Long likeCount;
 }

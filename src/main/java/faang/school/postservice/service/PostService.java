@@ -5,89 +5,125 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
-    private final PostRepository postRepository;
-    private final PostMapper postMapper;
-    private final UserServiceClient userServiceClient;
+
     private final ProjectServiceClient projectServiceClient;
     private final PostEventPublisher postEventPublisher;
+    private final UserServiceClient userServiceClient;
+    private final PostMapper postMapper;
+    private final PostRepository postRepository;
 
     @Transactional
-    public PostDto createDraftPost(PostDto postDto) {
-        validateIdPostDto(postDto);
-        validateAuthorExist(postDto);
-
+    public PostDto createDraft(PostDto postDto) {
+        validateAuthor(postDto);
         Post post = postMapper.toEntity(postDto);
-
-        return postMapper.toDto(postRepository.save(post));
+        postRepository.save(post);
+        return postMapper.toDto(post);
     }
 
     @Transactional
-    public PostDto publishPost(Long id) {
-        Post post = validatePostExist(id);
-
-        if (post.isPublished() || post.isDeleted()) {
-            throw new DataValidationException("Post is already published or deleted");
+    public PostDto publish(long id) {
+        Post post = searchPostById(id);
+        if (post.isPublished()) {
+            throw new DataValidationException("The post has already been published");
         }
-
         postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
-
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        postRepository.save(post);
         return postMapper.toDto(post);
     }
 
     @Transactional
-    public PostDto updatePost(PostDto postDto) {
-        validateIdPostDto(postDto);
-        validateAuthorExist(postDto);
-        Post post = validatePostExist(postDto.getId());
-
+    public PostDto update(PostDto postDto) {
+        Post post = searchPostById(postDto.getId());
         post.setContent(postDto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
-
+        postRepository.save(post);
         return postMapper.toDto(post);
     }
 
-    private void validateIdPostDto(PostDto postDto) {
-        if ((postDto.getAuthorId() == null && postDto.getProjectId() == null) ||
-                (postDto.getAuthorId() != null && postDto.getProjectId() != null)) {
-            throw new DataValidationException("Enter one thing: authorId or projectId");
-        }
+    @Transactional
+    public PostDto deletePost(long id) {
+        Post post = searchPostById(id);
+        post.setPublished(false);
+        post.setDeleted(true);
+        return postMapper.toDto(post);
     }
 
-    private void validateAuthorExist(PostDto postDto) {
-        if (postDto.getAuthorId() != null) {
-            try {
-                userServiceClient.getUser(postDto.getAuthorId());
-            } catch (FeignException e) {
-                throw new EntityNotFoundException("User with the specified authorId does not exist");
-            }
-        } else if (postDto.getProjectId() != null) {
-            try {
-                projectServiceClient.getProject(postDto.getProjectId());
-            } catch (FeignException e) {
-                throw new EntityNotFoundException("Project with the specified projectId does not exist");
-            }
-        }
+    @Transactional
+    public PostDto getPostById(long id) {
+        return postMapper.toDto(searchPostById(id));
     }
 
-    private Post validatePostExist(Long id) {
+    @Transactional
+    public List<PostDto> getDraftsByAuthorId(long id) {
+        List<Post> posts = postRepository.findByAuthorId(id);
+        return filterPosts(posts, false);
+    }
+
+    @Transactional
+    public List<PostDto> getDraftsByProjectId(long id) {
+        List<Post> posts = postRepository.findByProjectId(id);
+        return filterPosts(posts, false);
+    }
+
+    @Transactional
+    public List<PostDto> getPublishedPostsByAuthorId(long id) {
+        List<Post> posts = postRepository.findByAuthorId(id);
+        return filterPosts(posts, true);
+    }
+
+    @Transactional
+    public List<PostDto> getPublishedPostsByProjectId(long id) {
+        List<Post> posts = postRepository.findByProjectId(id);
+        return filterPosts(posts, true);
+    }
+
+    private void validateAuthor(PostDto postDto) {
+        if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
+            throw new DataValidationException("The author of the post is not specified");
+        }
+        if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
+            throw new DataValidationException("A post cannot have two authors");
+        }
+        if (postDto.getAuthorId() != null && !userServiceClient.existById(postDto.getAuthorId())) {
+            throw new DataValidationException("There is no author with this id " + postDto.getAuthorId());
+        }
+
+    }
+
+    public Post searchPostById(long id) {
         return postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Post with the specified id does not exist"));
+                .orElseThrow(() -> new DataValidationException("Post with id " + id + " not found."));
+    }
+
+    private List<PostDto> filterPosts(List<Post> posts, boolean isPublished) {
+        return posts.stream()
+                .filter(post -> post.isPublished() == isPublished)
+                .filter(post -> !post.isDeleted())
+                .sorted((post1, post2) -> {
+                    LocalDateTime date1 = isPublished ? post1.getPublishedAt() : post1.getCreatedAt();
+                    LocalDateTime date2 = isPublished ? post2.getPublishedAt() : post2.getCreatedAt();
+                    if (date1 == null || date2 == null) {
+                        throw new DataValidationException("Invalid date");
+                    }
+                    return date2.compareTo(date1);
+                })
+                .map(postMapper::toDto)
+                .toList();
     }
 }
