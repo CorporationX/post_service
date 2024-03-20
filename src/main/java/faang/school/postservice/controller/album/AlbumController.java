@@ -1,5 +1,6 @@
 package faang.school.postservice.controller.album;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.service.album.AlbumService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Albums", description = "Endpoints for managing albums")
 public class AlbumController {
     private final AlbumService albumService;
+    private final UserContext userContext;
 
     @Operation(summary = "Create an album")
     @PostMapping
@@ -31,17 +32,15 @@ public class AlbumController {
 
     @Operation(summary = "Add post to an album")
     @PutMapping("/{albumId}")
-    public AlbumDto addPostToAlbum(@RequestHeader("x-user-id") long userId,
-                                   @PathVariable long albumId,
-                                   @RequestParam long postId) {
+    public AlbumDto addPostToAlbum(@PathVariable long albumId, @RequestParam long postId) {
+        long userId = userContext.getUserId();
         return albumService.addPostToAlbum(userId, albumId, postId);
     }
 
     @Operation(summary = "Delete post from an album")
     @DeleteMapping("/{albumId}")
-    public AlbumDto deletePostFromAlbum(@RequestHeader("x-user-id") long userId,
-                                        @PathVariable long albumId,
-                                        @RequestParam long postId) {
+    public AlbumDto deletePostFromAlbum(@PathVariable long albumId, @RequestParam long postId) {
+        long userId = userContext.getUserId();
         return albumService.deletePostFromAlbum(userId, albumId, postId);
     }
 
