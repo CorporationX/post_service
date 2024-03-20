@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -33,36 +32,65 @@ public class AlbumController {
         return albumService.create(albumDto);
     }
 
-    @Operation(summary = "Add post to an album")
-    @PutMapping("/{albumId}")
-    public AlbumDto addPostToAlbum(@PathVariable long albumId, @RequestParam long postId) {
+    @Operation(summary = "Get filtered list of user's albums")
+    @PostMapping("/user/filtered")
+    public List<AlbumDto> getUsersAlbums(@RequestBody AlbumFilterDto filters) {
         long userId = userContext.getUserId();
-        return albumService.addPostToAlbum(userId, albumId, postId);
+        return albumService.getUsersAlbums(userId, filters);
     }
 
-    @Operation(summary = "Delete post from an album")
-    @DeleteMapping("/{albumId}")
-    public AlbumDto deletePostFromAlbum(@PathVariable long albumId, @RequestParam long postId) {
+    @Operation(summary = "Get filtered list of every existing album")
+    @PostMapping("/filtered")
+    public List<AlbumDto> getAllAlbums(@RequestBody AlbumFilterDto filters) {
+        return albumService.getAllAlbums(filters);
+    }
+
+    @Operation(summary = "Get filtered list of user's favourite albums")
+    @PostMapping("/user/favourite/filtered")
+    public List<AlbumDto> getFavouriteAlbums(@RequestBody AlbumFilterDto filters) {
         long userId = userContext.getUserId();
-        return albumService.deletePostFromAlbum(userId, albumId, postId);
+        return albumService.getFavouriteAlbums(userId, filters);
+    }
+
+    @Operation(summary = "Update existing album")
+    @PutMapping
+    public AlbumDto update(@Valid @RequestBody AlbumDto albumDto) {
+        long userId = userContext.getUserId();
+        return albumService.update(userId, albumDto);
+    }
+
+    @Operation(summary = "Add post to an album")
+    @PutMapping("/{albumId}/post/{postId}")
+    public AlbumDto addPostToAlbum(@PathVariable long albumId, @PathVariable long postId) {
+        long userId = userContext.getUserId();
+        return albumService.addPostToAlbum(userId, albumId, postId);
     }
 
     @Operation(summary = "Add album to favourites")
     @PutMapping("/favourite")
     public void addAlbumToFavourites(@Valid @RequestBody AlbumDto albumDto) {
-        albumService.addAlbumToFavourites(albumDto);
+        long userId = userContext.getUserId();
+        albumService.addAlbumToFavourites(userId, albumDto);
+    }
+
+    @Operation(summary = "Delete post from an album")
+    @DeleteMapping("/{albumId}/post/{postId}")
+    public AlbumDto deletePostFromAlbum(@PathVariable long albumId, @PathVariable long postId) {
+        long userId = userContext.getUserId();
+        return albumService.deletePostFromAlbum(userId, albumId, postId);
     }
 
     @Operation(summary = "Delete album from favourites")
     @DeleteMapping("/favourite")
     public void deleteAlbumFromFavourites(@Valid @RequestBody AlbumDto albumDto) {
-        albumService.deleteAlbumToFavourites(albumDto);
+        long userId = userContext.getUserId();
+        albumService.deleteAlbumToFavourites(userId, albumDto);
     }
 
-    @Operation(summary = "Get user's albums with filters")
-    @PostMapping("/user")
-    public List<AlbumDto> getUsersAlbums(@RequestBody AlbumFilterDto filters) {
+    @Operation(summary = "Delete an album")
+    @DeleteMapping("/{albumId}")
+    public void delete(@PathVariable long albumId) {
         long userId = userContext.getUserId();
-        return albumService.getUsersAlbums(userId, filters);
+        albumService.delete(userId, albumId);
     }
 }

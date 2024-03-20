@@ -35,46 +35,80 @@ public class AlbumService {
         return albumMapper.toDto(savedAlbum);
     }
 
+    public List<AlbumDto> getUsersAlbums(long userId, AlbumFilterDto filters) {
+        List<Album> albums = albumRepository.findByAuthorId(userId).collect(Collectors.toList());
+        applyFilters(albums, filters);
+        return albumMapper.toDto(albums);
+    }
+
+    public List<AlbumDto> getAllAlbums(AlbumFilterDto filters) {
+        List<Album> albums = albumRepository.findAll();
+        applyFilters(albums, filters);
+        return albumMapper.toDto(albums);
+    }
+
+    public List<AlbumDto> getFavouriteAlbums(long userId, AlbumFilterDto filters) {
+        List<Album> albums = albumRepository.findFavoriteAlbumsByUserId(userId).collect(Collectors.toList());
+        applyFilters(albums, filters);
+        return albumMapper.toDto(albums);
+    }
+
+    public AlbumDto update(long userId, AlbumDto albumDto) {
+        Album album = getAlbumFromRepository(albumDto.getId());
+        albumValidator.validateIfUserIsAuthor(userId, album);
+        albumValidator.validateUpdatedAlbum(userId, albumDto);
+
+        Album updatedAndSavedAlbum = albumRepository.save(albumMapper.toEntity(albumDto));
+        return albumMapper.toDto(updatedAndSavedAlbum);
+    }
+
     public AlbumDto addPostToAlbum(long userId, long albumId, long postId) {
         Album album = getAlbumFromRepository(albumId);
-        albumValidator.validateIfUserHasAccess(userId, album);
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
+        albumValidator.validateIfUserIsAuthor(userId, album);
+        Post post = getPostFromRepository(postId);
 
         album.addPost(post);
         return albumMapper.toDto(albumRepository.save(album));
     }
 
+    public void addAlbumToFavourites(long userId, AlbumDto albumDto) {
+        userValidator.validateUserExist(userId);
+        albumRepository.addAlbumToFavorites(albumDto.getId(), userId);
+    }
+
     public AlbumDto deletePostFromAlbum(long userId, long albumId, long postId) {
         Album album = getAlbumFromRepository(albumId);
-        albumValidator.validateIfUserHasAccess(userId, album);
+        albumValidator.validateIfUserIsAuthor(userId, album);
 
         album.removePost(postId);
         return albumMapper.toDto(albumRepository.save(album));
     }
 
-    public void addAlbumToFavourites(AlbumDto albumDto) {
-        long userId = albumDto.getAuthorId();
-        userValidator.validateUserExist(userId);
-        albumRepository.addAlbumToFavorites(albumDto.getId(), userId);
-    }
-
-    public void deleteAlbumToFavourites(AlbumDto albumDto) {
-        long userId = albumDto.getAuthorId();
+    public void deleteAlbumToFavourites(long userId, AlbumDto albumDto) {
         userValidator.validateUserExist(userId);
         albumRepository.deleteAlbumFromFavorites(albumDto.getId(), userId);
     }
 
-    public List<AlbumDto> getUsersAlbums(long userId, AlbumFilterDto filters) {
-        List<Album> albums = albumRepository.findByAuthorId(userId).collect(Collectors.toList());
-        albumFilters.stream()
-                .filter(filter -> filter.isApplicable(filters))
-                .forEach(filter -> filter.apply(albums, filters));
-        return albumMapper.toDto(albums);
+    public void delete(long userId, long albumId) {
+        Album album = getAlbumFromRepository(albumId);
+        albumValidator.validateIfUserIsAuthor(userId, album);
+
+        albumRepository.delete(album);
     }
 
     private Album getAlbumFromRepository(long albumId) {
         return albumRepository.findById(albumId)
                 .orElseThrow(() -> new EntityNotFoundException("Album doesn't exist by id: " + albumId));
+    }
+
+    private Post getPostFromRepository(long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
+    }
+
+    private void applyFilters(List<Album> albums, AlbumFilterDto filters) {
+        albumFilters.stream()
+                .filter(filter -> filter.isApplicable(filters))
+                .forEach(filter -> filter.apply(albums, filters));
     }
 }

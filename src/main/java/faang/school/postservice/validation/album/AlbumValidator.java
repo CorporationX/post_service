@@ -22,12 +22,18 @@ public class AlbumValidator {
         }
     }
 
-    public void validateIfUserHasAccess(long userId, Album album) {
+    public void validateIfUserIsAuthor(long userId, Album album) {
         long authorId = album.getAuthorId();
 
         if (userId != authorId) {
             throw new DataValidationException(String.format("User with id %d is not an author of the album with id %d",
                     userId, authorId));
+        }
+    }
+
+    public void validateUpdatedAlbum(long authorId, AlbumDto albumDto) {
+        if (authorId != albumDto.getAuthorId()) {
+            throw new DataValidationException("Album author can't be changed");
         }
     }
 }
