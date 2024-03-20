@@ -35,6 +35,7 @@ public class PostService {
     public PostDto publish(long postId) {
         Post post = getPost(postId);
         postValidator.validateIfPostIsPublished(post);
+        postValidator.validateIfPostIsDeleted(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
@@ -51,6 +52,7 @@ public class PostService {
 
     public void delete(long postId) {
         Post post = getPost(postId);
+        postValidator.validateIfPostIsDeleted(post);
         post.setDeleted(true);
         postRepository.save(post);
     }
