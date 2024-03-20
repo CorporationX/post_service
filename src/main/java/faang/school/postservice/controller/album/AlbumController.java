@@ -61,7 +61,7 @@ public class AlbumController {
 
     @Operation(summary = "Get user's albums with filters")
     @PostMapping("/user")
-    public List<AlbumDto> getUsersAlbums(AlbumFilterDto filters) {
+    public List<AlbumDto> getUsersAlbums(@RequestBody AlbumFilterDto filters) {
         long userId = userContext.getUserId();
         return albumService.getUsersAlbums(userId, filters);
     }
