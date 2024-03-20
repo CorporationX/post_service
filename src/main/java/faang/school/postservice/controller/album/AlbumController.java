@@ -2,6 +2,7 @@ package faang.school.postservice.controller.album;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.filter.AlbumFilterDto;
 import faang.school.postservice.service.album.AlbumService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,15 +47,22 @@ public class AlbumController {
         return albumService.deletePostFromAlbum(userId, albumId, postId);
     }
 
-    @Operation(summary = "Add post to favourites")
+    @Operation(summary = "Add album to favourites")
     @PutMapping("/favourite")
     public void addAlbumToFavourites(@Valid @RequestBody AlbumDto albumDto) {
         albumService.addAlbumToFavourites(albumDto);
     }
 
-    @Operation(summary = "Delete post from favourites")
+    @Operation(summary = "Delete album from favourites")
     @DeleteMapping("/favourite")
     public void deleteAlbumFromFavourites(@Valid @RequestBody AlbumDto albumDto) {
         albumService.deleteAlbumToFavourites(albumDto);
+    }
+
+    @Operation(summary = "Get user's albums with filters")
+    @PostMapping("/user")
+    public List<AlbumDto> getUsersAlbums(AlbumFilterDto filters) {
+        long userId = userContext.getUserId();
+        return albumService.getUsersAlbums(userId, filters);
     }
 }

@@ -1,16 +1,21 @@
 package faang.school.postservice.service.album;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.filter.AlbumFilterDto;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.album.filter.AlbumFilter;
 import faang.school.postservice.validation.album.AlbumValidator;
 import faang.school.postservice.validation.user.UserValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +25,7 @@ public class AlbumService {
     private final AlbumValidator albumValidator;
     private final UserValidator userValidator;
     private final PostRepository postRepository;
+    private final List<AlbumFilter> albumFilters;
 
     public AlbumDto create(AlbumDto albumDto) {
         userValidator.validateUserExist(albumDto.getAuthorId());
@@ -57,6 +63,14 @@ public class AlbumService {
         long userId = albumDto.getAuthorId();
         userValidator.validateUserExist(userId);
         albumRepository.deleteAlbumFromFavorites(albumDto.getId(), userId);
+    }
+
+    public List<AlbumDto> getUsersAlbums(long userId, AlbumFilterDto filters) {
+        List<Album> albums = albumRepository.findByAuthorId(userId).collect(Collectors.toList());
+        albumFilters.stream()
+                .filter(filter -> filter.isApplicable(filters))
+                .forEach(filter -> filter.apply(albums, filters));
+        return albumMapper.toDto(albums);
     }
 
     private Album getAlbumFromRepository(long albumId) {
