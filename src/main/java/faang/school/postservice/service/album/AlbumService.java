@@ -57,6 +57,7 @@ public class AlbumService {
         Album album = getAlbumFromRepository(albumDto.getId());
         albumValidator.validateIfUserIsAuthor(userId, album);
         albumValidator.validateUpdatedAlbum(userId, albumDto);
+        albumValidator.validateAlbumTitle(albumDto);
 
         Album updatedAndSavedAlbum = albumRepository.save(albumMapper.toEntity(albumDto));
         return albumMapper.toDto(updatedAndSavedAlbum);
@@ -84,7 +85,7 @@ public class AlbumService {
         return albumMapper.toDto(albumRepository.save(album));
     }
 
-    public void deleteAlbumToFavourites(long userId, AlbumDto albumDto) {
+    public void deleteAlbumFromFavourites(long userId, AlbumDto albumDto) {
         userValidator.validateUserExist(userId);
         albumRepository.deleteAlbumFromFavorites(albumDto.getId(), userId);
     }

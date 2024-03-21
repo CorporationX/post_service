@@ -84,7 +84,7 @@ public class AlbumController {
     @DeleteMapping("/favourite")
     public void deleteAlbumFromFavourites(@Valid @RequestBody AlbumDto albumDto) {
         long userId = userContext.getUserId();
-        albumService.deleteAlbumToFavourites(userId, albumDto);
+        albumService.deleteAlbumFromFavourites(userId, albumDto);
     }
 
     @Operation(summary = "Delete an album")
