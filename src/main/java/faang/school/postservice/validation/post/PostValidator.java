@@ -54,6 +54,12 @@ public class PostValidator {
         }
     }
 
+    public void validateIfPostIsDeleted(Post post) {
+        if (post.isDeleted()) {
+            throw new DataValidationException("Post has been deleted");
+        }
+    }
+
     public void validateUpdatedPost(Post post, PostDto updatedPostDto) {
         validatePostAuthor(updatedPostDto);
 
