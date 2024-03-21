@@ -26,7 +26,7 @@ public class AlbumValidator {
         long authorId = album.getAuthorId();
 
         if (userId != authorId) {
-            throw new DataValidationException(String.format("User with id %d is not an author of the album with id %d",
+            throw new DataValidationException(String.format("User with id %d isn't the author of the album with id %d",
                     userId, authorId));
         }
     }
