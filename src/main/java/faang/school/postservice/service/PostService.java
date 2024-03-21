@@ -21,10 +21,10 @@ import java.util.List;
 public class PostService {
 
     private final ProjectServiceClient projectServiceClient;
+    private final PostEventPublisher postEventPublisher;
     private final UserServiceClient userServiceClient;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
-    private final PostEventPublisher postEventPublisher;
 
 
     @Transactional
@@ -41,6 +41,7 @@ public class PostService {
         if (post.isPublished()) {
             throw new DataValidationException("The post has already been published");
         }
+        postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);

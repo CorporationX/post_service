@@ -48,7 +48,7 @@ public class LikeServiceTest {
 
 
     @InjectMocks
-    private LikeService likeService;
+    private LikeServiceImpl likeService;
 
     private UserDto userDto;
 
