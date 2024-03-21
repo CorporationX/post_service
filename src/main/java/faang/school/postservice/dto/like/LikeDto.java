@@ -1,4 +1,4 @@
-package faang.school.postservice.dto;
+package faang.school.postservice.dto.like;
 
 
 import jakarta.validation.constraints.Positive;
