@@ -35,6 +35,11 @@ public class AlbumService {
         return albumMapper.toDto(savedAlbum);
     }
 
+    public AlbumDto getAlbum(long albumId) {
+        Album album = getAlbumFromRepository(albumId);
+        return albumMapper.toDto(album);
+    }
+
     public List<AlbumDto> getUsersAlbums(long userId, AlbumFilterDto filters) {
         List<Album> albums = albumRepository.findByAuthorId(userId).collect(Collectors.toList());
         applyFilters(albums, filters);
@@ -85,9 +90,9 @@ public class AlbumService {
         return albumMapper.toDto(albumRepository.save(album));
     }
 
-    public void deleteAlbumFromFavourites(long userId, AlbumDto albumDto) {
+    public void deleteAlbumFromFavourites(long userId, long albumId) {
         userValidator.validateUserExist(userId);
-        albumRepository.deleteAlbumFromFavorites(albumDto.getId(), userId);
+        albumRepository.deleteAlbumFromFavorites(albumId, userId);
     }
 
     public void delete(long userId, long albumId) {

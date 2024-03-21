@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -30,6 +31,12 @@ public class AlbumController {
     @PostMapping
     public AlbumDto create(@Valid @RequestBody AlbumDto albumDto) {
         return albumService.create(albumDto);
+    }
+
+    @Operation(summary = "Get album by id")
+    @GetMapping("/{albumId}")
+    public AlbumDto getAlbum(@PathVariable long albumId) {
+        return albumService.getAlbum(albumId);
     }
 
     @Operation(summary = "Get filtered list of user's albums")
@@ -81,10 +88,10 @@ public class AlbumController {
     }
 
     @Operation(summary = "Delete album from favourites")
-    @DeleteMapping("/favourite")
-    public void deleteAlbumFromFavourites(@Valid @RequestBody AlbumDto albumDto) {
+    @DeleteMapping("/{albumId}/favourite")
+    public void deleteAlbumFromFavourites(@PathVariable long albumId) {
         long userId = userContext.getUserId();
-        albumService.deleteAlbumFromFavourites(userId, albumDto);
+        albumService.deleteAlbumFromFavourites(userId, albumId);
     }
 
     @Operation(summary = "Delete an album")

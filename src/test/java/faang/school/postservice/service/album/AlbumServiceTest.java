@@ -222,7 +222,7 @@ class AlbumServiceTest {
 
     @Test
     void deleteAlbumFromFavourites_AlbumIsDeletedFromFavourites_IsValid() {
-        albumService.deleteAlbumFromFavourites(20L, albumDto);
+        albumService.deleteAlbumFromFavourites(20L, albumDto.getId());
 
         assertAll(
                 () -> verifyValidateUserExists(1, 20L),
