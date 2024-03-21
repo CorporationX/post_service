@@ -64,6 +64,7 @@ public class LikeService {
 
     private List<UserDto> getUsers(List<Long> userIds) {
         List<List<Long>> choppedLists = getChoppedLists(userIds);
+        System.out.println(choppedLists);
         List<UserDto> result = new ArrayList<>();
         for (List<Long> chunk : choppedLists) {
             List<UserDto> users = userServiceClient.getUsersByIds(chunk);
