@@ -11,6 +11,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.album.filter.AlbumFilter;
 import faang.school.postservice.validation.album.AlbumValidator;
 import faang.school.postservice.validation.user.UserValidator;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +26,9 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -99,6 +102,26 @@ class AlbumServiceTest {
                 () -> verify(albumMapper, times(1)).toDto(album),
                 () -> assertEquals(albumDto, returned)
         );
+    }
+
+    @Test
+    void getAlbum_AlbumFound_ThenReturnedAsDto() {
+        whenAlbumRepositoryFindById(album.getId());
+
+        AlbumDto returned = albumService.getAlbum(albumDto.getId());
+
+        assertAll(
+                () -> verifyAlbumRepositoryFindById(1, albumDto.getId()),
+                () -> assertEquals(albumDto, returned)
+        );
+    }
+
+    @Test
+    void getAlbum_AlbumNotFound_ShouldThrowEntityNotFoundException() {
+        when(albumRepository.findById(albumDto.getId())).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class,
+                () -> albumService.getAlbum(albumDto.getId()));
     }
 
     @Test
