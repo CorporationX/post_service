@@ -14,12 +14,12 @@ import java.util.List;
 public class LikeController {
     private final LikeService likeService;
 
-    @GetMapping("/post/{postId}")
+    @GetMapping("/posts/{postId}/likes")
     public List<UserDto> getUsersLikedPost(@PathVariable Long postId){
         return likeService.getUsersLikedPost(postId);
     }
 
-    @GetMapping("/comment/{commentId}")
+    @GetMapping("/comment/{commentId}/likes")
     public List<UserDto> getUsersLikedComment(@PathVariable Long commentId){
         return likeService.getUsersLikedComment(commentId);
     }
