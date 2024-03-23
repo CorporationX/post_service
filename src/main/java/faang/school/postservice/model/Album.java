@@ -46,6 +46,10 @@ public class Album {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "visibility")
+    private AlbumVisibility albumVisibility;
+
     public void addPost(Post post) {
         posts.add(post);
     }
