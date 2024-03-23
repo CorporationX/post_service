@@ -30,7 +30,8 @@ public class AlbumController {
     @Operation(summary = "Create an album")
     @PostMapping
     public AlbumDto create(@Valid @RequestBody AlbumDto albumDto) {
-        return albumService.create(albumDto);
+        long userId = userContext.getUserId();
+        return albumService.create(userId, albumDto);
     }
 
     @Operation(summary = "Get album by id")
@@ -64,6 +65,34 @@ public class AlbumController {
     public AlbumDto update(@Valid @RequestBody AlbumDto albumDto) {
         long userId = userContext.getUserId();
         return albumService.update(userId, albumDto);
+    }
+
+    @Operation(summary = "Set public visibility to an album")
+    @PutMapping("/{albumId}/public")
+    public AlbumDto setPublicVisibility(@PathVariable long albumId) {
+        long userId = userContext.getUserId();
+        return albumService.setPublicVisibility(userId, albumId);
+    }
+
+    @Operation(summary = "Set subscribers only to access to an album")
+    @PutMapping("/{albumId}/subscribers")
+    public AlbumDto setSubscribersOnlyVisibility(@PathVariable long albumId) {
+        long userId = userContext.getUserId();
+        return albumService.setSubscribersOnlyVisibility(userId, albumId);
+    }
+
+    @Operation(summary = "Set list of selected users only to access an album")
+    @PutMapping("/{albumId}/users")
+    public AlbumDto setSelectedUsersOnlyVisibility(@PathVariable long albumId, @RequestBody List<Long> usersIds) {
+        long userId = userContext.getUserId();
+        return albumService.setSelectedUsersOnlyVisibility(userId, albumId, usersIds);
+    }
+
+    @Operation(summary = "Set private access to the album")
+    @PutMapping("/{albumId}/private")
+    public AlbumDto setPrivateVisibility(@PathVariable long albumId) {
+        long userId = userContext.getUserId();
+        return albumService.setPrivateVisibility(userId, albumId);
     }
 
     @Operation(summary = "Add post to an album")

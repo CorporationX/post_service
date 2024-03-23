@@ -17,7 +17,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.catalina.User;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -67,7 +66,7 @@ public class Album {
     @JoinTable(name = "album_users",
             joinColumns = @JoinColumn(name = "album_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private List<User> allowedUsers;
+    private List<Long> allowedUsersIds;
 
     public void addPost(Post post) {
         posts.add(post);

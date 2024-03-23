@@ -5,6 +5,7 @@ import faang.school.postservice.dto.album.filter.AlbumFilterDto;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.mapper.album.AlbumMapperImpl;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -28,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -91,9 +91,10 @@ class AlbumServiceTest {
 
     @Test
     void create_AlbumCreatedAndSavedToDb_ThenReturnedAsDto() {
+        album.setAlbumVisibility(AlbumVisibility.PUBLIC);
         when(albumRepository.save(any(Album.class))).thenReturn(album);
 
-        AlbumDto returned = albumService.create(albumDto);
+        AlbumDto returned = albumService.create(albumDto.getAuthorId(), albumDto);
 
         assertAll(
                 () -> verify(albumRepository, times(1)).save(any(Album.class)),
