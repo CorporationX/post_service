@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +25,7 @@ public interface AlbumMapper {
     @Named("postsToIds")
     default List<Long> postsToIds(List<Post> posts) {
         if (posts == null || posts.isEmpty()) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
         return posts.stream()
                 .map(Post::getId)
