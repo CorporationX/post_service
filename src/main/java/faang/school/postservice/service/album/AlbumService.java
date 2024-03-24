@@ -30,8 +30,8 @@ public class AlbumService {
 
     public AlbumDto create(long userId, AlbumDto albumDto) {
         userValidator.validateUserExist(userId);
-        albumValidator.validateAlbumTitle(albumDto);
         albumDto.setAuthorId(userId);
+        albumValidator.validateAlbumTitle(albumDto);
         albumDto.setAlbumVisibility(AlbumVisibility.PUBLIC);
 
         Album savedAlbum = albumRepository.save(albumMapper.toEntity(albumDto));
