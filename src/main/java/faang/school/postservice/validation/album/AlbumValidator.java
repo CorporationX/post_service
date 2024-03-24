@@ -35,6 +35,10 @@ public class AlbumValidator {
         AlbumVisibility visibility = album.getAlbumVisibility();
         long authorId = album.getAuthorId();
 
+        if (authorId == userId) {
+            return;
+        }
+
         if (AlbumVisibility.FOLLOWERS_ONLY.equals(visibility)) {
             try {
                 Set<Long> followersIds = userServiceClient.getFollowers().stream()
@@ -51,7 +55,8 @@ public class AlbumValidator {
         if (AlbumVisibility.SELECTED_USERS_ONLY.equals(visibility) && !album.getAllowedUsersIds().contains(userId)) {
             throw new DataValidationException("User has no access to this album");
         }
-        if (AlbumVisibility.PRIVATE.equals(visibility) && userId != authorId) {
+
+        if (AlbumVisibility.PRIVATE.equals(visibility)) {
             throw new DataValidationException("User has no access to this private album");
         }
     }
