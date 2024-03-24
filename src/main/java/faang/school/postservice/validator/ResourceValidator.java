@@ -27,7 +27,7 @@ public class ResourceValidator {
 
     private void isAllowedVideoType(String type) {
         if (!ALLOWED_VIDEO_MIME_TYPES.contains(type)) {
-            throw new IllegalArgumentException("Type file not like video");
+            throw new IllegalArgumentException("The video has not allowed format.");
         }
     }
 

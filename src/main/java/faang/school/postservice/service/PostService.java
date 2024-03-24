@@ -112,14 +112,14 @@ public class PostService {
     @Transactional
     public List<ResourceDto> addVideo(long postId, List<MultipartFile> files) {
         Post post = getPost(postId);
-        int resourcesSize = post.getResources().size();
+        int amount = post.getResources().size();
 
         List<MultipartFile> validFiles = new ArrayList<>();
         for (MultipartFile file : files) {
-            if (resourcesSize < maxVideo) {
+            if (amount < maxVideo) {
                 resourceValidator.videoIsValid(file);
                 validFiles.add(file);
-                resourcesSize++;
+                amount++;
             }
         }
         return resourceService.addResources(postId, validFiles);
