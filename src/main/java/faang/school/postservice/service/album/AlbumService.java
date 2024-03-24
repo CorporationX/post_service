@@ -81,10 +81,10 @@ public class AlbumService {
         return albumMapper.toDto(albumRepository.save(album));
     }
 
-    public AlbumDto setSubscribersOnlyVisibility(long userId, long albumId) {
+    public AlbumDto setFollowersOnlyVisibility(long userId, long albumId) {
         Album album = getAlbumFromRepository(albumId);
         albumValidator.validateIfUserIsAuthor(userId, album);
-        album.setAlbumVisibility(AlbumVisibility.SUBSCRIBERS_ONLY);
+        album.setAlbumVisibility(AlbumVisibility.FOLLOWERS_ONLY);
 
         return albumMapper.toDto(albumRepository.save(album));
     }

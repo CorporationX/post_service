@@ -35,12 +35,12 @@ public class AlbumValidator {
         AlbumVisibility visibility = album.getAlbumVisibility();
         long authorId = album.getAuthorId();
 
-        if (AlbumVisibility.SUBSCRIBERS_ONLY.equals(visibility)) {
+        if (AlbumVisibility.FOLLOWERS_ONLY.equals(visibility)) {
             try {
-                Set<Long> subscribersIds = userServiceClient.getSubscribers(authorId).stream()
+                Set<Long> followersIds = userServiceClient.getFollowers().stream()
                         .map(UserDto::getId)
                         .collect(Collectors.toSet());
-                if (!subscribersIds.contains(userId)) {
+                if (!followersIds.contains(userId)) {
                     throw new DataValidationException("User has no access to this album");
                 }
             } catch (FeignException.InternalServerError exception) {

@@ -74,11 +74,11 @@ public class AlbumController {
         return albumService.setPublicVisibility(userId, albumId);
     }
 
-    @Operation(summary = "Set subscribers only to access to an album")
-    @PutMapping("/{albumId}/subscribers")
-    public AlbumDto setSubscribersOnlyVisibility(@PathVariable long albumId) {
+    @Operation(summary = "Set followers only to access to an album")
+    @PutMapping("/{albumId}/followers")
+    public AlbumDto setFollowersOnlyVisibility(@PathVariable long albumId) {
         long userId = userContext.getUserId();
-        return albumService.setSubscribersOnlyVisibility(userId, albumId);
+        return albumService.setFollowersOnlyVisibility(userId, albumId);
     }
 
     @Operation(summary = "Set list of selected users only to access an album")
