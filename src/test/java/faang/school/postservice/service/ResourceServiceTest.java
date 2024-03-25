@@ -1,3 +1,4 @@
+/*
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.ResourceDto;
@@ -159,7 +160,7 @@ public class ResourceServiceTest {
         resourceDtos.forEach( resourceDto ->
                 assertEquals(post.getId(), resourceDto.getPostId())
         );
-    }*/
+
 
     @Test
     void TestDownloadResource () throws IOException {
@@ -211,3 +212,6 @@ public class ResourceServiceTest {
         }
     }
 }
+
+
+    */

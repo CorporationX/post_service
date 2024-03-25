@@ -3,22 +3,26 @@ package faang.school.postservice.validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
 public class ResourceValidator {
 
-    @Value("${post.content_to_post.max_amount}")
+    @Value("${post.content_to_post.max_amount.any}")
     private int maxAmountFiles;
-    @Value("${post.content_to_post.max_size}")
-    private int maxFileSize;
+    @Value("${multipart.max_image_file_size}")
+    private int maxImageSize;
     @Value("${multipart.max_video_file_size}")
     private int maxVideoSize;
     private static final Set<String> ALLOWED_VIDEO_MIME_TYPES = Set.of("video/mpeg", "video/mp4", "video/x-msvideo");
 
-    public void validateFileSize(long fileSize) {
-        if (fileSize > maxFileSize) {
-            throw new IllegalArgumentException("Size of file must be equals or less than 5 mb");
+    public void validateImageSize(long fileSize) {
+        if (fileSize > maxImageSize) {
+            throw new IllegalArgumentException("Size of Image must be equals or less than 5 mb");
         }
     }
 

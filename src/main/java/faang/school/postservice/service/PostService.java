@@ -3,8 +3,6 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
-import faang.school.postservice.dto.ResourceDto;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
@@ -16,7 +14,6 @@ import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,15 +31,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostService {
 
-    @Value("${post.content_to_post.max_amount.video}")
-    private int maxVideo;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
-    private final PostValidator postValidator;
+    private final ResourceValidator resourceValidator;
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
+    @Value("${post.content_to_post.max_amount.video}")
+    private int maxVideo;
     @Value("${post.rule.unverified_posts_limit}")
     private int unverifiedPostsLimit;
 
@@ -180,7 +177,7 @@ public class PostService {
                 .toList();
 
         post.getResources().removeAll(resourcesToDelete);
-        resourceService.deleteResources(resourcesToDelete.stream()
+        resourceService.deleteResources(post.getId(), resourcesToDelete.stream()
                 .map(Resource::getId)
                 .toList()
         );
