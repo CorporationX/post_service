@@ -15,6 +15,7 @@ public interface CommentMapper {
     @Mapping(source = "likes", target = "likesIds", qualifiedByName = "likesToIds")
     @Mapping(source = "post.id", target = "postId")
     CommentDto toDto (Comment comment);
+    List<CommentDto> toDto (List<Comment> comments);
     @Mapping(target = "likes", ignore = true)
     @Mapping(target = "post", ignore = true)
     Comment toEntity(CommentDto commentDto);
