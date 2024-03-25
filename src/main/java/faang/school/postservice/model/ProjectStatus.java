@@ -1,5 +1,4 @@
 package faang.school.postservice.model;
-
 public enum ProjectStatus {
     CREATED,
     IN_PROGRESS,
