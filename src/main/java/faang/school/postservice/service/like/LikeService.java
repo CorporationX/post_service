@@ -9,13 +9,10 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,12 +35,14 @@ public class LikeService {
     }
 
     private List<Like> getCommentLikes(Long commentId) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Comment with id %s not found", commentId)));
         return comment.getLikes();
     }
 
     private List<Like> getPostLikes(Long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Post with id %s not found", postId)));
         return post.getLikes();
     }
 
