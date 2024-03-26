@@ -20,6 +20,6 @@ public class CommentEventListener {
     })
     public void listen(CommentUserEvent commentUserEvent, Acknowledgment acknowledgment) {
         postHashService.updateComment(commentUserEvent, acknowledgment);
-        userHashService.saveUser(commentUserEvent.getUserDto(), acknowledgment);
+        userHashService.saveUserAsync(commentUserEvent.getUserDto(), acknowledgment);
     }
 }

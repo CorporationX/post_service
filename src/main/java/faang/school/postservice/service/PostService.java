@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.ProjectDto;
+import faang.school.postservice.dto.event_broker.PostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
@@ -13,6 +14,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.hash.PostHashService;
+import faang.school.postservice.service.hash.UserHashService;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +47,8 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
     private final AsyncPostPublishService asyncPostPublishService;
+    private final PostHashService postHashService;
+    private final UserHashService userHashService;
     private final ModerationDictionary moderationDictionary;
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
@@ -68,7 +73,12 @@ public class PostService {
         }
         postValidator.validateAuthorExists(author, project);
 
-        return savePost(postDto);
+        PostDto savePost = savePost(postDto);
+        PostEvent postEvent = postEventMapper.toPostEvent(savePost);
+        postHashService.savePost(postEvent);
+        userHashService.saveUser(postEvent.getUserDtoAuthor());
+
+        return savePost;
     }
 
     private PostDto savePost(PostDto postDto) {

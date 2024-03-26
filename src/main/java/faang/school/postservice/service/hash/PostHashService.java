@@ -30,20 +30,13 @@ public class PostHashService {
     @Value("${feed.ttl}")
     private long ttl;
 
-    @Async("taskExecutor")
-    @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttemptsExpression = "${feed.retry.maxAttempts}",
-            backoff = @Backoff(delayExpression = "${feed.retry.maxDelay}"))
-    public void savePost(PostEvent postEvent, Acknowledgment acknowledgment) {
+    public void savePost(PostEvent postEvent) {
         boolean exists = postHashRepository.findById(postEvent.getPostId()).isPresent();
-        if (exists) {
-            acknowledgment.acknowledge();
-            return;
+        if (!exists) {
+            PostHash postHash = postEventMapper.toPostHash(postEvent);
+            postHash.setTtl(ttl);
+            postHashRepository.save(postHash);
         }
-
-        PostHash postHash = postEventMapper.toPostHash(postEvent);
-        postHash.setTtl(ttl);
-        postHashRepository.save(postHash);
-        acknowledgment.acknowledge();
     }
 
     @Async("taskExecutor")

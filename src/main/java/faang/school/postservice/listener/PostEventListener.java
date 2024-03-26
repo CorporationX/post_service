@@ -13,8 +13,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PostEventListener {
     private final FeedHashService feedHashService;
-    private final PostHashService postHashService;
-    private final UserHashService userHashService;
 
     @KafkaListener(topics = {
             "${spring.kafka.topics.post.name}",
@@ -22,7 +20,5 @@ public class PostEventListener {
     })
     public void listen(PostEvent postEvent, Acknowledgment acknowledgment) {
         feedHashService.updateFeed(postEvent, acknowledgment);
-        postHashService.savePost(postEvent, acknowledgment);
-        userHashService.saveUser(postEvent.getUserDtoAuthor(), acknowledgment);
     }
 }

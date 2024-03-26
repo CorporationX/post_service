@@ -25,7 +25,7 @@ public class UserHashService {
     @Async("taskExecutor")
     @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttemptsExpression = "${feed.retry.maxAttempts}",
             backoff = @Backoff(delayExpression = "${feed.retry.maxDelay}"))
-    public void saveUser(UserDto userDto, Acknowledgment acknowledgment) {
+    public void saveUserAsync(UserDto userDto, Acknowledgment acknowledgment) {
         boolean exists = userHashRepository.findById(userDto.getId()).isPresent();
         if (!exists) {
             UserHash hash = userHashMapper.toHash(userDto);
@@ -33,5 +33,14 @@ public class UserHashService {
             userHashRepository.save(hash);
         }
         acknowledgment.acknowledge();
+    }
+
+    public void saveUser(UserDto userDto) {
+        boolean exists = userHashRepository.findById(userDto.getId()).isPresent();
+        if (!exists) {
+            UserHash hash = userHashMapper.toHash(userDto);
+            hash.setTtl(ttl);
+            userHashRepository.save(hash);
+        }
     }
 }
