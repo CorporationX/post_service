@@ -35,6 +35,14 @@ spring:
         comment_channel:
           name: comment_channel
 
+  kafka:
+    bootstrap-servers=localhost: 9092
+    consumer:
+      group-id: test-group
+      auto-offset-reset: earliest
+    template:
+      default-topic: test-topic
+
 server:
   port: 8081
 
@@ -86,3 +94,4 @@ post_moderation:
   batch_size: 10_000
 like_service:
   batch: 100
+
