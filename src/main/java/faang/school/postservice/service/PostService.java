@@ -1,14 +1,21 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
+import faang.school.postservice.mapper.redis.RedisPostMapper;
+import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.redis.RedisPost;
+import faang.school.postservice.model.redis.RedisUser;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +43,11 @@ public class PostService {
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
+    private final RedisPostRepository redisPostRepository;
+    private final RedisPostMapper redisPostMapper;
+    private final RedisUserRepository redisUserRepository;
+    private final RedisUserMapper redisUserMapper;
+    private final UserServiceClient userServiceClient;
     @Value("${post.rule.unverified_posts_limit}")
     private int unverifiedPostsLimit;
 
@@ -51,6 +63,8 @@ public class PostService {
         Post post = getPost(postId);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        cachePost(postMapper.toDto(post));
+        cachePostAuthor(post.getAuthorId());
     }
 
     @Transactional
@@ -65,10 +79,6 @@ public class PostService {
         postValidator.validatePostByOwner(postId, ownerId);
         Post post = getPost(postId);
         post.setDeleted(true);
-    }
-
-    public PostDto getPostById(long postId) {
-        return postMapper.toDto(getPost(postId));
     }
 
     public Post getPost(long postId) {
@@ -187,5 +197,14 @@ public class PostService {
                 }
         );
         log.info("check and ban authors method completed");
+    }
+
+    private void cachePost(PostDto postDto) {
+        redisPostRepository.save(redisPostMapper.toRedisPost(postDto));
+    }
+
+    private void cachePostAuthor(long authorId) {
+        RedisUser postAuthor = redisUserMapper.toRedisUser(userServiceClient.getUser(authorId));
+        redisUserRepository.save(postAuthor);
     }
 }

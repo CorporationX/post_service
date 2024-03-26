@@ -1,14 +1,19 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.CommentEventDto;
+import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.RedisUser;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -25,11 +30,15 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final CommentMapper commentMapper;
     private final CommentEventPublisher commentEventPublisher;
+    private final RedisUserRepository redisUserRepository;
+    private final RedisUserMapper redisUserMapper;
+    private final UserServiceClient userServiceClient;
 
     public CommentDto addNewComment(long postId, CommentDto commentDto) {
         commentValidator.validateCommentAuthor(commentDto.getId());
         Comment comment = commentMapper.toEntity(commentDto);
-        Post post = getPostById(postId);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new DataValidationException("There are no posts with that id: " + postId));
         comment.setPost(post);
         comment.setLikes(new ArrayList<>());
         Comment savedComment = commentRepository.save(comment);
@@ -40,6 +49,8 @@ public class CommentService {
                 .authorPostId(post.getAuthorId())
                 .postId(post.getId())
                 .build());
+        cacheCommentAuthor(savedComment.getAuthorId());
+
         return commentMapper.toDTO(savedComment);
     }
 
@@ -60,8 +71,8 @@ public class CommentService {
         return commentMapper.toDtoList(allByPostId);
     }
 
-    public Post getPostById(long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new DataValidationException("There are no posts with that id: " + postId));
+    private void cacheCommentAuthor(long authorId) {
+        RedisUser commentAuthor = redisUserMapper.toRedisUser(userServiceClient.getUser(authorId));
+        redisUserRepository.save(commentAuthor);
     }
 }

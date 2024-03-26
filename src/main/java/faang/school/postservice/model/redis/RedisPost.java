@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
@@ -21,6 +22,9 @@ import java.util.PriorityQueue;
 @Data
 @Builder
 public class RedisPost implements Serializable {
+
+    @Value("${newsfeed.posts_ttl}")
+    private int TTL;
 
     @Id
     private long id;

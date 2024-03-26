@@ -75,3 +75,7 @@ s3:
   bucketName: corpbucket
   #should be changed to bucketName: user-service-bucket
   region: null
+
+newfeed:
+  users_ttl: 86400
+  posts_ttl: 86400
