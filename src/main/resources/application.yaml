@@ -41,7 +41,7 @@ spring:
       group-id: test-group
       auto-offset-reset: earliest
     template:
-      default-topic: test-topic
+      default-topic: posts
 
 server:
   port: 8081
