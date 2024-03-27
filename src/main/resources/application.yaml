@@ -35,6 +35,29 @@ spring:
         comment_channel:
           name: comment_channel
 
+  kafka:
+    listener:
+      ack-mode: MANUAL
+    producer:
+      bootstrap-servers: localhost:29092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      bootstrap-servers: localhost:29092
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: post_service
+    properties:
+      spring.json.trusted.packages: '*'
+    batch-size: 1000
+    topics:
+      post:
+        name: post_topic
+      comment:
+        name: comment_topic
+      like:
+        name: like_topic
+
 server:
   port: 8081
 
@@ -84,5 +107,13 @@ payment-service:
 post_moderation:
   time: 0 0 0 * * ?
   batch_size: 10_000
+
 like_service:
   batch: 100
+
+ttl:
+    cache: 86400
+
+feed:
+  posts: 500
+  batch: 20

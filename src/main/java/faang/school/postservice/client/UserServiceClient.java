@@ -9,15 +9,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}")
+@FeignClient(path = "/api",name = "user-service", url = "${user-service.host}:${user-service.port}")
 public interface UserServiceClient {
 
-    @GetMapping("/api/users/{userId}")
+    @GetMapping("/users/{userId}")
     UserDto getUser(@PathVariable long userId);
 
-    @GetMapping("/api/users/exists/{userId}")
+    @GetMapping("/users/exists/{userId}")
     boolean isUserExists(@PathVariable long userId);
 
-    @PostMapping("/api/users")
+    @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
+    @PostMapping("/user/{id}/followersIds")
+    List<Long> getSubscriberIdsByUserId(@PathVariable long id);
+
+    @PostMapping("/user/{id}/followeesIds")
+    List<Long> getSubscriptionsIdsByUserId(@PathVariable long id);
 }
