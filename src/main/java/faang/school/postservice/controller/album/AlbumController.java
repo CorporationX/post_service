@@ -6,8 +6,9 @@ import faang.school.postservice.dto.album.filter.AlbumFilterDto;
 import faang.school.postservice.service.album.AlbumService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,13 +30,13 @@ public class AlbumController {
 
     @Operation(summary = "Create an album")
     @PostMapping
-    public AlbumDto create(@Valid @RequestBody AlbumDto albumDto) {
+    public AlbumDto create(@Validated @RequestBody AlbumDto albumDto) {
         return albumService.create(albumDto);
     }
 
     @Operation(summary = "Get album by id")
     @GetMapping("/{albumId}")
-    public AlbumDto getAlbum(@PathVariable long albumId) {
+    public AlbumDto getAlbum(@PathVariable @Positive(message = "ID can't be less than 1") long albumId) {
         return albumService.getAlbum(albumId);
     }
 
@@ -61,42 +62,42 @@ public class AlbumController {
 
     @Operation(summary = "Update existing album")
     @PutMapping
-    public AlbumDto update(@Valid @RequestBody AlbumDto albumDto) {
+    public AlbumDto update(@Validated @RequestBody AlbumDto albumDto) {
         long userId = userContext.getUserId();
         return albumService.update(userId, albumDto);
     }
 
     @Operation(summary = "Add post to an album")
     @PutMapping("/{albumId}/post/{postId}")
-    public AlbumDto addPostToAlbum(@PathVariable long albumId, @PathVariable long postId) {
+    public AlbumDto addPostToAlbum(@PathVariable @Positive(message = "ID can't be less than 1") long albumId, @PathVariable @Positive(message = "ID can't be less than 1") long postId) {
         long userId = userContext.getUserId();
         return albumService.addPostToAlbum(userId, albumId, postId);
     }
 
     @Operation(summary = "Add album to favourites")
     @PutMapping("/favourite")
-    public void addAlbumToFavourites(@Valid @RequestBody AlbumDto albumDto) {
+    public void addAlbumToFavourites(@Validated @RequestBody AlbumDto albumDto) {
         long userId = userContext.getUserId();
         albumService.addAlbumToFavourites(userId, albumDto);
     }
 
     @Operation(summary = "Delete post from an album")
     @DeleteMapping("/{albumId}/post/{postId}")
-    public AlbumDto deletePostFromAlbum(@PathVariable long albumId, @PathVariable long postId) {
+    public AlbumDto deletePostFromAlbum(@PathVariable @Positive(message = "ID can't be less than 1") long albumId, @PathVariable @Positive(message = "ID can't be less than 1") long postId) {
         long userId = userContext.getUserId();
         return albumService.deletePostFromAlbum(userId, albumId, postId);
     }
 
     @Operation(summary = "Delete album from favourites")
     @DeleteMapping("/{albumId}/favourite")
-    public void deleteAlbumFromFavourites(@PathVariable long albumId) {
+    public void deleteAlbumFromFavourites(@PathVariable @Positive(message = "ID can't be less than 1") long albumId) {
         long userId = userContext.getUserId();
         albumService.deleteAlbumFromFavourites(userId, albumId);
     }
 
     @Operation(summary = "Delete an album")
     @DeleteMapping("/{albumId}")
-    public void delete(@PathVariable long albumId) {
+    public void delete(@PathVariable @Positive(message = "ID can't be less than 1") long albumId) {
         long userId = userContext.getUserId();
         albumService.delete(userId, albumId);
     }

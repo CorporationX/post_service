@@ -4,9 +4,9 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +27,7 @@ public class PostController {
 
     @Operation(summary = "Create a post draft")
     @PostMapping
-    public PostDto create(@RequestBody @Valid PostDto postDto) {
+    public PostDto create(@Validated @RequestBody PostDto postDto) {
         return postService.create(postDto);
     }
 
@@ -39,7 +39,7 @@ public class PostController {
 
     @Operation(summary = "Update existing post")
     @PutMapping
-    public PostDto update(@RequestBody @Valid PostDto postDto) {
+    public PostDto update(@Validated @RequestBody PostDto postDto) {
         return postService.update(postDto);
     }
 

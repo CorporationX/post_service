@@ -3,8 +3,9 @@ package faang.school.postservice.controller.comment;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.comment.CommentService;
-import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,22 +25,22 @@ public class CommentController {
     private final UserContext userContext;
 
     @PostMapping("/posts/{postId}/comments")
-    public CommentDto createComment(@PathVariable Long postId, @RequestBody @Valid CommentDto commentDto) {
+    public CommentDto createComment(@PathVariable @Positive(message = "ID can't be less than 1") Long postId, @Validated @RequestBody CommentDto commentDto) {
         return commentService.createComment(userContext.getUserId(), postId, commentDto);
     }
 
     @PutMapping("/comments/{commentId}")
-    public CommentDto updateComment(@PathVariable Long commentId, @RequestBody @Valid CommentDto commentDto) {
+    public CommentDto updateComment(@PathVariable Long commentId, @Validated @RequestBody CommentDto commentDto) {
         return commentService.updateComment(commentId, commentDto);
     }
 
     @GetMapping("/posts/{postId}/comments")
-    public List<CommentDto> getCommentsByPostId(@PathVariable Long postId) {
+    public List<CommentDto> getCommentsByPostId(@PathVariable @Positive(message = "ID can't be less than 1")  Long postId) {
         return commentService.getCommentsByPostId(postId);
     }
 
     @DeleteMapping("/comments")
-    public void deleteComment(@RequestParam("id") Long commentId) {
+    public void deleteComment(@RequestParam("id") @Positive(message = "ID can't be less than 1")  Long commentId) {
         commentService.deleteComment(commentId);
     }
 }
