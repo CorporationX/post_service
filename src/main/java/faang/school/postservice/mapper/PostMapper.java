@@ -14,7 +14,7 @@ import java.util.List;
 public interface PostMapper {
 
     @Mapping(target = "resourceIds", source = "resources", qualifiedByName = "getResourceIds")
-    PostDto toDto(Post project);
+    PostDto toDto(Post post);
 
     Post toEntity(PostDto postDto);
 

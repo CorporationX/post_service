@@ -10,6 +10,7 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
+import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,9 +34,12 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final ResourceValidator resourceValidator;
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
+    @Value("${post.content_to_post.max_amount.video}")
+    private int maxVideo;
     @Value("${post.rule.unverified_posts_limit}")
     private int unverifiedPostsLimit;
 
@@ -173,7 +177,7 @@ public class PostService {
                 .toList();
 
         post.getResources().removeAll(resourcesToDelete);
-        resourceService.deleteResources(resourcesToDelete.stream()
+        resourceService.deleteResources(post.getId(), resourcesToDelete.stream()
                 .map(Resource::getId)
                 .toList()
         );
@@ -188,4 +192,26 @@ public class PostService {
         );
         log.info("check and ban authors method completed");
     }
+
+    @Transactional
+    public List<ResourceDto> addVideo(long postId, List<MultipartFile> files) {
+        Post post = getPost(postId);
+        int amount = post.getResources().size();
+
+        List<MultipartFile> validFiles = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (amount < maxVideo) {
+                resourceValidator.videoIsValid(file);
+                validFiles.add(file);
+                amount++;
+            }
+        }
+        return resourceService.addResources(postId, validFiles);
+    }
+
+    @Transactional
+    public void deleteVideo(long postId, List<Long> resourceIds) {
+        resourceService.deleteResources(postId, resourceIds);
+    }
+
 }

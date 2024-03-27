@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -47,6 +48,7 @@ public class Resource {
     @Column(name = "type", length = 50)
     private String type;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;

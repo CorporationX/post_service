@@ -2,12 +2,21 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.model.Resource;
+import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+import java.util.List;
+
+@Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.FIELD,
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ResourceMapper {
-    @Mapping(target = "postId", source = "post.id")
+
+    @Mapping(source = "post.id", target = "postId")
     ResourceDto toDto(Resource resource);
+
+    Resource toEntity(ResourceDto resourceDto);
+
+    List<ResourceDto> toListDto(List<Resource> resources);
 }
