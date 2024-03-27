@@ -24,6 +24,8 @@ public class KafkaConfig {
     private String bootstrapServer;
     @Value("${kafka.topic.post_topic}")
     private String postTopic;
+    @Value("${kafka.topic.post_views_topic}")
+    private String postViewTopic;
 
     @Bean
     public ProducerFactory<String, String> producerFactory() {
@@ -53,6 +55,11 @@ public class KafkaConfig {
     @Bean
     public NewTopic postTopic() {
         return new NewTopic(postTopic, 10, (short) 2);
+    }
+
+    @Bean
+    public NewTopic postViewTopic() {
+        return new NewTopic(postViewTopic, 10, (short) 2);
     }
 
 

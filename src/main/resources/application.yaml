@@ -21,6 +21,7 @@ spring:
     bootstrap-servers: localhost:9092
     topic:
       post_topic: postTopic
+      post_views_topic: viewTopic
 
   data:
     redis:

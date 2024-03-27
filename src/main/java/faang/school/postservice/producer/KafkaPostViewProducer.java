@@ -2,7 +2,7 @@ package faang.school.postservice.producer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.kafka.KafkaPostEvent;
+import faang.school.postservice.dto.kafka.KafkaPostViewEvent;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.SerializationException;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -11,16 +11,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class KafkaPostProducer {
+public class KafkaPostViewProducer {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final NewTopic postTopic;
+    private final NewTopic postViewTopic;
     private final ObjectMapper objectMapper;
 
-    public void sendMessage(KafkaPostEvent event) {
+    public void sendMessage(KafkaPostViewEvent event) {
         try {
             String msg = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send(postTopic.name(), msg);
+            kafkaTemplate.send(postViewTopic.name(), msg);
         } catch (JsonProcessingException e) {
             throw new SerializationException("Can't serialize event");
         }
