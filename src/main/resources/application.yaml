@@ -19,6 +19,8 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    topic:
+      post_topic: postTopic
 
   data:
     redis:

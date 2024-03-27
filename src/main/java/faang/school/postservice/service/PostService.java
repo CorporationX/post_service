@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
+import faang.school.postservice.dto.kafka.KafkaPostEvent;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.mapper.redis.RedisPostMapper;
@@ -12,6 +13,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.model.redis.RedisUser;
+import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
@@ -48,6 +50,7 @@ public class PostService {
     private final RedisUserRepository redisUserRepository;
     private final RedisUserMapper redisUserMapper;
     private final UserServiceClient userServiceClient;
+    private final KafkaPostProducer postProducer;
     @Value("${post.rule.unverified_posts_limit}")
     private int unverifiedPostsLimit;
 
@@ -63,8 +66,11 @@ public class PostService {
         Post post = getPost(postId);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        postRepository.save(post);
+
         cachePost(postMapper.toDto(post));
         cachePostAuthor(post.getAuthorId());
+        sendKafkaPostEvent(post);
     }
 
     @Transactional
@@ -206,5 +212,15 @@ public class PostService {
     private void cachePostAuthor(long authorId) {
         RedisUser postAuthor = redisUserMapper.toRedisUser(userServiceClient.getUser(authorId));
         redisUserRepository.save(postAuthor);
+    }
+
+    private void sendKafkaPostEvent(Post post) {
+        List<Long> followersIds = userServiceClient.getFollowersIds(post.getAuthorId());
+        KafkaPostEvent kfe = KafkaPostEvent.builder()
+                .postId(post.getId())
+                .updatedAt(post.getUpdatedAt())
+                .followersIds(followersIds)
+                .build();
+        postProducer.sendMessage(kfe);
     }
 }

@@ -1,6 +1,7 @@
 package faang.school.postservice.config;
 
 import nonapi.io.github.classgraph.json.JSONSerializer;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -21,6 +22,8 @@ public class KafkaConfig {
 
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServer;
+    @Value("${kafka.topic.post_topic}")
+    private String postTopic;
 
     @Bean
     public ProducerFactory<String, String> producerFactory() {
@@ -45,6 +48,11 @@ public class KafkaConfig {
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JSONSerializer.class);
 
         return new DefaultKafkaConsumerFactory<>(properties);
+    }
+
+    @Bean
+    public NewTopic postTopic() {
+        return new NewTopic(postTopic, 10, (short) 2);
     }
 
 
