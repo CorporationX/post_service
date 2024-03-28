@@ -74,9 +74,7 @@ public class AlbumService {
     public AlbumDto setPublicVisibility(long userId, long albumId) {
         Album album = getAlbumFromRepository(albumId);
         albumValidator.validateIfUserIsAuthor(userId, album);
-        if (!AlbumVisibility.PUBLIC.equals(album.getAlbumVisibility())) {
-            album.setAlbumVisibility(AlbumVisibility.PUBLIC);
-        }
+        album.setAlbumVisibility(AlbumVisibility.PUBLIC);
 
         return albumMapper.toDto(albumRepository.save(album));
     }
@@ -115,9 +113,11 @@ public class AlbumService {
         return albumMapper.toDto(albumRepository.save(album));
     }
 
-    public void addAlbumToFavourites(long userId, AlbumDto albumDto) {
+    public void addAlbumToFavourites(long userId, long albumId) {
         userValidator.validateUserExist(userId);
-        albumRepository.addAlbumToFavorites(albumDto.getId(), userId);
+        Album album = getAlbumFromRepository(albumId);
+        albumValidator.validateAccessToAlbum(userId, album);
+        albumRepository.addAlbumToFavorites(albumId, userId);
     }
 
     public AlbumDto deletePostFromAlbum(long userId, long albumId, long postId) {
@@ -130,6 +130,8 @@ public class AlbumService {
 
     public void deleteAlbumFromFavourites(long userId, long albumId) {
         userValidator.validateUserExist(userId);
+        Album album = getAlbumFromRepository(albumId);
+        albumValidator.validateAccessToAlbum(userId, album);
         albumRepository.deleteAlbumFromFavorites(albumId, userId);
     }
 

@@ -103,10 +103,10 @@ public class AlbumController {
     }
 
     @Operation(summary = "Add album to favourites")
-    @PutMapping("/favourite")
-    public void addAlbumToFavourites(@Valid @RequestBody AlbumDto albumDto) {
+    @PutMapping("/{albumId}/favourite")
+    public void addAlbumToFavourites(@PathVariable long albumId) {
         long userId = userContext.getUserId();
-        albumService.addAlbumToFavourites(userId, albumDto);
+        albumService.addAlbumToFavourites(userId, albumId);
     }
 
     @Operation(summary = "Delete post from an album")
