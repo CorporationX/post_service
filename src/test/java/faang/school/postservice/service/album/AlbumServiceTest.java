@@ -215,7 +215,8 @@ class AlbumServiceTest {
 
     @Test
     void addAlbumToFavourites_AlbumAddedToFavourites_IsValid() {
-        when(albumRepository.findById(album.getId())).thenReturn(Optional.ofNullable(album));
+        whenAlbumRepositoryFindById(album.getId());
+
         albumService.addAlbumToFavourites(album.getAuthorId(), album.getId());
 
         assertAll(
@@ -247,7 +248,8 @@ class AlbumServiceTest {
 
     @Test
     void deleteAlbumFromFavourites_AlbumIsDeletedFromFavourites_IsValid() {
-        when(albumRepository.findById(albumDto.getId())).thenReturn(Optional.ofNullable(album));
+        whenAlbumRepositoryFindById(album.getId());
+
         albumService.deleteAlbumFromFavourites(20L, albumDto.getId());
 
         assertAll(
