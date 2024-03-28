@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
+@Validated
 @RestController
 @RequiredArgsConstructor
 public class CommentController {
@@ -26,7 +26,7 @@ public class CommentController {
     private final UserContext userContext;
 
     @PostMapping("/posts/{postId}/comments")
-    public CommentDto createComment(@PathVariable @Positive(message = "ID can't be less than 1") Long postId, @Validated @RequestBody CommentDto commentDto) {
+    public CommentDto createComment(@PathVariable @Positive(message = "ID can't be less than 1") Long postId, @Valid @RequestBody CommentDto commentDto) {
         return commentService.createComment(userContext.getUserId(), postId, commentDto);
     }
 
