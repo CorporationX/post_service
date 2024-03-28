@@ -13,12 +13,18 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PostEventListener {
     private final FeedHashService feedHashService;
+    private final PostHashService postHashService;
+    private final UserHashService userHashService;
 
-    @KafkaListener(topics = {
-            "${spring.kafka.topics.post.name}",
-            "${spring.kafka.topics.heat_feed.post}"
-    })
+    @KafkaListener(topics = {"${spring.kafka.topics.post.name}"})
     public void listen(PostEvent postEvent, Acknowledgment acknowledgment) {
         feedHashService.updateFeed(postEvent, acknowledgment);
+    }
+
+    @KafkaListener(topics = {"${spring.kafka.topics.heat_feed.post}"})
+    public void listenHeater(PostEvent postEvent, Acknowledgment acknowledgment) {
+        feedHashService.updateFeed(postEvent, acknowledgment);
+        postHashService.savePostAsync(postEvent, acknowledgment);
+        userHashService.saveUserAsync(postEvent.getUserDtoAuthor(), acknowledgment);
     }
 }
