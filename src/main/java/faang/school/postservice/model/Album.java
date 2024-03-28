@@ -1,6 +1,8 @@
 package faang.school.postservice.model;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -62,10 +64,9 @@ public class Album {
     @Column(name = "visibility")
     private AlbumVisibility albumVisibility;
 
-    @ManyToMany
-    @JoinTable(name = "album_users",
-            joinColumns = @JoinColumn(name = "album_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @ElementCollection
+    @CollectionTable(name = "album_users", joinColumns = @JoinColumn(name = "album_id"))
+    @Column(name = "user_id")
     private List<Long> allowedUsersIds;
 
     public void addPost(Post post) {
