@@ -51,6 +51,9 @@ public class Post {
     @Column(name = "published", nullable = false)
     private boolean published;
 
+    @Column(name = "corrected", nullable = false)
+    private boolean corrected;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
@@ -71,4 +74,11 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verified_date")
+    private LocalDateTime verifiedDate;
+
+    @Column(name = "verified", nullable = false)
+    private boolean verified;
 }

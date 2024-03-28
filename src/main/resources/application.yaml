@@ -18,12 +18,32 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
   data:
+    kafka:
+      bootstrap-servers: localhost:9092
+      groupId: 1
+      topics:
+        feedHeatTopic:
+          name: feedHeatTopic
+        postViewTopic:
+          name: postViewTopic
+        commentTopic:
+          name: commentTopic
+        postTopic:
+          name: postTopic
+        likeTopic:
+          name: likeTopic
     redis:
       port: 6379
       host: localhost
       channels:
         calculations_channel:
           name: calculations_channel
+        event_channels:
+          likePost: /likes/post
+        post_channel:
+          name: post_channel
+        comment_event_channel:
+          name: comment_topic
 
 server:
   port: 8081
@@ -35,10 +55,49 @@ logging:
 post:
   publisher:
     scheduler:
+      thread-pool:
+        core-pool-size: 1
+        maximum-pool-size: 10
+        keep-alive-time: 0
+        time-unit: MILLISECONDS
+      batch_size: 1000
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+      every_day_cron: "0 0 0 * * ?"
+      thread-pool:
+        core-pool-size: 1
+        max-pool-size: 10
+        queue-capacity: 1000
+    batch:
+      size: 1000
+  moderation:
+    scheduler:
+      cron: "0 0 0 * * ?" # every day at 00:00:00
+      sublist-size: 100
+
+async:
+  post-moderation:
+    thread-pool:
+      settings:
+        core-pool-size: 4
+        max-pool-size: 8
+        queue-capacity: 100
+  feed-heating:
+    thread-pool:
+      settings:
+        core-pool-size: 4
+        max-pool-size: 8
+        queue-capacity: 100
+
+
+comment:
+  moderator:
+    scheduler:
+      cron: "0 0 12 * * ?" # every day 12:00
+  batch:
+    size: 50
 
 user-service:
   host: localhost
@@ -49,3 +108,12 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+post-correcter:
+  url: "https://bing-spell-check2.p.rapidapi.com/spellcheck"
+  mode: "spell"
+  contentType: "application/x-www-form-urlencoded"
+  xRapidApiKey: "871e222f4dmsha404f4603a4687ep188b05jsn4942910dec51"
+  xRapidApiHost: "bing-spell-check2.p.rapidapi.com"
+  cron: "0 0 3 * * *" # every day at 03:00
+  rateLimitPerSecond: 3
