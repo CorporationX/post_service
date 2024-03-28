@@ -1,7 +1,6 @@
 package faang.school.postservice.dto.payment;
 
 import java.math.BigDecimal;
-
 public record PaymentResponse(
         PaymentStatus status,
         int verificationCode,
@@ -9,5 +8,5 @@ public record PaymentResponse(
         BigDecimal amount,
         Currency currency,
         String message
-){
+) {
 }
