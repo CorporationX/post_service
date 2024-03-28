@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.album;
 
+import faang.school.postservice.model.AlbumVisibility;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,4 +21,5 @@ public class AlbumDto {
     private String description;
     private long authorId;
     private List<Long> postsIds;
+    private AlbumVisibility albumVisibility;
 }

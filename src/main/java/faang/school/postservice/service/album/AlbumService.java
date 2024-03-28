@@ -4,6 +4,7 @@ import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.filter.AlbumFilterDto;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -27,9 +28,11 @@ public class AlbumService {
     private final PostRepository postRepository;
     private final List<AlbumFilter> albumFilters;
 
-    public AlbumDto create(AlbumDto albumDto) {
-        userValidator.validateUserExist(albumDto.getAuthorId());
+    public AlbumDto create(long userId, AlbumDto albumDto) {
+        userValidator.validateUserExist(userId);
+        albumDto.setAuthorId(userId);
         albumValidator.validateAlbumTitle(albumDto);
+        albumDto.setAlbumVisibility(AlbumVisibility.PUBLIC);
 
         Album savedAlbum = albumRepository.save(albumMapper.toEntity(albumDto));
         return albumMapper.toDto(savedAlbum);
@@ -68,6 +71,39 @@ public class AlbumService {
         return albumMapper.toDto(updatedAndSavedAlbum);
     }
 
+    public AlbumDto setPublicVisibility(long userId, long albumId) {
+        Album album = getAlbumFromRepository(albumId);
+        albumValidator.validateIfUserIsAuthor(userId, album);
+        album.setAlbumVisibility(AlbumVisibility.PUBLIC);
+
+        return albumMapper.toDto(albumRepository.save(album));
+    }
+
+    public AlbumDto setFollowersOnlyVisibility(long userId, long albumId) {
+        Album album = getAlbumFromRepository(albumId);
+        albumValidator.validateIfUserIsAuthor(userId, album);
+        album.setAlbumVisibility(AlbumVisibility.FOLLOWERS_ONLY);
+
+        return albumMapper.toDto(albumRepository.save(album));
+    }
+
+    public AlbumDto setSelectedUsersOnlyVisibility(long userId, long albumId, List<Long> usersIds) {
+        Album album = getAlbumFromRepository(albumId);
+        albumValidator.validateIfUserIsAuthor(userId, album);
+        album.setAlbumVisibility(AlbumVisibility.SELECTED_USERS_ONLY);
+        album.setAllowedUsersIds(usersIds);
+
+        return albumMapper.toDto(albumRepository.save(album));
+    }
+
+    public AlbumDto setPrivateVisibility(long userId, long albumId) {
+        Album album = getAlbumFromRepository(albumId);
+        albumValidator.validateIfUserIsAuthor(userId, album);
+        album.setAlbumVisibility(AlbumVisibility.PRIVATE);
+
+        return albumMapper.toDto(albumRepository.save(album));
+    }
+
     public AlbumDto addPostToAlbum(long userId, long albumId, long postId) {
         Album album = getAlbumFromRepository(albumId);
         albumValidator.validateIfUserIsAuthor(userId, album);
@@ -77,9 +113,11 @@ public class AlbumService {
         return albumMapper.toDto(albumRepository.save(album));
     }
 
-    public void addAlbumToFavourites(long userId, AlbumDto albumDto) {
+    public void addAlbumToFavourites(long userId, long albumId) {
         userValidator.validateUserExist(userId);
-        albumRepository.addAlbumToFavorites(albumDto.getId(), userId);
+        Album album = getAlbumFromRepository(albumId);
+        albumValidator.validateAccessToAlbum(userId, album);
+        albumRepository.addAlbumToFavorites(albumId, userId);
     }
 
     public AlbumDto deletePostFromAlbum(long userId, long albumId, long postId) {
@@ -92,6 +130,8 @@ public class AlbumService {
 
     public void deleteAlbumFromFavourites(long userId, long albumId) {
         userValidator.validateUserExist(userId);
+        Album album = getAlbumFromRepository(albumId);
+        albumValidator.validateAccessToAlbum(userId, album);
         albumRepository.deleteAlbumFromFavorites(albumId, userId);
     }
 
