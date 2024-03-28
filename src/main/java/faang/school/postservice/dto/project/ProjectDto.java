@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProjectDto {
-    @NotNull
     private long id;
     @Size(max = 150, message = "Event title can't be longer than 150 characters")
     private String title;

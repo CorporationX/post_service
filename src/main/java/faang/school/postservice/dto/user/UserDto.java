@@ -13,10 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto {
-    @NotNull
     private Long id;
-    @NotBlank
     private String username;
-    @Email
     private String email;
 }

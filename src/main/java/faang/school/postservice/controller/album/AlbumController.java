@@ -6,6 +6,7 @@ import faang.school.postservice.dto.album.filter.AlbumFilterDto;
 import faang.school.postservice.service.album.AlbumService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -30,7 +31,7 @@ public class AlbumController {
 
     @Operation(summary = "Create an album")
     @PostMapping
-    public AlbumDto create(@Validated @RequestBody AlbumDto albumDto) {
+    public AlbumDto create(@Valid @RequestBody AlbumDto albumDto) {
         return albumService.create(albumDto);
     }
 
@@ -62,7 +63,7 @@ public class AlbumController {
 
     @Operation(summary = "Update existing album")
     @PutMapping
-    public AlbumDto update(@Validated @RequestBody AlbumDto albumDto) {
+    public AlbumDto update(@Valid @RequestBody AlbumDto albumDto) {
         long userId = userContext.getUserId();
         return albumService.update(userId, albumDto);
     }

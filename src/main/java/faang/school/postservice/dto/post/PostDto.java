@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostDto {
-    @NotNull
     private Long id;
     @NotBlank
     private String content;

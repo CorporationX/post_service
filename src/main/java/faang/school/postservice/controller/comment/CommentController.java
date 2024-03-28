@@ -3,6 +3,7 @@ package faang.school.postservice.controller.comment;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.comment.CommentService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -30,7 +31,7 @@ public class CommentController {
     }
 
     @PutMapping("/comments/{commentId}")
-    public CommentDto updateComment(@PathVariable Long commentId, @Validated @RequestBody CommentDto commentDto) {
+    public CommentDto updateComment(@PathVariable Long commentId, @Valid @RequestBody CommentDto commentDto) {
         return commentService.updateComment(commentId, commentDto);
     }
 

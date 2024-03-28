@@ -16,14 +16,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AlbumDto {
-    @NotNull
     private Long id;
     @NotBlank(message = "Album must have a title")
     private String title;
     @NotBlank(message = "Album must have a description")
     private String description;
-    @NotNull
     private long authorId;
-    @NotEmpty
     private List<Long> postsIds;
 }
