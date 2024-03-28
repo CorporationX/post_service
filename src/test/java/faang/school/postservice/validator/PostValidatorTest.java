@@ -2,7 +2,7 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.ProjectDto;
-import faang.school.postservice.dto.UserDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;

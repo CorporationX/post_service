@@ -28,6 +28,7 @@ public class PostController {
         return postService.createDraftPost(postDto);
     }
 
+    @Operation(summary = "Опубликовать пост", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "id пользователя", required = false)})
     @PutMapping("/drafts/{id}")
     public PostDto publishPost(@PathVariable long id) {
         return postService.publishPost(id);
@@ -45,6 +46,7 @@ public class PostController {
         postService.deletePost(id);
     }
 
+    @Operation(summary = "Получить пост", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "id пользователя", required = false)})
     @GetMapping("/{id}")
     public PostDto getPost(@PathVariable long id) {
         return postService.getPost(id);
@@ -60,6 +62,7 @@ public class PostController {
         return postService.getDraftsByProject(projectId);
     }
 
+    @Operation(summary = "Получить посты пользователя", parameters = {@Parameter(in = ParameterIn.HEADER, name = "x-user-id", description = "id пользователя", required = false)})
     @GetMapping("/user/{userId}")
     public List<PostDto> getPublishedPostsByUser(@PathVariable long userId) {
         return postService.getPublishedPostsByUser(userId);

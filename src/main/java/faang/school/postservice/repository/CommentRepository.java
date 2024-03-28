@@ -12,4 +12,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId")
     List<Comment> findAllByPostId(long postId);
+
+    @Query("SELECT c FROM Comment c LEFT JOIN FETCH c.likes WHERE c.post.id = :postId ORDER BY c.createdAt DESC LIMIT 3")
+    List<Comment> findLatestByPostId(long postId);
 }

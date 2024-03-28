@@ -25,4 +25,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.verifiedDate IS NULL")
     List<Post> findAllByVerifiedDateIsNull();
+
+    @Query("SELECT p FROM Post p WHERE p.authorId = :userId AND p.published = true ORDER BY p.publishedAt DESC LIMIT 500")
+    List<Post> findLatestPublishedByUserId(long userId);
 }

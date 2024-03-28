@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserContext {
 
-    private final ThreadLocal<Long> userIdHolder = new ThreadLocal<>();
+    private final InheritableThreadLocal<Long> userIdHolder = new InheritableThreadLocal<>();
 
     public void setUserId(long userId) {
         userIdHolder.set(userId);
