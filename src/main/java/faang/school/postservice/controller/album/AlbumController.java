@@ -32,12 +32,13 @@ public class AlbumController {
     @Operation(summary = "Create an album")
     @PostMapping
     public AlbumDto create(@Valid @RequestBody AlbumDto albumDto) {
-        return albumService.create(albumDto);
+        long userId = userContext.getUserId();
+        return albumService.create(userId, albumDto);
     }
 
     @Operation(summary = "Get album by id")
     @GetMapping("/{albumId}")
-    public AlbumDto getAlbum(@PathVariable @Positive(message = "ID can't be less than 1") long albumId) {
+    public AlbumDto getAlbum(@PathVariable long albumId) {
         return albumService.getAlbum(albumId);
     }
 
@@ -68,6 +69,34 @@ public class AlbumController {
         return albumService.update(userId, albumDto);
     }
 
+    @Operation(summary = "Set public visibility to an album")
+    @PutMapping("/{albumId}/public")
+    public AlbumDto setPublicVisibility(@PathVariable long albumId) {
+        long userId = userContext.getUserId();
+        return albumService.setPublicVisibility(userId, albumId);
+    }
+
+    @Operation(summary = "Set followers only to access to an album")
+    @PutMapping("/{albumId}/followers")
+    public AlbumDto setFollowersOnlyVisibility(@PathVariable long albumId) {
+        long userId = userContext.getUserId();
+        return albumService.setFollowersOnlyVisibility(userId, albumId);
+    }
+
+    @Operation(summary = "Set list of selected users only to access an album")
+    @PutMapping("/{albumId}/users")
+    public AlbumDto setSelectedUsersOnlyVisibility(@PathVariable long albumId, @RequestBody List<Long> usersIds) {
+        long userId = userContext.getUserId();
+        return albumService.setSelectedUsersOnlyVisibility(userId, albumId, usersIds);
+    }
+
+    @Operation(summary = "Set private access to the album")
+    @PutMapping("/{albumId}/private")
+    public AlbumDto setPrivateVisibility(@PathVariable long albumId) {
+        long userId = userContext.getUserId();
+        return albumService.setPrivateVisibility(userId, albumId);
+    }
+
     @Operation(summary = "Add post to an album")
     @PutMapping("/{albumId}/post/{postId}")
     public AlbumDto addPostToAlbum(@PathVariable @Positive(message = "ID can't be less than 1") long albumId, @PathVariable @Positive(message = "ID can't be less than 1") long postId) {
@@ -76,10 +105,10 @@ public class AlbumController {
     }
 
     @Operation(summary = "Add album to favourites")
-    @PutMapping("/favourite")
-    public void addAlbumToFavourites(@Validated @RequestBody AlbumDto albumDto) {
+    @PutMapping("/{albumId}/favourite")
+    public void addAlbumToFavourites(@PathVariable long albumId) {
         long userId = userContext.getUserId();
-        albumService.addAlbumToFavourites(userId, albumDto);
+        albumService.addAlbumToFavourites(userId, albumId);
     }
 
     @Operation(summary = "Delete post from an album")
