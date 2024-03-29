@@ -27,7 +27,7 @@ public class PostController {
 
     @Operation(summary = "Create a post draft")
     @PostMapping
-    public PostDto create(@RequestBody @Valid PostDto postDto) {
+    public PostDto create(@Valid @RequestBody PostDto postDto) {
         return postService.create(postDto);
     }
 
@@ -39,7 +39,7 @@ public class PostController {
 
     @Operation(summary = "Update existing post")
     @PutMapping
-    public PostDto update(@RequestBody @Valid PostDto postDto) {
+    public PostDto update(@Valid @RequestBody PostDto postDto) {
         return postService.update(postDto);
     }
 
