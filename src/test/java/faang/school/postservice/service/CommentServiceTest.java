@@ -82,7 +82,7 @@ public class CommentServiceTest {
 
         CommentDto result = commentService.create(firstCommentDto, firstCommentDto.getAuthorId());
 
-        Mockito.verify(commentValidation, Mockito.times(1)).authorValidation(firstCommentDto.getAuthorId());
+        Mockito.verify(commentValidation, Mockito.times(1)).authorExistenceValidation(firstCommentDto.getAuthorId());
         Mockito.verify(postService, Mockito.times(1)).getPost(firstCommentDto.getPostId());
 
         Assert.assertEquals(result, firstCommentDto);
@@ -98,7 +98,7 @@ public class CommentServiceTest {
         CommentDto result = commentService.update(secondCommentDto, secondCommentDto.getAuthorId());
 
         Mockito.verify(commentValidation, Mockito.times(1)).validateCommentExistence(secondComment.getId());
-        Mockito.verify(commentValidation, Mockito.times(1)).authorValidation(secondCommentDto.getAuthorId());
+        Mockito.verify(commentValidation, Mockito.times(1)).authorExistenceValidation(secondCommentDto.getAuthorId());
         Assert.assertEquals(result, secondCommentDto);
     }
 
@@ -117,7 +117,7 @@ public class CommentServiceTest {
     public void testDeletion() {
         commentService.delete(secondCommentDto, secondCommentDto.getAuthorId());
 
-        Mockito.verify(commentValidation, Mockito.times(1)).authorValidation(secondCommentDto.getAuthorId());
+        Mockito.verify(commentValidation, Mockito.times(1)).authorExistenceValidation(secondCommentDto.getAuthorId());
         Mockito.verify(commentValidation, Mockito.times(1)).validateCommentExistence(secondComment.getId());
         Mockito.verify(commentRepository, Mockito.times(1)).deleteById(secondComment.getId());
     }

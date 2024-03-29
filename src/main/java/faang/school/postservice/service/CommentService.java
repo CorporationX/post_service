@@ -21,7 +21,7 @@ public class CommentService {
     private final CommentValidation commentValidation;
 
     public CommentDto create(CommentDto commentDto, long userId) {
-        commentValidation.authorValidation(userId);
+        commentValidation.authorExistenceValidation(userId);
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setLikes(Collections.EMPTY_LIST);
         comment.setPost(postService.getPost(commentDto.getPostId()));
@@ -30,16 +30,16 @@ public class CommentService {
     }
 
     public CommentDto update(CommentDto commentDto, long userId) {
-        commentValidation.authorValidation(userId);
+        commentValidation.authorExistenceValidation(userId);
 
         commentValidation.validateCommentExistence(commentDto.getId());
 
-        Comment comment = commentMapper.toEntity(commentDto);
-        comment.setLikes(Collections.EMPTY_LIST);
-        comment.setPost(postService.getPost(commentDto.getPostId()));
-        Comment updatedComment = commentRepository.save(comment);
+        Comment comment = commentRepository.findById(commentDto.getId()).get();
+        comment.setContent(commentDto.getContent());
 
-        return commentMapper.toDto(updatedComment);
+        commentRepository.save(comment);
+
+        return commentMapper.toDto(comment);
     }
 
     public List<CommentDto> getPostComments(Long postId) {
@@ -49,7 +49,7 @@ public class CommentService {
     }
 
     public void delete(CommentDto commentDto, Long userId) {
-        commentValidation.authorValidation(userId);
+        commentValidation.authorExistenceValidation(userId);
         commentValidation.validateCommentExistence(commentDto.getId());
         commentRepository.deleteById(commentDto.getId());
     }

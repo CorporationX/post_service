@@ -20,14 +20,13 @@ public class CommentController {
 
     @PostMapping
     public CommentDto create(@Valid @RequestBody CommentDto comment) {
-
         return commentService.create(comment, userContext.getUserId());
     }
 
     @PutMapping
     public CommentDto update(@Valid @RequestBody CommentDto comment) throws AuthenticationException {
         Long userId = userContext.getUserId();
-        if (!(userId == comment.getAuthorId())) {
+        if (userId != comment.getAuthorId()) {
             throw new AuthenticationException("Only authors of the comment can update it");
         }
         return commentService.update(comment, userId);

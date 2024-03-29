@@ -62,7 +62,7 @@ class CommentValidationTest {
 
     @Test
     public void testAuthorValidation() {
-        commentValidation.authorValidation(firstCommentDto.getAuthorId());
+        commentValidation.authorExistenceValidation(firstCommentDto.getAuthorId());
     }
 
     @Test

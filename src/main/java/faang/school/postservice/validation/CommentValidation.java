@@ -15,17 +15,17 @@ public class CommentValidation {
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
 
-    public void authorValidation(Long userId) {
+    public void authorExistenceValidation(Long userId) {
         try {
             UserDto user = userServiceClient.getUser(userId);
         } catch (FeignException e) {
-            throw new EntityNotFoundException("User is not found");
+            throw new EntityNotFoundException("User with id " + userId + " is not found");
         }
     }
 
     public void validateCommentExistence(Long commentId) {
         if (!commentRepository.existsById(commentId)) {
-            throw new DataValidationException("No comment with this id found");
+            throw new DataValidationException("No comment with id" + commentId + " found");
         }
     }
 
