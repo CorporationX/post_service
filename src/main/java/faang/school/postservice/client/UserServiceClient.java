@@ -1,6 +1,8 @@
 package faang.school.postservice.client;
 
-import faang.school.postservice.dto.UserDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserFilterDto;
+import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,4 +22,14 @@ public interface UserServiceClient {
 
     @PostMapping("/api/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
+    @PostMapping("/api/user/{id}/followers")
+    List<UserDto> getFollowers(@PathVariable("id") long followeeId, @RequestBody @Valid UserFilterDto filters);
+
+    @PostMapping("/api/user/{id}/followersIds")
+    List<Long> getFollowers(@PathVariable("id") long followeeId);
+
+    @GetMapping("/api/users/ids")
+    List<Long> getUserIds();
+
 }

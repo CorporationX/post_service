@@ -35,6 +35,26 @@ spring:
         comment_channel:
           name: comment_channel
 
+  kafka:
+    producer:
+      bootstrap-servers: "127.0.0.1:9092"
+    topics:
+      group-id: postGroup
+      post:
+       name: "post"
+       partition: 1
+       replica: 1
+       batch-size: 10
+      comment:
+        name: "comment"
+        partition: 1
+        replica: 1
+      heat-feed:
+        name: "heatFeed"
+        partition: 1
+        replica: 1
+        batch-size: 5
+
 server:
   port: 8081
 
@@ -86,3 +106,13 @@ post_moderation:
   batch_size: 10_000
 like_service:
   batch: 100
+
+redis_cash:
+  ttl:
+    post_cash: 86400L
+
+feed:
+  feed-size: 500
+  view-size: 20
+  heat-feed:
+    size: 100

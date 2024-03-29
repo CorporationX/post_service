@@ -25,4 +25,11 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.verifiedDate IS NULL")
     List<Post> findAllByVerifiedDateIsNull();
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post p WHERE p.published = TRUE AND p.author_id IN
+            (SELECT s.followee_id  FROM subscription s WHERE s.follower_id = :userId ) 
+            ORDER BY p.published_at DESC LIMIT 500
+            """)
+    List<Post> findPostByFollowee(long userId);
 }
