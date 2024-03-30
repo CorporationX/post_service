@@ -45,7 +45,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
     implementation("org.imgscalr:imgscalr-lib:4.2")
 
-    /**
+    /***
      * Test containers
      */
     implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))
