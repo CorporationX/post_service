@@ -18,7 +18,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class S3Service {
 
-    private final AmazonS3 s3Client;
+    private final AmazonS3 amazonS3Client;
 
     @Value("${services.s3.bucket-name}")
     private String bucketName;
@@ -36,7 +36,7 @@ public class S3Service {
     private void saveFile(String bucketName, String key, MultipartFile file, ObjectMetadata objectMetadata) {
         try {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, file.getInputStream(), objectMetadata);
-            s3Client.putObject(putObjectRequest);
+            amazonS3Client.putObject(putObjectRequest);
         } catch (IOException e) {
             log.error("FileException", e);
             throw new FileException(e.getMessage());

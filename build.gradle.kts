@@ -62,7 +62,8 @@ dependencies {
     /**
      * Services
      */
-    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.690")
+
 }
 
 tasks.withType<Test> {

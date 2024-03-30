@@ -1,7 +1,9 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
@@ -27,6 +29,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final S3Service s3Service;
     private final ResourceRepository resourceRepository;
+    private final ResourceMapper resourceMapper;
 
     public PostDto create(PostDto postDto) {
         postValidator.validatePostAuthor(postDto);
@@ -99,14 +102,14 @@ public class PostService {
     }
 
     @Transactional
-    public InputStream uploadMedia(Long postId, MultipartFile file) {
+    public ResourceDto uploadMedia(Long postId, MultipartFile file) {
         Post post = getPost(postId);
         String folder = String.valueOf(post.getId());
         Resource resource = s3Service.uploadMedia(file, folder);
         resource.setPost(post);
         resource = resourceRepository.save(resource);
         post.getResources().add(resource);
-        return null;
+        return resourceMapper.toDto(resource);
     }
 
     private Post getPost(long postId) {
