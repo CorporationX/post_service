@@ -1,25 +1,25 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.s3.S3Service;
+import faang.school.postservice.service.image.ImageResizeService;
+import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -27,16 +27,21 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
-    private final S3Service s3Service;
-    private final ResourceRepository resourceRepository;
-    private final ResourceMapper resourceMapper;
+    private final ResourceService resourceService;
+    private final ImageResizeService imageResizer;
 
-    public PostDto create(PostDto postDto) {
+    @Transactional
+    public PostDto create(PostDto postDto, MultipartFile[] images) {
         postValidator.validatePostAuthor(postDto);
         postValidator.validateIfAuthorExists(postDto);
-
-        Post savedPost = postRepository.save(postMapper.toEntity(postDto));
-        return postMapper.toDto(savedPost);
+        postValidator.validateImagesCount(images.length);
+        Post post = postRepository.save(postMapper.toEntity(postDto));
+        post.setResources(new ArrayList<>());
+        for (MultipartFile file : images) {
+            Resource resource = saveImage(file, post);
+            post.getResources().add(resource);
+        }
+        return postMapper.toDto(post);
     }
 
     public PostDto getPostById(long postId) {
@@ -54,12 +59,20 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public PostDto update(PostDto postDto) {
+    @Transactional
+    public PostDto update(PostDto postDto, MultipartFile[] images) {
         Post post = getPost(postDto.getId());
         postValidator.validateUpdatedPost(post, postDto);
+        postValidator.validateImagesCount(images.length);
+        if (post.getResources().size() - images.length < 0) {
+            throw new IllegalArgumentException("Image can have up to 10 images");
+        }
         post.setContent(postDto.getContent());
-
-        return postMapper.toDto(postRepository.save(post));
+        for (MultipartFile file : images) {
+            Resource resource = saveImage(file, post);
+            post.getResources().add(resource);
+        }
+        return postMapper.toDto(post);
     }
 
     public void delete(long postId) {
@@ -101,15 +114,13 @@ public class PostService {
         return postMapper.toDto(posts);
     }
 
-    @Transactional
-    public ResourceDto uploadMedia(Long postId, MultipartFile file) {
-        Post post = getPost(postId);
+    private Resource saveImage(MultipartFile image, Post post) {
         String folder = String.valueOf(post.getId());
-        Resource resource = s3Service.uploadMedia(file, folder);
+        Resource resource = resourceService.uploadImage(image, folder, imageResizer.getResizedImage(image));
+        log.info("File {} uploaded to file storage", image.getOriginalFilename());
         resource.setPost(post);
-        resource = resourceRepository.save(resource);
         post.getResources().add(resource);
-        return resourceMapper.toDto(resource);
+        return resource;
     }
 
     private Post getPost(long postId) {

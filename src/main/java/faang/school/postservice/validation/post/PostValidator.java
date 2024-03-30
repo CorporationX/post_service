@@ -8,13 +8,18 @@ import faang.school.postservice.model.Post;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class PostValidator {
+
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+
+    @Value("${post.max-images}")
+    private Integer maxImages;
 
     public void validatePostAuthor(PostDto postDto) {
         Long authorId = postDto.getAuthorId();
@@ -71,6 +76,12 @@ public class PostValidator {
            (post.getAuthorId() == null && updatedPostDto.getAuthorId() != null) ||
            (post.getProjectId() == null && updatedPostDto.getProjectId() != null)) {
             throw new DataValidationException("Post author can't be changed");
+        }
+    }
+
+    public void validateImagesCount(Integer imagesCount) {
+        if (imagesCount > maxImages) {
+            throw new DataValidationException(String.format("Post can't have more than %d images", maxImages));
         }
     }
 }

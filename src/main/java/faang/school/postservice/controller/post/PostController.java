@@ -1,13 +1,11 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.service.post.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,13 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
 import java.util.List;
 
 @Validated
@@ -34,8 +30,9 @@ public class PostController {
 
     @Operation(summary = "Create a post draft")
     @PostMapping
-    public PostDto create(@RequestBody @Valid PostDto postDto) {
-        return postService.create(postDto);
+    public PostDto create(@RequestPart @Valid PostDto postDto,
+                          @RequestPart(required = false) MultipartFile[] images) {
+        return postService.create(postDto, images);
     }
 
     @Operation(summary = "Get post by id")
@@ -46,8 +43,9 @@ public class PostController {
 
     @Operation(summary = "Update existing post")
     @PutMapping
-    public PostDto update(@RequestBody @Valid PostDto postDto) {
-        return postService.update(postDto);
+    public PostDto update(@RequestPart @Valid PostDto postDto,
+                          @RequestPart(required = false) MultipartFile[] images) {
+        return postService.update(postDto, images);
     }
 
     @Operation(summary = "Publish created post draft")
@@ -84,12 +82,5 @@ public class PostController {
     @GetMapping("/project/{projectId}/published")
     public List<PostDto> getPublishedPostsByProjectId(@PathVariable @Min(1) long projectId) {
         return postService.getPublishedPostsByProjectId(projectId);
-    }
-
-    @Operation(summary = "Add media file to post")
-    @PostMapping("/{postId}/media")
-    public ResourceDto uploadMedia(@PathVariable @Positive(message = "Post id must be positive number") Long postId,
-                                   @RequestParam("file") MultipartFile file) {
-        return postService.uploadMedia(postId, file);
     }
 }

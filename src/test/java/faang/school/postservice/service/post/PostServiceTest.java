@@ -2,8 +2,10 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
+import faang.school.postservice.mapper.resource.ResourceMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,8 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,13 +39,15 @@ import static org.mockito.Mockito.when;
 class PostServiceTest {
 
     @Mock
-    PostRepository postRepository;
+    private PostRepository postRepository;
     @Mock
-    PostValidator postValidator;
+    private PostValidator postValidator;
     @Spy
-    PostMapperImpl postMapper;
+    private PostMapperImpl postMapper;
+    @Mock
+    private ResourceService resourceService;
     @InjectMocks
-    PostService postService;
+    private PostService postService;
 
     private Post firstPost;
     private Post secondPost;
@@ -52,15 +60,18 @@ class PostServiceTest {
                 .id(1L)
                 .content("Valid content")
                 .authorId(1L)
+                .resources(new ArrayList<>())
                 .build();
         secondPost = Post.builder()
                 .id(2L)
                 .content("Valid content")
+                .resources(new ArrayList<>())
                 .authorId(1L)
                 .build();
         thirdPost = Post.builder()
                 .id(3L)
                 .content("Valid content")
+                .resources(new ArrayList<>())
                 .authorId(1L)
                 .build();
         firstPostDto = PostDto.builder()
@@ -72,14 +83,15 @@ class PostServiceTest {
 
     @Test
     void create_PostCreated_ThenReturnedAsDto() {
-        when(postRepository.save(firstPost)).thenReturn(firstPost);
+        when(postRepository.save(any(Post.class))).thenReturn(firstPost);
 
-        PostDto returned = postService.create(firstPostDto);
+        PostDto returned = postService.create(firstPostDto, new MultipartFile[]{});
 
         assertAll(
                 () -> verify(postValidator, times(1)).validatePostAuthor(firstPostDto),
                 () -> verify(postValidator, times(1)).validateIfAuthorExists(firstPostDto),
-                () -> verify(postRepository, times(1)).save(firstPost),
+                () -> verify(postValidator, times(1)).validateImagesCount(anyInt()),
+                () -> verify(postRepository, times(1)).save(any(Post.class)),
                 () -> verify(postMapper, times(1)).toEntity(firstPostDto),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
                 () -> assertEquals(firstPostDto, returned)
@@ -129,14 +141,14 @@ class PostServiceTest {
         firstPost.setContent("Old content");
         firstPostDto.setContent("Updated content");
         when(postRepository.findById(firstPost.getId())).thenReturn(Optional.ofNullable(firstPost));
-        when(postRepository.save(firstPost)).thenReturn(firstPost);
 
-        PostDto returned = postService.update(firstPostDto);
+        PostDto returned = postService.update(firstPostDto, new MultipartFile[]{});
 
         assertAll(
                 () -> verify(postRepository, times(1)).findById(firstPost.getId()),
+                () -> verify(postValidator, times(1)).validateUpdatedPost(any(Post.class), any(PostDto.class)),
+                () -> verify(postValidator, times(1)).validateImagesCount(anyInt()),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
-                () -> verify(postRepository, times(1)).save(firstPost),
                 () -> assertEquals(firstPostDto, returned),
                 () -> assertNotEquals("Old content", firstPost.getContent())
         );
