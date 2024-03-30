@@ -28,6 +28,17 @@ spring:
 server:
   port: 8081
 
+services:
+  s3:
+    endpoint: http://127.0.0.1:8081
+    access-key: user
+    secret-key: password
+    bucket-name: post-service-bucket
+
+  servlet:
+    multipart:
+      max-request-size: 5MB
+
 post:
   publisher:
     scheduler:

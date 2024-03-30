@@ -8,7 +8,9 @@ import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -87,6 +89,12 @@ public class PostService {
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .toList();
         return postMapper.toDto(posts);
+    }
+
+    public InputStream uploadMedia(Long postId, MultipartFile file) {
+        Post post = getPost(postId);
+        String folder = String.valueOf(post.getId());
+        return null;
     }
 
     private Post getPost(long postId) {
