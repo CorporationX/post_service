@@ -3,11 +3,15 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.service.s3.S3Service;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -17,9 +21,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
+    private final S3Service s3Service;
+    private final ResourceRepository resourceRepository;
 
     public PostDto create(PostDto postDto) {
         postValidator.validatePostAuthor(postDto);
@@ -91,9 +98,14 @@ public class PostService {
         return postMapper.toDto(posts);
     }
 
+    @Transactional
     public InputStream uploadMedia(Long postId, MultipartFile file) {
         Post post = getPost(postId);
         String folder = String.valueOf(post.getId());
+        Resource resource = s3Service.uploadMedia(file, folder);
+        resource.setPost(post);
+        resource = resourceRepository.save(resource);
+        post.getResources().add(resource);
         return null;
     }
 
