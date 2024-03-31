@@ -78,4 +78,8 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_date")
     private LocalDateTime verifiedDate;
+
+    @Column(name = "check_spelling")
+    private Boolean checkSpelling;
+
 }

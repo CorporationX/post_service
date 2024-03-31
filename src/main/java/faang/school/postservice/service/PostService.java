@@ -5,10 +5,12 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.ProjectDto;
 import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.utils.Spelling;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +23,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import faang.school.postservice.dto.post.UpdatePostDto;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Service
@@ -40,6 +45,7 @@ public class PostService {
     private final ResourceService resourceService;
     private final TransactionTemplate transactionTemplate;
     private final ModeratePostService moderatePostService;
+    private final Spelling spelling;
 
     @Value("${scheduler.post-publisher.size_batch}")
     private int sizeSublist;
@@ -129,7 +135,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
-                new faang.school.postservice.exception.DataValidationException("Post has not found"));
+                new faang.school.postservice.exception.DataValidationException("Post was not found"));
     }
 
     @Transactional
@@ -147,6 +153,7 @@ public class PostService {
         }
     }
 
+    @Transactional
     public void moderatePosts() {
         List<Post> posts = postRepository.findAllByVerifiedDateIsNull();
         List<List<Post>> postBathes = ListUtils.partition(posts, postBatchSize);
@@ -172,5 +179,34 @@ public class PostService {
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    @Transactional
+    public void correctPost() {
+        log.info("Start checking the spelling of unpublished posts");
+        List<Post> postsToPublish = postRepository.findReadyToPublish();
+        HashMap<CompletableFuture<Optional<String>>, Post> futures = new HashMap<>();
+
+        postsToPublish.stream()
+                .filter(post-> !post.getCheckSpelling())
+                .forEach(post -> {
+                    String content = post.getContent();
+                    CompletableFuture<Optional<String>> future = spelling.check(content);
+                    futures.put(future, post);
+                }
+        );
+        futures.forEach((future, post) -> {
+            try {
+                Optional<String> result = future.get();
+                result.ifPresent(updatedContent -> {
+                    post.setContent(updatedContent);
+                    post.setCheckSpelling(true);
+                    log.info("Updated content of post {}", post.getId());
+                });
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("Error updating of post {} in Thread {}", post.getId(), future, e);
+                throw new RuntimeException("Failed thread - " + Thread.currentThread().getName());
+            }
+        });
     }
 }

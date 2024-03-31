@@ -10,6 +10,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.utils.Spelling;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +45,8 @@ class PostServiceTest {
     private PostMapperImpl postMapper = new PostMapperImpl();
     @Mock
     private AsyncPostPublishService asyncPostPublishService;
+    @Mock
+    private Spelling spelling;
 
     @InjectMocks
     private PostService postService;
@@ -54,7 +58,7 @@ class PostServiceTest {
         postDto.setAuthorId(1L);
         when(userServiceClient.getUser(postDto.getAuthorId())).thenReturn(null);
 
-        postService.createDraftPost(postDto,null);
+        postService.createDraftPost(postDto, null);
         Mockito.verify(userServiceClient, Mockito.times(1)).getUser(postDto.getAuthorId());
     }
 
@@ -63,7 +67,7 @@ class PostServiceTest {
         postDto.setProjectId(1L);
         when(projectServiceClient.getProject(postDto.getProjectId())).thenReturn(null);
 
-        postService.createDraftPost(postDto,null);
+        postService.createDraftPost(postDto, null);
         Mockito.verify(projectServiceClient, Mockito.times(1)).getProject(postDto.getProjectId());
     }
 
@@ -76,7 +80,7 @@ class PostServiceTest {
         Mockito.doThrow(new DataValidationException("У поста должен быть только один автор"))
                 .when(postValidator).validateAuthorExists(any(), any());
 
-        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto,null));
+        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto, null));
     }
 
     @Test
@@ -85,7 +89,7 @@ class PostServiceTest {
 
         when(userServiceClient.getUser(postDto.getAuthorId()))
                 .thenReturn(new UserDto(1L, "user1", "user1@mail"));
-        postService.createDraftPost(postDto,null);
+        postService.createDraftPost(postDto, null);
 
         Mockito.verify(postRepository, Mockito.times(1)).save(any());
     }
@@ -262,7 +266,7 @@ class PostServiceTest {
     }
 
     @Test
-    public void publishScheduledPosts_when() {
+    public void publishScheduledPosts() {
         //Arrange
         ReflectionTestUtils.setField(postService, "sizeSublist", 100);
         List<Post> posts = List.of(
@@ -276,5 +280,25 @@ class PostServiceTest {
         //Assert
         verify(postRepository, times(1)).findReadyToPublish();
         verify(asyncPostPublishService, times(1)).publishPost(any());
+    }
+
+    @Test
+    public void correctPost_when() {
+        //Arrange
+        String content = "Прывет";
+        String correctContent = "Привет";
+        Post post = Post.builder().content(content).authorId(1L).published(false).checkSpelling(false).build();
+
+        List<Post> posts = List.of(post);
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+        when(spelling.check(content))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(correctContent)));
+
+        //Act
+        postService.correctPost();
+
+        //Assert
+        verify(postRepository, times(1)).findReadyToPublish();
+        assertEquals(post.getContent(), correctContent);
     }
 }
