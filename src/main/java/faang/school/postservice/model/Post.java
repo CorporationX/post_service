@@ -1,7 +1,19 @@
 package faang.school.postservice.model;
 
 import faang.school.postservice.model.ad.Ad;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,6 +57,7 @@ public class Post {
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private Ad ad;
 
+    @Size(max = 5)
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Resource> resources;
 
@@ -61,6 +74,9 @@ public class Post {
 
     @Column(name = "deleted", nullable = false)
     private boolean deleted;
+
+    @Column(name = "verified")
+    private Boolean verified;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
