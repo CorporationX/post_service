@@ -6,4 +6,6 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/album_visibility_V001__initial.sql
   - include:
-      file: db/changelog/changeset/post_V003_create_resource.sql
+      file: db/changelog/changeset/post_V003_create_project.sql
+  - include:
+      file: db/changelog/changeset/post_V004_create_resource.sql
