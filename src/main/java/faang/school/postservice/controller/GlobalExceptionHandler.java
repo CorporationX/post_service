@@ -48,4 +48,5 @@ public class GlobalExceptionHandler {
         log.error("Runtime error: ", e);
         return e.getMessage();
     }
+
 }

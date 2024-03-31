@@ -18,6 +18,8 @@ public class RedisConfig {
     private int port;
     @Value("${spring.data.redis.channels.post_channel.name}")
     private String postChannelName;
+    @Value("${spring.data.redis.post.ttl}")
+    private int postsTtl;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -38,4 +40,6 @@ public class RedisConfig {
     public ChannelTopic postTopic() {
         return new ChannelTopic(postChannelName);
     }
+
+
 }

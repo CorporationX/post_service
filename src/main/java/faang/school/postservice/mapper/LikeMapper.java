@@ -14,6 +14,4 @@ public interface LikeMapper {
     @Mapping(source = "comment.id", target = "commentId")
     LikeDto toDto(Like like);
 
-
-
 }

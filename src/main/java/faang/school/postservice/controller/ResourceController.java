@@ -31,4 +31,5 @@ public class ResourceController {
         resourceService.deleteResource(postId, fileId);
         return "File deleted";
     }
+
 }

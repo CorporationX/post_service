@@ -24,4 +24,5 @@ public interface PostMapper {
     default Long toLikeCount(List<Like> likes) {
         return likes != null ? likes.size() : 0L;
     }
+
 }

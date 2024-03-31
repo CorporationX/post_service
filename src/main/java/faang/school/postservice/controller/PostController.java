@@ -16,12 +16,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "PostController", description = "Посылаем запросы в PostController")
-@RestController
 @Validated
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/post")
+@Tag(name = "PostController", description = "Посылаем запросы в PostController")
 public class PostController {
+
     private final PostService postService;
 
     @Operation(
@@ -103,4 +104,5 @@ public class PostController {
     public List<PostDto> getPostsByProjectId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
         return postService.getPublishedPostsByProjectId(id);
     }
+
 }

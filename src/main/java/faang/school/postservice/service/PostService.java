@@ -20,12 +20,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostService {
 
-    private final ProjectServiceClient projectServiceClient;
     private final PostEventPublisher postEventPublisher;
     private final UserServiceClient userServiceClient;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
-
 
     @Transactional
     public PostDto createDraft(PostDto postDto) {
@@ -41,11 +39,10 @@ public class PostService {
         if (post.isPublished()) {
             throw new DataValidationException("The post has already been published");
         }
-        postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
+//        postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
-
         postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
 
         return postMapper.toDto(post);
@@ -97,6 +94,12 @@ public class PostService {
         return filterPosts(posts, true);
     }
 
+    public Post searchPostById(long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new DataValidationException("Post with id " + id + " not found."));
+    }
+
+
     private void validateAuthor(PostDto postDto) {
         if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
             throw new DataValidationException("The author of the post is not specified");
@@ -108,11 +111,6 @@ public class PostService {
             throw new DataValidationException("There is no author with this id " + postDto.getAuthorId());
         }
 
-    }
-
-    public Post searchPostById(long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new DataValidationException("Post with id " + id + " not found."));
     }
 
     private List<PostDto> filterPosts(List<Post> posts, boolean isPublished) {
@@ -130,4 +128,5 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
     }
+
 }

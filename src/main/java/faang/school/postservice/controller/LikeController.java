@@ -36,5 +36,4 @@ public class LikeController {
         likeService.deleteLikeComment(commentId);
     }
 
-
 }

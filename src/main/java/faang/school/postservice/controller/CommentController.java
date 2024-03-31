@@ -32,4 +32,5 @@ public class CommentController {
     public List<CommentDto> getAllCommentsByPostId(@PathVariable long id) {
         return commentService.getAllCommentsByPostId(id);
     }
+
 }

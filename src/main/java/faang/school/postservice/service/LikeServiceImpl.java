@@ -37,7 +37,6 @@ public class LikeServiceImpl implements LikeService {
         return likeMapper.toDto(likeRepository.save(like));
     }
 
-
     public LikeDto likeComment(LikeDto likeDto) {
         Comment comment = commentService.getCommentIfExist(likeDto.getCommentId());
         UserDto userDto = getUserFromUserService();
@@ -47,15 +46,12 @@ public class LikeServiceImpl implements LikeService {
                 .userId(userDto.getId())
                 .build();
         return likeMapper.toDto(likeRepository.save(like));
-
     }
-
 
     public void deleteLikePost(long postId) {
         UserDto userDto = getUserFromUserService();
         likeRepository.deleteByPostIdAndUserId(postId, userDto.getId());
     }
-
 
     public void deleteLikeComment(long commentId) {
         UserDto userDto = getUserFromUserService();
@@ -83,6 +79,4 @@ public class LikeServiceImpl implements LikeService {
         }
     }
 
-
 }
-
