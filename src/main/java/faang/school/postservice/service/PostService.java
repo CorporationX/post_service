@@ -6,15 +6,19 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.PostCache;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -23,6 +27,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
+    private final RedisPostRepository redisPostRepository;
 
     @Transactional
     public PostDto createDraft(PostDto postDto) {
@@ -38,10 +43,11 @@ public class PostService {
         if (post.isPublished()) {
             throw new DataValidationException("The post has already been published");
         }
-//        postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
+
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+        savePostToRedis(post);
         postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
 
         return postMapper.toDto(post);
@@ -126,6 +132,12 @@ public class PostService {
                 })
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    private void savePostToRedis(Post post) {
+        PostCache postCache = new PostCache(post);
+        redisPostRepository.save(postCache);
+        log.info("Сообщение сохранено в Redis: {}", postCache);
     }
 
 }
