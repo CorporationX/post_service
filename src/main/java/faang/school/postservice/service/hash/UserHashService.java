@@ -35,6 +35,8 @@ public class UserHashService {
         acknowledgment.acknowledge();
     }
 
+    @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttemptsExpression = "${feed.retry.maxAttempts}",
+            backoff = @Backoff(delayExpression = "${feed.retry.maxDelay}"))
     public void saveUser(UserDto userDto) {
         boolean exists = userHashRepository.findById(userDto.getId()).isPresent();
         if (!exists) {

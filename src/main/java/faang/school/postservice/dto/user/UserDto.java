@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,4 +25,6 @@ public class UserDto {
     private String phone;
     @NotNull
     private Long countryId;
+    @JsonIgnore
+    private PreferredContact preference;
 }

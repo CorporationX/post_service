@@ -43,6 +43,8 @@ public class PostHashService {
         acknowledgment.acknowledge();
     }
 
+    @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttemptsExpression = "${feed.retry.maxAttempts}",
+            backoff = @Backoff(delayExpression = "${feed.retry.maxDelay}"))
     public void savePost(PostEvent postEvent) {
         boolean exists = postHashRepository.findById(postEvent.getPostId()).isPresent();
         if (!exists) {

@@ -76,7 +76,7 @@ public class PostService {
         PostDto savePost = savePost(postDto);
         PostEvent postEvent = postEventMapper.toPostEvent(savePost);
         postHashService.savePost(postEvent);
-        userHashService.saveUser(postEvent.getUserDtoAuthor());
+        userHashService.saveUser(userServiceClient.getUser(postEvent.getUserAuthorId()));
 
         return savePost;
     }
