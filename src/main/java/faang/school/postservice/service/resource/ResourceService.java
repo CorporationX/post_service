@@ -4,8 +4,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import faang.school.postservice.exception.FileException;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.service.image.ImageResizeService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,20 +30,18 @@ public class ResourceService {
 
     private final AmazonS3 amazonS3Client;
     private final ResourceRepository resourceRepository;
+    private final ImageResizeService imageResizer;
 
     @Value("${services.s3.bucket-name}")
     private String bucketName;
 
-    public Resource uploadImage(MultipartFile file, String folder, BufferedImage image) {
-        Long fileSize = file.getSize();
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentType(file.getContentType());
-        String key = String.format("%s/%s/%s", folder, System.currentTimeMillis(), file.getOriginalFilename());
-        InputStream inputStream = getInputStream(image, file.getContentType());
-        setContentLength(objectMetadata, inputStream);
-        PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, inputStream, objectMetadata);
-        amazonS3Client.putObject(putObjectRequest);
-        return getResource(file, fileSize, key);
+    public Resource saveImage(MultipartFile image, Post post) {
+        String folder = String.valueOf(post.getId());
+        Resource resource = uploadImage(image, folder, imageResizer.getResizedImage(image));
+        log.info("File {} uploaded to file storage", image.getOriginalFilename());
+        resource.setPost(post);
+        post.getResources().add(resource);
+        return resource;
     }
 
     @Transactional
@@ -49,7 +49,21 @@ public class ResourceService {
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Resource with id %s not found", resourceId)));
         amazonS3Client.deleteObject(bucketName, resource.getKey());
-        log.info("File {} deleted", resource.getKey());
+        log.info("File {} deleted from file storage", resource.getKey());
+        resourceRepository.delete(resource);
+        log.info("File {} deleted from data base", resource.getKey());
+    }
+
+    private Resource uploadImage(MultipartFile file, String folder, BufferedImage image) {
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentType(file.getContentType());
+        objectMetadata.setContentEncoding("utf-8");
+        String key = String.format("%s/%s/%s", folder, System.currentTimeMillis(), file.getOriginalFilename());
+        InputStream inputStream = getInputStream(image, file.getContentType());
+        setContentLength(objectMetadata, inputStream);
+        PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, inputStream, objectMetadata);
+        amazonS3Client.putObject(putObjectRequest);
+        return getResource(file, file.getSize(), key);
     }
 
     private void setContentLength(ObjectMetadata objectMetadata, InputStream inputStream) {
@@ -73,7 +87,7 @@ public class ResourceService {
     private InputStream getInputStream(BufferedImage image, String contentType) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            ImageIO.write(image, contentType, baos);
+            ImageIO.write(image, contentType.split("/")[1], baos);
         } catch (IOException e) {
             log.error("FileException", e);
             throw new FileException(e.getMessage());

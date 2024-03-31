@@ -2,7 +2,6 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
-import faang.school.postservice.mapper.resource.ResourceMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
@@ -147,7 +146,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postRepository, times(1)).findById(firstPost.getId()),
                 () -> verify(postValidator, times(1)).validateUpdatedPost(any(Post.class), any(PostDto.class)),
-                () -> verify(postValidator, times(1)).validateImagesCount(anyInt()),
+                () -> verify(postValidator, times(1)).validateImagesCount(anyInt(), anyInt()),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
                 () -> assertEquals(firstPostDto, returned),
                 () -> assertNotEquals("Old content", firstPost.getContent())

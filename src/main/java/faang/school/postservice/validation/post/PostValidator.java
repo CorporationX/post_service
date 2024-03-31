@@ -84,4 +84,10 @@ public class PostValidator {
             throw new DataValidationException(String.format("Post can't have more than %d images", maxImages));
         }
     }
+
+    public void validateImagesCount(Integer actual, Integer add) {
+        if (actual + add > 10) {
+            throw new DataValidationException(String.format("Post can't have more than %d images", maxImages));
+        }
+    }
 }

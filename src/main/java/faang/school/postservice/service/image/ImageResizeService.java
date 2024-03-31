@@ -29,18 +29,18 @@ public class ImageResizeService {
             BufferedImage image = ImageIO.read(picture.getInputStream());
             if (image.getWidth() == image.getHeight()) {
                 if (image.getHeight() > squareImageSize) {
-                    image = Scalr.resize(image, image.getWidth(), squareImageSize);
+                    image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, image.getWidth(), squareImageSize);
                 }
                 if (image.getWidth() > squareImageSize) {
-                    image = Scalr.resize(image, squareImageSize, image.getHeight());
+                    image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, squareImageSize, image.getHeight());
                 }
                 return image;
             }
             if (image.getWidth() > horizontalImageWidth) {
-                image = Scalr.resize(image, horizontalImageWidth, image.getHeight());
+                image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, horizontalImageWidth, image.getHeight());
             }
             if (image.getHeight() > horizontalImageHeight) {
-                image = Scalr.resize(image, image.getWidth(), horizontalImageHeight);
+                image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, image.getWidth(), horizontalImageHeight);
             }
             return image;
         } catch (IOException e) {

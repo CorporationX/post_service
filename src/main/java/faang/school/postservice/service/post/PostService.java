@@ -5,7 +5,6 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.image.ImageResizeService;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,18 +27,20 @@ public class PostService {
     private final PostValidator postValidator;
     private final PostMapper postMapper;
     private final ResourceService resourceService;
-    private final ImageResizeService imageResizer;
 
     @Transactional
     public PostDto create(PostDto postDto, MultipartFile[] images) {
         postValidator.validatePostAuthor(postDto);
         postValidator.validateIfAuthorExists(postDto);
-        postValidator.validateImagesCount(images.length);
         Post post = postRepository.save(postMapper.toEntity(postDto));
+        log.info("Post saved: {}", post);
         post.setResources(new ArrayList<>());
-        for (MultipartFile file : images) {
-            Resource resource = saveImage(file, post);
-            post.getResources().add(resource);
+        if (images != null) {
+            postValidator.validateImagesCount(images.length);
+            for (MultipartFile file : images) {
+                Resource resource = resourceService.saveImage(file, post);
+                post.getResources().add(resource);
+            }
         }
         return postMapper.toDto(post);
     }
@@ -63,14 +64,13 @@ public class PostService {
     public PostDto update(PostDto postDto, MultipartFile[] images) {
         Post post = getPost(postDto.getId());
         postValidator.validateUpdatedPost(post, postDto);
-        postValidator.validateImagesCount(images.length);
-        if (post.getResources().size() - images.length < 0) {
-            throw new IllegalArgumentException("Image can have up to 10 images");
-        }
         post.setContent(postDto.getContent());
-        for (MultipartFile file : images) {
-            Resource resource = saveImage(file, post);
-            post.getResources().add(resource);
+        if (images != null) {
+            postValidator.validateImagesCount(post.getResources().size(), images.length);
+            for (MultipartFile file : images) {
+                Resource resource = resourceService.saveImage(file, post);
+                post.getResources().add(resource);
+            }
         }
         return postMapper.toDto(post);
     }
@@ -112,15 +112,6 @@ public class PostService {
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .toList();
         return postMapper.toDto(posts);
-    }
-
-    private Resource saveImage(MultipartFile image, Post post) {
-        String folder = String.valueOf(post.getId());
-        Resource resource = resourceService.uploadImage(image, folder, imageResizer.getResizedImage(image));
-        log.info("File {} uploaded to file storage", image.getOriginalFilename());
-        resource.setPost(post);
-        post.getResources().add(resource);
-        return resource;
     }
 
     private Post getPost(long postId) {
