@@ -5,7 +5,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.image.ImageResizeService;
+import faang.school.postservice.image.ImageResizer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +39,7 @@ class ResourceServiceTest {
     @Mock
     private ResourceRepository resourceRepository;
     @Mock
-    private ImageResizeService imageResizer;
+    private ImageResizer imageResizer;
     @InjectMocks
     private ResourceService resourceService;
 

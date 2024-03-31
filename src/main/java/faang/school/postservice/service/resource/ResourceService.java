@@ -7,7 +7,7 @@ import faang.school.postservice.exception.FileException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.image.ImageResizeService;
+import faang.school.postservice.image.ImageResizer;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class ResourceService {
 
     private final AmazonS3 amazonS3Client;
     private final ResourceRepository resourceRepository;
-    private final ImageResizeService imageResizer;
+    private final ImageResizer imageResizer;
 
     @Value("${services.s3.bucket-name}")
     private String bucketName;

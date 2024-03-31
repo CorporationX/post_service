@@ -1,4 +1,4 @@
-package faang.school.postservice.service.image;
+package faang.school.postservice.image;
 
 import faang.school.postservice.exception.FileException;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import java.io.IOException;
 
 @Slf4j
 @Component
-public class ImageResizeService {
+public class ImageResizer {
 
     @Value("${image.horizontalWidth}")
     private Integer horizontalImageWidth;
