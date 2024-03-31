@@ -3,13 +3,16 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.PostCache;
+import faang.school.postservice.model.redis.UserCache;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final RedisPostRepository redisPostRepository;
+    private final RedisUserRepository redisUserRepository;
 
     @Transactional
     public PostDto createDraft(PostDto postDto) {
@@ -40,14 +44,13 @@ public class PostService {
     @Transactional
     public PostDto publish(long id) {
         Post post = searchPostById(id);
-        if (post.isPublished()) {
-            throw new DataValidationException("The post has already been published");
-        }
+        validatePostIsNotPublished(post);
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        postRepository.save(post);
         savePostToRedis(post);
+        saveAuthorToRedis(post.getAuthorId());
+
         postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
 
         return postMapper.toDto(post);
@@ -134,10 +137,23 @@ public class PostService {
                 .toList();
     }
 
+    private static void validatePostIsNotPublished(Post post) {
+        if (post.isPublished()) {
+            throw new DataValidationException("The post has already been published");
+        }
+    }
+
     private void savePostToRedis(Post post) {
         PostCache postCache = new PostCache(post);
         redisPostRepository.save(postCache);
-        log.info("Сообщение сохранено в Redis: {}", postCache);
+        log.info("Сообщение сохранено в RedisPost: {}", postCache);
+    }
+
+    private void saveAuthorToRedis(long userId) {
+        UserDto author = userServiceClient.getUser(userId);
+        UserCache userCache = new UserCache(author);
+        redisUserRepository.save(userCache);
+        log.info("Author c ID: {} сохранен в RedisUser: {}", userId, userCache);
     }
 
 }
