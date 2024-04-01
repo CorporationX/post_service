@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    private Map<String, String> handleArgumentNotValidException(MethodArgumentNotValidException exception) {
+    public Map<String, String> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
         log.error("MethodArgumentNotValidException" + exception);
         return exception.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
@@ -48,14 +48,14 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ConstraintViolationException.class)
-    public ErrorResponse handleExceptionHandlingInvalidValue(ConstraintViolationException exception) {
+    public ErrorResponse handleConstraintViolationException(ConstraintViolationException exception) {
         log.error("ConstraintViolationException" + exception);
         return new ErrorResponse(exception.getMessage(), HttpStatus.BAD_REQUEST.value());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ErrorResponse handleExceptionMissingParameter(MissingServletRequestParameterException exception) {
+    public ErrorResponse handleMissingServletRequestParameterException(MissingServletRequestParameterException exception) {
         log.error("MissingServletRequestParameterException" + exception);
         return new ErrorResponse(exception.getMessage(), HttpStatus.BAD_REQUEST.value());
     }
