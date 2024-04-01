@@ -9,18 +9,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CommentDto {
     private Long id;
-
     @NotBlank(message = "Content cannot be blank")
     @Size(max = 4096, message = "Content length must be less than or equal to 4096 characters")
     private String content;
-
     @NotNull(message = "AuthorId cannot be null")
     private Long authorId;
+    private Long postId;
     private LocalDateTime createdAt;
 }

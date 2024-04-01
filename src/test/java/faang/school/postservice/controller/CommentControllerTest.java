@@ -1,10 +1,7 @@
 package faang.school.postservice.controller;
 
-import static org.mockito.Mockito.*;
-
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +11,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentControllerTest {
@@ -25,6 +24,7 @@ public class CommentControllerTest {
 
 
     CommentDto commentDto;
+
     @BeforeEach
     public void setUp() {
         commentDto = CommentDto.builder()
@@ -32,13 +32,14 @@ public class CommentControllerTest {
                 .id(1L)
                 .content("content")
                 .createdAt(LocalDateTime.now())
+                .postId(1L)
                 .build();
-        Post post = new Post();
     }
+
     @Test
     public void testCreateVerify() {
-        commentController.create(commentDto, 1L);
-        verify(commentService, times(1)).create(commentDto, 1L);
+        commentController.create(commentDto);
+        verify(commentService, times(1)).create(commentDto);
     }
 
     @Test

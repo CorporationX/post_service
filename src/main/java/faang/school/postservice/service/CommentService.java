@@ -7,6 +7,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,14 +23,15 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final CommentEventPublisher commentPublisher;
 
-    public CommentDto create(CommentDto commentDto, long postId) {
+    public CommentDto create(CommentDto commentDto) {
         validateAuthorExists(commentDto);
-
-        Optional<Post> post = postRepository.findById(postId);
         Comment comment = commentMapper.toEntity(commentDto);
-        comment.setPost(post.orElseThrow(() -> new IllegalArgumentException("Post ID is invalid")));
-        return commentMapper.toDto(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+        setPostToComment(savedComment);
+        commentPublisher.publish(commentMapper.toEvent(savedComment));
+        return commentMapper.toDto(savedComment);
     }
 
     public CommentDto update(CommentDto commentDto, long postId) {
@@ -61,24 +62,30 @@ public class CommentService {
     private void validateAuthorExists(CommentDto commentDto) {
         UserDto userDto = userServiceClient.getUser(commentDto.getAuthorId());
         if (userDto == null || userDto.getId() == null) {
-            throw new IllegalArgumentException("There are no author with id "+commentDto.getAuthorId());
+            throw new IllegalArgumentException("There are no author with id " + commentDto.getAuthorId());
         }
     }
 
     private Comment validateCommentDto(CommentDto commentDto, long id) {
         postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("There are no post with id "+id));
+                .orElseThrow(() -> new IllegalArgumentException("There are no post with id " + id));
         Comment comment = commentRepository.findById(commentDto.getId())
-                .orElseThrow(() -> new IllegalArgumentException("There are no comment with id "+commentDto.getId()));
+                .orElseThrow(() -> new IllegalArgumentException("There are no comment with id " + commentDto.getId()));
 
         if (commentDto.getAuthorId() != comment.getAuthorId()) {
-            throw new IllegalArgumentException("Only author can make changes! ID: "+commentDto.getAuthorId()+" is not valid");
+            throw new IllegalArgumentException("Only author can make changes! ID: " + commentDto.getAuthorId() + " is not valid");
         }
 
         if (id != comment.getPost().getId()) {
             throw new IllegalArgumentException("Post's ID is not invalid");
         }
-
         return comment;
+    }
+
+    private void setPostToComment(Comment comment) {
+        long id = comment.getPost().getId();
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("There are no post with id " + id));
+        comment.setPost(post);
     }
 }

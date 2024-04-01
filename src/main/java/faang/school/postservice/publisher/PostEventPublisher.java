@@ -15,8 +15,9 @@ public class PostEventPublisher extends AbstractEventPublisher<PostEvent> {
         super(objectMapper, redisTemplate);
     }
 
+    @Override
     public void publish(PostEvent postEvent) {
-        convert(postEvent, postChannel);
+        convertAndSend(postEvent, postChannel);
     }
 
 }

@@ -1,8 +1,5 @@
 package faang.school.postservice.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -11,18 +8,23 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -44,6 +46,7 @@ public class CommentServiceTest {
         commentDto = CommentDto.builder()
                 .authorId(1L)
                 .content("content")
+                .postId(1L)
                 .build();
         userDto = new UserDto(1L, "Username", "email");
     }
@@ -52,7 +55,7 @@ public class CommentServiceTest {
     public void testCreateAuthorExistsInvalid() {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(null);
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
-                () -> commentService.create(commentDto, 1L));
+                () -> commentService.create(commentDto));
         assertEquals(illegalArgumentException.getMessage(), "There are no author with id " + commentDto.getAuthorId());
     }
 
@@ -61,7 +64,7 @@ public class CommentServiceTest {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
         when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
 
-        commentService.create(commentDto, 1L);
+        commentService.create(commentDto);
         verify(commentMapper, times(1)).toEntity(commentDto);
     }
 
@@ -70,7 +73,7 @@ public class CommentServiceTest {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
         when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
 
-        commentService.create(commentDto, 1L);
+        commentService.create(commentDto);
         verify(commentRepository, times(1)).save(any(Comment.class));
     }
 
@@ -79,7 +82,7 @@ public class CommentServiceTest {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
         when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
 
-        commentService.create(commentDto, 1L);
+        commentService.create(commentDto);
         verify(commentMapper, times(1))
                 .toDto(commentRepository.save(commentMapper.toEntity(commentDto)));
     }

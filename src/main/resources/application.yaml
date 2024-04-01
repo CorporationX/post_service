@@ -30,6 +30,7 @@ spring:
           name: calculations_channel
         post_channel:
           name: post_channel
+        comment: comment_channel
 
 server:
   port: 8081
@@ -48,7 +49,7 @@ post:
 
 schedule:
   cron:
-    removeExpiredAds: "0 0 0 * * ?" # Запуск каждый день в полночь
+    removeExpiredAds: "0 0 0 * * ?" # every midnight
 
 async:
   corePoolSize: 10

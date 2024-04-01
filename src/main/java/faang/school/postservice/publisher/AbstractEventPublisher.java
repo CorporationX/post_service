@@ -8,11 +8,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 @RequiredArgsConstructor
 @Slf4j
-public class AbstractEventPublisher<T> {
+public abstract class AbstractEventPublisher<T> {
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public void convert(T event, String channelTopic) {
+    public void convertAndSend(T event, String channelTopic) {
         try {
             String json = objectMapper.writeValueAsString(event);
             redisTemplate.convertAndSend(channelTopic, json);
@@ -22,6 +22,6 @@ public class AbstractEventPublisher<T> {
         }
     }
 
-
+    public abstract void publish(T event);
 
 }
