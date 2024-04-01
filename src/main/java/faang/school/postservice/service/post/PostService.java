@@ -6,18 +6,29 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
+    private final ExecutorService postPublisherThreadPool;
+
+    @Value("${post.publisher.batch-size}")
+    Integer scheduledBatchSize;
 
     public PostDto create(PostDto postDto) {
         postValidator.validatePostAuthor(postDto);
@@ -40,6 +51,32 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         return postMapper.toDto(postRepository.save(post));
+    }
+
+    @Transactional
+    public List<PostDto> publishScheduledPosts() {
+        List<Post> posts = postRepository.findReadyToPublish();
+        int postsQuantity = posts.size();
+        List<CompletableFuture<List<Post>>> futurePostsPublished = new CopyOnWriteArrayList<>();
+
+        for (int i = 0; i < postsQuantity; i += scheduledBatchSize) {
+            final int fromIndex = i;
+            int toIndex = Math.min(i + scheduledBatchSize, postsQuantity);
+
+            futurePostsPublished.add(CompletableFuture.supplyAsync(() -> {
+                List<Post> batch = posts.subList(fromIndex, toIndex);
+                batch.forEach(post -> {
+                    post.setPublished(true);
+                    post.setPublishedAt(LocalDateTime.now());
+                });
+                return postRepository.saveAll(batch);
+            }, postPublisherThreadPool));
+        }
+
+        return futurePostsPublished.stream()
+                .flatMap(future -> future.join().stream())
+                .map(postMapper::toDto)
+                .toList();
     }
 
     public PostDto update(PostDto postDto) {

@@ -30,6 +30,8 @@ server:
 
 post:
   publisher:
+    thread-count: 10
+    batch-size: 1000
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
