@@ -6,6 +6,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,8 +39,12 @@ public class CommentServiceTest {
     private CommentRepository commentRepository;
     @Mock
     private PostRepository postRepository;
+    @Mock
+    CommentEventPublisher commentEventPublisher;
     private CommentDto commentDto;
     private UserDto userDto;
+    private Comment comment;
+    private Comment savedComment;
 
     @BeforeEach
     void setUp() {
@@ -47,6 +52,17 @@ public class CommentServiceTest {
                 .authorId(1L)
                 .content("content")
                 .postId(1L)
+                .build();
+        comment = Comment.builder()
+                .authorId(1L)
+                .content("content")
+                .post(Post.builder().id(1L).authorId(1L).build())
+                .build();
+        savedComment = Comment.builder()
+                .id(1L)
+                .authorId(1L)
+                .content("content")
+                .post(Post.builder().id(1L).authorId(1L).build())
                 .build();
         userDto = new UserDto(1L, "Username", "email");
     }
@@ -62,7 +78,8 @@ public class CommentServiceTest {
     @Test
     public void testCreateVerifyToEntity() {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
-        when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
+        when(postRepository.findById(1L)).thenReturn(Optional.of(Post.builder().id(1L).authorId(1L).build()));
+        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
 
         commentService.create(commentDto);
         verify(commentMapper, times(1)).toEntity(commentDto);
@@ -71,7 +88,8 @@ public class CommentServiceTest {
     @Test
     public void testCreateVerifySave() {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
-        when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
+        when(postRepository.findById(1L)).thenReturn(Optional.of(Post.builder().id(1L).authorId(1L).build()));
+        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
 
         commentService.create(commentDto);
         verify(commentRepository, times(1)).save(any(Comment.class));
@@ -80,7 +98,8 @@ public class CommentServiceTest {
     @Test
     public void testCreateVerifyToDto() {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
-        when(postRepository.findById(1L)).thenReturn(Optional.of(new Post()));
+        when(postRepository.findById(1L)).thenReturn(Optional.of(Post.builder().id(1L).authorId(1L).build()));
+        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
 
         commentService.create(commentDto);
         verify(commentMapper, times(1))
