@@ -1,0 +1,108 @@
+{
+  "properties": [
+    {
+      "name": "spring.kafka.topic.post_comments_topic",
+      "type": "java.lang.String",
+      "description": "Description for spring.kafka.topic.post_comments_topic."
+    },
+    {
+      "name": "spring.kafka.topic.post_likes_topic",
+      "type": "java.lang.String",
+      "description": "Description for spring.kafka.topic.post_likes_topic."
+    },
+    {
+      "name": "spring.kafka.topic.post_views_topic",
+      "type": "java.lang.String",
+      "description": "Description for spring.kafka.topic.post_views_topic."
+    },
+    {
+      "name": "spring.kafka.topic.post_topic",
+      "type": "java.lang.String",
+      "description": "Description for spring.kafka.topic.post_topic."
+    },
+    {
+      "name": "spring.data.redis.channel.comment",
+      "type": "java.lang.String",
+      "description": "Description for spring.data.redis.channel.comment."
+    },
+    {
+      "name": "spring.data.redis.channel.calculations_channel.name",
+      "type": "java.lang.String",
+      "description": "Description for spring.data.redis.channel.calculations_channel.name."
+    },
+    {
+      "name": "spring.data.redis.channel.user_ban.name",
+      "type": "java.lang.String",
+      "description": "Description for spring.data.redis.channel.user_ban.name."
+    },
+    {
+      "name": "post.content_to_post.max_amount",
+      "type": "java.lang.String",
+      "description": "Description for post.content_to_post.max_amount."
+    },
+    {
+      "name": "post.content_to_post.max_size",
+      "type": "java.lang.String",
+      "description": "Description for post.content_to_post.max_size."
+    },
+    {
+      "name": "post.rule.unverified_posts_limit",
+      "type": "java.lang.String",
+      "description": "Description for post.rule.unverified_posts_limit."
+    },
+    {
+      "name": "post.publisher.scheduler.cron",
+      "type": "java.lang.String",
+      "description": "Description for post.publisher.scheduler.cron."
+    },
+    {
+      "name": "post.ad-remover.scheduler.cron",
+      "type": "java.lang.String",
+      "description": "Description for post.ad-remover.scheduler.cron."
+    },
+    {
+      "name": "post.auto_banner.scheduler.cron",
+      "type": "java.lang.String",
+      "description": "Description for post.auto_banner.scheduler.cron."
+    },
+    {
+      "name": "s3.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for s3.endpoint."
+    },
+    {
+      "name": "s3.accessKey",
+      "type": "java.lang.String",
+      "description": "Description for s3.accessKey."
+    },
+    {
+      "name": "s3.secretKey",
+      "type": "java.lang.String",
+      "description": "Description for s3.secretKey."
+    },
+    {
+      "name": "s3.bucketName",
+      "type": "java.lang.String",
+      "description": "Description for s3.bucketName."
+    },
+    {
+      "name": "s3.region",
+      "type": "java.lang.String",
+      "description": "Description for s3.region."
+    },
+    {
+      "name": "newfeed.users_ttl",
+      "type": "java.lang.String",
+      "description": "Description for newfeed.users_ttl."
+    },
+    {
+      "name": "newfeed.posts_ttl",
+      "type": "java.lang.String",
+      "description": "Description for newfeed.posts_ttl."
+    },
+    {
+      "name": "newfeed.comments_queue_size",
+      "type": "java.lang.String",
+      "description": "Description for newfeed.comments_queue_size."
+    }
+  ] }

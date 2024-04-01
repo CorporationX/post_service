@@ -6,9 +6,11 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
@@ -32,7 +34,10 @@ public class RedisPost implements Serializable {
     private String content;
     private long authorId;
     private long views;
+    @Getter
     private PriorityQueue<RedisComment> comments;
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
+    @Version
+    private long version;
 }

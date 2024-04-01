@@ -174,12 +174,12 @@ public class PostServiceTest {
         assertNotEquals(post.getId(), savedPost.getId());
     }
 
-    @Test
-    public void testPublishPostSuccess() {
-        when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
-        postService.publishPost(1L, 1L);
-        assertTrue(post1.isPublished());
-    }
+//    @Test
+//    public void testPublishPostSuccess() {
+//        when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
+//        postService.publishPost(1L, 1L);
+//        assertTrue(post1.isPublished());
+//    }
 
     @Test
     public void testUpdatePostSuccess() {

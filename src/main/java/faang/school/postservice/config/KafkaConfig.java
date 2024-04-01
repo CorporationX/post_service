@@ -26,6 +26,10 @@ public class KafkaConfig {
     private String postTopic;
     @Value("${kafka.topic.post_views_topic}")
     private String postViewTopic;
+    @Value("${kafka.topic.post_likes_topic}")
+    private String postLikeTopic;
+    @Value("${kafka.topic.post_comments_topic}")
+    private String postCommentTopic;
 
     @Bean
     public ProducerFactory<String, String> producerFactory() {
@@ -33,6 +37,7 @@ public class KafkaConfig {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, JSONSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JSONSerializer.class);
+        properties.put(ProducerConfig.ACKS_CONFIG, 1);
 
         return new DefaultKafkaProducerFactory<>(properties);
     }
@@ -60,6 +65,16 @@ public class KafkaConfig {
     @Bean
     public NewTopic postViewTopic() {
         return new NewTopic(postViewTopic, 10, (short) 2);
+    }
+
+    @Bean
+    public NewTopic postLikeTopic() {
+        return new NewTopic(postLikeTopic, 10, (short) 2);
+    }
+
+    @Bean
+    public NewTopic postCommentTopic() {
+        return new NewTopic(postCommentTopic, 10, (short) 2);
     }
 
 

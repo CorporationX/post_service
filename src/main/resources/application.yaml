@@ -20,8 +20,10 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     topic:
-      post_topic: postTopic
-      post_views_topic: viewTopic
+      post_topic: post_topic
+      post_views_topic: view_topic
+      post_likes_topic: like_topic
+      post_comments_topic: comment_topic
 
   data:
     redis:
@@ -82,3 +84,4 @@ s3:
 newfeed:
   users_ttl: 86400
   posts_ttl: 86400
+  comments_queue_size: 3

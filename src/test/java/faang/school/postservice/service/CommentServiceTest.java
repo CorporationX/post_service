@@ -5,11 +5,13 @@ import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,10 +45,17 @@ public class CommentServiceTest {
     @Mock
     private CommentEventPublisher commentEventPublisher;
 
+    @Mock
     private CommentValidator commentValidator;
 
     @Mock
     private CommentMapper commentMapper;
+
+    @Mock
+    private RedisUserRepository redisUserRepository;
+
+    @Mock
+    private RedisUserMapper redisUserMapper;
 
     @InjectMocks
     private CommentService commentService;
@@ -67,7 +76,8 @@ public class CommentServiceTest {
     @BeforeEach
     public void init() {
         commentValidator = new CommentValidator(userServiceClient);
-        commentService = new CommentService(commentRepository, postRepository, commentValidator, commentMapper, commentEventPublisher);
+        commentService = new CommentService(commentRepository, postRepository, commentValidator, commentMapper, commentEventPublisher,
+                redisUserRepository, redisUserMapper, userServiceClient);
         commentDto = CommentDto.builder()
                 .authorId(1L)
                 .id(2L)

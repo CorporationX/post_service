@@ -7,5 +7,5 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RedisPostRepository extends CrudRepository<RedisPost, String> {
+public interface RedisPostRepository extends CrudRepository<RedisPost, Long> {
 }

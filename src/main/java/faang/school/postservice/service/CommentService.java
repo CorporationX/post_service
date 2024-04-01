@@ -3,13 +3,14 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.CommentEventDto;
-import faang.school.postservice.dto.UserDto;
+import faang.school.postservice.dto.kafka.KafkaPostCommentEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.RedisUser;
+import faang.school.postservice.producer.KafkaPostCommentProducer;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -33,6 +34,7 @@ public class CommentService {
     private final RedisUserRepository redisUserRepository;
     private final RedisUserMapper redisUserMapper;
     private final UserServiceClient userServiceClient;
+    private final KafkaPostCommentProducer commentProducer;
 
     public CommentDto addNewComment(long postId, CommentDto commentDto) {
         commentValidator.validateCommentAuthor(commentDto.getId());
@@ -50,6 +52,7 @@ public class CommentService {
                 .postId(post.getId())
                 .build());
         cacheCommentAuthor(savedComment.getAuthorId());
+        sendKafkaPostCommentEvent(savedComment);
 
         return commentMapper.toDTO(savedComment);
     }
@@ -71,8 +74,23 @@ public class CommentService {
         return commentMapper.toDtoList(allByPostId);
     }
 
+    public CommentDto getComment(long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+               .orElseThrow(() -> new DataValidationException("There are no comments with that id: " + commentId));
+        return commentMapper.toDTO(comment);
+    }
+
     private void cacheCommentAuthor(long authorId) {
         RedisUser commentAuthor = redisUserMapper.toRedisUser(userServiceClient.getUser(authorId));
         redisUserRepository.save(commentAuthor);
+    }
+
+    private void sendKafkaPostCommentEvent(Comment comment) {
+        KafkaPostCommentEvent commentEvent = KafkaPostCommentEvent.builder()
+                .id(comment.getId())
+                .postId(comment.getPost().getId())
+                .authorId(comment.getAuthorId())
+                .build();
+        commentProducer.sendMessage(commentEvent);
     }
 }
