@@ -26,4 +26,6 @@ public class PostDto {
     private boolean deleted;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDateTime publishedAt;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private LocalDateTime scheduledAt;
 }
