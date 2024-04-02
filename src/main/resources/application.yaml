@@ -27,6 +27,8 @@ spring:
           name: calculations_channel
         user_ban:
           name: user_ban_channel
+      ttl:
+        post: 86400
   mvc:
     servlet:
       path: /api/v1

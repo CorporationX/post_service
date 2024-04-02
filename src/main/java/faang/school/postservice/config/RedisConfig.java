@@ -20,6 +20,8 @@ public class RedisConfig {
     private int port;
     @Value("${spring.data.redis.channel.comment")
     private String commentChannel;
+    @Value("${spring.data.redis.ttl.post}")
+    private long ttl;
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
@@ -39,5 +41,10 @@ public class RedisConfig {
     @Bean
     public ChannelTopic commentEventTopic() {
         return new ChannelTopic(commentChannel);
+    }
+
+    @Bean
+    public long getTtl() {
+        return ttl;
     }
 }
