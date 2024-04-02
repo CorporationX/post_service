@@ -20,5 +20,9 @@ public interface UserServiceClient {
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 
     @GetMapping("/users/exists/{userId}")
-    boolean existById (@PathVariable @Positive(message = "Id must be greater than zero") long userId);
+    boolean existById(@PathVariable @Positive(message = "Id must be greater than zero") long userId);
+
+    @GetMapping("/subscriptions/followers/{userId}")
+    List<Long> getAllFollowers(@PathVariable @Positive(message = "Id must be greater than zero") long userId);
+
 }

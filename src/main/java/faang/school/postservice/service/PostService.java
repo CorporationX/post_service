@@ -10,6 +10,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.PostCache;
 import faang.school.postservice.model.redis.UserCache;
 import faang.school.postservice.publisher.PostEventPublisher;
+import faang.school.postservice.publisher.kafka.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.repository.redis.RedisUserRepository;
@@ -32,6 +33,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final RedisPostRepository redisPostRepository;
     private final RedisUserRepository redisUserRepository;
+    private final KafkaPostProducer kafkaPostProducer;
 
     @Transactional
     public PostDto createDraft(PostDto postDto) {
@@ -50,9 +52,8 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         savePostToRedis(post);
         saveAuthorToRedis(post.getAuthorId());
-
+        kafkaPostProducer.publishKafkaPostEvent(post);
         postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
-
         return postMapper.toDto(post);
     }
 

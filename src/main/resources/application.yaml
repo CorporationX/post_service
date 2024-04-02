@@ -33,6 +33,15 @@ spring:
         post_channel:
           name: post_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      post:
+        name: posts
+        partitions: 10
+        replicas: 3
+
+
 server:
   port: 8081
 
