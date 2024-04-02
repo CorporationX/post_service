@@ -18,9 +18,7 @@ public class PostDto {
     private Long id;
     @NotBlank
     private String content;
-    @NotNull
     private Long authorId;
-    @NotNull
     private Long projectId;
     private boolean published;
     private boolean deleted;
