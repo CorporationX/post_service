@@ -35,7 +35,10 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+
+comment:
   commenter-banner:
+    comments-count: 5
     scheduler:
       cron: "0 0,12 0 * * *"
 
