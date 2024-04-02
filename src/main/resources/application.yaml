@@ -61,6 +61,7 @@ async:
 
 batchSize:
   batch: 100
+  feed-batch: 500
 
 services:
   s3:
