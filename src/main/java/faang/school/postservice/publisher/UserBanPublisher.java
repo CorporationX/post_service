@@ -20,6 +20,5 @@ public class UserBanPublisher {
 
     public void publish(UserEvent userEvent) {
         redisTemplate.convertAndSend(topic.getTopic(), userEvent);
-        System.out.println(userEvent);
     }
 }

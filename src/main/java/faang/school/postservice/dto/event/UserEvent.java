@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.event;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 public class UserEvent implements Serializable {
 
     private Long userId;

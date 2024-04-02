@@ -52,6 +52,11 @@ public class CommentService {
         commentRepository.deleteById(commentId);
     }
 
+    @Transactional(readOnly = true)
+    public List<Comment> findCommentsByVerified(boolean verified) {
+        return commentRepository.findByVerified(verified);
+    }
+
     private Comment getComment(Long userId, Long postId, CommentDto commentDto) {
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setAuthorId(userId);
