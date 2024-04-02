@@ -7,10 +7,12 @@ import lombok.Data;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @RedisHash("User")
-public class UserRedisDto {
+public class UserRedisDto implements Serializable {
 
     public UserRedisDto(RedisConfig config) {
         this.ttl = config.getTtl();
@@ -19,6 +21,7 @@ public class UserRedisDto {
     @Id
     private Long id;
     private String name;
+
     @TimeToLive
-    private long ttl;
+    private int ttl;
 }

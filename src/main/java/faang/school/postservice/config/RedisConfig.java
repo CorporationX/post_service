@@ -8,6 +8,8 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -20,8 +22,10 @@ public class RedisConfig {
     private int port;
     @Value("${spring.data.redis.channel.comment")
     private String commentChannel;
-    @Value("${spring.data.redis.ttl.post}")
-    private long ttl;
+    @Value("${spring.data.redis.channel.post_save_cache.name}")
+    private String postSaveCache;
+    @Value("${spring.data.redis.ttl}")
+    private int ttl;
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
@@ -44,7 +48,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public long getTtl() {
+    public int getTtl() {
         return ttl;
     }
 }

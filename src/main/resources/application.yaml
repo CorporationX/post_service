@@ -21,14 +21,16 @@ spring:
     redis:
       port: 6379
       host: localhost
+      ttl: 86400
       channel:
         comment: comment_channel
         calculations_channel:
           name: calculations_channel
         user_ban:
           name: user_ban_channel
-      ttl:
-        post: 86400
+        post_save_cache:
+          name: post_save_cache
+
   mvc:
     servlet:
       path: /api/v1
