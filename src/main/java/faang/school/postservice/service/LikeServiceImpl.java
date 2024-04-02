@@ -10,10 +10,12 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.kafka.KafkaLikeProducer;
 import faang.school.postservice.repository.LikeRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +27,9 @@ public class LikeServiceImpl implements LikeService {
     private final LikeRepository likeRepository;
     private final UserContext userContext;
     private final LikeMapper likeMapper;
+    private final KafkaLikeProducer kafkaLikeProducer;
 
+    @Transactional
     public LikeDto likePost(LikeDto likeDto) {
         Post post = postService.searchPostById(likeDto.getPostId());
         UserDto userDto = getUserFromUserService();
@@ -34,7 +38,11 @@ public class LikeServiceImpl implements LikeService {
                 .post(post)
                 .userId(userDto.getId())
                 .build();
-        return likeMapper.toDto(likeRepository.save(like));
+        likeRepository.save(like);
+
+        LikeDto afterLikeDto = likeMapper.toDto(like);
+        kafkaLikeProducer.publishKafkaLikeEvent(afterLikeDto);
+        return afterLikeDto;
     }
 
     public LikeDto likeComment(LikeDto likeDto) {

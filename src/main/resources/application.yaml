@@ -40,6 +40,10 @@ spring:
         name: posts
         partitions: 10
         replicas: 3
+      like:
+        name: likes
+        partitions: 10
+        replicas: 3
 
 
 server:

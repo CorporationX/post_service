@@ -1,4 +1,4 @@
-package faang.school.postservice.model.redis;
+package faang.school.postservice.model.redis.cache;
 
 import faang.school.postservice.dto.user.UserDto;
 import jakarta.persistence.Id;

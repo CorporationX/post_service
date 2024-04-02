@@ -30,7 +30,10 @@ public class CommentService {
         Optional<Post> post = postRepository.findById(postId);
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setPost(post.orElseThrow(() -> new IllegalArgumentException("Post ID is invalid")));
-        return commentMapper.toDto(commentRepository.save(comment));
+        commentRepository.save(comment);
+
+
+        return commentMapper.toDto(comment);
     }
 
     public CommentDto update(CommentDto commentDto, long postId) {

@@ -7,8 +7,8 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.redis.PostCache;
-import faang.school.postservice.model.redis.UserCache;
+import faang.school.postservice.model.redis.cache.PostCache;
+import faang.school.postservice.model.redis.cache.UserCache;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.kafka.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
@@ -50,6 +50,8 @@ public class PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        postRepository.save(post);
+
         savePostToRedis(post);
         saveAuthorToRedis(post.getAuthorId());
         kafkaPostProducer.publishKafkaPostEvent(post);
