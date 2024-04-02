@@ -28,7 +28,7 @@ public class PostService {
     private final ExecutorService postPublisherThreadPool;
 
     @Value("${post.publisher.batch-size}")
-    Integer scheduledBatchSize;
+    private Integer scheduledPostsBatchSize;
 
     public PostDto create(PostDto postDto) {
         postValidator.validatePostAuthor(postDto);
@@ -39,12 +39,12 @@ public class PostService {
     }
 
     public PostDto getPostById(long postId) {
-        Post post = getPost(postId);
+        Post post = getPostFromRepository(postId);
         return postMapper.toDto(post);
     }
 
     public PostDto publish(long postId) {
-        Post post = getPost(postId);
+        Post post = getPostFromRepository(postId);
         postValidator.validateIfPostIsPublished(post);
         postValidator.validateIfPostIsDeleted(post);
         post.setPublished(true);
@@ -59,9 +59,9 @@ public class PostService {
         int postsQuantity = posts.size();
         List<CompletableFuture<List<Post>>> futurePostsPublished = new CopyOnWriteArrayList<>();
 
-        for (int i = 0; i < postsQuantity; i += scheduledBatchSize) {
+        for (int i = 0; i < postsQuantity; i += scheduledPostsBatchSize) {
             final int fromIndex = i;
-            int toIndex = Math.min(i + scheduledBatchSize, postsQuantity);
+            int toIndex = Math.min(i + scheduledPostsBatchSize, postsQuantity);
 
             futurePostsPublished.add(CompletableFuture.supplyAsync(() -> {
                 List<Post> batch = posts.subList(fromIndex, toIndex);
@@ -80,7 +80,7 @@ public class PostService {
     }
 
     public PostDto update(PostDto postDto) {
-        Post post = getPost(postDto.getId());
+        Post post = getPostFromRepository(postDto.getId());
         postValidator.validateUpdatedPost(post, postDto);
         post.setContent(postDto.getContent());
 
@@ -88,7 +88,7 @@ public class PostService {
     }
 
     public void delete(long postId) {
-        Post post = getPost(postId);
+        Post post = getPostFromRepository(postId);
         postValidator.validateIfPostIsDeleted(post);
         post.setDeleted(true);
         postRepository.save(post);
@@ -126,7 +126,7 @@ public class PostService {
         return postMapper.toDto(posts);
     }
 
-    private Post getPost(long postId) {
+    private Post getPostFromRepository(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
     }

@@ -9,14 +9,17 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,13 +36,13 @@ import static org.mockito.Mockito.when;
 class PostServiceTest {
 
     @Mock
-    PostRepository postRepository;
+    private PostRepository postRepository;
     @Mock
-    PostValidator postValidator;
+    private PostValidator postValidator;
     @Spy
-    PostMapperImpl postMapper;
-    @InjectMocks
-    PostService postService;
+    private PostMapperImpl postMapper;
+    private ExecutorService postPublisherThreadPool;
+    private PostService postService;
 
     private Post firstPost;
     private Post secondPost;
@@ -68,6 +71,8 @@ class PostServiceTest {
                 .content(firstPost.getContent())
                 .authorId(firstPost.getAuthorId())
                 .build();
+        postPublisherThreadPool = Executors.newFixedThreadPool(10);
+        postService = new PostService(postRepository, postValidator, postMapper, postPublisherThreadPool);
     }
 
     @Test
@@ -125,11 +130,36 @@ class PostServiceTest {
     }
 
     @Test
+    void publishScheduledPosts() throws NoSuchFieldException, IllegalAccessException {
+        List<Post> posts = new ArrayList<>(List.of(firstPost, secondPost, thirdPost));
+        Field batchSize = PostService.class.getDeclaredField("scheduledPostsBatchSize");
+        batchSize.setAccessible(true);
+        batchSize.set(postService, 1000);
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+        when(postRepository.saveAll(posts)).thenReturn(posts);
+
+        List<PostDto> result = postService.publishScheduledPosts();
+
+        assertAll(
+                () -> verify(postRepository, times(1)).findReadyToPublish(),
+                () -> verify(postRepository, times(1)).saveAll(posts),
+                () -> verify(postMapper, times(1)).toDto(firstPost),
+                () -> verify(postMapper, times(1)).toDto(secondPost),
+                () -> verify(postMapper, times(1)).toDto(thirdPost),
+                () -> assertEquals(List.of(true, true, true), result.stream().map(PostDto::isPublished).toList()),
+                () -> assertNotNull(firstPost.getPublishedAt()),
+                () -> assertNotNull(secondPost.getPublishedAt()),
+                () -> assertNotNull(thirdPost.getPublishedAt())
+        );
+    }
+
+    @Test
     void update_PostUpdated_ThenReturnedAsDto() {
         firstPost.setContent("Old content");
         firstPostDto.setContent("Updated content");
         when(postRepository.findById(firstPost.getId())).thenReturn(Optional.ofNullable(firstPost));
         when(postRepository.save(firstPost)).thenReturn(firstPost);
+
 
         PostDto returned = postService.update(firstPostDto);
 
