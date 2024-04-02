@@ -160,7 +160,6 @@ class PostServiceTest {
         when(postRepository.findById(firstPost.getId())).thenReturn(Optional.ofNullable(firstPost));
         when(postRepository.save(firstPost)).thenReturn(firstPost);
 
-
         PostDto returned = postService.update(firstPostDto);
 
         assertAll(
