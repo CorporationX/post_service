@@ -13,7 +13,6 @@ import org.springframework.data.redis.core.TimeToLive;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Data
 @Builder
