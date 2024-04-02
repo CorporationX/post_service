@@ -27,7 +27,7 @@ public class NewsFeedController {
     }
 
     @PutMapping("/heat")
-    public void startFeedHeating() {
+    public void generateFeeds() {
         feedHeater.generateFeeds();
     }
 }

@@ -16,6 +16,12 @@ public class AsyncConfig {
     private int maxPoolSize;
     @Value("${async.queueCapacity}")
     private int queueCapacity;
+    @Value("${async.feed-heating.core-pool-size}")
+    private int feedHeaterCorePoolSize;
+    @Value("${async.feed-heating.max-pool-size}")
+    private int feedHeaterMaxPoolSize;
+    @Value("${async.feed-heating.queue-capacity}")
+    private int feedHeaterQueueCapacity;
 
     @Bean
     public ExecutorService executor() {
@@ -24,6 +30,16 @@ public class AsyncConfig {
         executor.setMaxPoolSize(maxPoolSize);
         executor.setQueueCapacity(queueCapacity);
         executor.setThreadNamePrefix("Async-Executor-");
+        executor.initialize();
+        return executor.getThreadPoolExecutor();
+    }
+
+    @Bean("feedHeaterThreadPool")
+    public ExecutorService feedHeaterThreadPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(feedHeaterCorePoolSize);
+        executor.setMaxPoolSize(feedHeaterMaxPoolSize);
+        executor.setQueueCapacity(feedHeaterQueueCapacity);
         executor.initialize();
         return executor.getThreadPoolExecutor();
     }

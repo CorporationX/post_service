@@ -54,6 +54,10 @@ async:
   corePoolSize: 10
   maxPoolSize: 15
   queueCapacity: 1000
+  feed-heating:
+    core-pool-size: 4
+    max-pool-size: 8
+    queue-capacity: 100
 
 batchSize:
   batch: 100
