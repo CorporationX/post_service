@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapperImpl;
@@ -6,7 +6,6 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.validation.user.UserValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,6 +83,13 @@ class CommentServiceTest {
         commentService.deleteComment(getId());
 
         verify(commentRepository, times(1)).deleteById(anyLong());
+    }
+
+    @Test
+    void findCommentsByVerified_ValidArgs() {
+        commentService.findCommentsByVerified(true);
+
+        verify(commentRepository, times(1)).findByVerified(true);
     }
 
     private List<Comment> getComments() {
