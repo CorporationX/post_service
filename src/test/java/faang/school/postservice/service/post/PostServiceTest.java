@@ -136,17 +136,12 @@ class PostServiceTest {
         batchSize.setAccessible(true);
         batchSize.set(postService, 1000);
         when(postRepository.findReadyToPublish()).thenReturn(posts);
-        when(postRepository.saveAll(posts)).thenReturn(posts);
 
-        List<PostDto> result = postService.publishScheduledPosts();
+        postService.publishScheduledPosts();
 
         assertAll(
                 () -> verify(postRepository, times(1)).findReadyToPublish(),
-                () -> verify(postRepository, times(1)).saveAll(posts),
-                () -> verify(postMapper, times(1)).toDto(firstPost),
-                () -> verify(postMapper, times(1)).toDto(secondPost),
-                () -> verify(postMapper, times(1)).toDto(thirdPost),
-                () -> assertEquals(List.of(true, true, true), result.stream().map(PostDto::isPublished).toList()),
+                () -> assertEquals(List.of(true, true, true), posts.stream().map(Post::isPublished).toList()),
                 () -> assertNotNull(firstPost.getPublishedAt()),
                 () -> assertNotNull(secondPost.getPublishedAt()),
                 () -> assertNotNull(thirdPost.getPublishedAt())

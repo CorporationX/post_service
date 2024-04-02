@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 
 @Slf4j
@@ -54,29 +53,22 @@ public class PostService {
     }
 
     @Transactional
-    public List<PostDto> publishScheduledPosts() {
+    public void publishScheduledPosts() {
         List<Post> posts = postRepository.findReadyToPublish();
         int postsQuantity = posts.size();
-        List<CompletableFuture<List<Post>>> futurePostsPublished = new CopyOnWriteArrayList<>();
 
         for (int i = 0; i < postsQuantity; i += scheduledPostsBatchSize) {
             final int fromIndex = i;
             int toIndex = Math.min(i + scheduledPostsBatchSize, postsQuantity);
 
-            futurePostsPublished.add(CompletableFuture.supplyAsync(() -> {
+            CompletableFuture.runAsync(() -> {
                 List<Post> batch = posts.subList(fromIndex, toIndex);
                 batch.forEach(post -> {
                     post.setPublished(true);
                     post.setPublishedAt(LocalDateTime.now());
                 });
-                return postRepository.saveAll(batch);
-            }, postPublisherThreadPool));
+            }, postPublisherThreadPool);
         }
-
-        return futurePostsPublished.stream()
-                .flatMap(future -> future.join().stream())
-                .map(postMapper::toDto)
-                .toList();
     }
 
     public PostDto update(PostDto postDto) {
