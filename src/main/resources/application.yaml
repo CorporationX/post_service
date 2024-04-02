@@ -35,6 +35,9 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  commenter-banner:
+    scheduler:
+      cron: "0 0,12 0 * * *"
 
 user-service:
   host: localhost
