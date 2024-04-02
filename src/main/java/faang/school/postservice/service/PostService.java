@@ -3,18 +3,29 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.event.PostEvent;
+import faang.school.postservice.dto.kafka.KafkaPostEvent;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.kafka.producers.KafkaPostProducer;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.redis.RedisPostMapper;
+import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.RedisComment;
+import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 
 @Service
 @RequiredArgsConstructor
@@ -23,9 +34,13 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final PostEventPublisher postEventPublisher;
     private final UserServiceClient userServiceClient;
+    private final KafkaPostProducer kafkaPostProducer;
     private final PostMapper postMapper;
+    private final RedisUserMapper redisUserMapper;
+    private final RedisPostMapper redisPostMapper;
     private final PostRepository postRepository;
-
+    private final RedisPostRepository redisPostRepository;
+    private final RedisUserRepository redisUserRepository;
 
     @Transactional
     public PostDto createDraft(PostDto postDto) {
@@ -97,6 +112,35 @@ public class PostService {
         return filterPosts(posts, true);
     }
 
+    public void sendKafkaPostEvent(Post post) {
+        List<Long> followersId = userServiceClient.getFollowersId(post.getAuthorId());
+        for (int i = 0; i < followersId.size(); i += 1000) {
+            int toIndex = (followersId.size() < i + 1000) ? (followersId.size() - 1) : (i + 1000);
+            List<Long> usersId = followersId.subList(i, toIndex);
+            KafkaPostEvent kafkaPostEvent = KafkaPostEvent.builder()
+                    .postId(post.getId())
+                    .followersId(usersId)
+                    .build();
+            kafkaPostProducer.sendMessage(kafkaPostEvent);
+        }
+    }
+
+    public void cachePostAuthor(long authorId) {
+        UserDto author = userServiceClient.getUser(authorId);
+        redisUserRepository.save(redisUserMapper.toRedisEntity(author));
+    }
+
+    public void cachePost(Post post, Comparator<RedisComment> commentComparator) {
+        RedisPost redisPost = redisPostMapper.toRedisEntity(post);
+        redisPost.setComments(new PriorityQueue<>(commentComparator));
+        redisPostRepository.save(redisPost);
+    }
+
+    public Post searchPostById(long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new DataValidationException("Post with id " + id + " not found."));
+    }
+
     private void validateAuthor(PostDto postDto) {
         if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
             throw new DataValidationException("The author of the post is not specified");
@@ -108,11 +152,6 @@ public class PostService {
             throw new DataValidationException("There is no author with this id " + postDto.getAuthorId());
         }
 
-    }
-
-    public Post searchPostById(long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new DataValidationException("Post with id " + id + " not found."));
     }
 
     private List<PostDto> filterPosts(List<Post> posts, boolean isPublished) {
@@ -130,4 +169,5 @@ public class PostService {
                 .map(postMapper::toDto)
                 .toList();
     }
+
 }
