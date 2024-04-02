@@ -3,8 +3,10 @@ package faang.school.postservice.dto.redis;
 import faang.school.postservice.config.RedisConfig;
 import faang.school.postservice.model.Resource;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
@@ -16,6 +18,8 @@ import java.util.concurrent.atomic.AtomicLong;
 @Data
 @Builder
 @RedisHash(value = "Post")
+@AllArgsConstructor
+@NoArgsConstructor
 public class PostRedisDto implements Serializable {
     public PostRedisDto(RedisConfig config) {
         this.ttl = config.getTtl();
@@ -25,7 +29,7 @@ public class PostRedisDto implements Serializable {
     private Long id;
     private String content;
     private Long authorId;
-    private AtomicLong postViewCounter;
+    private Long postViewCounter;
     private List<Resource> resources;
     private LocalDateTime publishedAt;
 
@@ -33,6 +37,6 @@ public class PostRedisDto implements Serializable {
     private int ttl;
 
     public void postViewIncrement() {
-        postViewCounter.incrementAndGet();
+        postViewCounter++;
     }
 }
