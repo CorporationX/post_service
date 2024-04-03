@@ -38,6 +38,8 @@ public class NewsFeedService {
 
     @Value("${batchSize.feed-batch}")
     private long postsBatchSize;
+    @Value("${batchSize.comment-batch}")
+    private long commentsBatchSize;
 
     public List<RedisPost> getFeed(Optional<Long> optionalPostId) {
         Stream<Long> postIdStream;
@@ -88,7 +90,7 @@ public class NewsFeedService {
         RedisPost redisPost = redisPostRepository.findById(postId).orElseThrow();
         Queue<RedisComment> redisComments = redisPost.getComments();
         redisComments.add(redisComment);
-        if (redisComments.size() > 3) {
+        if (redisComments.size() > commentsBatchSize) {
             redisComments.remove();
         }
         redisPostRepository.save(redisPost);

@@ -62,6 +62,7 @@ async:
 batchSize:
   batch: 100
   feed-batch: 500
+  comment-batch: 3
 
 services:
   s3:
