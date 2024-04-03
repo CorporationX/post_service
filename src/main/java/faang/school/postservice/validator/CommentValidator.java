@@ -17,7 +17,6 @@ public class CommentValidator {
         }
     }
 
-
     public void checkOwnerComment(Long authorId, Long userId) {
         if (!authorId.equals(userId)) {
             throw new DataValidationException("This is not your comment");

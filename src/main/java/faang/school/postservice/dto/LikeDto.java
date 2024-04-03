@@ -1,12 +1,12 @@
 package faang.school.postservice.dto;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
-@Builder
+@NoArgsConstructor
 public class LikeDto {
     private Long id;
     private Long userId;

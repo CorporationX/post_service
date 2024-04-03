@@ -4,16 +4,17 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
-import faang.school.postservice.dto.UserDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.mapper.PostEventMapper;
+import faang.school.postservice.mapper.PostEventMapperImpl;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.AsyncPostPublishService;
-import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
-import org.junit.BeforeClass;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,11 +22,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
@@ -49,6 +45,12 @@ class PostServiceTest {
     private PostRepository postRepository;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
+    @Mock
+    private PostEventPublisher postEventPublisher;
+    @Spy
+    private PostEventMapper postEventMapper = new PostEventMapperImpl();
     @Mock
     private ProjectServiceClient projectServiceClient;
     @Spy
@@ -96,7 +98,7 @@ class PostServiceTest {
         postDto.setAuthorId(1L);
 
         when(userServiceClient.getUser(postDto.getAuthorId()))
-                .thenReturn(new UserDto(1L, "user1", "user1@mail"));
+                .thenReturn(new UserDto());
         postService.createDraftPost(postDto);
 
         Mockito.verify(postRepository, Mockito.times(1)).save(any());

@@ -2,9 +2,11 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.dto.UserDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.mapper.LikePostEventMapper;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.publisher.LikePostEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
 import lombok.RequiredArgsConstructor;
@@ -22,23 +24,28 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeServiceValidator likeServiceValidator;
     private final LikeMapper likeMapper;
+    private final LikePostEventPublisher likePostEventPublisher;
+    private final LikePostEventMapper likePostEventMapper;
 
     @Value("${like_service.batch}")
-    private int BATCH_SIZE;
+    private int batchSize;
 
     @Transactional
     public LikeDto addLikeToPost(LikeDto likeDto) {
         likeServiceValidator.validateLikeOnPost(likeDto);
         Like likeEntity = likeMapper.toEntity(likeDto);
         Like saved = likeRepository.save(likeEntity);
-        return likeMapper.toDto(saved);
+        LikeDto likeDtoSave = likeMapper.toDto(saved);
+        likePostEventPublisher.publish(likePostEventMapper.toEvent(likeDtoSave));
+        return likeDtoSave;
     }
 
     @Transactional
     public LikeDto addLikeToComment(LikeDto like) {
         likeServiceValidator.validateLikeOnComment(like);
         Like likeEntity = likeMapper.toEntity(like);
-        return likeMapper.toDto(likeRepository.save(likeEntity));
+        Like saved = likeRepository.save(likeEntity);
+        return likeMapper.toDto(saved);
     }
 
     @Transactional
@@ -72,8 +79,8 @@ public class LikeService {
         List<UserDto> users = new ArrayList<>(userIds.size());
         final int totalUserIds = userIds.size();
 
-        for (int startIndex = 0; startIndex < totalUserIds; startIndex += BATCH_SIZE) {
-            int endIndex = Math.min(startIndex + BATCH_SIZE, totalUserIds);
+        for (int startIndex = 0; startIndex < totalUserIds; startIndex += batchSize) {
+            int endIndex = Math.min(startIndex + batchSize, totalUserIds);
             List<Long> batchIds = userIds.subList(startIndex, endIndex);
 
             List<UserDto> batchUsers = userServiceClient.getUsersByIds(batchIds);

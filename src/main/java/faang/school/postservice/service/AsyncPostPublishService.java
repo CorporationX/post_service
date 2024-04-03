@@ -16,7 +16,7 @@ import java.util.List;
 public class AsyncPostPublishService {
     private final PostRepository postRepository;
 
-    @Async("publishedPostThreadPool")
+    @Async("taskExecutor")
     public void publishPost(List<Post> posts) {
         log.info("Started async publish sublist of size {}", posts.size());
         posts.forEach(post -> {
