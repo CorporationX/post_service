@@ -12,6 +12,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,9 @@ public class NewsFeedService {
     private final UserContext userContext;
     private final PostRepository postRepository;
     private final RedisPostMapper redisPostMapper;
+
+    @Value("${batchSize.feed-batch}")
+    private long postsBatchSize;
 
     public List<RedisPost> getFeed(Optional<Long> optionalPostId) {
         Stream<Long> postIdStream;
@@ -73,8 +77,8 @@ public class NewsFeedService {
     public void addPost(long userId, long postId, LocalDateTime publishedAt) {
         Double score = timeToScore(publishedAt);
         feeds.add(userId, postId, score);
-        if (feeds.size(userId) > 500) {
-            feeds.removeRange(userId, 500, feeds.size(userId) - 1);
+        if (feeds.size(userId) > postsBatchSize) {
+            feeds.removeRange(userId, postsBatchSize, feeds.size(userId) - 1);
         }
     }
 
