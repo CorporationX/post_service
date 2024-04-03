@@ -1,16 +1,21 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.hhzuserban.dto.message.UserBanMessage;
+import faang.school.postservice.hhzuserban.publisher.MessagePublisher;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +23,10 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
+    private final MessagePublisher userBanPublisher;
+
+    @Value("${post.banner.post-count}")
+    private Integer postsCountToBan;
 
     public PostDto create(PostDto postDto) {
         postValidator.validatePostAuthor(postDto);
@@ -48,6 +57,15 @@ public class PostService {
         post.setContent(postDto.getContent());
 
         return postMapper.toDto(postRepository.save(post));
+    }
+
+    public void banUsers() {
+        postRepository.findByVerifiedFalse().stream()
+                .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()))
+                .entrySet().stream()
+                .filter(entry -> entry.getValue() >= postsCountToBan)
+                .map(Map.Entry::getKey)
+                .forEach(userId -> userBanPublisher.publish(new UserBanMessage(userId)));
     }
 
     public void delete(long postId) {
