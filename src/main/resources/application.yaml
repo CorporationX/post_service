@@ -30,6 +30,20 @@ spring:
           name: calculations_channel
         post_channel:
           name: post_channel
+    kafka:
+      bootstrap-servers: localhost:9092
+      groupId: 1
+      topics:
+        feedHeatTopic:
+          name: feedHeatTopic
+        postViewTopic:
+          name: postViewTopic
+        commentTopic:
+          name: commentTopic
+        postTopic:
+          name: postTopic
+        likeTopic:
+          name: likeTopic
 
 server:
   port: 8081
