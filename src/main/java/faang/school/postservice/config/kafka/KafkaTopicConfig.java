@@ -29,6 +29,13 @@ public class KafkaTopicConfig {
     @Value("${spring.kafka.topics.like.replicas}")
     private short likeTopicReplicas;
 
+    @Value("${spring.kafka.topics.comment.name}")
+    private String commentTopicName;
+    @Value("${spring.kafka.topics.comment.partitions}")
+    private int commentTopicPartitions;
+    @Value("${spring.kafka.topics.comment.replicas}")
+    private short commentTopicReplicas;
+
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> configs = new HashMap<>();
@@ -45,5 +52,10 @@ public class KafkaTopicConfig {
     public NewTopic kafkaLikeTopic() {
         return new NewTopic(likeTopicName, likeTopicPartitions, likeTopicReplicas);
     }
-    
+
+    @Bean
+    public NewTopic kafkaCommentTopic() {
+        return new NewTopic(commentTopicName, commentTopicPartitions, commentTopicReplicas);
+
+    }
 }

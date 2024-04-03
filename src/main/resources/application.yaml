@@ -44,6 +44,10 @@ spring:
         name: likes
         partitions: 10
         replicas: 3
+      comment:
+        name: comments
+        partitions: 10
+        replicas: 3
 
 
 server:
