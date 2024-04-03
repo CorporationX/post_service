@@ -31,6 +31,12 @@ spring:
         post_channel:
           name: post_channel
 
+  kafka:
+      bootstrap-servers: localhost:9092
+      topics:
+        post:
+          name: post_topic
+
 server:
   port: 8081
 
@@ -57,6 +63,8 @@ async:
 
 batchSize:
   batch: 100
+  publish:
+    followers: 1000
 
 services:
   s3:
