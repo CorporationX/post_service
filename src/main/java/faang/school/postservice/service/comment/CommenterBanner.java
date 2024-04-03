@@ -29,11 +29,13 @@ public class CommenterBanner {
         List<Comment> comments = commentService.findCommentsByVerified(false);
         Map<Long, Long> authorsCommsCount = comments.stream()
                 .collect(Collectors.groupingBy(Comment::getAuthorId, Collectors.counting()));
-        authorsCommsCount.forEach((authorId, commsCount) -> {
-            if (commsCount > countCommentsForBan) {
-                userBanPublisher.publish(new UserEvent(authorId));
-                log.info("User {} has published to topic", authorId);
-            }
-        });
+        authorsCommsCount.entrySet().stream()
+                .filter(entry -> entry.getValue() > countCommentsForBan)
+                .forEach(entry -> send(entry.getKey()));
+    }
+
+    private void send(Long userId) {
+        userBanPublisher.publish(new UserEvent(userId));
+        log.info("User {} has published to topic", userId);
     }
 }
