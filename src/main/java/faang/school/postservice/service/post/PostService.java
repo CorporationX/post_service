@@ -88,7 +88,7 @@ public class PostService {
         postRepository.findByVerifiedFalse().stream()
                 .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()))
                 .entrySet().stream()
-                .filter(entry -> entry.getValue() >= postsCountToBan)
+                .filter(entry -> entry.getValue() > postsCountToBan)
                 .map(Map.Entry::getKey)
                 .forEach(userId -> userBanPublisher.publish(new UserBanMessage(userId)));
     }
