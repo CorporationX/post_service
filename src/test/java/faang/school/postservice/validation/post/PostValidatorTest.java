@@ -16,6 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
+
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -147,5 +149,21 @@ class PostValidatorTest {
 
         assertThrows(DataValidationException.class, () ->
                 postValidator.validateUpdatedPost(post, postDto));
+    }
+
+    @Test
+    void validateImagesCount_ImagesLimitExceeded_ThrowsDataValidationException() throws NoSuchFieldException, IllegalAccessException {
+        Field maxImages = postValidator.getClass().getDeclaredField("maxImages");
+        maxImages.setAccessible(true);
+        maxImages.set(postValidator, 10);
+        assertThrows(DataValidationException.class, () -> postValidator.validateImagesCount(11));
+    }
+
+    @Test
+    void validateImagesCount2_ImagesLimitExceeded_ThrowsDataValidationException() throws NoSuchFieldException, IllegalAccessException {
+        Field maxImages = postValidator.getClass().getDeclaredField("maxImages");
+        maxImages.setAccessible(true);
+        maxImages.set(postValidator, 10);
+        assertThrows(DataValidationException.class, () -> postValidator.validateImagesCount(5, 10));
     }
 }

@@ -5,15 +5,20 @@ import faang.school.postservice.hhzuserban.dto.message.UserBanMessage;
 import faang.school.postservice.hhzuserban.publisher.MessagePublisher;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,20 +27,31 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
+    private final ResourceService resourceService;
     private final MessagePublisher userBanPublisher;
 
     @Value("${post.banner.post-count}")
     private Integer postsCountToBan;
 
-    public PostDto create(PostDto postDto) {
+    @Transactional
+    public PostDto create(PostDto postDto, MultipartFile[] images) {
         postValidator.validatePostAuthor(postDto);
         postValidator.validateIfAuthorExists(postDto);
-
-        Post savedPost = postRepository.save(postMapper.toEntity(postDto));
-        return postMapper.toDto(savedPost);
+        Post post = postRepository.save(postMapper.toEntity(postDto));
+        log.info("Post saved: {}", post);
+        post.setResources(new ArrayList<>());
+        if (images != null) {
+            postValidator.validateImagesCount(images.length);
+            for (MultipartFile file : images) {
+                Resource resource = resourceService.saveImage(file, post);
+                post.getResources().add(resource);
+            }
+        }
+        return postMapper.toDto(post);
     }
 
     public PostDto getPostById(long postId) {
@@ -53,12 +69,19 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public PostDto update(PostDto postDto) {
+    @Transactional
+    public PostDto update(PostDto postDto, MultipartFile[] images) {
         Post post = getPost(postDto.getId());
         postValidator.validateUpdatedPost(post, postDto);
         post.setContent(postDto.getContent());
-
-        return postMapper.toDto(postRepository.save(post));
+        if (images != null) {
+            postValidator.validateImagesCount(post.getResources().size(), images.length);
+            for (MultipartFile file : images) {
+                Resource resource = resourceService.saveImage(file, post);
+                post.getResources().add(resource);
+            }
+        }
+        return postMapper.toDto(post);
     }
 
     public void banUsers() {
