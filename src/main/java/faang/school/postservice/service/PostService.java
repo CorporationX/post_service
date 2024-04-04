@@ -50,7 +50,7 @@ public class PostService {
 
         postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
 
-        PostEventKafka postEventKafka = new PostEventKafka(post, userServiceClient.getFollowerIds(post.getAuthorId()));
+        PostEventKafka postEventKafka = new PostEventKafka(post, userServiceClient.getFollowerIds(post.getAuthorId()), userServiceClient.getUser(post.getAuthorId()));
         kafkaPostProducer.publish(postEventKafka);
 
         return postMapper.toDto(post);
