@@ -21,7 +21,6 @@ public class PostEventKafka {
     private List<Long> followerIds;
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
-    private Long likeCount;
 
     public PostEventKafka(Post post, List<Long> followerIds) {
         this.content = post.getContent();
@@ -29,7 +28,6 @@ public class PostEventKafka {
         this.postId = post.getId();
         this.projectId = post.getProjectId();
         this.updatedAt = post.getUpdatedAt();
-        this.likeCount = (long) post.getLikes().size();
         this.followerIds = followerIds;
     }
 }

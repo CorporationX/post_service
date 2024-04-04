@@ -70,6 +70,9 @@ batchSize:
 
 feed:
   size: 500
+  maxAttempts: 10
+  post:
+    time-to-live: 86400
 
 services:
   s3:

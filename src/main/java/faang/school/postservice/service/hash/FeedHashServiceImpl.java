@@ -5,6 +5,8 @@ import faang.school.postservice.hash.FeedHash;
 import faang.school.postservice.repository.FeedHashRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
@@ -19,6 +21,8 @@ public class FeedHashServiceImpl implements FeedHashService{
     private int feedSize;
 
     @Override
+    @Retryable(retryFor = OptimisticLockingFailureException.class,
+            maxAttemptsExpression = "${feed.maxAttempts}")
     public void updateFeed(PostEventKafka postEvent) {
         List<Long> followerIds = postEvent.getFollowerIds();
         followerIds.forEach((followerId) -> {
