@@ -1,6 +1,8 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.hhzuserban.dto.message.UserBanMessage;
+import faang.school.postservice.hhzuserban.publisher.MessagePublisher;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -14,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -33,18 +36,21 @@ import static org.mockito.Mockito.when;
 class PostServiceTest {
 
     @Mock
-    PostRepository postRepository;
+    private PostRepository postRepository;
     @Mock
-    PostValidator postValidator;
+    private PostValidator postValidator;
     @Spy
-    PostMapperImpl postMapper;
+    private PostMapperImpl postMapper;
+    @Mock
+    private MessagePublisher userBanPublisher;
     @InjectMocks
-    PostService postService;
+    private PostService postService;
 
     private Post firstPost;
     private Post secondPost;
     private Post thirdPost;
     private PostDto firstPostDto;
+    private UserBanMessage userBanMessage;
 
     @BeforeEach
     void setUp() {
@@ -67,6 +73,9 @@ class PostServiceTest {
                 .id(firstPost.getId())
                 .content(firstPost.getContent())
                 .authorId(firstPost.getAuthorId())
+                .build();
+        userBanMessage = UserBanMessage.builder()
+                .userId(firstPost.getAuthorId())
                 .build();
     }
 
@@ -139,6 +148,24 @@ class PostServiceTest {
                 () -> verify(postRepository, times(1)).save(firstPost),
                 () -> assertEquals(firstPostDto, returned),
                 () -> assertNotEquals("Old content", firstPost.getContent())
+        );
+    }
+
+    @Test
+    void banUsers_UserShouldBeBanned_BanMessagePublished() throws NoSuchFieldException, IllegalAccessException {
+        firstPost.setVerified(false);
+        secondPost.setVerified(false);
+        List<Post> posts = List.of(firstPost, secondPost, thirdPost);
+        Field postsCountToBan = PostService.class.getDeclaredField("postsCountToBan");
+        postsCountToBan.setAccessible(true);
+        postsCountToBan.set(postService, 2);
+        when(postRepository.findByVerifiedFalse()).thenReturn(posts);
+
+        postService.banUsers();
+
+        assertAll(
+                () -> verify(postRepository, times(1)).findByVerifiedFalse(),
+                () -> verify(userBanPublisher, times(1)).publish(userBanMessage)
         );
     }
 
