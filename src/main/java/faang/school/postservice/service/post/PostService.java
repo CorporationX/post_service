@@ -3,16 +3,20 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -21,20 +25,31 @@ import java.util.concurrent.ExecutorService;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
-    private final ExecutorService postPublisherThreadPool;
+    private final ResourceService resourceService;
+    private final ExecutorService threadPool;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
 
-    public PostDto create(PostDto postDto) {
+    @Transactional
+    public PostDto create(PostDto postDto, MultipartFile[] images) {
         postValidator.validatePostAuthor(postDto);
         postValidator.validateIfAuthorExists(postDto);
-
-        Post savedPost = postRepository.save(postMapper.toEntity(postDto));
-        return postMapper.toDto(savedPost);
+        Post post = postRepository.save(postMapper.toEntity(postDto));
+        log.info("Post saved: {}", post);
+        post.setResources(new ArrayList<>());
+        if (images != null) {
+            postValidator.validateImagesCount(images.length);
+            for (MultipartFile file : images) {
+                Resource resource = resourceService.saveImage(file, post);
+                post.getResources().add(resource);
+            }
+        }
+        return postMapper.toDto(post);
     }
 
     public PostDto getPostById(long postId) {
@@ -67,16 +82,23 @@ public class PostService {
                     post.setPublished(true);
                     post.setPublishedAt(LocalDateTime.now());
                 });
-            }, postPublisherThreadPool);
+            }, threadPool);
         }
     }
 
-    public PostDto update(PostDto postDto) {
+    @Transactional
+    public PostDto update(PostDto postDto, MultipartFile[] images) {
         Post post = getPostFromRepository(postDto.getId());
         postValidator.validateUpdatedPost(post, postDto);
         post.setContent(postDto.getContent());
-
-        return postMapper.toDto(postRepository.save(post));
+        if (images != null) {
+            postValidator.validateImagesCount(post.getResources().size(), images.length);
+            for (MultipartFile file : images) {
+                Resource resource = resourceService.saveImage(file, post);
+                post.getResources().add(resource);
+            }
+        }
+        return postMapper.toDto(post);
     }
 
     public void delete(long postId) {

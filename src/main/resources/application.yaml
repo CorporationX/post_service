@@ -17,6 +17,10 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  servlet:
+    multipart:
+      max-request-size: 5MB
+
   data:
     redis:
       port: 6379
@@ -28,6 +32,18 @@ spring:
 server:
   port: 8081
 
+services:
+  s3:
+    endpoint: http://127.0.0.1:9000
+    access-key: user
+    secret-key: password
+    bucket-name: post-service-bucket
+
+image:
+  horizontalWidth: 1080
+  horizontalHeight: 566
+  squareSize: 1080
+
 post:
   publisher:
     thread-count: 10
@@ -37,6 +53,7 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  max-images: 10
 
 user-service:
   host: localhost
