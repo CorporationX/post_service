@@ -11,10 +11,10 @@ import java.util.concurrent.Executors;
 public class ThreadPoolConfig {
 
     @Value("${post.publisher.thread-count}")
-    private Integer postPublisherThreadCount;
+    private Integer threadCount;
 
     @Bean
-    public ExecutorService postPublisherThreadPool() {
-        return Executors.newFixedThreadPool(postPublisherThreadCount);
+    public ExecutorService threadPool() {
+        return Executors.newFixedThreadPool(threadCount);
     }
 }
