@@ -3,10 +3,12 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.event.PostEvent;
+import faang.school.postservice.dto.event.PostEventKafka;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
+    private final KafkaPostProducer kafkaPostProducer;
 
 
     @Transactional
@@ -41,12 +44,14 @@ public class PostService {
         if (post.isPublished()) {
             throw new DataValidationException("The post has already been published");
         }
-        postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
 
         postEventPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
+
+        PostEventKafka postEventKafka = new PostEventKafka(post, userServiceClient.getFollowerIds(post.getAuthorId()), userServiceClient.getUser(post.getAuthorId()));
+        kafkaPostProducer.publish(postEventKafka);
 
         return postMapper.toDto(post);
     }
