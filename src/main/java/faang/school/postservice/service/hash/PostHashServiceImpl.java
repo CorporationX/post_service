@@ -1,5 +1,6 @@
 package faang.school.postservice.service.hash;
 
+import faang.school.postservice.dto.event.CommentEventKafka;
 import faang.school.postservice.dto.event.PostEventKafka;
 import faang.school.postservice.hash.PostHash;
 import faang.school.postservice.repository.PostHashRepository;
@@ -9,6 +10,8 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
+
 @Service
 @RequiredArgsConstructor
 public class PostHashServiceImpl implements PostHashService{
@@ -16,6 +19,8 @@ public class PostHashServiceImpl implements PostHashService{
 
     @Value("${feed.post.time-to-live}")
     private long ttl;
+    @Value("${feed.comment.size}")
+    private int commentSize;
 
     @Override
     @Retryable(retryFor = OptimisticLockingFailureException.class,
@@ -32,5 +37,26 @@ public class PostHashServiceImpl implements PostHashService{
         postHash.setPublishedAt(postEvent.getPublishedAt());
 
         postHashRepository.save(postHash);
+    }
+
+    public void addComment(CommentEventKafka commentEvent) {
+        postHashRepository.findById(commentEvent.getPostId())
+                .ifPresent(postHash -> {
+                   postHash.getComments().add(commentEvent);
+                   checkCommentSize(postHash);
+                   postHashRepository.save(postHash);
+                });
+    }
+
+    private void checkCommentSize(PostHash postHash) {
+        while (postHash.getComments().size() > commentSize) {
+            Iterator<CommentEventKafka> iterator = postHash.getComments().iterator();
+            if (iterator.hasNext()) {
+                iterator.next();
+                iterator.remove();
+            } else {
+                break;
+            }
+        }
     }
 }

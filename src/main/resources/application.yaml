@@ -75,6 +75,8 @@ feed:
   maxAttempts: 10
   post:
     time-to-live: 86400
+  comment:
+    size: 3
 
 services:
   s3:
