@@ -19,7 +19,8 @@ spring:
 
   servlet:
     multipart:
-      max-request-size: 5MB
+      max-request-size: 100MB
+      max-file-size: 100MB
 
   data:
     redis:
@@ -43,6 +44,12 @@ image:
   horizontalWidth: 1080
   horizontalHeight: 566
   squareSize: 1080
+
+media:
+  image:
+    max-file-size: 5
+  audio-video:
+    max-file-size: 100
 
 post:
   publisher:

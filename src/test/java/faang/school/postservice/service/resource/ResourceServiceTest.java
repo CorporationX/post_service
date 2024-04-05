@@ -3,9 +3,10 @@ package faang.school.postservice.service.resource;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.resource.Resource;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.image.ImageResizer;
+import faang.school.postservice.validation.resource.ResourceValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,8 @@ class ResourceServiceTest {
     private ResourceRepository resourceRepository;
     @Mock
     private ImageResizer imageResizer;
+    @Mock
+    private ResourceValidator resourceValidator;
     @InjectMocks
     private ResourceService resourceService;
 

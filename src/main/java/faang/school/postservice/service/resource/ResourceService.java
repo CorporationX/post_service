@@ -8,7 +8,8 @@ import faang.school.postservice.exception.FileException;
 import faang.school.postservice.image.ImageResizer;
 import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.resource.Resource;
+import faang.school.postservice.model.resource.ResourceType;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.validation.resource.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -41,6 +43,7 @@ public class ResourceService {
     private String bucketName;
 
     public Resource saveImage(MultipartFile image, Post post) {
+        resourceValidator.validateImageFileSize(image);
         String folder = String.valueOf(post.getId());
         Resource resource = uploadImage(image, folder, imageResizer.getResizedImage(image));
         log.info("File {} uploaded to file storage", image.getOriginalFilename());
@@ -61,16 +64,26 @@ public class ResourceService {
 
     @Transactional
     public ResourceDto attachMediaToPost(MultipartFile mediaFile, Post post) {
-        resourceValidator.validateMediaType(mediaFile);
+        resourceValidator.validateAudioOrVideoFileSize(mediaFile);
+        resourceValidator.validateTypeAudioOrVideo(mediaFile);
         String folder = String.valueOf(post.getId());
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentType(mediaFile.getContentType());
-        objectMetadata.setContentLength(mediaFile.getSize());
+        ObjectMetadata objectMetadata = getObjectMetaData(mediaFile);
         String key = generatePostKey(folder, mediaFile.getOriginalFilename());
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, getMultipartFileInputStream(mediaFile), objectMetadata);
         amazonS3Client.putObject(putObjectRequest);
         log.info("File {} attached to post", key);
-        return resourceMapper.toDto(getResource(mediaFile, mediaFile.getSize(), key));
+        Resource resource = getResource(mediaFile, mediaFile.getSize(), key);
+        resource.setPost(post);
+        resourceRepository.save(resource);
+        log.info("Resource {} saved to data base", resource);
+        return resourceMapper.toDto(resource);
+    }
+
+    private ObjectMetadata getObjectMetaData(MultipartFile mediaFile) {
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentType(mediaFile.getContentType());
+        objectMetadata.setContentLength(mediaFile.getSize());
+        return objectMetadata;
     }
 
     private Resource uploadImage(MultipartFile file, String folder, BufferedImage image) {
@@ -112,8 +125,13 @@ public class ResourceService {
                 .key(key)
                 .size(fileSize)
                 .name(file.getOriginalFilename())
-                .type(file.getContentType())
+                .type(ResourceType.getResourceType(getContentType(file)).name())
                 .build();
+    }
+
+    private String getContentType(MultipartFile file) {
+        String contentType = Objects.requireNonNullElse(file.getContentType(), "");
+        return contentType.split("/")[0].toLowerCase();
     }
 
     private InputStream getInputStream(BufferedImage image, String contentType) {
