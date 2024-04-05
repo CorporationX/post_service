@@ -16,7 +16,8 @@ public class KafkaConfig {
     private String bootstrapAddress;
     @Value("${spring.kafka.topics.post.name}")
     private String topicPost;
-
+    @Value("${spring.kafka.topics.comment.name}")
+    private String commentTopic;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {

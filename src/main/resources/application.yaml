@@ -38,6 +38,8 @@ spring:
       topics:
         post:
           name: post_topic
+        comment:
+          name: comment_topic
 
 server:
   port: 8081

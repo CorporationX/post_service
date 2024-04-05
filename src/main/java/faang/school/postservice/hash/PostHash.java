@@ -1,5 +1,6 @@
 package faang.school.postservice.hash;
 
+import faang.school.postservice.dto.event.CommentEventKafka;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import org.springframework.data.redis.core.TimeToLive;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 
 @Data
 @Builder
@@ -26,6 +28,7 @@ public class PostHash implements Serializable {
     private Long authorId;
     private Long projectId;
     private LocalDateTime publishedAt;
+    private LinkedHashSet<CommentEventKafka> comments;
 
     @TimeToLive
     private Long ttl;
