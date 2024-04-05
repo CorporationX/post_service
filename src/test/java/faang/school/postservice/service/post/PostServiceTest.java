@@ -10,16 +10,18 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,7 +47,7 @@ class PostServiceTest {
     private PostMapperImpl postMapper;
     @Mock
     private ResourceService resourceService;
-    @InjectMocks
+    private ExecutorService threadPool;
     private PostService postService;
 
     private Post firstPost;
@@ -78,6 +80,8 @@ class PostServiceTest {
                 .content(firstPost.getContent())
                 .authorId(firstPost.getAuthorId())
                 .build();
+        threadPool = Executors.newFixedThreadPool(10);
+        postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool);
     }
 
     @Test
@@ -132,6 +136,25 @@ class PostServiceTest {
                 () -> assertTrue(returned.isPublished()),
                 () -> assertNotNull(returned.getPublishedAt()),
                 () -> assertNotEquals(firstPostDto, returned)
+        );
+    }
+
+    @Test
+    void publishScheduledPosts() throws NoSuchFieldException, IllegalAccessException {
+        List<Post> posts = new ArrayList<>(List.of(firstPost, secondPost, thirdPost));
+        Field batchSize = PostService.class.getDeclaredField("scheduledPostsBatchSize");
+        batchSize.setAccessible(true);
+        batchSize.set(postService, 1000);
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+
+        postService.publishScheduledPosts();
+
+        assertAll(
+                () -> verify(postRepository, times(1)).findReadyToPublish(),
+                () -> assertEquals(List.of(true, true, true), posts.stream().map(Post::isPublished).toList()),
+                () -> assertNotNull(firstPost.getPublishedAt()),
+                () -> assertNotNull(secondPost.getPublishedAt()),
+                () -> assertNotNull(thirdPost.getPublishedAt())
         );
     }
 

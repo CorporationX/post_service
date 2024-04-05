@@ -10,6 +10,7 @@ import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 @Slf4j
 @Service
@@ -27,6 +30,10 @@ public class PostService {
     private final PostValidator postValidator;
     private final PostMapper postMapper;
     private final ResourceService resourceService;
+    private final ExecutorService threadPool;
+
+    @Value("${post.publisher.batch-size}")
+    private Integer scheduledPostsBatchSize;
 
     @Transactional
     public PostDto create(PostDto postDto, MultipartFile[] images) {
@@ -46,12 +53,12 @@ public class PostService {
     }
 
     public PostDto getPostById(long postId) {
-        Post post = getPost(postId);
+        Post post = getPostFromRepository(postId);
         return postMapper.toDto(post);
     }
 
     public PostDto publish(long postId) {
-        Post post = getPost(postId);
+        Post post = getPostFromRepository(postId);
         postValidator.validateIfPostIsPublished(post);
         postValidator.validateIfPostIsDeleted(post);
         post.setPublished(true);
@@ -61,8 +68,27 @@ public class PostService {
     }
 
     @Transactional
+    public void publishScheduledPosts() {
+        List<Post> posts = postRepository.findReadyToPublish();
+        int postsQuantity = posts.size();
+
+        for (int i = 0; i < postsQuantity; i += scheduledPostsBatchSize) {
+            final int fromIndex = i;
+            int toIndex = Math.min(i + scheduledPostsBatchSize, postsQuantity);
+
+            CompletableFuture.runAsync(() -> {
+                List<Post> batch = posts.subList(fromIndex, toIndex);
+                batch.forEach(post -> {
+                    post.setPublished(true);
+                    post.setPublishedAt(LocalDateTime.now());
+                });
+            }, threadPool);
+        }
+    }
+
+    @Transactional
     public PostDto update(PostDto postDto, MultipartFile[] images) {
-        Post post = getPost(postDto.getId());
+        Post post = getPostFromRepository(postDto.getId());
         postValidator.validateUpdatedPost(post, postDto);
         post.setContent(postDto.getContent());
         if (images != null) {
@@ -76,7 +102,7 @@ public class PostService {
     }
 
     public void delete(long postId) {
-        Post post = getPost(postId);
+        Post post = getPostFromRepository(postId);
         postValidator.validateIfPostIsDeleted(post);
         post.setDeleted(true);
         postRepository.save(post);
@@ -114,7 +140,7 @@ public class PostService {
         return postMapper.toDto(posts);
     }
 
-    private Post getPost(long postId) {
+    private Post getPostFromRepository(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
     }
