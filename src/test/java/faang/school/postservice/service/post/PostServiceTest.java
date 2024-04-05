@@ -62,18 +62,21 @@ class PostServiceTest {
                 .content("Valid content")
                 .authorId(1L)
                 .resources(new ArrayList<>())
+                .published(false)
                 .build();
         secondPost = Post.builder()
                 .id(2L)
                 .content("Valid content")
                 .resources(new ArrayList<>())
                 .authorId(1L)
+                .published(false)
                 .build();
         thirdPost = Post.builder()
                 .id(3L)
                 .content("Valid content")
                 .resources(new ArrayList<>())
                 .authorId(1L)
+                .published(false)
                 .build();
         firstPostDto = PostDto.builder()
                 .id(firstPost.getId())
