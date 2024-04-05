@@ -3,11 +3,14 @@ package faang.school.postservice.service.resource;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.exception.FileException;
+import faang.school.postservice.image.ImageResizer;
+import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.image.ImageResizer;
+import faang.school.postservice.validation.resource.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +34,8 @@ public class ResourceService {
     private final AmazonS3 amazonS3Client;
     private final ResourceRepository resourceRepository;
     private final ImageResizer imageResizer;
+    private final ResourceValidator resourceValidator;
+    private final ResourceMapper resourceMapper;
 
     @Value("${services.s3.bucket-name}")
     private String bucketName;
@@ -54,16 +59,43 @@ public class ResourceService {
         log.info("File {} deleted from data base", resource.getKey());
     }
 
+    @Transactional
+    public ResourceDto attachMediaToPost(MultipartFile mediaFile, Post post) {
+        resourceValidator.validateMediaType(mediaFile);
+        String folder = String.valueOf(post.getId());
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentType(mediaFile.getContentType());
+        objectMetadata.setContentLength(mediaFile.getSize());
+        String key = generatePostKey(folder, mediaFile.getOriginalFilename());
+        PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, getMultipartFileInputStream(mediaFile), objectMetadata);
+        amazonS3Client.putObject(putObjectRequest);
+        log.info("File {} attached to post", key);
+        return resourceMapper.toDto(getResource(mediaFile, mediaFile.getSize(), key));
+    }
+
     private Resource uploadImage(MultipartFile file, String folder, BufferedImage image) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(file.getContentType());
         objectMetadata.setContentEncoding("utf-8");
-        String key = String.format("%s/%s/%s", folder, System.currentTimeMillis(), file.getOriginalFilename());
+        String key = generatePostKey(folder, file.getOriginalFilename());
         InputStream inputStream = getInputStream(image, file.getContentType());
         setContentLength(objectMetadata, inputStream);
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, inputStream, objectMetadata);
         amazonS3Client.putObject(putObjectRequest);
         return getResource(file, file.getSize(), key);
+    }
+
+    private InputStream getMultipartFileInputStream(MultipartFile multipartFile) {
+        try {
+            return multipartFile.getInputStream();
+        } catch (IOException e) {
+            log.error("FileException", e);
+            throw new FileException(e.getMessage());
+        }
+    }
+
+    private String generatePostKey(String folder, String fileName) {
+        return String.format("%s/%s/%s", folder, System.currentTimeMillis(), fileName);
     }
 
     private void setContentLength(ObjectMetadata objectMetadata, InputStream inputStream) {

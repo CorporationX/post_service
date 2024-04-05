@@ -1,6 +1,7 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -36,7 +37,7 @@ public class PostService {
         log.info("Post saved: {}", post);
         post.setResources(new ArrayList<>());
         if (images != null) {
-            postValidator.validateImagesCount(images.length);
+            postValidator.validateResourcesCount(images.length);
             for (MultipartFile file : images) {
                 Resource resource = resourceService.saveImage(file, post);
                 post.getResources().add(resource);
@@ -66,7 +67,7 @@ public class PostService {
         postValidator.validateUpdatedPost(post, postDto);
         post.setContent(postDto.getContent());
         if (images != null) {
-            postValidator.validateImagesCount(post.getResources().size(), images.length);
+            postValidator.validateResourcesCount(post.getResources().size(), images.length);
             for (MultipartFile file : images) {
                 Resource resource = resourceService.saveImage(file, post);
                 post.getResources().add(resource);
@@ -112,6 +113,12 @@ public class PostService {
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .toList();
         return postMapper.toDto(posts);
+    }
+
+    @Transactional
+    public ResourceDto attachMedia(long postId, MultipartFile mediaFile) {
+        Post post = getPost(postId);
+        return resourceService.attachMediaToPost(mediaFile, post);
     }
 
     private Post getPost(long postId) {

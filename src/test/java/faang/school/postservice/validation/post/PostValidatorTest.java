@@ -156,7 +156,7 @@ class PostValidatorTest {
         Field maxImages = postValidator.getClass().getDeclaredField("maxImages");
         maxImages.setAccessible(true);
         maxImages.set(postValidator, 10);
-        assertThrows(DataValidationException.class, () -> postValidator.validateImagesCount(11));
+        assertThrows(DataValidationException.class, () -> postValidator.validateResourcesCount(11));
     }
 
     @Test
@@ -164,6 +164,6 @@ class PostValidatorTest {
         Field maxImages = postValidator.getClass().getDeclaredField("maxImages");
         maxImages.setAccessible(true);
         maxImages.set(postValidator, 10);
-        assertThrows(DataValidationException.class, () -> postValidator.validateImagesCount(5, 10));
+        assertThrows(DataValidationException.class, () -> postValidator.validateResourcesCount(5, 10));
     }
 }

@@ -1,11 +1,13 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.service.post.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -82,5 +85,12 @@ public class PostController {
     @GetMapping("/project/{projectId}/published")
     public List<PostDto> getPublishedPostsByProjectId(@PathVariable @Min(1) long projectId) {
         return postService.getPublishedPostsByProjectId(projectId);
+    }
+
+    @Operation(summary = "Attach media file to post")
+    @PutMapping("/{postId}")
+    public ResourceDto attachMedia(@PathVariable @Positive(message = "Post id must be positive number") long postId,
+                                   @RequestParam MultipartFile file) {
+        return postService.attachMedia(postId, file);
     }
 }

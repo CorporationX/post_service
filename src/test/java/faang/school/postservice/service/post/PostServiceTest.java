@@ -89,7 +89,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postValidator, times(1)).validatePostAuthor(firstPostDto),
                 () -> verify(postValidator, times(1)).validateIfAuthorExists(firstPostDto),
-                () -> verify(postValidator, times(1)).validateImagesCount(anyInt()),
+                () -> verify(postValidator, times(1)).validateResourcesCount(anyInt()),
                 () -> verify(postRepository, times(1)).save(any(Post.class)),
                 () -> verify(postMapper, times(1)).toEntity(firstPostDto),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
@@ -146,7 +146,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postRepository, times(1)).findById(firstPost.getId()),
                 () -> verify(postValidator, times(1)).validateUpdatedPost(any(Post.class), any(PostDto.class)),
-                () -> verify(postValidator, times(1)).validateImagesCount(anyInt(), anyInt()),
+                () -> verify(postValidator, times(1)).validateResourcesCount(anyInt(), anyInt()),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
                 () -> assertEquals(firstPostDto, returned),
                 () -> assertNotEquals("Old content", firstPost.getContent())
