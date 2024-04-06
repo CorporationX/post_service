@@ -26,4 +26,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     Optional<Post> findByIdAndPublishedIsTrueAndDeletedIsFalse(long postId);
 
+    @Query("SELECT p FROM Post p WHERE p.authorId = :userId ORDER BY p.createdAt DESC")
+    List<Post> findLatestPosts(long userId);
+
 }

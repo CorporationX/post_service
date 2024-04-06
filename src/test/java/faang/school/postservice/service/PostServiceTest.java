@@ -2,10 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,10 @@ class PostServiceTest {
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private UserContext userContext;
+    @Mock
+    private KafkaPostViewProducer postViewProducer;
     @Captor
     private ArgumentCaptor<Post> captor;
     private PostDto postDto;
@@ -116,6 +122,7 @@ class PostServiceTest {
     @Test
     void testGetPostByIdSuccessful() {
         when(postRepository.findById(6L)).thenReturn(Optional.ofNullable(post2));
+        when(userContext.getUserId()).thenReturn(1L);
         PostDto postDtoNew = postService.getPostById(6);
         assertEquals(post2.getContent(), postDtoNew.getContent());
         assertEquals(post2.getAuthorId(), postDtoNew.getAuthorId());
