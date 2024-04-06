@@ -3,6 +3,7 @@ package faang.school.postservice.service.hash;
 import faang.school.postservice.dto.event.CommentEventKafka;
 import faang.school.postservice.dto.event.LikeEventKafka;
 import faang.school.postservice.dto.event.PostEventKafka;
+import faang.school.postservice.dto.event.PostViewEventKafka;
 import faang.school.postservice.hash.PostHash;
 import faang.school.postservice.repository.PostHashRepository;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,14 @@ public class PostHashServiceImpl implements PostHashService{
     public void addLikeToPost(LikeEventKafka likeEvent) {
         postHashRepository.findById(likeEvent.getPostId()).ifPresent(postHash -> {
             postHash.getLikes().add(likeEvent);
+            postHashRepository.save(postHash);
+        });
+    }
+
+    @Override
+    public void addPostView(PostViewEventKafka postViewEvent) {
+        postHashRepository.findById(postViewEvent.getPostId()).ifPresent(postHash -> {
+            postHash.getPostViews().add(postViewEvent);
             postHashRepository.save(postHash);
         });
     }

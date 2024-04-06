@@ -2,6 +2,7 @@ package faang.school.postservice.hash;
 
 import faang.school.postservice.dto.event.CommentEventKafka;
 import faang.school.postservice.dto.event.LikeEventKafka;
+import faang.school.postservice.dto.event.PostViewEventKafka;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,6 +32,7 @@ public class PostHash implements Serializable {
     private LocalDateTime publishedAt;
     private LinkedHashSet<CommentEventKafka> comments;
     private LinkedHashSet<LikeEventKafka> likes;
+    private LinkedHashSet<PostViewEventKafka> postViews;
 
     @TimeToLive
     private Long ttl;
