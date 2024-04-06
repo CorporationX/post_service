@@ -42,9 +42,7 @@ public class PostService {
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
-    private final UserServiceClient userServiceClient;
-    private final UserRedisRepository userRedisRepository;
-    private final UserMapper userMapper;
+    private final RedisService redisService;
     @Value("${post.content_to_post.max_amount.video}")
     private int maxVideo;
     @Value("${post.rule.unverified_posts_limit}")
@@ -63,12 +61,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
-        postOwnerToCache(ownerId);
-    }
-
-    private void postOwnerToCache(long ownerId) {
-        UserDto userDto = userServiceClient.getUser(ownerId);
-        userRedisRepository.save(userMapper.toRedisDto(userDto));
+        redisService.cacheUserById(ownerId);
     }
 
     @Transactional
