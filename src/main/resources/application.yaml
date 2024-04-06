@@ -29,7 +29,7 @@ spring:
           name: user_ban_channel
       cache:
         ttl:
-          user: 100
+          user: 86400 #equals one day in seconds
           post: 100
   mvc:
     servlet:
