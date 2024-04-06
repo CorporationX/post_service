@@ -29,7 +29,7 @@ spring:
           name: user_ban_channel
       cache:
         post:
-          ttl: 100
+          ttl: 86400
   mvc:
     servlet:
       path: /api/v1

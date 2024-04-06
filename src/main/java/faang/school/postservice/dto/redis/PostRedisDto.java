@@ -27,11 +27,6 @@ public class PostRedisDto implements Serializable {
     private Long id;
     private String content;
     private Long authorId;
-    private Long postViewCounter;
     private List<Resource> resources;
     private LocalDateTime publishedAt;
-
-    public void postViewIncrement() {
-        postViewCounter++;
-    }
 }
