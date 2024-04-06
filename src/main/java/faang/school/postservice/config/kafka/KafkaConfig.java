@@ -22,6 +22,13 @@ public class KafkaConfig {
     private String topicLike;
     @Value("${spring.kafka.topics.post_view.name}")
     private String topicPostView;
+    @Value("${spring.kafka.topics.post.cache}")
+    private String topicCachePost;
+    @Value("${spring.kafka.topics.comment.cache}")
+    private String topicCacheComment;
+    @Value("${spring.kafka.topics.like.cache}")
+    private String topicCacheLike;
+
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -49,4 +56,20 @@ public class KafkaConfig {
     public NewTopic topicPostView() {
         return new NewTopic(topicPostView, 1, (short) 1);
     }
+
+    @Bean
+    public NewTopic topicCachePost() {
+        return new NewTopic(topicCachePost, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topicCacheComment() {
+        return new NewTopic(topicCacheComment, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topicCacheLike() {
+        return new NewTopic(topicCacheLike, 1, (short) 1);
+    }
+
 }

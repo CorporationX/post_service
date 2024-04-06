@@ -12,6 +12,8 @@ import java.util.List;
 public class KafkaPostProducer extends AbstractEventProducer<PostEventKafka> {
     @Value("${spring.kafka.topics.post.name}")
     private String postTopic;
+    @Value("${spring.kafka.topics.post.cache}")
+    private String topicCachePost;
     @Value("${batchSize.publish.followers}")
     private int batchSize;
 
@@ -27,6 +29,16 @@ public class KafkaPostProducer extends AbstractEventProducer<PostEventKafka> {
         partitions.forEach(batchFollowers -> {
             postEvent.setFollowerIds(batchFollowers);
             sendMessage(postEvent, postTopic);
+        });
+    }
+
+    public void publishHeatCache(PostEventKafka postEvent) {
+
+        List<List<Long>> partitions = ListUtils.partition(postEvent.getFollowerIds(), batchSize);
+
+        partitions.forEach(batchFollowers -> {
+            postEvent.setFollowerIds(batchFollowers);
+            sendMessage(postEvent, topicCachePost);
         });
     }
 }

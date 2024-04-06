@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 public class KafkaCommentProducer extends AbstractEventProducer<CommentEventKafka>{
     @Value("${spring.kafka.topics.comment.name}")
     private String commentTopic;
+    @Value("${spring.kafka.topics.comment.cache}")
+    private String topicCacheComment;
 
     public KafkaCommentProducer(KafkaTemplate<String, Object> kafkaTemplate) {
         super(kafkaTemplate);
@@ -17,6 +19,10 @@ public class KafkaCommentProducer extends AbstractEventProducer<CommentEventKafk
 
     public void publish(CommentEventKafka commentEventKafka) {
         sendMessage(commentEventKafka, commentTopic);
+    }
+
+    public void publishHeatCache(CommentEventKafka commentEventKafka) {
+        sendMessage(commentEventKafka, topicCacheComment);
     }
 
 }

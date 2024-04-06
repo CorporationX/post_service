@@ -17,4 +17,10 @@ public class KafkaLikeConsumer {
         postHashService.addLikeToPost(likeEventKafka);
         acknowledgment.acknowledge();
     }
+
+    @KafkaListener(topics = "${spring.kafka.topics.like.cache}")
+    public void listenHeatCache(LikeEventKafka likeEventKafka, Acknowledgment acknowledgment) {
+        postHashService.addLikeToPost(likeEventKafka);
+        acknowledgment.acknowledge();
+    }
 }

@@ -20,4 +20,11 @@ public class KafkaCommentConsumer {
         userHashService.saveAuthor(commentEventKafka.getUserDto());
         acknowledgment.acknowledge();
     }
+
+    @KafkaListener(topics = "${spring.kafka.topics.comment.cache}")
+    public void listenHeatCache(CommentEventKafka commentEventKafka, Acknowledgment acknowledgment) {
+        postHashService.addComment(commentEventKafka);
+        userHashService.saveAuthor(commentEventKafka.getUserDto());
+        acknowledgment.acknowledge();
+    }
 }

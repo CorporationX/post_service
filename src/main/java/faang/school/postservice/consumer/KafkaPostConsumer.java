@@ -24,4 +24,12 @@ public class KafkaPostConsumer {
         acknowledgment.acknowledge();
     }
 
+    @KafkaListener(topics = "${spring.kafka.topics.post.cache}")
+    public void listenHeatCache(PostEventKafka postEventKafka, Acknowledgment acknowledgment) {
+        feedHashService.updateFeed(postEventKafka);
+        postHashService.savePost(postEventKafka);
+        userHashService.saveAuthor(postEventKafka.getUserDto());
+        acknowledgment.acknowledge();
+    }
+
 }
