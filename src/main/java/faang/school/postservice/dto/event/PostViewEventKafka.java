@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class PostViewEventKafka {
     private Long postId;
     private Long viewerId;
