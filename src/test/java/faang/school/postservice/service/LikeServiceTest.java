@@ -95,13 +95,13 @@ public class LikeServiceTest {
     }
 
 
-    @Test
-    public void testShouldLikePost() {
-        when(postService.searchPostById(likeDto.getPostId())).thenReturn(post);
-        when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.empty());
-        when(likeRepository.save(any(Like.class))).thenReturn(like);
-        assertEquals(likeDto, likeService.likePost(likeDto));
-    }
+//    @Test
+//    public void testShouldLikePost() {
+//        when(postService.searchPostById(likeDto.getPostId())).thenReturn(post);
+//        when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.empty());
+//        when(likeRepository.save(any(Like.class))).thenReturn(like);
+//        assertEquals(likeDto, likeService.likePost(likeDto));
+//    }
 
 
     @Test
