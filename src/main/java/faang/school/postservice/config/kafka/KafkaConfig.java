@@ -18,6 +18,8 @@ public class KafkaConfig {
     private String topicPost;
     @Value("${spring.kafka.topics.comment.name}")
     private String topicComment;
+    @Value("${spring.kafka.topics.like.name}")
+    private String topicLike;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -34,5 +36,10 @@ public class KafkaConfig {
     @Bean
     public NewTopic topicComment() {
         return new NewTopic(topicComment, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topicLike() {
+        return new NewTopic(topicLike, 1, (short) 1);
     }
 }
