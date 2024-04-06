@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -143,15 +144,17 @@ class PostServiceTest {
     }
 
     @Test
-    void publishScheduledPosts() throws NoSuchFieldException, IllegalAccessException {
+    void publishScheduledPosts() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
         List<Post> posts = new ArrayList<>(List.of(firstPost, secondPost, thirdPost));
-        Field batchSize = PostService.class.getDeclaredField("scheduledPostsBatchSize");
+        Field batchSize = postService.getClass().getDeclaredField("scheduledPostsBatchSize");
         batchSize.setAccessible(true);
         batchSize.set(postService, 1000);
         when(postRepository.findReadyToPublish()).thenReturn(posts);
 
         postService.publishScheduledPosts();
 
+        threadPool.shutdown();
+        threadPool.awaitTermination(5L, TimeUnit.MINUTES);
         assertAll(
                 () -> verify(postRepository, times(1)).findReadyToPublish(),
                 () -> assertEquals(List.of(true, true, true), posts.stream().map(Post::isPublished).toList()),
