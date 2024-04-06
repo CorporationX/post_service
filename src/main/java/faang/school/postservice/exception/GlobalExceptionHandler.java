@@ -1,7 +1,6 @@
 package faang.school.postservice.exception;
 
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.EntityNotFoundException;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,5 +39,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleValidationRuntimeException(RuntimeException ex) {
         log.error("Runtime Exception", ex);
         return ResponseEntity.internalServerError().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<Object> handleValidationFeignExceptionException(FeignException ex) {
+        log.error("Feign Exception", ex);
+        return ResponseEntity.internalServerError().body("The request could not be generated, please try again later");
     }
 }

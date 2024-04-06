@@ -23,6 +23,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.retry:spring-retry:2.0.2")
 
     /**
      * Amazon S3
@@ -35,6 +36,9 @@ dependencies {
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
+    implementation ("org.springframework.kafka:spring-kafka")
+    implementation ("org.apache.kafka:kafka-clients")
+    implementation ("org.apache.kafka:kafka-streams")
 
     /**
      * Utils & Logging

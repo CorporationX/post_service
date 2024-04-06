@@ -3,8 +3,9 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.ProjectDto;
-import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import faang.school.postservice.dto.post.UpdatePostDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,6 +40,8 @@ public class PostService {
     private final ResourceService resourceService;
     private final TransactionTemplate transactionTemplate;
     private final ModeratePostService moderatePostService;
+    private final RedisCashService redisCashService;
+    private final EventKafkaService eventKafkaService;
 
     @Value("${scheduler.post-publisher.size_batch}")
     private int sizeSublist;
@@ -71,13 +73,19 @@ public class PostService {
         return postRepository.save(post);
     }
 
+    @Transactional
     public PostDto publishPost(long id) {
         Post post = findById(id);
         postValidator.validateIsNotPublished(post);
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        return postMapper.toDto(postRepository.save(post));
+        Post savedPost = postRepository.save(post);
+
+        redisCashService.saveCache(savedPost);
+        eventKafkaService.sendPostEvent(savedPost);
+
+        return postMapper.toDto(savedPost);
     }
 
     public PostDto updatePost(UpdatePostDto postDto, long postId, @Nullable MultipartFile file) {
@@ -129,7 +137,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
-                new faang.school.postservice.exception.DataValidationException("Post has not found"));
+                new EntityNotFoundException("Post has not found"));
     }
 
     @Transactional
@@ -172,5 +180,9 @@ public class PostService {
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    public List<Post> getPostsByFollowee(long userId) {
+        return postRepository.findPostByFollowee(userId);
     }
 }

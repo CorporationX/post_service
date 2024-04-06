@@ -27,4 +27,5 @@ public interface PostMapper {
         }
         return likes.stream().map(Like::getId).toList();
     }
+
 }
