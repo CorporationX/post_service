@@ -1,6 +1,7 @@
 package faang.school.postservice.service.hash;
 
 import faang.school.postservice.dto.event.CommentEventKafka;
+import faang.school.postservice.dto.event.LikeEventKafka;
 import faang.school.postservice.dto.event.PostEventKafka;
 import faang.school.postservice.hash.PostHash;
 import faang.school.postservice.repository.PostHashRepository;
@@ -39,6 +40,7 @@ public class PostHashServiceImpl implements PostHashService{
         postHashRepository.save(postHash);
     }
 
+    @Override
     public void addComment(CommentEventKafka commentEvent) {
         postHashRepository.findById(commentEvent.getPostId())
                 .ifPresent(postHash -> {
@@ -46,6 +48,14 @@ public class PostHashServiceImpl implements PostHashService{
                    checkCommentSize(postHash);
                    postHashRepository.save(postHash);
                 });
+    }
+
+    @Override
+    public void addLikeToPost(LikeEventKafka likeEvent) {
+        postHashRepository.findById(likeEvent.getPostId()).ifPresent(postHash -> {
+            postHash.getLikes().add(likeEvent);
+            postHashRepository.save(postHash);
+        });
     }
 
     private void checkCommentSize(PostHash postHash) {
