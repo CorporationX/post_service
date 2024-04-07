@@ -36,6 +36,8 @@ post:
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+      cron-fix-rate: "0 0/1 * 1/1 * ?" # every minute
+      batch-size: 1000
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute

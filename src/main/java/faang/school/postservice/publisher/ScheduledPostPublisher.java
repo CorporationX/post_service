@@ -11,7 +11,7 @@ public class ScheduledPostPublisher {
 
     private final PostService postService;
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(cron = "${post.publisher.scheduler.cron-fix-rate}")
     public void publishScheduledPosts() {
         postService.publishScheduledPosts();
     }

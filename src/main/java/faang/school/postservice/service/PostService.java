@@ -2,12 +2,11 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.async.AsyncPostService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -15,30 +14,21 @@ import java.util.List;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final AsyncPostService asyncPostService;
+
+    @Value("${post.publisher.scheduler.batch-size}")
+    private int batchSize;
 
     public void publishScheduledPosts() {
         List<Post> posts = postRepository.findReadyToPublish();
 
-        for (int i = 0; i < posts.size(); i += 1000) {
+        for (int i = 0; i < posts.size(); i += batchSize) {
             int finalI = i;
-            if (i + 1000 < posts.size()) {
-                publishThousandPosts(posts, finalI, finalI + 1000);
+            if (i + batchSize < posts.size()) {
+                asyncPostService.publishThousandPosts(posts, finalI, finalI + batchSize);
             } else {
-                publishThousandPosts(posts, finalI, posts.size());
+                asyncPostService.publishThousandPosts(posts, finalI, posts.size());
             }
         }
     }
-
-    @Async(value = "poolForScheduled")
-    private void publishThousandPosts(List<Post> posts, int start, int end) {
-        List<Post> currentPosts = new ArrayList<>();
-        for (int i = start; i < end; i++) {
-            Post currentPost = posts.get(i);
-            currentPost.setPublished(true);
-            currentPost.setPublishedAt(LocalDateTime.now());
-            currentPosts.add(currentPost);
-        }
-        postRepository.saveAll(currentPosts);
-    }
-
 }
