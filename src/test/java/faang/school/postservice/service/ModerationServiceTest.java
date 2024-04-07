@@ -22,8 +22,6 @@ class ModerationServiceTest {
     private PostRepository postRepository;
     @Mock
     private ModerationDictionary moderationDictionary;
-    @Mock
-    private PostService postService;
     @InjectMocks
     private ModerationService moderationService;
 
@@ -39,11 +37,10 @@ class ModerationServiceTest {
                 .build();
         moderationService.setBatchSize(100);
         List<Post> posts = List.of(postTrue, postFalse);
-        when(postRepository.findAllByVerifiedAtNull()).thenReturn(posts);
         when(moderationDictionary.containsBadWord("true")).thenReturn(false);
         when(moderationDictionary.containsBadWord("false")).thenReturn(true);
 
-        postService.checkPostsWithBadWord();
+        moderationService.moderatePosts(posts);
 
         assertTrue(posts.get(0).isVerified());
         assertFalse(posts.get(1).isVerified());

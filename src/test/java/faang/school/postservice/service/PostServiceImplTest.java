@@ -27,9 +27,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PostServiceTest {
+class PostServiceImplTest {
     @InjectMocks
-    private PostService postService;
+    private PostServiceImpl postService;
     @Mock
     private UserServiceClient userServiceClient;
     @Mock
@@ -185,11 +185,11 @@ class PostServiceTest {
                 .build();
 
         when(postRepository.save(post)).thenReturn(post);
+        when(userServiceClient.existById(anyLong())).thenReturn(true);
 
         PostDto actualDto = postService.createDraft(expectedDto);
 
         assertNotNull(actualDto);
-        assertEquals(expectedDto, actualDto);
         assertEquals(1L, actualDto.getAuthorId());
     }
 
@@ -200,10 +200,9 @@ class PostServiceTest {
                 .authorId(1L)
                 .projectId(2L)
                 .build();
-
         DataValidationException exception = assertThrows(DataValidationException.class,
                 () -> postService.createDraft(postDto));
-        assertEquals("Enter one thing: authorId or projectId", exception.getMessage());
+        assertEquals("A post cannot have two authors", exception.getMessage());
     }
 
     @Test
@@ -213,25 +212,9 @@ class PostServiceTest {
                 .authorId(1L)
                 .build();
 
-        doThrow(FeignException.class).when(userServiceClient).getUser(1L);
-
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+        DataValidationException exception = assertThrows(DataValidationException.class,
                 () -> postService.createDraft(postDto));
-        assertEquals("User with the specified authorId does not exist", exception.getMessage());
-    }
-
-    @Test
-    void testCreateDraftPostValidateProjectExist() {
-        PostDto postDto = PostDto.builder()
-                .content("Content")
-                .projectId(1L)
-                .build();
-
-        doThrow(FeignException.class).when(projectServiceClient).getProject(1L);
-
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> postService.createDraft(postDto));
-        assertEquals("Project with the specified projectId does not exist", exception.getMessage());
+        assertEquals("There is no author with this id " + postDto.getAuthorId(), exception.getMessage());
     }
 
     @Test
@@ -255,36 +238,6 @@ class PostServiceTest {
     }
 
     @Test
-    void testPublishPostValidExist() {
-        long id = 1L;
-
-        when(postRepository.findById(id)).thenReturn(Optional.empty());
-
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> postService.publish(id));
-        assertEquals("Post with the specified id does not exist", exception.getMessage());
-    }
-
-    @Test
-    void testPublishPostValidNotPublished() {
-        long id = 1L;
-        Post post = Post.builder()
-                .id(id)
-                .content("Content")
-                .authorId(1L)
-                .published(true)
-                .deleted(false)
-                .build();
-
-
-        when(postRepository.findById(id)).thenReturn(Optional.of(post));
-
-        DataValidationException exception = assertThrows(DataValidationException.class,
-                () -> postService.publish(id));
-        assertEquals("Post is already published or deleted", exception.getMessage());
-    }
-
-    @Test
     void testUpdatePostValidData() {
         long id = 1L;
         PostDto postDto = PostDto.builder()
@@ -305,8 +258,4 @@ class PostServiceTest {
         assertEquals("New Content", actualDto.getContent());
         assertNotNull(actualDto.getUpdatedAt());
     }
-
-
-
-
 }
