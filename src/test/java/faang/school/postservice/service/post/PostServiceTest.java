@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -62,18 +63,21 @@ class PostServiceTest {
                 .content("Valid content")
                 .authorId(1L)
                 .resources(new ArrayList<>())
+                .published(false)
                 .build();
         secondPost = Post.builder()
                 .id(2L)
                 .content("Valid content")
                 .resources(new ArrayList<>())
                 .authorId(1L)
+                .published(false)
                 .build();
         thirdPost = Post.builder()
                 .id(3L)
                 .content("Valid content")
                 .resources(new ArrayList<>())
                 .authorId(1L)
+                .published(false)
                 .build();
         firstPostDto = PostDto.builder()
                 .id(firstPost.getId())
@@ -93,7 +97,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postValidator, times(1)).validatePostAuthor(firstPostDto),
                 () -> verify(postValidator, times(1)).validateIfAuthorExists(firstPostDto),
-                () -> verify(postValidator, times(1)).validateImagesCount(anyInt()),
+                () -> verify(postValidator, times(1)).validateResourcesCount(anyInt()),
                 () -> verify(postRepository, times(1)).save(any(Post.class)),
                 () -> verify(postMapper, times(1)).toEntity(firstPostDto),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
@@ -140,15 +144,17 @@ class PostServiceTest {
     }
 
     @Test
-    void publishScheduledPosts() throws NoSuchFieldException, IllegalAccessException {
+    void publishScheduledPosts() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
         List<Post> posts = new ArrayList<>(List.of(firstPost, secondPost, thirdPost));
-        Field batchSize = PostService.class.getDeclaredField("scheduledPostsBatchSize");
+        Field batchSize = postService.getClass().getDeclaredField("scheduledPostsBatchSize");
         batchSize.setAccessible(true);
         batchSize.set(postService, 1000);
         when(postRepository.findReadyToPublish()).thenReturn(posts);
 
         postService.publishScheduledPosts();
 
+        threadPool.shutdown();
+        threadPool.awaitTermination(5L, TimeUnit.MINUTES);
         assertAll(
                 () -> verify(postRepository, times(1)).findReadyToPublish(),
                 () -> assertEquals(List.of(true, true, true), posts.stream().map(Post::isPublished).toList()),
@@ -169,7 +175,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postRepository, times(1)).findById(firstPost.getId()),
                 () -> verify(postValidator, times(1)).validateUpdatedPost(any(Post.class), any(PostDto.class)),
-                () -> verify(postValidator, times(1)).validateImagesCount(anyInt(), anyInt()),
+                () -> verify(postValidator, times(1)).validateResourcesCount(anyInt(), anyInt()),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
                 () -> assertEquals(firstPostDto, returned),
                 () -> assertNotEquals("Old content", firstPost.getContent())

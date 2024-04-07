@@ -19,7 +19,8 @@ spring:
 
   servlet:
     multipart:
-      max-request-size: 5MB
+      max-request-size: 100MB
+      max-file-size: 100MB
 
   data:
     redis:
@@ -44,6 +45,12 @@ image:
   horizontalHeight: 566
   squareSize: 1080
 
+media:
+  image:
+    max-file-size: 5
+  audio-video:
+    max-file-size: 100
+
 post:
   publisher:
     thread-count: 10
@@ -53,7 +60,7 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
-  max-images: 10
+  max-resources: 10
 
 comment:
   commenter-banner:

@@ -153,17 +153,17 @@ class PostValidatorTest {
 
     @Test
     void validateImagesCount_ImagesLimitExceeded_ThrowsDataValidationException() throws NoSuchFieldException, IllegalAccessException {
-        Field maxImages = postValidator.getClass().getDeclaredField("maxImages");
-        maxImages.setAccessible(true);
-        maxImages.set(postValidator, 10);
-        assertThrows(DataValidationException.class, () -> postValidator.validateImagesCount(11));
+        Field maxResources = postValidator.getClass().getDeclaredField("maxResources");
+        maxResources.setAccessible(true);
+        maxResources.set(postValidator, 10);
+        assertThrows(DataValidationException.class, () -> postValidator.validateResourcesCount(11));
     }
 
     @Test
     void validateImagesCount2_ImagesLimitExceeded_ThrowsDataValidationException() throws NoSuchFieldException, IllegalAccessException {
-        Field maxImages = postValidator.getClass().getDeclaredField("maxImages");
-        maxImages.setAccessible(true);
-        maxImages.set(postValidator, 10);
-        assertThrows(DataValidationException.class, () -> postValidator.validateImagesCount(5, 10));
+        Field maxResources = postValidator.getClass().getDeclaredField("maxResources");
+        maxResources.setAccessible(true);
+        maxResources.set(postValidator, 10);
+        assertThrows(DataValidationException.class, () -> postValidator.validateResourcesCount(5, 10));
     }
 }

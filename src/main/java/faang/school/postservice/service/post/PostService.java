@@ -1,9 +1,11 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.resource.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -43,7 +45,7 @@ public class PostService {
         log.info("Post saved: {}", post);
         post.setResources(new ArrayList<>());
         if (images != null) {
-            postValidator.validateImagesCount(images.length);
+            postValidator.validateResourcesCount(images.length);
             for (MultipartFile file : images) {
                 Resource resource = resourceService.saveImage(file, post);
                 post.getResources().add(resource);
@@ -92,7 +94,7 @@ public class PostService {
         postValidator.validateUpdatedPost(post, postDto);
         post.setContent(postDto.getContent());
         if (images != null) {
-            postValidator.validateImagesCount(post.getResources().size(), images.length);
+            postValidator.validateResourcesCount(post.getResources().size(), images.length);
             for (MultipartFile file : images) {
                 Resource resource = resourceService.saveImage(file, post);
                 post.getResources().add(resource);
@@ -140,8 +142,15 @@ public class PostService {
         return postMapper.toDto(posts);
     }
 
+    @Transactional
+    public ResourceDto attachMedia(long postId, MultipartFile mediaFile) {
+        Post post = getPostFromRepository(postId);
+        return resourceService.attachMediaToPost(mediaFile, post);
+    }
+
     private Post getPostFromRepository(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
     }
+
 }
