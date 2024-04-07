@@ -18,7 +18,7 @@ public class PostValidator {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
-    @Value("${post.max-images}")
+    @Value("${post.max-resources}")
     private Integer maxResources;
 
     public void validatePostAuthor(PostDto postDto) {
@@ -81,13 +81,13 @@ public class PostValidator {
 
     public void validateResourcesCount(Integer imagesCount) {
         if (imagesCount > maxResources) {
-            throw new DataValidationException(String.format("Post can't have more than %d images", maxResources));
+            throw new DataValidationException(String.format("Post can't have more than %d resources", maxResources));
         }
     }
 
     public void validateResourcesCount(Integer actual, Integer add) {
         if (actual + add > 10) {
-            throw new DataValidationException(String.format("Post can't have more than %d images", maxResources));
+            throw new DataValidationException(String.format("Post can't have more than %d resources", maxResources));
         }
     }
 }

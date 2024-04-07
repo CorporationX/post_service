@@ -60,7 +60,7 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
-  max-images: 10
+  max-resources: 10
 
 user-service:
   host: localhost
