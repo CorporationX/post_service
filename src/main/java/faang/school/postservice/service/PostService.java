@@ -4,10 +4,12 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
+import faang.school.postservice.dto.kafka.PostPublishedDto;
 import faang.school.postservice.dto.redis.UserRedisDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.mapper.UserMapper;
+import faang.school.postservice.messaging.PostCreateKafkaProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.UserBanEventPublisher;
@@ -36,6 +38,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostService {
 
+    private final PostCreateKafkaProducer postCreateKafkaProducer;
     private final PostRedisRepository postRedisRepository;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
@@ -47,6 +50,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final UserRedisRepository userRedisRepository;
     private final UserBanEventPublisher userBanEventPublisher;
+
     @Value("${post.content_to_post.max_amount.video}")
     private int maxVideo;
     @Value("${post.rule.unverified_posts_limit}")
@@ -64,9 +68,16 @@ public class PostService {
         Post post = getPost(postId);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        //to Redis
         postRedisRepository.save(postMapper.toPostRedisDto(post));
         UserRedisDto userRedisDto = userMapper.toUserRedisDto(userServiceClient.getUser(ownerId));
         userRedisRepository.save(userRedisDto);
+
+        //to Kafka
+        List<Long> followersIds = userServiceClient.getFollowersIds(ownerId);
+        PostPublishedDto postCreateDto = postMapper.toPostCreate(post);
+        postCreateDto.setFollowersIds(followersIds);
+        postCreateKafkaProducer.publish(postCreateDto);
     }
 
     @Transactional

@@ -30,6 +30,16 @@ spring:
           name: user_ban_channel
         post_save_cache:
           name: post_save_cache
+    kafka:
+      port: 9092
+      topics:
+        post-views:
+          name: post_views
+        post-create:
+          name: post_create
+      client-id: news_feed_events
+      partition-count: 1
+      replicas: 1
 
   mvc:
     servlet:

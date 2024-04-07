@@ -1,20 +1,29 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.ResourceMapperImpl;
+import faang.school.postservice.mapper.UserMapper;
+import faang.school.postservice.messaging.PostCreateKafkaProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.PostRedisRepository;
+import faang.school.postservice.repository.redis.UserRedisRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,15 +35,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,7 +55,12 @@ public class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
-
+    @Mock
+    private PostRedisRepository postRedisRepository;
+    @Mock
+    private UserRedisRepository userRedisRepository;
+    @Mock
+    private PostCreateKafkaProducer postCreateKafkaProducer;
     @Spy
     private PostMapperImpl postMapper;
 
@@ -53,6 +68,10 @@ public class PostServiceTest {
     private PostValidator postValidator;
     @Mock
     private UserBanEventPublisher userBanEventPublisher;
+    @Mock
+    private UserServiceClient userServiceClient;
+    @Mock
+    private UserMapper userMapper;
 
     @InjectMocks
     private PostService postService;
