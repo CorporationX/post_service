@@ -26,7 +26,7 @@ public class PostRedisDto implements Serializable {
     @Id
     private Long id;
     private String content;
-    private Long authorId;
-    private List<Resource> resources;
+    private Long ownerId;
+    private List<Integer> resourceIds;
     private LocalDateTime publishedAt;
 }

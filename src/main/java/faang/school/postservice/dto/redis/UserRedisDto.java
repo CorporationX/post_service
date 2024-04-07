@@ -18,10 +18,10 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserRedisDto implements Serializable {
-    @TimeToLive
-    @Value("${spring.data.redis.cache.ttl.user}")
-    private int ttl;
     @Id
     private Long id;
     private String name;
+    @TimeToLive
+    @Value("${spring.data.redis.cache.ttl.user}")
+    private int ttl;
 }

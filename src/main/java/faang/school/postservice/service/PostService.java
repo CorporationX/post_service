@@ -9,6 +9,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.redis.RedisCacheService;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,7 +31,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PostService {
-
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
@@ -38,6 +38,7 @@ public class PostService {
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
+    private final RedisCacheService redisCacheService;
     @Value("${post.content_to_post.max_amount.video}")
     private int maxVideo;
     @Value("${post.rule.unverified_posts_limit}")
@@ -56,14 +57,8 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
-        postOwnerToCache(ownerId);
-    }
-
-    private void postOwnerToCache(long ownerId) {
-        UserDto userDto = userServiceClient.getUser(ownerId);
-        userRedisRepository.save(userMapper.toRedisDto(userDto));
-
-        postRedisRepository.save(postMapper.toPostRedisDto(post));
+        redisCacheService.postToCache(post);
+        redisCacheService.userToCache(ownerId);
     }
 
     @Transactional
