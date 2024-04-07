@@ -20,8 +20,10 @@ public class RedisConfig {
     private int port;
     @Value("${spring.data.redis.channel.comment")
     private String commentChannel;
-    @Value("${spring.data.redis.ttl.post}")
-    private long ttl;
+    @Value("${spring.data.redis.channel.post_save_cache.name}")
+    private String postSaveCache;
+    @Value("${spring.data.redis.ttl}")
+    private int ttl;
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
@@ -44,7 +46,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public long getTtl() {
+    public int getTtl() {
         return ttl;
     }
 }
