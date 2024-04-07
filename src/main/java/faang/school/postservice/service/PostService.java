@@ -1,20 +1,16 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.event.PostEventDto;
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
-import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,13 +34,10 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
-    private final PostEventPublisher postEventPublisher;
-    private final ResourceValidator resourceValidator;
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
-    @Value("${post.content_to_post.max_amount.video}")
-    private int maxVideo;
+    private final UserServiceClient userServiceClient;
     @Value("${post.rule.unverified_posts_limit}")
     private int unverifiedPostsLimit;
 
@@ -60,7 +53,7 @@ public class PostService {
         Post post = getPost(postId);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        postEventPublisher.publish(postMapper.toEventDto(post));
+        postRepository.save(post);
     }
 
     @Transactional
@@ -75,10 +68,6 @@ public class PostService {
         postValidator.validatePostByOwner(postId, ownerId);
         Post post = getPost(postId);
         post.setDeleted(true);
-    }
-
-    public PostDto getPostById(long postId) {
-        return postMapper.toDto(getPost(postId));
     }
 
     public Post getPost(long postId) {
@@ -183,7 +172,7 @@ public class PostService {
                 .toList();
 
         post.getResources().removeAll(resourcesToDelete);
-        resourceService.deleteResources(post.getId(), resourcesToDelete.stream()
+        resourceService.deleteResources(resourcesToDelete.stream()
                 .map(Resource::getId)
                 .toList()
         );
@@ -198,26 +187,4 @@ public class PostService {
         );
         log.info("check and ban authors method completed");
     }
-
-    @Transactional
-    public List<ResourceDto> addVideo(long postId, List<MultipartFile> files) {
-        Post post = getPost(postId);
-        int amount = post.getResources().size();
-
-        List<MultipartFile> validFiles = new ArrayList<>();
-        for (MultipartFile file : files) {
-            if (amount < maxVideo) {
-                resourceValidator.videoIsValid(file);
-                validFiles.add(file);
-                amount++;
-            }
-        }
-        return resourceService.addResources(postId, validFiles);
-    }
-
-    @Transactional
-    public void deleteVideo(long postId, List<Long> resourceIds) {
-        resourceService.deleteResources(postId, resourceIds);
-    }
-
 }
