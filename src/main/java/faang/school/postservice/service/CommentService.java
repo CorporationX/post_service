@@ -13,6 +13,7 @@ import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.UserRedisRepository;
+import faang.school.postservice.service.redis.RedisCacheService;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -29,10 +30,9 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final CommentMapper commentMapper;
     private final CommentEventPublisher commentEventPublisher;
-    private final UserRedisRepository userRedisRepository;
-    private final UserMapper userMapper;
-    private final UserServiceClient userServiceClient;
     private final RedisService redisService;
+    private final RedisCacheService redisCacheService;
+
 
     public CommentDto addNewComment(long postId, CommentDto commentDto) {
         commentValidator.validateCommentAuthor(commentDto.getId());
@@ -49,7 +49,7 @@ public class CommentService {
                 .postId(post.getId())
                 .build());
 
-        redisService.cacheUserById(post.getAuthorId());
+        redisCacheService.userToCache(post.getAuthorId());
         return commentMapper.toDTO(savedComment);
     }
 
