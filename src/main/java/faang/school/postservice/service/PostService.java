@@ -1,15 +1,19 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
+import faang.school.postservice.dto.redis.UserRedisDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
+import faang.school.postservice.mapper.UserMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.PostRedisRepository;
+import faang.school.postservice.repository.redis.UserRedisRepository;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -39,6 +43,9 @@ public class PostService {
     private final ResourceValidator resourceValidator;
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
+    private final UserMapper userMapper;
+    private final UserServiceClient userServiceClient;
+    private final UserRedisRepository userRedisRepository;
     private final UserBanEventPublisher userBanEventPublisher;
     @Value("${post.content_to_post.max_amount.video}")
     private int maxVideo;
@@ -58,6 +65,8 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRedisRepository.save(postMapper.toPostRedisDto(post));
+        UserRedisDto userRedisDto = userMapper.toUserRedisDto(userServiceClient.getUser(ownerId));
+        userRedisRepository.save(userRedisDto);
     }
 
     @Transactional
