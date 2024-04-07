@@ -26,16 +26,10 @@ import static org.mockito.Mockito.when;
 class PostServiceTest {
     @InjectMocks
     private PostService postService;
-    @Mock
-    private UserServiceClient userServiceClient;
-    @Mock
-    private ProjectServiceClient projectServiceClient;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
     @Mock
     private PostRepository postRepository;
-    @Captor
-    private ArgumentCaptor<Post> captor;
     private PostDto postDto;
     private Post post1;
     private Post post2;
