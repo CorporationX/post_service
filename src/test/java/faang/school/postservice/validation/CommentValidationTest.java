@@ -78,7 +78,7 @@ class CommentValidationTest {
         DataValidationException e = Assert.assertThrows(DataValidationException.class,
                 () -> commentValidation.validateCommentExistence(firstComment.getId()));
 
-        Assert.assertEquals(e.getMessage(), "No comment with this id found");
+        Assert.assertEquals(e.getMessage(), "No comment with id" + firstComment.getId()+ " found");
     }
 
 

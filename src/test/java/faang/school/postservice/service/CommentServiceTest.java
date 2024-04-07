@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -91,7 +92,7 @@ public class CommentServiceTest {
 
     @Test
     public void testUpdating() {
-        Mockito.when(commentMapper.toEntity(secondCommentDto)).thenReturn(secondComment);
+        Mockito.when(commentRepository.findById(secondComment.getId())).thenReturn(Optional.of(secondComment));
         Mockito.when(commentRepository.save(secondComment)).thenReturn(secondComment);
         Mockito.when(commentMapper.toDto(secondComment)).thenReturn(secondCommentDto);
 
