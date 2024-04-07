@@ -9,14 +9,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class PostEventPublisher extends AbstractEventPublisher<PostEventDto> {
 
-    @Value("${spring.data.redis.channel.post_channel")
+
     private String topic;
 
-    public PostEventPublisher(ObjectMapper objectMapper, RedisTemplate<String, Object> redisTemplate) {
-        super(objectMapper, redisTemplate);
+    public PostEventPublisher(ObjectMapper objectMapper,
+                              RedisTemplate<String, Object> redisTemplate,
+                              @Value("${spring.data.redis.channel.post_channel") String topic) {
+        super(objectMapper, redisTemplate, topic);
     }
 
+
     public void publish(PostEventDto postEventDto) {
-        publishInTopic(postEventDto, topic);
+        publishInTopic(postEventDto);
     }
 }

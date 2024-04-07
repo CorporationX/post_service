@@ -42,6 +42,10 @@ spring:
     servlet:
       path: /api/v1
 
+multipart:
+  max_video_file_size: 104857600 #100MB
+  max_request_size: 524288000 #500MB
+  max_image_file_size: 5242880 #5MB
 
 server:
   port: 8085
@@ -52,8 +56,11 @@ logging:
 
 post:
   content_to_post:
-    max_amount: 10
-    max_size: 20000
+    max_amount:
+      any: 10
+      video: 5
+      audio: 5
+      image: 10
   rule:
     unverified_posts_limit: 5
   publisher:

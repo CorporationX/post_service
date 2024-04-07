@@ -1,0 +1,38 @@
+{
+  "properties": [
+    {
+      "name": "post.content_to_post.max_amount.any",
+      "type": "java.lang.String",
+      "description": "Description for post.content_to_post.max_amount.any."
+    },
+    {
+      "name": "post.content_to_post.max_amount.video",
+      "type": "java.lang.String",
+      "description": "Description for post.content_to_post.max_amount.video."
+    },
+    {
+      "name": "post.content_to_post.max_amount.audio",
+      "type": "java.lang.String",
+      "description": "Description for post.content_to_post.max_amount.audio."
+    },
+    {
+      "name": "post.content_to_post.max_amount.image",
+      "type": "java.lang.String",
+      "description": "Description for post.content_to_post.max_amount.image."
+    },
+    {
+      "name": "multipart.max_video_file_size",
+      "type": "java.lang.String",
+      "description": "Description for multipart.max_video_file_size."
+    },
+    {
+      "name": "multipart.max_request_size",
+      "type": "java.lang.String",
+      "description": "Description for multipart.max_request_size."
+    },
+    {
+      "name": "multipart.max_image_file_size",
+      "type": "java.lang.String",
+      "description": "Description for multipart.max_image_file_size."
+    }
+  ] }

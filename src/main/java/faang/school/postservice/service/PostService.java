@@ -11,6 +11,7 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
+import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,9 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     @Value("${post.rule.unverified_posts_limit}")
     private int unverifiedPostsLimit;
+    @Value("${post.content_to_post.max_amount.video}")
+    private int maxVideo;
+    private final ResourceValidator resourceValidator;
 
     public void createPostDraft(PostDto postDto) {
         postValidator.validatePostOwnerExists(postDto);
@@ -182,9 +186,30 @@ public class PostService {
         postRepository.findAuthorIdsByNotVerifiedPosts(unverifiedPostsLimit).forEach(
                 authorId -> {
                     log.debug("User with id = {} has more then {} unverified posts", authorId, unverifiedPostsLimit);
-                    userBanEventPublisher.publish(new UserBanEventDto(authorId));
+                    userBanEventPublisher.publishInTopic(new UserBanEventDto(authorId));
                 }
         );
         log.info("check and ban authors method completed");
+    }
+
+    @Transactional
+    public List<ResourceDto> addVideo(long postId, List<MultipartFile> files) {
+        Post post = getPost(postId);
+        int amount = post.getResources().size();
+
+        List<MultipartFile> validFiles = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (amount < maxVideo) {
+                resourceValidator.videoIsValid(file);
+                validFiles.add(file);
+                amount++;
+            }
+        }
+        return resourceService.addResources(postId, validFiles);
+    }
+
+    @Transactional
+    public void deleteVideo(long postId, List<Long> resourceIds) {
+        resourceService.deleteResources(postId, resourceIds);
     }
 }
