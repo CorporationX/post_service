@@ -35,6 +35,9 @@ spring:
     bootstrap-servers: localhost:9092
     topics:
       post: post_topic
+      view: view_topic
+      like: like_topic
+      comment: comment_topic
 
 
 server:

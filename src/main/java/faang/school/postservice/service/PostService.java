@@ -1,12 +1,16 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
+import faang.school.postservice.dto.event.PostEventKafka;
+import faang.school.postservice.dto.event.ViewEventKafka;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,15 +29,19 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final KafkaPostProducer kafkaPostProducer;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
+    private final UserContext userContext;
 
     @Transactional
     public PostDto createDraft(PostDto postDto) {
         validateAuthor(postDto);
         Post post = postMapper.toEntity(postDto);
         postRepository.save(post);
-        kafkaPostProducer.sendMessage(
+
+        PostEventKafka postEventKafka = new PostEventKafka(
                 post.getAuthorId(),
                 userServiceClient.getFollowersId(post.getAuthorId()));
+        kafkaPostProducer.sendMessage(postEventKafka);
         return postMapper.toDto(post);
     }
 
@@ -72,7 +80,12 @@ public class PostService {
 
     @Transactional
     public PostDto getPostById(long id) {
-        return postMapper.toDto(searchPostById(id));
+        Post post = searchPostById(id);
+        ViewEventKafka viewEventKafka = new ViewEventKafka(
+                post.getId(),
+                userContext.getUserId());
+        kafkaPostViewProducer.sendMessage(viewEventKafka);
+        return postMapper.toDto(post);
     }
 
     @Transactional

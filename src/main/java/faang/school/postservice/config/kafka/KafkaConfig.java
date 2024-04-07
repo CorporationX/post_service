@@ -15,9 +15,14 @@ public class KafkaConfig {
 
     @Value(value = "${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
-
     @Value(value = "${spring.kafka.topics.post}")
     private String topicPost;
+    @Value(value = "${spring.kafka.topics.view}")
+    private String topicView;
+    @Value(value = "${spring.kafka.topics.like}")
+    private String topicLike;
+    @Value(value = "${spring.kafka.topics.comment}")
+    private String topicComment;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -29,5 +34,20 @@ public class KafkaConfig {
     @Bean
     public NewTopic topicPost() {
         return new NewTopic(topicPost, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topicView() {
+        return new NewTopic(topicView, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topicLike() {
+        return new NewTopic(topicLike, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topicComment() {
+        return new NewTopic(topicComment, 1, (short) 1);
     }
 }

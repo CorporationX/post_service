@@ -2,10 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,10 @@ class PostServiceTest {
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private KafkaPostViewProducer kafkaPostViewProducer;
+    @Mock
+    private UserContext userContext;
     private PostDto postDto;
     private Post post1;
     private Post post2;
