@@ -5,6 +5,7 @@ import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -14,5 +15,4 @@ public class PostService {
     public Post getPost(Long postId){
         return  postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
     }
-
 }
