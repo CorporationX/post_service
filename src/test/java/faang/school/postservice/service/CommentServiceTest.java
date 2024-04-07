@@ -80,7 +80,6 @@ public class CommentServiceTest {
         Mockito.when(commentRepository.save(firstComment)).thenReturn(firstComment);
         Mockito.when(commentMapper.toDto(firstComment)).thenReturn(firstCommentDto);
 
-
         CommentDto result = commentService.create(firstCommentDto, firstCommentDto.getAuthorId());
 
         Mockito.verify(commentValidation, Mockito.times(1)).authorExistenceValidation(firstCommentDto.getAuthorId());
