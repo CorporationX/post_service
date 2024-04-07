@@ -16,16 +16,16 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class RedisCacheService {
-    private final int MAX_ATTEMPTS = 5;
-    private final int MULTIPLIER = 5;
+    private final int retryMaxAttempts = 5;
+    private final int retryMultiplier = 5;
+    private final int retryDelay = 1000;
     private final UserRedisRepository userRedisRepository;
     private final PostRedisRepository postRedisRepository;
     private final UserServiceClient userServiceClient;
     private final UserMapper userMapper;
     private final PostMapper postMapper;
-
-    @Retryable(retryFor = {FeignException.class}, maxAttempts = MAX_ATTEMPTS, backoff =
-    @Backoff(delay = 1000, multiplier = 3))
+    @Retryable(retryFor = {FeignException.class}, maxAttempts = retryMaxAttempts, backoff =
+    @Backoff(delay = retryDelay, multiplier = retryMultiplier))
     public void userToCache(long ownerId) {
         UserDto userDto = userServiceClient.getUser(ownerId);
         userRedisRepository.save(userMapper.toRedisDto(userDto));
@@ -34,4 +34,5 @@ public class RedisCacheService {
     public void postToCache(Post post) {
         postRedisRepository.save(postMapper.toPostRedisDto(post));
     }
+
 }
