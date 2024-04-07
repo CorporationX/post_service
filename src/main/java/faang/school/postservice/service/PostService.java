@@ -1,13 +1,16 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
+import faang.school.postservice.dto.kafka.PostPublishedEvent;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.UserBanEventPublisher;
+import faang.school.postservice.publisher.kafka.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.validator.ResourceValidator;
@@ -38,6 +41,8 @@ public class PostService {
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
+    private final UserServiceClient userServiceClient;
+    private final KafkaPostProducer kafkaPostProducer;
     @Value("${post.content_to_post.max_amount.video}")
     private int maxVideo;
     @Value("${post.rule.unverified_posts_limit}")
@@ -55,6 +60,8 @@ public class PostService {
         Post post = getPost(postId);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+
+        kafkaPostProducer.publish(postId, ownerId);
     }
 
     @Transactional
