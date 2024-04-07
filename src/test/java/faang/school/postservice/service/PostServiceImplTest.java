@@ -4,9 +4,11 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,9 +27,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PostServiceImplTest {
+class PostServiceTest {
     @InjectMocks
-    private PostServiceImpl postServiceImpl;
+    private PostService postService;
     @Mock
     private UserServiceClient userServiceClient;
     @Mock
@@ -81,22 +83,23 @@ class PostServiceImplTest {
     void testCreateDraftAuthorSuccessful() {
         postDto.setAuthorId(1L);
         when(userServiceClient.existById(anyLong())).thenReturn(true);
-        postServiceImpl.createDraft(postDto);
+        postService.createDraft(postDto);
         captor = ArgumentCaptor.forClass(Post.class);
+        // Mockito.verify(userServiceClient).getUser(postDto.getAuthorId());
         Mockito.verify(postRepository).save(captor.capture());
         assertEquals(postDto.getContent(), captor.getValue().getContent());
     }
 
     @Test
     void testCreateDraftNullAuthorAndProjectException() {
-        DataValidationException exception = assertThrows(DataValidationException.class, () -> postServiceImpl.createDraft(postDto));
+        DataValidationException exception = assertThrows(DataValidationException.class, () -> postService.createDraft(postDto));
         assertEquals("The author of the post is not specified", exception.getMessage());
     }
 
     @Test
     void testPublishSuccessful() {
         when(postRepository.findById(5L)).thenReturn(Optional.of(post1));
-        postServiceImpl.publish(5L);
+        postService.publish(5L);
         assertTrue(post1.isPublished());
         assertNotNull(post1.getPublishedAt());
         Mockito.verify(postRepository).save(post1);
@@ -106,14 +109,14 @@ class PostServiceImplTest {
     @Test
     void testPublishFailed() {
         long id = 1;
-        DataValidationException exception = assertThrows(DataValidationException.class, () -> postServiceImpl.publish(id));
+        DataValidationException exception = assertThrows(DataValidationException.class, () -> postService.publish(id));
         assertEquals("Post with id " + id + " not found.", exception.getMessage());
     }
 
     @Test
     void testPublishIfIsPublish() {
         when(postRepository.findById(6L)).thenReturn(Optional.of(post2));
-        DataValidationException exception = assertThrows(DataValidationException.class, () -> postServiceImpl.publish(6));
+        DataValidationException exception = assertThrows(DataValidationException.class, () -> postService.publish(6));
         assertEquals("The post has already been published", exception.getMessage());
     }
 
@@ -122,7 +125,7 @@ class PostServiceImplTest {
     void testUpdateSuccessful() {
         postDto.setId(5L);
         when(postRepository.findById(5L)).thenReturn(Optional.of(post1));
-        postServiceImpl.update(postDto);
+        postService.update(postDto);
         assertEquals(postDto.getContent(), post1.getContent());
         Mockito.verify(postRepository).save(post1);
     }
@@ -130,7 +133,7 @@ class PostServiceImplTest {
     @Test
     void testDeletePostSuccessful() {
         when(postRepository.findById(6L)).thenReturn(Optional.of(post2));
-        postServiceImpl.deletePost(6);
+        postService.deletePost(6);
         assertFalse(post2.isPublished());
         assertTrue(post2.isDeleted());
     }
@@ -138,7 +141,7 @@ class PostServiceImplTest {
     @Test
     void testGetPostByIdSuccessful() {
         when(postRepository.findById(6L)).thenReturn(Optional.ofNullable(post2));
-        PostDto postDtoNew = postServiceImpl.getPostById(6);
+        PostDto postDtoNew = postService.getPostById(6);
         assertEquals(post2.getContent(), postDtoNew.getContent());
         assertEquals(post2.getAuthorId(), postDtoNew.getAuthorId());
     }
@@ -146,7 +149,7 @@ class PostServiceImplTest {
     @Test
     void testGetDraftsByAuthorIdSuccessful() {
         when(postRepository.findByAuthorId(1)).thenReturn(Arrays.asList(post1, post2, post3));
-        List<PostDto> postsDto = postServiceImpl.getDraftsByAuthorId(1);
+        List<PostDto> postsDto = postService.getDraftsByAuthorId(1);
         assertEquals(2, postsDto.size());
     }
 
@@ -155,7 +158,7 @@ class PostServiceImplTest {
         post1.setCreatedAt(null);
         post3.setCreatedAt(null);
         when(postRepository.findByAuthorId(1)).thenReturn(Arrays.asList(post1, post3));
-        DataValidationException exception = assertThrows(DataValidationException.class, () -> postServiceImpl.getDraftsByAuthorId(1));
+        DataValidationException exception = assertThrows(DataValidationException.class, () -> postService.getDraftsByAuthorId(1));
         assertEquals("Invalid date", exception.getMessage());
     }
 
@@ -163,93 +166,93 @@ class PostServiceImplTest {
     void testGetPublishedPostsByAuthorIdSuccessful() {
         post1.setPublished(true);
         when(postRepository.findByAuthorId(1)).thenReturn(Arrays.asList(post1, post2, post3));
-        List<PostDto> postDtos = postServiceImpl.getPostsByAuthorId(1);
+        List<PostDto> postDtos = postService.getPublishedPostsByAuthorId(1);
         assertEquals(2, postDtos.size());
     }
 
 
-//    @Test
-//    void testCreateDraftPostValidData() {
-//        PostDto expectedDto = PostDto.builder()
-//                .id(1L)
-//                .content("Content")
-//                .authorId(1L)
-//                .build();
-//        Post post = Post.builder()
-//                .id(1L)
-//                .content("Content")
-//                .authorId(1L)
-//                .build();
-//
-//        when(postRepository.save(post)).thenReturn(post);
-//
-//        PostDto actualDto = postService.createDraft(expectedDto);
-//
-//        assertNotNull(actualDto);
-//        assertEquals(expectedDto, actualDto);
-//        assertEquals(1L, actualDto.getAuthorId());
-//    }
+    @Test
+    void testCreateDraftPostValidData() {
+        PostDto expectedDto = PostDto.builder()
+                .id(1L)
+                .content("Content")
+                .authorId(1L)
+                .build();
+        Post post = Post.builder()
+                .id(1L)
+                .content("Content")
+                .authorId(1L)
+                .build();
 
-//    @Test
-//    void testCreateDraftPostValidateId() {
-//        PostDto postDto = PostDto.builder()
-//                .content("Content")
-//                .authorId(1L)
-//                .projectId(2L)
-//                .build();
-//
-//        DataValidationException exception = assertThrows(DataValidationException.class,
-//                () -> postService.createDraft(postDto));
-//        assertEquals("Enter one thing: authorId or projectId", exception.getMessage());
-//    }
+        when(postRepository.save(post)).thenReturn(post);
 
-//    @Test
-//    void testCreateDraftPostValidateUserExist() {
-//        PostDto postDto = PostDto.builder()
-//                .content("Content")
-//                .authorId(1L)
-//                .build();
-//
-//        doThrow(FeignException.class).when(userServiceClient).getUser(1L);
-//
-//        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-//                () -> postService.createDraft(postDto));
-//        assertEquals("User with the specified authorId does not exist", exception.getMessage());
-//    }
-//
-//    @Test
-//    void testCreateDraftPostValidateProjectExist() {
-//        PostDto postDto = PostDto.builder()
-//                .content("Content")
-//                .projectId(1L)
-//                .build();
-//
-//        doThrow(FeignException.class).when(projectServiceClient).getProject(1L);
-//
-//        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-//                () -> postService.createDraft(postDto));
-//        assertEquals("Project with the specified projectId does not exist", exception.getMessage());
-//    }
-//
-//    @Test
-//    void testPublishPostValidData() {
-//        long id = 1L;
-//        Post post = Post.builder()
-//                .id(id)
-//                .content("Content")
-//                .authorId(1L)
-//                .published(false)
-//                .deleted(false)
-//                .build();
-//
-//
-//        when(postRepository.findById(id)).thenReturn(Optional.of(post));
-//
-//        PostDto actualDto = postService.publish(id);
-//
-//        assertTrue(actualDto.isPublished());
-//        assertNotNull(actualDto.getPublishedAt());
-//    }
+        PostDto actualDto = postService.createDraft(expectedDto);
+
+        assertNotNull(actualDto);
+        assertEquals(expectedDto, actualDto);
+        assertEquals(1L, actualDto.getAuthorId());
+    }
+
+    @Test
+    void testCreateDraftPostValidateId() {
+        PostDto postDto = PostDto.builder()
+                .content("Content")
+                .authorId(1L)
+                .projectId(2L)
+                .build();
+
+        DataValidationException exception = assertThrows(DataValidationException.class,
+                () -> postService.createDraft(postDto));
+        assertEquals("Enter one thing: authorId or projectId", exception.getMessage());
+    }
+
+    @Test
+    void testCreateDraftPostValidateUserExist() {
+        PostDto postDto = PostDto.builder()
+                .content("Content")
+                .authorId(1L)
+                .build();
+
+        doThrow(FeignException.class).when(userServiceClient).getUser(1L);
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> postService.createDraft(postDto));
+        assertEquals("User with the specified authorId does not exist", exception.getMessage());
+    }
+
+    @Test
+    void testCreateDraftPostValidateProjectExist() {
+        PostDto postDto = PostDto.builder()
+                .content("Content")
+                .projectId(1L)
+                .build();
+
+        doThrow(FeignException.class).when(projectServiceClient).getProject(1L);
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> postService.createDraft(postDto));
+        assertEquals("Project with the specified projectId does not exist", exception.getMessage());
+    }
+
+    @Test
+    void testPublishPostValidData() {
+        long id = 1L;
+        Post post = Post.builder()
+                .id(id)
+                .content("Content")
+                .authorId(1L)
+                .published(false)
+                .deleted(false)
+                .build();
+
+
+        when(postRepository.findById(id)).thenReturn(Optional.of(post));
+
+        PostDto actualDto = postService.publish(id);
+
+        assertTrue(actualDto.isPublished());
+        assertNotNull(actualDto.getPublishedAt());
+    }
 
     @Test
     void testPublishPostValidExist() {
@@ -257,29 +260,29 @@ class PostServiceImplTest {
 
         when(postRepository.findById(id)).thenReturn(Optional.empty());
 
-        DataValidationException exception = assertThrows(DataValidationException.class,
-                () -> postServiceImpl.publish(id));
-        assertEquals("Post with id " + id + " not found.", exception.getMessage());
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> postService.publish(id));
+        assertEquals("Post with the specified id does not exist", exception.getMessage());
     }
 
-//    @Test
-//    void testPublishPostValidNotPublished() {
-//        long id = 1L;
-//        Post post = Post.builder()
-//                .id(id)
-//                .content("Content")
-//                .authorId(1L)
-//                .published(true)
-//                .deleted(false)
-//                .build();
-//
-//
-//        when(postRepository.findById(id)).thenReturn(Optional.of(post));
-//
-//        DataValidationException exception = assertThrows(DataValidationException.class,
-//                () -> postService.publish(id));
-//        assertEquals("Post is already published or deleted", exception.getMessage());
-//    }
+    @Test
+    void testPublishPostValidNotPublished() {
+        long id = 1L;
+        Post post = Post.builder()
+                .id(id)
+                .content("Content")
+                .authorId(1L)
+                .published(true)
+                .deleted(false)
+                .build();
+
+
+        when(postRepository.findById(id)).thenReturn(Optional.of(post));
+
+        DataValidationException exception = assertThrows(DataValidationException.class,
+                () -> postService.publish(id));
+        assertEquals("Post is already published or deleted", exception.getMessage());
+    }
 
     @Test
     void testUpdatePostValidData() {
@@ -297,9 +300,13 @@ class PostServiceImplTest {
 
         when(postRepository.findById(id)).thenReturn(Optional.of(post));
 
-        PostDto actualDto = postServiceImpl.update(postDto);
+        PostDto actualDto = postService.update(postDto);
 
         assertEquals("New Content", actualDto.getContent());
         assertNotNull(actualDto.getUpdatedAt());
     }
+
+
+
+
 }
