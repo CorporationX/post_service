@@ -92,6 +92,8 @@ kafka:
   topics:
     post:
       name: post_topic
+    post_view:
+      name: post_view_topic
     comment:
       name: comment_topic
     like:
