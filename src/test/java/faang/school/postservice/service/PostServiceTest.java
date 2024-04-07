@@ -7,7 +7,7 @@ import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.ResourceMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.publisher.UserBanEventPublisher;
+import faang.school.postservice.publisher.redis.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;

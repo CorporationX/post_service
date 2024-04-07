@@ -6,7 +6,8 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.kafka.KafkaCommentProducer;
+import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -25,6 +26,7 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final CommentMapper commentMapper;
     private final CommentEventPublisher commentEventPublisher;
+    private final KafkaCommentProducer kafkaCommentProducer;
 
     public CommentDto addNewComment(long postId, CommentDto commentDto) {
         commentValidator.validateCommentAuthor(commentDto.getId());
@@ -40,6 +42,8 @@ public class CommentService {
                 .authorPostId(post.getAuthorId())
                 .postId(post.getId())
                 .build());
+
+        kafkaCommentProducer.publish(postId, comment.getId(), comment.getAuthorId());
         return commentMapper.toDTO(savedComment);
     }
 

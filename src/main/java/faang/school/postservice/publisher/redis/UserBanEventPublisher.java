@@ -1,4 +1,4 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.publisher.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.UserBanEventDto;
@@ -16,11 +16,5 @@ public class UserBanEventPublisher extends AbstractEventPublisher<UserBanEventDt
                                  @Value("${spring.data.redis.channel.user_ban.name}") ChannelTopic channelTopic,
                                  ObjectMapper objectMapper) {
         super(redisTemplate, channelTopic, objectMapper);
-    }
-
-    @Override
-    public void publish(UserBanEventDto event) {
-        publish(event);
-        log.info("UserBanEventDto published with userId = {}", event.getUserId());
     }
 }
