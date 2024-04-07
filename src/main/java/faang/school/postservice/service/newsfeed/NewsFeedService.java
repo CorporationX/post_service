@@ -29,13 +29,12 @@ import java.util.stream.Stream;
 public class NewsFeedService {
 
     private final RedisPostRepository redisPostRepository;
-    private final ZSetOperations<Long, Object> feeds;
     private final CommentService commentService;
     private final RedisCommentMapper redisCommentMapper;
     private final UserContext userContext;
     private final PostRepository postRepository;
     private final RedisPostMapper redisPostMapper;
-
+    private ZSetOperations<Long, Object> feeds;
     @Value("${batchSize.feed-batch}")
     private long postsBatchSize;
     @Value("${batchSize.comment-batch}")
