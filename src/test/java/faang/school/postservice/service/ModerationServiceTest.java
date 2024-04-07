@@ -22,6 +22,8 @@ class ModerationServiceTest {
     private PostRepository postRepository;
     @Mock
     private ModerationDictionary moderationDictionary;
+    @Mock
+    private PostService postService;
     @InjectMocks
     private ModerationService moderationService;
 
@@ -41,7 +43,7 @@ class ModerationServiceTest {
         when(moderationDictionary.containsBadWord("true")).thenReturn(false);
         when(moderationDictionary.containsBadWord("false")).thenReturn(true);
 
-        moderationService.checkPostsWithBadWord();
+        postService.checkPostsWithBadWord();
 
         assertTrue(posts.get(0).isVerified());
         assertFalse(posts.get(1).isVerified());

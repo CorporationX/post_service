@@ -166,7 +166,7 @@ class PostServiceTest {
     void testGetPublishedPostsByAuthorIdSuccessful() {
         post1.setPublished(true);
         when(postRepository.findByAuthorId(1)).thenReturn(Arrays.asList(post1, post2, post3));
-        List<PostDto> postDtos = postService.getPublishedPostsByAuthorId(1);
+        List<PostDto> postDtos = postService.getPostsByAuthorId(1);
         assertEquals(2, postDtos.size());
     }
 

@@ -19,7 +19,7 @@ public class ModerationDictionary {
     private Set<String> badWords;
 
     @PostConstruct
-    private void collectionBadWords() {
+    private void collectBadWords() {
         Path filePath = Path.of("src/main/resources/dictionary.txt");
         try (Stream<String> lines = Files.lines(filePath)) {
             badWords = lines

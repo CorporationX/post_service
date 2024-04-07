@@ -14,4 +14,5 @@ public interface PostService {
     List<PostDto> getDraftsByProjectId(long id);
     List<PostDto> getPostsByAuthorId(long id);
     List<PostDto> getPostsByProjectId(long id);
+    public void checkPostsWithBadWord();
 }

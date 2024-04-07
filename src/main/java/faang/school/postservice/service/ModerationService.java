@@ -25,17 +25,8 @@ public class ModerationService {
     @Value("${post.moderation.batchSize}")
     private int batchSize;
 
-    @Transactional
-    public void checkPostsWithBadWord() {
-        List<Post> allPosts = postRepository.findAllByVerifiedAtNull();
-        List<List<Post>> postPartitions = ListUtils.partition(allPosts, batchSize);
-        log.info("Moderation of posts for offensive content starts");
-        postPartitions.forEach(this::moderatePosts);
-        log.info("Post moderation is complete");
-    }
-
     @Async("asyncExecutor")
-    private void moderatePosts(List<Post> posts) {
+    public void moderatePosts(List<Post> posts) {
         posts.forEach(post -> {
             post.setVerified(!moderationDictionary.containsBadWord(post.getContent()));
             post.setVerifiedAt(LocalDateTime.now());
