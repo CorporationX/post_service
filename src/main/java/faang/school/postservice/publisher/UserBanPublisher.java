@@ -4,9 +4,11 @@ import faang.school.postservice.dto.event.UserEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.stereotype.Component;
 
+@Component
 @RequiredArgsConstructor
-public class UserBanPublisher implements MessagePublisher {
+public class UserBanPublisher {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChannelTopic userBanTopic;
 

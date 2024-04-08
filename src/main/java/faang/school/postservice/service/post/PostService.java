@@ -6,7 +6,7 @@ import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.resource.Resource;
-import faang.school.postservice.publisher.MessagePublisher;
+import faang.school.postservice.publisher.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -36,7 +36,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final ResourceService resourceService;
     private final ExecutorService threadPool;
-    private final MessagePublisher userBanPublisher;
+    private final UserBanPublisher userBanPublisher;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;

@@ -2,7 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.publisher.MessagePublisher;
+import faang.school.postservice.publisher.UserBanPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class CommenterBanner {
 
     private final CommentService commentService;
-    private final MessagePublisher userBanPublisher;
+    private final UserBanPublisher userBanPublisher;
 
     @Value("${comment.commenter-banner.comments-count}")
     private Integer countCommentsForBan;
