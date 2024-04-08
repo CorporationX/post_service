@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,4 +27,9 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     Optional<Post> findByIdAndPublishedIsTrueAndDeletedIsFalse(long postId);
 
+    @Query("SELECT p FROM Post p WHERE p.authorId = :userId ORDER BY p.createdAt DESC")
+    List<Post> findLatestPosts(long userId);
+
+    @Query("SELECT p FROM Post p WHERE p.id IN :postIds")
+    List<Post> findByPostIds(LinkedHashSet<Long> postIds);
 }
