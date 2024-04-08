@@ -4,6 +4,10 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -24,6 +28,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        post_channel:
+          name: post_channel
 
 server:
   port: 8081
@@ -41,6 +47,28 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+
+schedule:
+  cron:
+    removeExpiredAds: "0 0 0 * * ?" # Запуск каждый день в полночь
+
+async:
+  corePoolSize: 10
+  maxPoolSize: 15
+  queueCapacity: 1000
+
+batchSize:
+  batch: 100
+
+services:
+  s3:
+    endpoint: http://127.0.0.1:9000/
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+    targetWidth: 1080
+    targetHeight: 566
+    maxFilesAmount: 10
 
 user-service:
   host: localhost
