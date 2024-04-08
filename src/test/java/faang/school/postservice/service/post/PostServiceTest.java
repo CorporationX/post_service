@@ -12,7 +12,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,6 +22,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,9 +50,7 @@ class PostServiceTest {
     private PostMapperImpl postMapper;
     @Mock
     private ResourceService resourceService;
-    @Mock
-    private MessagePublisher userBanPublisher;
-    @InjectMocks
+    private ExecutorService threadPool;
     private PostService postService;
 
     private Post firstPost;
@@ -66,18 +66,21 @@ class PostServiceTest {
                 .content("Valid content")
                 .authorId(1L)
                 .resources(new ArrayList<>())
+                .published(false)
                 .build();
         secondPost = Post.builder()
                 .id(2L)
                 .content("Valid content")
                 .resources(new ArrayList<>())
                 .authorId(1L)
+                .published(false)
                 .build();
         thirdPost = Post.builder()
                 .id(3L)
                 .content("Valid content")
                 .resources(new ArrayList<>())
                 .authorId(1L)
+                .published(false)
                 .build();
         firstPostDto = PostDto.builder()
                 .id(firstPost.getId())
@@ -87,6 +90,8 @@ class PostServiceTest {
         userBanMessage = UserBanMessage.builder()
                 .userId(firstPost.getAuthorId())
                 .build();
+        threadPool = Executors.newFixedThreadPool(10);
+        postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool);
     }
 
     @Test
@@ -98,7 +103,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postValidator, times(1)).validatePostAuthor(firstPostDto),
                 () -> verify(postValidator, times(1)).validateIfAuthorExists(firstPostDto),
-                () -> verify(postValidator, times(1)).validateImagesCount(anyInt()),
+                () -> verify(postValidator, times(1)).validateResourcesCount(anyInt()),
                 () -> verify(postRepository, times(1)).save(any(Post.class)),
                 () -> verify(postMapper, times(1)).toEntity(firstPostDto),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
@@ -145,6 +150,27 @@ class PostServiceTest {
     }
 
     @Test
+    void publishScheduledPosts() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+        List<Post> posts = new ArrayList<>(List.of(firstPost, secondPost, thirdPost));
+        Field batchSize = postService.getClass().getDeclaredField("scheduledPostsBatchSize");
+        batchSize.setAccessible(true);
+        batchSize.set(postService, 1000);
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+
+        postService.publishScheduledPosts();
+
+        threadPool.shutdown();
+        threadPool.awaitTermination(5L, TimeUnit.MINUTES);
+        assertAll(
+                () -> verify(postRepository, times(1)).findReadyToPublish(),
+                () -> assertEquals(List.of(true, true, true), posts.stream().map(Post::isPublished).toList()),
+                () -> assertNotNull(firstPost.getPublishedAt()),
+                () -> assertNotNull(secondPost.getPublishedAt()),
+                () -> assertNotNull(thirdPost.getPublishedAt())
+        );
+    }
+
+    @Test
     void update_PostUpdated_ThenReturnedAsDto() {
         firstPost.setContent("Old content");
         firstPostDto.setContent("Updated content");
@@ -155,7 +181,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postRepository, times(1)).findById(firstPost.getId()),
                 () -> verify(postValidator, times(1)).validateUpdatedPost(any(Post.class), any(PostDto.class)),
-                () -> verify(postValidator, times(1)).validateImagesCount(anyInt(), anyInt()),
+                () -> verify(postValidator, times(1)).validateResourcesCount(anyInt(), anyInt()),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
                 () -> assertEquals(firstPostDto, returned),
                 () -> assertNotEquals("Old content", firstPost.getContent())

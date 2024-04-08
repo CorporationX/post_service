@@ -1,11 +1,12 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.hhzuserban.dto.message.UserBanMessage;
 import faang.school.postservice.hhzuserban.publisher.MessagePublisher;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.resource.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -21,6 +22,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,7 +35,11 @@ public class PostService {
     private final PostValidator postValidator;
     private final PostMapper postMapper;
     private final ResourceService resourceService;
+    private final ExecutorService threadPool;
     private final MessagePublisher userBanPublisher;
+
+    @Value("${post.publisher.batch-size}")
+    private Integer scheduledPostsBatchSize;
 
     @Value("${post.banner.post-count}")
     private Integer postsCountToBan;
@@ -45,7 +52,7 @@ public class PostService {
         log.info("Post saved: {}", post);
         post.setResources(new ArrayList<>());
         if (images != null) {
-            postValidator.validateImagesCount(images.length);
+            postValidator.validateResourcesCount(images.length);
             for (MultipartFile file : images) {
                 Resource resource = resourceService.saveImage(file, post);
                 post.getResources().add(resource);
@@ -55,12 +62,12 @@ public class PostService {
     }
 
     public PostDto getPostById(long postId) {
-        Post post = getPost(postId);
+        Post post = getPostFromRepository(postId);
         return postMapper.toDto(post);
     }
 
     public PostDto publish(long postId) {
-        Post post = getPost(postId);
+        Post post = getPostFromRepository(postId);
         postValidator.validateIfPostIsPublished(post);
         postValidator.validateIfPostIsDeleted(post);
         post.setPublished(true);
@@ -70,12 +77,31 @@ public class PostService {
     }
 
     @Transactional
+    public void publishScheduledPosts() {
+        List<Post> posts = postRepository.findReadyToPublish();
+        int postsQuantity = posts.size();
+
+        for (int i = 0; i < postsQuantity; i += scheduledPostsBatchSize) {
+            final int fromIndex = i;
+            int toIndex = Math.min(i + scheduledPostsBatchSize, postsQuantity);
+
+            CompletableFuture.runAsync(() -> {
+                List<Post> batch = posts.subList(fromIndex, toIndex);
+                batch.forEach(post -> {
+                    post.setPublished(true);
+                    post.setPublishedAt(LocalDateTime.now());
+                });
+            }, threadPool);
+        }
+    }
+
+    @Transactional
     public PostDto update(PostDto postDto, MultipartFile[] images) {
-        Post post = getPost(postDto.getId());
+        Post post = getPostFromRepository(postDto.getId());
         postValidator.validateUpdatedPost(post, postDto);
         post.setContent(postDto.getContent());
         if (images != null) {
-            postValidator.validateImagesCount(post.getResources().size(), images.length);
+            postValidator.validateResourcesCount(post.getResources().size(), images.length);
             for (MultipartFile file : images) {
                 Resource resource = resourceService.saveImage(file, post);
                 post.getResources().add(resource);
@@ -94,7 +120,7 @@ public class PostService {
     }
 
     public void delete(long postId) {
-        Post post = getPost(postId);
+        Post post = getPostFromRepository(postId);
         postValidator.validateIfPostIsDeleted(post);
         post.setDeleted(true);
         postRepository.save(post);
@@ -132,7 +158,13 @@ public class PostService {
         return postMapper.toDto(posts);
     }
 
-    private Post getPost(long postId) {
+    @Transactional
+    public ResourceDto attachMedia(long postId, MultipartFile mediaFile) {
+        Post post = getPostFromRepository(postId);
+        return resourceService.attachMediaToPost(mediaFile, post);
+    }
+
+    private Post getPostFromRepository(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
     }
