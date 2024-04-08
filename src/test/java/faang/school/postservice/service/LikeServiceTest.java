@@ -1,7 +1,6 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
@@ -19,8 +18,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,8 +37,6 @@ public class LikeServiceTest {
     private LikeRepository likeRepository;
     @Mock
     private UserServiceClient userServiceClient;
-    @Mock
-    private UserContext userContext;
     @Spy
     private LikeMapper likeMapper;
 
@@ -50,7 +48,7 @@ public class LikeServiceTest {
     private Post post;
     private Comment comment;
     private UserDto userDto;
-    private long userId = 1L;
+    private final long userId = 1L;
 
     @BeforeEach
     public void setUp() {
@@ -92,5 +90,40 @@ public class LikeServiceTest {
         assertEquals(likeDto, likeService.likePost(likeDto));
 
         verify(likeValidation, times(1)).verifyUniquenessLikePost(likeDto.getPostId(), likeDto.getUserId());
+    }
+
+    @Test
+    @DisplayName("Remove like from post")
+    public void testDeleteLikePost() {
+        when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
+
+        likeService.deleteLikePost(post.getId());
+
+        verify(userServiceClient, times(1)).getUser(anyLong());
+        verify(likeRepository, times(1)).deleteByPostIdAndUserId(post.getId(), userId);
+    }
+
+    @Test
+    @DisplayName("Like the comment")
+    public void testLikeComment() {
+        when(commentService.findCommentById(likeDto.getCommentId())).thenReturn(comment);
+        when(userServiceClient.getUser(likeDto.getUserId())).thenReturn(userDto);
+        when(likeRepository.save(any(Like.class))).thenReturn(like);
+        when(likeMapper.toDto(like)).thenReturn(likeDto);
+
+        assertEquals(likeDto, likeService.likeComment(likeDto));
+
+        verify(likeValidation, times(1)).verifyUniquenessLikeComment(likeDto.getCommentId(), likeDto.getUserId());
+    }
+
+    @Test
+    @DisplayName("Remove like from comment")
+    public void testDeleteLikeComment() {
+        when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
+
+        likeService.deleteLikeComment(post.getId());
+
+        verify(userServiceClient, times(1)).getUser(anyLong());
+        verify(likeRepository, times(1)).deleteByCommentIdAndUserId(post.getId(), userId);
     }
 }
