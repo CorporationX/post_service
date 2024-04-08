@@ -1,5 +1,7 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.service.async.AsyncPostService;
+import org.springframework.beans.factory.annotation.Value;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.event.PostEvent;
@@ -12,20 +14,20 @@ import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
-
     private final ProjectServiceClient projectServiceClient;
     private final PostEventPublisher postEventPublisher;
     private final UserServiceClient userServiceClient;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
-
+    private final AsyncPostService asyncPostService;
+    @Value("${post.publisher.scheduler.batch-size}")
+    private int batchSize;
 
     @Transactional
     public PostDto createDraft(PostDto postDto) {
@@ -97,6 +99,19 @@ public class PostService {
         return filterPosts(posts, true);
     }
 
+    public void publishScheduledPosts() {
+        List<Post> posts = postRepository.findReadyToPublish();
+
+        for (int i = 0; i < posts.size(); i += batchSize) {
+            int finalI = i;
+            if (i + batchSize < posts.size()) {
+                asyncPostService.publishThousandPosts(posts, finalI, finalI + batchSize);
+            } else {
+                asyncPostService.publishThousandPosts(posts, finalI, posts.size());
+            }
+        }
+    }
+
     private void validateAuthor(PostDto postDto) {
         if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
             throw new DataValidationException("The author of the post is not specified");
@@ -110,7 +125,7 @@ public class PostService {
 
     }
 
-    public Post searchPostById(long id) {
+    private Post searchPostById(long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("Post with id " + id + " not found."));
     }
