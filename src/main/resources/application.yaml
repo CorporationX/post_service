@@ -45,6 +45,10 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderation:
+    scheduler:
+      cron: "0 */5 * * * ?" # every day
+    batchSize: 100
 
 schedule:
   cron:
@@ -77,3 +81,4 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+

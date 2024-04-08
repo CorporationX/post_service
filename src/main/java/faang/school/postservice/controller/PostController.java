@@ -2,6 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -60,7 +61,7 @@ public class PostController {
             description = "Помечает пост как удаленный"
     )
     @DeleteMapping("/{postId}")
-    public PostDto removePostSoftly(@PathVariable @Positive(message = "Id must be greater than zero") long postId) {
+    public PostDto deletePost(@PathVariable @Positive(message = "Id must be greater than zero") long postId) {
         return postService.deletePost(postId);
     }
 
@@ -93,7 +94,7 @@ public class PostController {
     )
     @GetMapping("/author/{id}")
     public List<PostDto> getPostsByAuthorId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
-        return postService.getPublishedPostsByAuthorId(id);
+        return postService.getPostsByAuthorId(id);
     }
 
     @Operation(
@@ -101,6 +102,6 @@ public class PostController {
     )
     @GetMapping("/project/{id}")
     public List<PostDto> getPostsByProjectId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
-        return postService.getPublishedPostsByProjectId(id);
+        return postService.getPostsByProjectId(id);
     }
 }
