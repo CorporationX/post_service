@@ -84,6 +84,7 @@ feed:
     batch: 1000
   post:
     time-to-live: 86400
+    amount: 20
   comment:
     size: 3
 

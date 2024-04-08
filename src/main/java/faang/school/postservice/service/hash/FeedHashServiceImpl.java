@@ -3,6 +3,7 @@ package faang.school.postservice.service.hash;
 import faang.school.postservice.dto.event.PostEventKafka;
 import faang.school.postservice.hash.FeedHash;
 import faang.school.postservice.repository.FeedHashRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
