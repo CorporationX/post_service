@@ -25,6 +25,11 @@ public class RedisConfig {
     }
 
     @Bean
+    ChannelTopic postViewTopic() {
+        return new ChannelTopic("post_view");
+    }
+
+    @Bean
     public JedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         return new JedisConnectionFactory(config);

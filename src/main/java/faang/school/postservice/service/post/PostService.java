@@ -1,11 +1,13 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.resource.Resource;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.publisher.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
@@ -37,6 +39,7 @@ public class PostService {
     private final ResourceService resourceService;
     private final ExecutorService threadPool;
     private final UserBanPublisher userBanPublisher;
+    private final PostViewEventPublisher postViewEventPublisher;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -61,8 +64,16 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
-    public PostDto getPostById(long postId) {
+    public PostDto getPostById(long userId, long postId) {
         Post post = getPostFromRepository(postId);
+        if (post.getAuthorId() != userId) {
+            postViewEventPublisher.publish(PostViewEvent.builder()
+                    .postId(postId)
+                    .userId(userId)
+                    .postId(post.getAuthorId())
+                    .build());
+        }
+        log.info("Post {} view event published", postId);
         return postMapper.toDto(post);
     }
 
@@ -126,8 +137,8 @@ public class PostService {
         postRepository.save(post);
     }
 
-    public List<PostDto> getCreatedPostsByUserId(long userId) {
-        List<Post> posts = postRepository.findByAuthorId(userId).stream()
+    public List<PostDto> getCreatedPostsByAuthorId(long authorId) {
+        List<Post> posts = postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
                 .sorted((post1, post2) -> post2.getCreatedAt().compareTo(post1.getCreatedAt()))
                 .toList();
@@ -142,30 +153,46 @@ public class PostService {
         return postMapper.toDto(posts);
     }
 
-    public List<PostDto> getPublishedPostsByUserId(long userId) {
-        List<Post> posts = postRepository.findByAuthorId(userId).stream()
+    public List<PostDto> getPublishedPostsByAuthorId(long userId, long authorId) {
+        List<Post> posts = postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .toList();
-        return postMapper.toDto(posts);
-    }
+        posts.forEach(post -> {
+            postViewEventPublisher.publish(PostViewEvent.builder()
+                    .postId(post.getId())
+                    .authorId(post.getAuthorId())
+                    .userId(userId)
+                    .build());
+            log.info("Post {} view event published", post.getId());
+        });
+            return postMapper.toDto(posts);
+        }
 
-    public List<PostDto> getPublishedPostsByProjectId(long projectId) {
-        List<Post> posts = postRepository.findByProjectId(projectId).stream()
-                .filter(post -> !post.isDeleted() && post.isPublished())
-                .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
-                .toList();
-        return postMapper.toDto(posts);
-    }
+        public List<PostDto> getPublishedPostsByProjectId (long userId, long projectId){
+            List<Post> posts = postRepository.findByProjectId(projectId).stream()
+                    .filter(post -> !post.isDeleted() && post.isPublished())
+                    .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
+                    .toList();
+            posts.forEach(post -> {
+                postViewEventPublisher.publish(PostViewEvent.builder()
+                        .postId(post.getId())
+                        .authorId(post.getProjectId())
+                        .userId(userId)
+                        .build());
+                log.info("Post {} view event published", post.getId());
+            });
+            return postMapper.toDto(posts);
+        }
 
-    @Transactional
-    public ResourceDto attachMedia(long postId, MultipartFile mediaFile) {
-        Post post = getPostFromRepository(postId);
-        return resourceService.attachMediaToPost(mediaFile, post);
-    }
+        @Transactional
+        public ResourceDto attachMedia ( long postId, MultipartFile mediaFile){
+            Post post = getPostFromRepository(postId);
+            return resourceService.attachMediaToPost(mediaFile, post);
+        }
 
-    private Post getPostFromRepository(long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
+        private Post getPostFromRepository ( long postId){
+            return postRepository.findById(postId)
+                    .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
+        }
     }
-}

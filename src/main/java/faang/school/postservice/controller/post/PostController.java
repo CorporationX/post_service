@@ -1,5 +1,6 @@
 package faang.school.postservice.controller.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.service.post.PostService;
@@ -30,6 +31,7 @@ import java.util.List;
 @Tag(name = "Posts", description = "Endpoints for managing posts")
 public class PostController {
     private final PostService postService;
+    private final UserContext userContext;
 
     @Operation(summary = "Create a post draft")
     @PostMapping
@@ -41,7 +43,8 @@ public class PostController {
     @Operation(summary = "Get post by id")
     @GetMapping("/{postId}")
     public PostDto getPostById(@PathVariable @Min(1) long postId) {
-        return postService.getPostById(postId);
+        long userId = userContext.getUserId();
+        return postService.getPostById(userId, postId);
     }
 
     @Operation(summary = "Update existing post")
@@ -64,9 +67,9 @@ public class PostController {
     }
 
     @Operation(summary = "Get created post draft by user id")
-    @GetMapping("/user/{userId}")
-    public List<PostDto> getCreatedPostsByUserId(@PathVariable @Min(1) long userId) {
-        return postService.getCreatedPostsByUserId(userId);
+    @GetMapping("/user/{authorId}")
+    public List<PostDto> getCreatedPostsByAuthorId(@PathVariable @Min(1) long authorId) {
+        return postService.getCreatedPostsByAuthorId(authorId);
     }
 
     @Operation(summary = "Get created post draft by project id")
@@ -76,15 +79,17 @@ public class PostController {
     }
 
     @Operation(summary = "Get published post by user id")
-    @GetMapping("/user/{userId}/published")
-    public List<PostDto> getPublishedPostsByUserId(@PathVariable @Min(1) long userId) {
-        return postService.getPublishedPostsByUserId(userId);
+    @GetMapping("/user/{authorId}/published")
+    public List<PostDto> getPublishedPostsByAuthorId(@PathVariable @Min(1) long authorId) {
+        long userId = userContext.getUserId();
+        return postService.getPublishedPostsByAuthorId(userId, authorId);
     }
 
     @Operation(summary = "Get published post by project id")
     @GetMapping("/project/{projectId}/published")
     public List<PostDto> getPublishedPostsByProjectId(@PathVariable @Min(1) long projectId) {
-        return postService.getPublishedPostsByProjectId(projectId);
+        long userId = userContext.getUserId();
+        return postService.getPublishedPostsByProjectId(userId, projectId);
     }
 
     @Operation(summary = "Attach media file to post")
