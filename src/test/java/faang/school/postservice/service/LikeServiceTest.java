@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
@@ -37,6 +38,8 @@ public class LikeServiceTest {
     private LikeRepository likeRepository;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private UserContext userContext;
     @Spy
     private LikeMapper likeMapper;
 
