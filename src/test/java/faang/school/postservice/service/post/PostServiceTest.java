@@ -4,7 +4,7 @@ import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.UserBanPublisher;
+import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -51,7 +51,7 @@ class PostServiceTest {
     @Mock
     private ResourceService resourceService;
     @Mock
-    private UserBanPublisher userBanPublisher;
+    private MessagePublisher userBanPublisher;
     private ExecutorService threadPool;
     private PostService postService;
 
