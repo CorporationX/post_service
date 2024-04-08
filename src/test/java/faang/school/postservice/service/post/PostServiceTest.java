@@ -55,7 +55,6 @@ class PostServiceTest {
     private ExecutorService threadPool;
     private PostService postService;
 
-
     private Post firstPost;
     private Post secondPost;
     private Post thirdPost;
