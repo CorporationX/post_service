@@ -1,5 +1,7 @@
 package faang.school.postservice.config.redis;
 
+import faang.school.postservice.publisher.MessagePublisher;
+import faang.school.postservice.publisher.UserBanPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,5 +39,10 @@ public class RedisConfig {
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
+    }
+
+    @Bean
+    public MessagePublisher userBanPublisher() {
+        return new UserBanPublisher(redisTemplate(), userBanTopic());
     }
 }

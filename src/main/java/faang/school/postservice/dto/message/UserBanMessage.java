@@ -1,4 +1,4 @@
-package faang.school.postservice.hhzuserban.dto.message;
+package faang.school.postservice.dto.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

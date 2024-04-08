@@ -1,10 +1,10 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.hhzuserban.dto.message.UserBanMessage;
-import faang.school.postservice.hhzuserban.publisher.MessagePublisher;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -50,14 +50,17 @@ class PostServiceTest {
     private PostMapperImpl postMapper;
     @Mock
     private ResourceService resourceService;
+    @Mock
+    private UserBanPublisher userBanPublisher;
     private ExecutorService threadPool;
     private PostService postService;
+
 
     private Post firstPost;
     private Post secondPost;
     private Post thirdPost;
     private PostDto firstPostDto;
-    private UserBanMessage userBanMessage;
+    private UserEvent userBanMessage;
 
     @BeforeEach
     void setUp() {
@@ -87,11 +90,11 @@ class PostServiceTest {
                 .content(firstPost.getContent())
                 .authorId(firstPost.getAuthorId())
                 .build();
-        userBanMessage = UserBanMessage.builder()
+        userBanMessage = UserEvent.builder()
                 .userId(firstPost.getAuthorId())
                 .build();
         threadPool = Executors.newFixedThreadPool(10);
-        postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool);
+        postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool, userBanPublisher);
     }
 
     @Test

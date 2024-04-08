@@ -1,12 +1,12 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.ResourceDto;
-import faang.school.postservice.hhzuserban.dto.message.UserBanMessage;
-import faang.school.postservice.hhzuserban.publisher.MessagePublisher;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.resource.Resource;
+import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -116,7 +116,7 @@ public class PostService {
                 .entrySet().stream()
                 .filter(entry -> entry.getValue() > postsCountToBan)
                 .map(Map.Entry::getKey)
-                .forEach(userId -> userBanPublisher.publish(new UserBanMessage(userId)));
+                .forEach(userId -> userBanPublisher.publish(new UserEvent(userId)));
     }
 
     public void delete(long postId) {
