@@ -33,7 +33,7 @@ public class CommentService {
         comment.setPost(post);
         comment.setLikes(new ArrayList<>());
         Comment savedComment = commentRepository.save(comment);
-        commentEventPublisher.publish(CommentEventDto.builder()
+        commentEventPublisher.publishInTopic(CommentEventDto.builder()
                 .authorId(comment.getAuthorId())
                 .commentId(comment.getId())
                 .content(comment.getContent())

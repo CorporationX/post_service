@@ -12,15 +12,15 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class UserBanEventPublisher extends AbstractEventPublisher<UserBanEventDto> {
 
-    public UserBanEventPublisher(RedisTemplate<String, Object> redisTemplate,
-                                 @Value("${spring.data.redis.channel.user_ban.name}") ChannelTopic channelTopic,
-                                 ObjectMapper objectMapper) {
-        super(redisTemplate, channelTopic, objectMapper);
+    public UserBanEventPublisher(ObjectMapper objectMapper,
+                                 RedisTemplate<String, Object> redisTemplate,
+                                 @Value("${spring.data.redis.channel.user_ban.name}")String topic) {
+        super(objectMapper, redisTemplate, topic);
     }
 
     @Override
-    public void publish(UserBanEventDto event) {
-        publish(event);
+    public void publishInTopic(UserBanEventDto event) {
+        super.publishInTopic(event);
         log.info("UserBanEventDto published with userId = {}", event.getUserId());
     }
 }

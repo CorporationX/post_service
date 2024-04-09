@@ -379,8 +379,8 @@ public class PostServiceTest {
 
         postService.checkAndBanAuthors();
 
-        verify(userBanEventPublisher, times(1)).publish(firstExpectedUserBanEventDto);
-        verify(userBanEventPublisher, times(1)).publish(secondExpectedUserBanEventDto);
+        verify(userBanEventPublisher, times(1)).publishInTopic(firstExpectedUserBanEventDto);
+        verify(userBanEventPublisher, times(1)).publishInTopic(secondExpectedUserBanEventDto);
     }
 
     @Test
@@ -391,7 +391,7 @@ public class PostServiceTest {
 
         postService.checkAndBanAuthors();
 
-        verify(userBanEventPublisher, never()).publish(any());
+        verify(userBanEventPublisher, never()).publishInTopic(any());
     }
 
     @Test

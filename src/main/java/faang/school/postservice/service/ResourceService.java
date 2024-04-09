@@ -29,19 +29,19 @@ public class ResourceService {
     private final ResourceValidator resourceValidator;
     private final PostRepository postRepository;
 
-//    @Transactional
-//    public List<ResourceDto> deleteResources(List<Long> resourceIds) {
-//        List<Resource> resourcesToDelete = resourceIds.stream()
-//                .map(this::validateAccessAndGetResource)
-//                .toList();
-//
-//        resourcesToDelete.forEach(resource -> amazonService.deleteFile(resource.getKey()));
-//
-//        resourceRepository.deleteAll(resourcesToDelete);
-//        return resourcesToDelete.stream()
-//                .map(resourceMapper::toDto)
-//                .toList();
-//    }
+    @Transactional
+    public List<ResourceDto> deleteResources(List<Long> resourceIds) {
+        List<Resource> resourcesToDelete = resourceIds.stream()
+                .map(this::validateAccessAndGetResource)
+                .toList();
+
+        resourcesToDelete.forEach(resource -> amazonService.deleteFile(resource.getKey()));
+
+        resourceRepository.deleteAll(resourcesToDelete);
+        return resourcesToDelete.stream()
+                .map(resourceMapper::toDto)
+                .toList();
+    }
 
     @Transactional
     public List<ResourceDto> deleteResources(long postId, List<Long> resourceIds) {

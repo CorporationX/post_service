@@ -10,16 +10,18 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public abstract class AbstractEventPublisher<T> {
+
+    private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic topic;
-    private final ObjectMapper mapper;
+    private final String topic;
 
-    public void publish(T event) {
+    public void publishInTopic(T event) {
+        String json;
         try {
-            redisTemplate.convertAndSend(topic.getTopic(), mapper.writeValueAsString(event));
+            json = objectMapper.writeValueAsString(event);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Can't converting object to string");
+            throw new RuntimeException("Cannot serialize event to json");
         }
-
+        redisTemplate.convertAndSend(new ChannelTopic(topic).getTopic(), json);
     }
 }

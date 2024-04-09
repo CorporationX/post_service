@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.event.PostEventDto;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -21,6 +22,8 @@ public interface PostMapper {
     List<PostDto> toDtoList(List<Post> postList);
 
     List<Post> toEntityList(List<PostDto> postDtoList);
+
+    PostEventDto toEventDto(Post post);
 
     @Named("getResourceIds")
     default List<Long> getResourceIds(List<Resource> resources) {

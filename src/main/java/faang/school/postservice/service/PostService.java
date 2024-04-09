@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
@@ -34,14 +35,15 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
-    private final ResourceValidator resourceValidator;
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
-    @Value("${post.content_to_post.max_amount.video}")
-    private int maxVideo;
+    private final UserServiceClient userServiceClient;
     @Value("${post.rule.unverified_posts_limit}")
     private int unverifiedPostsLimit;
+    @Value("${post.content_to_post.max_amount.video}")
+    private int maxVideo;
+    private final ResourceValidator resourceValidator;
 
     public void createPostDraft(PostDto postDto) {
         postValidator.validatePostOwnerExists(postDto);
@@ -55,6 +57,7 @@ public class PostService {
         Post post = getPost(postId);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        postRepository.save(post);
     }
 
     @Transactional
@@ -69,10 +72,6 @@ public class PostService {
         postValidator.validatePostByOwner(postId, ownerId);
         Post post = getPost(postId);
         post.setDeleted(true);
-    }
-
-    public PostDto getPostById(long postId) {
-        return postMapper.toDto(getPost(postId));
     }
 
     public Post getPost(long postId) {
@@ -177,7 +176,7 @@ public class PostService {
                 .toList();
 
         post.getResources().removeAll(resourcesToDelete);
-        resourceService.deleteResources(post.getId(), resourcesToDelete.stream()
+        resourceService.deleteResources(resourcesToDelete.stream()
                 .map(Resource::getId)
                 .toList()
         );
@@ -187,7 +186,7 @@ public class PostService {
         postRepository.findAuthorIdsByNotVerifiedPosts(unverifiedPostsLimit).forEach(
                 authorId -> {
                     log.debug("User with id = {} has more then {} unverified posts", authorId, unverifiedPostsLimit);
-                    userBanEventPublisher.publish(new UserBanEventDto(authorId));
+                    userBanEventPublisher.publishInTopic(new UserBanEventDto(authorId));
                 }
         );
         log.info("check and ban authors method completed");
@@ -213,5 +212,4 @@ public class PostService {
     public void deleteVideo(long postId, List<Long> resourceIds) {
         resourceService.deleteResources(postId, resourceIds);
     }
-
 }
