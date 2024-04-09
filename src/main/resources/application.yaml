@@ -39,6 +39,10 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  user-ban:
+    scheduler:
+      cron: "0 0 0 * * *" #every day
+  maxUnverifiedPosts: 5
 
 user-service:
   host: localhost
