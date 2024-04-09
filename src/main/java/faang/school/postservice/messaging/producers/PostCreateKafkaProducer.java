@@ -7,11 +7,14 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PostCreateKafkaProducer extends AbstractKafkaEventProducer<PostPublishedDto>{
+public class PostCreateKafkaProducer extends AbstractKafkaEventProducer<PostPublishedDto> {
 
-    public PostCreateKafkaProducer(KafkaTemplate<String, String> kafkaTemplate,
-                                   @Value("${spring.data.kafka.topics.post-create.name}") String topic,
-                                   ObjectMapper mapper) {
+    public PostCreateKafkaProducer(
+            KafkaTemplate<String, String> kafkaTemplate,
+            @Value("${spring.data.kafka.topics.post-create.name}")
+            String topic,
+            ObjectMapper mapper
+    ) {
         super(kafkaTemplate, topic, mapper);
     }
 }

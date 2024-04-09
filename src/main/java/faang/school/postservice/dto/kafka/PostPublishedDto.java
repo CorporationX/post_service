@@ -14,5 +14,4 @@ import java.util.List;
 public class PostPublishedDto {
     private Long postId;
     private Long authorId;
-    private List<Long> followersIds;
 }
