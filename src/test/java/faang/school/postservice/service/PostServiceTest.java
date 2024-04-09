@@ -7,7 +7,7 @@ import faang.school.postservice.dto.UserBanEventDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.ResourceMapperImpl;
 import faang.school.postservice.mapper.UserMapper;
-import faang.school.postservice.messaging.PostCreateKafkaProducer;
+import faang.school.postservice.messaging.producers.PostCreateKafkaProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.UserBanEventPublisher;

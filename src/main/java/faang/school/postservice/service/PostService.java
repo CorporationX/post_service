@@ -9,7 +9,7 @@ import faang.school.postservice.dto.redis.UserRedisDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.mapper.UserMapper;
-import faang.school.postservice.messaging.PostCreateKafkaProducer;
+import faang.school.postservice.messaging.producers.PostCreateKafkaProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.UserBanEventPublisher;
