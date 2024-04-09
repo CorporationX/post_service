@@ -1,11 +1,8 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.RedisConfig;
 import faang.school.postservice.dto.kafka.PostPublishedDto;
-import faang.school.postservice.dto.redis.FeedDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
