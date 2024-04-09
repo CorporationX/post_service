@@ -56,6 +56,6 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic kafkaCommentTopic() {
         return new NewTopic(commentTopicName, commentTopicPartitions, commentTopicReplicas);
-
     }
+
 }

@@ -23,8 +23,8 @@ public class UserCache implements Serializable {
     private long id;
     private String name;
     @TimeToLive
-    @Value("${spring.data.redis.post.ttl}")
-    private int postsTtl;
+    @Value("${spring.data.redis.user.ttl}")
+    private int usersTtl;
 
     public UserCache(UserDto user) {
         this.id = user.getId();

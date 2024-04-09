@@ -10,7 +10,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.cache.PostCache;
 import faang.school.postservice.model.redis.cache.UserCache;
 import faang.school.postservice.publisher.PostEventPublisher;
-import faang.school.postservice.publisher.kafka.KafkaPostProducer;
+import faang.school.postservice.kafka.producer.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.repository.redis.RedisUserRepository;

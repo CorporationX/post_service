@@ -1,4 +1,4 @@
-package faang.school.postservice.publisher.kafka;
+package faang.school.postservice.kafka.producer;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.kafka.KafkaPostEvent;

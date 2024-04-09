@@ -27,6 +27,11 @@ spring:
       host: localhost
       post:
         ttl: 86400
+      user:
+        ttl: 86400
+      feed:
+        ttl: 86400
+
       channels:
         calculations_channel:
           name: calculations_channel
@@ -35,6 +40,7 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+
     topics:
       post:
         name: posts
