@@ -1,6 +1,8 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.kafka.PostPublishedDto;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import org.mapstruct.Mapper;
@@ -15,6 +17,10 @@ public interface PostMapper {
 
     @Mapping(target = "resourceIds", source = "resources", qualifiedByName = "getResourceIds")
     PostDto toDto(Post post);
+
+    PostRedisDto toPostRedisDto(Post post);
+
+    PostPublishedDto toPostCreate(Post post);
 
     Post toEntity(PostDto postDto);
 

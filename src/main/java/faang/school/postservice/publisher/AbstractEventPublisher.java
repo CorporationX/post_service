@@ -20,6 +20,5 @@ public abstract class AbstractEventPublisher<T> {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Can't converting object to string");
         }
-
     }
 }
