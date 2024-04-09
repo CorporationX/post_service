@@ -26,6 +26,8 @@ spring:
           name: calculations_channel
         like_event_channel:
           name: like_event_channel
+        post_channel:
+          name: post_channel
 
 server:
   port: 8081
@@ -41,6 +43,10 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderation:
+    scheduler:
+      cron: "0 */5 * * * ?" # every day
+    batchSize: 100
 
 schedule:
   cron:
@@ -53,6 +59,16 @@ async:
 
 batchSize:
   batch: 100
+
+services:
+  s3:
+    endpoint: http://127.0.0.1:9000/
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+    targetWidth: 1080
+    targetHeight: 566
+    maxFilesAmount: 10
 
 user-service:
   host: localhost

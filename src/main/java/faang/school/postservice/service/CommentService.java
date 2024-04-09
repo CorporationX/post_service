@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -50,6 +51,12 @@ public class CommentService {
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
                 .map(commentMapper::toDto).toList();
     }
+
+    public Comment getCommentIfExist(long commentId) {
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Comment by id: " + commentId + " not found"));
+    }
+
 
     private void validateAuthorExists(CommentDto commentDto) {
         UserDto userDto = userServiceClient.getUser(commentDto.getAuthorId());

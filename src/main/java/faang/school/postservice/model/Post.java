@@ -48,6 +48,9 @@ public class Post {
     @Column(name = "published", nullable = false)
     private boolean published;
 
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
+    private List<Resource> resources;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
@@ -68,4 +71,11 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "verified", nullable = false)
+    private boolean verified;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
 }
