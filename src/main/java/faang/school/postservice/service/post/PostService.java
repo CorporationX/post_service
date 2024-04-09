@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
@@ -16,6 +17,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,11 +69,7 @@ public class PostService {
     public PostDto getPostById(long userId, long postId) {
         Post post = getPostFromRepository(postId);
         if (post.getAuthorId() != userId) {
-            postViewEventPublisher.publish(PostViewEvent.builder()
-                    .postId(postId)
-                    .userId(userId)
-                    .postId(post.getAuthorId())
-                    .build());
+            publishPostEvent(userId, post);
         }
         log.info("Post {} view event published", postId);
         return postMapper.toDto(post);
@@ -159,40 +157,51 @@ public class PostService {
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .toList();
         posts.forEach(post -> {
-            postViewEventPublisher.publish(PostViewEvent.builder()
-                    .postId(post.getId())
-                    .authorId(post.getAuthorId())
-                    .userId(userId)
-                    .build());
+            publishPostEvent(userId, post);
             log.info("Post {} view event published", post.getId());
         });
-            return postMapper.toDto(posts);
-        }
+        return postMapper.toDto(posts);
+    }
 
-        public List<PostDto> getPublishedPostsByProjectId (long userId, long projectId){
-            List<Post> posts = postRepository.findByProjectId(projectId).stream()
-                    .filter(post -> !post.isDeleted() && post.isPublished())
-                    .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
-                    .toList();
-            posts.forEach(post -> {
-                postViewEventPublisher.publish(PostViewEvent.builder()
-                        .postId(post.getId())
-                        .authorId(post.getProjectId())
-                        .userId(userId)
-                        .build());
-                log.info("Post {} view event published", post.getId());
-            });
-            return postMapper.toDto(posts);
-        }
+    public List<PostDto> getPublishedPostsByProjectId(long userId, long projectId) {
+        List<Post> posts = postRepository.findByProjectId(projectId).stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
+                .toList();
+        posts.forEach(post -> {
+            publishPostEvent(userId, post);
+            log.info("Post {} view event published", post.getId());
+        });
+        return postMapper.toDto(posts);
+    }
 
-        @Transactional
-        public ResourceDto attachMedia ( long postId, MultipartFile mediaFile){
-            Post post = getPostFromRepository(postId);
-            return resourceService.attachMediaToPost(mediaFile, post);
-        }
+    @Transactional
+    public ResourceDto attachMedia(long postId, MultipartFile mediaFile) {
+        Post post = getPostFromRepository(postId);
+        return resourceService.attachMediaToPost(mediaFile, post);
+    }
 
-        private Post getPostFromRepository ( long postId){
-            return postRepository.findById(postId)
-                    .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
+    private void publishPostEvent(long userId, Post post) {
+        PostViewEvent event = PostViewEvent.builder()
+                .postId(post.getId())
+                .userId(userId)
+                .build();
+        if (post.getAuthorId() != null) {
+            event.setAuthorId(post.getAuthorId());
+        }
+        if (post.getProjectId() != null) {
+            event.setAuthorId(post.getProjectId());
+        }
+        try {
+            postViewEventPublisher.publish(event);
+        } catch (JsonProcessingException e) {
+            log.error("JsonProcessingException was thrown", e);
+            throw new SerializationException(e.getMessage());
         }
     }
+
+    private Post getPostFromRepository(long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
+    }
+}
