@@ -1,11 +1,10 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.dto.event.LikeEventDto;
-import faang.school.postservice.publisher.LikeEventPublisher;
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.service.PostService;
 
+import faang.school.postservice.dto.event.LikeEventDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -87,7 +86,7 @@ public class PostController {
         likeEventPublisher.publish(testEvent);
         return testEvent;
     }
-}
+
 
     @Operation(
             summary = "Получение черновиков по id пользователя"
