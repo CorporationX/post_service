@@ -1,11 +1,12 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.resource.Resource;
+import faang.school.postservice.publisher.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -20,8 +21,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,9 +36,13 @@ public class PostService {
     private final PostMapper postMapper;
     private final ResourceService resourceService;
     private final ExecutorService threadPool;
+    private final UserBanPublisher userBanPublisher;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
+
+    @Value("${post.banner.post-count}")
+    private Integer postsCountToBan;
 
     @Transactional
     public PostDto create(PostDto postDto, MultipartFile[] images) {
@@ -103,6 +110,15 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    public void banUsers() {
+        postRepository.findByVerifiedFalse().stream()
+                .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()))
+                .entrySet().stream()
+                .filter(entry -> entry.getValue() > postsCountToBan)
+                .map(Map.Entry::getKey)
+                .forEach(userId -> userBanPublisher.publish(new UserEvent(userId)));
+    }
+
     public void delete(long postId) {
         Post post = getPostFromRepository(postId);
         postValidator.validateIfPostIsDeleted(post);
@@ -152,5 +168,4 @@ public class PostService {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
     }
-
 }

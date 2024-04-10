@@ -1,8 +1,10 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -48,6 +50,8 @@ class PostServiceTest {
     private PostMapperImpl postMapper;
     @Mock
     private ResourceService resourceService;
+    @Mock
+    private UserBanPublisher userBanPublisher;
     private ExecutorService threadPool;
     private PostService postService;
 
@@ -55,6 +59,7 @@ class PostServiceTest {
     private Post secondPost;
     private Post thirdPost;
     private PostDto firstPostDto;
+    private UserEvent userBanMessage;
 
     @BeforeEach
     void setUp() {
@@ -84,8 +89,11 @@ class PostServiceTest {
                 .content(firstPost.getContent())
                 .authorId(firstPost.getAuthorId())
                 .build();
+        userBanMessage = UserEvent.builder()
+                .userId(firstPost.getAuthorId())
+                .build();
         threadPool = Executors.newFixedThreadPool(10);
-        postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool);
+        postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool, userBanPublisher);
     }
 
     @Test
@@ -179,6 +187,24 @@ class PostServiceTest {
                 () -> verify(postMapper, times(1)).toDto(firstPost),
                 () -> assertEquals(firstPostDto, returned),
                 () -> assertNotEquals("Old content", firstPost.getContent())
+        );
+    }
+
+    @Test
+    void banUsers_UserShouldBeBanned_BanMessagePublished() throws NoSuchFieldException, IllegalAccessException {
+        firstPost.setVerified(false);
+        secondPost.setVerified(false);
+        List<Post> posts = List.of(firstPost, secondPost, thirdPost);
+        Field postsCountToBan = PostService.class.getDeclaredField("postsCountToBan");
+        postsCountToBan.setAccessible(true);
+        postsCountToBan.set(postService, 2);
+        when(postRepository.findByVerifiedFalse()).thenReturn(posts);
+
+        postService.banUsers();
+
+        assertAll(
+                () -> verify(postRepository, times(1)).findByVerifiedFalse(),
+                () -> verify(userBanPublisher, times(1)).publish(userBanMessage)
         );
     }
 

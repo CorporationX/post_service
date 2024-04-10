@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003_create_project.sql
   - include:
       file: db/changelog/changeset/post_V004_create_resource.sql
+  - include:
+      file: db/changelog/changeset/post_V005__ban.sql
