@@ -38,7 +38,7 @@ public class LikeService {
         return likeMapper.toDto(likeRepository.save(like));
     }
 
-    public void deleteLikePost(Long postId) {
+    public void deleteLikeFromPost(Long postId) {
         UserDto userDto = getUserFromUserService();
         likeRepository.deleteByPostIdAndUserId(postId, userDto.getId());
     }
@@ -54,7 +54,7 @@ public class LikeService {
         return likeMapper.toDto(likeRepository.save(like));
     }
 
-    public void deleteLikeComment(Long commentId) {
+    public void deleteLikeFromComment(Long commentId) {
         UserDto userDto = getUserFromUserService();
         likeRepository.deleteByCommentIdAndUserId(commentId, userDto.getId());
     }

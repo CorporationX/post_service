@@ -29,8 +29,8 @@ public class LikeController {
 
     @DeleteMapping("/post/{postId}")
     @Operation(summary = "Remove like from post")
-    public void deleteLikePost(@Valid @PathVariable Long postId) {
-        likeService.deleteLikePost(postId);
+    public void deleteLikeFromPost(@Valid @PathVariable Long postId) {
+        likeService.deleteLikeFromPost(postId);
     }
 
     @PostMapping("/comment/{commentId}")
@@ -41,7 +41,7 @@ public class LikeController {
 
     @DeleteMapping("/comment/{commentId}")
     @Operation(summary = "Remove like from comment")
-    public void deleteLikeComment(@Valid @PathVariable Long commentId) {
-        likeService.deleteLikeComment(commentId);
+    public void deleteLikeFromComment(@Valid @PathVariable Long commentId) {
+        likeService.deleteLikeFromComment(commentId);
     }
 }

@@ -97,10 +97,10 @@ public class LikeServiceTest {
 
     @Test
     @DisplayName("Remove like from post")
-    public void testDeleteLikePost() {
+    public void testDeleteLikeFromPost() {
         when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
 
-        likeService.deleteLikePost(post.getId());
+        likeService.deleteLikeFromPost(post.getId());
 
         verify(userServiceClient, times(1)).getUser(anyLong());
         verify(likeRepository, times(1)).deleteByPostIdAndUserId(post.getId(), userId);
@@ -121,10 +121,10 @@ public class LikeServiceTest {
 
     @Test
     @DisplayName("Remove like from comment")
-    public void testDeleteLikeComment() {
+    public void testDeleteLikeFromComment() {
         when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
 
-        likeService.deleteLikeComment(post.getId());
+        likeService.deleteLikeFromComment(post.getId());
 
         verify(userServiceClient, times(1)).getUser(anyLong());
         verify(likeRepository, times(1)).deleteByCommentIdAndUserId(post.getId(), userId);
