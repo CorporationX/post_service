@@ -36,7 +36,7 @@ public class LikeServiceImpl implements LikeService {
                 .post(post)
                 .userId(userDto.getId())
                 .build();
-        likeEventPublisher.publish(like);
+        likeEventPublisher.publish(likeMapper.toEventDto(like));
         return likeMapper.toDto(likeRepository.save(like));
     }
 

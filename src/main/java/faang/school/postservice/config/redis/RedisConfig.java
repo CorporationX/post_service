@@ -19,7 +19,7 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int post;
     @Value("${spring.data.redis.channels.like_channel.name}")
-    private String likeEvent;
+    private String likeEventChannel;
 
     @Bean
     RedisConnectionFactory jedisConnectionFactory() {
@@ -40,7 +40,7 @@ public class RedisConfig {
 
     @Bean
     ChannelTopic likeTopic() {
-        return new ChannelTopic(likeEvent);
+        return new ChannelTopic(likeEventChannel);
     }
 
 }

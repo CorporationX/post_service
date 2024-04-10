@@ -2,7 +2,6 @@ package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.exception.SerializeJsonException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -13,15 +12,15 @@ public abstract class AbstractEventPublisher<T> {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
-    private final String topicChannelName;
 
-    protected void publishInTopic(T event) {
-        String json;
+    abstract public void publish(T event);
+
+    protected void send(T event, String topicChannelName) {
         try {
-            json = objectMapper.writeValueAsString(event);
+            String json = objectMapper.writeValueAsString(event);
+            redisTemplate.convertAndSend(topicChannelName, json);
         } catch (JsonProcessingException e) {
-            throw new SerializeJsonException("Cannot serialize event to json");
+            throw new RuntimeException("Json processing exception");
         }
-        redisTemplate.convertAndSend(topicChannelName, json);
     }
 }
