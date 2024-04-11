@@ -69,7 +69,7 @@ public class PostService {
     public PostDto getPostById(long userId, long postId) {
         Post post = getPostFromRepository(postId);
         if (post.getAuthorId() != userId) {
-            publishPostEvent(userId, post);
+            publishPostViewEvent(userId, post);
         }
         log.info("Post {} view event published", postId);
         return postMapper.toDto(post);
@@ -157,7 +157,7 @@ public class PostService {
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .toList();
         posts.forEach(post -> {
-            publishPostEvent(userId, post);
+            publishPostViewEvent(userId, post);
             log.info("Post {} view event published", post.getId());
         });
         return postMapper.toDto(posts);
@@ -169,7 +169,7 @@ public class PostService {
                 .sorted((post1, post2) -> post2.getPublishedAt().compareTo(post1.getPublishedAt()))
                 .toList();
         posts.forEach(post -> {
-            publishPostEvent(userId, post);
+            publishPostViewEvent(userId, post);
             log.info("Post {} view event published", post.getId());
         });
         return postMapper.toDto(posts);
@@ -181,7 +181,7 @@ public class PostService {
         return resourceService.attachMediaToPost(mediaFile, post);
     }
 
-    private void publishPostEvent(long userId, Post post) {
+    private void publishPostViewEvent(long userId, Post post) {
         PostViewEvent event = PostViewEvent.builder()
                 .postId(post.getId())
                 .userId(userId)
