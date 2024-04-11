@@ -29,6 +29,12 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+    kafka:
+      port: 9092
+      host: localhost
+      channels:
+        comment-channel:
+          name: comment_event_channel
 
 server:
   port: 8081
