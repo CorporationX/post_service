@@ -25,4 +25,13 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.verifiedDate IS NULL")
     List<Post> findAllByVerifiedDateIsNull();
+
+    @Query(value = "WITH ranked_posts AS (" +
+            "  SELECT *, ROW_NUMBER() OVER(PARTITION BY author_id ORDER BY published_at DESC) as rn" +
+            "  FROM post" +
+            "  WHERE author_id IN :authorIds" +
+            ")" +
+            "SELECT * FROM ranked_posts WHERE rn <= :limit",
+            nativeQuery = true)
+    List<Post> findLastPostsByAuthorIds(List<Long> authorIds, int limit);
 }

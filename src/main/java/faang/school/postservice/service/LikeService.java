@@ -5,6 +5,7 @@ import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.publisher.kafka_producer.KafkaLikeProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeServiceValidator likeServiceValidator;
     private final LikeMapper likeMapper;
+    private final KafkaLikeProducer kafkaLikeProducer;
 
     @Value("${like_service.batch}")
     private int likeServiceBatchSize;
@@ -31,6 +33,7 @@ public class LikeService {
         likeServiceValidator.validateLikeOnPost(likeDto);
         Like likeEntity = likeMapper.toEntity(likeDto);
         Like saved = likeRepository.save(likeEntity);
+        kafkaLikeProducer.publishLikeKafkaEvent(saved);
         return likeMapper.toDto(saved);
     }
 
