@@ -1,4 +1,4 @@
-package faang.school.postservice.service.cash;
+package faang.school.postservice.service.cache;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.UserDto;

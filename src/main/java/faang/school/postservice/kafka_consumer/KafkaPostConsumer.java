@@ -2,7 +2,7 @@ package faang.school.postservice.kafka_consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.kafka_events.PostKafkaEvent;
-import faang.school.postservice.service.cash.FeedService;
+import faang.school.postservice.service.cache.FeedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

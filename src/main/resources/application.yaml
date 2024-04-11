@@ -57,6 +57,8 @@ spring:
         name: comment_topic
       like:
         name: like_topic
+      view:
+        name: view_topic
 
 server:
   port: 8081
