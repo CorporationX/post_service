@@ -86,3 +86,17 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+kafka:
+  bootstrap-servers: localhost:9092
+  producer:
+    batch_size: 10000
+  consumer:
+    group-id: post_service
+  topics:
+    post:
+      name: post_topic
+    comment:
+      name: comment_topic
+    like:
+      name: like_topic

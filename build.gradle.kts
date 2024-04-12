@@ -20,6 +20,7 @@ dependencies {
      * Spring boot starters
      */
     implementation("org.springframework.retry:spring-retry:2.0.5")
+    implementation ("org.springframework.kafka:spring-kafka")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
