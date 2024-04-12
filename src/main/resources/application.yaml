@@ -46,6 +46,9 @@ post:
 spell-check:
   url: "https://speller.yandex.net/services/spellservice.json/checkText"
 
+api:
+  default: "/api/v1/"
+
 user-service:
   host: localhost
   port: 8080

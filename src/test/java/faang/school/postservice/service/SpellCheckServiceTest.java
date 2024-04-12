@@ -1,6 +1,7 @@
-package faang.school.postservice.corrector;
+package faang.school.postservice.service;
 
-import faang.school.postservice.corrector.ContentCorrector;
+import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.post.SpellCheckService;
 import faang.school.postservice.dto.corrector.CorrectWordDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
@@ -21,13 +22,15 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ContentCorrectorTest {
+public class SpellCheckServiceTest {
     @Mock
     private RestTemplate restTemplate;
     @Mock
+    private PostService postService;
+    @Mock
     private PostRepository postRepository;
     @InjectMocks
-    private ContentCorrector contentCorrector;
+    private SpellCheckService spellCheckService;
 
     @Test
     public void test_spellCheckTextInPosts_Successful() {
@@ -35,14 +38,14 @@ public class ContentCorrectorTest {
         String yandexUrl = "https://speller.yandex.net/services/spellservice.json/checkText";
         String finalUrlFirstPost = yandexUrl + "?text=" + posts.get(0).getContent();
         String finalUrlSecondPost = yandexUrl + "?text=" + posts.get(1).getContent();
-        ReflectionTestUtils.setField(contentCorrector, "url", yandexUrl);
+        ReflectionTestUtils.setField(spellCheckService, "url", yandexUrl);
 
-        when(postRepository.findReadyToPublish()).thenReturn(posts);
+        when(postService.findReadyToPublishAndUncorrected()).thenReturn(posts);
         when(restTemplate.getForObject(finalUrlFirstPost, CorrectWordDto[].class)).thenReturn(new CorrectWordDto[]{});
         when(restTemplate.getForObject(finalUrlSecondPost, CorrectWordDto[].class)).thenReturn(new CorrectWordDto[]{});
 
-        Assertions.assertDoesNotThrow(() -> contentCorrector.spellCheckTextInPosts());
-        verify(postRepository).findReadyToPublish();
+        Assertions.assertDoesNotThrow(() -> spellCheckService.spellCheckTextInPosts());
+        verify(postService).findReadyToPublishAndUncorrected();
         verify(restTemplate, times(2)).getForObject(anyString(), any(Class.class));
     }
 
@@ -50,9 +53,9 @@ public class ContentCorrectorTest {
     public void test_spellCheckPostById_Failed() {
         Long postId = 1L;
 
-        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+        when(postService.findPostById(postId)).thenThrow(EntityNotFoundException.class);
 
-        Assertions.assertThrows(EntityNotFoundException.class, () -> contentCorrector.spellCheckPostById(postId));
+        Assertions.assertThrows(EntityNotFoundException.class, () -> spellCheckService.spellCheckPostById(postId));
     }
 
     @Test
@@ -61,13 +64,13 @@ public class ContentCorrectorTest {
         Post post = Post.builder().id(postId).content("Привет").build();
         String yandexUrl = "https://speller.yandex.net/services/spellservice.json/checkText";
         String finalUrlPost = yandexUrl + "?text=" + post.getContent();
-        ReflectionTestUtils.setField(contentCorrector, "url", yandexUrl);
+        ReflectionTestUtils.setField(spellCheckService, "url", yandexUrl);
 
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(postService.findPostById(postId)).thenReturn(post);
         when(restTemplate.getForObject(finalUrlPost, CorrectWordDto[].class)).thenReturn(new CorrectWordDto[]{});
 
-        Assertions.assertDoesNotThrow(() -> contentCorrector.spellCheckPostById(postId));
-        verify(postRepository).findById(postId);
+        Assertions.assertDoesNotThrow(() -> spellCheckService.spellCheckPostById(postId));
+        verify(postService).findPostById(postId);
         verify(restTemplate, times(1)).getForObject(anyString(), any(Class.class));
     }
 
