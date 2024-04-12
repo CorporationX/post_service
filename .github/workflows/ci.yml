@@ -2,7 +2,7 @@ name: ci
 on:
   pull_request:
     branches:
-      - kraken-master-bc3
+      - feature-BJS2-3502
 
 jobs:
   start-unit-tests:
