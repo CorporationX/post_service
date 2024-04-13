@@ -24,9 +24,6 @@ public class AdService {
     public void deleteAdsWhichEndPaidPeriod() {
         log.info("Запускаем процесс поиска завершившихся рекламных кампаний");
         List<Ad> allAds = adRepository.findAll();
-        if (allAds == null) {
-            throw new RuntimeException("Список рекламный кампаний пуст");
-        }
         List<Long> removeAdsIds = allAds.stream().filter(ad -> LocalDateTime.now().isAfter(ad.getEndDate()) || ad.getAppearancesLeft() == 0)
                 .map(Ad::getId).toList();
         if (removeAdsIds.isEmpty()) {

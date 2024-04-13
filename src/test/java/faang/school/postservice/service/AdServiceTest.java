@@ -61,9 +61,9 @@ public class AdServiceTest {
 
     @Test
     public void testDeleteAdsPeriodEmptyList() {
-        Mockito.when(adRepository.findAll()).thenReturn(null);
-
-        Assertions.assertThrows(RuntimeException.class, () -> adService.deleteAdsWhichEndPaidPeriod());
+        Mockito.when(adRepository.findAll()).thenReturn(Collections.emptyList());
+        adService.deleteAdsWhichEndPaidPeriod();
+        Mockito.verify(adRepository, Mockito.never()).deleteAllById(Mockito.anyList());
     }
 
     @Test
