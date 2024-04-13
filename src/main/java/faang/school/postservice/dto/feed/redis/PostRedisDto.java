@@ -1,6 +1,5 @@
-package faang.school.postservice.dto.redis;
+package faang.school.postservice.dto.feed.redis;
 
-import faang.school.postservice.model.Resource;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 public class PostRedisDto implements Serializable {
     @TimeToLive
-    @Value("${spring.data.redis.cache.post.ttl}")
+    @Value("${spring.data.redis.cache.ttl.post}")
     private int ttl;
     @Id
     private Long id;

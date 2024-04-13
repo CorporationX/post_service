@@ -5,12 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.LinkedHashSet;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CommentPublishedEvent {
+public class PostPublishedEventDto {
     private Long postId;
-    private Long commentId;
-    private Long commentOwnerId;
+    private Long ownerId;
+    private LinkedHashSet<Integer> authorSubscriberIds = new LinkedHashSet<>();
 }

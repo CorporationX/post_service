@@ -28,11 +28,11 @@ public class RedisCacheService {
     @Backoff(delay = retryDelay, multiplier = retryMultiplier))
     public void userToCache(long ownerId) {
         UserDto userDto = userServiceClient.getUser(ownerId);
-        userRedisRepository.save(userMapper.toRedisDto(userDto));
+        userRedisRepository.save(userMapper.toRedisEntity(userDto));
     }
 
     public void postToCache(Post post) {
-        postRedisRepository.save(postMapper.toPostRedisDto(post));
+        postRedisRepository.save(postMapper.toRedisEntity(post));
     }
 
 }

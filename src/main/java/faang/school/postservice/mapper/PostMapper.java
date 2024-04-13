@@ -1,7 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.dto.redis.PostRedisDto;
+import faang.school.postservice.dto.feed.redis.PostRedisDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import org.mapstruct.Mapper;
@@ -13,7 +13,8 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
-    PostRedisDto toPostRedisDto(Post post);
+    PostRedisDto toRedisEntity(Post post);
+    PostRedisDto toRedisEntity(PostDto postDto);
 
     @Mapping(target = "resourceIds", source = "resources", qualifiedByName = "getResourceIds")
     PostDto toDto(Post post);

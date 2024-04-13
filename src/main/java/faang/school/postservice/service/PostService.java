@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
@@ -8,7 +7,6 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.publisher.kafka.KafkaPostProducer;
 import faang.school.postservice.publisher.redis.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
@@ -43,7 +41,6 @@ public class PostService {
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
     private final RedisCacheService redisCacheService;
-    private final UserServiceClient userServiceClient;
     private final KafkaPostProducer kafkaPostProducer;
     @Value("${post.content_to_post.max_amount.video}")
     private int maxVideo;
@@ -64,7 +61,6 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         kafkaPostProducer.publish(postId, ownerId);
-
         redisCacheService.postToCache(post);
         redisCacheService.userToCache(ownerId);
     }

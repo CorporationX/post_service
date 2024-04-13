@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PostViewedEvent {
+public class CommentPublishedEventDto {
     private Long postId;
-    private Long ownerId;
-    private Long viewerId;
+    private Long commentId;
+    private Long commentOwnerId;
 }

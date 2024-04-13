@@ -23,14 +23,12 @@ spring:
       host: localhost
       channel:
         comment: comment_channel
-        calculations_channel:
-          name: calculations_channel
         user_ban:
           name: user_ban_channel
       cache:
         ttl:
           user: 86400 #equals one day in seconds
-          post: 100
+          post: 86400
   mvc:
     servlet:
       path: /api/v1
@@ -102,3 +100,7 @@ kafka:
       name: comment_topic
     like:
       name: like_topic
+
+feed:
+  max_size: 500
+  batch_size: 20

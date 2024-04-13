@@ -1,6 +1,5 @@
-package faang.school.postservice.dto.redis;
+package faang.school.postservice.dto.feed.redis;
 
-import faang.school.postservice.config.RedisConfig;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

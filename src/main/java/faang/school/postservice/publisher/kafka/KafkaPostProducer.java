@@ -1,7 +1,7 @@
 package faang.school.postservice.publisher.kafka;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.kafka.PostPublishedEvent;
+import faang.school.postservice.dto.kafka.PostPublishedEventDto;
 import feign.FeignException;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.LinkedHashSet;
 
 @Component
-public class KafkaPostProducer extends AbstractKafkaEventProducer<PostPublishedEvent> {
+public class KafkaPostProducer extends AbstractKafkaEventProducer<PostPublishedEventDto> {
     private final int retryMaxAttempts = 5;
     @Value("${kafka.producer.batch_size}")
     private int batchSize;
@@ -30,7 +30,7 @@ public class KafkaPostProducer extends AbstractKafkaEventProducer<PostPublishedE
         ListUtils.partition(userServiceClient.getFollowerIdsById(postOwnerId), batchSize)
                 .forEach(partition -> send(
                         postTopic,
-                        PostPublishedEvent.builder()
+                        PostPublishedEventDto.builder()
                                 .postId(postId)
                                 .ownerId(postOwnerId)
                                 .authorSubscriberIds(new LinkedHashSet<>(partition))
