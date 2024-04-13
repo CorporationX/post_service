@@ -51,7 +51,7 @@ public class AdServiceTest {
 
         List<Ad> ads = new ArrayList<>(List.of(ad1, ad2));
 
-        Mockito.when(StreamSupport.stream(adRepository.findAll().spliterator(), false).toList()).thenReturn(ads);
+        Mockito.when(adRepository.findAll()).thenReturn(ads);
 
         adService.deleteAdsWhichEndPaidPeriod();
 
@@ -61,7 +61,8 @@ public class AdServiceTest {
 
     @Test
     public void testDeleteAdsPeriodEmptyList() {
-        List<Ad> ads = null;
+        Mockito.when(adRepository.findAll()).thenReturn(null);
+
         Assertions.assertThrows(RuntimeException.class, () -> adService.deleteAdsWhichEndPaidPeriod());
     }
 
