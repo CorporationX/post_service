@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CommentPublishedEventDto {
     private Long postId;
+    private Long authorId;
     private Long commentId;
-    private Long commentOwnerId;
 }

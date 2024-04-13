@@ -3,7 +3,9 @@ package faang.school.postservice.publisher.kafka;
 import faang.school.postservice.dto.kafka.PostViewedEventDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 
+@Component
 public class KafkaPostViewProducer extends AbstractKafkaEventProducer<PostViewedEventDto> {
     @Value("${kafka.topics.post_view.name}")
     private String postViewTopic;

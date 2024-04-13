@@ -3,7 +3,9 @@ package faang.school.postservice.publisher.kafka;
 import faang.school.postservice.dto.kafka.CommentPublishedEventDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 
+@Component
 public class KafkaCommentProducer extends AbstractKafkaEventProducer<CommentPublishedEventDto>{
     @Value("${kafka.topics.comment.name}")
     private String commentTopic;
@@ -15,7 +17,7 @@ public class KafkaCommentProducer extends AbstractKafkaEventProducer<CommentPubl
         send(commentTopic, CommentPublishedEventDto.builder()
                 .postId(postId)
                 .commentId(commentId)
-                .commentOwnerId(commentOwnerId)
+                .authorId(commentOwnerId)
                 .build());
     }
 }
