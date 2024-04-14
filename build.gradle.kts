@@ -49,6 +49,9 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+
+
 
     /**
      * Tests
