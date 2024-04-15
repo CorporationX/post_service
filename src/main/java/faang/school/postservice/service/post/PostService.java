@@ -43,7 +43,7 @@ public class PostService {
 
     private void sendUsersToBan(List<Post> posts) {
         posts.stream()
-                .filter(post -> !post.getVerified())
+                .filter(post -> !post.isVerified())
                 .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()))
                 .entrySet().stream()
                 .filter(entry -> entry.getValue() >= maxUnverifiedPosts)
