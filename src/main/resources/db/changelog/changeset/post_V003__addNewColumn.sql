@@ -1,2 +1,4 @@
 ALTER TABLE IF EXISTS post
     ADD COLUMN IF NOT EXISTS verified boolean;
+ALTER TABLE IF EXISTS post
+    ADD COLUMN IF NOT EXISTS corrected boolean;

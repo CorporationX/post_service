@@ -73,5 +73,8 @@ public class Post {
     private LocalDateTime updatedAt;
 
     @Column(name = "verified")
-    private Boolean verified;
+    private boolean verified;
+
+    @Column(name = "corrected")
+    private boolean corrected;
 }

@@ -1,6 +1,7 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.event.UserEvent;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PublisherUsersBan;
 import faang.school.postservice.repository.PostRepository;
@@ -25,6 +26,15 @@ public class PostService {
     public void banUsersWithMultipleUnverifiedPosts() {
         List<Post> posts = getUnverifiedPost();
         sendUsersToBan(posts);
+    }
+
+    public Post findPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Post with id %s not found", postId)));
+    }
+
+    public List<Post> findReadyToPublishAndUncorrected() {
+        return postRepository.findReadyToPublishAndUncorrected();
     }
 
     private List<Post> getUnverifiedPost() {
