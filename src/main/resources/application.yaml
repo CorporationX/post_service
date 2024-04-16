@@ -4,10 +4,6 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
-  servlet:
-    multipart:
-      max-file-size: 5MB
-      max-request-size: 5MB
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -28,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        like_event_channel:
+          name: like_event_channel
         post_channel:
           name: post_channel
 
@@ -75,10 +73,11 @@ services:
 user-service:
   host: localhost
   port: 8080
+
 project-service:
   host: localhost
   port: 8082
+
 payment-service:
   host: localhost
   port: 9080
-

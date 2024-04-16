@@ -16,7 +16,6 @@ dependencies {
     /**
      * Spring boot starters
      */
-
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2") //swagger
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -37,7 +36,7 @@ dependencies {
     /**
      * Amazon S3
      */
-    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.482")
 
     /**
      * Utils & Logging
