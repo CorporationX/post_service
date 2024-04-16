@@ -5,6 +5,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.event.PostEventKafka;
 import faang.school.postservice.dto.event.ViewEventKafka;
+import faang.school.postservice.dto.hash.AuthorType;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
@@ -13,6 +14,8 @@ import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.hashService.AuthorHashService;
+import faang.school.postservice.service.hashService.PostHashService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +34,8 @@ public class PostService {
     private final KafkaPostProducer kafkaPostProducer;
     private final KafkaPostViewProducer kafkaPostViewProducer;
     private final UserContext userContext;
+    private final PostHashService postHashService;
+    private final AuthorHashService authorHashService;
 
     @Transactional
     public PostDto createDraft(PostDto postDto) {
@@ -42,6 +47,9 @@ public class PostService {
                 post.getAuthorId(),
                 userServiceClient.getFollowersId(post.getAuthorId()));
         kafkaPostProducer.sendMessage(postEventKafka);
+
+        postHashService.save(post);
+        authorHashService.saveAuthor(post.getAuthorId(), AuthorType.POST_AUTHOR);
         return postMapper.toDto(post);
     }
 

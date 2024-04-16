@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.event.CommentEventKafka;
+import faang.school.postservice.dto.hash.AuthorType;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
@@ -11,6 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.hashService.AuthorHashService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final KafkaCommentProducer kafkaCommentProducer;
+    private final AuthorHashService authorHashService;
 
     public CommentDto create(CommentDto commentDto, long postId) {
         validateAuthorExists(commentDto);
@@ -33,11 +36,13 @@ public class CommentService {
         Optional<Post> post = postRepository.findById(postId);
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setPost(post.orElseThrow(() -> new IllegalArgumentException("Post ID is invalid")));
+        commentRepository.save(comment);
 
         CommentEventKafka commentEventKafka = new CommentEventKafka(
                 postId, comment.getAuthorId());
         kafkaCommentProducer.sendMessage(commentEventKafka);
-        return commentMapper.toDto(commentRepository.save(comment));
+        authorHashService.saveAuthor(comment.getAuthorId(), AuthorType.COMMENT_AUTHOR);
+        return commentMapper.toDto(comment);
     }
 
     public CommentDto update(CommentDto commentDto, long postId) {

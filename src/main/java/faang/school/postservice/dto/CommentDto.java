@@ -23,4 +23,5 @@ public class CommentDto {
     @NotNull(message = "AuthorId cannot be null")
     private Long authorId;
     private LocalDateTime createdAt;
+    private Long likeCount;
 }

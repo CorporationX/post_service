@@ -30,6 +30,8 @@ spring:
           name: calculations_channel
         post_channel:
           name: post_channel
+      time_to_live: 86400 # 1 день
+      retry_max_attempts: 10
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -38,7 +40,6 @@ spring:
       view: view_topic
       like: like_topic
       comment: comment_topic
-
 
 server:
   port: 8081

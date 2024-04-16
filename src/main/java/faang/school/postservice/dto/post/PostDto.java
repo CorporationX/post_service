@@ -1,6 +1,7 @@
 package faang.school.postservice.dto.post;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import faang.school.postservice.dto.CommentDto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 @Data
 @Builder
