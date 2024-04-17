@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.publisher.kafka.KafkaPostProducer;
 import faang.school.postservice.publisher.redis.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
@@ -38,6 +39,8 @@ public class PostService {
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
+    private final RedisCacheService redisCacheService;
+    private final KafkaPostProducer kafkaPostProducer;
     @Value("${post.content_to_post.max_amount.video}")
     private int maxVideo;
     @Value("${post.rule.unverified_posts_limit}")
@@ -61,6 +64,9 @@ public class PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+
+        redisCacheService.savePost(postMapper.toDto(post));
+        //kafkaPostProducer.publish(postId, post.getAuthorId());
     }
 
     @Transactional
@@ -73,7 +79,10 @@ public class PostService {
 
         Post updatedPost = postRepository.save(post);
 
-        return createResourcesAndGetPostDto(updatedPost, files);
+        PostDto resourcesAndGetPostDto = createResourcesAndGetPostDto(updatedPost, files);
+
+        redisCacheService.savePost(postMapper.toDto(updatedPost));
+        return resourcesAndGetPostDto;
     }
 
     @Transactional
@@ -81,6 +90,8 @@ public class PostService {
         Post post = getPost(postId);
         postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
         post.setDeleted(true);
+
+        redisCacheService.deletePostById(postId);
     }
 
     public Post getPost(long postId) {
