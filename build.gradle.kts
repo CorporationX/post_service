@@ -1,7 +1,9 @@
 plugins {
+    jacoco
     java
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
+
 }
 
 group = "faang.school"
@@ -53,7 +55,6 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
 
-
     /**
      * Tests
      */
@@ -71,3 +72,42 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 tasks.bootJar {
     archiveFileName.set("service.jar")
 }
+/**
+ * JaCoCo settings
+ */
+val mainDir = sourceSets.main.get().output.asFileTree
+val jacocoPackages = listOf(
+        "**/service/**",
+        "**/validation/**"
+)
+jacoco {
+    toolVersion = "0.8.12"
+    reportsDirectory.set(layout.buildDirectory.dir("$buildDir/reports/jacoco"))
+}
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "CLASS"
+            classDirectories.setFrom(
+                    mainDir.matching {
+                        jacocoPackages
+                    })
+            limit {
+                minimum = "0.50".toBigDecimal()
+            }
+        }
+    }
+}
+tasks.jacocoTestReport {
+    classDirectories.setFrom(
+            mainDir.matching {
+                include(jacocoPackages)
+            }
+    )
+}
+
