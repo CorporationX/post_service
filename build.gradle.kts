@@ -55,7 +55,6 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
 
-
     /**
      * Tests
      */
@@ -76,6 +75,11 @@ tasks.bootJar {
 /**
  * JaCoCo settings
  */
+val mainDir = sourceSets.main.get().output.asFileTree
+val jacocoPackages = listOf(
+        "**/service/**",
+        "**/validation/**"
+)
 jacoco {
     toolVersion = "0.8.12"
     reportsDirectory.set(layout.buildDirectory.dir("$buildDir/reports/jacoco"))
@@ -83,30 +87,27 @@ jacoco {
 tasks.test {
     finalizedBy(tasks.jacocoTestReport)
 }
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
 
-    reports {
-        xml.required.set(false)
-        csv.required.set(false)
-    }
-}
+
 tasks.jacocoTestCoverageVerification {
     violationRules {
         rule {
-            isEnabled = true
             element = "CLASS"
-            includes = listOf(
-                    "**/controller/**",
-                    "**/service/**",
-                    "**/validator/**",
-                    "**/mapper/**"
-            )
+            classDirectories.setFrom(
+                    mainDir.matching {
+                        jacocoPackages
+                    })
             limit {
-                counter = "LINE"
-                value = "TOTALCOUNT"
-                minimum = "0.5".toBigDecimal()
+                minimum = "0.50".toBigDecimal()
             }
         }
     }
 }
+tasks.jacocoTestReport {
+    classDirectories.setFrom(
+            mainDir.matching {
+                include(jacocoPackages)
+            }
+    )
+}
+
