@@ -1,6 +1,5 @@
 package faang.school.postservice.service.post;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
@@ -8,8 +7,8 @@ import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.resource.Resource;
-import faang.school.postservice.publisher.PostViewEventPublisher;
-import faang.school.postservice.publisher.UserBanPublisher;
+import faang.school.postservice.publisher.postview.PostViewEventPublisher;
+import faang.school.postservice.publisher.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -17,7 +16,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -192,12 +190,7 @@ public class PostService {
         if (post.getProjectId() != null) {
             event.setAuthorId(post.getProjectId());
         }
-        try {
-            postViewEventPublisher.publish(event);
-        } catch (JsonProcessingException e) {
-            log.error("JsonProcessingException was thrown", e);
-            throw new SerializationException(e.getMessage());
-        }
+        postViewEventPublisher.publish(event);
     }
 
     private Post getPostFromRepository(long postId) {

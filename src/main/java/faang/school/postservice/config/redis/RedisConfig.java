@@ -18,14 +18,20 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private Integer port;
 
+    @Value("${spring.data.redis.channels.user-ban.name}")
+    private String userBanTopic;
+
+    @Value("${spring.data.redis.channels.post-view.name}")
+    private String postViewTopic;
+
     @Bean
     ChannelTopic userBanTopic() {
-        return new ChannelTopic("user_ban");
+        return new ChannelTopic(userBanTopic);
     }
 
     @Bean
     ChannelTopic postViewTopic() {
-        return new ChannelTopic("post_view");
+        return new ChannelTopic(postViewTopic);
     }
 
     @Bean
