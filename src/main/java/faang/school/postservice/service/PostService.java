@@ -7,10 +7,8 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.publisher.kafka.KafkaPostProducer;
 import faang.school.postservice.publisher.redis.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.redis.RedisCacheService;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -40,47 +38,49 @@ public class PostService {
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
-    private final RedisCacheService redisCacheService;
-    private final KafkaPostProducer kafkaPostProducer;
     @Value("${post.content_to_post.max_amount.video}")
     private int maxVideo;
     @Value("${post.rule.unverified_posts_limit}")
     private int unverifiedPostsLimit;
 
-    public void createPostDraft(PostDto postDto) {
-        postValidator.validatePostOwnerExists(postDto);
-        postValidator.validatePost(postDto);
-        postRepository.save(postMapper.toEntity(postDto));
+    @Transactional
+    public PostDto createPost(PostDto postDto, List<MultipartFile> files) {
+        postValidator.validateAccessAndContent(postDto);
+
+        Post post = postMapper.toEntity(postDto);
+        post.setVerified(true);
+        Post savedPost = postRepository.save(post);
+
+        return createResourcesAndGetPostDto(savedPost, files);
     }
 
     @Transactional
-    public void publishPost(long postId, long ownerId) {
-        postValidator.validatePostByOwner(postId, ownerId);
+    public void publishPost(long postId) {
         Post post = getPost(postId);
+        postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
+
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-
-        kafkaPostProducer.publish(postId, ownerId);
-        redisCacheService.postToCache(post);
-        redisCacheService.userToCache(ownerId);
     }
 
     @Transactional
-    public void updatePost(long postId, long ownerId, PostDto postDto) {
-        postValidator.validatePostByOwner(postId, ownerId);
+    public PostDto updatePost(long postId, PostDto postDto, List<MultipartFile> files) {
         Post post = getPost(postId);
+        postValidator.validateAccessAndContent(postDto);
+
         post.setContent(postDto.getContent());
+        removeUnnecessaryResources(post, postDto);
+
+        Post updatedPost = postRepository.save(post);
+
+        return createResourcesAndGetPostDto(updatedPost, files);
     }
 
     @Transactional
-    public void deletePost(long postId, long ownerId) {
-        postValidator.validatePostByOwner(postId, ownerId);
+    public void deletePost(long postId) {
         Post post = getPost(postId);
+        postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
         post.setDeleted(true);
-    }
-
-    public PostDto getPostById(long postId) {
-        return postMapper.toDto(getPost(postId));
     }
 
     public Post getPost(long postId) {
@@ -112,50 +112,34 @@ public class PostService {
         return sortPosts(postRepository.findByProjectId(projectId));
     }
 
-    public List<PostDto> sortDrafts(List<Post> posts) {
-        return posts.stream()
-                .filter(post -> !post.isDeleted() && !post.isPublished())
-                .map(postMapper::toDto)
-                .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
-                .collect(Collectors.toList());
-    }
-
-    public List<PostDto> sortPosts(List<Post> posts) {
-        return posts.stream()
-                .filter(post -> post.isPublished() && !post.isDeleted())
-                .map(postMapper::toDto)
-                .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
-                .collect(Collectors.toList());
-    }
-
-    @Transactional
-    public PostDto createPost(PostDto postDto, List<MultipartFile> files) {
-        postValidator.validateAccessAndContent(postDto);
-
-        Post savedPost = postRepository.save(postMapper.toEntity(postDto));
-
-        return createResourcesAndGetPostDto(savedPost, files);
-    }
-
-    @Transactional
-    public PostDto updatePost(long postId, PostDto postDto, List<MultipartFile> files) {
-        Post post = getPost(postId);
-        postValidator.validateAccessAndContent(postDto);
-
-        post.setContent(postDto.getContent());
-        removeUnnecessaryResources(post, postDto);
-
-        Post updatedPost = postRepository.save(post);
-
-        return createResourcesAndGetPostDto(updatedPost, files);
-    }
-
     @Transactional(readOnly = true)
     public PostDto getPostDto(long postId) {
         Post post = getPost(postId);
         postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
         return postMapper.toDto(post);
     }
+
+    @Transactional
+    public List<ResourceDto> addVideo(long postId, List<MultipartFile> files) {
+        Post post = getPost(postId);
+        int amount = post.getResources().size();
+
+        List<MultipartFile> validFiles = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (amount < maxVideo) {
+                resourceValidator.videoIsValid(file);
+                validFiles.add(file);
+                amount++;
+            }
+        }
+        return resourceService.addResources(postId, validFiles);
+    }
+
+    @Transactional
+    public void deleteVideo(long postId, List<Long> resourceIds) {
+        resourceService.deleteResources(postId, resourceIds);
+    }
+
 
     private PostDto createResourcesAndGetPostDto(Post post, List<MultipartFile> files) {
         if (files == null) {
@@ -201,25 +185,19 @@ public class PostService {
         log.info("check and ban authors method completed");
     }
 
-    @Transactional
-    public List<ResourceDto> addVideo(long postId, List<MultipartFile> files) {
-        Post post = getPost(postId);
-        int amount = post.getResources().size();
-
-        List<MultipartFile> validFiles = new ArrayList<>();
-        for (MultipartFile file : files) {
-            if (amount < maxVideo) {
-                resourceValidator.videoIsValid(file);
-                validFiles.add(file);
-                amount++;
-            }
-        }
-        return resourceService.addResources(postId, validFiles);
+    public List<PostDto> sortDrafts(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .map(postMapper::toDto)
+                .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
+                .collect(Collectors.toList());
     }
 
-    @Transactional
-    public void deleteVideo(long postId, List<Long> resourceIds) {
-        resourceService.deleteResources(postId, resourceIds);
+    public List<PostDto> sortPosts(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> post.isPublished() && !post.isDeleted())
+                .map(postMapper::toDto)
+                .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
+                .collect(Collectors.toList());
     }
-
 }

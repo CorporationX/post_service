@@ -77,7 +77,7 @@ s3:
 
 user-service:
   host: localhost
-  port: 8083
+  port: 8080
 project-service:
   host: localhost
   port: 8082

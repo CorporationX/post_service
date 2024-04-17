@@ -31,13 +31,21 @@ public class PostController {
     private final PostService postService;
     private final UserContext userContext;
 
-    @PostMapping("/draft")
-    public void createPostDraft(@RequestBody @Valid PostDto dto) {
-        postService.createPostDraft(dto);
+    @PostMapping
+    public PostDto createPost(@RequestPart @Valid PostDto postDto,
+                              @RequestPart(value = "files", required = false) @Size(max = 10) List<MultipartFile> files) {
+        return postService.createPost(postDto, files);
+    }
+
+    @PutMapping("/{postId}")
+    public PostDto updatePost(@PathVariable long postId,
+                              @RequestPart PostDto postDto,
+                              @RequestPart(value = "files", required = false) @Size(max = 10) List<MultipartFile> files) {
+        return postService.updatePost(postId, postDto, files);
     }
 
     @PostMapping("/{postId}/video")
-    public ResponseEntity<String> uploadVideo(@PathVariable long postId,
+    public ResponseEntity<String> uploadVideos(@PathVariable long postId,
                                               @RequestPart("files") @Size(max = 5) List<MultipartFile> files) {
         List<ResourceDto> resourceDtos = postService.addVideo(postId, files);
         return ResponseEntity.ok("Files uploaded: " + resourceDtos);
@@ -51,12 +59,12 @@ public class PostController {
 
     @PostMapping("/publish/{postId}")
     public void publishPost(@PathVariable long postId) {
-        postService.publishPost(postId, userContext.getUserId());
+        postService.publishPost(postId);
     }
 
     @DeleteMapping("/{postId}")
     public void deletePost(@PathVariable long postId) {
-        postService.deletePost(postId, userContext.getUserId());
+        postService.deletePost(postId);
     }
 
     @GetMapping("/{postId}")
@@ -82,18 +90,5 @@ public class PostController {
     @GetMapping("/project/posts/{projectId}")
     public List<PostDto> getProjectPosts(@PathVariable long projectId) {
         return postService.getProjectPosts(projectId);
-    }
-
-    @PostMapping
-    public PostDto createPost(@RequestPart @Valid PostDto postDto,
-                              @RequestPart(value = "files", required = false) @Size(max = 10) List<MultipartFile> files) {
-        return postService.createPost(postDto, files);
-    }
-
-    @PutMapping("/{postId}")
-    public PostDto updatePost(@PathVariable long postId,
-                              @RequestPart PostDto postDto,
-                              @RequestPart(value = "files", required = false) @Size(max = 10) List<MultipartFile> files) {
-        return postService.updatePost(postId, postDto, files);
     }
 }
