@@ -52,6 +52,9 @@ payment-service:
   host: localhost
   port: 9080
 
+like:
+  endpoint:
+    context-path: "/api/v1/likes"
 scheduled:
   author-banner: "@daily"
 
