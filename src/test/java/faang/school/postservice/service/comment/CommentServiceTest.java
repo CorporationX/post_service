@@ -158,6 +158,7 @@ class CommentServiceTest {
                 .authorId(0L)
                 .post(Post.builder()
                         .id(1L)
+                        .authorId(1L)
                         .build())
                 .content("content")
                 .build();
