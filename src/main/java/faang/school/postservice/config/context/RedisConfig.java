@@ -17,6 +17,8 @@ public class RedisConfig {
     private String host;
     @Value("${spring.data.redis.port}")
     private int port;
+    @Value("${spring.data.redis.channels.user_ban_channel.name}")
+    private String userBanTopic;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory(){
@@ -35,6 +37,6 @@ public class RedisConfig {
 
     @Bean
     public ChannelTopic userBanTopic(){
-        return new ChannelTopic("user_ban");
+        return new ChannelTopic(userBanTopic);
     }
 }

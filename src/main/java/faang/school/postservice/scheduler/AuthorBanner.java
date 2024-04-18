@@ -14,7 +14,7 @@ public class AuthorBanner {
     private final PostService postService;
 
     @Scheduled(cron = "${post.user-ban.scheduler.cron}")
-    public void AuthorBan() {
+    public void authorBan() {
         log.info("Daily user ban begins");
         postService.banUsersWithMultipleUnverifiedPosts();
     }
