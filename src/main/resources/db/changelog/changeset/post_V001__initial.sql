@@ -8,7 +8,8 @@ CREATE TABLE post (
     scheduled_at timestamptz,
     deleted boolean DEFAULT false NOT NULL,
     created_at timestamptz DEFAULT current_timestamp,
-    updated_at timestamptz DEFAULT current_timestamp
+    updated_at timestamptz DEFAULT current_timestamp,
+    verified boolean NOT NULL
 );
 
 CREATE TABLE comment (
@@ -65,3 +66,15 @@ CREATE TABLE favorite_albums (
 
     CONSTRAINT fk_album_id FOREIGN KEY (album_id) REFERENCES album (id) ON DELETE CASCADE
 );
+
+CREATE TABLE resource (
+    id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY  UNIQUE,
+    key VARCHAR NOT NULL,
+    size bigint NOT NULL,
+    created_at timestamptz DEFAULT current_timestamp,
+    name VARCHAR(64) NOT NULL,
+    type VARCHAR(64) NOT NULL,
+    post_id bigint,
+
+    CONSTRAINT fk_post_id FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
+)

@@ -22,6 +22,8 @@ spring:
       port: 6379
       host: localhost
       channels:
+        user_ban_channel:
+          name: user_ban
         calculations_channel:
           name: calculations_channel
 
@@ -53,3 +55,8 @@ payment-service:
 like:
   endpoint:
     context-path: "/api/v1/likes"
+scheduled:
+  author-banner: "@daily"
+
+limits:
+  unverified_post_limit: 5

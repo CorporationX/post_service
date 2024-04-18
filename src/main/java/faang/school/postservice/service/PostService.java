@@ -14,5 +14,4 @@ public class PostService {
     public Post getPost(Long postId){
         return  postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
     }
-
 }
