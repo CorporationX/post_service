@@ -68,6 +68,7 @@ public class CommentService {
     private void publishCommentEvent(Comment comment) {
         commentEventPublisher.publish(CommentEvent.builder()
                 .authorId(comment.getAuthorId())
+                .postAuthorId(comment.getPost().getAuthorId())
                 .postId(comment.getPost().getId())
                 .commentId(comment.getId())
                 .commentContent(comment.getContent())

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class CommentEvent {
 
     private long authorId;
+    private long postAuthorId;
     private long postId;
     private long commentId;
     private String commentContent;
