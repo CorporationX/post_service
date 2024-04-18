@@ -20,12 +20,12 @@ import java.util.List;
 public class RedisUser implements Serializable {
     @Id
     private Long id;
-    private String username;
-    private List<Long> followerIds;
-    private List<Long> followeeIds;
-    private String pictureFileId;
     @TimeToLive
     private int ttl;
     @Version
     private long version;
+
+    private String username;
+    private List<Long> followerIds;
+    private List<Long> followeeIds;
 }

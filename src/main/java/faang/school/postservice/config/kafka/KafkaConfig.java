@@ -5,6 +5,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaAdmin;
 
 import java.util.HashMap;
@@ -12,10 +13,18 @@ import java.util.Map;
 
 @Configuration
 public class KafkaConfig {
+    @Value("${kafka.partitions}")
+    private int partitionsAmount;
+    @Value("${kafka.replicas}")
+    private int replicaAmount;
     @Value(value = "${kafka.bootstrap-servers}")
     private String bootstrapAddress;
     @Value("${kafka.topics.post_view.name}")
     private String topicPostView;
+    @Value("${kafka.topics.post.name}")
+    private String topicPost;
+    @Value("${kafka.topics.comment.name}")
+    private String topicComment;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -26,6 +35,28 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic topicPostView() {
-        return new NewTopic(topicPostView, 1, (short) 1);
+        return TopicBuilder
+                .name(topicPostView)
+                .partitions(partitionsAmount)
+                .replicas(replicaAmount)
+                .build();
+    }
+
+    @Bean
+    public NewTopic topicPost() {
+        return TopicBuilder
+                .name(topicPost)
+                .partitions(partitionsAmount)
+                .replicas(replicaAmount)
+                .build();
+    }
+
+    @Bean
+    public NewTopic topicComment() {
+        return TopicBuilder
+                .name(topicComment)
+                .partitions(partitionsAmount)
+                .replicas(replicaAmount)
+                .build();
     }
 }

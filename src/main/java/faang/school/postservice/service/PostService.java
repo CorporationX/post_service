@@ -7,9 +7,10 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.publisher.kafka.KafkaPostProducer;
+import faang.school.postservice.publisher.kafka.PostKafkaProducer;
 import faang.school.postservice.publisher.redis.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.redis.RedisPostCacheService;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.validator.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -39,8 +40,8 @@ public class PostService {
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
-    private final RedisCacheService redisCacheService;
-    private final KafkaPostProducer kafkaPostProducer;
+    private final RedisPostCacheService redisPostCacheService;
+    private final PostKafkaProducer postKafkaProducer;
     @Value("${post.content_to_post.max_amount.video}")
     private int maxVideo;
     @Value("${post.rule.unverified_posts_limit}")
@@ -60,13 +61,15 @@ public class PostService {
     @Transactional
     public void publishPost(long postId) {
         Post post = getPost(postId);
-        postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
+        Long authorId = post.getAuthorId();
+        LocalDateTime publishedAt = LocalDateTime.now();
+        postValidator.validateAccessToPost(authorId, post.getProjectId());
 
         post.setPublished(true);
-        post.setPublishedAt(LocalDateTime.now());
+        post.setPublishedAt(publishedAt);
 
-        redisCacheService.savePost(postMapper.toDto(post));
-        //kafkaPostProducer.publish(postId, post.getAuthorId());
+        redisPostCacheService.savePost(postMapper.toDto(post));
+        postKafkaProducer.publish(postId, authorId, publishedAt);
     }
 
     @Transactional
@@ -81,7 +84,7 @@ public class PostService {
 
         PostDto resourcesAndGetPostDto = createResourcesAndGetPostDto(updatedPost, files);
 
-        redisCacheService.savePost(postMapper.toDto(updatedPost));
+        redisPostCacheService.savePost(postMapper.toDto(updatedPost));
         return resourcesAndGetPostDto;
     }
 
@@ -91,7 +94,7 @@ public class PostService {
         postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
         post.setDeleted(true);
 
-        redisCacheService.deletePostById(postId);
+        redisPostCacheService.deletePostById(postId);
     }
 
     public Post getPost(long postId) {

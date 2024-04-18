@@ -6,10 +6,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KafkaCommentProducer extends AbstractKafkaEventProducer<CommentPublishedEventDto>{
+public class CommentKafkaProducer extends AbstractKafkaProducer<CommentPublishedEventDto> {
     @Value("${kafka.topics.comment.name}")
     private String commentTopic;
-    public KafkaCommentProducer(KafkaTemplate<String, Object> kafkaTemplate) {
+    public CommentKafkaProducer(KafkaTemplate<String, Object> kafkaTemplate) {
         super(kafkaTemplate);
     }
 
