@@ -29,6 +29,7 @@ spring:
         ttl:
           user: 86400 #equals one day in seconds
           post: 86400
+          feed: 2592000 #equals 30 days day in seconds
   mvc:
     servlet:
       path: /api/v1
@@ -86,6 +87,8 @@ payment-service:
   port: 9080
 
 kafka:
+  partitions: 1
+  replicas: 1
   bootstrap-servers: localhost:9092
   producer:
     batch_size: 10000
