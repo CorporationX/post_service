@@ -1,19 +1,24 @@
 package faang.school.postservice.publishers;
 
-import lombok.AllArgsConstructor;
+import faang.school.postservice.mapper.JsonMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.stereotype.Component;
 
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Component
 public class UserBannerPublisher implements MessagePublisher {
 
-    private RedisTemplate<String, Object> redisTemplate;
-    private ChannelTopic topic;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ChannelTopic topic;
+    private final JsonMapper jsonMapper;
 
     @Override
-    public void publish(String message) {
+    public <T> void publish(T event) {
+        String message = jsonMapper.toJson(event);
         redisTemplate.convertAndSend(topic.getTopic(), message);
     }
 

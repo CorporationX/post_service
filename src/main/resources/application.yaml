@@ -54,3 +54,6 @@ payment-service:
 
 scheduled:
   author-banner: "@daily"
+
+limits:
+  unverified_post_limit: 5

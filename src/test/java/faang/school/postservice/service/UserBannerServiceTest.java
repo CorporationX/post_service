@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.UserBannerPublisher;
@@ -16,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,8 +25,6 @@ class UserBannerServiceTest {
     PostRepository postRepository;
     @Mock
     UserBannerPublisher userBannerPublisher;
-    @Spy
-    ObjectMapper objectMapper;
     @InjectMocks
     UserBannerService userBannerService;
     Post firstPost;
@@ -83,12 +79,7 @@ class UserBannerServiceTest {
 
         userBannerService.banPosts();
 
-        try {
-            verify(objectMapper, times(1)).writeValueAsString(userIdsToBan);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        verify(userBannerPublisher, times(1)).publish(anyString());
+        verify(userBannerPublisher, times(1)).publish(userIdsToBan);
         verify(postRepository, times(1)).deleteAllByAuthorIdIn(userIdsToBan);
     }
 }

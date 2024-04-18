@@ -1,6 +1,5 @@
-package faang.school.postservice.config.context;
+package faang.school.postservice.config;
 
-import faang.school.postservice.publishers.UserBannerPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,17 +19,12 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.user_ban_channel.name}")
     private String userBannerTopic;
     @Bean
-    public UserBannerPublisher userBannerPublisher(){
-        return new UserBannerPublisher(redisTemplate(), getChannelTopic());
-    }
-    @Bean
     public ChannelTopic getChannelTopic(){
         return new ChannelTopic(userBannerTopic);
     }
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
-        System.out.println(port);
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         return new JedisConnectionFactory(config);
     }
