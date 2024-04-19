@@ -4,6 +4,7 @@ import faang.school.postservice.exception.DataValidationException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -64,6 +65,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ServletRequestBindingException.class)
     public ErrorResponse handleServletRequestBindingException(ServletRequestBindingException exception) {
         log.error("ServletRequestBindingException" + exception);
+        return new ErrorResponse(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(SerializationException.class)
+    public ErrorResponse handleSerializationException(SerializationException exception) {
+        log.error("SerializationException" + exception);
         return new ErrorResponse(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 }
