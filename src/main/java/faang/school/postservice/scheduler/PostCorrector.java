@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class PostCorrector {
     private final SpellCheckService spellCheckService;
 
-    @Scheduled(fixedDelay = 10000)
+    @Scheduled(cron = "${post.post-spell-check.scheduler.cron}")
     public void spellCheckTextInPosts() {
         spellCheckService.spellCheckTextInPosts();
     }

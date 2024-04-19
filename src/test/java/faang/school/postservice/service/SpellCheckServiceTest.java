@@ -47,6 +47,7 @@ public class SpellCheckServiceTest {
         Assertions.assertDoesNotThrow(() -> spellCheckService.spellCheckTextInPosts());
         verify(postService).findReadyToPublishAndUncorrected();
         verify(restTemplate, times(2)).getForObject(anyString(), any(Class.class));
+        verify(postRepository).saveAll(posts);
     }
 
     @Test
@@ -72,6 +73,7 @@ public class SpellCheckServiceTest {
         Assertions.assertDoesNotThrow(() -> spellCheckService.spellCheckPostById(postId));
         verify(postService).findPostById(postId);
         verify(restTemplate, times(1)).getForObject(anyString(), any(Class.class));
+        verify(postRepository).save(post);
     }
 
     private List<Post> getPosts() {
