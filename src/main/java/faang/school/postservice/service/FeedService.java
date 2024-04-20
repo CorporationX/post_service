@@ -2,96 +2,110 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.feed.FeedDto;
-import faang.school.postservice.dto.feed.redis.PostRedisDto;
-import faang.school.postservice.dto.feed.redis.UserRedisDto;
-import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.mapper.UserMapper;
-import faang.school.postservice.repository.redis.PostRedisRepository;
-import faang.school.postservice.repository.redis.UserRedisRepository;
-import feign.FeignException;
+import faang.school.postservice.dto.FeedDto;
+import faang.school.postservice.dto.redis.PostIdDto;
+import faang.school.postservice.mapper.RedisPostMapper;
+import faang.school.postservice.mapper.RedisUserMapper;
+import faang.school.postservice.model.redis.RedisPost;
+import faang.school.postservice.model.redis.RedisUser;
+import faang.school.postservice.repository.redis.RedisFeedRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
-import java.net.ConnectException;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
+import java.util.SortedSet;
 
 @Service
 @RequiredArgsConstructor
 public class FeedService {
-    private final int retryMaxAttempts = 5;
-    private final int retryMultiplier = 5;
-    private final int retryDelay = 1000;
-    private final UserRedisRepository userRedisRepository;
-    private final PostRedisRepository postRedisRepository;
-    private final UserServiceClient userServiceClient;
+    private final RedisFeedRepository redisFeedRepository;
+    private final RedisPostMapper redisPostMapper;
+    private final RedisUserMapper redisUserMapper;
+    private final RedisPostRepository redisPostRepository;
+    private final RedisUserRepository redisUserRepository;
     private final PostService postService;
+    private final UserServiceClient userServiceClient;
     private final UserContext userContext;
-    private final PostMapper postMapper;
-    private final UserMapper userMapper;
-    private final FeedHeater feedHeater;
-    private final ZSetOperations<Long, Object> feeds;
     @Value("${feed.batch_size}")
     private int postFeedBatch = 20;
     @Value("${feed.max_size}")
     private int maxFeedSize = 500;
 
-    @Retryable(retryFor = {FeignException.class, ConnectException.class}, maxAttempts = retryMaxAttempts, backoff =
-    @Backoff(delay = retryDelay, multiplier = retryMultiplier))
-    public List<FeedDto> getFeed(long postIndex) {
-        List<Long> postIds = getPostIds(postIndex);
-        if (postIds == null) {
-            return null;
+    public List<FeedDto> getFeed(Long lastPostId) {
+        long userId = userContext.getUserId();
+        final List<PostIdDto> nextPostIdDtosBatch = new ArrayList<>();
+
+        redisFeedRepository.findById(userId)
+                .ifPresent((redisFeed) -> {
+                    List<PostIdDto> nextPostIdDtosBatch1 = getNextPostIdDtosBatch(lastPostId, redisFeed.getPostIds());
+                    nextPostIdDtosBatch.addAll(nextPostIdDtosBatch1);
+                });
+
+        if (nextPostIdDtosBatch.isEmpty()) {
+            //from BD
         }
-        return postIds
-                .stream()
-                .map(this::getFeedByPostId
-                )
+
+        return nextPostIdDtosBatch.stream()
+                .map(postIdDto -> buildFeedDto(getRedisUser(userId), getRedisPost(postIdDto.getPostId())))
                 .toList();
     }
 
-    @Retryable(retryFor = {FeignException.class}, maxAttempts = retryMaxAttempts, backoff =
-    @Backoff(delay = retryDelay, multiplier = retryMultiplier))
-    private FeedDto getFeedByPostId(Long postId) {
-        PostRedisDto postRedisDto = postRedisRepository.findById(postId)
-                .orElseGet(() -> postMapper.toRedisEntity(postService.getPostById(postId)));
+    private List<PostIdDto> getNextPostIdDtosBatch(Long lastPostId, SortedSet<PostIdDto> postIdDtos) {
+        if (lastPostId != null) {
+            Optional<PostIdDto> postIdDtoOpt = postIdDtos.stream()
+                    .filter(postIdDto -> postIdDto.getPostId() == lastPostId)
+                    .findFirst();
 
-        long ownerId = postRedisDto.getOwnerId();
-        UserRedisDto userRedisDto = userRedisRepository.findById(ownerId)
-                .orElseGet(() -> userMapper.toRedisEntity(userServiceClient.getUser(ownerId)));
-
-        return new FeedDto(postRedisDto, userRedisDto);
-    }
-
-
-    private List<Long> getPostIds(long startIndex) {
-        Set<Object> range = feeds.range(userContext.getUserId(), startIndex, startIndex + postFeedBatch - 1);
-        if (range == null || range.size() < postFeedBatch) {
-            feedHeater.heatFeed();
-        }
-
-        if (range == null) {
-            return null;
-        }
-        return range
-                .stream()
-                .map(o -> (Long) o)
-                .toList();
-    }
-
-    public void addPostIdToUsersFeed(long postId, List<Long> userIds, LocalDateTime publishedAt) {
-        userIds.forEach(userId -> {
-            feeds.add(userId, postId, publishedAt.getNano());
-
-            if (feeds.size(userId) > maxFeedSize) {
-                feeds.removeRange(userId, maxFeedSize, feeds.size(userId) - 1);
+            if (postIdDtoOpt.isPresent()) {
+                return getNextPostIdDtos(postIdDtos, postIdDtoOpt.get());
             }
-        });
+        }
+
+        if (lastPostId == null) {
+            return getNextPostIdDtos(postIdDtos, null);
+        }
+
+        return new ArrayList<>();
+    }
+
+    private List<PostIdDto> getNextPostIdDtos(SortedSet<PostIdDto> postIdDtos, PostIdDto fromThisPost) {
+        if (fromThisPost == null) {
+            return setToListWithLimit(postIdDtos);
+        }
+        //set tailed and unnecessary first element (fromThisPost from argument) deleted
+        postIdDtos.tailSet(fromThisPost).remove(postIdDtos.first());
+        return setToListWithLimit(postIdDtos);
+    }
+
+    private List<PostIdDto> setToListWithLimit(SortedSet<PostIdDto> postIdDtos) {
+        return postIdDtos.stream().limit(postFeedBatch).toList();
+    }
+
+    private RedisPost getRedisPost(long postId) {
+        return redisPostRepository.findById(postId)
+                .orElseGet(() -> redisPostMapper.toEntity(postService.getPostDto(postId)));
+    }
+
+    private RedisUser getRedisUser(long userId) {
+        return redisUserRepository.findById(userId)
+                .orElseGet(() -> redisUserMapper.toEntity(userServiceClient.getUser(userId)));
+    }
+
+    private FeedDto buildFeedDto(RedisUser redisUser, RedisPost redisPost) {
+        return FeedDto.builder()
+                .userId(redisUser.getId())
+                .username(redisUser.getUsername())
+                .postId(redisPost.getId())
+                .content(redisPost.getContent())
+                .likes(redisPost.getLikes())
+                .comments(redisPost.getComments().stream().toList())
+                .publishedAt(redisPost.getPublishedAt())
+                .updatedAt(redisPost.getUpdatedAt())
+                .build();
     }
 }

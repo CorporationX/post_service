@@ -15,7 +15,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 @Service
@@ -26,6 +25,7 @@ public class RedisFeedCacheService {
     private final RedisKeyValueTemplate redisTemplate;
     @Value("${spring.data.redis.cache.ttl.feed}")
     private int feedTtl;
+    @Value("${feed.max_size}")
     private int feedBatchSize;
 
     @Retryable(retryFor = {OptimisticLockingFailureException.class}, maxAttempts = 3, backoff =
@@ -67,6 +67,7 @@ public class RedisFeedCacheService {
         return redisFeedRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("There is no post in feed to delete"));
     }
+
     @Recover
     private void recoverGetPostFromFeed(EntityNotFoundException ex, long userId, PostIdDto postIdDto) {
         log.error("There was attempt to get non-existing post = {} from user's feed with userid = {}"

@@ -26,7 +26,7 @@ public class RedisFeed {
     private int ttl;
     @Version
     private long version;
-    private SortedSet<PostIdDto> postIds = new TreeSet<>();
+    private TreeSet<PostIdDto> postIds = new TreeSet<>();
 
     public void addPostIdDto(PostIdDto postIdDto) {
         postIds.add(postIdDto);

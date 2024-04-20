@@ -30,11 +30,12 @@ public class RedisPost implements Serializable {
 
     private String content;
     private Long authorId;
-    private SortedSet<RedisCommentDto> redisComments = new TreeSet<>();
+    private SortedSet<RedisCommentDto> comments = new TreeSet<>();
+    private int likes;
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
 
-    public void addComment (RedisCommentDto redisCommentDto) {
-        redisComments.add(redisCommentDto);
+    public void addComment(RedisCommentDto redisCommentDto) {
+        comments.add(redisCommentDto);
     }
 }
