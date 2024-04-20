@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostFeedDto implements Comparable<PostFeedDto> {
+public class PostIdDto implements Comparable<PostIdDto> {
     private long postId;
     private LocalDateTime publishedAt;
     @Override
-    public int compareTo(PostFeedDto postFeedDto) {
-        return publishedAt.compareTo(postFeedDto.publishedAt);
+    public int compareTo(PostIdDto postIdDto) {
+        return publishedAt.compareTo(postIdDto.publishedAt);
     }
 }

@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.kafka;
 
 public enum KafkaKey {
-    CREATE
+    SAVE,
+    DELETE
 }

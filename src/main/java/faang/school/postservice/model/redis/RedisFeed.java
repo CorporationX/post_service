@@ -1,6 +1,6 @@
 package faang.school.postservice.model.redis;
 
-import faang.school.postservice.dto.redis.PostFeedDto;
+import faang.school.postservice.dto.redis.PostIdDto;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,13 +26,19 @@ public class RedisFeed {
     private int ttl;
     @Version
     private long version;
-    private SortedSet<PostFeedDto> postIds = new TreeSet<>();
+    private SortedSet<PostIdDto> postIds = new TreeSet<>();
 
-    public void addPostFeedDto(PostFeedDto postFeedDto) {
-        postIds.add(postFeedDto);
+    public void addPostIdDto(PostIdDto postIdDto) {
+        postIds.add(postIdDto);
     }
 
-    public void removePost (PostFeedDto postFeedDto) {
-        postIds.remove(postFeedDto);
+    public void removePost (PostIdDto postIdDto) {
+        postIds.remove(postIdDto);
+    }
+
+
+    public void removeLastPostIdDto () {
+        PostIdDto last = postIds.last();
+        postIds.remove(last);
     }
 }
