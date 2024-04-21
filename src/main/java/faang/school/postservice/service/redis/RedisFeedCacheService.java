@@ -52,20 +52,15 @@ public class RedisFeedCacheService {
         );
     }
 
-    @Retryable(retryFor = {OptimisticLockingFailureException.class}, maxAttempts = 3, backoff =
-    @Backoff(delay = 300, multiplier = 3), recover = "recoverRemovePostFromFeed")
+    @Retryable(retryFor = {OptimisticLockingFailureException.class, EntityNotFoundException.class}, maxAttempts = 5,
+            backoff =
+            @Backoff(delay = 500, multiplier = 3), recover = "recoverRemovePostFromFeed")
     public void removePostFromFeed(long userId, PostIdDto postIdDto) {
-        RedisFeed redisFeed = getRedisFeed(userId);
+        RedisFeed redisFeed = redisFeedRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("There is no post in feed to delete"));
 
         redisFeed.removePost(postIdDto);
         redisTemplate.update(redisFeed);
-    }
-
-    @Retryable(retryFor = {EntityNotFoundException.class}, maxAttempts = 5, backoff =
-    @Backoff(delay = 500, multiplier = 10), recover = "recoverGetPostFromFeed")
-    private RedisFeed getRedisFeed(long userId) {
-        return redisFeedRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no post in feed to delete"));
     }
 
     @Recover

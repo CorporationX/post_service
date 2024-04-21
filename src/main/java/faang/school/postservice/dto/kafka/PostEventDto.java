@@ -17,5 +17,5 @@ public class PostEventDto {
     private Long postId;
     private Long authorId;
     private LocalDateTime publishedAt;
-    private Set<Integer> authorSubscriberIds = new HashSet<>();
+    private Set<Long> authorSubscriberIds = new HashSet<>();
 }

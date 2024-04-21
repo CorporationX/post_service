@@ -13,7 +13,9 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.redis.RedisPostCacheService;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.validator.ResourceValidator;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -42,6 +45,8 @@ public class PostService {
     private final UserBanEventPublisher userBanEventPublisher;
     private final RedisPostCacheService redisPostCacheService;
     private final PostKafkaProducer postKafkaProducer;
+    @PersistenceContext
+    private final EntityManager entityManager;
     @Value("${post.content_to_post.max_amount.video}")
     private int maxVideo;
     @Value("${post.rule.unverified_posts_limit}")
@@ -213,5 +218,13 @@ public class PostService {
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .collect(Collectors.toList());
+    }
+
+    public List<Post> getPosts (List<Long> authorIds, @Nullable Long fromPostId, int postQuantity) {
+        LocalDateTime publishedAt = null;
+        if (fromPostId != null) {
+            publishedAt = getPost(fromPostId).getPublishedAt();
+        }
+        return postRepository.getNextPostsByAuthorIds(entityManager, authorIds, publishedAt, postQuantity);
     }
 }

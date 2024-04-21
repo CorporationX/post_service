@@ -22,5 +22,5 @@ public interface UserServiceClient {
     boolean existsUserById(@PathVariable("id") long Id);
 
     @GetMapping("/followers")
-    List<Integer> getFollowerIdsById(long ownerId);
+    List<Long> getFollowerIdsById(long ownerId);
 }

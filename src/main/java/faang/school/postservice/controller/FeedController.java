@@ -19,7 +19,7 @@ public class FeedController {
     private final FeedService feedService;
 
     @GetMapping("/feed")
-    public List<FeedDto> getPostFeedBatch(@RequestParam(value = "postIndex", required = false) long postIndex) {
+    public List<FeedDto> getPostFeedBatch(@RequestParam(value = "postIndex", required = false) Long postIndex) {
         return feedService.getFeed(postIndex);
     }
 }

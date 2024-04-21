@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Service
 @RequiredArgsConstructor
@@ -38,65 +38,76 @@ public class FeedService {
 
     public List<FeedDto> getFeed(Long lastPostId) {
         long userId = userContext.getUserId();
-        final List<PostIdDto> nextPostIdDtosBatch = new ArrayList<>();
+        List<PostIdDto> postIdDtos = new ArrayList<>();
 
         redisFeedRepository.findById(userId)
-                .ifPresent((redisFeed) -> {
-                    List<PostIdDto> nextPostIdDtosBatch1 = getNextPostIdDtosBatch(lastPostId, redisFeed.getPostIds());
-                    nextPostIdDtosBatch.addAll(nextPostIdDtosBatch1);
-                });
+                .ifPresent(
+                        (redisFeed) -> {
+                            TreeSet<PostIdDto> postIds = redisFeed.getPostIds();
+                            if (lastPostId == null) {
+                                postIdDtos.addAll(postIds);
+                            } else {
+                                postIds.stream()
+                                        .filter(postIdDto -> lastPostId == postIdDto.getPostId())
+                                        .findFirst()
+                                        .ifPresent(postIdDto -> {
+                                            SortedSet<PostIdDto> sortedSet = postIds.tailSet(postIdDto);
+                                            sortedSet.remove(sortedSet.first());
+                                            postIdDtos.addAll(sortedSet);
+                                        });
+                            }
+                        }
+                );
 
-        if (nextPostIdDtosBatch.isEmpty()) {
-            //from BD
+        if (postIdDtos.size() < postFeedBatch) {
+            List<Long> followerIds = userServiceClient.getFollowerIdsById(userId);
+
+            postIdDtos.addAll(
+                    postService //posts from DB
+                            .getPosts(followerIds, lastPostId, postFeedBatch - postIdDtos.size())
+                            .stream()
+                            .map(post -> new PostIdDto(post.getId(), post.getPublishedAt()))
+                            .toList()
+            );
         }
 
-        return nextPostIdDtosBatch.stream()
-                .map(postIdDto -> buildFeedDto(getRedisUser(userId), getRedisPost(postIdDto.getPostId())))
+        return postIdDtos.stream()
+                .limit(postFeedBatch)
+                .map(postIdDto -> getFeedDto(userId, postIdDto.getPostId()))
                 .toList();
     }
 
-    private List<PostIdDto> getNextPostIdDtosBatch(Long lastPostId, SortedSet<PostIdDto> postIdDtos) {
-        if (lastPostId != null) {
-            Optional<PostIdDto> postIdDtoOpt = postIdDtos.stream()
-                    .filter(postIdDto -> postIdDto.getPostId() == lastPostId)
-                    .findFirst();
+    private SortedSet<PostIdDto> getFeedFromCache(long userId, Long lastPostId, int amount) {
+        SortedSet<PostIdDto> sortedSet = new TreeSet<>();
 
-            if (postIdDtoOpt.isPresent()) {
-                return getNextPostIdDtos(postIdDtos, postIdDtoOpt.get());
-            }
-        }
+        redisFeedRepository.findById(userId)
+                .ifPresent(
+                        (redisFeed) -> {
+                            TreeSet<PostIdDto> postIds = redisFeed.getPostIds();
+                            if (lastPostId == null) {
+                                sortedSet.addAll(postIds);
+                            } else {
+                                postIds.stream()
+                                        .filter(postIdDto -> lastPostId == postIdDto.getPostId())
+                                        .findFirst()
+                                        .ifPresent(postIdDto -> {
+                                            sortedSet.addAll(postIds.tailSet(postIdDto));
+                                            sortedSet.remove(sortedSet.first());
+                                        });
+                            }
+                        }
+                );
 
-        if (lastPostId == null) {
-            return getNextPostIdDtos(postIdDtos, null);
-        }
-
-        return new ArrayList<>();
+        return sortedSet;
     }
 
-    private List<PostIdDto> getNextPostIdDtos(SortedSet<PostIdDto> postIdDtos, PostIdDto fromThisPost) {
-        if (fromThisPost == null) {
-            return setToListWithLimit(postIdDtos);
-        }
-        //set tailed and unnecessary first element (fromThisPost from argument) deleted
-        postIdDtos.tailSet(fromThisPost).remove(postIdDtos.first());
-        return setToListWithLimit(postIdDtos);
-    }
-
-    private List<PostIdDto> setToListWithLimit(SortedSet<PostIdDto> postIdDtos) {
-        return postIdDtos.stream().limit(postFeedBatch).toList();
-    }
-
-    private RedisPost getRedisPost(long postId) {
-        return redisPostRepository.findById(postId)
-                .orElseGet(() -> redisPostMapper.toEntity(postService.getPostDto(postId)));
-    }
-
-    private RedisUser getRedisUser(long userId) {
-        return redisUserRepository.findById(userId)
+    private FeedDto getFeedDto(long userId, long postId) {
+        RedisUser redisUser = redisUserRepository.findById(userId)
                 .orElseGet(() -> redisUserMapper.toEntity(userServiceClient.getUser(userId)));
-    }
 
-    private FeedDto buildFeedDto(RedisUser redisUser, RedisPost redisPost) {
+        RedisPost redisPost = redisPostRepository.findById(postId)
+                .orElseGet(() -> redisPostMapper.toEntity(postService.getPostDto(postId)));
+
         return FeedDto.builder()
                 .userId(redisUser.getId())
                 .username(redisUser.getUsername())
