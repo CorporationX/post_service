@@ -1,9 +1,12 @@
 package faang.school.postservice.publisher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.comment.CommentEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.common.errors.SerializationException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -12,13 +15,16 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CommentEventPublisher {
 
-    @Value("${spring.data.kafka.channels.comment-channel.name}")
-    private String commentEventChannel;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
+    private final NewTopic commentEventTopic;
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
-
-    public void publish(CommentEvent commentEvent) {
-        kafkaTemplate.send(commentEventChannel, commentEvent);
-        log.info("Comment event published: {}", commentEvent);
+    public void publish(CommentEvent event) {
+        try {
+            kafkaTemplate.send(commentEventTopic.name(), objectMapper.writeValueAsString(event));
+            log.info("Comment event published: {}", event);
+        } catch (JsonProcessingException e) {
+            throw new SerializationException(e.getMessage());
+        }
     }
 }

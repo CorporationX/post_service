@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class UserBanPublisher {
+
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChannelTopic userBanTopic;
 
