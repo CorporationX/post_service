@@ -1,4 +1,4 @@
-package faang.school.postservice.config.redis;
+package faang.school.postservice.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,7 +40,7 @@ public class RedisConfig {
         return redisTemplate;
     }
 
-    @Bean // перенес сюда) думаю эстетичнее будет)
+    @Bean
     public ChannelTopic getChannelTopic(){
         return new ChannelTopic(userBannerTopic);
     }
