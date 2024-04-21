@@ -23,6 +23,7 @@ public class AuthorHash implements Serializable {
 
     @Id
     private long authorId;
+    private long eventId;
     private AuthorType authorType;
     private UserDto userDto;
 

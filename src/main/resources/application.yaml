@@ -34,12 +34,19 @@ spring:
       retry_max_attempts: 10
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap_servers: localhost:9092
+    group_id: post_service
     topics:
       post: post_topic
       view: view_topic
       like: like_topic
       comment: comment_topic
+
+feed:
+  count_post: 500
+
+comments:
+  max_count: 3
 
 server:
   port: 8081

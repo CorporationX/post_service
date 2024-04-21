@@ -1,6 +1,6 @@
 package faang.school.postservice.repository.redis;
 
-import faang.school.postservice.dto.hash.AuthorHash;
+import faang.school.postservice.dto.hash.FeedHash;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.repository.CrudRepository;
@@ -8,12 +8,12 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public abstract class AuthorRedisRepository implements CrudRepository<AuthorHash, Long> {
+public abstract class FeedRedisRepository implements CrudRepository<FeedHash, Long> {
 
-    private final RedisTemplate<Long, AuthorHash> redisTemplate;
+    private final RedisTemplate<Long, FeedHash> redisTemplate;
 
-    public void saveInRedis(AuthorHash authorHash) {
+    public void saveInRedis(FeedHash feedHash) {
         redisTemplate.opsForZSet().add(
-                authorHash.getEventId(), authorHash, authorHash.getEventId());
+                feedHash.getFeedId(), feedHash, feedHash.getFeedId());
     }
 }

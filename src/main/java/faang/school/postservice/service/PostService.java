@@ -43,9 +43,8 @@ public class PostService {
         Post post = postMapper.toEntity(postDto);
         postRepository.save(post);
 
-        PostEventKafka postEventKafka = new PostEventKafka(
-                post.getAuthorId(),
-                userServiceClient.getFollowersId(post.getAuthorId()));
+        PostEventKafka postEventKafka = new PostEventKafka(post);
+        postEventKafka.addFollowersId(userServiceClient.getFollowersId(post.getAuthorId()));
         kafkaPostProducer.sendMessage(postEventKafka);
 
         postHashService.save(post);

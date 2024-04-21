@@ -38,11 +38,12 @@ public class PostHashService {
                 .projectId(post.getProjectId())
                 .publishedAt(post.getPublishedAt())
                 .updatedAt(post.getUpdatedAt())
-                .likeCount((long) post.getLikes().size())
-                .comments(getComments(post))
+                .likeCount(post.getLikes().size())
                 .timeToLive(timeToLive)
                 .build();
-        postRedisRepository.save(postHash);
+        post.getComments().forEach(
+                comment -> postHash.addComment(commentMapper.toDto(comment)));
+        postRedisRepository.saveInRedis(postHash);
     }
 
     private LinkedBlockingDeque<CommentDto> getComments(Post post) {

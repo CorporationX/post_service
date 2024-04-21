@@ -1,11 +1,13 @@
 package faang.school.postservice.dto.hash;
 
 import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.user.UserDto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
@@ -14,7 +16,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 @Component
 @Data
@@ -23,6 +26,9 @@ import java.util.concurrent.LinkedBlockingDeque;
 @AllArgsConstructor
 @RedisHash("PostHash")
 public class PostHash implements Serializable {
+
+    @Value(value = "${comments.max_count}")
+    private int maxCount;
 
     @Id
     private Long id;
@@ -34,15 +40,20 @@ public class PostHash implements Serializable {
     private Long projectId;
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
-    private Long likeCount;
-    private LinkedBlockingDeque<CommentDto> comments =
-            new LinkedBlockingDeque<>(3);
+    private int likeCount;
+    private List<Long> followersId;
+    private ConcurrentLinkedDeque<CommentDto> comments;
+    private ConcurrentLinkedDeque<UserDto> views;
 
-    public void addComment(CommentDto newComment) {
-        if (comments.size() >= 3) {
+    public void addComment(CommentDto newCommentDto) {
+        comments.offerLast(newCommentDto);
+        if (comments.size() >= maxCount) {
             comments.pollFirst();
         }
-        comments.offerLast(newComment);
+    }
+
+    public void addView(UserDto userDto) {
+        this.views.add(userDto);
     }
 
     @Version

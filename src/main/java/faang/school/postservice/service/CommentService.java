@@ -38,8 +38,9 @@ public class CommentService {
         comment.setPost(post.orElseThrow(() -> new IllegalArgumentException("Post ID is invalid")));
         commentRepository.save(comment);
 
+        userServiceClient.getUser(commentDto.getAuthorId());
         CommentEventKafka commentEventKafka = new CommentEventKafka(
-                postId, comment.getAuthorId());
+                comment, userServiceClient.getUser(commentDto.getAuthorId()));
         kafkaCommentProducer.sendMessage(commentEventKafka);
         authorHashService.saveAuthor(comment.getAuthorId(), AuthorType.COMMENT_AUTHOR);
         return commentMapper.toDto(comment);

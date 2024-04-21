@@ -19,7 +19,6 @@ public interface PostMapper {
 
     Post toEntity(PostDto postDto);
 
-
     @Named("toLikeCount")
     default Long toLikeCount(List<Like> likes) {
         return likes != null ? likes.size() : 0L;

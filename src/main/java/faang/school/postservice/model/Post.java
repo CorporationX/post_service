@@ -1,5 +1,6 @@
 package faang.school.postservice.model;
 
+import faang.school.postservice.dto.event.CommentEventKafka;
 import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -71,4 +72,12 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void addComment(Comment comment) {
+        this.comments.add(comment);
+    }
+
+    public void addLike(Like like) {
+        this.likes.add(like);
+    }
 }

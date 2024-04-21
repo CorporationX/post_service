@@ -3,11 +3,9 @@ package faang.school.postservice.service.hashService;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.hash.AuthorHash;
 import faang.school.postservice.dto.hash.AuthorType;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.redis.AuthorRedisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Retryable;
@@ -35,6 +33,6 @@ public class AuthorHashService {
                 .userDto(userServiceClient.getUser(authorId))
                 .timeToLive(timeToLive)
                 .build();
-        authorRepository.save(authorHash);
+        authorRepository.saveInRedis(authorHash);
     }
 }

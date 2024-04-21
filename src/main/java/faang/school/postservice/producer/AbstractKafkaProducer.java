@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Slf4j
-public class AbstractKafkaProducer<T> {
+public abstract class AbstractKafkaProducer<T> {
 
     private KafkaTemplate<String, String> kafkaTemplate;
 
