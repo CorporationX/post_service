@@ -1,4 +1,4 @@
-package faang.school.postservice.mapper;
+package faang.school.postservice.mapper.redis;
 
 import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.model.redis.RedisUser;

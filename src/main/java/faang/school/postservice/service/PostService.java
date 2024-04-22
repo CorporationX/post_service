@@ -3,11 +3,12 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
+import faang.school.postservice.dto.kafka.KafkaKey;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.publisher.kafka.PostKafkaProducer;
+import faang.school.postservice.publisher.kafka.PostKafkaPublisher;
 import faang.school.postservice.publisher.redis.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.redis.RedisPostCacheService;
@@ -44,7 +45,7 @@ public class PostService {
     private final ResourceService resourceService;
     private final UserBanEventPublisher userBanEventPublisher;
     private final RedisPostCacheService redisPostCacheService;
-    private final PostKafkaProducer postKafkaProducer;
+    private final PostKafkaPublisher postKafkaProducer;
     @PersistenceContext
     private final EntityManager entityManager;
     @Value("${post.content_to_post.max_amount.video}")
@@ -73,8 +74,8 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(publishedAt);
 
-        redisPostCacheService.savePost(postMapper.toDto(post));
-        postKafkaProducer.publish(postId, authorId, publishedAt);
+        redisPostCacheService.saveOrUpdate(postMapper.toDto(post));
+        postKafkaProducer.publish(postId, authorId, publishedAt, KafkaKey.SAVE);
     }
 
     @Transactional
@@ -84,22 +85,25 @@ public class PostService {
 
         post.setContent(postDto.getContent());
         removeUnnecessaryResources(post, postDto);
-
         Post updatedPost = postRepository.save(post);
+        PostDto updatedPostDto = createResourcesAndGetPostDto(updatedPost, files);
 
-        PostDto resourcesAndGetPostDto = createResourcesAndGetPostDto(updatedPost, files);
-
-        redisPostCacheService.savePost(postMapper.toDto(updatedPost));
-        return resourcesAndGetPostDto;
+        redisPostCacheService.saveOrUpdate(postMapper.toDto(updatedPost));
+        postKafkaProducer.publish(postId, updatedPostDto.getAuthorId(), updatedPostDto.getPublishedAt(), KafkaKey.SAVE);
+        return updatedPostDto;
     }
 
     @Transactional
     public void deletePost(long postId) {
         Post post = getPost(postId);
-        postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
+        Long authorId = post.getAuthorId();
+
+        postValidator.validateAccessToPost(authorId, post.getProjectId());
+
         post.setDeleted(true);
 
         redisPostCacheService.deletePostById(postId);
+        postKafkaProducer.publish(postId, authorId, post.getPublishedAt(), KafkaKey.DELETE);
     }
 
     public Post getPost(long postId) {
@@ -220,7 +224,7 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    public List<Post> getPosts (List<Long> authorIds, @Nullable Long fromPostId, int postQuantity) {
+    public List<Post> getPosts(List<Long> authorIds, @Nullable Long fromPostId, int postQuantity) {
         LocalDateTime publishedAt = null;
         if (fromPostId != null) {
             publishedAt = getPost(fromPostId).getPublishedAt();

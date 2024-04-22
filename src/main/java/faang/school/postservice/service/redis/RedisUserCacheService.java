@@ -2,7 +2,7 @@ package faang.school.postservice.service.redis;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.UserDto;
-import faang.school.postservice.mapper.RedisUserMapper;
+import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.redis.RedisUser;
 import faang.school.postservice.repository.redis.RedisUserRepository;
 import feign.FeignException;

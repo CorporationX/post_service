@@ -22,7 +22,7 @@ import java.util.TreeSet;
 @Slf4j
 public class RedisFeedCacheService {
     private final RedisFeedRepository redisFeedRepository;
-    private final RedisKeyValueTemplate redisTemplate;
+    private final RedisKeyValueTemplate redisKeyValueTemplate;
     @Value("${spring.data.redis.cache.ttl.feed}")
     private int feedTtl;
     @Value("${feed.max_size}")
@@ -30,7 +30,7 @@ public class RedisFeedCacheService {
 
     @Retryable(retryFor = {OptimisticLockingFailureException.class}, maxAttempts = 3, backoff =
     @Backoff(delay = 300, multiplier = 3))
-    public void savePostToFeed(long userId, PostIdDto postIdDto) {
+    public void addToFeed(long userId, PostIdDto postIdDto) {
         redisFeedRepository.findById(userId).ifPresentOrElse(
                 (redisFeed) -> {
                     redisFeed.addPostIdDto(postIdDto);
@@ -39,7 +39,7 @@ public class RedisFeedCacheService {
                         redisFeed.removeLastPostIdDto();
                     }
 
-                    redisTemplate.update(redisFeed);
+                    redisKeyValueTemplate.update(redisFeed);
                 },
                 () -> {
                     RedisFeed redisFeed = RedisFeed.builder()
@@ -55,12 +55,12 @@ public class RedisFeedCacheService {
     @Retryable(retryFor = {OptimisticLockingFailureException.class, EntityNotFoundException.class}, maxAttempts = 5,
             backoff =
             @Backoff(delay = 500, multiplier = 3), recover = "recoverRemovePostFromFeed")
-    public void removePostFromFeed(long userId, PostIdDto postIdDto) {
+    public void remove(long userId, PostIdDto postIdDto) {
         RedisFeed redisFeed = redisFeedRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("There is no post in feed to delete"));
 
         redisFeed.removePost(postIdDto);
-        redisTemplate.update(redisFeed);
+        redisKeyValueTemplate.update(redisFeed);
     }
 
     @Recover

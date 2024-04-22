@@ -2,16 +2,19 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.CommentEventDto;
+import faang.school.postservice.dto.kafka.KafkaKey;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.kafka.KafkaCommentProducer;
+import faang.school.postservice.publisher.kafka.CommentKafkaPublisher;
 import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.redis.RedisCacheService;
+import faang.school.postservice.service.redis.RedisCommentCacheService;
+import faang.school.postservice.service.redis.RedisUserCacheService;
 import faang.school.postservice.validator.CommentValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -27,8 +30,9 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final CommentMapper commentMapper;
     private final CommentEventPublisher commentEventPublisher;
-    private final RedisCacheService redisCacheService;
-    private final KafkaCommentProducer kafkaCommentProducer;
+    private final RedisCommentCacheService redisCommentCacheService;
+    private final RedisUserCacheService redisUserCacheService;
+    private final CommentKafkaPublisher commentKafkaPublisher;
 
     public CommentDto addNewComment(long postId, CommentDto commentDto) {
         commentValidator.validateCommentAuthor(commentDto.getId());
@@ -45,8 +49,9 @@ public class CommentService {
                 .postId(post.getId())
                 .build());
 
-        redisCacheService.userToCache(post.getAuthorId());
-        kafkaCommentProducer.publish(postId, comment.getId(), comment.getAuthorId());
+        redisUserCacheService.saveUser(post.getAuthorId());
+        commentKafkaPublisher.publish(savedComment.getId(), postId, KafkaKey.SAVE);
+
         return commentMapper.toDTO(savedComment);
     }
 
@@ -55,11 +60,17 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setContent(commentDto.getContent());
         Comment savedComment = commentRepository.save(comment);
+
+        commentKafkaPublisher.publish(savedComment.getId(), savedComment.getPost().getId(), KafkaKey.SAVE);
         return commentMapper.toDTO(savedComment);
     }
 
     public void deleteComment(long commentId) {
-        commentRepository.deleteById(commentId);
+        commentRepository.findById(commentId)
+                .ifPresent(comment -> {
+                    commentRepository.deleteById(commentId);
+                    commentKafkaPublisher.publish(commentId, comment.getPost().getId(), KafkaKey.DELETE);
+                });
     }
 
     public List<CommentDto> getAllComments(long postId) {
@@ -70,5 +81,10 @@ public class CommentService {
     public Post getPostById(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("There are no posts with that id: " + postId));
+    }
+
+    public Comment getComment (long id) {
+        return commentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found in database"));
     }
 }

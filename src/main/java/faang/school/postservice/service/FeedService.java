@@ -4,15 +4,17 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.FeedDto;
 import faang.school.postservice.dto.redis.PostIdDto;
-import faang.school.postservice.mapper.RedisPostMapper;
-import faang.school.postservice.mapper.RedisUserMapper;
+import faang.school.postservice.mapper.redis.RedisPostMapper;
+import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.model.redis.RedisUser;
 import faang.school.postservice.repository.redis.RedisFeedRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.repository.redis.RedisUserRepository;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,7 +33,7 @@ public class FeedService {
     private final PostService postService;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
-    @Value("${feed.batch_size}")
+    @Value("${feed.batch_size.post}")
     private int postFeedBatch = 20;
     @Value("${feed.max_size}")
     private int maxFeedSize = 500;
@@ -43,15 +45,15 @@ public class FeedService {
         redisFeedRepository.findById(userId)
                 .ifPresent(
                         (redisFeed) -> {
-                            TreeSet<PostIdDto> postIds = redisFeed.getPostIds();
+                            TreeSet<PostIdDto> postIdsDtosFromCache = redisFeed.getPostIds();
                             if (lastPostId == null) {
-                                postIdDtos.addAll(postIds);
+                                postIdDtos.addAll(postIdsDtosFromCache);
                             } else {
-                                postIds.stream()
+                                postIdsDtosFromCache.stream()
                                         .filter(postIdDto -> lastPostId == postIdDto.getPostId())
                                         .findFirst()
                                         .ifPresent(postIdDto -> {
-                                            SortedSet<PostIdDto> sortedSet = postIds.tailSet(postIdDto);
+                                            SortedSet<PostIdDto> sortedSet = postIdsDtosFromCache.tailSet(postIdDto);
                                             sortedSet.remove(sortedSet.first());
                                             postIdDtos.addAll(sortedSet);
                                         });
@@ -77,30 +79,7 @@ public class FeedService {
                 .toList();
     }
 
-    private SortedSet<PostIdDto> getFeedFromCache(long userId, Long lastPostId, int amount) {
-        SortedSet<PostIdDto> sortedSet = new TreeSet<>();
-
-        redisFeedRepository.findById(userId)
-                .ifPresent(
-                        (redisFeed) -> {
-                            TreeSet<PostIdDto> postIds = redisFeed.getPostIds();
-                            if (lastPostId == null) {
-                                sortedSet.addAll(postIds);
-                            } else {
-                                postIds.stream()
-                                        .filter(postIdDto -> lastPostId == postIdDto.getPostId())
-                                        .findFirst()
-                                        .ifPresent(postIdDto -> {
-                                            sortedSet.addAll(postIds.tailSet(postIdDto));
-                                            sortedSet.remove(sortedSet.first());
-                                        });
-                            }
-                        }
-                );
-
-        return sortedSet;
-    }
-
+    @Retryable(retryFor = FeignException.class, maxAttempts = 5)
     private FeedDto getFeedDto(long userId, long postId) {
         RedisUser redisUser = redisUserRepository.findById(userId)
                 .orElseGet(() -> redisUserMapper.toEntity(userServiceClient.getUser(userId)));

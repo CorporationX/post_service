@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 
-@KafkaListener
 @RequiredArgsConstructor
 public class PostKafkaListener extends AbstractKafkaListener<PostEventDto> {
     private final RedisFeedCacheService redisFeedCacheService;
@@ -27,10 +26,10 @@ public class PostKafkaListener extends AbstractKafkaListener<PostEventDto> {
         postEventDto.getAuthorSubscriberIds().forEach(
                 (userId) -> {
                     if (kafkaKey == KafkaKey.SAVE) {
-                        redisFeedCacheService.savePostToFeed(userId, postIdDto);
+                        redisFeedCacheService.addToFeed(userId, postIdDto);
                     }
                     if (kafkaKey == KafkaKey.DELETE) {
-                        redisFeedCacheService.removePostFromFeed(userId, postIdDto);
+                        redisFeedCacheService.remove(userId, postIdDto);
                     }
                 }
         );

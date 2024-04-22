@@ -106,4 +106,6 @@ kafka:
 
 feed:
   max_size: 500
-  batch_size: 20
+  batch_size:
+    post: 20
+    comment: 3

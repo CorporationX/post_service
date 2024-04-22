@@ -38,4 +38,15 @@ public class RedisPost implements Serializable {
     public void addComment(RedisCommentDto redisCommentDto) {
         comments.add(redisCommentDto);
     }
+
+    public void removeComment(long commentId) {
+        comments.stream().filter(redisCommentDto -> redisCommentDto.getId() == commentId)
+                .findFirst()
+                .ifPresent(comments::remove);
+    }
+
+    public void removeLastRedisCommentDto() {
+        RedisCommentDto last = comments.last();
+        comments.remove(last);
+    }
 }
