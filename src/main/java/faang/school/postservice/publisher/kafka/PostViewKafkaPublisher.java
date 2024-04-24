@@ -6,11 +6,11 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PostViewKafkaProducer extends AbstractKafkaProducer<PostViewedEventDto> {
+public class PostViewKafkaPublisher extends AbstractKafkaPublisher<PostViewedEventDto> {
     @Value("${kafka.topics.post_view.name}")
     private String postViewTopic;
 
-    public PostViewKafkaProducer(KafkaTemplate<String, Object> kafkaTemplate) {
+    public PostViewKafkaPublisher(KafkaTemplate<String, Object> kafkaTemplate) {
         super(kafkaTemplate);
     }
 
