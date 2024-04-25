@@ -16,7 +16,7 @@ import java.util.List;
 
 @Component
 public class PostKafkaPublisher extends AbstractKafkaPublisher<PostEventDto> {
-    @Value("${kafka.producer.batch_size}")
+    @Value("${kafka.producer.batch_size.user_save}")
     private int batchSize;
     @Value("${kafka.topics.post.name}")
     private String postTopic;

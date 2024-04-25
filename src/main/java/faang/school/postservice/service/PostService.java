@@ -231,4 +231,8 @@ public class PostService {
         }
         return postRepository.getNextPostsByAuthorIds(entityManager, authorIds, publishedAt, postQuantity);
     }
+
+    public List<Post> getPosts(Long authorId, int postQuantity) {
+        return postRepository.getNextPostsByAuthorId(entityManager, authorId, postQuantity);
+    }
 }

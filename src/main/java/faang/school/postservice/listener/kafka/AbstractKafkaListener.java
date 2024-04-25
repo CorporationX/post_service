@@ -9,10 +9,18 @@ import java.util.function.BiConsumer;
 @RequiredArgsConstructor
 public abstract class AbstractKafkaListener<Event> {
 
-    protected void consume(ConsumerRecord<String, Object> message, Class<Event> type, BiConsumer<Event, KafkaKey> biConsumer) {
-        KafkaKey kafkaKey = Enum.valueOf(KafkaKey.class, message.key());
-        Event event = type.cast(message.value());
+    public void consume(ConsumerRecord<String, Object> message, Class<Event> type, BiConsumer<Event, KafkaKey> biConsumer) {
+        KafkaKey kafkaKey = getKafkaKey(message);
+        Event event = getEvent(message, type);
 
         biConsumer.accept(event, kafkaKey);
+    }
+
+    protected KafkaKey getKafkaKey(ConsumerRecord<String, Object> message) {
+        return Enum.valueOf(KafkaKey.class, message.key());
+    }
+
+    protected Event getEvent(ConsumerRecord<String, Object> message, Class<Event> type) {
+        return type.cast(message.value());
     }
 }

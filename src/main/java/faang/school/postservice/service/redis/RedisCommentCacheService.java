@@ -10,8 +10,10 @@ import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisKeyValueTemplate;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
+@Service
 public class RedisCommentCacheService {
     private final RedisPostRepository redisPostRepository;
     private final RedisKeyValueTemplate redisKeyValueTemplate;

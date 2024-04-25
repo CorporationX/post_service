@@ -43,7 +43,7 @@ public class RedisFeedCacheService {
                 },
                 () -> {
                     RedisFeed redisFeed = RedisFeed.builder()
-                            .userId(userId)
+                            .id(userId)
                             .ttl(feedTtl)
                             .postIds(new TreeSet<>(Set.of(postIdDto)))
                             .build();
@@ -65,7 +65,7 @@ public class RedisFeedCacheService {
 
     @Recover
     private void recoverGetPostFromFeed(EntityNotFoundException ex, long userId, PostIdDto postIdDto) {
-        log.error("There was attempt to get non-existing post = {} from user's feed with userid = {}"
+        log.error("There was attempt to update non-existing post = {} from user's feed with userid = {}"
                 , postIdDto, userId, ex);
     }
 }

@@ -91,7 +91,9 @@ kafka:
   replicas: 1
   bootstrap-servers: localhost:9092
   producer:
-    batch_size: 10000
+    batch_size:
+      user_save: 1000
+      feed_heat: 10000
   consumer:
     group-id: post_service
   topics:
@@ -103,6 +105,8 @@ kafka:
       name: comment_topic
     like:
       name: like_topic
+    heat:
+      name: heat_topic
 
 feed:
   max_size: 500

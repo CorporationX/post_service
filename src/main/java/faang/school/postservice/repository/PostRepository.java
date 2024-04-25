@@ -56,4 +56,19 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         query.setMaxResults(postQuantity);
         return query.getResultList();
     }
+
+    default List<Post> getNextPostsByAuthorId(EntityManager entityManager,
+                                              long authorId, int postQuantity) {
+        TypedQuery<Post> query = entityManager.createQuery(
+                """
+                        SELECT p FROM Post p
+                        WHERE p.authorId = :authorId
+                        ORDER BY p.publishedAt ASC
+                        """
+                , Post.class);
+
+        query.setParameter("authorId", authorId);
+        query.setMaxResults(postQuantity);
+        return query.getResultList();
+    }
 }

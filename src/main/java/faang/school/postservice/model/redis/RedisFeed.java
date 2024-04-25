@@ -10,7 +10,7 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
-import java.util.SortedSet;
+import java.io.Serializable;
 import java.util.TreeSet;
 
 
@@ -19,9 +19,9 @@ import java.util.TreeSet;
 @NoArgsConstructor
 @Builder
 @RedisHash("Feed")
-public class RedisFeed {
+public class RedisFeed implements Serializable {
     @Id
-    private Long userId;
+    private Long id;
     @TimeToLive
     private int ttl;
     @Version

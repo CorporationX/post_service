@@ -4,10 +4,13 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.mapper.redis.RedisPostMapper;
 import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.repository.redis.RedisPostRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisKeyValueTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +29,17 @@ public class RedisPostCacheService {
         RedisPost redisPost = redisPostMapper.toEntity(postDto);
         redisPost.setTtl(postTtl);
 
-        redisPostRepository.findById(postId)
-                .ifPresentOrElse(
-                        (post) -> redisTemplate.update(redisPost),
-                        () -> redisPostRepository.save(redisPost)
-                );
+        redisPostRepository.findById(postId).ifPresentOrElse(
+                (post) -> redisTemplate.update(redisPost),
+                () -> redisPostRepository.save(redisPost)
+        );
+    }
+
+    public void update(long postId, Consumer<RedisPost> consumer) {
+        RedisPost redisPost = redisPostRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        consumer.accept(redisPost);
     }
 
     public void deletePostById(long postId) {

@@ -11,6 +11,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PostViewedEventDto {
     private Long postId;
-    private Long ownerId;
     private Long viewerId;
 }

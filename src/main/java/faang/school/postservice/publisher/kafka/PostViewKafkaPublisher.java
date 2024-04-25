@@ -14,11 +14,10 @@ public class PostViewKafkaPublisher extends AbstractKafkaPublisher<PostViewedEve
         super(kafkaTemplate);
     }
 
-    public void publish(long postId, long ownerId, long viewerId) {
+    public void publish(long postId, long ownerId) {
         send(postViewTopic, PostViewedEventDto.builder()
                 .postId(postId)
-                .ownerId(ownerId)
-                .viewerId(viewerId)
+                .viewerId(ownerId)
                 .build());
     }
 }

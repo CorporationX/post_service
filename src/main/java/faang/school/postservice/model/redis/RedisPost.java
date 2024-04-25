@@ -12,6 +12,8 @@ import org.springframework.data.redis.core.TimeToLive;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -31,7 +33,8 @@ public class RedisPost implements Serializable {
     private String content;
     private Long authorId;
     private SortedSet<RedisCommentDto> comments = new TreeSet<>();
-    private int likes;
+    private Set<Long> likedUserIds = new HashSet<>();
+    private Set<Long> viewedUserIds = new HashSet<>();
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
 

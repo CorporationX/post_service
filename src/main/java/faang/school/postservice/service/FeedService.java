@@ -92,7 +92,7 @@ public class FeedService {
                 .username(redisUser.getUsername())
                 .postId(redisPost.getId())
                 .content(redisPost.getContent())
-                .likes(redisPost.getLikes())
+                .likes(redisPost.getLikedUserIds().size())
                 .comments(redisPost.getComments().stream().toList())
                 .publishedAt(redisPost.getPublishedAt())
                 .updatedAt(redisPost.getUpdatedAt())

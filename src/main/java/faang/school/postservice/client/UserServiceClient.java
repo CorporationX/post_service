@@ -19,8 +19,11 @@ public interface UserServiceClient {
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 
     @GetMapping("/exists/{id}")
-    boolean existsUserById(@PathVariable("id") long Id);
+    boolean existsUserById(@PathVariable("id") long id);
 
-    @GetMapping("/followers")
-    List<Long> getFollowerIdsById(long ownerId);
+    @GetMapping("/followers/{id}")
+    List<Long> getFollowerIdsById(@PathVariable("id") long id);
+
+    @GetMapping("/ids")
+    List<Long> getAllUserIds ();
 }
