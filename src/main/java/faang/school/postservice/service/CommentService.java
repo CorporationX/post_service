@@ -1,12 +1,15 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.CommentEventDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validation.CommentValidation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -14,11 +17,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final PostService postService;
     private final CommentValidation commentValidation;
+    private final CommentEventPublisher commentEventPublisher;
 
     public CommentDto create(CommentDto commentDto, long userId) {
         commentValidation.authorExistenceValidation(userId);
@@ -26,6 +31,13 @@ public class CommentService {
         comment.setLikes(Collections.EMPTY_LIST);
         comment.setPost(postService.getPost(commentDto.getPostId()));
         Comment newComment = commentRepository.save(comment);
+        CommentEventDto event = CommentEventDto.builder()
+                .commentId(newComment.getId())
+                .authorId(newComment.getAuthorId())
+                .commentedAt(newComment.getCreatedAt())
+                .postId(newComment.getPost().getId())
+                .build();
+        commentEventPublisher.publish(event);
         return commentMapper.toDto(newComment);
     }
 
