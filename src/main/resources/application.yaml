@@ -33,6 +33,12 @@ spring:
           name: user_ban
         post-view:
           name: post_view
+    kafka:
+      port: 9092
+      host: localhost
+      channels:
+        comment-channel:
+          name: comment_event_channel
 
 server:
   port: 8081

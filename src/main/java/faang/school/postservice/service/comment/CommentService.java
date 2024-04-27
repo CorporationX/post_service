@@ -1,20 +1,24 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.event.comment.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.user.UserValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -23,12 +27,16 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
     private final UserValidator userValidator;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Transactional
     public CommentDto createComment(Long userId, Long postId, CommentDto commentDto) {
         userValidator.validateUserExist(userId);
         Comment comment = getComment(userId, postId, commentDto);
-        return commentMapper.toDto(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+        log.info("Saved comment {}", savedComment.getId());
+        publishCommentEvent(savedComment);
+        return commentMapper.toDto(savedComment);
     }
 
     @Transactional
@@ -55,6 +63,16 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<Comment> findCommentsByVerified(boolean verified) {
         return commentRepository.findByVerified(verified);
+    }
+
+    private void publishCommentEvent(Comment comment) {
+        commentEventPublisher.publish(CommentEvent.builder()
+                .authorId(comment.getAuthorId())
+                .postAuthorId(comment.getPost().getAuthorId())
+                .postId(comment.getPost().getId())
+                .commentId(comment.getId())
+                .commentContent(comment.getContent())
+                .build());
     }
 
     private Comment getComment(Long userId, Long postId, CommentDto commentDto) {

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+
 @Validated
 @RestController
 @RequiredArgsConstructor
@@ -36,12 +37,12 @@ public class CommentController {
     }
 
     @GetMapping("/posts/{postId}/comments")
-    public List<CommentDto> getCommentsByPostId(@PathVariable @Positive(message = "ID can't be less than 1")  Long postId) {
+    public List<CommentDto> getCommentsByPostId(@PathVariable @Positive(message = "ID can't be less than 1") Long postId) {
         return commentService.getCommentsByPostId(postId);
     }
 
     @DeleteMapping("/comments")
-    public void deleteComment(@RequestParam("id") @Positive(message = "ID can't be less than 1")  Long commentId) {
+    public void deleteComment(@RequestParam("id") @Positive(message = "ID can't be less than 1") Long commentId) {
         commentService.deleteComment(commentId);
     }
 }

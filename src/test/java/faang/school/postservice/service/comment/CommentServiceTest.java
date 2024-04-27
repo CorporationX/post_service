@@ -1,9 +1,11 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.event.comment.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.user.UserValidator;
@@ -31,12 +33,19 @@ class CommentServiceTest {
 
     @Mock
     private CommentRepository commentRepository;
+
     @Spy
     private CommentMapperImpl commentMapper;
+
     @Mock
     private PostRepository postRepository;
+
     @Mock
     private UserValidator userValidator;
+
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
+
     @InjectMocks
     private CommentService commentService;
 
@@ -50,6 +59,7 @@ class CommentServiceTest {
 
         assertEquals(expected, actual);
         verify(postRepository, times(1)).findById(anyLong());
+        verify(commentEventPublisher, times(1)).publish(any(CommentEvent.class));
         verify(commentMapper, times(1)).toEntity(any(CommentDto.class));
         verify(commentMapper, times(1)).toDto(any(Comment.class));
     }
@@ -146,6 +156,10 @@ class CommentServiceTest {
         return Comment.builder()
                 .id(1L)
                 .authorId(0L)
+                .post(Post.builder()
+                        .id(1L)
+                        .authorId(1L)
+                        .build())
                 .content("content")
                 .build();
     }
@@ -154,6 +168,7 @@ class CommentServiceTest {
         return CommentDto.builder()
                 .id(1L)
                 .authorId(0L)
+                .postId(1L)
                 .content("content")
                 .build();
     }
@@ -162,6 +177,7 @@ class CommentServiceTest {
         return CommentDto.builder()
                 .id(1L)
                 .authorId(0L)
+                .postId(1L)
                 .content("updated content")
                 .build();
     }
