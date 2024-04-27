@@ -64,7 +64,7 @@ public class Post {
     private boolean deleted;
 
     @Column(name = "verified")
-    private boolean verified;
+    private Boolean verified;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
