@@ -29,9 +29,7 @@ public class KafkaCommentConsumerService extends
     public void addComment(String message, Acknowledgment acknowledgement) {
         CommentEventKafka commentEventKafka = listener(message, CommentEventKafka.class);
 
-        PostHash postHash = postRedisRepository.findById(commentEventKafka.getPostId()).
-                orElseThrow(() -> new DataValidationException(
-                        "Post not found from Kafka: " + commentEventKafka.getPostId()));
+        PostHash postHash = getPostHash(commentEventKafka.getPostId());
         postHash.addComment(commentMapper.toDtoFromKafka(commentEventKafka));
         postRedisRepository.saveInRedis(postHash);
         acknowledgement.acknowledge();

@@ -13,12 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class KafkaPostViewConsumerService extends
         AbstractKafkaConsumer<ViewEventKafka> {
 
-    private final UserServiceClient userServiceClient;
-
     @Autowired
-    public KafkaPostViewConsumerService(PostRedisRepository postRedisRepository, UserServiceClient userServiceClient) {
+    public KafkaPostViewConsumerService(PostRedisRepository postRedisRepository) {
         super(postRedisRepository);
-        this.userServiceClient = userServiceClient;
     }
 
     @Transactional
@@ -26,7 +23,7 @@ public class KafkaPostViewConsumerService extends
     public void addViewPost(String message) {
         ViewEventKafka viewEventKafka = listener(message, ViewEventKafka.class);
         PostHash postHash = getPostHash(viewEventKafka.getPostId());
-        postHash.addView(userServiceClient.getUser(viewEventKafka.getViewId()));
+        postHash.addView(viewEventKafka.getUserDto());
         postRedisRepository.saveInRedis(postHash);
     }
 }

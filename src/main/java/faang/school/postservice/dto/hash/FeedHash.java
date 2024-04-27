@@ -1,6 +1,6 @@
 package faang.school.postservice.dto.hash;
 
-import faang.school.postservice.model.Post;
+import faang.school.postservice.exception.DataValidationException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,8 +12,11 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 @Component
 @Data
@@ -28,7 +31,6 @@ public class FeedHash implements Serializable {
 
     @Id
     private long userId;
-    private long feedId;
     private LinkedHashSet<Long> postsId =
             new LinkedHashSet<Long>(16, .65f);
 
@@ -46,6 +48,20 @@ public class FeedHash implements Serializable {
         while (postsId.size() >= countPost) {
             iterator.next();
             iterator.remove();
+        }
+    }
+
+    public List<Long> getNextTwentyPostsIdByLastPostId(Long lastPostId) {
+        List<Long> postsId = new ArrayList<>(this.postsId);
+        Collections.reverse(postsId);
+        if (lastPostId == null) {
+            return postsId.subList(0, 19);
+        } else {
+            int postIndex = postsId.indexOf(lastPostId);
+            if (postIndex == -1) {
+                throw new DataValidationException("Post not found : " + lastPostId);
+            }
+            return postsId.subList(postIndex, postIndex + 20);
         }
     }
 }

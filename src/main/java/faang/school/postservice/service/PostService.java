@@ -90,7 +90,7 @@ public class PostService {
         Post post = searchPostById(id);
         ViewEventKafka viewEventKafka = new ViewEventKafka(
                 post.getId(),
-                userContext.getUserId());
+                userServiceClient.getUser(userContext.getUserId()));
         kafkaPostViewProducer.sendMessage(viewEventKafka);
         return postMapper.toDto(post);
     }

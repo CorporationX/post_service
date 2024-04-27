@@ -1,6 +1,7 @@
 package faang.school.postservice.dto.hash;
 
 import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -40,9 +41,9 @@ public class PostHash implements Serializable {
     private Long projectId;
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
-    private int likeCount;
     private List<Long> followersId;
     private ConcurrentLinkedDeque<CommentDto> comments;
+    private ConcurrentLinkedDeque<LikeDto> likes;
     private ConcurrentLinkedDeque<UserDto> views;
 
     public void addComment(CommentDto newCommentDto) {
@@ -50,6 +51,9 @@ public class PostHash implements Serializable {
         if (comments.size() >= maxCount) {
             comments.pollFirst();
         }
+    }
+    public void addLike(LikeDto likeDto) {
+        this.likes.add(likeDto);
     }
 
     public void addView(UserDto userDto) {

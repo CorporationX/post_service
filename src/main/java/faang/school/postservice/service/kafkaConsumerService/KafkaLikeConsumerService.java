@@ -23,12 +23,8 @@ public class KafkaLikeConsumerService extends
     public void addLike(String message) {
         LikeEventKafka likeEventKafka = listener(message, LikeEventKafka.class);
 
-        PostHash postHash = postRedisRepository.findById(likeEventKafka.getPostId()).
-                orElseThrow(() -> new DataValidationException(
-                        "Post not found from Kafka: " + likeEventKafka.getPostId()));
-        postHash.setLikeCount(postHash.getLikeCount() + 1);
+        PostHash postHash = getPostHash(likeEventKafka.getPostId());
+        postHash.addLike(likeEventKafka.getLikeDto());
         postRedisRepository.saveInRedis(postHash);
-
-
     }
 }

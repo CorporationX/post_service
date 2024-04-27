@@ -36,6 +36,8 @@ class PostServiceTest {
     private KafkaPostViewProducer kafkaPostViewProducer;
     @Mock
     private UserContext userContext;
+    @Mock
+    private UserServiceClient userServiceClient;
     private PostDto postDto;
     private Post post1;
     private Post post2;

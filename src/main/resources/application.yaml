@@ -50,6 +50,7 @@ comments:
 
 server:
   port: 8081
+  version: /api/v1
 
 logging:
   level:

@@ -1,19 +1,15 @@
 package faang.school.postservice.repository.redis;
 
 import faang.school.postservice.dto.hash.AuthorHash;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
+import faang.school.postservice.dto.hash.AuthorType;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
-@RequiredArgsConstructor
-public abstract class AuthorRedisRepository implements CrudRepository<AuthorHash, Long> {
+public interface AuthorRedisRepository extends CrudRepository<AuthorHash, Long> {
+    void saveInRedis(AuthorHash authorHash);
 
-    private final RedisTemplate<Long, AuthorHash> redisTemplate;
-
-    public void saveInRedis(AuthorHash authorHash) {
-        redisTemplate.opsForZSet().add(
-                authorHash.getEventId(), authorHash, authorHash.getEventId());
-    }
+    Optional<AuthorHash> findByIdAndAuthorType(Long userId, AuthorType authorType);
 }
