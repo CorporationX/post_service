@@ -29,6 +29,10 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        user-ban:
+          name: user_ban
+        post-view:
+          name: post_view
     kafka:
       port: 9092
       host: localhost

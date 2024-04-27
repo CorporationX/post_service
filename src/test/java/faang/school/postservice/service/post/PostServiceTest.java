@@ -1,10 +1,12 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.UserBanPublisher;
+import faang.school.postservice.publisher.postview.PostViewEventPublisher;
+import faang.school.postservice.publisher.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -35,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -52,6 +55,8 @@ class PostServiceTest {
     private ResourceService resourceService;
     @Mock
     private UserBanPublisher userBanPublisher;
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
     private ExecutorService threadPool;
     private PostService postService;
 
@@ -93,7 +98,8 @@ class PostServiceTest {
                 .userId(firstPost.getAuthorId())
                 .build();
         threadPool = Executors.newFixedThreadPool(10);
-        postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool, userBanPublisher);
+        postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool,
+                userBanPublisher, postViewEventPublisher);
     }
 
     @Test
@@ -117,11 +123,12 @@ class PostServiceTest {
     void getPostById_PostFound_thenReturnedAsDto() {
         when(postRepository.findById(firstPost.getId())).thenReturn(Optional.ofNullable(firstPost));
 
-        PostDto returned = postService.getPostById(firstPost.getId());
+        PostDto returned = postService.getPostById(1L, firstPost.getId());
 
         assertAll(
                 () -> verify(postRepository, times(1)).findById(firstPost.getId()),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
+                () -> verify(postViewEventPublisher, never()).publish(any(PostViewEvent.class)),
                 () -> assertEquals(firstPostDto, returned)
         );
     }
@@ -131,7 +138,7 @@ class PostServiceTest {
         when(postRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class,
-                () -> postService.getPostById(1299L));
+                () -> postService.getPostById(1L, 1299L));
     }
 
     @Test
@@ -223,12 +230,12 @@ class PostServiceTest {
     }
 
     @Test
-    void getCreatedPostsByUserId_PostsFilteredAndSorted_ThenReturnedAsDto() {
+    void getCreatedPostsByAuthorId_PostsFilteredAndSorted_ThenReturnedAsDto() {
         setPostsCreationDates();
         firstPost.setPublished(true);
         when(postRepository.findByAuthorId(anyLong())).thenReturn(List.of(firstPost, secondPost, thirdPost));
 
-        List<PostDto> returned = postService.getCreatedPostsByUserId(1L);
+        List<PostDto> returned = postService.getCreatedPostsByAuthorId(1L);
 
         assertAll(
                 () -> verify(postRepository, times(1)).findByAuthorId(1L),
@@ -256,17 +263,18 @@ class PostServiceTest {
     }
 
     @Test
-    void getPublishedPostsByUserId_PostsFilteredAndSorted_ThenReturnedAsDto() {
+    void getPublishedPostsByAuthorId_PostsFilteredAndSorted_ThenReturnedAsDto() {
         setPublishedForAllPosts();
         setPostsPublishDates();
         thirdPost.setDeleted(true);
         when(postRepository.findByAuthorId(anyLong())).thenReturn(List.of(firstPost, secondPost, thirdPost));
 
-        List<PostDto> returned = postService.getPublishedPostsByUserId(1L);
+        List<PostDto> returned = postService.getPublishedPostsByAuthorId(1L, 1L);
 
         assertAll(
                 () -> verify(postRepository, times(1)).findByAuthorId(1L),
                 () -> verify(postMapper, times(1)).toDto(List.of(secondPost, firstPost)),
+                () -> verify(postViewEventPublisher, times(2)).publish(any(PostViewEvent.class)),
                 () -> assertEquals(2, returned.size()),
                 () -> assertEquals(postMapper.toDto(secondPost), returned.get(0))
         );
@@ -280,11 +288,12 @@ class PostServiceTest {
         thirdPost.setDeleted(true);
         when(postRepository.findByProjectId(anyLong())).thenReturn(List.of(firstPost, secondPost, thirdPost));
 
-        List<PostDto> returned = postService.getPublishedPostsByProjectId(2L);
+        List<PostDto> returned = postService.getPublishedPostsByProjectId(1L, 2L);
 
         assertAll(
                 () -> verify(postRepository, times(1)).findByProjectId(2L),
                 () -> verify(postMapper, times(1)).toDto(List.of(secondPost, firstPost)),
+                () -> verify(postViewEventPublisher, times(2)).publish(any(PostViewEvent.class)),
                 () -> assertEquals(2, returned.size()),
                 () -> assertEquals(postMapper.toDto(firstPost), returned.get(1))
         );
