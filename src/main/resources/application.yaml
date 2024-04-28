@@ -55,6 +55,16 @@ spell-check:
 api:
   default: "/api/v1/"
 
+scheduled:
+  cron:
+    removeAds: "0 0 0 * * *" #every day
+
+async:
+  poolCount: 10
+
+batchSize:
+  batch: 100
+
 user-service:
   host: localhost
   port: 8080
