@@ -47,21 +47,21 @@ public class AdServiceTest {
         ad2.setId(2L);
         ad2.setAppearancesLeft(5);
         ad2.setStartDate(LocalDateTime.of(2023, 4, 1, 0, 0));
-        ad2.setEndDate(LocalDateTime.of(2024, 4, 15, 0, 0));
+        ad2.setEndDate(LocalDateTime.of(2024, 5, 15, 0, 0));
 
-        List<Ad> ads = new ArrayList<>(List.of(ad1, ad2));
+        List<Long> removeIds = new ArrayList<>(List.of(1L));
 
-        Mockito.when(adRepository.findAll()).thenReturn(ads);
+        Mockito.when(adRepository.findByEndDateAfterOrNoAppearancesLeft()).thenReturn(removeIds);
 
         adService.deleteAdsWhichEndPaidPeriod();
 
-        Mockito.verify(adRepository, Mockito.times(1)).findAll();
+        Mockito.verify(adRepository, Mockito.times(1)).findByEndDateAfterOrNoAppearancesLeft();
         Mockito.verify(adRepository, Mockito.times(1)).deleteAllById(List.of(1L));
     }
 
     @Test
     public void testDeleteAdsPeriodEmptyList() {
-        Mockito.when(adRepository.findAll()).thenReturn(Collections.emptyList());
+        Mockito.when(adRepository.findByEndDateAfterOrNoAppearancesLeft()).thenReturn(Collections.emptyList());
         adService.deleteAdsWhichEndPaidPeriod();
         Mockito.verify(adRepository, Mockito.never()).deleteAllById(Mockito.anyList());
     }

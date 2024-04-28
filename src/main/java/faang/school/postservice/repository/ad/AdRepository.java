@@ -3,7 +3,6 @@ package faang.school.postservice.repository.ad;
 import faang.school.postservice.model.ad.Ad;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,4 +15,6 @@ public interface AdRepository extends JpaRepository<Ad, Long> {
     Optional<Ad> findByPostId(long postId);
 
     List<Ad> findAllByBuyerId(long buyerId);
+    @Query("SELECT ad.id FROM Ad ad WHERE CURRENT_TIMESTAMP > ad.endDate OR ad.appearancesLeft = 0")
+    List<Long> findByEndDateAfterOrNoAppearancesLeft();
 }

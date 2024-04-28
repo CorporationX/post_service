@@ -20,12 +20,10 @@ public class AdService {
 
     @Value("${batchSize.batch}")
     private int batchSize;
-
+    @Async("executorService")
     public void deleteAdsWhichEndPaidPeriod() {
         log.info("Запускаем процесс поиска завершившихся рекламных кампаний");
-        List<Ad> allAds = adRepository.findAll();
-        List<Long> removeAdsIds = allAds.stream().filter(ad -> LocalDateTime.now().isAfter(ad.getEndDate()) || ad.getAppearancesLeft() == 0)
-                .map(Ad::getId).toList();
+        List<Long> removeAdsIds = adRepository.findByEndDateAfterOrNoAppearancesLeft();
         if (removeAdsIds.isEmpty()) {
             log.info("Завершившихся рекламных кампаний не найдено");
             return;
