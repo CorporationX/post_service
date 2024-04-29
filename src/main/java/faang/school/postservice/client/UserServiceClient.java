@@ -21,4 +21,10 @@ public interface UserServiceClient {
 
     @GetMapping("/users/exists/{userId}")
     boolean existById (@PathVariable @Positive(message = "Id must be greater than zero") long userId);
+
+    @GetMapping("/followers/{followeeId}")
+    List<Long> getFollowersId(@RequestBody Long followeeId);
+
+    @GetMapping("/activeUsers")
+    List<Long> getActiveUsers();
 }

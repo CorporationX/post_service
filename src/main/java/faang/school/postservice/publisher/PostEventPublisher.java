@@ -18,5 +18,4 @@ public class PostEventPublisher extends AbstractEventPublisher<PostEvent> {
     public void publish(PostEvent postEvent) {
         convert(postEvent, postChannel);
     }
-
 }

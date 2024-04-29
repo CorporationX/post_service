@@ -28,9 +28,29 @@ spring:
           name: like_event_channel
         post_channel:
           name: post_channel
+      time_to_live: 86400 # 1 день
+      retry_max_attempts: 10
+
+  kafka:
+    bootstrap_servers: localhost:9092
+    group_id: post_service
+    topics:
+      post: post_topic
+      view: view_topic
+      like: like_topic
+      comment: comment_topic
+      heat_feed: heat_feed_topic
+
+feed:
+  count_post: 500
+  heat_batch_size: 1000
+
+comments:
+  max_count: 3
 
 server:
   port: 8081
+  version: /api/v1
 
 logging:
   level:

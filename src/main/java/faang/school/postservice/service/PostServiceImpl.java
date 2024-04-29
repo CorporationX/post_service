@@ -21,7 +21,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class PostServiceImpl implements PostService {
+public class PostServiceImpl {
 
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;

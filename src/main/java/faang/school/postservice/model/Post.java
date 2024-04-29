@@ -1,5 +1,6 @@
 package faang.school.postservice.model;
 
+import faang.school.postservice.dto.event.CommentEventKafka;
 import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

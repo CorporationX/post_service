@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.event.CommentEventKafka;
 import faang.school.postservice.model.Comment;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -13,4 +14,5 @@ public interface CommentMapper {
 
     CommentDto toDto(Comment comment);
 
+    CommentDto toDtoFromKafka(CommentEventKafka commentEventKafka);
 }

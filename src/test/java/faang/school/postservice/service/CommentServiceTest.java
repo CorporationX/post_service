@@ -9,9 +9,11 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.CommentService;
+import faang.school.postservice.service.hashService.AuthorHashService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +38,10 @@ public class CommentServiceTest {
     private CommentRepository commentRepository;
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private KafkaCommentProducer kafkaCommentProducer;
+    @Mock
+    private AuthorHashService authorHashService;
     private CommentDto commentDto;
     private UserDto userDto;
 

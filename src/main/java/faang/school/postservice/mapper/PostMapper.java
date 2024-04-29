@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.hash.PostHash;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -18,7 +19,6 @@ public interface PostMapper {
     PostDto toDto(Post post);
 
     Post toEntity(PostDto postDto);
-
 
     @Named("toLikeCount")
     default Long toLikeCount(List<Like> likes) {

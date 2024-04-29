@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.LikeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,8 @@ public class LikeServiceTest {
 
     @Mock
     private UserContext userContext;
-
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
     @Spy
     private LikeMapperImpl likeMapper;
 

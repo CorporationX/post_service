@@ -5,6 +5,7 @@ import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.PostServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -28,6 +29,7 @@ public class PostController {
 
     private final PostService postService;
     private final LikeEventPublisher likeEventPublisher;
+    private final PostServiceImpl postServiceImpl;
 
     @Operation(
             summary = "Создание черновика поста",
@@ -109,7 +111,7 @@ public class PostController {
     )
     @GetMapping("/author/{id}")
     public List<PostDto> getPostsByAuthorId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
-        return postService.getPostsByAuthorId(id);
+        return postServiceImpl.getPostsByAuthorId(id);
     }
 
     @Operation(
@@ -117,6 +119,6 @@ public class PostController {
     )
     @GetMapping("/project/{id}")
     public List<PostDto> getPostsByProjectId(@PathVariable @Positive(message = "Id must be greater than zero") long id) {
-        return postService.getPostsByProjectId(id);
+        return postServiceImpl.getPostsByProjectId(id);
     }
 }

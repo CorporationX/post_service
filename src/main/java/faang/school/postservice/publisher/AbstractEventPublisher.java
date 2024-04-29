@@ -21,7 +21,4 @@ public class AbstractEventPublisher<T> {
             throw new RuntimeException("Json processing exception");
         }
     }
-
-
-
 }
