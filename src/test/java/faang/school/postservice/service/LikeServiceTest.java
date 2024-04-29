@@ -30,27 +30,40 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
     @Mock
-    private PostService postService;
+    private PostServiceImpl postServiceImpl;
+
     @Mock
     private CommentService commentService;
+
     @Mock
     private UserServiceClient userServiceClient;
+
     @Mock
     private LikeRepository likeRepository;
+
     @Mock
     private UserContext userContext;
     @Mock
     private KafkaLikeProducer kafkaLikeProducer;
     @Spy
     private LikeMapperImpl likeMapper;
+
+
     @InjectMocks
     private LikeServiceImpl likeService;
+
     private UserDto userDto;
+
     private LikeDto likeDto;
+
     private Like like;
+
     private Post post;
+
     private Comment comment;
+
     private long userId = 1L;
+
 
     @BeforeEach
     public void setUp() {
@@ -80,15 +93,18 @@ public class LikeServiceTest {
 
         when(userContext.getUserId()).thenReturn(userId);
         when(userServiceClient.getUser(userId)).thenReturn(userDto);
+
     }
+
 
     @Test
     public void testShouldLikePost() {
-        when(postService.searchPostById(likeDto.getPostId())).thenReturn(post);
+        when(postServiceImpl.searchPostById(likeDto.getPostId())).thenReturn(post);
         when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.empty());
         when(likeRepository.save(any(Like.class))).thenReturn(like);
         assertEquals(likeDto, likeService.likePost(likeDto));
     }
+
 
     @Test
     public void testShouldLikeComment() {
@@ -98,12 +114,14 @@ public class LikeServiceTest {
         assertEquals(likeDto, likeService.likeComment(likeDto));
     }
 
+
     @Test
     public void testShouldThrowDataValidationExceptionOnDuplicateLikePost() {
-        when(postService.searchPostById(likeDto.getPostId())).thenReturn(post);
+        when(postServiceImpl.searchPostById(likeDto.getPostId())).thenReturn(post);
         when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.of(like));
         assertThrows(DataValidationException.class, () -> likeService.likePost(likeDto));
     }
+
 
     @Test
     public void testShouldThrowDataValidationExceptionOnDuplicateLikeComment() {
@@ -112,15 +130,18 @@ public class LikeServiceTest {
         assertThrows(DataValidationException.class, () -> likeService.likeComment(likeDto));
     }
 
+
     @Test
     public void testShouldDeleteLikePost() {
         likeService.deleteLikePost(post.getId());
         verify(likeRepository).deleteByPostIdAndUserId(post.getId(), userDto.getId());
     }
 
+
     @Test
     public void testShouldDeleteLikeComment() {
         likeService.deleteLikeComment(comment.getId());
         verify(likeRepository).deleteByCommentIdAndUserId(comment.getId(), userDto.getId());
     }
+
 }

@@ -12,6 +12,9 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AmazonS3Config {
+    @Value("${services.s3.endpoint}")
+    private String endpoint;
+
     @Value("${services.s3.accessKey}")
     private String accessKey;
 
@@ -21,8 +24,6 @@ public class AmazonS3Config {
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
-    @Value("${services.s3.endpoint}")
-    private String endpoint;
 
     @Bean(name = "clientAmazonS3")
     public AmazonS3 s3Client() {
