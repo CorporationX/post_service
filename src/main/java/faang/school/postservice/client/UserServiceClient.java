@@ -24,4 +24,7 @@ public interface UserServiceClient {
 
     @GetMapping("/followers/{followeeId}")
     List<Long> getFollowersId(@RequestBody Long followeeId);
+
+    @GetMapping("/activeUsers")
+    List<Long> getActiveUsers();
 }

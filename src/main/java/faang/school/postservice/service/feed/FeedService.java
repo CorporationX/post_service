@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.feed;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CommentDto;
@@ -46,7 +46,7 @@ public class FeedService {
         return createPostsForFeed(twentyPostsId);
     }
 
-    private List<PostForFeed> createPostsForFeed(List<Long> postsId) {
+    public List<PostForFeed> createPostsForFeed(List<Long> postsId) {
         List<PostForFeed> postsForFeed = new ArrayList<>();
         for (Long postId : postsId) {
             PostHash postHash = getPostHash(postId);
@@ -64,7 +64,7 @@ public class FeedService {
         return postsForFeed;
     }
 
-    private PostForFeed createPostFromHash(PostHash postHash) {
+    public PostForFeed createPostFromHash(PostHash postHash) {
         return PostForFeed.builder()
                 .id(postHash.getId())
                 .content(postHash.getContent())
@@ -81,7 +81,7 @@ public class FeedService {
                 .build();
     }
 
-    private PostForFeed createPostFromBD(Post post) {
+    public PostForFeed createPostFromBD(Post post) {
         return PostForFeed.builder()
                 .id(post.getId())
                 .content(post.getContent())
@@ -135,12 +135,14 @@ public class FeedService {
     private ConcurrentLinkedDeque<UserDto> getViewer(
             List<Comment> comments, List<Like> likes) {
         ConcurrentLinkedDeque<UserDto> views = new ConcurrentLinkedDeque<>();
-        views.addAll(userServiceClient.getUsersByIds(comments.stream()
-                .map(Comment::getAuthorId)
-                .toList()));
-        views.addAll(userServiceClient.getUsersByIds(likes.stream()
-                .map(Like::getUserId)
-                .toList()));
+        views.addAll(userServiceClient.getUsersByIds(
+                comments.stream()
+                        .map(Comment::getAuthorId)
+                        .toList()));
+        views.addAll(userServiceClient.getUsersByIds(
+                likes.stream()
+                        .map(Like::getUserId)
+                        .toList()));
         return views;
     }
 }

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ public class KafkaCommentConsumerService extends
 
     @Transactional
     @KafkaListener(topics = "${spring.kafka.topics.comment}")
+    @Async("executor")
     public void addComment(String message, Acknowledgment acknowledgement) {
         CommentEventKafka commentEventKafka = listener(message, CommentEventKafka.class);
 

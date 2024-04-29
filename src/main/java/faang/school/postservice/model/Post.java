@@ -72,12 +72,4 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    public void addComment(Comment comment) {
-        this.comments.add(comment);
-    }
-
-    public void addLike(Like like) {
-        this.likes.add(like);
-    }
 }

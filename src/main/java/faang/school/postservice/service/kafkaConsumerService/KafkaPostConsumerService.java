@@ -6,6 +6,7 @@ import faang.school.postservice.repository.redis.FeedRedisRepository;
 import faang.school.postservice.repository.redis.PostRedisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class KafkaPostConsumerService extends
 
     @Transactional
     @KafkaListener(topics = "${spring.kafka.topics.post}")
+    @Async("executor")
     public void addPost(String message) {
         PostEventKafka postEventKafka = listener(message, PostEventKafka.class);
         addPostForFollowersFeed(postEventKafka);

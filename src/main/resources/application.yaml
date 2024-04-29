@@ -41,9 +41,11 @@ spring:
       view: view_topic
       like: like_topic
       comment: comment_topic
+      heat_feed: heat_feed_topic
 
 feed:
   count_post: 500
+  heat_batch_size: 1000
 
 comments:
   max_count: 3

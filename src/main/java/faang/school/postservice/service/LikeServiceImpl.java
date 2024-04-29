@@ -39,9 +39,7 @@ public class LikeServiceImpl implements LikeService {
                 .build();
 
         LikeEventKafka likeEventKafka = new LikeEventKafka(
-                post.getId(),
-                userDto.getId(),
-                likeDto);
+                likeDto, userDto);
         kafkaLikeProducer.sendMessage(likeEventKafka);
         return likeMapper.toDto(likeRepository.save(like));
     }

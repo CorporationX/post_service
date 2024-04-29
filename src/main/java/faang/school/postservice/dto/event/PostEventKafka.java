@@ -1,6 +1,5 @@
 package faang.school.postservice.dto.event;
 
-import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.model.Post;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingDeque;
 
 @Data
 @Builder
@@ -33,14 +31,6 @@ public class PostEventKafka {
     private LocalDateTime updatedAt;
     private int likeCount;
     private List<Long> followersId;
-    private LinkedBlockingDeque<CommentDto> comments;
-
-    public void addComment(CommentDto newComment) {
-        comments.offerLast(newComment);
-        while (comments.size() >= maxCount) {
-            comments.pollFirst();
-        }
-    }
 
     public PostEventKafka(Post post) {
         this.id = post.getId();
