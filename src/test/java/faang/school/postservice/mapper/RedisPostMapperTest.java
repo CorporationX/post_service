@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(MockitoExtension.class)
-public class PostMapperTest {
+public class RedisPostMapperTest {
     private final PostMapper postMapper = new PostMapperImpl();
     private PostDto postDto;
     private Post post;

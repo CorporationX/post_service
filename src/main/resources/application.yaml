@@ -27,9 +27,40 @@ spring:
           name: calculations_channel
         user_ban:
           name: user_ban_channel
+      posts:
+        ttl: 86400
+        count: 20
+        max-heat-posts: 500
+      authors:
+        ttl: 86400
+      feed-limit: 500
+
+      stores:
+        keys:
+          feed: "feed:"
+
+      comments:
+        max-comments: 3
   mvc:
     servlet:
       path: /api/v1
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: newsFeed
+      auto-offset-reset: earliest
+      max-poll-records: 50
+      enable-auto-commit: false
+
+    listener:
+      ack-mode: manual
+
+    topics:
+      posts: "posts"
+      likes: "likes"
+      comments: "comments"
+      post-views: "post-views"
 
 
 server:

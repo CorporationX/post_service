@@ -8,8 +8,10 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.kafka.KafkaEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisAuthorRepository;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,10 +40,16 @@ public class CommentServiceTest {
     private PostRepository postRepository;
 
     @Mock
+    private RedisAuthorRepository redisAuthorRepository;
+
+    @Mock
     private UserServiceClient userServiceClient;
 
     @Mock
     private CommentEventPublisher commentEventPublisher;
+
+    @Mock
+    private KafkaEventPublisher kafkaEventPublisher;
 
     private CommentValidator commentValidator;
 
@@ -67,7 +75,8 @@ public class CommentServiceTest {
     @BeforeEach
     public void init() {
         commentValidator = new CommentValidator(userServiceClient);
-        commentService = new CommentService(commentRepository, postRepository, commentValidator, commentMapper, commentEventPublisher);
+        commentService = new CommentService(commentRepository, postRepository, redisAuthorRepository,
+                commentValidator, commentMapper, commentEventPublisher, kafkaEventPublisher);
         commentDto = CommentDto.builder()
                 .authorId(1L)
                 .id(2L)

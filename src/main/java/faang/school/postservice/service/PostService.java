@@ -1,14 +1,21 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.UserBanEventDto;
+import faang.school.postservice.dto.event.PostCreatedEvent;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.redis.Author;
+import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisAuthorRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.publisher.kafka.KafkaEventPublisher;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +38,29 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final RedisPostRepository redisPostRepository;
+    private final RedisAuthorRepository redisAuthorRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
     private final ResourceMapper resourceMapper;
     private final ResourceService resourceService;
+    private final UserServiceClient userServiceClient;
     private final UserBanEventPublisher userBanEventPublisher;
+    private final KafkaEventPublisher kafkaEventPublisher;
+
     @Value("${post.rule.unverified_posts_limit}")
     private int unverifiedPostsLimit;
+
+    @Value("${spring.kafka.topics.posts}")
+    private String postsTopic;
+
+    @Value("${redis.post.ttl}")
+    private long postTtl;
+
+    @Value("${redis.author.ttl}")
+    private long authorTtl;
+
+
 
     public void createPostDraft(PostDto postDto) {
         postValidator.validatePostOwnerExists(postDto);
@@ -51,6 +74,12 @@ public class PostService {
         Post post = getPost(postId);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+
+        redisAuthorRepository.save(Author.builder()
+                .id(post.getAuthorId())
+                .postId(post.getId())
+                .expiration(authorTtl)
+                .build());
     }
 
     @Transactional
@@ -120,7 +149,26 @@ public class PostService {
     public PostDto createPost(PostDto postDto, List<MultipartFile> files) {
         postValidator.validateAccessAndContent(postDto);
 
+        List<Long> followerIds = postRepository.findFollowerIdsByAuthorId(postDto.getAuthorId());
+        PostCreatedEvent postCreatedEvent = new PostCreatedEvent(postDto.getId(), followerIds, postDto.getCreatedAt());
         Post savedPost = postRepository.save(postMapper.toEntity(postDto));
+
+        redisPostRepository.save(RedisPost.builder()
+                .expiration(postTtl)
+                .id(savedPost.getId())
+                .content(savedPost.getContent())
+                .authorId(savedPost.getAuthorId())
+                .projectId(savedPost.getProjectId())
+                .likes(savedPost.getLikes())
+                .comments(savedPost.getComments())
+                .albums(savedPost.getAlbums())
+                .ad(savedPost.getAd())
+                .resources(savedPost.getResources())
+                .createdAt(savedPost.getCreatedAt())
+                .updatedAt(savedPost.getUpdatedAt())
+                .build());
+
+        kafkaEventPublisher.sendEvent(postsTopic, postCreatedEvent);
 
         return createResourcesAndGetPostDto(savedPost, files);
     }

@@ -50,6 +50,9 @@ public class Post {
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments;
 
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
+    private List<PostView> postViews;
+
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;
 

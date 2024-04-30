@@ -2,7 +2,9 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.PostViewDto;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.PostViewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +29,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PostViewService postViewService;
     private final UserContext userContext;
 
     @PostMapping("/draft")
@@ -80,5 +83,10 @@ public class PostController {
                               @RequestPart PostDto postDto,
                               @RequestPart(value = "files", required = false) @Size(max = 10) List<MultipartFile> files) {
         return postService.updatePost(postId, postDto, files);
+    }
+
+    @PostMapping("/posts/postView/")
+    public PostViewDto viewPost(@RequestBody PostViewDto postViewDto) {
+        return postViewService.addPostView(postViewDto);
     }
 }

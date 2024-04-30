@@ -41,7 +41,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class PostServiceTest {
+public class RedisPostServiceTest {
 
     @Mock
     private PostRepository postRepository;

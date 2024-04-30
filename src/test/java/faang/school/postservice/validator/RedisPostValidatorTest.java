@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class PostValidatorTest {
+public class RedisPostValidatorTest {
 
     @Mock
     private UserServiceClient userServiceClient;
