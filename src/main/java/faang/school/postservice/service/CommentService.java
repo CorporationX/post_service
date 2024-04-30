@@ -8,6 +8,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validation.CommentValidation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -64,5 +65,10 @@ public class CommentService {
         commentValidation.authorExistenceValidation(userId);
         commentValidation.validateCommentExistence(commentDto.getId());
         commentRepository.deleteById(commentDto.getId());
+    }
+
+    public Comment findCommentById(Long commentId) {
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Comment by id: " + commentId + " not found"));
     }
 }
