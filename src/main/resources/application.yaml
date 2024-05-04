@@ -39,6 +39,8 @@ spring:
       channels:
         comment-channel:
           name: comment_event_channel
+        post-channel:
+          name: post_event_channel
 
 server:
   port: 8081

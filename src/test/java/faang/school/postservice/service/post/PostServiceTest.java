@@ -5,6 +5,7 @@ import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
@@ -57,6 +58,8 @@ class PostServiceTest {
     private UserBanPublisher userBanPublisher;
     @Mock
     private PostViewEventPublisher postViewEventPublisher;
+    @Mock
+    private PostEventPublisher postEventPublisher;
     private ExecutorService threadPool;
     private PostService postService;
 
@@ -72,6 +75,7 @@ class PostServiceTest {
                 .id(1L)
                 .content("Valid content")
                 .authorId(1L)
+                .projectId(1L)
                 .resources(new ArrayList<>())
                 .published(false)
                 .build();
@@ -93,13 +97,14 @@ class PostServiceTest {
                 .id(firstPost.getId())
                 .content(firstPost.getContent())
                 .authorId(firstPost.getAuthorId())
+                .projectId(firstPost.getProjectId())
                 .build();
         userBanMessage = UserEvent.builder()
                 .userId(firstPost.getAuthorId())
                 .build();
         threadPool = Executors.newFixedThreadPool(10);
         postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool,
-                userBanPublisher, postViewEventPublisher);
+                userBanPublisher, postViewEventPublisher, postEventPublisher);
     }
 
     @Test
