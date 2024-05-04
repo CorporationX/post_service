@@ -4,9 +4,11 @@ import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.event.post.PostEvent;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.resource.Resource;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
@@ -40,6 +42,7 @@ public class PostService {
     private final ExecutorService threadPool;
     private final UserBanPublisher userBanPublisher;
     private final PostViewEventPublisher postViewEventPublisher;
+    private final PostEventPublisher postEventPublisher;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -61,6 +64,7 @@ public class PostService {
                 post.getResources().add(resource);
             }
         }
+        publishPostEvent(post);
         return postMapper.toDto(post);
     }
 
@@ -196,5 +200,13 @@ public class PostService {
     private Post getPostFromRepository(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist by id: " + postId));
+    }
+
+    private void publishPostEvent(Post post) {
+        postEventPublisher.publish(PostEvent.builder()
+                .authorId(post.getAuthorId())
+                .projectId(post.getProjectId())
+                .content(post.getContent())
+                .build());
     }
 }
