@@ -1,4 +1,4 @@
-package faang.school.postservice.dto;
+package faang.school.postservice.dto.like;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class LikeDto {
     private Long id;
     @NotNull
+    @Positive
     private Long userId;
     @Positive
     private Long postId;

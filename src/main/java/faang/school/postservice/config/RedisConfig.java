@@ -1,5 +1,6 @@
 package faang.school.postservice.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,22 +11,23 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
+@Slf4j
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
     private String host;
     @Value("${spring.data.redis.port}")
     private int port;
+
     @Value("${spring.data.redis.channels.user_ban_channel.name}")
     private String userBannerTopic;
-    @Bean
-    public ChannelTopic getChannelTopic(){
-        return new ChannelTopic(userBannerTopic);
-    }
+    @Value("${spring.data.redis.channels.notification_of_like_channel.name}")
+    private String notificationOfLikeTopic;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+        log.info("Connections to Redis created on the host: {}, port: {}", host, port);
         return new JedisConnectionFactory(config);
     }
 
@@ -38,5 +40,13 @@ public class RedisConfig {
         return redisTemplate;
     }
 
+    @Bean
+    public ChannelTopic userBannerChannel(){
+        return new ChannelTopic(userBannerTopic);
+    }
 
+    @Bean
+    public ChannelTopic notificationOfLikeChannel(){
+        return new ChannelTopic(notificationOfLikeTopic);
+    }
 }
