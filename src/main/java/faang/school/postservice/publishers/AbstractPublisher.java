@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 public abstract class AbstractPublisher<T> {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
-    private final String chanelName;
+    private final String channelName;
 
     public void publish(T eventType) {
         String json;
@@ -21,6 +21,6 @@ public abstract class AbstractPublisher<T> {
             log.error("Error when serializing an object to a JSON string", e);
             throw new RuntimeException(e);
         }
-        redisTemplate.convertAndSend(chanelName, json);
+        redisTemplate.convertAndSend(channelName, json);
     }
 }

@@ -41,13 +41,13 @@ public class LikeService {
                 .post(checkPost)
                 .build();
 
-        LikeEvent likeEvent = LikeEvent.builder()
-                .authorLikeId(likeDto.getUserId())
+        LikeEvent likeEvent = buildLikeEvent(likeDto);
+        LikeEvent likeEventPost = likeEvent.toBuilder()
                 .authorPostId(checkPost.getAuthorId())
                 .postId(checkPost.getId())
-                .createdAt(LocalDateTime.now())
                 .build();
-        likeEventPublisher.publish(likeEvent);
+
+        likeEventPublisher.publish(likeEventPost);
 
         return likeMapper.toDto(likeRepository.save(like));
     }
@@ -66,13 +66,13 @@ public class LikeService {
                 .comment(checkComment)
                 .build();
 
-        LikeEvent likeEvent = LikeEvent.builder()
-                .authorLikeId(likeDto.getUserId())
+        LikeEvent likeEvent = buildLikeEvent(likeDto);
+        LikeEvent likeEventComment = likeEvent.toBuilder()
                 .authorCommentId(checkComment.getAuthorId())
                 .commentId(checkComment.getId())
-                .createdAt(LocalDateTime.now())
                 .build();
-        likeEventPublisher.publish(likeEvent);
+
+        likeEventPublisher.publish(likeEventComment);
 
         return likeMapper.toDto(likeRepository.save(like));
     }
@@ -88,5 +88,12 @@ public class LikeService {
         } catch (FeignException e) {
             throw new EntityNotFoundException(e.getMessage());
         }
+    }
+
+    public LikeEvent buildLikeEvent(LikeDto likeDto) {
+        return LikeEvent.builder()
+                .authorLikeId(likeDto.getUserId())
+                .createdAt(LocalDateTime.now())
+                .build();
     }
 }

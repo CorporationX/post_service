@@ -41,12 +41,12 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic getChannelTopic(){
+    public ChannelTopic userBannerChannel(){
         return new ChannelTopic(userBannerTopic);
     }
 
     @Bean
-    public ChannelTopic getNotificationOfLikeTopic(){
+    public ChannelTopic notificationOfLikeChannel(){
         return new ChannelTopic(notificationOfLikeTopic);
     }
 }
