@@ -18,9 +18,16 @@ public class RedisConfig {
     private int port;
     @Value("${spring.data.redis.channels.user_ban_channel.name}")
     private String userBannerTopic;
+    @Value("${spring.data.redis.channels.comment_channel.name}")
+    private String commentTopic;
     @Bean
     public ChannelTopic getChannelTopic(){
         return new ChannelTopic(userBannerTopic);
+    }
+
+    @Bean
+    public ChannelTopic getCommentTopic() {
+        return new ChannelTopic(commentTopic);
     }
 
     @Bean

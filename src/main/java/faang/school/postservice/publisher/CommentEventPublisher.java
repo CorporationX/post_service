@@ -1,24 +1,18 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.mapper.ToJsonCommentMapper;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.CommentEventDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
-@RequiredArgsConstructor
-public class CommentEventPublisher implements MessagePublisher {
-    @Value("${spring.data.redis.channels.comment.name}")
-    private String commentTopic;
-    private final RedisTemplate redisTemplate;
-    private final ToJsonCommentMapper toJsonCommentMapper;
+@Component
+public class CommentEventPublisher extends MessagePublisher<CommentEventDto> {
 
+    public CommentEventPublisher(RedisTemplate<String, Object> redisTemplate,
+                                 ObjectMapper jsonMapper,
+                                 @Value("${spring.data.redis.channels.comment.name}") String commentTopic) {
+        super(redisTemplate, jsonMapper, commentTopic);
 
-    @Override
-    public <T> void publish(T event) {
-        String json = toJsonCommentMapper.toJson(event);
-        redisTemplate.convertAndSend(commentTopic, json);
     }
-
 }
