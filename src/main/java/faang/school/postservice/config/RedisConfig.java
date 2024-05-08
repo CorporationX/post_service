@@ -21,8 +21,8 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.channels.user_ban_channel.name}")
     private String userBannerTopic;
-    @Value("${spring.data.redis.channels.notification_of_like_channel.name}")
-    private String notificationOfLikeTopic;
+    @Value("${spring.data.redis.channels.notification_like_channel.name}")
+    private String notificationLikeTopic;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -47,6 +47,6 @@ public class RedisConfig {
 
     @Bean
     public ChannelTopic notificationOfLikeChannel(){
-        return new ChannelTopic(notificationOfLikeTopic);
+        return new ChannelTopic(notificationLikeTopic);
     }
 }
