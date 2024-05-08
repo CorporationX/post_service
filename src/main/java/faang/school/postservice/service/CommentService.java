@@ -1,9 +1,11 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publishers.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validation.CommentValidation;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,6 +22,7 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final PostService postService;
     private final CommentValidation commentValidation;
+    private final CommentEventPublisher commentEventPublisher;
 
     public CommentDto create(CommentDto commentDto, long userId) {
         commentValidation.authorExistenceValidation(userId);
@@ -27,7 +30,18 @@ public class CommentService {
         comment.setLikes(Collections.EMPTY_LIST);
         comment.setPost(postService.getPost(commentDto.getPostId()));
         Comment newComment = commentRepository.save(comment);
+        CommentEvent commentEvent = buildCommentEvent(newComment);
+        commentEventPublisher.publish(commentEvent);
         return commentMapper.toDto(newComment);
+    }
+
+    private CommentEvent buildCommentEvent(Comment comment) {
+        return CommentEvent.builder()
+                .authorOfCommentId(comment.getAuthorId())
+                .authorOfPostId(comment.getPost().getAuthorId())
+                .postId(comment.getPost().getId())
+                .content(comment.getContent())
+                .build();
     }
 
     public CommentDto update(CommentDto commentDto, long userId) {
@@ -39,6 +53,7 @@ public class CommentService {
         comment.setContent(commentDto.getContent());
 
         commentRepository.save(comment);
+
 
         return commentMapper.toDto(comment);
     }

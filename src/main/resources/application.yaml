@@ -28,6 +28,8 @@ spring:
           name: calculations_channel
         notification_of_like_channel:
           name: notification_of_like_channel
+        comment_event_channel:
+          name: comment_event_channel
 
 server:
   port: 8081

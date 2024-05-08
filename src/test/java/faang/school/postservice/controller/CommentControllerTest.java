@@ -1,7 +1,7 @@
 //package faang.school.postservice.controller;
 //
 //import faang.school.postservice.config.context.UserContext;
-//import faang.school.postservice.dto.CommentDto;
+//import faang.school.postservice.dto.comment.CommentDto;
 //import faang.school.postservice.service.CommentService;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
