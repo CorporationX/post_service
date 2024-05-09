@@ -15,12 +15,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class LikeEvent {
+    @Positive
+    private Long id; // TODO: передавать
     @NotNull
-    private Long authorLikeId;
+    private Long authorLikeId; // TODO: передавать
     @Positive
     private Long authorPostId;
     @Positive
-    private Long postId;
+    private Long postId; // TODO: передавать
     @Positive
     private Long authorCommentId;
     @Positive
