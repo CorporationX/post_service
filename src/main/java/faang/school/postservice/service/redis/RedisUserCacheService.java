@@ -13,6 +13,8 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class RedisUserCacheService {
@@ -25,7 +27,7 @@ public class RedisUserCacheService {
 
     @Retryable(retryFor = {FeignException.class}, maxAttempts = 5, backoff =
     @Backoff(delay = 500, multiplier = 3))
-    public void saveUser(long userId) {
+    public RedisUser save(long userId) {
         UserDto userDto = userServiceClient.getUser(userId);
         RedisUser redisUser = redisUserMapper.toEntity(userDto);
         redisUser.setTtl(userTtl);
@@ -35,5 +37,11 @@ public class RedisUserCacheService {
                         (user) -> redisTemplate.update(redisUser),
                         () -> redisUserRepository.save(redisUser)
                 );
+
+        return redisUser;
+    }
+
+    public Optional<RedisUser> get (long userId) {
+        return redisUserRepository.findById(userId);
     }
 }

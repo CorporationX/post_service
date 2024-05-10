@@ -15,13 +15,13 @@ import java.util.List;
 public class FeedController {
     private final FeedService feedService;
 
-    @GetMapping("/feed")
+    @GetMapping
     public List<FeedDto> getPostFeedBatch(@RequestParam(value = "postIndex", required = false) Long postIndex) {
         return feedService.getFeed(postIndex);
     }
 
     @PostMapping("/heat")
-    public List<FeedDto> heatFeed(@RequestParam(value = "postIndex", required = false) Long postIndex) {
-        return feedService.getFeed(postIndex);
+    public void heatFeed() {
+        feedService.heat();
     }
 }

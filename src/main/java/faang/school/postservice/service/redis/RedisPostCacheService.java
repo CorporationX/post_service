@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisKeyValueTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 @Service
@@ -22,9 +23,9 @@ public class RedisPostCacheService {
     @Value("${spring.data.redis.cache.ttl.post}")
     private int postTtl;
 
-    public void saveOrUpdate(PostDto postDto) {
+    public RedisPost save(PostDto postDto) {
         Long postId = postDto.getId();
-        redisUserCacheService.saveUser(postDto.getAuthorId());
+        redisUserCacheService.save(postDto.getAuthorId());
 
         RedisPost redisPost = redisPostMapper.toEntity(postDto);
         redisPost.setTtl(postTtl);
@@ -33,6 +34,7 @@ public class RedisPostCacheService {
                 (post) -> redisTemplate.update(redisPost),
                 () -> redisPostRepository.save(redisPost)
         );
+        return redisPost;
     }
 
     public void update(long postId, Consumer<RedisPost> consumer) {
@@ -40,6 +42,10 @@ public class RedisPostCacheService {
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
         consumer.accept(redisPost);
+    }
+
+    public Optional<RedisPost> get (long postId) {
+        return redisPostRepository.findById(postId);
     }
 
     public void deletePostById(long postId) {

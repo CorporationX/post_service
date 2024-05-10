@@ -8,6 +8,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.publisher.kafka.PostKafkaPublisher;
 import faang.school.postservice.publisher.redis.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
@@ -74,7 +75,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(publishedAt);
 
-        redisPostCacheService.saveOrUpdate(postMapper.toDto(post));
+        redisPostCacheService.save(postMapper.toDto(post));
         postKafkaProducer.publish(postId, authorId, publishedAt, KafkaKey.SAVE);
     }
 
@@ -88,7 +89,7 @@ public class PostService {
         Post updatedPost = postRepository.save(post);
         PostDto updatedPostDto = createResourcesAndGetPostDto(updatedPost, files);
 
-        redisPostCacheService.saveOrUpdate(postMapper.toDto(updatedPost));
+        redisPostCacheService.save(postMapper.toDto(updatedPost));
         postKafkaProducer.publish(postId, updatedPostDto.getAuthorId(), updatedPostDto.getPublishedAt(), KafkaKey.SAVE);
         return updatedPostDto;
     }
@@ -234,5 +235,14 @@ public class PostService {
 
     public List<Post> getPosts(Long authorId, int postQuantity) {
         return postRepository.getNextPostsByAuthorId(entityManager, authorId, postQuantity);
+    }
+
+    public RedisPost getPostFromCache(long postId) {
+        return redisPostCacheService.get(postId).orElseGet(() ->
+                {
+                    PostDto postDto = getPostDto(postId);
+                    return redisPostCacheService.save(postDto);
+                }
+        );
     }
 }

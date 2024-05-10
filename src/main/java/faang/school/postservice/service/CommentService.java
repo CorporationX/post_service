@@ -49,7 +49,7 @@ public class CommentService {
                 .postId(post.getId())
                 .build());
 
-        redisUserCacheService.saveUser(post.getAuthorId());
+        redisUserCacheService.save(post.getAuthorId());
         commentKafkaPublisher.publish(savedComment.getId(), postId, KafkaKey.SAVE);
 
         return commentMapper.toDTO(savedComment);

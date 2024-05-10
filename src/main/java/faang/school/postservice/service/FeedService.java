@@ -4,13 +4,10 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.FeedDto;
 import faang.school.postservice.dto.redis.PostIdDto;
-import faang.school.postservice.mapper.redis.RedisPostMapper;
-import faang.school.postservice.mapper.redis.RedisUserMapper;
 import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.model.redis.RedisUser;
 import faang.school.postservice.repository.redis.RedisFeedRepository;
-import faang.school.postservice.repository.redis.RedisPostRepository;
-import faang.school.postservice.repository.redis.RedisUserRepository;
+import faang.school.postservice.service.redis.RedisUserCacheService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,17 +16,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 @Service
 @RequiredArgsConstructor
 public class FeedService {
     private final RedisFeedRepository redisFeedRepository;
-    private final RedisPostMapper redisPostMapper;
-    private final RedisUserMapper redisUserMapper;
-    private final RedisPostRepository redisPostRepository;
-    private final RedisUserRepository redisUserRepository;
+    private final RedisUserCacheService redisUserCacheService;
     private final PostService postService;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
@@ -45,19 +39,20 @@ public class FeedService {
         redisFeedRepository.findById(userId)
                 .ifPresent(
                         (redisFeed) -> {
-                            TreeSet<PostIdDto> postIdsDtosFromCache = redisFeed.getPostIds();
-                            if (lastPostId == null) {
-                                postIdDtos.addAll(postIdsDtosFromCache);
-                            } else {
-                                postIdsDtosFromCache.stream()
+                            SortedSet<PostIdDto> postIdsDtosFromCache = redisFeed.getPostIds();
+
+                            if (lastPostId != null) {
+                                Optional<PostIdDto> from = postIdsDtosFromCache.stream()
                                         .filter(postIdDto -> lastPostId == postIdDto.getPostId())
-                                        .findFirst()
-                                        .ifPresent(postIdDto -> {
-                                            SortedSet<PostIdDto> sortedSet = postIdsDtosFromCache.tailSet(postIdDto);
-                                            sortedSet.remove(sortedSet.first());
-                                            postIdDtos.addAll(sortedSet);
-                                        });
+                                        .findFirst();
+
+                                if (from.isPresent()) {
+                                    postIdsDtosFromCache = postIdsDtosFromCache.tailSet(from.get());
+                                    postIdsDtosFromCache.remove(postIdsDtosFromCache.first());
+                                }
                             }
+
+                            postIdDtos.addAll(postIdsDtosFromCache);
                         }
                 );
 
@@ -81,11 +76,11 @@ public class FeedService {
 
     @Retryable(retryFor = FeignException.class, maxAttempts = 5)
     private FeedDto getFeedDto(long userId, long postId) {
-        RedisUser redisUser = redisUserRepository.findById(userId)
-                .orElseGet(() -> redisUserMapper.toEntity(userServiceClient.getUser(userId)));
 
-        RedisPost redisPost = redisPostRepository.findById(postId)
-                .orElseGet(() -> redisPostMapper.toEntity(postService.getPostDto(postId)));
+        RedisUser redisUser = redisUserCacheService.get(userId)
+                .orElseGet(() -> redisUserCacheService.save(userId));
+
+        RedisPost redisPost = postService.getPostFromCache(postId);
 
         return FeedDto.builder()
                 .userId(redisUser.getId())
@@ -97,5 +92,8 @@ public class FeedService {
                 .publishedAt(redisPost.getPublishedAt())
                 .updatedAt(redisPost.getUpdatedAt())
                 .build();
+    }
+
+    public void heat() {
     }
 }
