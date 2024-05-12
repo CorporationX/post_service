@@ -28,6 +28,8 @@ spring:
           name: calculations_channel
         notification_like_channel:
           name: notification_like_channel
+        comment_channel:
+          name: comment_channel
 
 server:
   port: 8081
