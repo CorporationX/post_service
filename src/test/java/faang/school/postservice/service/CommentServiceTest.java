@@ -4,6 +4,7 @@ import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validation.CommentValidation;
 import org.junit.Assert;
@@ -31,6 +32,8 @@ public class CommentServiceTest {
     private CommentRepository commentRepository;
     @Mock
     CommentValidation commentValidation;
+    @Mock
+    CommentEventPublisher commentEventPublisher;
     @InjectMocks
     private CommentService commentService;
     CommentDto firstCommentDto;
@@ -79,6 +82,7 @@ public class CommentServiceTest {
         Mockito.when(commentMapper.toEntity(firstCommentDto)).thenReturn(firstComment);
         Mockito.when(commentRepository.save(firstComment)).thenReturn(firstComment);
         Mockito.when(commentMapper.toDto(firstComment)).thenReturn(firstCommentDto);
+        Mockito.when(postService.getPost(firstCommentDto.getPostId())).thenReturn(new Post());
 
         CommentDto result = commentService.create(firstCommentDto, firstCommentDto.getAuthorId());
 

@@ -23,6 +23,9 @@ public class RedisConfig {
     private String userBannerTopic;
     @Value("${spring.data.redis.channels.notification_like_channel.name}")
     private String notificationLikeTopic;
+    @Value("${spring.data.redis.channels.comment_channel.name}")
+    private String commentTopic;
+
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -49,4 +52,10 @@ public class RedisConfig {
     public ChannelTopic notificationLikeChannel(){
         return new ChannelTopic(notificationLikeTopic);
     }
+
+    @Bean
+    public ChannelTopic getCommentTopic() {
+        return new ChannelTopic(commentTopic);
+    }
+
 }
