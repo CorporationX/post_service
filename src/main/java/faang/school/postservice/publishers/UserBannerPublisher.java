@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 public class UserBannerPublisher implements MessagePublisher {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic topic;
+    private final ChannelTopic userBannerChannel;
     private final JsonMapper jsonMapper;
 
     @Override
     public <T> void publish(T event) {
         String message = jsonMapper.toJson(event);
-        redisTemplate.convertAndSend(topic.getTopic(), message);
+        redisTemplate.convertAndSend(userBannerChannel.getTopic(), message);
     }
 
 }

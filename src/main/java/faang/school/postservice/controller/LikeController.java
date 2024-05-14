@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
