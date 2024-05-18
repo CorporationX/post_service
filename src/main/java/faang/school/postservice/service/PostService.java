@@ -6,7 +6,7 @@ import faang.school.postservice.repository.PostRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import static faang.school.postservice.exception.MessageForException.NO_POST_IN_DB;
+import static faang.school.postservice.exception.MessagesForCommentsException.NO_POST_IN_DB;
 
 @Service
 @AllArgsConstructor

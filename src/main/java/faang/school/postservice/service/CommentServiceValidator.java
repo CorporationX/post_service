@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static faang.school.postservice.exception.MessageForException.*;
+import static faang.school.postservice.exception.MessagesForCommentsException.*;
 
 @Component
 @AllArgsConstructor

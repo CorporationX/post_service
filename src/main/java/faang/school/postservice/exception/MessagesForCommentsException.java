@@ -3,7 +3,7 @@ package faang.school.postservice.exception;
 import lombok.Getter;
 
 @Getter
-public enum MessageForException {
+public enum MessagesForCommentsException {
     NO_USER_IN_DB("There is no such user in database"),
     NO_POST_IN_DB("There is no post in database"),
     NO_COMMENT_IN_DB("There is no comment in db"),
@@ -11,7 +11,7 @@ public enum MessageForException {
 
     private final String message;
 
-    MessageForException(String message) {
+    MessagesForCommentsException(String message) {
         this.message = message;
     }
 }
