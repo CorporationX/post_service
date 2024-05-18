@@ -26,7 +26,7 @@ spring:
           name: calculations_channel
 
 server:
-  port: 8081
+  port: 8085
 
 logging:
   level:
@@ -42,10 +42,10 @@ post:
 
 user-service:
   host: localhost
-  port: 8080
+  port: 8081
 project-service:
   host: localhost
-  port: 8082
+  port: 8083
 payment-service:
   host: localhost
   port: 9080
