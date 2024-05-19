@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +46,7 @@ public class PostValidator {
 
     public void validatePostsExists(List<Post> posts) {
         if (posts == null || posts.isEmpty()) {
-            throw new DataValidationException("Posts not found");
+            throw new EntityNotFoundException("Posts not found");
         }
     }
 }
