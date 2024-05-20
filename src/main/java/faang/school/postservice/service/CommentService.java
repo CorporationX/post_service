@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.CommentDto;
-import faang.school.postservice.dto.CommentEventDto;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
