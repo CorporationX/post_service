@@ -33,7 +33,7 @@ public class LikeService {
     private final LikeEventPublisher likeEventPublisher;
 
     public LikeDto likePost(LikeDto likeDto) {
-        Post checkPost = postService.getPost(likeDto.getPostId());
+        Post checkPost = postService.getPostById(likeDto.getPostId());
         userServiceClient.getUser(likeDto.getUserId());
         likeValidation.verifyUniquenessLikePost(likeDto.getPostId(), likeDto.getUserId());
         Like like = Like.builder()

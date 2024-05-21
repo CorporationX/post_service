@@ -24,8 +24,6 @@ spring:
       channels:
         user_ban_channel:
           name: user_ban
-        calculations_channel:
-          name: calculations_channel
         notification_like_channel:
           name: notification_like_channel
 
@@ -39,10 +37,10 @@ logging:
 post:
   publisher:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "0 0/1 * 1/1 * ?" # every minute #TODO: не используется, но может потом пригодится
   ad-remover:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "0 0/1 * 1/1 * ?" # every minute #TODO: не используется, если нет, то удалить
 
 user-service:
   host: localhost

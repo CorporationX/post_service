@@ -89,7 +89,7 @@ public class LikeServiceTest {
     @Test
     @DisplayName("Like the post")
     public void testLikePost() {
-        when(postService.getPost(likeDto.getPostId())).thenReturn(post);
+        when(postService.getPostById(likeDto.getPostId())).thenReturn(post);
         when(userServiceClient.getUser(likeDto.getUserId())).thenReturn(userDto);
         when(likeRepository.save(any(Like.class))).thenReturn(like);
         when(likeMapper.toDto(like)).thenReturn(likeDto);

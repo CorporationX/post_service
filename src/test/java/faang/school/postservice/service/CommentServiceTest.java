@@ -82,12 +82,12 @@ public class CommentServiceTest {
         Mockito.when(commentMapper.toEntity(firstCommentDto)).thenReturn(firstComment);
         Mockito.when(commentRepository.save(firstComment)).thenReturn(firstComment);
         Mockito.when(commentMapper.toDto(firstComment)).thenReturn(firstCommentDto);
-        Mockito.when(postService.getPost(firstCommentDto.getPostId())).thenReturn(new Post());
+        Mockito.when(postService.getPostById(firstCommentDto.getPostId())).thenReturn(new Post());
 
         CommentDto result = commentService.create(firstCommentDto, firstCommentDto.getAuthorId());
 
         Mockito.verify(commentValidation, Mockito.times(1)).authorExistenceValidation(firstCommentDto.getAuthorId());
-        Mockito.verify(postService, Mockito.times(1)).getPost(firstCommentDto.getPostId());
+        Mockito.verify(postService, Mockito.times(1)).getPostById(firstCommentDto.getPostId());
 
         Assert.assertEquals(result, firstCommentDto);
     }
@@ -108,11 +108,11 @@ public class CommentServiceTest {
 
     @Test
     public void testGetPostComments() {
-        Mockito.when(postService.getPost(post.getId())).thenReturn(post);
+        Mockito.when(postService.getPostById(post.getId())).thenReturn(post);
 
         commentService.getPostComments(post.getId());
 
-        Mockito.verify(postService, Mockito.times(1)).getPost(post.getId());
+        Mockito.verify(postService, Mockito.times(1)).getPostById(post.getId());
         Mockito.verify(commentMapper, Mockito.times(1)).toDto(post.getComments());
 
     }
