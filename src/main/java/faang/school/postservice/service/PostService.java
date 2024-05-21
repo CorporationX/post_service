@@ -10,8 +10,11 @@ import java.util.NoSuchElementException;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+
     private final PostRepository postRepository;
+
     public Post getPost(Long postId){
         return  postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
     }
+
 }
