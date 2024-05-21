@@ -42,12 +42,14 @@ public class CommentServiceTest {
 
     private CommentDto commentDto;
     private Comment comment;
+    private Long id;
 
     @BeforeEach
     public void setUp() {
         Post post = Post.builder().id(1L).build();
         commentDto = CommentDto.builder().id(1L).content("content").authorId(1L).postId(1L).build();
         comment = Comment.builder().id(1L).content("content").authorId(1L).post(post).build();
+        id = 1L;
     }
 
     @Test
@@ -67,7 +69,6 @@ public class CommentServiceTest {
     @Test
     public void testCorrectWorkChangeComment() {
         when(commentRepository.findById(commentDto.getId())).thenReturn(Optional.ofNullable(comment));
-        assertDoesNotThrow(() -> commentValidator.changeCommentService(Optional.ofNullable(comment), commentDto.getId()));
 
         when(commentMapper.toDto(comment)).thenReturn(commentDto);
 
@@ -75,25 +76,23 @@ public class CommentServiceTest {
 
         assertEquals(commentDto, result);
         verify(commentRepository).findById(commentDto.getId());
-        verify(commentValidator,times(2)).changeCommentService(Optional.of(comment), commentDto.getId());
         verify(commentMapper).toDto(comment);
     }
 
     @Test
     public void testChangeCommentWithValidationException() {
-        when(commentRepository.findById(commentDto.getId())).thenReturn(Optional.ofNullable(comment));
-        doThrow(DataValidationException.class).when(commentValidator).changeCommentService(Optional.ofNullable(comment), commentDto.getId());
+        when(commentRepository.findById(commentDto.getId())).thenThrow(DataValidationException.class);
         assertThrows(DataValidationException.class, () -> commentService.changeComment(commentDto));
     }
 
 
     @Test
     public void testCorrectWorkGetAllCommentsOnPostId() {
-        when(commentRepository.findAllByPostId(commentDto.getPostId())).thenReturn(Collections.singletonList(comment));
-        doNothing().when(commentValidator).getAllCommentsOnPostIdService(commentDto.getPostId());
+        when(commentRepository.findAllByPostId(id)).thenReturn(Collections.singletonList(comment));
+        doNothing().when(commentValidator).getAllCommentsOnPostIdService(id);
         when(commentMapper.toDto(comment)).thenReturn(commentDto);
 
-        List<CommentDto> result = commentService.getAllCommentsOnPostId(commentDto);
+        List<CommentDto> result = commentService.getAllCommentsOnPostId(id);
 
         verify(commentValidator, times(1)).getAllCommentsOnPostIdService(commentDto.getPostId());
         verify(commentRepository, times(1)).findAllByPostId(commentDto.getPostId());
@@ -102,23 +101,20 @@ public class CommentServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertNotNull(result.get(0));
-        assertEquals(commentDto.getId(), result.get(0).getId());
+        assertEquals(id, result.get(0).getId());
         assertEquals(commentDto.getContent(), result.get(0).getContent());
     }
 
     @Test
     public void testGetAllCommentsOnPostIdWithValidationException() {
-        doThrow(DataValidationException.class).when(commentValidator).getAllCommentsOnPostIdService(commentDto.getPostId());
-        assertThrows(DataValidationException.class, () -> commentService.getAllCommentsOnPostId(commentDto));
+        doThrow(DataValidationException.class).when(commentValidator).getAllCommentsOnPostIdService(id);
+        assertThrows(DataValidationException.class, () -> commentService.getAllCommentsOnPostId(id));
     }
 
     @Test
     public void testCorrectWorkDeleteComment() {
-        when(commentMapper.toEntity(commentDto)).thenReturn(comment);
-
-        commentService.deleteComment(commentDto);
-
-        verify(commentMapper, times(1)).toEntity(commentDto);
-        verify(commentRepository, times(1)).deleteById(comment.getId());
+        doNothing().when(commentRepository).deleteById(id);
+        commentService.deleteComment(id);
+        verify(commentRepository, times(1)).deleteById(id);
     }
 }

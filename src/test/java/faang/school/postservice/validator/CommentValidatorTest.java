@@ -112,17 +112,6 @@ public class CommentValidatorTest {
     }
 
     @Test
-    public void testCorrectWorkChangeCommentService() {
-        Optional<Comment> optionalCommentFromDB = Optional.ofNullable(Comment.builder().id(1L).build());
-        assertDoesNotThrow(() -> commentValidator.changeCommentService(optionalCommentFromDB, commentId));
-    }
-
-    @Test
-    public void testChangeCommentServiceWithNullComment() {
-        assertThrows(DataValidationException.class, () -> commentValidator.changeCommentService(Optional.empty(), commentId));
-    }
-
-    @Test
     public void testCorrectWorkGetAllCommentsOnPostIdService() {
         when(postRepository.existsById(postId)).thenReturn(true);
         assertDoesNotThrow(() -> commentValidator.getAllCommentsOnPostIdService(postId));

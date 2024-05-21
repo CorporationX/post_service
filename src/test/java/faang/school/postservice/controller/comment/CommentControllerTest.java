@@ -29,10 +29,12 @@ public class CommentControllerTest {
     private CommentValidator commentValidator;
 
     private CommentDto commentDto;
+    private Long id;
 
     @BeforeEach
     public void setUp() {
         commentDto = CommentDto.builder().id(1L).content("content").authorId(1L).postId(1L).build();
+        id = 1L;
     }
 
     @Test
@@ -63,26 +65,26 @@ public class CommentControllerTest {
 
     @Test
     public void testCorrectWorkGetAllCommentsOnPostId() {
-        assertDoesNotThrow(() -> commentController.getAllCommentsOnPostId(commentDto));
-        verify(commentService).getAllCommentsOnPostId(commentDto);
+        assertDoesNotThrow(() -> commentController.getAllCommentsOnPostId(id));
+        verify(commentService).getAllCommentsOnPostId(id);
     }
 
     @Test
     public void testGetAllCommentsOnPostIdWithValidatorException() {
-        doThrow(DataValidationException.class).when(commentValidator).getAllCommentsOnPostIdController(commentDto.getPostId());
-        assertThrows(DataValidationException.class, () -> commentController.getAllCommentsOnPostId(commentDto));
+        doThrow(DataValidationException.class).when(commentValidator).getAllCommentsOnPostIdController(id);
+        assertThrows(DataValidationException.class, () -> commentController.getAllCommentsOnPostId(id));
     }
 
 
     @Test
     public void testCorrectWorkDeleteComment() {
-        assertDoesNotThrow(() -> commentController.deleteComment(commentDto));
-        verify(commentService).deleteComment(commentDto);
+        assertDoesNotThrow(() -> commentController.deleteComment(id));
+        verify(commentService).deleteComment(id);
     }
 
     @Test
     public void testDeleteCommentWithValidatorException() {
-        doThrow(DataValidationException.class).when(commentValidator).deleteCommentController(commentDto.getId());
-        assertThrows(DataValidationException.class, () -> commentController.deleteComment(commentDto));
+        doThrow(DataValidationException.class).when(commentValidator).deleteCommentController(id);
+        assertThrows(DataValidationException.class, () -> commentController.deleteComment(id));
     }
 }

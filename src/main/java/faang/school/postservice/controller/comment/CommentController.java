@@ -10,31 +10,32 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/comments")
 public class CommentController {
     private final CommentService commentService;
     private final CommentValidator commentValidator;
 
-    @PostMapping("/createComment")
+    @PostMapping("/create")
     public CommentDto createComment(@RequestBody CommentDto commentDto) {
         commentValidator.createCommentController(commentDto.getContent(), commentDto.getAuthorId(), commentDto.getPostId());
         return commentService.createComment(commentDto);
     }
 
-    @PutMapping("/changeComment")
+    @PutMapping("/change")
     public CommentDto changeComment(@RequestBody CommentDto commentDto) {
         commentValidator.changeCommentController(commentDto.getId(), commentDto.getContent());
         return commentService.changeComment(commentDto);
     }
 
-    @GetMapping("/getAllCommentsOnPostId")
-    public List<CommentDto> getAllCommentsOnPostId(@RequestBody CommentDto commentDto) {
-        commentValidator.getAllCommentsOnPostIdController(commentDto.getPostId());
-        return commentService.getAllCommentsOnPostId(commentDto);
+    @GetMapping("/post/{id}")
+    public List<CommentDto> getAllCommentsOnPostId(@RequestParam long id) {
+        commentValidator.getAllCommentsOnPostIdController(id);
+        return commentService.getAllCommentsOnPostId(id);
     }
 
-    @DeleteMapping("/deleteComment")
-    public void deleteComment(@RequestBody CommentDto commentDto) {
-        commentValidator.deleteCommentController(commentDto.getId());
-        commentService.deleteComment(commentDto);
+    @DeleteMapping("/deleteComment/{id}")
+    public void deleteComment(@RequestParam long id) {
+        commentValidator.deleteCommentController(id);
+        commentService.deleteComment(id);
     }
 }

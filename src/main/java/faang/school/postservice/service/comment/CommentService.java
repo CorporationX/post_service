@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,26 +29,24 @@ public class CommentService {
 
     @Transactional
     public CommentDto changeComment(CommentDto commentDto) {
-        Optional<Comment> optionalCommentFromDB = commentRepository.findById(commentDto.getId());
-        commentValidator.changeCommentService(optionalCommentFromDB, commentDto.getId());
+        Comment commentFromDB = commentRepository.findById(commentDto.getId())
+                .orElseThrow(() -> new DataValidationException("couldn't find a comment by id: " + commentDto.getId()));
 
-        Comment commentFromDB = optionalCommentFromDB.get();
         commentFromDB.setContent(commentDto.getContent());
 
         return commentMapper.toDto(commentFromDB);
     }
 
     @Transactional(readOnly = true)
-    public List<CommentDto> getAllCommentsOnPostId(CommentDto commentDto) {
-        commentValidator.getAllCommentsOnPostIdService(commentDto.getPostId());
+    public List<CommentDto> getAllCommentsOnPostId(long id) {
+        commentValidator.getAllCommentsOnPostIdService(id);
 
-        List<Comment> comments = commentRepository.findAllByPostId(commentDto.getPostId());
+        List<Comment> comments = commentRepository.findAllByPostId(id);
         return comments.stream().map(commentMapper::toDto).toList();
     }
 
     @Transactional
-    public void deleteComment(CommentDto commentDto) {
-        Comment comment = commentMapper.toEntity(commentDto);
-        commentRepository.deleteById(comment.getId());
+    public void deleteComment(long id) {
+        commentRepository.deleteById(id);
     }
 }

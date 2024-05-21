@@ -53,12 +53,6 @@ public class CommentValidator {
         }
     }
 
-    public void changeCommentService(Optional<Comment> optionalCommentFromDB, Long commentId) {
-        if (optionalCommentFromDB.isEmpty()) {
-            throw new DataValidationException("Comment not found with id: " + commentId);
-        }
-    }
-
     public void getAllCommentsOnPostIdService(Long postId) {
         if (!postRepository.existsById(postId)) {
             throw new DataValidationException("Post not found with id: " + postId);
