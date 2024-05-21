@@ -14,27 +14,27 @@ public class LikeController {
     private final LikeValidator likeValidator;
     private final LikeService likeService;
 
-    @PostMapping("posts/{postId}")
-    public LikeDto addLikePost(@PathVariable Long postId, @RequestBody LikeDto likeDto) {
-        likeValidator.checkIsNull(postId, likeDto);
-        return likeService.addLikePost(postId, likeDto);
+    @PostMapping("posts/{id}")
+    public LikeDto addLikePost(@PathVariable Long id, @RequestBody LikeDto likeDto) {
+        likeValidator.checkIsNull(id, likeDto);
+        return likeService.addLikePost(id, likeDto);
     }
 
-    @PostMapping("/comments/{commentId}")
-    public LikeDto addLikeComment(@PathVariable Long commentId, @RequestBody LikeDto likeDto) {
-        likeValidator.checkIsNull(commentId, likeDto);
-        return likeService.addLikeComment(commentId, likeDto);
+    @PostMapping("/comments/{id}")
+    public LikeDto addLikeComment(@PathVariable Long id, @RequestBody LikeDto likeDto) {
+        likeValidator.checkIsNull(id, likeDto);
+        return likeService.addLikeComment(id, likeDto);
     }
 
-    @DeleteMapping("posts/{postId}")
-    public LikeDto deleteLikePost(@PathVariable Long postId, @RequestBody LikeDto likeDto) {
-        likeValidator.checkIsNull(postId, likeDto);
-        return likeService.deleteLikePost(postId, likeDto);
+    @DeleteMapping("posts/{id}")
+    public LikeDto deleteLikePost(@PathVariable Long id, @RequestBody LikeDto likeDto) {
+        likeValidator.checkIsNull(id, likeDto);
+        return likeService.deleteLikePost(id, likeDto);
     }
 
-    @DeleteMapping("comments/{commentId}")
-    public LikeDto deleteLikeComment(@PathVariable Long commentId, @RequestBody LikeDto likeDto) {
-        likeValidator.checkIsNull(commentId, likeDto);
-        return likeService.deleteLikeComment(commentId, likeDto);
+    @DeleteMapping("comments/{id}")
+    public LikeDto deleteLikeComment(@PathVariable Long id, @RequestBody LikeDto likeDto) {
+        likeValidator.checkIsNull(id, likeDto);
+        return likeService.deleteLikeComment(id, likeDto);
     }
 }
