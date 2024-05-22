@@ -18,11 +18,11 @@ import java.util.List;
 public class UserDto {
 
     private long id;
+
     @NotBlank(message = "Username can't be empty")
-
     private String username;
-    @NotBlank(message = "E-mail can't be empty")
 
+    @NotBlank(message = "E-mail can't be empty")
     @Email
     private String email;
 

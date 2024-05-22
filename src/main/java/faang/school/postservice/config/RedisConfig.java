@@ -51,4 +51,9 @@ public class RedisConfig {
     public ChannelTopic notificationLikeChannel(){
         return new ChannelTopic(notificationLikeTopic);
     }
+
+    @Bean
+    public ChannelTopic commentChannel(){
+        return new ChannelTopic(commentTopic);
+    }
 }

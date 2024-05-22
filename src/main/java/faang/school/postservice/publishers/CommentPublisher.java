@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CommentPublisher extends AbstractPublisher<CommentEvent> {
-    public CommentPublisher(RedisTemplate<String, Object> redisTemplate, ObjectMapper jsonMapper,
+    public CommentPublisher(RedisTemplate<String, Object> redisTemplate,
+                            ObjectMapper jsonMapper,
                             @Value("${spring.data.redis.channels.comment_channel.name}") String commentChannelTopic) {
         super(redisTemplate, jsonMapper, commentChannelTopic);
     }
