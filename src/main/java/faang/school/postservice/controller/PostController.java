@@ -57,10 +57,10 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "Post not found"),
             @ApiResponse(responseCode = "500", description = "Error updating the post")
     })
-    //TODO: пока так, может быть добавлю "/update/{postId}" и long postId
-    @PutMapping("/update")
-    public PostDto updatePost(@RequestBody @Valid PostDto postDto) {
-        return postService.updatePost(postDto);
+    //TODO: Можно просто ДТО отправлять, но сонар мне советует использовать такой вариант
+    @PutMapping("/update/{postId}")
+    public PostDto updatePost(@PathVariable long postId, @RequestBody @Valid PostDto postDto) {
+        return postService.updatePost(postId,postDto);
     }
 
     @Operation(summary = "Deleting a post by ID")
