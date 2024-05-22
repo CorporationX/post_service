@@ -1,13 +1,16 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @Service
@@ -38,9 +41,8 @@ public class PostService {
         return
     }
 
-    //TODO: Здесь был Post, теперь PostDto, нужно теперь в других сервисах посмотреть и поменять логику работы
     public PostDto getPostById(long postId) {
-        return postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
+        return
     }
 
     public List<PostDto> getDraftsByAuthorId(long id) {
@@ -59,4 +61,8 @@ public class PostService {
         return
     }
 
+    protected Post existsPost(long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new DataValidationException("Post with ID " + postId + " not found"));
+    }
 }

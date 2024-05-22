@@ -11,7 +11,7 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.validation.LikeValidation;
+import faang.school.postservice.validator.LikeValidation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -89,7 +89,7 @@ public class LikeServiceTest {
     @Test
     @DisplayName("Like the post")
     public void testLikePost() {
-        when(postService.getPostById(likeDto.getPostId())).thenReturn(post);
+        when(postService.existsPost(likeDto.getPostId())).thenReturn(post);
         when(userServiceClient.getUser(likeDto.getUserId())).thenReturn(userDto);
         when(likeRepository.save(any(Like.class))).thenReturn(like);
         when(likeMapper.toDto(like)).thenReturn(likeDto);

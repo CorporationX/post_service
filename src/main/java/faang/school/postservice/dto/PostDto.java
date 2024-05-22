@@ -26,10 +26,13 @@ public class PostDto {
     @Size(min = 1, max = 4096, message = "Post content must contains less then 4096 symbols")
     private String content;
 
-    @NotNull(message = "The author must be an existing user in the system")
-    private Long authorId;
-    @NotNull(message = "The author must be an existing project in the system")
-    private Long projectId;
+    //TODO: сделать одного автора и в валидаторе проверять что есть такой юзер или проект,
+    // но при этом нужно не забыть про мапинг, у меня же в Post есть 2 поля authorId и projectId,
+    // и нужно автора в нужное поле сохранять
+    @NotNull(message = "The author must be an existing user or project in the system")
+    private long authorId;
+//    @NotNull(message = "The author must be an existing project in the system")
+//    private Long projectId;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
