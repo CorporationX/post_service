@@ -25,10 +25,12 @@ public interface PostMapper {
     @Mapping(source = "comments", target = "commentsIds", qualifiedByName = "toCommentsIds")
     PostDto toDto(Post post);
 
+    List<PostDto> toDto(List<Post> posts);
+
     @Named("toLikeIds")
     default List<Long> toLikeIds(List<Like> likes) {
         if (likes == null) {
-            return new ArrayList<Long>();
+            return new ArrayList<>();
         }
         return likes.stream()
                 .map(Like::getId)
@@ -38,7 +40,7 @@ public interface PostMapper {
     @Named("toCommentsIds")
     default List<Long> toCommentsIds(List<Comment> comments) {
         if (comments == null) {
-            return new ArrayList<Long>();
+            return new ArrayList<>();
         }
         return comments.stream()
                 .map(Comment::getId)

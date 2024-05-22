@@ -51,6 +51,7 @@ public class CommentServiceTest {
                 .content("first content")
                 .authorId(1L)
                 .likesIds(null)
+                .postId(1L)
                 .build();
         firstComment = Comment.builder()
                 .id(1L)

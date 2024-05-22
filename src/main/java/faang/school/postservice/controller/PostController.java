@@ -21,9 +21,6 @@ public class PostController {
 
     private final PostService postService;
 
-    //TODO: по заданию: "Контроллер принимает и возвращает только объекты PostDto или
-    // коллекции этих объектов", пока везде возвращаю PostDto, по ходу дела буду смотреть
-
     @Operation(
             summary = "Creating a draft post",
             description = "Exactly one author user or project creates a draft of the post"
@@ -57,7 +54,6 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "Post not found"),
             @ApiResponse(responseCode = "500", description = "Error updating the post")
     })
-    //TODO: Можно просто ДТО отправлять, но сонар мне советует использовать такой вариант
     @PutMapping("/update/{postId}")
     public PostDto updatePost(@PathVariable long postId, @RequestBody @Valid PostDto postDto) {
         return postService.updatePost(postId,postDto);
