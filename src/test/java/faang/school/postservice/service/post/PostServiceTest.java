@@ -18,13 +18,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
 
+    private Post post;
+
     @Mock
     private PostRepository postRepository;
 
     @InjectMocks
     private PostService postService;
-
-    private Post post;
 
     @BeforeEach
     void setUp() {
