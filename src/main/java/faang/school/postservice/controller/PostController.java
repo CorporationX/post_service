@@ -22,17 +22,17 @@ public class PostController {
 
     @PostMapping
     public PostDto publish(PostDto postDto) {
-        return postService.publish(postDto);
+        return postService.publish(postDto.getId());
     }
 
     @PutMapping
     public PostDto update(PostDto postDto) {
-        return postService.update(postDto);
+        return postService.update(postDto.getId(), postDto.getContent());
     }
 
     @DeleteMapping
-    public PostDto deleteById(Long postId) {
-        return postService.deleteById(postId);
+    public void deleteById(Long postId) {
+        postService.deleteById(postId);
     }
 
     @GetMapping
@@ -40,6 +40,7 @@ public class PostController {
         return postMapper.toDto(postService.findById(postId));
     }
 
+    @GetMapping
     public List<PostDto> getAllPostsDraftsByUserAuthorId(Long userId) {
         return postService.getAllPostsDraftsByUserAuthorId(userId);
     }
