@@ -1,7 +1,7 @@
-package faang.school.postservice.validation;
+package faang.school.postservice.validator;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;

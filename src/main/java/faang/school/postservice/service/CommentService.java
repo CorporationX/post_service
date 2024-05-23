@@ -1,13 +1,13 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.CommentDto;
-import faang.school.postservice.dto.CommentEventDto;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.validation.CommentValidation;
+import faang.school.postservice.validator.CommentValidation;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class CommentService {
         commentValidation.authorExistenceValidation(userId);
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setLikes(Collections.EMPTY_LIST);
-        comment.setPost(postService.getPost(commentDto.getPostId()));
+        comment.setPost(postService.existsPost(commentDto.getPostId()));
         Comment newComment = commentRepository.save(comment);
         CommentEventDto event = CommentEventDto.builder()
                 .commentId(newComment.getId())
@@ -56,7 +56,7 @@ public class CommentService {
     }
 
     public List<CommentDto> getPostComments(Long postId) {
-        Post post = postService.getPost(postId);
+        Post post = postService.existsPost(postId);
         List<Comment> comments = post.getComments();
         return commentMapper.toDto(comments);
     }

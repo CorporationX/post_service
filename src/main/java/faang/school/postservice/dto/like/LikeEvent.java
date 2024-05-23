@@ -16,13 +16,13 @@ import java.time.LocalDateTime;
 @Builder(toBuilder = true)
 public class LikeEvent {
     @Positive
-    private Long id; // TODO: передавать
+    private Long id;
     @NotNull
-    private Long authorLikeId; // TODO: передавать
+    private Long authorLikeId;
     @Positive
     private Long authorPostId;
     @Positive
-    private Long postId; // TODO: передавать
+    private Long postId;
     @Positive
     private Long authorCommentId;
     @Positive
