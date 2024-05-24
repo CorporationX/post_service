@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 @RestController
-@RequestMapping("${endpoint.context-path.post}")
+@RequestMapping
 public class PostController {
 
     private final PostService postService;
@@ -54,9 +54,9 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "Post not found"),
             @ApiResponse(responseCode = "500", description = "Error updating the post")
     })
-    @PutMapping("/update/{postId}")
+    @PutMapping("/{postId}")
     public PostDto updatePost(@PathVariable long postId, @RequestBody @Valid PostDto postDto) {
-        return postService.updatePost(postId,postDto);
+        return postService.updatePost(postId, postDto);
     }
 
     @Operation(summary = "Deleting a post by ID")

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("${endpoint.context-path.like}")
+@RequestMapping
 public class LikeController {
 
     private final LikeService likeService;
