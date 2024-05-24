@@ -9,11 +9,11 @@ import lombok.Data;
 public class CommentDto {
     private Long id;
 
-    @NotNull
-    @NotBlank
+    @NotNull(message = "content shouldn't be null")
+    @NotBlank(message = "description should not be blank")
     @Size(max = 4096)
     private String content;
 
-    @NotNull
+    @NotNull(message = "content shouldn't be null")
     private Long authorId;
 }
