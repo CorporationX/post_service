@@ -15,5 +15,6 @@ public interface CommentMapper {
     Comment dtoToComment(CommentDto commentDto);
 
     CommentDto commentToDto(Comment comment);
+
     List<CommentDto> commentsToCommentsDto(List<Comment> comments);
 }
