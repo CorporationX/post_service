@@ -7,6 +7,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,81 +16,106 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
 
     public PostDto create(PostDto postDto) {
+        log.info("Trying to create post with ID: {}", postDto.getId());
         postValidator.validateAuthorIdAndProjectId(postDto.getAuthorId(), postDto.getProjectId());
         postValidator.validatePostContent(postDto.getContent());
         Post post = postRepository.save(postMapper.toEntity(postDto));
+        log.info("Post with ID:{} created.", postDto.getId());
         return postMapper.toDto(post);
     }
 
     public PostDto publish(Long postId) {
+        log.info("Trying to publish post with ID: {}", postId);
         postValidator.validateId(postId);
         Post post = findById(postId);
         postValidator.validatePublicationPost(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+        log.info("Post with ID: {} published.", postId);
         return postMapper.toDto(post);
     }
 
     public PostDto update(Long postId, String content) {
+        log.info("Trying to update post with ID: {}", postId);
         postValidator.validateId(postId);
         postValidator.validatePostContent(content);
         Post post = findById(postId);
         post.setContent(content);
         postRepository.save(post);
+        log.info("Post with ID:{} created. Content updated on {}", postId, content);
         return postMapper.toDto(post);
     }
 
     public void deleteById(Long postId) {
+        log.info("Trying to delete post with ID: {}", postId);
         postValidator.validateId(postId);
         Post post = findById(postId);
         post.setDeleted(true);
         postRepository.save(post);
+        log.info("A post with this ID: {} has been added to the deleted list.", postId);
     }
 
     public Post findById(Long postId) {
+        log.info("Attempting to find post with ID: {}", postId);
         return postRepository.findById(postId)
-                .orElseThrow(() -> new DataValidationException("Post with this ID does not exist"));
+                .orElseThrow(() -> {
+                    log.error(String.format("Post with this ID: %s was not found", postId));
+                    return new DataValidationException(String.format("Post with this ID: %s was not found", postId));
+                });
     }
 
-    public List<PostDto> getAllPostsDraftsByUserAuthorId(Long authorId) {
-        return postRepository.findByAuthorId(authorId).stream()
+    public List<PostDto> getAllPostsDraftsByUserAuthorId(Long userId) {
+        log.info("Trying to get drafts of posts, where the author is a user with ID: {}", userId);
+        List<PostDto> postDtos = postRepository.findByAuthorId(userId).stream()
                 .filter(post -> !post.isDeleted())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
+        log.info("Found {} posts for author with ID: {}", postDtos.size(), userId);
+        return postDtos;
     }
 
     public List<PostDto> getAllPostsDraftsByProjectAuthorId(Long projectId) {
-        return postRepository.findByProjectId(projectId).stream()
+        log.info("Trying to get drafts of posts, where the author is a project with ID: {}", projectId);
+        List<PostDto> postDtos = postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isPublished())
                 .filter(post -> !post.isDeleted())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
+        log.info("Found {} posts for author with ID: {}", postDtos.size(), projectId);
+        return postDtos;
     }
 
     public List<PostDto> getAllPublishedNonDeletedPostsByUserAuthorId(Long userId) {
-        return postRepository.findByAuthorId(userId).stream()
+        log.info("Trying to get all published, non-deleted posts authored by a user with a given id: {}", userId);
+        List<PostDto> postDtos = postRepository.findByAuthorId(userId).stream()
                 .filter(Post::isPublished)
                 .filter(post -> !post.isDeleted())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
+        log.info("Found {} posts for author with ID: {}", postDtos.size(), userId);
+        return postDtos;
     }
 
     public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(Long projectId) {
-        return postRepository.findByProjectId(projectId).stream()
+        log.info("Trying to get all published, non-deleted posts authored by a project with a given id: {}", projectId);
+        List<PostDto> postDtos = postRepository.findByProjectId(projectId).stream()
                 .filter(Post::isPublished)
                 .filter(post -> !post.isDeleted())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
+        log.info("Found {} posts for author with ID: {}", postDtos.size(), projectId);
+        return postDtos;
     }
 }

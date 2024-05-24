@@ -9,54 +9,54 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
 @RequiredArgsConstructor
+@RequestMapping("/posts")
 public class PostController {
     private final PostService postService;
     private final PostMapper postMapper;
 
     @PostMapping
-    public PostDto create(PostDto postDto) {
+    public PostDto create(@RequestBody PostDto postDto) {
         return postService.create(postDto);
     }
 
     @PostMapping
-    public PostDto publish(PostDto postDto) {
+    public PostDto publish(@RequestBody PostDto postDto) {
         return postService.publish(postDto.getId());
     }
 
     @PutMapping
-    public PostDto update(PostDto postDto) {
+    public PostDto update(@RequestBody PostDto postDto) {
         return postService.update(postDto.getId(), postDto.getContent());
     }
 
-    @DeleteMapping
-    public void deleteById(Long postId) {
+    @DeleteMapping("/{postId}")
+    public void deleteById(@PathVariable Long postId) {
         postService.deleteById(postId);
     }
 
-    @GetMapping
-    public PostDto findById(Long postId) {
+    @GetMapping("/{postId}")
+    public PostDto findById(@PathVariable Long postId) {
         return postMapper.toDto(postService.findById(postId));
     }
 
-    @GetMapping
-    public List<PostDto> getAllPostsDraftsByUserAuthorId(Long userId) {
+    @GetMapping("/draft/user/{userId}")
+    public List<PostDto> getAllPostsDraftsByUserAuthorId(@PathVariable Long userId) {
         return postService.getAllPostsDraftsByUserAuthorId(userId);
     }
 
-    @GetMapping
-    public List<PostDto> getAllPostsDraftsByProjectAuthorId(Long projectId) {
+    @GetMapping("/draft/project/{projectId}")
+    public List<PostDto> getAllPostsDraftsByProjectAuthorId(@PathVariable Long projectId) {
         return postService.getAllPostsDraftsByProjectAuthorId(projectId);
     }
 
-    @GetMapping
-    public List<PostDto> getAllPublishedNonDeletedPostsByUserAuthorId(Long userId) {
+    @GetMapping("/published/user/{userId}")
+    public List<PostDto> getAllPublishedNonDeletedPostsByUserAuthorId(@PathVariable Long userId) {
         return postService.getAllPublishedNonDeletedPostsByUserAuthorId(userId);
     }
 
-    @GetMapping
-    public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(Long projectId) {
+    @GetMapping("/published/project/projectId")
+    public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(@PathVariable Long projectId) {
         return postService.getAllPublishedNonDeletedPostsByProjectAuthorId(projectId);
     }
 }
