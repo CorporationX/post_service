@@ -1,15 +1,16 @@
 package faang.school.postservice.dto.comment;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 public class CommentDto {
 
-    @NotNull(message = "Content cannot be null")
-    @NotBlank(message = "Content cannot be blank")
-    @Size(max = 4096, message = "Content cannot exceed 4096 characters")
     private String content;
+    private long authorId;
+    private long likesCount;
+    private long postId;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
