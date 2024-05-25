@@ -21,6 +21,30 @@ public class CommentValidatorTest {
     private CommentValidator commentValidator;
 
     @Test
+    public void testValidateEventWithBlankContent() {
+        CommentDto commentDto = CommentDto.builder()
+                .content("  ")
+                .build();
+        Assert.assertThrows(DataValidationException.class, () -> commentValidator.validateComment(commentDto));
+    }
+
+    @Test
+    public void testValidateEventWithEmptyContent() {
+        CommentDto commentDto = CommentDto.builder()
+                .content(null)
+                .build();
+        Assert.assertThrows(DataValidationException.class, () -> commentValidator.validateComment(commentDto));
+    }
+
+    @Test
+    public void testValidateEventWithWrongContentSize() {
+        CommentDto commentDto = CommentDto.builder()
+                .content(String.format("%-2047s", "2047"))
+                .build();
+        Assert.assertThrows(DataValidationException.class, () -> commentValidator.validateComment(commentDto));
+    }
+
+    @Test
     public void testValidateCommentWithEmptyAuthor() {
         CommentDto commentDto = CommentDto.builder()
                 .authorId(999L)
