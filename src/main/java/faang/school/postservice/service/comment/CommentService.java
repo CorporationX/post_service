@@ -24,9 +24,9 @@ public class CommentService {
 
     public CommentDto createComment(long postId, CommentDto commentDto) {
         commentValidator.checkCommentAuthor(commentDto);
-        Comment commentEntity = commentMapper.toEntity(commentDto);
         Optional<Post> optionalPost = postRepository.findById(postId);
         Post post = optionalPost.orElseThrow(() -> new EntityNotFoundException("Post with Id " + postId + " not found."));
+        Comment commentEntity = commentMapper.toEntity(commentDto);
         commentEntity.setPost(post);
 
         return commentMapper.toDto(commentRepository.save(commentEntity));
