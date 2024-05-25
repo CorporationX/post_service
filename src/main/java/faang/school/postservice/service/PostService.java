@@ -74,48 +74,46 @@ public class PostService {
 
     public List<PostDto> getAllPostsDraftsByUserAuthorId(Long userId) {
         log.info("Trying to get drafts of posts, where the author is a user with ID: {}", userId);
-        List<PostDto> postDtos = postRepository.findByAuthorId(userId).stream()
+        List<PostDto> draftsPostsByUser = postRepository.findByAuthorId(userId).stream()
                 .filter(post -> !post.isDeleted())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
-        log.info("Found {} posts for author with ID: {}", postDtos.size(), userId);
-        return postDtos;
+        log.info("Found {} posts for author with ID: {}", draftsPostsByUser.size(), userId);
+        return draftsPostsByUser;
     }
 
     public List<PostDto> getAllPostsDraftsByProjectAuthorId(Long projectId) {
         log.info("Trying to get drafts of posts, where the author is a project with ID: {}", projectId);
-        List<PostDto> postDtos = postRepository.findByProjectId(projectId).stream()
+        List<PostDto> draftsPostsByProject = postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isPublished())
                 .filter(post -> !post.isDeleted())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
-        log.info("Found {} posts for author with ID: {}", postDtos.size(), projectId);
-        return postDtos;
+        log.info("Found {} posts for author with ID: {}", draftsPostsByProject.size(), projectId);
+        return draftsPostsByProject;
     }
 
     public List<PostDto> getAllPublishedNonDeletedPostsByUserAuthorId(Long userId) {
         log.info("Trying to get all published, non-deleted posts authored by a user with a given id: {}", userId);
-        List<PostDto> postDtos = postRepository.findByAuthorId(userId).stream()
-                .filter(Post::isPublished)
-                .filter(post -> !post.isDeleted())
+        List<PostDto> publishedPostsByUser = postRepository.findByAuthorId(userId).stream()
+                .filter(post -> post.isPublished() && !post.isDeleted())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
-        log.info("Found {} posts for author with ID: {}", postDtos.size(), userId);
-        return postDtos;
+        log.info("Found {} posts for author with ID: {}", publishedPostsByUser.size(), userId);
+        return publishedPostsByUser;
     }
 
     public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(Long projectId) {
         log.info("Trying to get all published, non-deleted posts authored by a project with a given id: {}", projectId);
-        List<PostDto> postDtos = postRepository.findByProjectId(projectId).stream()
-                .filter(Post::isPublished)
-                .filter(post -> !post.isDeleted())
+        List<PostDto> publishedPostsByProject = postRepository.findByProjectId(projectId).stream()
+                .filter(post -> post.isPublished() && !post.isDeleted())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
-        log.info("Found {} posts for author with ID: {}", postDtos.size(), projectId);
-        return postDtos;
+        log.info("Found {} posts for author with ID: {}", publishedPostsByProject.size(), projectId);
+        return publishedPostsByProject;
     }
 }
