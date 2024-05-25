@@ -11,7 +11,6 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,7 +27,6 @@ public class CommentService {
     public CommentDto createComment(CommentDto commentDto) {
         validateCommentDto(commentDto);
         Comment comment = commentMapper.fromDto(commentDto);
-        comment.setCreatedAt(LocalDateTime.now());
         comment = commentRepository.save(comment);
         return commentMapper.toDto(comment);
     }
