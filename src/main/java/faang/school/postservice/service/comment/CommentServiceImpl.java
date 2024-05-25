@@ -1,8 +1,6 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.comment.CommentToCreateDto;
-import faang.school.postservice.dto.comment.CommentToUpdateDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -30,7 +28,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommonServiceMethods commonServiceMethods;
 
     @Override
-    public CommentDto createComment(long postId, long userId, CommentToCreateDto commentDto) {
+    public CommentDto createComment(long postId, long userId, CommentDto commentDto) {
 
         Post post = commonServiceMethods.findEntityById(postRepository, postId, "Post");
         Comment comment = commentMapper.toEntity(commentDto);
@@ -41,7 +39,7 @@ public class CommentServiceImpl implements CommentService {
 
         commentRepository.save(comment);
         log.info("Created comment on post {} authored by {}", postId, userId);
-        return commentMapper.toDto(comment);
+        return commentDto;
     }
 
     @Override
@@ -55,7 +53,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDto updateComment(long commentId, long userId, CommentToUpdateDto updatedCommentDto) {
+    public CommentDto updateComment(long commentId, long userId, CommentDto updatedCommentDto) {
 
         Comment commentToUpdate = commonServiceMethods.findEntityById(commentRepository, commentId, "Comment");
 
@@ -63,8 +61,7 @@ public class CommentServiceImpl implements CommentService {
 
         commentMapper.update(updatedCommentDto, commentToUpdate);
         log.info("Updated comment {} on post {} authored by {}", commentId, commentToUpdate.getPost().getId(), userId);
-        commentRepository.save(commentToUpdate);
-        return commentMapper.toDto(commentToUpdate);
+        return commentMapper.toDto(commentRepository.save(commentToUpdate));
     }
 
     @Override

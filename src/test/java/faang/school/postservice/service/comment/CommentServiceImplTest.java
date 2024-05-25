@@ -1,8 +1,6 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.comment.CommentToCreateDto;
-import faang.school.postservice.dto.comment.CommentToUpdateDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -52,21 +50,19 @@ class CommentServiceImplTest {
     void createComment_success() {
         long postId = 1L;
         long userId = 1L;
-        CommentToCreateDto commentToCreateDto = new CommentToCreateDto();
         CommentDto commentDto = new CommentDto();
         Post post = new Post();
         Comment comment = new Comment();
 
         when(commonServiceMethods.findEntityById(postRepository, postId, "Post")).thenReturn(post);
-        when(commentMapper.toEntity(commentToCreateDto)).thenReturn(comment);
+        when(commentMapper.toEntity(commentDto)).thenReturn(comment);
         doNothing().when(commentValidator).validateCreateComment(userId);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
-        when(commentMapper.toDto(comment)).thenReturn(commentDto);
 
-        CommentDto result = commentService.createComment(postId, userId, commentToCreateDto);
+        CommentDto result = commentService.createComment(postId, userId, commentDto);
 
         verify(commonServiceMethods, times(1)).findEntityById(postRepository, postId, "Post");
-        verify(commentMapper, times(1)).toEntity(commentToCreateDto);
+        verify(commentMapper, times(1)).toEntity(commentDto);
         verify(commentValidator, times(1)).validateCreateComment(userId);
         verify(commentRepository, times(1)).save(comment);
 
@@ -101,8 +97,7 @@ class CommentServiceImplTest {
     void updateComment_success() {
         long commentId = 1L;
         long userId = 1L;
-        CommentToUpdateDto updatedCommentDto = new CommentToUpdateDto();
-        CommentDto commentDto = new CommentDto();
+        CommentDto updatedCommentDto = new CommentDto();
         Comment comment = new Comment();
         Post post = new Post();
         comment.setPost(post);
@@ -111,7 +106,7 @@ class CommentServiceImplTest {
         doNothing().when(commentValidator).validateUpdateAlbum(comment, userId);
         doNothing().when(commentMapper).update(updatedCommentDto, comment);
         when(commentRepository.save(comment)).thenReturn(comment);
-        when(commentMapper.toDto(comment)).thenReturn(commentDto);
+        when(commentMapper.toDto(comment)).thenReturn(updatedCommentDto);
 
         CommentDto result = commentService.updateComment(commentId, userId, updatedCommentDto);
 
@@ -121,7 +116,7 @@ class CommentServiceImplTest {
         verify(commentRepository, times(1)).save(comment);
         verify(commentMapper, times(1)).toDto(comment);
 
-        assertEquals(commentDto, result);
+        assertEquals(updatedCommentDto, result);
     }
 
     @Test
