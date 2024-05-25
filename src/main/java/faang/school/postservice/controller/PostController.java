@@ -15,12 +15,12 @@ public class PostController {
     private final PostService postService;
     private final PostMapper postMapper;
 
-    @PostMapping
+    @PostMapping("/drafts")
     public PostDto create(@RequestBody PostDto postDto) {
         return postService.create(postDto);
     }
 
-    @PostMapping
+    @PostMapping("/published")
     public PostDto publish(@RequestBody PostDto postDto) {
         return postService.publish(postDto.getId());
     }
