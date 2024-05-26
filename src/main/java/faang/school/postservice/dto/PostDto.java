@@ -7,20 +7,21 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AlbumDto {
+public class PostDto {
     private Long id;
     @NonNull
-    @NotBlank(message = "Title is required")
-    private String title;
-    @NonNull
-    @NotBlank(message = "Description is required")
-    private String description;
+    @NotBlank(message = "Content is required")
+    private String content;
     private Long authorId;
-    private List<Long> postsId;
+    private Long projectId;
+    private boolean published;
+    private boolean deleted;
+    private LocalDateTime publishedAt;
+    private LocalDateTime updatedAt;
 }
