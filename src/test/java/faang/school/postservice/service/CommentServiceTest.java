@@ -79,7 +79,7 @@ public class CommentServiceTest {
     }
 
     @Test
-    public void testCreation() {
+    void testCreation() {
         Mockito.when(commentMapper.toEntity(firstCommentDto)).thenReturn(firstComment);
         Mockito.when(commentRepository.save(firstComment)).thenReturn(firstComment);
         Mockito.when(commentMapper.toDto(firstComment)).thenReturn(firstCommentDto);
@@ -95,7 +95,7 @@ public class CommentServiceTest {
 
 
     @Test
-    public void testUpdating() {
+    void testUpdating() {
         Mockito.when(commentRepository.findById(secondComment.getId())).thenReturn(Optional.of(secondComment));
         Mockito.when(commentRepository.save(secondComment)).thenReturn(secondComment);
         Mockito.when(commentMapper.toDto(secondComment)).thenReturn(secondCommentDto);
@@ -108,7 +108,7 @@ public class CommentServiceTest {
     }
 
     @Test
-    public void testGetPostComments() {
+    void testGetPostComments() {
         Mockito.when(postService.existsPost(post.getId())).thenReturn(post);
 
         commentService.getPostComments(post.getId());
@@ -119,7 +119,7 @@ public class CommentServiceTest {
     }
 
     @Test
-    public void testDeletion() {
+    void testDeletion() {
         commentService.delete(secondCommentDto, secondCommentDto.getAuthorId());
 
         Mockito.verify(commentValidation, Mockito.times(1)).authorExistenceValidation(secondCommentDto.getAuthorId());
