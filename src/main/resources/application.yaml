@@ -26,6 +26,8 @@ spring:
           name: user_ban
         notification_like_channel:
           name: notification_like_channel
+        comment_channel:
+          name: comment_channel
 
   mvc:
     servlet:

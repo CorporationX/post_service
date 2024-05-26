@@ -11,7 +11,7 @@ public class CommentEventPublisher extends MessagePublisher<CommentEventDto> {
 
     public CommentEventPublisher(RedisTemplate<String, Object> redisTemplate,
                                  ObjectMapper jsonMapper,
-                                 @Value("${spring.data.redis.channels.comment.name}") String commentTopic) {
+                                 @Value("${spring.data.redis.channels.comment_channel.name}") String commentTopic) {
         super(redisTemplate, jsonMapper, commentTopic);
 
     }
