@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class LikeEvent {
+    @Positive
+    private Long id;
     @NotNull
     private Long authorLikeId;
     @Positive

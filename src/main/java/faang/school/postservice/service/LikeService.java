@@ -4,14 +4,14 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.validation.LikeValidation;
+import faang.school.postservice.validator.LikeValidation;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class LikeService {
     private final LikeEventPublisher likeEventPublisher;
 
     public LikeDto likePost(LikeDto likeDto) {
-        Post checkPost = postService.getPost(likeDto.getPostId());
+        Post checkPost = postService.existsPost(likeDto.getPostId());
         userServiceClient.getUser(likeDto.getUserId());
         likeValidation.verifyUniquenessLikePost(likeDto.getPostId(), likeDto.getUserId());
         Like like = Like.builder()
