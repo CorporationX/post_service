@@ -1,5 +1,6 @@
 package faang.school.postservice.model.redis;
 
+import faang.school.postservice.dto.redis.PostInRedisDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,12 +16,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash(timeToLive = 86400L)
+@RedisHash(value = "PostInRedis", timeToLive = 86400L)
 public class PostRedis implements Serializable {
 
     @Id
-    @Version
     private String id;
-    private Long authorId;
-    private LocalDateTime createdAt;
+    PostInRedisDto post;
 }
