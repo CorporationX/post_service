@@ -56,13 +56,6 @@ public class PostService {
         postValidator.validateIfAuthorExists(postDto);
         Post post = postRepository.save(postMapper.toEntity(postDto));
         log.info("Post saved: {}", post);
-        PostRedis postRedis = PostRedis.builder()
-                .id(String.valueOf(post.getId()))
-                .authorId(post.getAuthorId())
-                .createdAt(post.getCreatedAt())
-                .build();
-        redisPostRepository.save(postRedis);
-        log.info("Post saved in redis: {}", postRedis);
         post.setResources(new ArrayList<>());
         if (images != null) {
             postValidator.validateResourcesCount(images.length);
