@@ -41,27 +41,27 @@ public class PostController {
         return postService.updatePost(postId, content);
     }
 
-    @PutMapping("/markDelete/{postId}")
+    @PutMapping("/delete/{postId}")
     public PostDto markDelete(@PathVariable("postId") long postId) {
         return postService.markDeletePost(postId);
     }
 
-    @GetMapping("/notDeleteByAuthor/{authorId}")
+    @GetMapping("/posts/{authorId}")
     public List<PostDto> getPostsNotDeleteByAuthorId (@PathVariable("authorId") long authorId) {
         return postService.getPostsNotDeleteByAuthorId(authorId);
     }
 
-    @GetMapping("/notDeleteByProject/{projectId}")
+    @GetMapping("/posts/{projectId}")
     public List<PostDto> getPostsNotDeleteByProjectId (@PathVariable("projectId") long projectId) {
         return postService.getPostsNotDeleteByProjectId(projectId);
     }
 
-    @GetMapping("/publishedByAuthor/{authorId}")
+    @GetMapping("/published/author/{authorId}")
     public List<PostDto> getPostsPublishedByAuthorId (@PathVariable("authorId") long authorId) {
         return postService.getPostsPublishedByAuthorId(authorId);
     }
 
-    @GetMapping("/notDeleteByAuthor/{authorId}")
+    @GetMapping("/published/project/{projectId}")
     public List<PostDto> getPostsPublishedByProjectId (@PathVariable("projectId") long projectId) {
         return postService.getPostsPublishedByProjectId(projectId);
     }

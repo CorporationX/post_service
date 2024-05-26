@@ -8,7 +8,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PublisherUsersBan;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

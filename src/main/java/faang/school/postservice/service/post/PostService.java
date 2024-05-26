@@ -107,28 +107,6 @@ public class PostService {
     public PostDto getPostById(long postId) {
         return postMapper.toDto(findPostById(postId));
     }
-
-    private void validation(PostDto postDto) {
-        if (postDto.getContent() == null || postDto.getContent().isBlank()) {
-            throw new DataValidationException("Пост не может быть пустым");
-        }
-        if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
-            throw new DataValidationException("У поста должен быть владелец!");
-        }
-        if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
-            throw new DataValidationException("У поста должен быть только один владелец либо автор либо проект");
-        }
-    }
-
-
-    private UserDto getUser(long id) {
-        return userServiceClient.getUser(id);
-    }
-
-    private ProjectDto getProject(long id) {
-        return projectServiceClient.getProject(id);
-    }
-
     public void banUsersWithMultipleUnverifiedPosts() {
         List<Post> posts = getUnverifiedPost();
         sendUsersToBan(posts);
@@ -155,5 +133,22 @@ public class PostService {
                 .filter(entry -> entry.getValue() >= maxUnverifiedPosts)
                 .map(Map.Entry::getKey)
                 .forEach(id -> publisherUsersBan.publish(new UserEvent(id)));
+    }
+
+    private void validation(PostDto postDto) {
+        if (postDto.getAuthorId() == null && postDto.getProjectId() == null) {
+            throw new DataValidationException("У поста должен быть владелец!");
+        }
+        if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
+            throw new DataValidationException("У поста должен быть только один владелец либо автор либо проект");
+        }
+    }
+
+    private UserDto getUser(long id) {
+        return userServiceClient.getUser(id);
+    }
+
+    private ProjectDto getProject(long id) {
+        return projectServiceClient.getProject(id);
     }
 }
