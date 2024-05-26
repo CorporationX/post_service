@@ -1,15 +1,18 @@
 package faang.school.postservice.publishers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.comment.CommentEventDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-import faang.school.postservice.dto.comment.CommentEvent;
 
 @Component
-public class CommentEventPublisher extends AbstractPublisher<CommentEvent> {
+public class CommentEventPublisher extends AbstractPublisher<CommentEventDto> {
+
     public CommentEventPublisher(RedisTemplate<String, Object> redisTemplate,
-                              ObjectMapper objectMapper,
-                              String channelName) {
-        super(redisTemplate, objectMapper, channelName);
+                                 ObjectMapper jsonMapper,
+                                 @Value("${spring.data.redis.channels.comment.name}") String commentTopic) {
+        super(redisTemplate, jsonMapper, commentTopic);
+
     }
 }
