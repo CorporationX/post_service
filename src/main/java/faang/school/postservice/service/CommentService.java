@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.comment.CommentEventDto;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -32,10 +32,11 @@ public class CommentService {
         comment.setLikes(Collections.EMPTY_LIST);
         comment.setPost(postService.existsPost(commentDto.getPostId()));
         Comment newComment = commentRepository.save(comment);
-        CommentEventDto event = CommentEventDto.builder()
+        CommentEvent event = CommentEvent.builder()
                 .commentId(newComment.getId())
-                .authorId(newComment.getAuthorId())
-                .commentedAt(newComment.getCreatedAt())
+                .authorOfCommentId(newComment.getAuthorId())
+                .createdAt(newComment.getCreatedAt())
+                .authorOfPostId(newComment.getPost().getAuthorId())
                 .postId(newComment.getPost().getId())
                 .build();
         commentEventPublisher.publish(event);
