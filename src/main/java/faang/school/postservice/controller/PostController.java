@@ -55,19 +55,19 @@ public class PostController {
         return postService.getUserDrafts(userId);
     }
 
-    @GetMapping("drafts/project/{projectId}")
+    @GetMapping("/drafts/project/{projectId}")
     @Operation(description = "Get project's drafts")
     public List<PostDto> getProjectDrafts(@PathVariable Long projectId) {
         return postService.getProjectDrafts(projectId);
     }
 
-    @GetMapping("user/{userId}")
+    @GetMapping("/user/{userId}")
     @Operation(description = "Get user's posts")
     public List<PostDto> getUserPosts(@PathVariable Long userId) {
         return postService.getUserPosts(userId);
     }
 
-    @GetMapping("project/{projectId}")
+    @GetMapping("/project/{projectId}")
     @Operation(description = "Get project's posts")
     public List<PostDto> getProjectPosts(@PathVariable Long projectId) {
         return postService.getProjectPosts(projectId);

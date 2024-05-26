@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -42,7 +41,6 @@ public class PostService {
     public PostDto publishDraftPost(Long id) {
         Post post = getById(id);
         postValidator.validateIsNotPublished(post);
-        post.setPublishedAt(LocalDateTime.now());
         post.setPublished(true);
         return postMapper.toDto(post);
     }
