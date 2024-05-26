@@ -16,6 +16,6 @@ public class AlbumTitleFilter implements AlbumFilter {
 
     @Override
     public void apply(List<AlbumDto> albums, AlbumFilterDto filterDto) {
-        albums.removeIf(album -> album.getTitle().contains(filterDto.getTitle()));
+        albums.removeIf(album -> !album.getTitle().contains(filterDto.getTitle()));
     }
 }

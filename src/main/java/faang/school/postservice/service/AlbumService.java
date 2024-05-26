@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -80,7 +82,7 @@ public class AlbumService {
         long userId = userContext.getUserId();
         List<AlbumDto> albums = albumRepository.findByAuthorId(userId)
                 .map(albumMapper::toDto)
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
 
         applyFilters(albums, filterDto);
         return albums;
@@ -90,7 +92,7 @@ public class AlbumService {
     public List<AlbumDto> getAllAlbums(AlbumFilterDto filterDto) {
         List<AlbumDto> albums = StreamSupport.stream(albumRepository.findAll().spliterator(), false)
                 .map(albumMapper::toDto)
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
 
         applyFilters(albums, filterDto);
         return albums;
@@ -101,7 +103,7 @@ public class AlbumService {
         long userId = getUserId();
         List<AlbumDto> albums = albumRepository.findFavoriteAlbumsByUserId(userId)
                 .map(albumMapper::toDto)
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
 
         applyFilters(albums, filterDto);
         return albums;

@@ -9,8 +9,9 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class AlbumFilterDto {
-    private final String title;
-    private final LocalDateTime createdAfter;
+    private String title;
+    private LocalDateTime createdAfter;
 }
