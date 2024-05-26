@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.redis.PostInRedisDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
@@ -76,14 +77,24 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostDto publish(long postId) {
         Post post = getPostFromRepository(postId);
         postValidator.validateIfPostIsPublished(post);
         postValidator.validateIfPostIsDeleted(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-
+        PostInRedisDto postInRedisDto = postMapper.toRedisDto(post);
+        sendPostInCashRedis(postInRedisDto);
         return postMapper.toDto(postRepository.save(post));
+    }
+
+    private void sendPostInCashRedis(PostInRedisDto postInRedisDto) {
+        PostRedis postRedis = PostRedis.builder()
+                .id(String.valueOf(postInRedisDto.getId())).post(postInRedisDto)
+                .build();
+        log.info("Send post in redis: {}", postInRedisDto);
+        redisPostRepository.save(postRedis);
     }
 
     @Transactional
