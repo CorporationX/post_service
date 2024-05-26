@@ -99,7 +99,6 @@ public class PostService {
         checkUserExistence(userId);
 
         return postRepository.findByAuthorId(userId).stream()
-                .filter(post -> post.getAuthorId().equals(userId))
                 .filter(post -> !post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
@@ -110,7 +109,6 @@ public class PostService {
         checkProjectExistence(projectId);
 
         return postRepository.findByProjectId(projectId).stream()
-                .filter(post -> post.getProjectId().equals(projectId))
                 .filter(post -> !post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
@@ -121,7 +119,6 @@ public class PostService {
         checkUserExistence(userId);
 
         return postRepository.findByAuthorId(userId).stream()
-                .filter(post -> post.getAuthorId().equals(userId))
                 .filter(Post::isPublished)
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .map(postMapper::toDto)
