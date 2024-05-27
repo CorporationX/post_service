@@ -7,7 +7,7 @@ import faang.school.postservice.dto.redis.PostInRedisDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.redis.PostRedis;
+import faang.school.postservice.model.redis.PostInRedis;
 import faang.school.postservice.model.resource.Resource;
 import faang.school.postservice.publisher.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.userban.UserBanPublisher;
@@ -90,11 +90,11 @@ public class PostService {
     }
 
     private void sendPostInCashRedis(PostInRedisDto postInRedisDto) {
-        PostRedis postRedis = PostRedis.builder()
-                .id(String.valueOf(postInRedisDto.getId())).post(postInRedisDto)
+        PostInRedis postInRedis = PostInRedis.builder()
+                .id(postInRedisDto.getId()).post(postInRedisDto)
                 .build();
         log.info("Send post in redis: {}", postInRedisDto);
-        redisPostRepository.save(postRedis);
+        redisPostRepository.save(postInRedis);
     }
 
     @Transactional
