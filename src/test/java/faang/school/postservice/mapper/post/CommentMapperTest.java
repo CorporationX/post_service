@@ -8,17 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentMapperTest {
-
-    @Mock
-    private Post postMock;
 
     @InjectMocks
     private CommentMapper mapper = Mappers.getMapper(CommentMapper.class);
@@ -28,11 +23,13 @@ public class CommentMapperTest {
 
     @BeforeEach
     void setUp() {
+        Post post = new Post();
+        post.setId(1L);
         comment = Comment.builder()
                 .id(1L)
                 .content("Text")
                 .authorId(2L)
-                .post(postMock)
+                .post(post)
                 .build();
         commentDto = CommentDto.builder()
                 .id(1L)
@@ -41,7 +38,6 @@ public class CommentMapperTest {
                 .postId(3L)
                 .createdAt(LocalDateTime.now())
                 .build();
-        Mockito.lenient().when(postMock.getId()).thenReturn(3L);
     }
 
     @Test
