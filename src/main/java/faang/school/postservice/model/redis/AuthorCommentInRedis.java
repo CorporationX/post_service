@@ -1,6 +1,6 @@
 package faang.school.postservice.model.redis;
 
-import faang.school.postservice.dto.post.PostInRedisDto;
+import faang.school.postservice.dto.user.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,13 +11,13 @@ import org.springframework.data.redis.core.RedisHash;
 import java.io.Serializable;
 
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@RedisHash(value = "PostInRedis", timeToLive = 86400L)
-public class PostInRedis implements Serializable {
+@NoArgsConstructor
+@Builder
+@RedisHash(value = "AuthorCommentInRedis", timeToLive = 86400L)
+public class AuthorCommentInRedis implements Serializable {
 
-    @Id
-    private long id;
-    PostInRedisDto post;
+        @Id
+        private long id;
+        private UserDto user;
 }

@@ -1,13 +1,18 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.comment.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.AuthorCommentInRedis;
+import faang.school.postservice.model.redis.AuthorPostInRedis;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisAuthorCommentRepository;
 import faang.school.postservice.validation.user.UserValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,15 +33,28 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserValidator userValidator;
     private final CommentEventPublisher commentEventPublisher;
+    private final RedisAuthorCommentRepository redisAuthorCommentRepository;
+    private final UserServiceClient userServiceClient;
 
     @Transactional
     public CommentDto createComment(Long userId, Long postId, CommentDto commentDto) {
         userValidator.validateUserExist(userId);
         Comment comment = getComment(userId, postId, commentDto);
         Comment savedComment = commentRepository.save(comment);
+        sendAuthorCommentInCashRedis(userId);
         log.info("Saved comment {}", savedComment.getId());
         publishCommentEvent(savedComment);
         return commentMapper.toDto(savedComment);
+    }
+
+    private void sendAuthorCommentInCashRedis(long userId) {
+        UserDto userDto = userServiceClient.getUser(userId);
+        AuthorCommentInRedis authorCommentInRedis = AuthorCommentInRedis.builder()
+                .id(userDto.getId())
+                .user(userDto)
+                .build();
+        log.info("Send author comment in redis: {}", authorCommentInRedis);
+        redisAuthorCommentRepository.save(authorCommentInRedis);
     }
 
     @Transactional

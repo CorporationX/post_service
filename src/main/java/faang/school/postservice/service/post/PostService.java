@@ -3,16 +3,19 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.redis.PostInRedisDto;
+import faang.school.postservice.dto.post.PostInRedisDto;
 import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.PostInRedis;
+import faang.school.postservice.model.redis.AuthorPostInRedis;
 import faang.school.postservice.model.resource.Resource;
 import faang.school.postservice.publisher.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisAuthorPostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -44,6 +47,7 @@ public class PostService {
     private final UserBanPublisher userBanPublisher;
     private final PostViewEventPublisher postViewEventPublisher;
     private final RedisPostRepository redisPostRepository;
+    private final RedisAuthorPostRepository redisAuthorPostRepository;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -86,15 +90,26 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         PostInRedisDto postInRedisDto = postMapper.toRedisDto(post);
         sendPostInCashRedis(postInRedisDto);
+        sendAuthorInCashRedis(post.getAuthorId());
         return postMapper.toDto(postRepository.save(post));
     }
 
     private void sendPostInCashRedis(PostInRedisDto postInRedisDto) {
         PostInRedis postInRedis = PostInRedis.builder()
-                .id(postInRedisDto.getId()).post(postInRedisDto)
+                .id(postInRedisDto.getId())
+                .post(postInRedisDto)
                 .build();
         log.info("Send post in redis: {}", postInRedisDto);
         redisPostRepository.save(postInRedis);
+    }
+
+    private void sendAuthorInCashRedis(long authorId) {
+        AuthorPostInRedis authorPostInRedis = AuthorPostInRedis.builder()
+                .id(authorId)
+                .user((UserDto) postRepository.findByAuthorId(authorId))
+                .build();
+        log.info("Send user in redis: {}", authorPostInRedis);
+        redisAuthorPostRepository.save(authorPostInRedis);
     }
 
     @Transactional

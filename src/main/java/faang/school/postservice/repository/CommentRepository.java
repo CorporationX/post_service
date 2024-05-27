@@ -14,4 +14,9 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     List<Comment> findAllByPostId(long postId);
 
     List<Comment> findByVerified(boolean verified);
+
+    @Query("SELECT c FROM Comment c WHERE c.author.id = :authorId")
+    List<Comment> findAllByAuthorId(long authorId);
+
+    Long findAuthorById(long id);
 }
