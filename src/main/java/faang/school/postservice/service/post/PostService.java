@@ -8,14 +8,14 @@ import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.redis.PostInRedis;
 import faang.school.postservice.model.redis.AuthorPostInRedis;
+import faang.school.postservice.model.redis.PostInRedis;
 import faang.school.postservice.model.resource.Resource;
 import faang.school.postservice.publisher.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.repository.redis.RedisAuthorPostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -108,7 +108,7 @@ public class PostService {
                 .id(authorId)
                 .user((UserDto) postRepository.findByAuthorId(authorId))
                 .build();
-        log.info("Send user in redis: {}", authorPostInRedis);
+        log.info("Send author in redis: {}", authorPostInRedis);
         redisAuthorPostRepository.save(authorPostInRedis);
     }
 

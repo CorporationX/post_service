@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
 
 import java.io.Serializable;
 
@@ -14,10 +15,10 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash(value = "PostInRedis", timeToLive = 86400L)
+@RedisHash(value = "PostInRedis")
 public class PostInRedis implements Serializable {
-
     @Id
     private long id;
+    @Indexed
     PostInRedisDto post;
 }
