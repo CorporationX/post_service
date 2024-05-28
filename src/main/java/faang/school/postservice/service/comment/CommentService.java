@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.post.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.Comparator;
@@ -25,14 +26,12 @@ public class CommentService {
     private final CommentMapper commentMapper;
 
     public CommentDto createComment(CommentDto commentDto) {
-        validateCommentDto(commentDto);
         Comment comment = commentMapper.fromDto(commentDto);
         comment = commentRepository.save(comment);
         return commentMapper.toDto(comment);
     }
 
     public CommentDto updateComment(long id, CommentDto commentDto) {
-        validateCommentDto(commentDto);
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Комментарий не найден"));
         if (comment.getAuthorId() != commentDto.getAuthorId()) {
@@ -62,18 +61,5 @@ public class CommentService {
             throw new NoAccessException("Пользователь не имеет права удалять этот комментарий");
         }
         commentRepository.deleteById(commentId);
-    }
-
-    private void validateCommentDto(CommentDto commentDto) {
-        if (commentDto.getContent() == null || commentDto.getContent().isEmpty() || commentDto.getContent().length() > 4096) {
-            throw new EntityWrongParameterException("Содержание комментария должно быть предоставлено и не может быть пустым или содержать более 4096 символов");
-        }
-        if (commentDto.getAuthorId() == null) {
-            throw new EntityWrongParameterException("Необходимо указать id автора");
-        }
-        if (commentDto.getPostId() == null) {
-            throw new EntityWrongParameterException("Необходимо указать id сообщения");
-        }
-        userServiceClient.getUser(commentDto.getAuthorId());
     }
 }
