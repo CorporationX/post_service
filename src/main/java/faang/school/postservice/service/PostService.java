@@ -105,6 +105,7 @@ public class PostService {
         return getNonDeletedSortedPostsDto(posts, Post::isPublished);
     }
 
+    @Transactional
     public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(() ->
                 new DataLikeValidation("Поста с id " + postId + " нет в базе данных."));
