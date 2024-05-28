@@ -1,6 +1,6 @@
 package faang.school.postservice.mapper.comment;
 
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.model.Comment;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 public interface CommentMapper {
 
     @Mapping(target = "post.id", source = "postId")
-    Comment toEntity(CommentDto commentDto);
+    Comment toEntity(CreateCommentDto createCommentDto);
 
     @Mapping(target = "postId", source = "post.id")
-    CommentDto toDto(Comment comment);
+    CreateCommentDto toDto(Comment comment);
 }

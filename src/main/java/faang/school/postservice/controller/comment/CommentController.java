@@ -1,41 +1,48 @@
 package faang.school.postservice.controller.comment;
 
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.ChangeCommentDto;
+import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.service.comment.CommentService;
-import faang.school.postservice.validator.CommentValidator;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/comments")
+@RequestMapping("/api/v1/comments")
 public class CommentController {
     private final CommentService commentService;
-    private final CommentValidator commentValidator;
 
+    @Operation(summary = "Add comment")
     @PostMapping("/create")
-    public CommentDto createComment(@RequestBody CommentDto commentDto) {
-        commentValidator.createCommentController(commentDto.getContent(), commentDto.getAuthorId(), commentDto.getPostId());
-        return commentService.createComment(commentDto);
+    public CreateCommentDto createComment(@RequestBody @Valid CreateCommentDto createCommentDto) {
+        log.info("Received create comment request {}", createCommentDto);
+        return commentService.createComment(createCommentDto);
     }
 
+    @Operation(summary = "change comment")
     @PutMapping("/change")
-    public CommentDto changeComment(@RequestBody CommentDto commentDto) {
-        commentValidator.changeCommentController(commentDto.getId(), commentDto.getContent());
-        return commentService.changeComment(commentDto);
+    public CreateCommentDto changeComment(@RequestBody @Valid ChangeCommentDto changeCommentDto) {
+        log.info("Received change comment request {}", changeCommentDto);
+        return commentService.changeComment(changeCommentDto);
     }
 
+    @Operation(summary = "Get list of commentDto")
     @GetMapping("/post/{id}")
-    public List<CommentDto> getAllCommentsOnPostId(@RequestParam long id) {
-        commentValidator.getAllCommentsOnPostIdController(id);
+    public List<CreateCommentDto> getAllCommentsOnPostId(@PathVariable long id) {
+        log.info("Received information for get all comments on post with id: {}", id);
         return commentService.getAllCommentsOnPostId(id);
     }
 
-    @DeleteMapping("/deleteComment/{id}")
-    public void deleteComment(@RequestParam long id) {
-        commentValidator.deleteCommentController(id);
+    @Operation(summary = "Delete comment")
+    @DeleteMapping("/{id}")
+    public void deleteComment(@PathVariable long id) {
+        log.info("Received information for delete comment with id: {}", id);
         commentService.deleteComment(id);
     }
 }

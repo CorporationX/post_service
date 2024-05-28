@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.ChangeCommentDto;
+import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -40,69 +41,71 @@ public class CommentServiceTest {
     @Mock
     private CommentValidator commentValidator;
 
-    private CommentDto commentDto;
+    private CreateCommentDto createCommentDto;
+    private ChangeCommentDto changeCommentDto;
     private Comment comment;
     private Long id;
 
     @BeforeEach
     public void setUp() {
         Post post = Post.builder().id(1L).build();
-        commentDto = CommentDto.builder().id(1L).content("content").authorId(1L).postId(1L).build();
+        createCommentDto = CreateCommentDto.builder().id(1L).content("content").authorId(1L).postId(1L).build();
+        changeCommentDto = ChangeCommentDto.builder().id(1L).content("content").build();
         comment = Comment.builder().id(1L).content("content").authorId(1L).post(post).build();
         id = 1L;
     }
 
     @Test
     public void testCorrectWorkCreateComment() {
-        when(commentMapper.toEntity(commentDto)).thenReturn(comment);
+        when(commentMapper.toEntity(createCommentDto)).thenReturn(comment);
         when(commentRepository.save(comment)).thenReturn(comment);
-        when(commentMapper.toDto(comment)).thenReturn(commentDto);
+        when(commentMapper.toDto(comment)).thenReturn(createCommentDto);
 
-        CommentDto result = commentService.createComment(commentDto);
+        CreateCommentDto result = commentService.createComment(createCommentDto);
 
-        assertEquals(commentDto, result);
-        verify(commentMapper).toEntity(commentDto);
+        assertEquals(createCommentDto, result);
+        verify(commentMapper).toEntity(createCommentDto);
         verify(commentRepository).save(comment);
         verify(commentMapper).toDto(comment);
     }
 
     @Test
     public void testCorrectWorkChangeComment() {
-        when(commentRepository.findById(commentDto.getId())).thenReturn(Optional.ofNullable(comment));
+        when(commentRepository.findById(createCommentDto.getId())).thenReturn(Optional.ofNullable(comment));
 
-        when(commentMapper.toDto(comment)).thenReturn(commentDto);
+        when(commentMapper.toDto(comment)).thenReturn(createCommentDto);
 
-        CommentDto result = commentService.changeComment(commentDto);
+        CreateCommentDto result = commentService.changeComment(changeCommentDto);
 
-        assertEquals(commentDto, result);
-        verify(commentRepository).findById(commentDto.getId());
+        assertEquals(createCommentDto, result);
+        verify(commentRepository).findById(createCommentDto.getId());
         verify(commentMapper).toDto(comment);
     }
 
     @Test
     public void testChangeCommentWithValidationException() {
-        when(commentRepository.findById(commentDto.getId())).thenThrow(DataValidationException.class);
-        assertThrows(DataValidationException.class, () -> commentService.changeComment(commentDto));
+        when(commentRepository.findById(createCommentDto.getId())).thenThrow(DataValidationException.class);
+        assertThrows(DataValidationException.class, () -> commentService.changeComment(changeCommentDto));
     }
 
 
     @Test
     public void testCorrectWorkGetAllCommentsOnPostId() {
-        when(commentRepository.findAllByPostId(id)).thenReturn(Collections.singletonList(comment));
+        when(commentRepository.findAllByPostIdOrderByCreatedAtDesc(id)).thenReturn(Collections.singletonList(comment));
         doNothing().when(commentValidator).getAllCommentsOnPostIdService(id);
-        when(commentMapper.toDto(comment)).thenReturn(commentDto);
+        when(commentMapper.toDto(comment)).thenReturn(createCommentDto);
 
-        List<CommentDto> result = commentService.getAllCommentsOnPostId(id);
+        List<CreateCommentDto> result = commentService.getAllCommentsOnPostId(id);
 
-        verify(commentValidator, times(1)).getAllCommentsOnPostIdService(commentDto.getPostId());
-        verify(commentRepository, times(1)).findAllByPostId(commentDto.getPostId());
+        verify(commentValidator, times(1)).getAllCommentsOnPostIdService(createCommentDto.getPostId());
+        verify(commentRepository, times(1)).findAllByPostIdOrderByCreatedAtDesc(createCommentDto.getPostId());
         verify(commentMapper, times(1)).toDto(comment);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertNotNull(result.get(0));
         assertEquals(id, result.get(0).getId());
-        assertEquals(commentDto.getContent(), result.get(0).getContent());
+        assertEquals(createCommentDto.getContent(), result.get(0).getContent());
     }
 
     @Test

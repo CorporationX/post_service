@@ -1,17 +1,20 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.ChangeCommentDto;
+import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -20,28 +23,35 @@ public class CommentService {
     private final CommentValidator commentValidator;
 
     @Transactional
-    public CommentDto createComment(CommentDto commentDto) {
-        Comment comment = commentMapper.toEntity(commentDto);
+    public CreateCommentDto createComment(CreateCommentDto createCommentDto) {
+        Comment comment = commentMapper.toEntity(createCommentDto);
         Comment commentSaved = commentRepository.save(comment);
+        log.debug("Comment saved in db. Comment: {}", commentSaved);
 
         return commentMapper.toDto(commentSaved);
     }
 
     @Transactional
-    public CommentDto changeComment(CommentDto commentDto) {
-        Comment commentFromDB = commentRepository.findById(commentDto.getId())
-                .orElseThrow(() -> new DataValidationException("couldn't find a comment by id: " + commentDto.getId()));
+    public CreateCommentDto changeComment(ChangeCommentDto changeCommentDto) {
+        Comment commentFromDB = commentRepository.findById(changeCommentDto.getId())
+                .orElseThrow(() -> {
+                    log.error("couldn't find a comment by id: {}", changeCommentDto.getId());
+                    return new DataValidationException("couldn't find a comment by id: " + changeCommentDto.getId());
+                });
 
-        commentFromDB.setContent(commentDto.getContent());
+        log.debug("Received comment for modification: {}", commentFromDB);
+
+        commentFromDB.setContent(changeCommentDto.getContent());
 
         return commentMapper.toDto(commentFromDB);
     }
 
     @Transactional(readOnly = true)
-    public List<CommentDto> getAllCommentsOnPostId(long id) {
+    public List<CreateCommentDto> getAllCommentsOnPostId(long id) {
         commentValidator.getAllCommentsOnPostIdService(id);
 
-        List<Comment> comments = commentRepository.findAllByPostId(id);
+        List<Comment> comments = commentRepository.findAllByPostIdOrderByCreatedAtDesc(id);
+        log.debug("Received list of comments for post with id: {} ; CommentList: {}", id, comments);
         return comments.stream().map(commentMapper::toDto).toList();
     }
 

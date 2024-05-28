@@ -24,91 +24,11 @@ public class CommentValidatorTest {
     @Mock
     private PostRepository postRepository;
 
-    private String content;
-    private Long authorId;
     private Long postId;
-    private Long commentId;
 
     @BeforeEach
     public void setUp(){
-        content = "content";
-        authorId = 1L;
         postId = 1L;
-        commentId = 1L;
-    }
-
-    @Test
-    public void testCorrectWorkCreateCommentController() {
-        assertDoesNotThrow(() -> commentValidator.createCommentController(content,authorId, postId));
-    }
-
-    @Test
-    public void testCreateCommentControllerWithNullContent() {
-        content = null;
-        assertThrows(DataValidationException.class, () -> commentValidator.createCommentController(content,authorId, postId));
-    }
-
-    @Test
-    public void testCreateCommentControllerWithEmptyContent() {
-        content = " ";
-        assertThrows(DataValidationException.class, () -> commentValidator.createCommentController(content,authorId, postId));
-    }
-
-    @Test
-    public void testCreateCommentControllerWithNullPostId() {
-        postId = null;
-        assertThrows(DataValidationException.class, () -> commentValidator.createCommentController(content,authorId, postId));
-    }
-
-    @Test
-    public void testCreateCommentControllerWithBiggerNumberOfSymbols() {
-        content = "0".repeat(4097);
-        assertThrows(DataValidationException.class, () -> commentValidator.createCommentController(content,authorId, postId));
-    }
-
-    @Test
-    public void testCorrectWorkChangeCommentController() {
-        assertDoesNotThrow(() -> commentValidator.changeCommentController(commentId, content));
-    }
-
-    @Test
-    public void testChangeCommentControllerWithNullContent() {
-        content = null;
-        assertThrows(DataValidationException.class, () -> commentValidator.changeCommentController(commentId, content));
-    }
-
-    @Test
-    public void testChangeCommentControllerWithEmptyContent() {
-        content = " ";
-        assertThrows(DataValidationException.class, () -> commentValidator.changeCommentController(commentId, content));
-    }
-
-    @Test
-    public void testChangeCommentControllerWithNullContentId() {
-        commentId = null;
-        assertThrows(DataValidationException.class, () -> commentValidator.changeCommentController(commentId, content));
-    }
-
-    @Test
-    public void testCorrectWorkGetAllCommentsOnPostIdController() {
-        assertDoesNotThrow(() -> commentValidator.getAllCommentsOnPostIdController(postId));
-    }
-
-    @Test
-    public void testGetAllCommentsOnPostIdControllerWithNullPostId() {
-        postId = null;
-        assertThrows(DataValidationException.class, () -> commentValidator.getAllCommentsOnPostIdController(postId));
-    }
-
-    @Test
-    public void testCorrectWorkDeleteCommentController() {
-        assertDoesNotThrow(() -> commentValidator.deleteCommentController(commentId));
-    }
-
-    @Test
-    public void testDeleteCommentControllerWithNullContentId() {
-        commentId = null;
-        assertThrows(DataValidationException.class, () -> commentValidator.deleteCommentController(commentId));
     }
 
     @Test
