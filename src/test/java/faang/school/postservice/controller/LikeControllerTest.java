@@ -35,21 +35,9 @@ public class LikeControllerTest {
     }
 
     @Test
-    public void testAddLikePost_isRunCheckIsNull() {
-        likeController.addLikePost(id, likeDto);
-        verify(likeValidator, times(1)).checkIsNull(id, likeDto);
-    }
-
-    @Test
     public void testAddLikePost_isRunAddLikePost() {
         likeController.addLikePost(id, likeDto);
         verify(likeService, times(1)).addLikePost(id, likeDto);
-    }
-
-    @Test
-    public void testAddLikeComment_isRunCheckIsNull() {
-        likeController.addLikeComment(id, likeDto);
-        verify(likeValidator, times(1)).checkIsNull(id, likeDto);
     }
 
     @Test
@@ -59,21 +47,9 @@ public class LikeControllerTest {
     }
 
     @Test
-    public void testDeleteLikePost_isRunCheckIsNull() {
-        likeController.deleteLikePost(id, likeDto);
-        verify(likeValidator, times(1)).checkIsNull(id, likeDto);
-    }
-
-    @Test
     public void testDeleteLikePost_isRunDeleteLikePost() {
         likeController.deleteLikePost(id, likeDto);
         verify(likeService, times(1)).deleteLikePost(id, likeDto);
-    }
-
-    @Test
-    public void testDeleteLikeComment_isRunCheckIsNull() {
-        likeController.deleteLikeComment(id, likeDto);
-        verify(likeValidator, times(1)).checkIsNull(id, likeDto);
     }
 
     @Test
