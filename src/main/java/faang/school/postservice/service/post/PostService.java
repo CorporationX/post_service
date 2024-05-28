@@ -9,8 +9,6 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +37,6 @@ import static faang.school.postservice.exception.post.PostValidationExceptionMes
 @Slf4j
 public class PostService {
     private final PostRepository postRepository;
-    private final LikeRepository likeRepository;
-    private final CommentRepository commentRepository;
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
@@ -98,43 +94,26 @@ public class PostService {
     public List<PostDto> getDraftsOfUser(long userId) {
         checkUserExistence(userId);
 
-        return postRepository.findByAuthorId(userId).stream()
-                .filter(post -> !post.isPublished())
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .map(postMapper::toDto)
-                .toList();
+        return getSortedDrafts(postRepository.findByAuthorId(userId));
     }
 
     public List<PostDto> getDraftsOfProject(long projectId) {
         checkProjectExistence(projectId);
 
-        return postRepository.findByProjectId(projectId).stream()
-                .filter(post -> !post.isPublished())
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .map(postMapper::toDto)
-                .toList();
+        return getSortedDrafts(postRepository.findByProjectId(projectId));
     }
 
     public List<PostDto> getPostsOfUser(long userId) {
         checkUserExistence(userId);
 
-        return postRepository.findByAuthorId(userId).stream()
-                .filter(Post::isPublished)
-                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .map(postMapper::toDto)
-                .toList();
+        return getSortedPosts(postRepository.findByAuthorId(userId));
     }
+
     public List<PostDto> getPostsOfProject(long projectId) {
         checkProjectExistence(projectId);
 
-        return postRepository.findByProjectId(projectId).stream()
-                .filter(post -> post.getProjectId().equals(projectId))
-                .filter(Post::isPublished)
-                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .map(postMapper::toDto)
-                .toList();
+        return getSortedPosts(postRepository.findByProjectId(projectId));
     }
-
 
     private void checkUserExistence(long userId) {
         if (!userServiceClient.existsById(userId)) {
@@ -196,5 +175,21 @@ public class PostService {
     private Post getPost(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException(NON_EXISTING_POST_EXCEPTION.getMessage()));
+    }
+
+    private List<PostDto> getSortedDrafts(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isPublished())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    private List<PostDto> getSortedPosts(List<Post> posts) {
+        return posts.stream()
+                .filter(Post::isPublished)
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .map(postMapper::toDto)
+                .toList();
     }
 }
