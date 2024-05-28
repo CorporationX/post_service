@@ -25,13 +25,13 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
 
-    public CommentDto createComment(@Valid CommentDto commentDto) {
+    public CommentDto createComment(CommentDto commentDto) {
         Comment comment = commentMapper.fromDto(commentDto);
         comment = commentRepository.save(comment);
         return commentMapper.toDto(comment);
     }
 
-    public CommentDto updateComment(long id,@Valid CommentDto commentDto) {
+    public CommentDto updateComment(long id, CommentDto commentDto) {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Комментарий не найден"));
         if (comment.getAuthorId() != commentDto.getAuthorId()) {
