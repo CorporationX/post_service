@@ -2,6 +2,7 @@ package faang.school.postservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +25,7 @@ public class PostDto {
     @NotBlank(message = "Post content cannot be empty")
     @Size(min = 1, max = 4096, message = "Post content must contains less then 4096 symbols")
     private String content;
-
+    @NotNull
     private Long authorId;
     private Long projectId;
 

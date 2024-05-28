@@ -4,7 +4,9 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.kafka.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.cache.PostServiceCache;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,8 @@ public class PostService {
     private final PostValidator postValidator;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
+    private final PostServiceCache postServiceCache;
+    private final KafkaPostProducer kafkaPostProducer;
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -38,6 +42,12 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         postRepository.save(post);
+        // TODO: save to cache
+
+        //sending to kafka
+        kafkaPostProducer.publish(post.getAuthorId());
+
+
         return postMapper.toDto(post);
     }
 

@@ -31,6 +31,13 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+
+    /**
+     * Kafka
+     */
+    implementation ("org.springframework.kafka:spring-kafka")
+
+
     /**
      * Database
      */
@@ -63,6 +70,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation ("org.springframework.kafka:spring-kafka-test")
 }
 
 tasks.withType<Test> {

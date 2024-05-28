@@ -1,6 +1,7 @@
 package faang.school.postservice.model.redis;
 
 
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,7 @@ import java.util.List;
 @Builder
 @RedisHash("Feed")
 public class RedisFeed {
+    @Id
     private Long id;
     private Long userId;
     private List<Long> postIds;
