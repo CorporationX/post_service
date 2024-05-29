@@ -55,7 +55,7 @@ public class PostController {
         return postService.getAllPublishedNonDeletedPostsByUserAuthorId(userId);
     }
 
-    @GetMapping("/published/project/projectId")
+    @GetMapping("/published/project/{projectId}")
     public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(@PathVariable Long projectId) {
         return postService.getAllPublishedNonDeletedPostsByProjectAuthorId(projectId);
     }

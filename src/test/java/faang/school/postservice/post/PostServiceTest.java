@@ -7,6 +7,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -97,6 +98,7 @@ public class PostServiceTest {
     }
 
     @Test
+    @DisplayName("Creating post")
     public void testCreatePost() {
         when(postMapper.toEntity(any(PostDto.class))).thenReturn(post1);
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto1);
@@ -105,7 +107,6 @@ public class PostServiceTest {
         PostDto createdPost = postService.create(postDto1);
 
         verify(postValidator).validateAuthorIdAndProjectId(postDto1.getAuthorId(), postDto1.getProjectId());
-        verify(postValidator).validatePostContent(postDto1.getContent());
         verify(postRepository).save(post1);
         verify(postMapper).toEntity(postDto1);
         verify(postMapper).toDto(post1);
@@ -118,8 +119,8 @@ public class PostServiceTest {
     }
 
     @Test
+    @DisplayName("Publishing post")
     public void testPublishPost() {
-        doNothing().when(postValidator).validateId(1L);
         doNothing().when(postValidator).validatePublicationPost(post1);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto1);
@@ -127,7 +128,6 @@ public class PostServiceTest {
 
         PostDto publishPost = postService.publish(1L);
 
-        verify(postValidator).validateId(1L);
         verify(postRepository).findById(1L);
         verify(postValidator).validatePublicationPost(post1);
         assertTrue(post1.isPublished());
@@ -140,17 +140,14 @@ public class PostServiceTest {
     }
 
     @Test
+    @DisplayName("Updating post")
     public void testUpdatePost() {
-        doNothing().when(postValidator).validateId(postId);
-        doNothing().when(postValidator).validatePostContent(content);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post1));
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto1);
         when(postRepository.save(any(Post.class))).thenReturn(post1);
 
         PostDto updatedPost = postService.update(postId, content);
 
-        verify(postValidator).validateId(postId);
-        verify(postValidator).validatePostContent(content);
         verify(postRepository).findById(postId);
         assertNotNull(post1.getContent());
         verify(postRepository).save(post1);
@@ -161,20 +158,20 @@ public class PostServiceTest {
     }
 
     @Test
+    @DisplayName("Deleting post")
     public void testDeleteByIdPost() {
-        doNothing().when(postValidator).validateId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post1));
         when(postRepository.save(any(Post.class))).thenReturn(post1);
 
         postService.deleteById(postId);
 
-        verify(postValidator).validateId(postId);
         verify(postRepository).findById(postId);
         assertTrue(post1.isDeleted());
         verify(postRepository).save(post1);
     }
 
     @Test
+    @DisplayName("Search for a post by ID")
     public void testFindByIdPost() {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post1));
 
@@ -187,6 +184,7 @@ public class PostServiceTest {
     }
 
     @Test
+    @DisplayName("Getting all drafts of non-deleted posts authored by user ID")
     public void testGetAllPostsDraftsByUserAuthorId() {
         when(postRepository.findByAuthorId(1L)).thenReturn(Arrays.asList(post1, post2));
         when(postMapper.toDto(post1)).thenReturn(postDto1);
@@ -205,6 +203,7 @@ public class PostServiceTest {
     }
 
     @Test
+    @DisplayName("Getting all drafts of non-deleted posts authored by project ID")
     public void testGetAllPostsDraftsByProjectAuthorId() {
         when(postRepository.findByProjectId(1L)).thenReturn(Arrays.asList(post1, post2));
         when(postMapper.toDto(post1)).thenReturn(postDto1);
@@ -223,6 +222,7 @@ public class PostServiceTest {
     }
 
     @Test
+    @DisplayName("Getting all published, non-deleted posts authored by user id")
     public void testGetAllPublishedNonDeletedPostsByUserAuthorId() {
         when(postRepository.findByAuthorId(1L)).thenReturn(Arrays.asList(post3, post4, post5));
         when(postMapper.toDto(post3)).thenReturn(postDto1);
@@ -242,6 +242,7 @@ public class PostServiceTest {
     }
 
     @Test
+    @DisplayName("Getting all published, non-deleted posts authored by project id")
     public void testGetAllPublishedNonDeletedPostsByProjectAuthorId() {
         when(postRepository.findByProjectId(1L)).thenReturn(Arrays.asList(post3, post4, post5));
         when(postMapper.toDto(post3)).thenReturn(postDto1);

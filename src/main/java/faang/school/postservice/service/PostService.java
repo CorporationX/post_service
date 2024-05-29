@@ -9,6 +9,7 @@ import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -22,18 +23,18 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostValidator postValidator;
 
+    @Transactional
     public PostDto create(PostDto postDto) {
         log.info("Trying to create post with ID: {}", postDto.getId());
         postValidator.validateAuthorIdAndProjectId(postDto.getAuthorId(), postDto.getProjectId());
-        postValidator.validatePostContent(postDto.getContent());
         Post post = postRepository.save(postMapper.toEntity(postDto));
         log.info("Post with ID:{} created.", postDto.getId());
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostDto publish(Long postId) {
         log.info("Trying to publish post with ID: {}", postId);
-        postValidator.validateId(postId);
         Post post = findById(postId);
         postValidator.validatePublicationPost(post);
         post.setPublished(true);
@@ -43,10 +44,9 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostDto update(Long postId, String content) {
         log.info("Trying to update post with ID: {}", postId);
-        postValidator.validateId(postId);
-        postValidator.validatePostContent(content);
         Post post = findById(postId);
         post.setContent(content);
         postRepository.save(post);
@@ -54,15 +54,16 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public void deleteById(Long postId) {
         log.info("Trying to delete post with ID: {}", postId);
-        postValidator.validateId(postId);
         Post post = findById(postId);
         post.setDeleted(true);
         postRepository.save(post);
         log.info("A post with this ID: {} has been added to the deleted list.", postId);
     }
 
+    @Transactional
     public Post findById(Long postId) {
         log.info("Attempting to find post with ID: {}", postId);
         return postRepository.findById(postId)
@@ -72,10 +73,11 @@ public class PostService {
                 });
     }
 
+    @Transactional
     public List<PostDto> getAllPostsDraftsByUserAuthorId(Long userId) {
         log.info("Trying to get drafts of posts, where the author is a user with ID: {}", userId);
         List<PostDto> draftsPostsByUser = postRepository.findByAuthorId(userId).stream()
-                .filter(post -> !post.isDeleted())
+                .filter(post -> !post.isDeleted() && !post.isPublished())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
@@ -83,11 +85,11 @@ public class PostService {
         return draftsPostsByUser;
     }
 
+    @Transactional
     public List<PostDto> getAllPostsDraftsByProjectAuthorId(Long projectId) {
         log.info("Trying to get drafts of posts, where the author is a project with ID: {}", projectId);
         List<PostDto> draftsPostsByProject = postRepository.findByProjectId(projectId).stream()
-                .filter(post -> !post.isPublished())
-                .filter(post -> !post.isDeleted())
+                .filter(post -> !post.isPublished() && !post.isDeleted())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
@@ -95,6 +97,7 @@ public class PostService {
         return draftsPostsByProject;
     }
 
+    @Transactional
     public List<PostDto> getAllPublishedNonDeletedPostsByUserAuthorId(Long userId) {
         log.info("Trying to get all published, non-deleted posts authored by a user with a given id: {}", userId);
         List<PostDto> publishedPostsByUser = postRepository.findByAuthorId(userId).stream()
@@ -106,6 +109,7 @@ public class PostService {
         return publishedPostsByUser;
     }
 
+    @Transactional
     public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(Long projectId) {
         log.info("Trying to get all published, non-deleted posts authored by a project with a given id: {}", projectId);
         List<PostDto> publishedPostsByProject = postRepository.findByProjectId(projectId).stream()

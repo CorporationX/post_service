@@ -2,23 +2,25 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-@Component
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class PostValidator {
-    public void validatePostContent(String content) {
-        if (content == null || content.isBlank()) {
-            log.error("Post content cannot be empty.");
-            throw new DataValidationException("Post content cannot be empty.");
-        }
-    }
+    private final PostRepository postRepository;
 
     public void validateAuthorIdAndProjectId(Long authorId, Long projectId) {
-        if (authorId == null && projectId == null) {
-            log.error("Author ID or project ID is null.");
-            throw new DataValidationException("Author ID or project ID is null.");
+        if (!postRepository.existsById(authorId)) {
+            log.error("User with ID {}, does not exist", authorId);
+            throw new DataValidationException("There is no user with this ID");
+        }
+        if (!postRepository.existsById(projectId)) {
+            log.error("Porject with ID {}, does not exist", projectId);
+            throw new DataValidationException("There is no project with this ID");
         }
     }
 
@@ -26,13 +28,6 @@ public class PostValidator {
         if (post.isPublished()) {
             log.error("The post has already been published.");
             throw new DataValidationException("The post has already been published.");
-        }
-    }
-
-    public void validateId(Long id) {
-        if (id == null) {
-            log.error("ID is null.");
-            throw new DataValidationException("ID is null.");
         }
     }
 }
