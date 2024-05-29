@@ -25,14 +25,13 @@ public class CommentService {
     private final PostMapper postMapper;
 
     public CommentDto createComment(long id, CommentDto commentDto) {
-        checkPostId(id);
         checkCommentDto(commentDto);
 
-        Comment comment = commentMapper.dtoToComment(commentDto);
+        Comment comment = commentMapper.ToEntity(commentDto);
         comment.setPost(postMapper.toEntity(postService.getPostById(id)));
         commentRepository.save(comment);
 
-        return commentMapper.commentToDto(comment);
+        return commentMapper.ToDto(comment);
     }
 
     public CommentDto updateComment(CommentDto commentDto) {
@@ -42,17 +41,16 @@ public class CommentService {
         comment.setContent(commentDto.getContent());
         commentRepository.save(comment);
 
-        return commentMapper.commentToDto(comment);
+        return commentMapper.ToDto(comment);
     }
 
     public List<CommentDto> getAllComments(long id) {
-        checkPostId(id);
         List<Comment> comments = commentRepository.findAllByPostId(postService.getPostById(id).getId());
         if (comments == null) {
             throw new DataValidationException(NO_COMMENTS_IN_THE_POST.getMessage());
         }
         comments.sort(Comparator.comparing(Comment::getCreatedAt));
-        return commentMapper.commentsToCommentsDto(comments);
+        return commentMapper.ToDtoList(comments);
     }
 
     public void deleteComment(CommentDto commentDto) {
@@ -73,11 +71,5 @@ public class CommentService {
         }
         return commentRepository.findById(commentDto.getId()).
                 orElseThrow(() -> new DataValidationException(NO_COMMENT_IN_DB.getMessage()));
-    }
-
-    private void checkPostId(long id) {
-        if (id <= 0) {
-            throw new DataValidationException(POST_ID_IS_INCORRECT.getMessage());
-        }
     }
 }

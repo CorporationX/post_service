@@ -14,6 +14,6 @@ public class CommentDto {
     @Size(max = 4096)
     private String content;
 
-    @NotNull(message = "content shouldn't be null")
+    @NotNull(message = "authorId shouldn't be null")
     private Long authorId;
 }
