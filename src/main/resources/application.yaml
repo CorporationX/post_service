@@ -29,6 +29,10 @@ spring:
         user_ban_channel:
           name: user_ban
 
+  mvc:
+    servlet:
+      path: /api/v1
+
 server:
   port: 8081
 
@@ -39,10 +43,10 @@ logging:
 post:
   publisher:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "0 0/1 * 1/1 * ?" # every minute #TODO: не используется, но может потом пригодится
   ad-remover:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "0 0/1 * 1/1 * ?" # every minute #TODO: не используется, если нет, то удалить
 
 payment-service:
   host: localhost
@@ -53,10 +57,6 @@ project-service:
 user-service:
   host: localhost
   port: 8080
-
-like:
-  endpoint:
-    context-path: "/api/v1/likes"
 
 scheduled:
   author-banner: "@daily"

@@ -14,7 +14,6 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     List<Post> findByProjectId(long projectId);
 
-
     void deleteAllByAuthorIdIn(List<Long> authorIds);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
@@ -28,4 +27,15 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     List<Post> findAllByVerified(boolean isVerified);
 
+    @Query("SELECT p FROM Post p WHERE p.authorId = :authorId AND p.published = false AND p.deleted = false ORDER BY p.createdAt DESC")
+    List<Post> findDraftPostsByAuthor(Long authorId);
+
+    @Query("SELECT p FROM Post p WHERE p.projectId = :projectId AND p.published = false AND p.deleted = false ORDER BY p.createdAt DESC")
+    List<Post> findDraftPostsByProject(long projectId);
+
+    @Query("SELECT p FROM Post p WHERE p.authorId = :authorId AND p.published = true AND p.deleted = false ORDER BY p.createdAt DESC")
+    List<Post> findPublishedPostsByAuthor(Long authorId);
+
+    @Query("SELECT p FROM Post p WHERE p.projectId = :projectId AND p.published = true AND p.deleted = false ORDER BY p.createdAt DESC")
+    List<Post> findPublishedPostsByProject(long projectId);
 }

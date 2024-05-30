@@ -28,7 +28,7 @@ public class CommentService {
         commentValidation.authorExistenceValidation(userId);
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setLikes(Collections.EMPTY_LIST);
-        comment.setPost(postService.getPost(commentDto.getPostId()));
+        comment.setPost(postService.existsPost(commentDto.getPostId()));
         Comment newComment = commentRepository.save(comment);
         CommentEvent commentEvent = CommentEvent.builder()
                 .commentId(newComment.getId())
@@ -54,7 +54,7 @@ public class CommentService {
     }
 
     public List<CommentDto> getPostComments(Long postId) {
-        Post post = postService.getPost(postId);
+        Post post = postService.existsPost(postId);
         List<Comment> comments = post.getComments();
         return commentMapper.toDto(comments);
     }
