@@ -14,7 +14,7 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash(value = "PostInRedis", timeToLive = 86400L)
+@RedisHash(value = "PostInRedis")
 public class PostInRedis implements Serializable {
 
     @Id

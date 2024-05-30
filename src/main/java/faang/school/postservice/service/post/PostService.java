@@ -19,6 +19,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -86,9 +87,11 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         PostInRedisDto postInRedisDto = postMapper.toRedisDto(post);
         sendPostInCashRedis(postInRedisDto);
+        log.info("sent to redis");
         return postMapper.toDto(postRepository.save(post));
     }
 
+    @Cacheable(value = "PostInRedis")
     private void sendPostInCashRedis(PostInRedisDto postInRedisDto) {
         PostInRedis postInRedis = PostInRedis.builder()
                 .id(postInRedisDto.getId()).post(postInRedisDto)
