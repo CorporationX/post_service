@@ -12,13 +12,14 @@ public abstract class MessagePublisher<T> {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper jsonMapper;
     private final String channel;
+
     public void publish(T event) {
         String json;
 
         try {
             json = jsonMapper.writeValueAsString(event);
         } catch (JsonProcessingException e) {
-            log.warn( "Exception with json processing at class"  + MessagePublisher.class);
+            log.warn("Exception with json processing at class" + MessagePublisher.class);
             throw new RuntimeException(e);
         }
 
