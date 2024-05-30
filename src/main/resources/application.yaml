@@ -49,3 +49,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+servlet:
+  PathV1: /api/v1

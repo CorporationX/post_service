@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/comments")
+@RequestMapping("${servlet.PathV1}/comments")
 public class CommentController {
     private final CommentService commentService;
 
