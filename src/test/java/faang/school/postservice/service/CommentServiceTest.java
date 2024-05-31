@@ -62,12 +62,15 @@ public class CommentServiceTest {
 
     private long postId;
 
+    private List<Comment> comments;
+
     @BeforeEach
     void init() {
         comment = testData.returnComment();
         commentDto = commentMapper.ToDto(testData.returnComment());
         postDto = testData.returnPostDto();
         postId = postDto.getId();
+        comments = testData.returnListOfComments();
     }
 
     @Test
@@ -146,8 +149,6 @@ public class CommentServiceTest {
 
     @Test
     void testForGetAllCommentsWithSort() {
-        List<Comment> comments = testData.returnListOfComments();
-
         when(postService.getPostById(postId)).thenReturn(postDto);
         when(commentRepository.findAllByPostId(postId)).thenReturn(comments);
 
@@ -162,7 +163,6 @@ public class CommentServiceTest {
         commentService.deleteComment(commentDto);
 
         verify(commentRepository).delete(captor.capture());
-        Comment commentAfterCapture = captor.getValue();
-        assertEquals(commentAfterCapture.getContent(), commentDto.getContent());
+        assertEquals(captor.getValue().getContent(), commentDto.getContent());
     }
 }

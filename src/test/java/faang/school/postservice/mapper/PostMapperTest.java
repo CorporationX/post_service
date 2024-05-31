@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 public class PostMapperTest {
+
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
     private Post post;
