@@ -22,10 +22,12 @@ spring:
       port: 6379
       host: localhost
       channels:
+        comment_channel:
+          name: comment_channel
+        like_channel:
+          name: like_channel
         user_ban_channel:
           name: user_ban
-        notification_like_channel:
-          name: notification_like_channel
 
   mvc:
     servlet:
@@ -46,15 +48,15 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute #TODO: не используется, если нет, то удалить
 
-user-service:
-  host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
 payment-service:
   host: localhost
   port: 9080
+project-service:
+  host: localhost
+  port: 8082
+user-service:
+  host: localhost
+  port: 8080
 
 scheduled:
   author-banner: "@daily"
