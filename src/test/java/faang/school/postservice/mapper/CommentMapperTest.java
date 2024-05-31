@@ -20,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(MockitoExtension.class)
 public class CommentMapperTest {
 
+    @Spy
+    private TestData testData;
+
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
     private Comment comment;
@@ -29,8 +32,6 @@ public class CommentMapperTest {
     private List<CommentDto> commentDtos;
 
     private List<Comment> comments;
-    @Spy
-    private TestData testData;
 
     @BeforeEach
     void init() {
@@ -50,19 +51,16 @@ public class CommentMapperTest {
 
     @Test
     void testToEntity() {
-        Comment actualComment = commentMapper.ToEntity(commentDto);
-        assertEquals(comment, actualComment);
+        assertEquals(comment, commentMapper.ToEntity(commentDto));
     }
 
     @Test
     void testToDto() {
-        CommentDto actualCommentDto = commentMapper.ToDto(comment);
-        assertEquals(actualCommentDto, commentDto);
+        assertEquals(commentMapper.ToDto(comment), commentDto);
     }
 
     @Test
     void testToDtoList() {
-        List<CommentDto> actualCommentDtos = commentMapper.ToDtoList(comments);
-        assertEquals(actualCommentDtos, commentDtos);
+        assertEquals(commentMapper.ToDtoList(comments), commentDtos);
     }
 }

@@ -33,13 +33,11 @@ public class PostMapperTest {
 
     @Test
     void testToEntity() {
-        Post actualPost = postMapper.toEntity(postDto);
-        assertEquals(post, actualPost);
+        assertEquals(post, postMapper.toEntity(postDto));
     }
 
     @Test
     void testToDto() {
-        PostDto actualPostDto = postMapper.toDto(post);
-        assertEquals(actualPostDto, postDto);
+        assertEquals(postMapper.toDto(post), postDto);
     }
 }
