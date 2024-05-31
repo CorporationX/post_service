@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/likes")
+@RequestMapping("${controller.like.url}")
 @Validated
 public class LikeController {
     private final LikeService likeService;

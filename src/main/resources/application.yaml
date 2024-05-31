@@ -25,6 +25,10 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+controller:
+  like:
+    url: api/v1/likes
+
 server:
   port: 8081
 
