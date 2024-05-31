@@ -81,7 +81,7 @@ public class AlbumController {
 
     @PutMapping("/{albumId}")
     @Operation(summary = "update album", tags = "album")
-    public AlbumDto updateAlbum(@PathVariable Long albumId, @RequestBody AlbumDto albumDto) {
+    public AlbumDto updateAlbum(@PathVariable Long albumId, @RequestBody @Valid AlbumDto albumDto) {
         return albumService.updateAlbum(albumId, albumDto);
     }
 

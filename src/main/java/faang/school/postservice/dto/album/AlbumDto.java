@@ -1,6 +1,7 @@
 package faang.school.postservice.dto.album;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +17,7 @@ import java.util.List;
 @Builder
 public class AlbumDto {
     private Long id;
-    @NonNull
+    @NotNull
     @NotBlank(message = "Title is required")
     private String title;
     @NonNull
