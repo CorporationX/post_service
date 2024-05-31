@@ -90,20 +90,20 @@ public class PostServiceTest {
     @Test
     void createDraftPostUserNotExist() {
         when(userServiceClient.getUser(postDto.getAuthorId())).thenThrow(DataValidationException.class);
-        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto, files));
+        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto, null));
     }
 
     @Test
     void createDraftPostProjectNotExist() {
         when(projectServiceClient.getProject(postDto.getProjectId())).thenThrow(DataValidationException.class);
-        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto, files));
+        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto, null));
     }
 
     @Test
     void createDraftPost() {
         Post post = postMapper.toEntity(postDto);
 
-        postService.createDraftPost(postDto, files);
+        postService.createDraftPost(postDto, null);
         verify(postRepository, times(1)).save(post);
     }
 

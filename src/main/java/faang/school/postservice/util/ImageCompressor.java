@@ -1,12 +1,11 @@
 package faang.school.postservice.util;
 
 import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.mock.web.MockMultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,46 +15,59 @@ import java.io.IOException;
 @Slf4j
 public class ImageCompressor {
 
-    public void compressImage(BufferedImage originalImage, MultipartFile file) {
-        int width = originalImage.getWidth();
-        int height = originalImage.getHeight();
+    private static final int MAX_WIDTH_LANDSCAPE = 1080;
+    private static final int MAX_HEIGHT_LANDSCAPE = 566;
+    private static final int MAX_SIZE_SQUARE = 1080;
 
-        int newWidth = width;
-        int newHeight = height;
+    public MultipartFile compressImage(BufferedImage image, MultipartFile file) {
+        log.info("start compress {} image", file.getName());
+        int width = image.getWidth();
+        int height = image.getHeight();
 
-        if (width > 1080 && height <= 566) { // Горизонтальное изображение
-            newWidth = 1080;
-            newHeight = (1080 * height) / width;
-        } else if (width > 1080 || height > 1080) { // Квадратное или любое изображение больше чем 1080x1080
-            newWidth = 1080;
-            newHeight = (1080 * height) / width;
-            if (newHeight > 1080) {
-                newHeight = 1080;
-                newWidth = (1080 * width) / height;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ByteArrayInputStream bais = null;
+        MultipartFile resizedFile = null;
+
+        try {
+            if (width > MAX_WIDTH_LANDSCAPE && height <= MAX_HEIGHT_LANDSCAPE) {
+                // Горизонтальное изображение
+                Thumbnails.of(image)
+                        .size(MAX_WIDTH_LANDSCAPE, (MAX_WIDTH_LANDSCAPE * height) / width)
+                        .toOutputStream(baos);
+            } else if (width > MAX_SIZE_SQUARE || height > MAX_SIZE_SQUARE) {
+                // Квадратное или любое изображение больше чем 1080x1080
+                int newWidth = MAX_SIZE_SQUARE;
+                int newHeight = (MAX_SIZE_SQUARE * height) / width;
+
+                if (newHeight > MAX_SIZE_SQUARE) {
+                    newHeight = MAX_SIZE_SQUARE;
+                    newWidth = (MAX_SIZE_SQUARE * width) / height;
+                }
+
+                Thumbnails.of(image)
+                        .size(newWidth, newHeight)
+                        .toOutputStream(baos);
+            }
+
+            bais = new ByteArrayInputStream(baos.toByteArray());
+            resizedFile = new MockMultipartFile(file.getName(), file.getOriginalFilename(), file.getContentType(), bais);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("Image compression error, file {}, {}", file.getName(), file.getContentType());
+            throw new RuntimeException("Image compression error");
+        } finally {
+            try {
+                baos.close();
+                if (bais != null) {
+                    bais.close();
+                }
+            } catch (IOException e) {
+                log.error("Input/Output stream closing error");
+                e.printStackTrace();
             }
         }
 
-        Image tmp = originalImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
-        BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
-
-        Graphics2D g2d = resizedImage.createGraphics();
-        g2d.drawImage(tmp, 0, 0, null);
-        g2d.dispose();
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-
-        try {
-            ImageIO.write(resizedImage, file.getContentType(), baos);
-            baos.flush();
-
-            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-            file = new MockMultipartFile(file.getName(), file.getOriginalFilename(), file.getContentType(), bais);
-
-            baos.close();
-            bais.close();
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
+        return resizedFile;
     }
 }

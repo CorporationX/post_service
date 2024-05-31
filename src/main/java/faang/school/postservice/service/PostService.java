@@ -35,7 +35,7 @@ public class PostService {
     private final MultipartFileValidator multipartFileValidator;
 
     @Transactional
-    public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
+    public PostDto createDraftPost(PostDto postDto, List<MultipartFile> files) {
         UserDto author = userServiceClient.getUser(postDto.getAuthorId());
         ProjectDto project = projectServiceClient.getProject(postDto.getProjectId());
 
@@ -43,10 +43,13 @@ public class PostService {
 
         Post saved = postRepository.save(postMapper.toEntity(postDto));
 
-        if (Objects.nonNull(files) && files.length > 0) {
+        if (Objects.nonNull(files) && !files.isEmpty()) {
             multipartFileValidator.validateFiles(files);
             String folder = String.valueOf(saved.getId());
-            Resource[] resource = s3Service.uploadFiles(files, folder);
+            List<Resource> resources = s3Service.uploadFiles(files, folder);
+
+            resources.forEach(resource -> resource.setPost(saved));
+            saved.setResources(resources);
         }
 
         return postMapper.toDto(saved);
@@ -120,6 +123,6 @@ public class PostService {
 
     private Post getById(long id) {
         return postRepository.findById(id)
-                .orElseThrow(() -> new DataValidationException("Поста с указанным id " + id + " не существует"));
+                .orElseThrow(() -> new DataValidationException("Post with id " + id + " do not exist"));
     }
 }

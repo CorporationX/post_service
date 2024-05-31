@@ -22,7 +22,7 @@ public class PostController {
     @PostMapping("/draft")
     @Operation(description = "Create new draft post")
     public PostDto createDraftPost(@RequestBody @Valid PostDto postDto,
-                                   @RequestParam("files") MultipartFile[] files) {
+                                   @RequestParam("files") List<MultipartFile> files) {
 
         postValidator.validateAuthorCount(postDto);
         return postService.createDraftPost(postDto, files);

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -24,4 +25,5 @@ public class PostDto {
     private boolean deleted;
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
+    private List<Long> resourceIds;
 }

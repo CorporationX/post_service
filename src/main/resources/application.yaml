@@ -50,7 +50,7 @@ payment-service:
   host: localhost
   port: 9080
 s3:
-  endpoint: <http://localhost:9000>
+  endpoint: http://127.0.0.1:9000
   accessKey: user
   secretKey: password
-  bucketName: postbucket
+  bucketName: corpbucket
