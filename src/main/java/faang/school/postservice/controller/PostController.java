@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,9 +21,11 @@ public class PostController {
 
     @PostMapping("/draft")
     @Operation(description = "Create new draft post")
-    public PostDto createDraftPost(@RequestBody @Valid PostDto postDto) {
+    public PostDto createDraftPost(@RequestBody @Valid PostDto postDto,
+                                   @RequestParam("files") MultipartFile[] files) {
+
         postValidator.validateAuthorCount(postDto);
-        return postService.createDraftPost(postDto);
+        return postService.createDraftPost(postDto, files);
     }
 
     @PutMapping("/drafts/{id}")

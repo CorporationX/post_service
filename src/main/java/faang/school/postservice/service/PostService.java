@@ -8,13 +8,18 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.s3.S3Service;
+import faang.school.postservice.validation.MultipartFileValidator;
 import faang.school.postservice.validation.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 @Component
@@ -26,14 +31,24 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
+    private final S3Service s3Service;
+    private final MultipartFileValidator multipartFileValidator;
 
     @Transactional
-    public PostDto createDraftPost(PostDto postDto) {
+    public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
         UserDto author = userServiceClient.getUser(postDto.getAuthorId());
         ProjectDto project = projectServiceClient.getProject(postDto.getProjectId());
+
         postValidator.validateAuthorExist(author, project);
 
         Post saved = postRepository.save(postMapper.toEntity(postDto));
+
+        if (Objects.nonNull(files) && files.length > 0) {
+            multipartFileValidator.validateFiles(files);
+            String folder = String.valueOf(saved.getId());
+            Resource[] resource = s3Service.uploadFiles(files, folder);
+        }
+
         return postMapper.toDto(saved);
     }
 
