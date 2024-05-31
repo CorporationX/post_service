@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class CommentDto {
     private Long id;
@@ -16,4 +18,6 @@ public class CommentDto {
 
     @NotNull(message = "authorId shouldn't be null")
     private Long authorId;
+
+    private LocalDateTime createdAt;
 }
