@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publishers.UserBannerPublisher;
+import faang.school.postservice.publisher.UserBannerPublisher;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

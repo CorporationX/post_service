@@ -48,5 +48,4 @@ public class CommentController {
     public void delete(@Valid @RequestBody CommentDto comment) {
         commentService.delete(comment, userContext.getUserId());
     }
-
 }
