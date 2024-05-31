@@ -1,0 +1,5 @@
+ALTER TABLE post
+ADD COLUMN verified boolean NOT NULL DEFAULT true;
+
+ALTER TABLE post
+ADD COLUMN verified_date TIMESTAMP;
