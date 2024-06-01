@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CommentEventPublisher extends MessagePublisher<CommentEvent> {
+public class CommentEventPublisher extends AbstractPublisher<CommentEvent> {
 
     public CommentEventPublisher(RedisTemplate<String, Object> redisTemplate,
                                  ObjectMapper jsonMapper,
