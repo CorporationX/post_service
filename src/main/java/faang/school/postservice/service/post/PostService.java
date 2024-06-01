@@ -91,7 +91,7 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    @Cacheable(value = "PostInRedis")
+    @Cacheable("PostInRedis")
     private void sendPostInCashRedis(PostInRedisDto postInRedisDto) {
         PostInRedis postInRedis = PostInRedis.builder()
                 .id(postInRedisDto.getId()).post(postInRedisDto)
