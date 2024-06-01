@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
@@ -8,6 +9,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisAuthorRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -59,6 +62,12 @@ class PostServiceTest {
     private PostViewEventPublisher postViewEventPublisher;
     private ExecutorService threadPool;
     private PostService postService;
+    @Mock
+    private RedisPostRepository redisPostRepository;
+    @Mock
+    private RedisAuthorRepository redisAuthorRepository;
+    @Mock
+    private UserContext userContext;
 
     private Post firstPost;
     private Post secondPost;
@@ -99,7 +108,7 @@ class PostServiceTest {
                 .build();
         threadPool = Executors.newFixedThreadPool(10);
         postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool,
-                userBanPublisher, postViewEventPublisher);
+                userBanPublisher, postViewEventPublisher, redisPostRepository, redisAuthorRepository, userContext);
     }
 
     @Test
