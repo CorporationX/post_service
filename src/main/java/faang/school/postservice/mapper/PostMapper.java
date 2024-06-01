@@ -15,7 +15,7 @@ import java.util.Objects;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
 
-    @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "toResourceIds")
+//    @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "toResourceIds")
     PostDto toDto(Post post);
 
     @Mapping(target = "resources", ignore = true)
@@ -23,11 +23,11 @@ public interface PostMapper {
 
     @Named("toResourceIds")
     default List<Long> toResourceIds(List<Resource> resources) {
-        if (Objects.nonNull(resources)) {
+        if (Objects.nonNull(resources) || !resources.isEmpty()) {
             return resources.stream()
                     .map(Resource::getId)
                     .toList();
         }
-        return new ArrayList<>();
+        return null;
     }
 }

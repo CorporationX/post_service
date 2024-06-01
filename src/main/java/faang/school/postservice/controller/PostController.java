@@ -19,7 +19,7 @@ public class PostController {
     private final PostService postService;
     private final PostValidator postValidator;
 
-    @PostMapping("/draft")
+    @PostMapping(value = "/draft")
     @Operation(description = "Create new draft post")
     public PostDto createDraftPost(@RequestBody @Valid PostDto postDto,
                                    @RequestParam("files") List<MultipartFile> files) {
