@@ -21,8 +21,6 @@ import java.io.Serializable;
 public class PostInRedis implements Serializable {
     @Id
     private long id;
-    @Indexed
-
     PostInRedisDto post;
     @Version
     private long version;

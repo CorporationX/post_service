@@ -1,17 +1,20 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.redis.PostInRedisDto;
+import faang.school.postservice.dto.post.PostInRedisDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.AuthorInRedis;
 import faang.school.postservice.model.redis.PostInRedis;
 import faang.school.postservice.model.resource.Resource;
 import faang.school.postservice.publisher.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisAuthorRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -45,6 +48,8 @@ public class PostService {
     private final UserBanPublisher userBanPublisher;
     private final PostViewEventPublisher postViewEventPublisher;
     private final RedisPostRepository redisPostRepository;
+    private final RedisAuthorRepository redisAuthorRepository;
+    private final UserContext userContext;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -85,19 +90,29 @@ public class PostService {
         postValidator.validateIfPostIsDeleted(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        post.setAuthorId(userContext.getUserId());
         PostInRedisDto postInRedisDto = postMapper.toRedisDto(post);
         sendPostInCashRedis(postInRedisDto);
-        log.info("sent to redis");
+        sendAuthorInCashRedis(postInRedisDto);
         return postMapper.toDto(postRepository.save(post));
     }
 
     @Cacheable("PostInRedis")
     private void sendPostInCashRedis(PostInRedisDto postInRedisDto) {
         PostInRedis postInRedis = PostInRedis.builder()
-                .id(postInRedisDto.getId()).post(postInRedisDto)
+                .id(postInRedisDto.getId())
+                .post(postInRedisDto)
                 .build();
-        log.info("Send post in redis: {}", postInRedisDto);
         redisPostRepository.save(postInRedis);
+    }
+
+    @Cacheable("AuthorInRedis")
+    private void sendAuthorInCashRedis(PostInRedisDto postInRedisDto) {
+        AuthorInRedis authorInRedis = AuthorInRedis.builder()
+                .id(postInRedisDto.getAuthorId())
+                .postId(postInRedisDto.getId())
+                .build();
+        redisAuthorRepository.save(authorInRedis);
     }
 
     @Transactional

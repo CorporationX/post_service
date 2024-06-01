@@ -1,9 +1,9 @@
 package faang.school.postservice.repository.redis;
 
-import faang.school.postservice.model.redis.AuthorCommentInRedis;
+import faang.school.postservice.model.redis.AuthorInRedis;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RedisAuthorCommentRepository extends CrudRepository<AuthorCommentInRedis, Long> {
+public interface RedisAuthorRepository extends CrudRepository<AuthorInRedis, Long> {
 }
