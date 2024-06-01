@@ -26,7 +26,7 @@ spring:
     redis:
       port: 6379
       host: localhost
-      ttl: 86400
+      ttl: 1440
       channels:
         calculations_channel:
           name: calculations_channel

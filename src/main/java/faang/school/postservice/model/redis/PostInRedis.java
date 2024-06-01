@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
 
@@ -23,5 +24,7 @@ public class PostInRedis implements Serializable {
     @Indexed
 
     PostInRedisDto post;
+    @Version
+    private long version;
 }
 
