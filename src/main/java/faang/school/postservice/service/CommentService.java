@@ -34,6 +34,8 @@ public class CommentService {
                 .commentId(newComment.getId())
                 .authorId(newComment.getAuthorId())
                 .content(newComment.getContent())
+                .createdAt(newComment.getCreatedAt())
+                .authorOfPostId(newComment.getPost().getAuthorId())
                 .postId(newComment.getPost().getId())
                 .build();
         commentPublisher.publish(commentEvent);

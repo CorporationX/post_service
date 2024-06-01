@@ -56,4 +56,5 @@ public class RedisConfig {
     public ChannelTopic userBannerChannel() {
         return new ChannelTopic(userBannerTopic);
     }
+
 }

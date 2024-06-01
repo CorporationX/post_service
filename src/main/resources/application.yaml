@@ -28,6 +28,12 @@ spring:
           name: like_channel
         user_ban_channel:
           name: user_ban
+        notification_like_channel:
+          name: notification_like_channel
+        calculations_channel:
+          name: calculations_channel
+        comment_event_channel:
+          name: comment_event_channel
 
   mvc:
     servlet:
@@ -58,6 +64,7 @@ user-service:
   host: localhost
   port: 8080
 
+like:
 scheduled:
   author-banner: "@daily"
 
