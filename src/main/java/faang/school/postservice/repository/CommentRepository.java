@@ -14,4 +14,11 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     List<Comment> findAllByPostId(long postId);
 
     List<Comment> findAllByPostIdOrderByCreatedAtDesc(long postId);
+
+    @Query("""
+                SELECT c FROM Comment c
+                WHERE c.updatedAt >= c.verifiedDate
+                OR c.verifiedDate IS NULL
+            """)
+    List<Comment> findUnVerifiedComments();
 }
