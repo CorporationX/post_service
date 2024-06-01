@@ -1,5 +1,16 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.exception.DataLikeValidation;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+
+
+
+
+
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
@@ -17,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.function.Predicate;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class PostService {
 
@@ -92,6 +103,12 @@ public class PostService {
         List<Post> posts = postRepository.findByProjectId(projectId);
         postValidator.validatePostsExists(posts);
         return getNonDeletedSortedPostsDto(posts, Post::isPublished);
+    }
+
+    @Transactional
+    public Post getPostById(Long postId) {
+        return postRepository.findById(postId).orElseThrow(() ->
+                new DataLikeValidation("Поста с id " + postId + " нет в базе данных."));
     }
 
     private List<PostDto> getNonDeletedSortedPostsDto(List<Post> posts, Predicate<Post> predicate) {

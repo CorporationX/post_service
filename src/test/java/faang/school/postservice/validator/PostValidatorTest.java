@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.validation.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,13 +78,13 @@ public class PostValidatorTest {
 
     @Test
     void validatePostExistEmptyList() {
-        assertThrows(DataValidationException.class, () -> validator.validatePostsExists(new ArrayList<>()));
+        assertThrows(EntityNotFoundException.class, () -> validator.validatePostsExists(new ArrayList<>()));
     }
 
     @Test
     void validatePostExistWithNull() {
         List<Post> posts = null;
-        assertThrows(DataValidationException.class,
+        assertThrows(EntityNotFoundException.class,
                 () -> validator.validatePostsExists(posts));
     }
 }
