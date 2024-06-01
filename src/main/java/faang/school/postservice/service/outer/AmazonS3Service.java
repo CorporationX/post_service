@@ -44,13 +44,15 @@ public class AmazonS3Service {
             throw new RuntimeException(e);
         }
 
-        return Resource.builder()
+        Resource resource = Resource.builder()
                 .key(fileKey)
                 .size(fileSize)
                 .createdAt(LocalDateTime.now())
                 .name(fileOriginalName)
                 .type(fileContentType)
                 .build();
+        log.info("Created a new resource with key {}", fileKey);
+        return resource;
     }
 
     public List<Resource> uploadFiles(List<MultipartFile> files, String folder) {
@@ -59,14 +61,17 @@ public class AmazonS3Service {
             throw new DataValidationException("You can upload a maximum of 10 files.");
         }
 
-        return files.stream()
+        List<Resource> resources = files.stream()
                 .map(file -> uploadFile(file, folder))
                 .toList();
+        log.info("Files uploaded successfully.");
+
+        return resources;
     }
 
     public void deleteFile(String fileKey) {
-        log.info("Delete file with key {} ", fileKey);
         s3Client.deleteObject(bucketName, fileKey);
+        log.info("Delete file with key {} ", fileKey);
     }
 
     public Resource updateFile(String fileKey, MultipartFile file, String folder) {
