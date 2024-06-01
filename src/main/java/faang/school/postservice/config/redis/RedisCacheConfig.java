@@ -18,6 +18,6 @@ public class RedisCacheConfig {
     public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
         return (builder) -> builder
                 .withCacheConfiguration("PostInRedis", RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ttl)))
-                .withCacheConfiguration("AuthorPostInRedis", RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ttl)));
+                .withCacheConfiguration("AuthorInRedis", RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ttl)));
     }
 }
