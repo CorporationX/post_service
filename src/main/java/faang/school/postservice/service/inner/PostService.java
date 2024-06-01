@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.inner;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
