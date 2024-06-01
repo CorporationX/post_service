@@ -1,19 +1,20 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.comment.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.AuthorInRedis;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisAuthorRepository;
 import faang.school.postservice.validation.user.UserValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,28 +31,27 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserValidator userValidator;
     private final CommentEventPublisher commentEventPublisher;
-    private final RedisAuthorCommentRepository redisAuthorCommentRepository;
-    private final UserServiceClient userServiceClient;
+    private final RedisAuthorRepository redisAuthorRepository;
 
     @Transactional
     public CommentDto createComment(Long userId, Long postId, CommentDto commentDto) {
         userValidator.validateUserExist(userId);
         Comment comment = getComment(userId, postId, commentDto);
         Comment savedComment = commentRepository.save(comment);
-        sendAuthorCommentInCashRedis(userId);
+        sendAuthorCommentInCashRedis(commentDto);
         log.info("Saved comment {}", savedComment.getId());
         publishCommentEvent(savedComment);
         return commentMapper.toDto(savedComment);
     }
 
-    private void sendAuthorCommentInCashRedis(long userId) {
-        UserDto userDto = userServiceClient.getUser(userId);
-        AuthorCommentInRedis authorCommentInRedis = AuthorCommentInRedis.builder()
-                .id(userDto.getId())
-                .user(userDto)
+    @Cacheable("AuthorInRedis")
+    private void sendAuthorCommentInCashRedis(CommentDto commentDto) {
+        AuthorInRedis authorCommentInRedis = AuthorInRedis.builder()
+                .commentId(commentDto.getId())
+                .postId(commentDto.getPostId())
                 .build();
         log.info("Send author comment in redis: {}", authorCommentInRedis);
-        redisAuthorCommentRepository.save(authorCommentInRedis);
+        redisAuthorRepository.save(authorCommentInRedis);
     }
 
     @Transactional
