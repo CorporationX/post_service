@@ -1,29 +1,29 @@
 package faang.school.postservice.dto.comment;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
-@Data
 @NoArgsConstructor
+@Data
+@Builder
 @AllArgsConstructor
-@Builder(toBuilder = true)
 public class CommentEvent {
     @NotNull
-    private Long authorOfCommentId;
-    @Positive
-    private Long authorOfPostId;
-    @Positive
-    private Long postId;
-    private String content;
-    @Positive
     private Long commentId;
+    @NotNull
+    private Long authorId;
+    @NotNull
+    private String content;
+    @NotNull
+    private Long postId;
+    @NotNull
+    private Long authorOfPostId;
+
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createdAt;
 }

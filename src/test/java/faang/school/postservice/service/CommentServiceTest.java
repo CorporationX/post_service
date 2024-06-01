@@ -4,10 +4,9 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.CommentPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidation;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,26 +18,26 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
 
-
     @Mock
-    PostService postService;
-
+    private PostService postService;
     @Mock
     private CommentMapper commentMapper;
     @Mock
     private CommentRepository commentRepository;
     @Mock
-    CommentValidation commentValidation;
+    private CommentValidation commentValidation;
     @Mock
-    CommentEventPublisher commentEventPublisher;
+    private CommentPublisher commentPublisher;
     @InjectMocks
     private CommentService commentService;
+
     CommentDto firstCommentDto;
     CommentDto secondCommentDto;
-
     Comment firstComment;
     Comment secondComment;
     Post post;
@@ -90,7 +89,7 @@ public class CommentServiceTest {
         Mockito.verify(commentValidation, Mockito.times(1)).authorExistenceValidation(firstCommentDto.getAuthorId());
         Mockito.verify(postService, Mockito.times(1)).existsPost(firstCommentDto.getPostId());
 
-        Assert.assertEquals(result, firstCommentDto);
+        assertEquals(result, firstCommentDto);
     }
 
 
@@ -104,7 +103,7 @@ public class CommentServiceTest {
 
         Mockito.verify(commentValidation, Mockito.times(1)).validateCommentExistence(secondComment.getId());
         Mockito.verify(commentValidation, Mockito.times(1)).authorExistenceValidation(secondCommentDto.getAuthorId());
-        Assert.assertEquals(result, secondCommentDto);
+        assertEquals(result, secondCommentDto);
     }
 
     @Test
@@ -127,4 +126,3 @@ public class CommentServiceTest {
         Mockito.verify(commentRepository, Mockito.times(1)).deleteById(secondComment.getId());
     }
 }
-

@@ -1,4 +1,4 @@
-package faang.school.postservice.publishers;
+package faang.school.postservice.publisher;
 
 import faang.school.postservice.mapper.JsonMapper;
 import lombok.RequiredArgsConstructor;

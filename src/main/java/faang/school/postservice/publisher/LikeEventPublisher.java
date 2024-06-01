@@ -1,4 +1,4 @@
-package faang.school.postservice.publishers;
+package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.like.LikeEvent;
@@ -11,7 +11,7 @@ public class LikeEventPublisher extends AbstractPublisher<LikeEvent> {
 
     public LikeEventPublisher(RedisTemplate<String, Object> redisTemplate,
                               ObjectMapper objectMapper,
-                              @Value("${spring.data.redis.channels.notification_like_channel.name}")
+                              @Value("${spring.data.redis.channels.like_channel.name}")
                               String channelName) {
         super(redisTemplate, objectMapper, channelName);
     }
