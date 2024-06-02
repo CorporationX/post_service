@@ -17,6 +17,22 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: post_service
+    properties:
+      spring.json.trusted.packages: '*'
+    batch-size: 1000
+    topics:
+      post:
+        name: post_topic
+
   data:
     redis:
       port: 6379
@@ -63,3 +79,6 @@ scheduled:
 
 limits:
   unverified_post_limit: 5
+
+feed:
+  batch: 20
