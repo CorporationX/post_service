@@ -125,7 +125,7 @@ public class PostServiceTest {
     @Test
     void updatePost() {
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToUpdate));
-        PostDto actual = postService.updatePost(postDto, postId);
+        PostDto actual = postService.updatePost(postDto, postId, null);
 
         assertEquals("qwe", actual.getContent());
     }

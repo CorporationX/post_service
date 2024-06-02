@@ -38,9 +38,10 @@ public class PostController {
 
     @PutMapping("/{id}")
     @Operation(description = "Update post")
-    public PostDto updatePost( @RequestPart PostDto postDto,
-                               @PathVariable Long id) {
-        return postService.updatePost(postDto, id);
+    public PostDto updatePost(@PathVariable long id,
+                              @RequestPart PostDto postDto,
+                              @RequestPart(value = "files", required = false) @Size(max = 10) List<MultipartFile> files) {
+        return postService.updatePost(postDto, id, files);
 
     }
 

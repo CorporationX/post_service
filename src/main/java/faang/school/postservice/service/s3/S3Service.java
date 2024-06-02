@@ -62,4 +62,7 @@ public class S3Service {
         return resources;
     }
 
+    public void deleteFile(String key) {
+        s3Client.deleteObject(bucketName, key);
+    }
 }
