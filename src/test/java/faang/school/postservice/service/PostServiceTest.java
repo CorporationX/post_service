@@ -48,6 +48,9 @@ public class PostServiceTest {
     @Mock
     private PostValidator postValidator;
 
+    @Mock
+    ResourceService resourceService;
+
     @Spy
     private PostMapperImpl postMapper;
 
@@ -124,6 +127,8 @@ public class PostServiceTest {
 
     @Test
     void updatePost() {
+        postToUpdate.setResources(new ArrayList<>());
+        postDto.setResourceIds(new ArrayList<>());
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToUpdate));
         PostDto actual = postService.updatePost(postDto, postId, null);
 

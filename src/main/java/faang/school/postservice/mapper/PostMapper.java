@@ -23,11 +23,11 @@ public interface PostMapper {
 
     @Named("toResourceIds")
     default List<Long> toResourceIds(List<Resource> resources) {
-        if (Objects.nonNull(resources) || !resources.isEmpty()) {
+        if (Objects.nonNull(resources)) {
             return resources.stream()
                     .map(Resource::getId)
                     .toList();
         }
-        return null;
+        return new ArrayList<>();
     }
 }

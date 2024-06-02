@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,7 +22,7 @@ public class PostController {
     private final PostService postService;
     private final PostValidator postValidator;
 
-    @PostMapping(value = "/draft")
+    @PostMapping(value = "/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public PostDto createDraftPost(
             @RequestPart("postDto") @Valid PostDto postDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
@@ -29,6 +30,12 @@ public class PostController {
         postValidator.validateAuthorCount(postDto);
         return postService.createDraftPost(postDto, files);
     }
+
+    @PostMapping(value = "/draft/mul", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity test(@RequestPart("postDto") PostDto postDto) {
+        return (ResponseEntity) ResponseEntity.ok();
+    }
+
 
     @PutMapping("/drafts/{id}")
     @Operation(description = "Publish draft post")

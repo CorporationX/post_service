@@ -27,7 +27,7 @@ public class PostValidatorTest {
 
     @BeforeEach
     void setUp() {
-        validator = new PostValidator(Mockito.mock(UserContext.class));
+        validator = new PostValidator();
         postDto = PostDto.builder().content("qwe").authorId(1L).build();
         post = Post.builder().content("123").authorId(3L).published(true).build();
     }

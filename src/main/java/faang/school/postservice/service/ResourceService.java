@@ -53,7 +53,7 @@ public class ResourceService {
 
     public List<Resource> deleteResources(List<Long> resourceIds) {
         List<Resource> resourcesToDelete = resourceIds.stream()
-                .map(this::validateAccessAndGetResource)
+                .map(this::getResourceById)
                 .toList();
 
         resourcesToDelete.forEach(resource -> s3Service.deleteFile(resource.getKey()));
@@ -62,12 +62,6 @@ public class ResourceService {
         return resourcesToDelete;
     }
 
-    private Resource validateAccessAndGetResource(Long id) {
-        Resource resource = getResourceById(id);
-        Post post = resource.getPost();
-        postValidator.validateAccessToPost(post.getAuthorId(), post.getProjectId());
-        return resource;
-    }
 
     private Resource getResourceById(Long id) {
         return repository.findById(id).orElseThrow(

@@ -68,7 +68,7 @@ public class PostService {
 
         removeUnnecessaryResources(post, postDto);
 
-        Post updatedPost = postRepository.save(post);
+
         return postMapper.toDto(post);
     }
 
