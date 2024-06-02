@@ -1,9 +1,9 @@
 package faang.school.postservice.exception;
 
 import faang.school.postservice.exception.like.LikeOperatingException;
-import org.springframework.http.ResponseEntity;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,10 +16,11 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-  
+
     @ExceptionHandler(LikeOperatingException.class)
     public ResponseEntity<String> handleLikeOperatingException(LikeOperatingException e) {
         return ResponseEntity.badRequest().body(e.getMessage());
+    }
 
     @ExceptionHandler(DataValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
