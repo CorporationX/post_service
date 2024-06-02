@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+<<<<<<< HEAD
 
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
@@ -17,3 +18,8 @@ public class PostService {
         return postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post with ID " + id + " not found"));
     }
 }
+=======
+public interface PostService {
+    void moderatePosts();
+}
+>>>>>>> 529001b5 (добавил функцию модерации плохих слов)
