@@ -4,7 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.post.PostOperationException;
+import faang.school.postservice.exception.DataOperationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -22,15 +22,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static faang.school.postservice.exception.post.PostOperationExceptionMessage.DELETED_STATUS_UPDATE_EXCEPTION;
-import static faang.school.postservice.exception.post.PostOperationExceptionMessage.LIKES_UPDATE_EXCEPTION;
-import static faang.school.postservice.exception.post.PostOperationExceptionMessage.PUBLISHED_DATE_UPDATE_EXCEPTION;
-import static faang.school.postservice.exception.post.PostOperationExceptionMessage.RE_DELETING_POST_EXCEPTION;
-import static faang.school.postservice.exception.post.PostOperationExceptionMessage.RE_PUBLISHING_POST_EXCEPTION;
-import static faang.school.postservice.exception.post.PostValidationExceptionMessage.NON_EXISTING_POST_EXCEPTION;
-import static faang.school.postservice.exception.post.PostValidationExceptionMessage.NON_EXISTING_PROJECT_EXCEPTION;
-import static faang.school.postservice.exception.post.PostValidationExceptionMessage.NON_EXISTING_USER_EXCEPTION;
-import static faang.school.postservice.exception.post.PostValidationExceptionMessage.NON_MATCHING_AUTHORS_EXCEPTION;
+import static faang.school.postservice.exception.message.PostOperationExceptionMessage.DELETED_STATUS_UPDATE_EXCEPTION;
+import static faang.school.postservice.exception.message.PostOperationExceptionMessage.LIKES_UPDATE_EXCEPTION;
+import static faang.school.postservice.exception.message.PostOperationExceptionMessage.PUBLISHED_DATE_UPDATE_EXCEPTION;
+import static faang.school.postservice.exception.message.PostOperationExceptionMessage.RE_DELETING_POST_EXCEPTION;
+import static faang.school.postservice.exception.message.PostOperationExceptionMessage.RE_PUBLISHING_POST_EXCEPTION;
+import static faang.school.postservice.exception.message.PostValidationExceptionMessage.NON_EXISTING_POST_EXCEPTION;
+import static faang.school.postservice.exception.message.PostValidationExceptionMessage.NON_EXISTING_PROJECT_EXCEPTION;
+import static faang.school.postservice.exception.message.PostValidationExceptionMessage.NON_EXISTING_USER_EXCEPTION;
+import static faang.school.postservice.exception.message.PostValidationExceptionMessage.NON_MATCHING_AUTHORS_EXCEPTION;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +55,7 @@ public class PostService {
         Post postToBePublished = getPost(postId);
 
         if (postToBePublished.isPublished()) {
-            throw new PostOperationException(RE_PUBLISHING_POST_EXCEPTION.getMessage());
+            throw new DataOperationException(RE_PUBLISHING_POST_EXCEPTION.getMessage());
         }
 
         postToBePublished.setPublished(true);

@@ -1,4 +1,4 @@
-package faang.school.postservice.exception.post;
+package faang.school.postservice.exception.message;
 
 public enum PostOperationExceptionMessage {
     RE_PUBLISHING_POST_EXCEPTION("The post can't be re-published."),

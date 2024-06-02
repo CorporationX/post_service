@@ -1,4 +1,4 @@
-package faang.school.postservice.exception.post;
+package faang.school.postservice.exception.message;
 
 public enum PostValidationExceptionMessage {
     NULL_VALUED_POST_ID_EXCEPTION("Post must exists in system to be operated."),

@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static faang.school.postservice.exception.post.PostValidationExceptionMessage.INCORRECT_POST_AUTHOR_EXCEPTION;
-import static faang.school.postservice.exception.post.PostValidationExceptionMessage.NULL_VALUED_POST_ID_EXCEPTION;
+import static faang.school.postservice.exception.message.PostValidationExceptionMessage.INCORRECT_POST_AUTHOR_EXCEPTION;
+import static faang.school.postservice.exception.message.PostValidationExceptionMessage.NULL_VALUED_POST_ID_EXCEPTION;
 
 @RestController
 @RequestMapping("/post")
