@@ -1,12 +1,19 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.service.s3.S3Service;
+import faang.school.postservice.validation.MultipartFileValidator;
+import faang.school.postservice.validation.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -14,8 +21,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class ResourceService {
 
     private final ResourceRepository repository;
+    private final MultipartFileValidator multipartFileValidator;
+    private final S3Service s3Service;
+    private final PostValidator postValidator;
 
-    @Transactional
     public Resource createResource(String key, MultipartFile file) {
         Resource resource = Resource.builder()
                 .key(key)
@@ -25,5 +34,20 @@ public class ResourceService {
                 .build();
 
         return repository.save(resource);
+    }
+
+    @Transactional
+    public List<Resource> createResourceToPost(List<MultipartFile> files, Post post) {
+        multipartFileValidator.validateFiles(files);
+
+        String folder = String.valueOf(post.getId());
+        List<Resource> resources = s3Service.uploadFiles(files, folder);
+
+        for (Resource resource : resources) {
+            Resource saved = repository.save(resource);
+            saved.setPost(post);
+        }
+
+        return resources;
     }
 }

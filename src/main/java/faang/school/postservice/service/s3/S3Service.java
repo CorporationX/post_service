@@ -24,12 +24,11 @@ public class S3Service {
 
     @Autowired
     private final AmazonS3 s3Client;
-    private final ResourceService resourceService;
 
     @Value("${s3.bucketName")
     private String bucketName;
 
-    @Transactional
+
     public List<Resource> uploadFiles(List<MultipartFile> files, String folder) {
         log.info("preparing {} files to saving", files.size());
         List<Resource> resources = new ArrayList<>();
@@ -51,9 +50,16 @@ public class S3Service {
                 throw new RuntimeException("Upload file error");
             }
             log.info("File {} upload completed", file.getOriginalFilename());
-            resources.add(resourceService.createResource(key, file));
+            resources.add(
+                    Resource.builder()
+                    .key(key)
+                    .size(file.getSize())
+                    .name(file.getOriginalFilename())
+                    .type(file.getContentType())
+                    .build()
+            );
         }
         return resources;
     }
-    //метод замены массива файлов
+
 }

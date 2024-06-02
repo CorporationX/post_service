@@ -10,16 +10,16 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.s3.S3Service;
-import faang.school.postservice.validation.MultipartFileValidator;
 import faang.school.postservice.validation.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 @Component
@@ -31,8 +31,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
-    private final S3Service s3Service;
-    private final MultipartFileValidator multipartFileValidator;
+    private final ResourceService resourceService;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto, List<MultipartFile> files) {
@@ -44,11 +43,7 @@ public class PostService {
         Post saved = postRepository.save(postMapper.toEntity(postDto));
 
         if (Objects.nonNull(files) && !files.isEmpty()) {
-            multipartFileValidator.validateFiles(files);
-            String folder = String.valueOf(saved.getId());
-            List<Resource> resources = s3Service.uploadFiles(files, folder);
-
-            resources.forEach(resource -> resource.setPost(saved));
+            List<Resource> resources = resourceService.createResourceToPost(files, saved);
             saved.setResources(resources);
         }
 
