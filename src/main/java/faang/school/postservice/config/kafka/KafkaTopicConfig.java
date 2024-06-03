@@ -11,8 +11,16 @@ public class KafkaTopicConfig {
     @Value("${spring.data.kafka.channels.comment-channel.name}")
     private String commentEventChannel;
 
+    @Value("${spring.data.kafka.channels.post-channel.name}")
+    private String postEventChannel;
+
     @Bean
     public NewTopic commentEventTopic() {
         return new NewTopic(commentEventChannel, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic postEventTopic() {
+        return new NewTopic(postEventChannel, 1, (short) 1);
     }
 }

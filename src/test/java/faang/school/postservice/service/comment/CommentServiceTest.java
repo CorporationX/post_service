@@ -5,7 +5,7 @@ import faang.school.postservice.event.comment.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.kafka.createcomment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.user.UserValidator;
