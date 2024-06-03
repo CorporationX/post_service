@@ -1,4 +1,4 @@
-package faang.school.postservice.service.outer;
+package faang.school.postservice.service.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -84,5 +85,20 @@ public class AmazonS3Service {
         log.info("Start download file with key {}", fileKey);
         S3Object s3Object = s3Client.getObject(bucketName, fileKey);
         return s3Object.getObjectContent();
+    }
+
+    private BufferedImage compressImage(BufferedImage originalImage) {
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
+        BufferedImage scaledImage = originalImage;
+
+        if (width > height) {
+            if (width > 1080 || height > 566) {
+
+            }
+        }
+
+
+        return scaledImage;
     }
 }

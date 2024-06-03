@@ -1,4 +1,4 @@
-package faang.school.postservice.service.inner;
+package faang.school.postservice.service;
 
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.resource.ResourceMapper;
@@ -6,7 +6,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.outer.AmazonS3Service;
+import faang.school.postservice.service.s3.AmazonS3Service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

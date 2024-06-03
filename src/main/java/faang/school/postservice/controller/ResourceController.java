@@ -1,27 +1,32 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.resource.ResourceDto;
-import faang.school.postservice.service.inner.ResourceService;
+import faang.school.postservice.service.ResourceService;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
+@RequestMapping("post/resource")
 public class ResourceController {
     private final ResourceService resourceService;
 
-    @PostMapping
-    public List<ResourceDto> addResourcesForPost(long postId, List<MultipartFile> files) {
+    @PostMapping("{postId}/files")
+    public List<ResourceDto> addResourcesForPost(@PathVariable @Min(1) long postId,
+                                                 @Size(max = 10) List<MultipartFile> files) {
         return resourceService.addResources(postId, files);
     }
 
-    @DeleteMapping
-    public void deleteResource(long postId, long resourceId) {
+    @DeleteMapping("{postId}/files/{resourceId}")
+    public void deleteResource(@PathVariable @Min(1) long postId,
+                               @PathVariable @Min(1) long resourceId) {
         resourceService.deleteResource(postId, resourceId);
     }
 }
