@@ -1,5 +1,6 @@
 package faang.school.postservice.service.s3;
 
+import org.imgscalr.Scalr;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
@@ -11,7 +12,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -22,38 +26,57 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AmazonS3Service {
     private final AmazonS3 s3Client;
+    @Value("${services.s3.photoStandards.maxWidthHorizontal}")
+    private int maxWidthHorizontal;
+    @Value("${services.s3.photoStandards.maxHeightHorizontal}")
+    private int maxHeightHorizontal;
+    @Value("${services.s3.photoStandards.maxSizeSquare}")
+    private int maxSizeSquare;
+    @Value("${services.s3.photoStandards.maxFileSizeInMB}")
+    private int maxFileSize;
 
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
     public Resource uploadFile(MultipartFile file, String folder) {
-        long fileSize = file.getSize();
-        String fileOriginalName = file.getOriginalFilename();
-        String fileContentType = file.getContentType();
-
-        log.info("Start upload file with name {}", file.getOriginalFilename());
-
-        String fileKey = String.format("%s/%d%s", folder, System.currentTimeMillis(), fileOriginalName);
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(fileSize);
-        objectMetadata.setContentType(fileContentType);
+        checkFileSize(file);
 
         try {
-            s3Client.putObject(bucketName, fileKey, file.getInputStream(), objectMetadata);
+            BufferedImage originalImage = ImageIO.read(file.getInputStream());
+            BufferedImage compressedImage = compressImage(originalImage);
+
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ImageIO.write(compressedImage, ".jpg", os);
+            InputStream inputStream = new ByteArrayInputStream(os.toByteArray());
+
+            long fileSize = os.size();
+            String fileOriginalName = file.getOriginalFilename();
+            String fileContentType = file.getContentType();
+
+            log.info("Start upload file with name {}", file.getOriginalFilename());
+
+            String fileKey = String.format("%s/%d%s", folder, System.currentTimeMillis(), fileOriginalName);
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentLength(fileSize);
+            objectMetadata.setContentType(fileContentType);
+
+            s3Client.putObject(bucketName, fileKey, inputStream, objectMetadata);
+
+            Resource resource = Resource.builder()
+                    .key(fileKey)
+                    .size(fileSize)
+                    .createdAt(LocalDateTime.now())
+                    .name(fileOriginalName)
+                    .type(fileContentType)
+                    .build();
+            log.info("Created a new resource with key {}", fileKey);
+
+            return resource;
+
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
-
-        Resource resource = Resource.builder()
-                .key(fileKey)
-                .size(fileSize)
-                .createdAt(LocalDateTime.now())
-                .name(fileOriginalName)
-                .type(fileContentType)
-                .build();
-        log.info("Created a new resource with key {}", fileKey);
-        return resource;
     }
 
     public List<Resource> uploadFiles(List<MultipartFile> files, String folder) {
@@ -93,12 +116,30 @@ public class AmazonS3Service {
         BufferedImage scaledImage = originalImage;
 
         if (width > height) {
-            if (width > 1080 || height > 566) {
-
+            if (width > maxWidthHorizontal || height > maxHeightHorizontal) {
+                scaledImage = Scalr.resize(originalImage,
+                        Scalr.Method.QUALITY,
+                        Scalr.Mode.AUTOMATIC,
+                        1080, 556);
+            }
+        } else if (width == height) {
+            if (width > maxSizeSquare || height > maxSizeSquare) {
+                scaledImage = Scalr.resize(originalImage,
+                        Scalr.Method.QUALITY,
+                        Scalr.Mode.AUTOMATIC,
+                        1080, 1080);
             }
         }
 
-
         return scaledImage;
+    }
+
+    private void checkFileSize(MultipartFile file) {
+        long fileSize = file.getSize();
+        maxFileSize *= 1024 * 1024;
+
+        if (fileSize > maxFileSize) {
+            throw new IllegalArgumentException("File size exceeds the maximum limit of 5 MB.");
+        }
     }
 }

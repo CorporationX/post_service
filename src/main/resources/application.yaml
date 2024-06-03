@@ -47,6 +47,11 @@ services:
     secretKey: password
     bucketName: corpbucket
     region: null
+    photoStandards:
+      maxWidthHorizontal: 1080
+      maxHeightHorizontal: 566
+      maxSizeSquare: 1080
+      maxFileSizeInMB: 5
 
 user-service:
   host: localhost
