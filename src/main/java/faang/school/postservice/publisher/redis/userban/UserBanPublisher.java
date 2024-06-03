@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserBanPublisher extends AbstractEventPublisher<UserEvent> {
 
-
     public UserBanPublisher(RedisTemplate<String, Object> redisTemplate,
                             ChannelTopic userBanTopic,
                             ObjectMapper objectMapper) {

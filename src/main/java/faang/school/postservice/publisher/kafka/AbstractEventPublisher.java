@@ -7,10 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.errors.SerializationException;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class AbstractEventPublisher<T> implements MessagePublisher<T> {
     private final KafkaTemplate<String, String> kafkaTemplate;
