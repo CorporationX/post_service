@@ -5,12 +5,14 @@ import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.redis.PostInRedisDto;
 import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.event.post.PostEvent;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.PostRedis;
 import faang.school.postservice.model.resource.Resource;
-import faang.school.postservice.publisher.postview.PostViewEventPublisher;
-import faang.school.postservice.publisher.userban.UserBanPublisher;
+import faang.school.postservice.publisher.kafka.postview.PostViewsEventPublisher;
+import faang.school.postservice.publisher.redis.postview.PostViewEventPublisher;
+import faang.school.postservice.publisher.redis.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.resource.ResourceService;
@@ -44,6 +46,7 @@ public class PostService {
     private final UserBanPublisher userBanPublisher;
     private final PostViewEventPublisher postViewEventPublisher;
     private final RedisPostRepository redisPostRepository;
+    private final PostViewsEventPublisher postViewsEventPublisher;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -57,6 +60,8 @@ public class PostService {
         postValidator.validateIfAuthorExists(postDto);
         Post post = postRepository.save(postMapper.toEntity(postDto));
         log.info("Post saved: {}", post);
+        sendEventInKafka(postDto);
+        log.info("Post send in kafka: {}", postDto);
         post.setResources(new ArrayList<>());
         if (images != null) {
             postValidator.validateResourcesCount(images.length);
@@ -66,6 +71,15 @@ public class PostService {
             }
         }
         return postMapper.toDto(post);
+    }
+
+    private void sendEventInKafka(PostDto postDto) {
+        postViewsEventPublisher.publish(PostEvent.builder()
+                .id(postDto.getId())
+                .authorId(postDto.getAuthorId())
+                .projectId(postDto.getProjectId())
+                .publishedAt(postDto.getPublishedAt())
+                .build());
     }
 
     public PostDto getPostById(long userId, long postId) {

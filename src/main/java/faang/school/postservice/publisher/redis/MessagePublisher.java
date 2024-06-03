@@ -1,4 +1,4 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.publisher.redis;
 
 public interface MessagePublisher<T> {
 
