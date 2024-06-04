@@ -1,8 +1,5 @@
 package faang.school.postservice.exception;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import faang.school.postservice.exception.like.LikeOperatingException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
