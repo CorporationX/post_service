@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -11,24 +12,27 @@ import java.nio.file.Paths;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class ModerationDictionary {
 
     private static final String FILE_SWEARWORDS = "files/list-of-swearwords-and-offensive-gestures.csv";
+    private static final String FILE_NOT_FOUND = "File " + FILE_SWEARWORDS + " not found";
 
-    private final Set<String> DICTIONARY;
+    private final Set<String> dictionary;
 
     public ModerationDictionary() throws FileNotFoundException {
         URL resource = getClass().getClassLoader().getResource(FILE_SWEARWORDS);
         if (resource != null) {
-            DICTIONARY = parseCsv(resource.getFile());
+            dictionary = parseCsv(resource.getFile());
         } else {
-            throw new FileNotFoundException("File " + FILE_SWEARWORDS + " not found");
+            log.error(FILE_NOT_FOUND);
+            throw new FileNotFoundException(FILE_NOT_FOUND);
         }
     }
 
     public boolean checkString(String string) {
-        for (String word : DICTIONARY) {
+        for (String word : dictionary) {
             if (string.toLowerCase().contains(word.toLowerCase())) {
                 return false;
             }
