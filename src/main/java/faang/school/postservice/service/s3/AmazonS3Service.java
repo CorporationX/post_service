@@ -32,9 +32,7 @@ public class AmazonS3Service {
     private int maxHeightHorizontal;
     @Value("${services.s3.photoStandards.maxSizeSquare}")
     private int maxSizeSquare;
-    @Value("${services.s3.photoStandards.maxFileSizeInMB}")
-    private int maxFileSize;
-
+    private static final int MAX_FILE_SIZE = 5 * 1024 * 1024;
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
@@ -136,9 +134,8 @@ public class AmazonS3Service {
 
     private void checkFileSize(MultipartFile file) {
         long fileSize = file.getSize();
-        maxFileSize *= 1024 * 1024;
 
-        if (fileSize > maxFileSize) {
+        if (fileSize > MAX_FILE_SIZE) {
             throw new IllegalArgumentException("File size exceeds the maximum limit of 5 MB.");
         }
     }

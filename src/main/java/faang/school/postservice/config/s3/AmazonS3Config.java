@@ -1,5 +1,6 @@
 package faang.school.postservice.config.s3;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -20,13 +21,24 @@ public class AmazonS3Config {
     private String endpoint;
     @Value("${services.s3.region}")
     private String region;
+    @Value("${services.s3.bucketName}")
+    private String bucketName;
 
     @Bean
     public AmazonS3 s3Client() {
         AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-        return AmazonS3ClientBuilder.standard()
+        ClientConfiguration clientConfig = new ClientConfiguration();
+        clientConfig.setConnectionTimeout(10000);
+        clientConfig.setSocketTimeout(10000);
+        AmazonS3 amazonS3Client = AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, null))
                 .build();
+
+        if (!amazonS3Client.doesBucketExistV2(bucketName)) {
+            amazonS3Client.createBucket(bucketName);
+        }
+
+        return amazonS3Client;
     }
 }

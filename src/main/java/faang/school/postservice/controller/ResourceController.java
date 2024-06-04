@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.service.ResourceService;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -17,6 +18,12 @@ import java.util.List;
 @RequestMapping("post/resource")
 public class ResourceController {
     private final ResourceService resourceService;
+
+    @PostMapping("{postId}/file")
+    public ResourceDto addFile(@PathVariable @Min(1) long postId,
+                               MultipartFile file) {
+        return resourceService.addFile(postId, file);
+    }
 
     @PostMapping("{postId}/files")
     public List<ResourceDto> addResourcesForPost(@PathVariable @Min(1) long postId,

@@ -26,6 +26,18 @@ public class ResourceService {
     private final ResourceRepository resourceRepository;
     private final ResourceMapper resourceMapper;
 
+    public ResourceDto addFile(long postId, MultipartFile file) {
+        Post post = postService.findById(postId);
+        String folder = String.format("%s", post.getId());
+
+        Resource resource = amazonS3Service.uploadFile(file, folder);
+        post.getResources().add(resource);
+        resourceRepository.save(resource);
+        postRepository.save(post);
+
+        return resourceMapper.toDto(resource);
+    }
+
     @Transactional
     public List<ResourceDto> addResources(long postId, List<MultipartFile> files) {
         log.info("Trying to add files to a post, with ID {}.", postId);
@@ -61,13 +73,5 @@ public class ResourceService {
         postRepository.save(post);
         resourceRepository.delete(resource);
         amazonS3Service.deleteFile(resource.getKey());
-    }
-
-    public void updateResource() {
-
-    }
-
-    public void downloadFile() {
-
     }
 }
