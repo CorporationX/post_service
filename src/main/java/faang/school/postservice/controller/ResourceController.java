@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.List;
 
 @RestController
@@ -35,5 +36,11 @@ public class ResourceController {
     public void deleteResource(@PathVariable @Min(1) long postId,
                                @PathVariable @Min(1) long resourceId) {
         resourceService.deleteResource(postId, resourceId);
+    }
+
+    @GetMapping("{postId}/files/{resourceId}")
+    public InputStream downloadFile(@PathVariable @Min(1) long postId,
+                                    @PathVariable @Min(1) long resourceId) {
+        return resourceService.downloadFile(postId, resourceId);
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.List;
 
 @Slf4j
@@ -26,6 +27,7 @@ public class ResourceService {
     private final ResourceRepository resourceRepository;
     private final ResourceMapper resourceMapper;
 
+    @Transactional
     public ResourceDto addFile(long postId, MultipartFile file) {
         Post post = postService.findById(postId);
         String folder = String.format("%s", post.getId());
@@ -57,21 +59,37 @@ public class ResourceService {
         return resourceDtos;
     }
 
+    @Transactional
     public void deleteResource(long postId, long resourceId) {
         Post post = postService.findById(postId);
         Resource resource = resourceRepository.getReferenceById(resourceId);
 
-        post.getResources().stream()
-                .filter(r -> resourceId == resource.getId())
-                .findFirst()
-                .orElseThrow(() -> {
-                    log.info("");
-                    return new EntityNotFoundException("");
-                });
+        checkResourceInPost(post, resourceId);
 
         post.getResources().remove(resource);
         postRepository.save(post);
         resourceRepository.delete(resource);
         amazonS3Service.deleteFile(resource.getKey());
+    }
+
+    @Transactional(readOnly = true)
+    public InputStream downloadFile(long postId, long resourceId) {
+        Post post = postService.findById(postId);
+        Resource resource = resourceRepository.getReferenceById(resourceId);
+
+        checkResourceInPost(post, resourceId);
+
+        return amazonS3Service.downloadFile(resource.getKey());
+    }
+
+
+    private void checkResourceInPost(Post post, long resourceId) {
+        post.getResources().stream()
+                .filter(resource -> resource.getId() == resourceId)
+                .findFirst()
+                .orElseThrow(() -> {
+                    log.error("There is no resource with this ID in the database");
+                    return new EntityNotFoundException("There is no resource with this ID in the database");
+                });
     }
 }

@@ -32,6 +32,10 @@ public class AmazonS3Service {
     private int maxHeightHorizontal;
     @Value("${services.s3.photoStandards.maxSizeSquare}")
     private int maxSizeSquare;
+    /**
+     * для тех кто будет делать ревью, почему-то если я значение ниже выношу в конфиг,
+     * и потом над ним провожу операции с умножением, начинает работать некорректно...
+     */
     private static final int MAX_FILE_SIZE = 5 * 1024 * 1024;
     @Value("${services.s3.bucketName}")
     private String bucketName;
@@ -94,12 +98,6 @@ public class AmazonS3Service {
     public void deleteFile(String fileKey) {
         s3Client.deleteObject(bucketName, fileKey);
         log.info("Delete file with key {} ", fileKey);
-    }
-
-    public Resource updateFile(String fileKey, MultipartFile file, String folder) {
-        log.info("Update file with key {}, on file {}", fileKey, file.getOriginalFilename());
-        deleteFile(fileKey);
-        return uploadFile(file, folder);
     }
 
     public InputStream downloadFile(String fileKey) {
