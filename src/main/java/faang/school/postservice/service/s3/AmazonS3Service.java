@@ -1,5 +1,6 @@
 package faang.school.postservice.service.s3;
 
+import faang.school.postservice.util.ImageCompressor;
 import org.imgscalr.Scalr;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -26,26 +27,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AmazonS3Service {
     private final AmazonS3 s3Client;
-    @Value("${services.s3.photoStandards.maxWidthHorizontal}")
-    private int maxWidthHorizontal;
-    @Value("${services.s3.photoStandards.maxHeightHorizontal}")
-    private int maxHeightHorizontal;
-    @Value("${services.s3.photoStandards.maxSizeSquare}")
-    private int maxSizeSquare;
-    /**
-     * для тех кто будет делать ревью, почему-то если я значение ниже выношу в конфиг,
-     * и потом над ним провожу операции с умножением, начинает работать некорректно...
-     */
-    private static final int MAX_FILE_SIZE = 5 * 1024 * 1024;
+    private final ImageCompressor imageCompressor;
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
     public Resource uploadFile(MultipartFile file, String folder) {
-        checkFileSize(file);
-
         try {
             BufferedImage originalImage = ImageIO.read(file.getInputStream());
-            BufferedImage compressedImage = compressImage(originalImage);
+            BufferedImage compressedImage = imageCompressor.compressImage(originalImage);
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             ImageIO.write(compressedImage, ".jpg", os);
@@ -82,9 +71,10 @@ public class AmazonS3Service {
     }
 
     public List<Resource> uploadFiles(List<MultipartFile> files, String folder) {
+        String errorMessage = "You can upload a maximum of 10 files.";
         if (files.size() > 10) {
-            log.error("Maximum 10 files");
-            throw new DataValidationException("You can upload a maximum of 10 files.");
+            log.error(errorMessage);
+            throw new DataValidationException(errorMessage);
         }
 
         List<Resource> resources = files.stream()
@@ -104,37 +94,5 @@ public class AmazonS3Service {
         log.info("Start download file with key {}", fileKey);
         S3Object s3Object = s3Client.getObject(bucketName, fileKey);
         return s3Object.getObjectContent();
-    }
-
-    private BufferedImage compressImage(BufferedImage originalImage) {
-        int width = originalImage.getWidth();
-        int height = originalImage.getHeight();
-        BufferedImage scaledImage = originalImage;
-
-        if (width > height) {
-            if (width > maxWidthHorizontal || height > maxHeightHorizontal) {
-                scaledImage = Scalr.resize(originalImage,
-                        Scalr.Method.QUALITY,
-                        Scalr.Mode.AUTOMATIC,
-                        1080, 556);
-            }
-        } else if (width == height) {
-            if (width > maxSizeSquare || height > maxSizeSquare) {
-                scaledImage = Scalr.resize(originalImage,
-                        Scalr.Method.QUALITY,
-                        Scalr.Mode.AUTOMATIC,
-                        1080, 1080);
-            }
-        }
-
-        return scaledImage;
-    }
-
-    private void checkFileSize(MultipartFile file) {
-        long fileSize = file.getSize();
-
-        if (fileSize > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("File size exceeds the maximum limit of 5 MB.");
-        }
     }
 }

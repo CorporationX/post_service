@@ -84,12 +84,13 @@ public class ResourceService {
 
 
     private void checkResourceInPost(Post post, long resourceId) {
+        String errorMessage = "There is no resource with this ID in the database";
         post.getResources().stream()
                 .filter(resource -> resource.getId() == resourceId)
                 .findFirst()
                 .orElseThrow(() -> {
-                    log.error("There is no resource with this ID in the database");
-                    return new EntityNotFoundException("There is no resource with this ID in the database");
+                    log.error(errorMessage);
+                    return new EntityNotFoundException(errorMessage);
                 });
     }
 }

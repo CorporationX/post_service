@@ -20,25 +20,25 @@ import java.util.List;
 public class ResourceController {
     private final ResourceService resourceService;
 
-    @PostMapping("{postId}/file")
+    @PostMapping("/{postId}/file")
     public ResourceDto addFile(@PathVariable @Min(1) long postId,
                                MultipartFile file) {
         return resourceService.addFile(postId, file);
     }
 
-    @PostMapping("{postId}/files")
+    @PostMapping("/{postId}/files")
     public List<ResourceDto> addResourcesForPost(@PathVariable @Min(1) long postId,
                                                  @Size(max = 10) List<MultipartFile> files) {
         return resourceService.addResources(postId, files);
     }
 
-    @DeleteMapping("{postId}/files/{resourceId}")
+    @DeleteMapping("/{postId}/files/{resourceId}")
     public void deleteResource(@PathVariable @Min(1) long postId,
                                @PathVariable @Min(1) long resourceId) {
         resourceService.deleteResource(postId, resourceId);
     }
 
-    @GetMapping("{postId}/files/{resourceId}")
+    @GetMapping("/{postId}/files/{resourceId}")
     public InputStream downloadFile(@PathVariable @Min(1) long postId,
                                     @PathVariable @Min(1) long resourceId) {
         return resourceService.downloadFile(postId, resourceId);
