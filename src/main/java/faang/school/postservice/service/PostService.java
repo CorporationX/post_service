@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -38,18 +39,16 @@ public class PostService {
         Post post = findById(postId);
         postValidator.validatePublicationPost(post);
         post.setPublished(true);
-        post.setPublishedAt(LocalDateTime.now());
-        postRepository.save(post);
         log.info("Post with ID: {} published.", postId);
         return postMapper.toDto(post);
     }
 
     @Transactional
-    public PostDto update(Long postId, String content) {
+    public PostDto update(Long postId, String content, LocalDateTime publicationTime) {
         log.info("Trying to update post with ID: {}", postId);
         Post post = findById(postId);
         post.setContent(content);
-        postRepository.save(post);
+        post.setPublishedAt(publicationTime);
         log.info("Post with ID:{} created. Content updated on {}", postId, content);
         return postMapper.toDto(post);
     }
@@ -59,11 +58,51 @@ public class PostService {
         log.info("Trying to delete post with ID: {}", postId);
         Post post = findById(postId);
         post.setDeleted(true);
-        postRepository.save(post);
         log.info("A post with this ID: {} has been added to the deleted list.", postId);
     }
 
     @Transactional
+    public PostDto getPost(Long postId) {
+        Post post = findById(postId);
+        return postMapper.toDto(post);
+    }
+
+    @Transactional
+    public List<PostDto> getAllPostsDraftsByUserAuthorId(Long userId) {
+        log.info("Trying to get drafts of posts, where the author is a user with ID: {}", userId);
+        List<Post> posts = postRepository.findByAuthorId(userId);
+        List<PostDto> draftsPostsByUser = getNonDeletedPosts(posts, (post -> !post.isPublished()));
+        log.info("Found {} posts for author with ID: {}", draftsPostsByUser.size(), userId);
+        return draftsPostsByUser;
+    }
+
+    @Transactional
+    public List<PostDto> getAllPostsDraftsByProjectAuthorId(Long projectId) {
+        log.info("Trying to get drafts of posts, where the author is a project with ID: {}", projectId);
+        List<Post> posts = postRepository.findByProjectId(projectId);
+        List<PostDto> draftsPostsByProject = getNonDeletedPosts(posts, (post -> !post.isPublished()));
+        log.info("Found {} posts for author with ID: {}", draftsPostsByProject.size(), projectId);
+        return draftsPostsByProject;
+    }
+
+    @Transactional
+    public List<PostDto> getAllPublishedNonDeletedPostsByUserAuthorId(Long userId) {
+        log.info("Trying to get all published, non-deleted posts authored by a user with a given id: {}", userId);
+        List<Post> posts = postRepository.findByAuthorId(userId);
+        List<PostDto> publishedPostsByUser = getNonDeletedPosts(posts, (Post::isPublished));
+        log.info("Found {} posts for author with ID: {}", publishedPostsByUser.size(), userId);
+        return publishedPostsByUser;
+    }
+
+    @Transactional
+    public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(Long projectId) {
+        log.info("Trying to get all published, non-deleted posts authored by a project with a given id: {}", projectId);
+        List<Post> posts = postRepository.findByProjectId(projectId);
+        List<PostDto> publishedPostsByProject = getNonDeletedPosts(posts, (Post::isPublished));
+        log.info("Found {} posts for author with ID: {}", publishedPostsByProject.size(), projectId);
+        return publishedPostsByProject;
+    }
+
     public Post findById(Long postId) {
         log.info("Attempting to find post with ID: {}", postId);
         return postRepository.findById(postId)
@@ -73,51 +112,12 @@ public class PostService {
                 });
     }
 
-    @Transactional
-    public List<PostDto> getAllPostsDraftsByUserAuthorId(Long userId) {
-        log.info("Trying to get drafts of posts, where the author is a user with ID: {}", userId);
-        List<PostDto> draftsPostsByUser = postRepository.findByAuthorId(userId).stream()
-                .filter(post -> !post.isDeleted() && !post.isPublished())
+    private List<PostDto> getNonDeletedPosts(List<Post> posts, Predicate<Post> predicate) {
+        return posts.stream()
+                .filter(predicate)
+                .filter(post -> !post.isDeleted())
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
-        log.info("Found {} posts for author with ID: {}", draftsPostsByUser.size(), userId);
-        return draftsPostsByUser;
-    }
-
-    @Transactional
-    public List<PostDto> getAllPostsDraftsByProjectAuthorId(Long projectId) {
-        log.info("Trying to get drafts of posts, where the author is a project with ID: {}", projectId);
-        List<PostDto> draftsPostsByProject = postRepository.findByProjectId(projectId).stream()
-                .filter(post -> !post.isPublished() && !post.isDeleted())
-                .map(postMapper::toDto)
-                .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
-                .toList();
-        log.info("Found {} posts for author with ID: {}", draftsPostsByProject.size(), projectId);
-        return draftsPostsByProject;
-    }
-
-    @Transactional
-    public List<PostDto> getAllPublishedNonDeletedPostsByUserAuthorId(Long userId) {
-        log.info("Trying to get all published, non-deleted posts authored by a user with a given id: {}", userId);
-        List<PostDto> publishedPostsByUser = postRepository.findByAuthorId(userId).stream()
-                .filter(post -> post.isPublished() && !post.isDeleted())
-                .map(postMapper::toDto)
-                .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
-                .toList();
-        log.info("Found {} posts for author with ID: {}", publishedPostsByUser.size(), userId);
-        return publishedPostsByUser;
-    }
-
-    @Transactional
-    public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(Long projectId) {
-        log.info("Trying to get all published, non-deleted posts authored by a project with a given id: {}", projectId);
-        List<PostDto> publishedPostsByProject = postRepository.findByProjectId(projectId).stream()
-                .filter(post -> post.isPublished() && !post.isDeleted())
-                .map(postMapper::toDto)
-                .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
-                .toList();
-        log.info("Found {} posts for author with ID: {}", publishedPostsByProject.size(), projectId);
-        return publishedPostsByProject;
     }
 }

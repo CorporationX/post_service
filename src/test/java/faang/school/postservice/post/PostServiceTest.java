@@ -43,11 +43,13 @@ public class PostServiceTest {
     private Post post5;
     private Long postId;
     private String content;
+    private LocalDateTime publicationTime;
 
     @BeforeEach
     void setUp() {
         postId = 10L;
         content = "text";
+        publicationTime = LocalDateTime.now();
 
         postDto1 = new PostDto();
         postDto1.setId(1L);
@@ -124,15 +126,12 @@ public class PostServiceTest {
         doNothing().when(postValidator).validatePublicationPost(post1);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto1);
-        when(postRepository.save(any(Post.class))).thenReturn(post1);
 
         PostDto publishPost = postService.publish(1L);
 
         verify(postRepository).findById(1L);
         verify(postValidator).validatePublicationPost(post1);
         assertTrue(post1.isPublished());
-        assertNotNull(post1.getPublishedAt());
-        verify(postRepository).save(post1);
         verify(postMapper).toDto(post1);
 
         assertNotNull(publishPost);
@@ -144,13 +143,11 @@ public class PostServiceTest {
     public void testUpdatePost() {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post1));
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto1);
-        when(postRepository.save(any(Post.class))).thenReturn(post1);
 
-        PostDto updatedPost = postService.update(postId, content);
+        PostDto updatedPost = postService.update(postId, content, publicationTime);
 
         verify(postRepository).findById(postId);
         assertNotNull(post1.getContent());
-        verify(postRepository).save(post1);
         verify(postMapper).toDto(post1);
 
         assertNotNull(updatedPost);
@@ -161,13 +158,11 @@ public class PostServiceTest {
     @DisplayName("Deleting post")
     public void testDeleteByIdPost() {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post1));
-        when(postRepository.save(any(Post.class))).thenReturn(post1);
 
         postService.deleteById(postId);
 
         verify(postRepository).findById(postId);
         assertTrue(post1.isDeleted());
-        verify(postRepository).save(post1);
     }
 
     @Test

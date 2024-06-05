@@ -33,6 +33,8 @@ public class PostDto {
 
     private Boolean published;
 
+    private LocalDateTime publishedAt;
+
     private LocalDateTime scheduledAt;
 
     private Boolean deleted;

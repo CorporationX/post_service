@@ -17,7 +17,6 @@ import java.util.List;
 @Validated
 public class PostController {
     private final PostService postService;
-    private final PostMapper postMapper;
 
     @PostMapping("/drafts")
     public PostDto create(@Valid @RequestBody PostDto postDto) {
@@ -31,7 +30,7 @@ public class PostController {
 
     @PutMapping
     public PostDto update(@Valid @RequestBody PostDto postDto) {
-        return postService.update(postDto.getId(), postDto.getContent());
+        return postService.update(postDto.getId(), postDto.getContent(), postDto.getPublishedAt());
     }
 
     @DeleteMapping("/{postId}")
@@ -41,7 +40,7 @@ public class PostController {
 
     @GetMapping("/{postId}")
     public PostDto findById(@PathVariable @Min(1) Long postId) {
-        return postMapper.toDto(postService.findById(postId));
+        return postService.getPost(postId);
     }
 
     @GetMapping("/draft/user/{userId}")
