@@ -56,10 +56,14 @@ payment-service:
   host: localhost
   port: 9080
 
-commentModeratorCron: "0 * * * * *"
+commentModeratorCron: "0 0 * * * *"
 
 pull:
   pullForCommentController: 4
 
 servlet:
   PathV1: /api/v1
+
+file:
+  fileWithBadWords:
+    path: "src/main/resources/badWords/badWords"

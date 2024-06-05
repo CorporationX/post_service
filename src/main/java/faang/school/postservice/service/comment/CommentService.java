@@ -3,20 +3,23 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.moderator.comment.dictionary.ModerationDictionary;
 import faang.school.postservice.moderator.comment.logic.ModerateComment;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.threadPool.ThreadPollForCommentModerator;
+import faang.school.postservice.threadPool.ThreadPoolForCommentModerator;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 
 import static java.lang.Math.floor;
 
@@ -27,26 +30,45 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final CommentRepository commentRepository;
     private final CommentValidator commentValidator;
-    private final ThreadPollForCommentModerator threadPollForCommentModerator;
+    private final ThreadPoolForCommentModerator threadPoolForCommentModerator;
     private final ModerateComment moderateComment;
     @Value("${pull.pullForCommentController}")
+    @Setter
     private int pullNumbers;
 
-    @Transactional
+
     public void moderateComment() {
         List<Comment> comments = commentRepository.findUnVerifiedComments();
 
         if (!comments.isEmpty()) {
-            ExecutorService executor = threadPollForCommentModerator.taskExecutor();
-            int rangeMax;
-            int rangeMin;
-            int stepLength = (int) floor((double) comments.size() / pullNumbers);
+            int stepLength = (int) Math.floor((double) comments.size() / pullNumbers);
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-            for (int i = 1; i <= pullNumbers; i++) {
-                rangeMax = stepLength * i;
-                rangeMin = rangeMax - stepLength;
+            for (int i = 0; i < pullNumbers; i++) {
+                int start = i * stepLength;
+                int end = (i + 1) * stepLength;
 
+                if (i == pullNumbers - 1) {
+                    end = comments.size();
+                }
 
+                int finalStart = start;
+                int finalEnd = end;
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() ->
+                                moderateComment.moderateComment(comments.subList(finalStart, finalEnd)),
+                        threadPoolForCommentModerator.taskExecutor()
+                );
+
+                futures.add(future);
+            }
+
+            try {
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(1, TimeUnit.MINUTES);
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                futures.forEach(future -> future.cancel(true));
+                System.out.println("Execution time exceeded, threads were forcibly closed.");
             }
         }
     }

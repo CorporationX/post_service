@@ -1,7 +1,7 @@
 package faang.school.postservice.dto.comment;
 
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,7 +11,7 @@ public class CreateCommentDto {
     private Long id;
 
     @NotNull(message = "content can't be empty")
-    @Max(value = 4096, message = "content can't be more 4096 symbols")
+    @Size(max = 4096, message = "content can't be more 4096 symbols")
     private String content;
 
     @NotNull(message = "authorId can't be empty")
