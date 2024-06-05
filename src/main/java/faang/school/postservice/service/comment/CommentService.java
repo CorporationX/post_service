@@ -37,7 +37,6 @@ public class CommentService {
         Comment commentEntity = commentRepository.findById(commentDtoId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment with Id " + commentDtoId + " not found"));
         commentEntity.setContent(commentDto.getContent());
-        commentEntity.setUpdatedAt(commentDto.getUpdatedAt());
 
         return commentMapper.toDto(commentRepository.save(commentEntity));
     }
