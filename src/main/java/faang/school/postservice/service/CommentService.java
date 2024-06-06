@@ -7,13 +7,17 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
 
-import static faang.school.postservice.exception.MessagesForCommentsException.*;
+import static faang.school.postservice.exception.MessagesForCommentsException.ID_IS_NULL;
+import static faang.school.postservice.exception.MessagesForCommentsException.NO_COMMENTS_IN_THE_POST;
+import static faang.school.postservice.exception.MessagesForCommentsException.NO_COMMENT_IN_DB;
+import static faang.school.postservice.exception.MessagesForCommentsException.NO_USER_IN_DB;
 
 @Service
 @RequiredArgsConstructor

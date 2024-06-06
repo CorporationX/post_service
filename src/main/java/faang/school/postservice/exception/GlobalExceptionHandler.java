@@ -43,10 +43,15 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleConstraintViolationException(ConstraintViolationException constraintViolationException) {
         return new ErrorResponse(constraintViolationException.getMessage());
     }
+
+    @ExceptionHandler(DataOperationException.class)
+    public ResponseEntity<String> handlePostOperationException(DataOperationException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
     
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity handleRuntimeExceptions(RuntimeException ex) {
+    public ResponseEntity<String> handleRuntimeExceptions(RuntimeException ex) {
         return ResponseEntity.internalServerError().body(String.format("Ошибка на стороне сервера: %s", ex.getMessage()));
     }
 }
