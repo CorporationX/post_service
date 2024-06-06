@@ -31,12 +31,6 @@ public class PostController {
         return postService.createDraftPost(postDto, files);
     }
 
-    @PostMapping(value = "/draft/mul", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity test(@RequestPart("postDto") PostDto postDto) {
-        return (ResponseEntity) ResponseEntity.ok();
-    }
-
-
     @PutMapping("/drafts/{id}")
     @Operation(description = "Publish draft post")
     public PostDto publishDraftPost(@PathVariable Long id) {

@@ -27,15 +27,12 @@ public class MultipartFileValidator {
     public void validateFiles(List<MultipartFile> files) {
         for (MultipartFile file : files) {
             if (file.getSize() > MAX_SIZE) {
+                log.error("file {}, with size {}, trow error", file.getOriginalFilename(), file.getSize());
                 throw new IllegalArgumentException();
             }
 
             if (Objects.requireNonNull(file.getContentType()).startsWith("image") ) {
                 validateImage(file);
-//            } else if (!file.getContentType().startsWith("video")
-//                    || !file.getContentType().startsWith("audio")) {
-//
-//                throw new IllegalArgumentException("Incorrect content type");
             }
         }
     }
