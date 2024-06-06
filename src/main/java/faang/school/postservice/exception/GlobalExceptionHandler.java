@@ -47,6 +47,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataOperationException.class)
     public ResponseEntity<String> handlePostOperationException(DataOperationException e) {
         return ResponseEntity.badRequest().body(e.getMessage());
+    }
     
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
