@@ -3,7 +3,6 @@ package faang.school.postservice.exception;
 import faang.school.postservice.exception.like.LikeOperatingException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
-import faang.school.postservice.exception.post.PostOperationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -47,11 +46,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataOperationException.class)
     public ResponseEntity<String> handlePostOperationException(DataOperationException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
-    }
-
-    @ExceptionHandler(PostOperationException.class)
-    public ResponseEntity<String> handlePostOperationException(PostOperationException e) {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 }
