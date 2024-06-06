@@ -69,7 +69,7 @@ public class PostService {
         removeUnnecessaryResources(post, postDto);
 
 
-        return postMapper.toDto(post);
+        return createResourcesAndGetPostDto(post, files);
     }
 
     private void removeUnnecessaryResources(Post post, PostDto postDto) {
