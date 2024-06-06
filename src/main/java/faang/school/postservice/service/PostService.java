@@ -17,11 +17,12 @@ public class PostService {
 
     @Transactional
     public PostDto getPost(Long id) {
-        Post post = getById(id);
+        Post post = findPostById(id);
         return postMapper.toDto(post);
     }
 
-    private Post getById(long id) {
+    @Transactional
+    public Post findPostById(long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Поста с указанным id " + id + " не существует"));
     }

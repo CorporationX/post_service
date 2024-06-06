@@ -5,6 +5,7 @@ import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
@@ -29,4 +30,6 @@ public interface AlbumMapper {
         }
         return new ArrayList<>();
     }
+
+    void update(@MappingTarget Album album, AlbumDto albumDto);
 }

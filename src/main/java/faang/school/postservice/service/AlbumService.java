@@ -26,10 +26,10 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
     private final AlbumValidator validator;
-    private final UserContext userContext;
     private final PostService postService;
     private final PostMapper postMapper;
     private final List<AlbumFilter> filters;
+    private final UserService userService;
 
     @Transactional
     public AlbumDto createAlbum(AlbumDto albumDto) {
@@ -78,8 +78,7 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlbumDto> getUserAlbums(AlbumFilterDto filterDto) {
-        long userId = userContext.getUserId();
+    public List<AlbumDto> getUserAlbums(AlbumFilterDto filterDto, Long userId) {
         List<AlbumDto> albums = albumRepository.findByAuthorId(userId)
                 .map(albumMapper::toDto)
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -99,8 +98,7 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlbumDto> getUserFavoriteAlbums(AlbumFilterDto filterDto) {
-        long userId = getUserId();
+    public List<AlbumDto> getUserFavoriteAlbums(AlbumFilterDto filterDto, Long userId) {
         List<AlbumDto> albums = albumRepository.findFavoriteAlbumsByUserId(userId)
                 .map(albumMapper::toDto)
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -118,8 +116,7 @@ public class AlbumService {
             validator.validateUniqueTitle(albumDto);
         }
 
-        album.setTitle(albumDto.getTitle());
-        album.setDescription(albumDto.getDescription());
+        albumMapper.update(album, albumDto);
         return albumMapper.toDto(album);
     }
 
@@ -143,8 +140,6 @@ public class AlbumService {
     }
 
     private long getUserId() {
-        long userId = userContext.getUserId();
-        validator.validateUser(userId);
-        return userId;
+        return userService.getUserId();
     }
 }

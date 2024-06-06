@@ -31,7 +31,7 @@ public class AlbumController {
         return albumService.createAlbum(albumDto);
     }
 
-    @PutMapping("{albumId}/posts/{postId}")
+    @PostMapping("{albumId}/posts/{postId}")
     @Operation(summary = "add post to album", tags = "post")
     public AlbumDto addPost(@PathVariable Long albumId, @PathVariable Long postId) {
         return albumService.addPost(albumId, postId);
@@ -61,10 +61,10 @@ public class AlbumController {
         return albumService.getAlbum(albumId);
     }
 
-    @GetMapping()
+    @GetMapping("/{userId}")
     @Operation(summary = "get filtered user's albums", tags = "album")
-    public List<AlbumDto> getUserAlbums(@RequestBody AlbumFilterDto filterDto) {
-        return albumService.getUserAlbums(filterDto);
+    public List<AlbumDto> getUserAlbums(@RequestBody AlbumFilterDto filterDto, @PathVariable Long userId) {
+        return albumService.getUserAlbums(filterDto, userId);
     }
 
     @GetMapping("/all")
@@ -73,10 +73,10 @@ public class AlbumController {
         return albumService.getAllAlbums(filterDto);
     }
 
-    @GetMapping("/favorite")
+    @GetMapping("/{userId}/favorite")
     @Operation(summary = "get filtered user's favorite albums", tags = "album")
-    public List<AlbumDto> getUserFavoriteAlbums(@RequestBody AlbumFilterDto filterDto) {
-        return albumService.getUserFavoriteAlbums(filterDto);
+    public List<AlbumDto> getUserFavoriteAlbums(@RequestBody AlbumFilterDto filterDto, @PathVariable Long userId) {
+        return albumService.getUserFavoriteAlbums(filterDto, userId);
     }
 
     @PutMapping("/{albumId}")
