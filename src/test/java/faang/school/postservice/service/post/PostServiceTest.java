@@ -62,12 +62,11 @@ class PostServiceTest {
     @BeforeEach
     void setUp() {
         postDto = testData.returnPostDto();
-        post = testData.returnPost();
+        post = testData.returnPostCreatedByUser(TestData.AUTHOR_ID, "content A", TestData.CREATED_AT, false);
         draftsOfUser = testData.getDraftsOfUser();
         draftsOfProject = testData.getDraftsOfProject();
         postsOfUser = testData.getPostsOfUser();
         postsOfProject = testData.getPostsOfProject();
-
     }
 
     @Nested
@@ -244,7 +243,7 @@ class PostServiceTest {
         @Test
         void updatePostWithInvalidDtoTest() {
             postDto.setContent("New content");
-            doThrow(DataValidationException.class).when(postVerifier).verifyPostMatchingWithSystem(any(), any());
+            doThrow(DataValidationException.class).when(postVerifier).verifyPostMatchingSystem(any(), any());
             when(postRepository.findById(anyLong())).thenReturn(Optional.of(post));
 
             assertThrows(DataValidationException.class, () -> postService.updatePost(postDto));

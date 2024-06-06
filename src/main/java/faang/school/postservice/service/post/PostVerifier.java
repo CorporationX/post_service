@@ -12,9 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static faang.school.postservice.exception.message.PostOperationExceptionMessage.DELETED_STATUS_UPDATE_EXCEPTION;
 import static faang.school.postservice.exception.message.PostOperationExceptionMessage.LIKES_UPDATE_EXCEPTION;
@@ -28,6 +30,7 @@ import static faang.school.postservice.exception.message.PostValidationException
 class PostVerifier {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+
     public void verifyAuthorExistence(Long authorId, Long projectId) {
         if (authorId != null) {
             verifyUserExistence(authorId);
@@ -50,38 +53,50 @@ class PostVerifier {
         }
     }
 
-    public void verifyPostMatchingWithSystem(PostDto postDto, Post postToBeUpdated) {
-        Long userAuthorIdFromDto = postDto.getAuthorId();
-        if (userAuthorIdFromDto != null && !Objects.equals(postToBeUpdated.getAuthorId(), userAuthorIdFromDto)) {
-            throw new DataValidationException(NON_MATCHING_AUTHORS_EXCEPTION.getMessage());
-        }
+    public void verifyPostMatchingSystem(PostDto postDto, Post postToBeUpdated) {
+        verifyAuthorMatchingSystem(postDto.getAuthorId(), postToBeUpdated.getAuthorId());
+        verifyAuthorMatchingSystem(postDto.getProjectId(), postToBeUpdated.getProjectId());
 
-        Long projectAuthorIdFromDto = postDto.getProjectId();
-        if (projectAuthorIdFromDto != null && !Objects.equals(postToBeUpdated.getProjectId(), projectAuthorIdFromDto)) {
-            throw new DataValidationException(NON_MATCHING_AUTHORS_EXCEPTION.getMessage());
-        }
+        verifyLikesAndCommentsMatchingSystem(postDto, postToBeUpdated);
 
-        Set<Long> likesOfPostToBeUpdated = postToBeUpdated.getLikes().stream()
-                .map(Like::getId)
-                .collect(Collectors.toSet());
-        if (!likesOfPostToBeUpdated.containsAll(postDto.getLikesIds())) {
-            throw new DataValidationException(LIKES_UPDATE_EXCEPTION.getMessage());
-        }
+        verifyPublicationDateMatchingSystem(postDto, postToBeUpdated);
 
-        Set<Long> commentsOfPostToBeUpdated = postToBeUpdated.getComments().stream()
-                .map(Comment::getId)
-                .collect(Collectors.toSet());
-        if (!commentsOfPostToBeUpdated.containsAll(postDto.getCommentsIds())) {
-            throw new DataValidationException(LIKES_UPDATE_EXCEPTION.getMessage());
-        }
+        verifyDeletedStatusMatchingSystem(postDto, postToBeUpdated);
+    }
 
+    private void verifyLikesAndCommentsMatchingSystem(PostDto postDto, Post postToBeUpdated) {
+        Stream<Long> commentsIds = postToBeUpdated.getComments().stream()
+                .map(Comment::getId);
+        Stream<Long> likesIds = postToBeUpdated.getLikes().stream()
+                .map(Like::getId);
+        verifyReviewsMathcingSystem(commentsIds, postDto.getCommentsIds());
+        verifyReviewsMathcingSystem(likesIds, postDto.getLikesIds());
+    }
+
+    private void verifyDeletedStatusMatchingSystem(PostDto postDto, Post postToBeUpdated) {
+        if (!postDto.isDeleted() == postToBeUpdated.isDeleted()) {
+            throw new DataValidationException(DELETED_STATUS_UPDATE_EXCEPTION.getMessage());
+        }
+    }
+
+    private void verifyPublicationDateMatchingSystem(PostDto postDto, Post postToBeUpdated) {
         LocalDateTime publishedAtFromDto = postDto.getPublishedAt();
         if (publishedAtFromDto != null && postToBeUpdated.isPublished() && !postToBeUpdated.getPublishedAt().equals(publishedAtFromDto)) {
             throw new DataValidationException(PUBLISHED_DATE_UPDATE_EXCEPTION.getMessage());
         }
+    }
 
-        if (!postDto.getDeleted().equals(postToBeUpdated.isDeleted())) {
-            throw new DataValidationException(DELETED_STATUS_UPDATE_EXCEPTION.getMessage());
+    private void verifyReviewsMathcingSystem(Stream<Long> postToBeUpdated, List<Long> postDto) {
+        Set<Long> likesOfPostToBeUpdated = postToBeUpdated
+                .collect(Collectors.toSet());
+        if (!likesOfPostToBeUpdated.containsAll(postDto)) {
+            throw new DataValidationException(LIKES_UPDATE_EXCEPTION.getMessage());
+        }
+    }
+
+    private void verifyAuthorMatchingSystem(Long postDto, Long postToBeUpdated) {
+        if (postDto != null && !Objects.equals(postToBeUpdated, postDto)) {
+            throw new DataValidationException(NON_MATCHING_AUTHORS_EXCEPTION.getMessage());
         }
     }
 }

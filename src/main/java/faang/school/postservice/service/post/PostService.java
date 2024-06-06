@@ -55,7 +55,7 @@ public class PostService {
 
         Post postToBeUpdated = getPost(postDto.getId());
 
-        postVerifier.verifyPostMatchingWithSystem(postDto, postToBeUpdated);
+        postVerifier.verifyPostMatchingSystem(postDto, postToBeUpdated);
 
         postToBeUpdated.setContent(postDto.getContent());
         return postMapper.toDto(postRepository.save(postToBeUpdated));

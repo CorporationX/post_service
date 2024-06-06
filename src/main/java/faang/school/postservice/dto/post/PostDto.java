@@ -22,8 +22,8 @@ public class PostDto {
     private Long projectId;
     private List<Long> likesIds;
     private List<Long> commentsIds;
-    private Boolean published;
+    private boolean published;
     @PastOrPresent(message = "Post can't be published in future")
     private LocalDateTime publishedAt;
-    private Boolean deleted;
+    private boolean deleted;
 }

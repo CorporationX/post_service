@@ -12,10 +12,14 @@ import java.util.List;
 
 @Component
 public class TestData {
+
+    public static final LocalDateTime CREATED_AT = LocalDateTime.of(2024, 12, 12, 12, 12);
+    public static final long AUTHOR_ID = 1L;
+
     public PostDto returnPostDto() {
         return PostDto.builder()
                 .id(2L)
-                .authorId(1L)
+                .authorId(AUTHOR_ID)
                 .content("content")
                 .build();
     }
@@ -23,74 +27,70 @@ public class TestData {
     public Comment returnComment() {
         Comment comment = new Comment();
         comment.setId(2L);
-        comment.setAuthorId(1L);
+        comment.setAuthorId(AUTHOR_ID);
         comment.setContent("NewContent");
-        comment.setCreatedAt(LocalDateTime.of(2024, Month.MAY, 31, 0, 0, 0));
+        comment.setCreatedAt(CREATED_AT);
         return comment;
     }
 
     public List<Comment> returnListOfComments() {
         Comment commentNew = returnComment();
         Comment commentOld = new Comment();
-        commentOld.setCreatedAt(LocalDateTime.of(2023, Month.MAY, 31, 0, 0, 0));
+        commentOld.setCreatedAt(CREATED_AT);
         List<Comment> comments = new ArrayList<>();
         comments.add(commentNew);
         comments.add(commentNew);
         return comments;
     }
 
-    public Post returnPost() {
+    public Post returnPostCreatedByUser(long authorId,
+                                        String content,
+                                        LocalDateTime createdAt,
+                                        boolean isPublished) {
         return Post.builder()
-                .authorId(1L)
-                .content("content A")
-                .createdAt(LocalDateTime.of(2024, 12,12,12, 12))
+                .authorId(authorId)
+                .content(content)
+                .published(isPublished)
+                .createdAt(createdAt)
+                .build();
+    }
+
+    private Post returnPostCreatedByProject(long projectId,
+                                            String content,
+                                            LocalDateTime createdAt,
+                                            boolean isPublished) {
+        return Post.builder()
+                .projectId(projectId)
+                .published(isPublished)
+                .content(content)
+                .createdAt(createdAt)
                 .build();
     }
 
     public List<Post> getDraftsOfUser() {
-        Post postA = returnPost();
-        Post postB = Post.builder()
-                .authorId(1L)
-                .content("content B")
-                .createdAt(LocalDateTime.of(2024, 12,13,12, 12))
-                .build();
+        Post postA = returnPostCreatedByUser(AUTHOR_ID, "content A", CREATED_AT, false);
+        Post postB = returnPostCreatedByUser(AUTHOR_ID, "content B", CREATED_AT.plusDays(1), false);
 
         return List.of(postA, postB);
     }
 
     public List<Post> getDraftsOfProject() {
-        Post postA = returnPost();
-        Post postB = Post.builder()
-                .projectId(1L)
-                .content("content B")
-                .createdAt(LocalDateTime.of(2024, 12,13,12, 12))
-                .build();
+        Post postA = returnPostCreatedByProject(AUTHOR_ID, "content A", CREATED_AT, false);
+        Post postB = returnPostCreatedByProject(AUTHOR_ID, "content B", CREATED_AT.plusDays(1), false);
 
         return List.of(postA, postB);
     }
 
     public List<Post> getPostsOfUser() {
-        Post postA = returnPost();
-        postA.setPublished(true);
-        Post postB = Post.builder()
-                .authorId(1L)
-                .content("content B")
-                .published(true)
-                .createdAt(LocalDateTime.of(2024, 12,13,12, 12))
-                .build();
+        Post postA = returnPostCreatedByUser(AUTHOR_ID, "content A", CREATED_AT, true);
+        Post postB = returnPostCreatedByUser(AUTHOR_ID, "content B", CREATED_AT.plusDays(1), true);
 
         return List.of(postA, postB);
     }
 
     public List<Post> getPostsOfProject() {
-        Post postA = returnPost();
-        postA.setPublished(true);
-        Post postB = Post.builder()
-                .projectId(1L)
-                .content("content B")
-                .published(true)
-                .createdAt(LocalDateTime.of(2024, 12,13,12, 12))
-                .build();
+        Post postA = returnPostCreatedByProject(AUTHOR_ID, "content A", CREATED_AT, true);
+        Post postB = returnPostCreatedByProject(AUTHOR_ID, "content A", CREATED_AT.plusDays(1), true);
 
         return List.of(postA, postB);
     }
