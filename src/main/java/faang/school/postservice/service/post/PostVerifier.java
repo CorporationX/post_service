@@ -69,8 +69,8 @@ class PostVerifier {
                 .map(Comment::getId);
         Stream<Long> likesIds = postToBeUpdated.getLikes().stream()
                 .map(Like::getId);
-        verifyReviewsMathcingSystem(commentsIds, postDto.getCommentsIds());
-        verifyReviewsMathcingSystem(likesIds, postDto.getLikesIds());
+        verifyReactionMatchingSystem(commentsIds, postDto.getCommentsIds());
+        verifyReactionMatchingSystem(likesIds, postDto.getLikesIds());
     }
 
     private void verifyDeletedStatusMatchingSystem(PostDto postDto, Post postToBeUpdated) {
@@ -86,7 +86,7 @@ class PostVerifier {
         }
     }
 
-    private void verifyReviewsMathcingSystem(Stream<Long> postToBeUpdated, List<Long> postDto) {
+    private void verifyReactionMatchingSystem(Stream<Long> postToBeUpdated, List<Long> postDto) {
         Set<Long> likesOfPostToBeUpdated = postToBeUpdated
                 .collect(Collectors.toSet());
         if (!likesOfPostToBeUpdated.containsAll(postDto)) {
