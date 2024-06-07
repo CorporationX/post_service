@@ -1,17 +1,17 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.exception.DataLikeValidation;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.DataLikeValidation;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.PostValidator;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -114,4 +114,5 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("Поста с указанным id " + id + " не существует"));
     }
 }
+
 
