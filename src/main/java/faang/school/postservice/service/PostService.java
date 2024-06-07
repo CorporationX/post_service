@@ -5,24 +5,13 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-
-
-
-
-
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.PostValidator;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -50,15 +39,21 @@ public class PostService {
 
     @Transactional
     public PostDto publishDraftPost(Long id) {
-        Post post = getById(id);
+        Post post = findPostById(id);
         postValidator.validateIsNotPublished(post);
         post.setPublished(true);
         return postMapper.toDto(post);
     }
 
     @Transactional
+    public PostDto getPost(Long id) {
+        Post post = findPostById(id);
+        return postMapper.toDto(post);
+    }
+
+    @Transactional
     public PostDto updatePost(PostDto postDto, Long id) {
-        Post post = getById(id);
+        Post post = findPostById(id);
         postValidator.validateChangeAuthor(post, postDto);
 
         post.setContent(postDto.getContent());
@@ -67,14 +62,8 @@ public class PostService {
 
     @Transactional
     public void deletePost(Long id) {
-        Post post = getById(id);
+        Post post = findPostById(id);
         post.setDeleted(true);
-    }
-
-    @Transactional
-    public PostDto getPost(Long id) {
-        Post post = getById(id);
-        return postMapper.toDto(post);
     }
 
     @Transactional(readOnly = true)
@@ -120,8 +109,10 @@ public class PostService {
                 .toList();
     }
 
-    private Post getById(long id) {
+    public Post findPostById(long id) {
         return postRepository.findById(id)
-                .orElseThrow(() -> new DataValidationException("Поста с указанным id " + id + " не существует"));
+                .orElseThrow(() -> new IllegalArgumentException("Поста с указанным id " + id + " не существует"));
     }
 }
+
+
