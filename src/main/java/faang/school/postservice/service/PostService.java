@@ -1,35 +1,33 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.exception.DataLikeValidation;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-
-
-
-
-
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.DataLikeValidation;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderation.dictionary.ModerationDictionary;
+import faang.school.postservice.moderation.logic.PostModerator;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.threadpool.PostServiceThreadPool;
 import faang.school.postservice.validation.PostValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
 
     private final PostRepository postRepository;
@@ -37,6 +35,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
+    private final PostModerator postModerator;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
@@ -123,5 +122,12 @@ public class PostService {
     private Post getById(long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("Поста с указанным id " + id + " не существует"));
+    }
+
+    public void moderatePosts() {
+        List<Post> unverifiedPosts = postRepository.findAllUnverifiedPosts();
+        if (!unverifiedPosts.isEmpty()) {
+            postModerator.moderatePosts(unverifiedPosts);
+        }
     }
 }
