@@ -1,18 +1,20 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.exception.DataLikeValidation;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.PostValidator;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,7 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class PostService {
 
@@ -53,15 +55,21 @@ public class PostService {
 
     @Transactional
     public PostDto publishDraftPost(Long id) {
-        Post post = getById(id);
+        Post post = findPostById(id);
         postValidator.validateIsNotPublished(post);
         post.setPublished(true);
         return postMapper.toDto(post);
     }
 
     @Transactional
+    public PostDto getPost(Long id) {
+        Post post = findPostById(id);
+        return postMapper.toDto(post);
+    }
+
+    @Transactional
     public PostDto updatePost(PostDto postDto, Long id, List<MultipartFile> files) {
-        Post post = getById(id);
+        Post post = findPostById(id);
         postValidator.validateChangeAuthor(post, postDto);
 
         post.setContent(postDto.getContent());
@@ -100,17 +108,10 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
-
     @Transactional
     public void deletePost(Long id) {
-        Post post = getById(id);
+        Post post = findPostById(id);
         post.setDeleted(true);
-    }
-
-    @Transactional
-    public PostDto getPost(Long id) {
-        Post post = getById(id);
-        return postMapper.toDto(post);
     }
 
     @Transactional(readOnly = true)
@@ -141,6 +142,12 @@ public class PostService {
         return getNonDeletedSortedPostsDto(posts, Post::isPublished);
     }
 
+    @Transactional
+    public Post getPostById(Long postId) {
+        return postRepository.findById(postId).orElseThrow(() ->
+                new DataLikeValidation("Поста с id " + postId + " нет в базе данных."));
+    }
+
     private List<PostDto> getNonDeletedSortedPostsDto(List<Post> posts, Predicate<Post> predicate) {
         return posts.stream()
                 .filter(predicate)
@@ -150,8 +157,9 @@ public class PostService {
                 .toList();
     }
 
-    private Post getById(long id) {
+    public Post findPostById(long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("Post with id " + id + " do not exist"));
+
     }
 }

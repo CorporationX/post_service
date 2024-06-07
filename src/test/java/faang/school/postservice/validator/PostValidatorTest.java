@@ -85,7 +85,8 @@ public class PostValidatorTest {
 
     @Test
     void validatePostExistWithNull() {
+        List<Post> posts = null;
         assertThrows(EntityNotFoundException.class,
-                () -> validator.validatePostsExists(null));
+                () -> validator.validatePostsExists(posts));
     }
 }
