@@ -1,9 +1,9 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -35,6 +35,11 @@ public class PostServiceImpl implements PostService {
                             post.setVerified(moderationDictionary.inspect(post.getContent()));
                             post.setVerifiedAt(LocalDateTime.now());
                         }));
+    }
+
+    @Override
+    public Post getPostById(long id) {
+        return postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post with ID " + id + " not found"));
     }
 
     private List<List<Post>> createSubLists(List<Post> posts) {
