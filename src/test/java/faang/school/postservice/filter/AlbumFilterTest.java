@@ -32,7 +32,7 @@ public class AlbumFilterTest {
         filters = List.of(albumTitleFilter, albumCreatedAfterFilter);
 
         albums = new ArrayList<>();
-        albums.add(AlbumDto.builder().title("qweqwe").description("qwe").build());
+        albums.add(AlbumDto.builder().title("qweqwe").description("qwe").createdAt(now.minusYears(1)).build());
         albums.add(AlbumDto.builder().title("qweqwe").description("qwe").createdAt(now.minusMonths(2)).build());
         albums.add(AlbumDto.builder().title("123").description("qwe").createdAt(now.minusMonths(1)).build());
         albums.add(AlbumDto.builder().title("qweqwe").description("qwe").createdAt(now.minusYears(1)).build());
