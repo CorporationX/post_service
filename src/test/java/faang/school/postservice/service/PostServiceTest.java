@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.VerifyStatus;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,7 +45,7 @@ class PostServiceTest {
 
         postService.moderateAll();
 
-        assertTrue(post.isVerified());
+        assertEquals(VerifyStatus.VERIFIED, post.getVerifyStatus());
     }
 
     @Test
@@ -55,6 +56,6 @@ class PostServiceTest {
 
         postService.moderateAll();
 
-        assertFalse(post.isVerified());
+        assertEquals(VerifyStatus.NOT_VERIFIED, post.getVerifyStatus());
     }
 }

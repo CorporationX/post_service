@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.VerifyStatus;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,8 @@ public class PostService {
         log.info("Moderate posts");
         List<Post> posts = postRepository.findNotVerifiedPosts();
         posts.forEach(post -> {
-            post.setVerified(moderationDictionary.checkString(post.getContent()));
+            VerifyStatus status = moderationDictionary.checkString(post.getContent()) ? VerifyStatus.VERIFIED : VerifyStatus.NOT_VERIFIED;
+            post.setVerifyStatus(status);
             post.setVerifiedDate(LocalDateTime.now());
         });
     }
