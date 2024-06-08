@@ -94,6 +94,7 @@ public class PostService {
         List<PostDto> publishedPostsByUser = getNonDeletedPosts(posts, (Post::isPublished));
         log.info("Found {} posts for author with ID: {}", publishedPostsByUser.size(), userId);
         return publishedPostsByUser;
+    }
 
     @Transactional
     public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(Long projectId) {
@@ -122,13 +123,14 @@ public class PostService {
                 .toList();
     }
 
-        public void moderateAll() {
-            log.info("Moderate posts");
-            List<Post> posts = postRepository.findNotVerifiedPosts();
-            posts.forEach(post -> {
-                VerifyStatus status = moderationDictionary.checkString(post.getContent()) ? VerifyStatus.VERIFIED : VerifyStatus.NOT_VERIFIED;
-                post.setVerifyStatus(status);
-                post.setVerifiedDate(LocalDateTime.now());
-            });
-        }
+    @Transactional
+    public void moderateAll() {
+        log.info("Moderate posts");
+        List<Post> posts = postRepository.findNotVerifiedPosts();
+        posts.forEach(post -> {
+            VerifyStatus status = moderationDictionary.checkString(post.getContent()) ? VerifyStatus.VERIFIED : VerifyStatus.NOT_VERIFIED;
+            post.setVerifyStatus(status);
+            post.setVerifiedDate(LocalDateTime.now());
+        });
+    }
 }
