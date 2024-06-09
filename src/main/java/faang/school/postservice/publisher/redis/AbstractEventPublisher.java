@@ -1,4 +1,4 @@
-package faang.school.postservice.publishers;
+package faang.school.postservice.publisher.redis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +8,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 @RequiredArgsConstructor
 @Slf4j
-public abstract class AbstractPublisher<T> {
+public abstract class AbstractEventPublisher<T> {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
     private final String channelName;

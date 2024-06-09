@@ -27,6 +27,30 @@ spring:
         notification_like_channel:
           name: notification_like_channel
 
+    kafka:
+      bootstrap-servers: localhost:9092
+      groupId: post_service
+      topics:
+        topic_post: post_topic
+        partitions_post: 10
+        replication_post: 3
+
+        topic_post_view: post_view
+        partitions_post_view: 10
+        replication_post_view: 3
+
+        topic_like: like
+        partitions_like: 10
+        replication_like: 3
+
+        topic_comment: comment
+        partitions_comment: 10
+        replication_comment: 3
+
+        topic_feed_heat: feed_heat
+        partitions_feed_heat: 5 #TODO: Пока непонятно сколько вообще нужно ставить, надо в конце последней таски смотреть
+        replication_feed_heat: 3
+
   mvc:
     servlet:
       path: /api/v1

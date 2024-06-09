@@ -1,4 +1,4 @@
-package faang.school.postservice.publishers;
+package faang.school.postservice.publisher.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.like.LikeEvent;
@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LikeEventPublisher extends AbstractPublisher<LikeEvent> {
+public class LikeEventPublisher extends AbstractEventPublisher<LikeEvent> {
 
     public LikeEventPublisher(RedisTemplate<String, Object> redisTemplate,
                               ObjectMapper objectMapper,
