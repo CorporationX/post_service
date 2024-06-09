@@ -26,6 +26,14 @@ spring:
           name: user_ban
         notification_like_channel:
           name: notification_like_channel
+    kafka:
+      bootstrap-servers: localhost:9092
+      groupId: post_service
+      topic_feed_heat: feed_heat_topic
+      topic_post: post_topic
+      topic_post_view: post_view_topic
+      topic_like: like_topic
+      topic_comment: comment_topic
 
   mvc:
     servlet:
