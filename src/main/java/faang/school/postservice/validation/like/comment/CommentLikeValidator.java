@@ -25,7 +25,8 @@ public class CommentLikeValidator {
     
     @Autowired
     public void setSimultaneousLikeValidator(
-        @Qualifier("simultaneousCommentLikeValidator") SimultaneousLikeValidator simultaneousLikeValidator
+        @Qualifier("simultaneousCommentLikeValidator")
+        SimultaneousLikeValidator simultaneousLikeValidator
     ) {
         this.simultaneousLikeValidator = simultaneousLikeValidator;
     }
@@ -37,13 +38,14 @@ public class CommentLikeValidator {
     }
     
     public void verifyLikeExists(Long likeId) {
-        Optional.ofNullable(likeRepository.findById(likeId)).orElseThrow(
+        likeRepository.findById(likeId).orElseThrow(
             () -> new NotFoundException(String.format("Like with id not found", likeId))
         );
     }
     
     private void verifyUserExist(LikeDto dto) {
         Long userId = dto.getUserId();
+        
         Optional.ofNullable(userClient.getUser(userId)).orElseThrow(
             () -> new NotFoundException(String.format("User with id %d not found", userId))
         );

@@ -25,20 +25,27 @@ class SimultaneousPostLikeValidator implements SimultaneousLikeValidator {
     
     private void verifyLikeNotOnPostAndCommentSimultaneously(LikeDto dto) {
         if (likeOnPostAndCommentExist(dto)) {
-            throwAlreadyExistsException(String.format("User with id %d can't like post and comment simultaneously"));
+            throwAlreadyExistsException(String.format(
+                "User with id %d can't like post and comment simultaneously",
+                dto.getUserId()
+            ));
         }
     }
     
     private boolean likeOnPostAndCommentExist(LikeDto dto) {
-        return getPostById(dto.getPostId()).getComments()
+        Long postId = dto.getPostId();
+        Long userId = dto.getUserId();
+        
+        return getPostById(postId).getComments()
             .stream()
             .flatMap(comment -> comment.getLikes().stream())
-            .anyMatch(like -> like.getUserId().equals(dto.getUserId()));
+            .anyMatch(like -> like.getUserId().equals(userId));
     }
     
     private void verifyUserDidntAlreadyLikedPost(LikeDto dto) {
         Long postId = dto.getPostId();
         Long userId = dto.getUserId();
+        
         likeRepository.findByPostIdAndUserId(postId, userId).ifPresent(
             (like) -> throwAlreadyExistsException(String.format(
                 "User with id %d already has like on post with Id %d",
