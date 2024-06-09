@@ -22,6 +22,8 @@ public class CommentDto {
 
     @NotNull(message = "Необходимо указать id автора")
     private Long authorId;
+
+    @NotNull
     private Long postId;
     private LocalDateTime createdAt;
 }

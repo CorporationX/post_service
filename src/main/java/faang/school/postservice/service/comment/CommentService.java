@@ -26,7 +26,6 @@ public class CommentService {
     private final CommentMapper commentMapper;
 
     public CommentDto createComment(CommentDto commentDto) {
-        validateCommentDto(commentDto);
         Comment comment = commentMapper.fromDto(commentDto);
         comment = commentRepository.save(comment);
         return commentMapper.toDto(comment);
@@ -62,17 +61,5 @@ public class CommentService {
             throw new NoAccessException("Пользователь не имеет права удалять этот комментарий");
         }
         commentRepository.deleteById(commentId);
-    }
-
-    private void validateCommentDto(CommentDto commentDto) {
-        if (commentDto.getContent() == null || commentDto.getContent().isEmpty()) {
-            throw new EntityWrongParameterException("Содержание комментария не может быть пустым");
-        }
-        if (commentDto.getAuthorId() == null) {
-            throw new EntityWrongParameterException("Author ID не может быть null");
-        }
-        if (commentDto.getPostId() == null) {
-            throw new EntityWrongParameterException("Post ID не может быть null");
-        }
     }
 }
