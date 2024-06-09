@@ -1,8 +1,9 @@
-package faang.school.postservice.publishers;
+package faang.school.postservice.redis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.publisher.redis.LikeEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
