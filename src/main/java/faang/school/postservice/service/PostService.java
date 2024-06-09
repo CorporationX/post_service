@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.VerifyStatus;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final ModerationDictionary moderationDictionary;
 
     @Transactional
     public PostDto create(PostDto postDto) {
@@ -119,5 +121,16 @@ public class PostService {
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
+    }
+
+    @Transactional
+    public void moderateAll() {
+        log.info("Moderate posts");
+        List<Post> posts = postRepository.findNotVerifiedPosts();
+        posts.forEach(post -> {
+            VerifyStatus status = moderationDictionary.checkString(post.getContent()) ? VerifyStatus.VERIFIED : VerifyStatus.NOT_VERIFIED;
+            post.setVerifyStatus(status);
+            post.setVerifiedDate(LocalDateTime.now());
+        });
     }
 }
