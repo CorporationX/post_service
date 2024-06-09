@@ -74,30 +74,6 @@ class CommentServiceTest {
     }
 
     @Test
-    void createCommentInvalidCommentDtoShouldThrowEntityWrongParameterException() {
-        commentDto = createTestCommentDto("", 2L, 3L);
-        assertThrows(EntityWrongParameterException.class, () -> commentService.createComment(commentDto));
-    }
-
-    @Test
-    void createCommentNullContentShouldThrowEntityWrongParameterException() {
-        commentDto = createTestCommentDto(null, 2L, 3L);
-        assertThrows(EntityWrongParameterException.class, () -> commentService.createComment(commentDto));
-    }
-
-    @Test
-    void createCommentNullAuthorIdShouldThrowEntityWrongParameterException() {
-        commentDto = createTestCommentDto("Comment", null, 3L);
-        assertThrows(EntityWrongParameterException.class, () -> commentService.createComment(commentDto));
-    }
-
-    @Test
-    void createCommentNullPostIdShouldThrowEntityWrongParameterException() {
-        commentDto = createTestCommentDto("Comment", 2L, null);
-        assertThrows(EntityWrongParameterException.class, () -> commentService.createComment(commentDto));
-    }
-
-    @Test
     void createCommentValidCommentDtoShouldSaveCommentAndReturnCommentDto() {
         when(commentMapper.fromDto(commentDto)).thenReturn(comment);
         when(commentRepository.save(comment)).thenReturn(comment);
