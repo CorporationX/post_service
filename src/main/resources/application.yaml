@@ -38,7 +38,8 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "0 0 0 * * ?" # every day
+      batch-size: 10
 
 moderation:
   chunkSize: 100
