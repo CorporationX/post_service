@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -17,6 +17,7 @@ import java.util.List;
 @Validated
 public class PostController {
     private final PostService postService;
+    private final UserContext userContext;
 
     @PostMapping("/drafts")
     public PostDto create(@Valid @RequestBody PostDto postDto) {
@@ -40,12 +41,13 @@ public class PostController {
 
     @GetMapping("/{postId}")
     public PostDto findById(@PathVariable @Min(1) Long postId) {
-        return postService.getPost(postId);
+        long userId = userContext.getUserId();
+        return postService.getPostById(userId, postId);
     }
 
-    @GetMapping("/draft/user/{userId}")
-    public List<PostDto> getAllPostsDraftsByUserAuthorId(@PathVariable @Min(1) Long userId) {
-        return postService.getAllPostsDraftsByUserAuthorId(userId);
+    @GetMapping("/draft/user/{authorId}")
+    public List<PostDto> getAllPostsDraftsByUserAuthorId(@PathVariable @Min(1) Long authorId) {
+        return postService.getAllPostsDraftsByUserAuthorId(authorId);
     }
 
     @GetMapping("/draft/project/{projectId}")
@@ -53,13 +55,15 @@ public class PostController {
         return postService.getAllPostsDraftsByProjectAuthorId(projectId);
     }
 
-    @GetMapping("/published/user/{userId}")
-    public List<PostDto> getAllPublishedNonDeletedPostsByUserAuthorId(@PathVariable @Min(1) Long userId) {
-        return postService.getAllPublishedNonDeletedPostsByUserAuthorId(userId);
+    @GetMapping("/published/user/{authorId}")
+    public List<PostDto> getAllPublishedNonDeletedPostsByUserAuthorId(@PathVariable @Min(1) Long authorId) {
+        long userId = userContext.getUserId();
+        return postService.getAllPublishedNonDeletedPostsByUserAuthorId(userId, authorId);
     }
 
     @GetMapping("/published/project/{projectId}")
     public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(@PathVariable @Min(1) Long projectId) {
-        return postService.getAllPublishedNonDeletedPostsByProjectAuthorId(projectId);
+        long userId = userContext.getUserId();
+        return postService.getAllPublishedNonDeletedPostsByProjectAuthorId(userId, projectId);
     }
 }
