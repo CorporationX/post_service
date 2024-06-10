@@ -138,10 +138,23 @@ public class PostService {
                 .build();
 
         if (post.getAuthorId() == null) {
-            event.setAuthorId(post.getProjectId());
-        }
-        if (post.getProjectId() == null) {
+            if (post.getProjectId() != null) {
+                event.setAuthorId(post.getProjectId());
+            } else {
+                // Значение по умолчанию, если оба поля null (например, 0L)
+                event.setAuthorId(0L);
+            }
+        } else {
             event.setAuthorId(post.getAuthorId());
+        }
+
+        if (post.getProjectId() == null) {
+            if (post.getAuthorId() != null) {
+                event.setAuthorId(post.getAuthorId());
+            } else {
+                // Значение по умолчанию, если оба поля null (например, 0L)
+                event.setAuthorId(0L);
+            }
         }
 
         postViewEventPublisher.publish(event);
@@ -152,7 +165,11 @@ public class PostService {
         postsDtos.stream()
                 .map(postMapper::toEntity)
                 .forEach(post -> {
-                    publishPostViewEvent(userId, post);
+                    if (post != null) {
+                        publishPostViewEvent(userId, post);
+                    } else {
+                        log.warn("Post entity is null for a given PostDto.");
+                    }
                 });
     }
 }
