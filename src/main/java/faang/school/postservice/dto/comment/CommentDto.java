@@ -1,23 +1,24 @@
 package faang.school.postservice.dto.comment;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
 public class CommentDto {
+    @NotNull(message = "CommentId can not be null")
+    @Positive(message = "CommentId should be positive")
     private Long id;
 
-    @NotNull(message = "content shouldn't be null")
-    @NotBlank(message = "description should not be blank")
-    @Size(max = 4096)
+    @NotBlank(message = "Comment should not be blank")
+    @Size(max = 4096, message = "Comment can not be greater than 4096 symbols.")
     private String content;
 
-    @NotNull(message = "authorId shouldn't be null")
+    @NotNull(message = "AuthorId shouldn't be null")
+    @Positive(message = "AuthorId should be positive")
     private Long authorId;
 
+    @PastOrPresent(message = "Comment can not be declared in future")
     private LocalDateTime createdAt;
 }
