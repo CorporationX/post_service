@@ -49,6 +49,9 @@ public class PostServiceTest {
     @Mock
     private PostValidator postValidator;
 
+    @Mock
+    ResourceService resourceService;
+
     @Spy
     private PostMapperImpl postMapper;
 
@@ -94,20 +97,20 @@ public class PostServiceTest {
     @Test
     void createDraftPostUserNotExist() {
         when(userServiceClient.getUser(postDto.getAuthorId())).thenThrow(DataValidationException.class);
-        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto));
+        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto, null));
     }
 
     @Test
     void createDraftPostProjectNotExist() {
         when(projectServiceClient.getProject(postDto.getProjectId())).thenThrow(DataValidationException.class);
-        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto));
+        assertThrows(DataValidationException.class, () -> postService.createDraftPost(postDto, null));
     }
 
     @Test
     void createDraftPost() {
         Post post = postMapper.toEntity(postDto);
 
-        postService.createDraftPost(postDto);
+        postService.createDraftPost(postDto, null);
         verify(postRepository, times(1)).save(post);
     }
 
@@ -128,8 +131,10 @@ public class PostServiceTest {
 
     @Test
     void updatePost() {
+        postToUpdate.setResources(new ArrayList<>());
+        postDto.setResourceIds(new ArrayList<>());
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToUpdate));
-        PostDto actual = postService.updatePost(postDto, postId);
+        PostDto actual = postService.updatePost(postDto, postId, null);
 
         assertEquals("qwe", actual.getContent());
     }

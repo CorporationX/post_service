@@ -24,6 +24,11 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 50MB
 
 controller:
   like:
@@ -58,6 +63,11 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+s3:
+  endpoint: http://127.0.0.1:9000/
+  accessKey: user
+  secretKey: password
+  bucketName: corpbucket
 
 postServiceThreadPool:
   poolAmount: 4
