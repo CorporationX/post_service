@@ -1,6 +1,9 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.WrongTimeException;
+import faang.school.postservice.mapper.post.postMapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
@@ -14,12 +17,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final ModerationDictionary moderationDictionary;
+    private final ExecutorService executorService;
+    private final PostMapper postMapper;
 
     @Value("${moderation.chunkSize}")
     private int chunkSize;
@@ -49,5 +55,41 @@ public class PostServiceImpl implements PostService {
             chunks.add(chunk);
         }
         return chunks;
+    }
+
+    public void publishScheduledPosts() {
+        List<Post> postsToPublish = postRepository.findReadyToPublish();
+        int batchSize = 1000;
+        List<List<Post>> postBatches = ListUtils.partition(postsToPublish, batchSize);
+        postBatches.forEach(batch ->
+                CompletableFuture.runAsync(() -> publishPostBatch(batch), executorService)
+        );
+    }
+
+    private void publishPostBatch(List<Post> postBatch) {
+        postBatch.forEach(post -> {
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+        });
+        postRepository.saveAll(postBatch);
+    }
+
+    public Post createPost(PostDto postDto) {
+        if (postDto.getScheduledAt() != null && postDto.getScheduledAt().isBefore(LocalDateTime.now())) {
+            throw new WrongTimeException("Запланированное время не может быть в прошлом");
+        }
+        Post post = postMapper.toEntity(postDto);
+        setPublishedFields(post, postDto.getScheduledAt());
+        return postRepository.save(post);
+    }
+
+    private void setPublishedFields(Post post, LocalDateTime scheduledAt) {
+        if (scheduledAt != null) {
+            post.setPublished(false);
+            post.setPublishedAt(scheduledAt);
+        } else {
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+        }
     }
 }
