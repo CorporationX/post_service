@@ -137,24 +137,11 @@ public class PostService {
                 .userId(userId)
                 .build();
 
-        if (post.getAuthorId() == null) {
-            if (post.getProjectId() != null) {
-                event.setAuthorId(post.getProjectId());
-            } else {
-                // Значение по умолчанию, если оба поля null (например, 0L)
-                event.setAuthorId(0L);
-            }
-        } else {
+        if (post.getAuthorId() != null) {
             event.setAuthorId(post.getAuthorId());
         }
-
-        if (post.getProjectId() == null) {
-            if (post.getAuthorId() != null) {
-                event.setAuthorId(post.getAuthorId());
-            } else {
-                // Значение по умолчанию, если оба поля null (например, 0L)
-                event.setAuthorId(0L);
-            }
+        if (post.getProjectId() != null) {
+            event.setAuthorId(post.getProjectId());
         }
 
         postViewEventPublisher.publish(event);
