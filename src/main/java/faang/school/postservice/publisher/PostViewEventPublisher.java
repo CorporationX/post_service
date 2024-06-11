@@ -2,6 +2,7 @@ package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.event.PostViewEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -12,6 +13,7 @@ public class PostViewEventPublisher extends AbstractEventPublisher<PostViewEvent
 
     private final ChannelTopic postViewTopic;
 
+    @Autowired
     public PostViewEventPublisher(RedisTemplate redisTemplate,
                                   ObjectMapper objectMapper,
                                   @Qualifier("postViewChannel") ChannelTopic postViewTopic) {
