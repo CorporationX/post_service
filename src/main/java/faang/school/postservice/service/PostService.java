@@ -170,6 +170,6 @@ public class PostService {
                 .viewTime(LocalDateTime.now())
                 .build();
 
-        postViewEventPublisher.sandEvent(postViewEvent);
+        postViewEventPublisher.sendEvent(postViewEvent);
     }
 }

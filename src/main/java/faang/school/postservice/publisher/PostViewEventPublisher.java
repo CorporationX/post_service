@@ -14,7 +14,7 @@ public class PostViewEventPublisher extends AbstractEventPublisher<PostViewEvent
     private final ChannelTopic postViewTopic;
 
     @Autowired
-    public PostViewEventPublisher(RedisTemplate redisTemplate,
+    public PostViewEventPublisher(RedisTemplate<String, Object> redisTemplate,
                                   ObjectMapper objectMapper,
                                   @Qualifier("postViewChannel") ChannelTopic postViewTopic) {
 
@@ -22,7 +22,7 @@ public class PostViewEventPublisher extends AbstractEventPublisher<PostViewEvent
         this.postViewTopic = postViewTopic;
     }
 
-    public void sandEvent(PostViewEvent event) {
+    public void sendEvent(PostViewEvent event) {
         publish(postViewTopic, event);
     }
 }
