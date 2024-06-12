@@ -14,16 +14,16 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    @Value("${data.redis.host}")
+    @Value("${spring.data.redis.host}")
     private String redisHost;
 
-    @Value("${data.redis.port}")
+    @Value("${spring.data.redis.port}")
     private int redisPort;
 
-    @Value("${data.redis.channels.calculations_channel.name}")
+    @Value("${spring.data.redis.channels.calculations_channel.name}")
     private String calculationsChannelName;
 
-    @Value("${data.redis.channels.post_view_channel.name}")
+    @Value("${spring.data.redis.channels.post_view_channel.name}")
     private String postViewChannelName;
 
     @Bean
