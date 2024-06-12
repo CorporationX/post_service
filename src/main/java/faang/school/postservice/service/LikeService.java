@@ -6,9 +6,11 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Collectors;
 
@@ -22,6 +24,7 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
 
+    @Transactional
     public LikeDto addLikePost(Long postId, LikeDto likeDto) {
         likeValidator.checkExistAuthor(likeDto);
 
@@ -37,6 +40,7 @@ public class LikeService {
         return likeMapper.toDto(likeRepository.save(like));
     }
 
+    @Transactional
     public LikeDto addLikeComment(Long commentId, LikeDto likeDto) {
         likeValidator.checkExistAuthor(likeDto);
 
@@ -52,6 +56,7 @@ public class LikeService {
         return likeMapper.toDto(likeRepository.save(like));
     }
 
+    @Transactional
     public LikeDto deleteLikePost(Long postId, LikeDto likeDto) {
         likeValidator.checkExistAuthor(likeDto);
 
@@ -68,6 +73,7 @@ public class LikeService {
         return likeMapper.toDto(like);
     }
 
+    @Transactional
     public LikeDto deleteLikeComment(Long commentId, LikeDto likeDto) {
         likeValidator.checkExistAuthor(likeDto);
 

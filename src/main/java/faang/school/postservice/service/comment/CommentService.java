@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.exception.DataLikeValidation;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -58,5 +59,11 @@ public class CommentService {
     @Transactional
     public void deleteComment(long id) {
         commentRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Comment getCommentById(Long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(() ->
+                new DataLikeValidation("Комментария с id " + commentId + " нет в базе данных."));
     }
 }

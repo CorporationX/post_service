@@ -30,10 +30,6 @@ spring:
       max-file-size: 5MB
       max-request-size: 50MB
 
-controller:
-  like:
-    url: api/v1/likes
-
 server:
   port: 8081
   servlet:
