@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -166,6 +167,7 @@ public class PostService {
                 .postId(post.getId())
                 .authorId(post.getAuthorId())
                 .viewerId(userContext.getUserId())
+                .viewTime(LocalDateTime.now())
                 .build();
 
         postViewEventPublisher.sendEvent(postViewEvent);
