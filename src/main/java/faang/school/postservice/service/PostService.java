@@ -136,6 +136,7 @@ public class PostService {
     public List<PostDto> getUserPosts(Long userId) {
         List<Post> posts = postRepository.findByAuthorId(userId);
         postValidator.validatePostsExists(posts);
+        posts.forEach(this::createAndPublishEvent);
         return getNonDeletedSortedPostsDto(posts, Post::isPublished);
     }
 
