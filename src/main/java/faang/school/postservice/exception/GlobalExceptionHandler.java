@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     @ExceptionHandler(LikeOperatingException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<String> handleLikeOperatingException(LikeOperatingException e) {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
@@ -42,5 +42,16 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleConstraintViolationException(ConstraintViolationException constraintViolationException) {
         return new ErrorResponse(constraintViolationException.getMessage());
+    }
+
+    @ExceptionHandler(DataOperationException.class)
+    public ResponseEntity<String> handlePostOperationException(DataOperationException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+    
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<String> handleRuntimeExceptions(RuntimeException ex) {
+        return ResponseEntity.internalServerError().body(String.format("Ошибка на стороне сервера: %s", ex.getMessage()));
     }
 }

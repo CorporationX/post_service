@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.util.TestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
