@@ -5,8 +5,12 @@ import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.PostValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -18,11 +22,13 @@ public class PostController {
     private final PostService postService;
     private final PostValidator postValidator;
 
-    @PostMapping("/draft")
-    @Operation(description = "Create new draft post")
-    public PostDto createDraftPost(@RequestBody @Valid PostDto postDto) {
+    @PostMapping(value = "/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public PostDto createDraftPost(
+            @RequestPart("postDto") @Valid PostDto postDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+
         postValidator.validateAuthorCount(postDto);
-        return postService.createDraftPost(postDto);
+        return postService.createDraftPost(postDto, files);
     }
 
     @PutMapping("/drafts/{id}")
@@ -33,8 +39,11 @@ public class PostController {
 
     @PutMapping("/{id}")
     @Operation(description = "Update post")
-    public PostDto updatePost(@RequestBody @Valid PostDto postDto, @PathVariable Long id) {
-        return postService.updatePost(postDto, id);
+    public PostDto updatePost(@PathVariable long id,
+                              @RequestPart PostDto postDto,
+                              @RequestPart(value = "files", required = false) @Size(max = 10) List<MultipartFile> files) {
+        return postService.updatePost(postDto, id, files);
+
     }
 
     @DeleteMapping("/{id}")

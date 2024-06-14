@@ -1,5 +1,6 @@
 package faang.school.postservice.validator;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -9,6 +10,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.validation.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
