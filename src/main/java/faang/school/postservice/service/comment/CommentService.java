@@ -2,11 +2,11 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.exception.DataLikeValidation;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.moderator.comment.dictionary.ModerationDictionary;
-import faang.school.postservice.moderator.comment.logic.ModerateComment;
+import faang.school.postservice.moderator.comment.logic.CommentModerator;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.threadPool.ThreadPoolForCommentModerator;
 import faang.school.postservice.validator.CommentValidator;
@@ -19,9 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
-
-import static java.lang.Math.floor;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Service
@@ -31,14 +32,15 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentValidator commentValidator;
     private final ThreadPoolForCommentModerator threadPoolForCommentModerator;
-    private final ModerateComment moderateComment;
-    @Value("${pull.pullForCommentController}")
+    private final CommentModerator commentModerator;
+    @Value("${postServiceThreadPool.poolComment}")
     @Setter
     private int pullNumbers;
 
 
     public void moderateComment() {
         List<Comment> comments = commentRepository.findUnVerifiedComments();
+        log.debug("Received comments from DB: {}", comments);
 
         if (!comments.isEmpty()) {
             int stepLength = (int) Math.floor((double) comments.size() / pullNumbers);
@@ -55,7 +57,7 @@ public class CommentService {
                 int finalStart = start;
                 int finalEnd = end;
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() ->
-                                moderateComment.moderateComment(comments.subList(finalStart, finalEnd)),
+                                commentModerator.moderateComment(comments.subList(finalStart, finalEnd)),
                         threadPoolForCommentModerator.taskExecutor()
                 );
 
@@ -65,10 +67,10 @@ public class CommentService {
             try {
                 CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(1, TimeUnit.MINUTES);
             } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                log.error("Error during comment moderation", e);
             } catch (TimeoutException e) {
                 futures.forEach(future -> future.cancel(true));
-                System.out.println("Execution time exceeded, threads were forcibly closed.");
+                log.warn("Execution time exceeded, threads were forcibly closed.");
             }
         }
     }
@@ -109,5 +111,10 @@ public class CommentService {
     @Transactional
     public void deleteComment(long id) {
         commentRepository.deleteById(id);
+    }
+
+    public Comment getCommentById(Long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(() ->
+                new DataLikeValidation("Комментария с id " + commentId + " нет в базе данных."));
     }
 }

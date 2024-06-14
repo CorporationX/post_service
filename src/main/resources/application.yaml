@@ -58,8 +58,9 @@ payment-service:
 
 commentModeratorCron: "0 0 0 * * *"
 
-pull:
-  pullForCommentController: 4
+postServiceThreadPool:
+  poolAmount: 4
+  poolComment: 4
 
 servlet:
   PathV1: /api/v1

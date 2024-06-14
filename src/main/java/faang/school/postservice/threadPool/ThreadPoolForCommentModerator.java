@@ -10,11 +10,20 @@ import java.util.concurrent.Executors;
 @Configuration
 public class ThreadPoolForCommentModerator {
 
-    @Value("${pull.pullForCommentController}")
+    @Value("${postServiceThreadPool.poolComment}")
     private int pullNumbers;
+
+    @Value("${postServiceThreadPool.poolAmount}")
+    private int startNumbers;
+
 
     @Bean
     public ExecutorService taskExecutor() {
         return Executors.newFixedThreadPool(pullNumbers);
+    }
+
+    @Bean
+    public ExecutorService startExecutor() {
+        return Executors.newFixedThreadPool(startNumbers);
     }
 }

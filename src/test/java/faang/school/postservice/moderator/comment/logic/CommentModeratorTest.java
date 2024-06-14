@@ -2,7 +2,6 @@ package faang.school.postservice.moderator.comment.logic;
 
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderator.comment.dictionary.ModerationDictionary;
-import faang.school.postservice.moderator.comment.logic.ModerateComment;
 import faang.school.postservice.repository.CommentRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,9 +21,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ModerateCommentTest {
+public class CommentModeratorTest {
     @InjectMocks
-    private ModerateComment moderateComment;
+    private CommentModerator commentModerator;
 
     @Mock
     private ModerationDictionary moderationDictionary;
@@ -59,7 +57,7 @@ public class ModerateCommentTest {
         when(moderationDictionary.isContainsBadWordInTheText("This is a clean comment")).thenReturn(false);
         when(moderationDictionary.isContainsBadWordInTheText("This is a bad comment with badword")).thenReturn(true);
 
-        moderateComment.moderateComment(comments);
+        commentModerator.moderateComment(comments);
 
         verify(commentRepository, times(2)).updateVerifiedAndVerifiedDate(idCaptor.capture(), verifiedCaptor.capture(), verifiedDateCaptor.capture());
 

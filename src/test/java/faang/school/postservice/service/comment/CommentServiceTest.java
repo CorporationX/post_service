@@ -6,7 +6,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.moderator.comment.logic.ModerateComment;
+import faang.school.postservice.moderator.comment.logic.CommentModerator;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.threadPool.ThreadPoolForCommentModerator;
 import faang.school.postservice.validator.CommentValidator;
@@ -17,8 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.env.Environment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +47,7 @@ public class CommentServiceTest {
     private ThreadPoolForCommentModerator threadPoolForCommentModerator;
 
     @Mock
-    private ModerateComment moderateComment;
+    private CommentModerator commentModerator;
 
     private CreateCommentDto createCommentDto;
     private ChangeCommentDto changeCommentDto;
@@ -143,7 +141,7 @@ public class CommentServiceTest {
 
         commentService.moderateComment();
 
-        verify(moderateComment, times(4)).moderateComment(anyList());
+        verify(commentModerator, times(4)).moderateComment(anyList());
         executorService.shutdownNow();
     }
 }
