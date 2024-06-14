@@ -37,8 +37,7 @@ public class PostLikeService {
         
         likeRepository.deleteByPostIdAndUserId(dto.getPostId(), userId);
     }
- 
-    //TODO: Заменить на использование сервиса, когда зальют в мастер
+    
     private Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(
             () -> new NotFoundException(String.format("Post with id %d not found", postId))

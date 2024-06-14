@@ -37,8 +37,9 @@ public class PostLikeValidator {
     }
     
     public void verifyLikeExists(Long likeId) {
-        Optional.ofNullable(likeRepository.findById(likeId)).orElseThrow(
-            ()-> new NotFoundException(String.format("Like with id not found", likeId)));
+        likeRepository.findById(likeId).orElseThrow(
+            ()-> new NotFoundException(String.format("Like with id %d not found", likeId))
+        );
     }
     
     private void verifyUserExist(LikeDto dto) {

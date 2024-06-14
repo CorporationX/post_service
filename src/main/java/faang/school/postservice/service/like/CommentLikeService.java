@@ -37,7 +37,6 @@ public class CommentLikeService {
         likeRepository.deleteByCommentIdAndUserId(dto.getCommentId(), userId);
     }
     
-    //TODO: Заменить на использование сервиса, когда зальют в мастер
     private Comment getCommentById(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(
             () -> new NotFoundException(String.format("Comment with id %d not found", commentId))
