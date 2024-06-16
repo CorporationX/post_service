@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Validated
-@RequestMapping("post/resource")
+@RequestMapping("resource")
 public class ResourceController {
     private final ResourceService resourceService;
 

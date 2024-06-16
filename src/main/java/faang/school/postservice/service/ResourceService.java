@@ -67,7 +67,6 @@ public class ResourceService {
         checkResourceInPost(post, resourceId);
 
         post.getResources().remove(resource);
-        postRepository.save(post);
         resourceRepository.delete(resource);
         amazonS3Service.deleteFile(resource.getKey());
     }

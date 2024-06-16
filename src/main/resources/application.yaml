@@ -54,6 +54,10 @@ services:
       maxWidthHorizontal: 1080
       maxHeightHorizontal: 566
       maxSizeSquare: 1080
+    client_config:
+      connection_timeout: 10000
+      socket_timeout: 10000
+
 
 user-service:
   host: localhost

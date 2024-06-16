@@ -123,7 +123,6 @@ public class ResourceServiceTest {
 
         resourceService.deleteResource(postId, resourceId);
 
-        verify(postRepository).save(post);
         verify(resourceRepository).delete(resource1);
         verify(amazonS3Service).deleteFile(resource1.getKey());
     }

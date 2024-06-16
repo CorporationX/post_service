@@ -23,16 +23,20 @@ public class AmazonS3Config {
     private String region;
     @Value("${services.s3.bucketName}")
     private String bucketName;
+    @Value("${services.s3.client_config.connection_timeout}")
+    private int connectionTimeout;
+    @Value("${services.s3.client_config.socket_timeout}")
+    private int socketTimeout;
 
     @Bean
     public AmazonS3 s3Client() {
         AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         ClientConfiguration clientConfig = new ClientConfiguration();
-        clientConfig.setConnectionTimeout(10000);
-        clientConfig.setSocketTimeout(10000);
+        clientConfig.setConnectionTimeout(connectionTimeout);
+        clientConfig.setSocketTimeout(socketTimeout);
         AmazonS3 amazonS3Client = AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, null))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
                 .build();
 
         if (!amazonS3Client.doesBucketExistV2(bucketName)) {

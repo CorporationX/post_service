@@ -53,16 +53,7 @@ public class AmazonS3Service {
 
             s3Client.putObject(bucketName, fileKey, inputStream, objectMetadata);
 
-            Resource resource = Resource.builder()
-                    .key(fileKey)
-                    .size(fileSize)
-                    .createdAt(LocalDateTime.now())
-                    .name(fileOriginalName)
-                    .type(fileContentType)
-                    .build();
-            log.info("Created a new resource with key {}", fileKey);
-
-            return resource;
+            return getResource(fileKey, fileSize, fileOriginalName, fileContentType);
 
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -70,13 +61,20 @@ public class AmazonS3Service {
         }
     }
 
-    public List<Resource> uploadFiles(List<MultipartFile> files, String folder) {
-        String errorMessage = "You can upload a maximum of 10 files.";
-        if (files.size() > 10) {
-            log.error(errorMessage);
-            throw new DataValidationException(errorMessage);
-        }
+    private Resource getResource(String fileKey, long fileSize, String fileOriginalName, String fileContentType) {
+        Resource resource = Resource.builder()
+                .key(fileKey)
+                .size(fileSize)
+                .createdAt(LocalDateTime.now())
+                .name(fileOriginalName)
+                .type(fileContentType)
+                .build();
 
+        log.info("Created a new resource with key {}", fileKey);
+        return resource;
+    }
+
+    public List<Resource> uploadFiles(List<MultipartFile> files, String folder) {
         List<Resource> resources = files.stream()
                 .map(file -> uploadFile(file, folder))
                 .toList();

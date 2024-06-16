@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 public class ResourceDto {
     @Min(value = 1, message = "ID cannot be less than or equal to 0")
     private Long id;
-    private String key;
     private long size;
     @NotBlank
     private String name;
