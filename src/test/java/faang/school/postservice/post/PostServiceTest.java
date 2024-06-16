@@ -239,6 +239,8 @@ public class PostServiceTest {
         when(postRepository.findByAuthorId(1L)).thenReturn(Arrays.asList(post3, post4, post5));
         when(postMapper.toDto(post3)).thenReturn(postDto1);
         when(postMapper.toDto(post4)).thenReturn(postDto2);
+        when(postMapper.toEntity(postDto1)).thenReturn(post3);
+        when(postMapper.toEntity(postDto2)).thenReturn(post4);
 
         List<PostDto> publishedPosts = postService.getAllPublishedNonDeletedPostsByUserAuthorId(2L, 1L);
 
