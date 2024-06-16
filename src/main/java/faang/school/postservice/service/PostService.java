@@ -152,11 +152,7 @@ public class PostService {
         postsDtos.stream()
                 .map(postMapper::toEntity)
                 .forEach(post -> {
-                    if (post != null) {
-                        publishPostViewEvent(userId, post);
-                    } else {
-                        log.warn("Post entity is null for a given PostDto.");
-                    }
+                    publishPostViewEvent(userId, post);
                 });
     }
 }

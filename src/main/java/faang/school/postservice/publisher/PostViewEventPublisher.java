@@ -1,20 +1,23 @@
 package faang.school.postservice.publisher;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.event.PostViewEvent;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-public class PostViewEventPublisher implements MessagePublisher {
+public class PostViewEventPublisher extends AbstractEventPublisher<PostViewEvent> {
+    private final ChannelTopic postViewEventTopic;
 
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic topic;
+    @Autowired
+    public PostViewEventPublisher(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper, ChannelTopic postViewEventTopic) {
+        super(redisTemplate, objectMapper);
+        this.postViewEventTopic = postViewEventTopic;
+    }
 
-    @Override
     public void publish(PostViewEvent postViewEvent) {
-        redisTemplate.convertAndSend(topic.getTopic(), postViewEvent);
+        publish(postViewEvent, postViewEventTopic);
     }
 }
