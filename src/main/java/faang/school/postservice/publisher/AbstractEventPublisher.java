@@ -16,9 +16,9 @@ public abstract class AbstractEventPublisher<T> {
     protected void publish(T event, ChannelTopic topic) {
         try {
             String eventJson = objectMapper.writeValueAsString(event);
-            log.info("Serialized Object for JSON: {}", eventJson);
+            log.info("Serialized event for JSON: {}", eventJson);
         } catch (JsonProcessingException e) {
-            log.error("Failed to serialized Object for JSON.", e);
+            log.error("Failed to serialized event for JSON.", e);
             throw new RuntimeException("Error serializing event to JSON: " + e.getMessage(), e);
         }
         redisTemplate.convertAndSend(topic.getTopic(), event);
