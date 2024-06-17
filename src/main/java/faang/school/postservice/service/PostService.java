@@ -1,25 +1,24 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.exception.DataLikeValidation;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.DataLikeValidation;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.moderation.logic.PostModerator;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.PostValidator;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +27,7 @@ import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
 
     private final PostRepository postRepository;
@@ -36,6 +36,7 @@ public class PostService {
     private final PostValidator postValidator;
     private final PostMapper postMapper;
     private final ResourceService resourceService;
+    private final PostModerator postModerator;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto, List<MultipartFile> files) {
@@ -162,5 +163,12 @@ public class PostService {
         return postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("Post with id " + id + " do not exist"));
 
+    }
+
+    public void moderatePosts() {
+        List<Post> unverifiedPosts = postRepository.findAllUnverifiedPosts();
+        if (!unverifiedPosts.isEmpty()) {
+            postModerator.moderatePosts(unverifiedPosts);
+        }
     }
 }
