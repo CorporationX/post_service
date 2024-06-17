@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.EntityWrongParameterException;
@@ -8,6 +9,7 @@ import faang.school.postservice.exception.NoAccessException;
 import faang.school.postservice.mapper.post.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +41,9 @@ class CommentServiceTest {
 
     @Mock
     private PostService postService;
+
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -78,9 +83,20 @@ class CommentServiceTest {
         when(commentMapper.fromDto(commentDto)).thenReturn(comment);
         when(commentRepository.save(comment)).thenReturn(comment);
         when(commentMapper.toDto(comment)).thenReturn(commentDto);
+
+        CommentEvent expectedEvent = CommentEvent.builder()
+                .commentAuthorId(comment.getAuthorId())
+                .postAuthorId(comment.getPost().getAuthorId())
+                .postId(comment.getPost().getId())
+                .commentId(comment.getId())
+                .build();
+
         CommentDto result = commentService.createComment(commentDto);
         assertEquals(commentDto, result);
-        verifyCommentDependencies(commentDto, comment);
+        verify(commentMapper).fromDto(commentDto);
+        verify(commentRepository).save(comment);
+        verify(commentMapper).toDto(comment);
+        verify(commentEventPublisher).publish(expectedEvent);
     }
 
     @Test
