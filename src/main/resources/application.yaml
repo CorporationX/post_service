@@ -4,6 +4,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+  servlet:
+    multipart:
+      max-file-size: 5MB
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -39,6 +42,22 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+
+services:
+  s3:
+    endpoint: http://127.0.0.1:9000/
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+    region: null
+    photoStandards:
+      maxWidthHorizontal: 1080
+      maxHeightHorizontal: 566
+      maxSizeSquare: 1080
+    client_config:
+      connection_timeout: 10000
+      socket_timeout: 10000
+
 
 user-service:
   host: localhost
