@@ -5,6 +5,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.validator.LikeValidator;
@@ -23,6 +24,7 @@ public class LikeService {
     private final LikeMapper likeMapper;
     private final PostService postService;
     private final CommentService commentService;
+    private final LikeEventPublisher likeEventPublisher;
 
     @Transactional
     public LikeDto addLikePost(Long postId, LikeDto likeDto) {
@@ -37,7 +39,10 @@ public class LikeService {
         like.setPost(post);
         post.getLikes().add(like);
 
-        return likeMapper.toDto(likeRepository.save(like));
+        likeRepository.save(like);
+        likeEventPublisher.publish(likeMapper.toLikeEvent(like));
+
+        return likeMapper.toDto(like);
     }
 
     @Transactional
