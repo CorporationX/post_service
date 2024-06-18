@@ -1,10 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifyStatus;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final PostViewEventPublisher postViewEventPublisher;
     private final ModerationDictionary moderationDictionary;
 
     @Transactional
@@ -64,17 +67,21 @@ public class PostService {
     }
 
     @Transactional
-    public PostDto getPost(Long postId) {
+    public PostDto getPostById(long userId, Long postId) {
+        log.info("Trying to get a post by ID: {}", postId);
         Post post = findById(postId);
-        return postMapper.toDto(post);
+        PostDto postDto = postMapper.toDto(post);
+        log.info("Post with ID {} received successfully", postId);
+        publishPostViewEvent(userId, post);
+        return postDto;
     }
 
     @Transactional
-    public List<PostDto> getAllPostsDraftsByUserAuthorId(Long userId) {
-        log.info("Trying to get drafts of posts, where the author is a user with ID: {}", userId);
-        List<Post> posts = postRepository.findByAuthorId(userId);
+    public List<PostDto> getAllPostsDraftsByUserAuthorId(Long authorId) {
+        log.info("Trying to get drafts of posts, where the author is a user with ID: {}", authorId);
+        List<Post> posts = postRepository.findByAuthorId(authorId);
         List<PostDto> draftsPostsByUser = getNonDeletedPosts(posts, (post -> !post.isPublished()));
-        log.info("Found {} posts for author with ID: {}", draftsPostsByUser.size(), userId);
+        log.info("Found {} posts for author with ID: {}", draftsPostsByUser.size(), authorId);
         return draftsPostsByUser;
     }
 
@@ -88,20 +95,22 @@ public class PostService {
     }
 
     @Transactional
-    public List<PostDto> getAllPublishedNonDeletedPostsByUserAuthorId(Long userId) {
-        log.info("Trying to get all published, non-deleted posts authored by a user with a given id: {}", userId);
-        List<Post> posts = postRepository.findByAuthorId(userId);
+    public List<PostDto> getAllPublishedNonDeletedPostsByUserAuthorId(long userId, Long authorId) {
+        log.info("Trying to get all published, non-deleted posts authored by a user with a given id: {}", authorId);
+        List<Post> posts = postRepository.findByAuthorId(authorId);
         List<PostDto> publishedPostsByUser = getNonDeletedPosts(posts, (Post::isPublished));
-        log.info("Found {} posts for author with ID: {}", publishedPostsByUser.size(), userId);
+        log.info("Found {} posts for author with ID: {}", publishedPostsByUser.size(), authorId);
+        viewEvents(userId, publishedPostsByUser);
         return publishedPostsByUser;
     }
 
     @Transactional
-    public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(Long projectId) {
+    public List<PostDto> getAllPublishedNonDeletedPostsByProjectAuthorId(long userId, Long projectId) {
         log.info("Trying to get all published, non-deleted posts authored by a project with a given id: {}", projectId);
         List<Post> posts = postRepository.findByProjectId(projectId);
         List<PostDto> publishedPostsByProject = getNonDeletedPosts(posts, (Post::isPublished));
         log.info("Found {} posts for author with ID: {}", publishedPostsByProject.size(), projectId);
+        viewEvents(userId, publishedPostsByProject);
         return publishedPostsByProject;
     }
 
@@ -121,6 +130,32 @@ public class PostService {
                 .map(postMapper::toDto)
                 .sorted(Comparator.comparing(PostDto::getCreatedAt).reversed())
                 .toList();
+    }
+
+    private void publishPostViewEvent(long userId, Post post) {
+        log.info("Trying to publish post {} view event...", post.getId());
+        PostViewEvent event = PostViewEvent.builder()
+                .postId(post.getId())
+                .userId(userId)
+                .build();
+
+        if (post.getAuthorId() != null) {
+            event.setAuthorId(post.getAuthorId());
+        }
+        if (post.getProjectId() != null) {
+            event.setAuthorId(post.getProjectId());
+        }
+
+        postViewEventPublisher.publish(event);
+        log.info("Post {} view event published.", post.getId());
+    }
+
+    private void viewEvents(long userId, List<PostDto> postsDtos) {
+        postsDtos.stream()
+                .map(postMapper::toEntity)
+                .forEach(post -> {
+                    publishPostViewEvent(userId, post);
+                });
     }
 
     @Transactional

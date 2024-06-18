@@ -3,6 +3,7 @@ package faang.school.postservice.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
@@ -33,9 +34,12 @@ public class PostServiceTest {
     private PostMapper postMapper;
     @Mock
     private PostValidator postValidator;
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
 
     private PostDto postDto1;
     private PostDto postDto2;
+    private PostDto postDto3;
     private Post post1;
     private Post post2;
     private Post post3;
@@ -65,6 +69,13 @@ public class PostServiceTest {
         postDto2.setContent("Content");
         postDto2.setCreatedAt(LocalDateTime.now());
 
+        postDto3 = new PostDto();
+        postDto3.setId(2L);
+        postDto3.setAuthorId(2L);
+        postDto3.setProjectId(2L);
+        postDto3.setContent("Content");
+        postDto3.setCreatedAt(LocalDateTime.now());
+
         post1 = new Post();
         post1.setId(1L);
         post1.setAuthorId(1L);
@@ -83,18 +94,24 @@ public class PostServiceTest {
 
         post3 = new Post();
         post3.setId(3L);
+        post1.setAuthorId(1L);
+        post1.setProjectId(1L);
         post3.setPublished(true);
         post3.setDeleted(false);
         post3.setCreatedAt(LocalDateTime.now());
 
         post4 = new Post();
         post4.setId(2L);
+        post1.setAuthorId(1L);
+        post1.setProjectId(1L);
         post4.setPublished(true);
         post4.setDeleted(false);
         post4.setCreatedAt(LocalDateTime.now().minusDays(1));
 
         post5 = new Post();
         post5.setId(5L);
+        post1.setAuthorId(1L);
+        post1.setProjectId(1L);
         post5.setPublished(false);
         post5.setDeleted(true);
     }
@@ -222,8 +239,10 @@ public class PostServiceTest {
         when(postRepository.findByAuthorId(1L)).thenReturn(Arrays.asList(post3, post4, post5));
         when(postMapper.toDto(post3)).thenReturn(postDto1);
         when(postMapper.toDto(post4)).thenReturn(postDto2);
+        when(postMapper.toEntity(postDto1)).thenReturn(post3);
+        when(postMapper.toEntity(postDto2)).thenReturn(post4);
 
-        List<PostDto> publishedPosts = postService.getAllPublishedNonDeletedPostsByUserAuthorId(1L);
+        List<PostDto> publishedPosts = postService.getAllPublishedNonDeletedPostsByUserAuthorId(2L, 1L);
 
         verify(postRepository).findByAuthorId(1L);
         verify(postMapper).toDto(post3);
@@ -242,8 +261,10 @@ public class PostServiceTest {
         when(postRepository.findByProjectId(1L)).thenReturn(Arrays.asList(post3, post4, post5));
         when(postMapper.toDto(post3)).thenReturn(postDto1);
         when(postMapper.toDto(post4)).thenReturn(postDto2);
+        when(postMapper.toEntity(postDto1)).thenReturn(post3);
+        when(postMapper.toEntity(postDto2)).thenReturn(post4);
 
-        List<PostDto> publishedPosts = postService.getAllPublishedNonDeletedPostsByProjectAuthorId(1L);
+        List<PostDto> publishedPosts = postService.getAllPublishedNonDeletedPostsByProjectAuthorId(2L, 1L);
 
         verify(postRepository).findByProjectId(1L);
         verify(postMapper).toDto(post3);
