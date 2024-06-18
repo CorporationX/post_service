@@ -16,6 +16,4 @@ public interface PostMapper {
     Post toEntity(PostDto postDto);
 
     List<PostDto> toDto(List<Post> posts);
-
-    PostInRedisDto toRedisDto (Post post);
 }

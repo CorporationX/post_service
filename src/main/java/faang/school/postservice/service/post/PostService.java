@@ -19,6 +19,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -84,17 +85,34 @@ public class PostService {
         postValidator.validateIfPostIsDeleted(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        PostInRedisDto postInRedisDto = postMapper.toRedisDto(post);
-        sendPostInCashRedis(postInRedisDto);
-        return postMapper.toDto(postRepository.save(post));
+        sendPostInCacheRedis(post);
+        PostDto postDto = postMapper.toDto(postRepository.save(post));
+
+        // Проверка наличия в кэше
+        if (postDto != null) {
+            log.info("Post published and cached successfully: {}", postId);
+        } else {
+            log.error("Failed to cache post after publishing: {}", postId);
+        }
+        PostRedis postRedis = redisPostRepository.findById(String.valueOf(postDto.getId())).get();
+        log.info("Post from cache: {}", postRedis);
+        return postDto;
     }
 
-    private void sendPostInCashRedis(PostInRedisDto postInRedisDto) {
+    private void sendPostInCacheRedis(Post post) {
         PostRedis postRedis = PostRedis.builder()
-                .id(String.valueOf(postInRedisDto.getId())).post(postInRedisDto)
+                .id(String.valueOf(post.getId()))
+                .postDto(postMapper.toDto(post))
                 .build();
-        log.info("Send post in redis: {}", postInRedisDto);
-        redisPostRepository.save(postRedis);
+        log.info("Send post in redis: {}", post);
+        try {
+            redisPostRepository.save(postRedis);
+            if (!redisPostRepository.existsById(String.valueOf(post.getId()))) {
+                log.error("Failed to save post to Redis cache: {}", post.getId());
+            }
+        } catch (Exception e) {
+            log.error("Error saving post to Redis: ", e);
+        }
     }
 
     @Transactional
