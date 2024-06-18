@@ -41,6 +41,12 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  inspector:
+    scheduler:
+      cron: "0 * * * * *"
+    file:
+      swearwords: files/list-of-swearwords-and-offensive-gestures.csv
+
 
 user-service:
   host: localhost

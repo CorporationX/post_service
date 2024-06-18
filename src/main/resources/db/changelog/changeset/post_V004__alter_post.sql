@@ -1,0 +1,5 @@
+ALTER TABLE post
+ADD COLUMN verify_status VARCHAR(16);
+
+ALTER TABLE post
+ADD COLUMN verified_date TIMESTAMP;

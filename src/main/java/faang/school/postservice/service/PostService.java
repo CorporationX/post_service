@@ -26,6 +26,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostValidator postValidator;
     private final PostViewEventPublisher postViewEventPublisher;
+    private final ModerationDictionary moderationDictionary;
 
     @Transactional
     public PostDto create(PostDto postDto) {
@@ -154,5 +155,16 @@ public class PostService {
                 .forEach(post -> {
                     publishPostViewEvent(userId, post);
                 });
+    }
+
+    @Transactional
+    public void moderateAll() {
+        log.info("Moderate posts");
+        List<Post> posts = postRepository.findNotVerifiedPosts();
+        posts.forEach(post -> {
+            VerifyStatus status = moderationDictionary.checkString(post.getContent()) ? VerifyStatus.VERIFIED : VerifyStatus.NOT_VERIFIED;
+            post.setVerifyStatus(status);
+            post.setVerifiedDate(LocalDateTime.now());
+        });
     }
 }
