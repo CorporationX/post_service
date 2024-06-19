@@ -1,5 +1,12 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.exception.DataLikeValidation;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.ResourceService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
