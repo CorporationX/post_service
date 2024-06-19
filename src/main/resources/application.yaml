@@ -51,6 +51,9 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+moderationScheduler:
+  cron: "0 0 0 * * *" # every day
+
 user-service:
   host: localhost
   port: 8080

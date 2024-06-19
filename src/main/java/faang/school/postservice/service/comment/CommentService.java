@@ -113,6 +113,7 @@ public class CommentService {
         commentRepository.deleteById(id);
     }
 
+    @Transactional(readOnly = true)
     public Comment getCommentById(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(() ->
                 new DataLikeValidation("Комментария с id " + commentId + " нет в базе данных."));
