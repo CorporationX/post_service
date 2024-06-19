@@ -27,7 +27,7 @@ public class LikeService {
     public LikeDto addLikePost(Long postId, LikeDto likeDto) {
         likeValidator.checkExistAuthor(likeDto);
 
-        Post post = postService.getPostById(postId);
+        Post post = postService.findPostById(postId);
         Like like = likeMapper.toEntity(likeDto);
 
         likeValidator.checkIsStandLikeWithIdOnPost(post, like);
@@ -57,7 +57,7 @@ public class LikeService {
     public LikeDto deleteLikePost(Long postId, LikeDto likeDto) {
         likeValidator.checkExistAuthor(likeDto);
 
-        Post post = postService.getPostById(postId);
+        Post post = postService.findPostById(postId);
         Like like = likeMapper.toEntity(likeDto);
 
         post.setLikes(post.getLikes().stream()

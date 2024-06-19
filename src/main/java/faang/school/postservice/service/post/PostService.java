@@ -1,24 +1,20 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.exception.DataLikeValidation;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.ResourceService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.DataLikeValidation;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderation.logic.PostModerator;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.ResourceService;
 import faang.school.postservice.validation.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -43,6 +40,8 @@ public class PostService {
     private final PostValidator postValidator;
     private final PostMapper postMapper;
     private final ResourceService resourceService;
+    private final PostViewEventPublisher postViewEventPublisher;
+    private final UserContext userContext;
     private final PostModerator postModerator;
 
     @Transactional
@@ -73,6 +72,7 @@ public class PostService {
     @Transactional
     public PostDto getPost(Long id) {
         Post post = findPostById(id);
+        createAndPublishEvent(post);
         return postMapper.toDto(post);
     }
 
@@ -141,6 +141,7 @@ public class PostService {
     public List<PostDto> getUserPosts(Long userId) {
         List<Post> posts = postRepository.findByAuthorId(userId);
         postValidator.validatePostsExists(posts);
+        posts.forEach(this::createAndPublishEvent);
         return getNonDeletedSortedPostsDto(posts, Post::isPublished);
     }
 
@@ -149,12 +150,6 @@ public class PostService {
         List<Post> posts = postRepository.findByProjectId(projectId);
         postValidator.validatePostsExists(posts);
         return getNonDeletedSortedPostsDto(posts, Post::isPublished);
-    }
-
-    @Transactional
-    public Post getPostById(Long postId) {
-        return postRepository.findById(postId).orElseThrow(() ->
-                new DataLikeValidation("Поста с id " + postId + " нет в базе данных."));
     }
 
     private List<PostDto> getNonDeletedSortedPostsDto(List<Post> posts, Predicate<Post> predicate) {
@@ -166,10 +161,22 @@ public class PostService {
                 .toList();
     }
 
+    @Transactional
     public Post findPostById(long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("Post with id " + id + " do not exist"));
 
+    }
+
+    private void createAndPublishEvent(Post post) {
+        PostViewEvent postViewEvent = PostViewEvent.builder()
+                .postId(post.getId())
+                .authorId(post.getAuthorId())
+                .viewerId(userContext.getUserId())
+                .viewTime(LocalDateTime.now())
+                .build();
+
+        postViewEventPublisher.sendEvent(postViewEvent);
     }
 
     public void moderatePosts() {

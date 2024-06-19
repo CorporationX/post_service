@@ -2,10 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.moderation.logic.PostModerator;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
@@ -51,7 +53,13 @@ public class PostServiceTest {
     private PostValidator postValidator;
 
     @Mock
-    ResourceService resourceService;
+    private ResourceService resourceService;
+
+    @Mock
+    private UserContext userContext;
+
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
 
     @Spy
     private PostMapperImpl postMapper;

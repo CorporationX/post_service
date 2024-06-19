@@ -59,7 +59,7 @@ public class LikeServiceTest {
 
     @Test
     public void testAddLikePost_notPostInBd() {
-        when(postService.getPostById(id)).thenThrow(DataLikeValidation.class);
+        when(postService.findPostById(id)).thenThrow(DataLikeValidation.class);
         assertThrows(DataLikeValidation.class, () -> likeService.addLikePost(id, likeDto));
     }
 
@@ -71,7 +71,7 @@ public class LikeServiceTest {
 
     @Test
     public void testDeleteLikePost_notPostInBd() {
-        when(postService.getPostById(id)).thenThrow(DataLikeValidation.class);
+        when(postService.findPostById(id)).thenThrow(DataLikeValidation.class);
         assertThrows(DataLikeValidation.class, () -> likeService.deleteLikePost(id, likeDto));
     }
 

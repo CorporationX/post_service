@@ -2,8 +2,8 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
-import faang.school.postservice.exception.DataLikeValidation;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderator.comment.logic.CommentModerator;
@@ -113,9 +113,8 @@ public class CommentService {
         commentRepository.deleteById(id);
     }
 
-    @Transactional(readOnly = true)
     public Comment getCommentById(Long commentId) {
-        return commentRepository.findById(commentId).orElseThrow(() ->
-                new DataLikeValidation("Комментария с id " + commentId + " нет в базе данных."));
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
     }
 }

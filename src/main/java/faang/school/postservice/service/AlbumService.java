@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.filter.AlbumFilter;
