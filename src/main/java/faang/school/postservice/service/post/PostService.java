@@ -86,17 +86,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         sendPostInCacheRedis(post);
-        PostDto postDto = postMapper.toDto(postRepository.save(post));
-
-        // Проверка наличия в кэше
-        if (postDto != null) {
-            log.info("Post published and cached successfully: {}", postId);
-        } else {
-            log.error("Failed to cache post after publishing: {}", postId);
-        }
-        PostRedis postRedis = redisPostRepository.findById(String.valueOf(postDto.getId())).get();
-        log.info("Post from cache: {}", postRedis);
-        return postDto;
+        return postMapper.toDto(postRepository.save(post));
     }
 
     private void sendPostInCacheRedis(Post post) {

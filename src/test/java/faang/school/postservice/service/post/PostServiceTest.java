@@ -60,6 +60,7 @@ class PostServiceTest {
     private PostViewEventPublisher postViewEventPublisher;
     private ExecutorService threadPool;
     private PostService postService;
+    @Mock
     private RedisPostRepository redisPostRepository;
 
     private Post firstPost;
@@ -124,7 +125,6 @@ class PostServiceTest {
     @Test
     void getPostById_PostFound_thenReturnedAsDto() {
         when(postRepository.findById(firstPost.getId())).thenReturn(Optional.ofNullable(firstPost));
-
         PostDto returned = postService.getPostById(1L, firstPost.getId());
 
         assertAll(
@@ -153,7 +153,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postRepository, times(1)).findById(firstPost.getId()),
                 () -> verify(postRepository, times(1)).save(firstPost),
-                () -> verify(postMapper, times(1)).toDto(firstPost),
+                () -> verify(postMapper, times(2)).toDto(firstPost),
                 () -> assertTrue(returned.isPublished()),
                 () -> assertNotNull(returned.getPublishedAt()),
                 () -> assertNotEquals(firstPostDto, returned)
