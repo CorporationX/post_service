@@ -63,15 +63,21 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
 s3:
   endpoint: http://127.0.0.1:9000/
   accessKey: user
   secretKey: password
   bucketName: corpbucket
 
+commentModeratorCron: "0 0 0 * * *"
+
 postServiceThreadPool:
   poolAmount: 4
+  poolComment: 4
 
+servlet:
+  PathV1: /api/v1
 
 file:
   fileWithBadWords:

@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper.comment;
 
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;
