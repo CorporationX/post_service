@@ -80,13 +80,13 @@ public class PostValidatorTest {
 
     @Test
     void validatePostExistEmptyList() {
-        assertThrows(EntityNotFoundException.class, () -> validator.validatePostsExists(new ArrayList<>()));
+        assertThrows(DataValidationException.class, () -> validator.validatePostsExists(new ArrayList<>()));
     }
 
     @Test
     void validatePostExistWithNull() {
         List<Post> posts = null;
-        assertThrows(EntityNotFoundException.class,
+        assertThrows(DataValidationException.class,
                 () -> validator.validatePostsExists(posts));
     }
 }

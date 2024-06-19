@@ -1,5 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.exception.DataLikeValidation;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.ResourceService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -7,13 +14,19 @@ import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.DataLikeValidation;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.moderation.logic.PostModerator;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.PostValidator;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +41,7 @@ import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
 
     private final PostRepository postRepository;
@@ -38,6 +52,7 @@ public class PostService {
     private final ResourceService resourceService;
     private final PostViewEventPublisher postViewEventPublisher;
     private final UserContext userContext;
+    private final PostModerator postModerator;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto, List<MultipartFile> files) {
@@ -172,5 +187,12 @@ public class PostService {
                 .build();
 
         postViewEventPublisher.sendEvent(postViewEvent);
+    }
+
+    public void moderatePosts() {
+        List<Post> unverifiedPosts = postRepository.findAllUnverifiedPosts();
+        if (!unverifiedPosts.isEmpty()) {
+            postModerator.moderatePosts(unverifiedPosts);
+        }
     }
 }

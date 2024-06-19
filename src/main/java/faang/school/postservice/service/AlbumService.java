@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.AlbumValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
