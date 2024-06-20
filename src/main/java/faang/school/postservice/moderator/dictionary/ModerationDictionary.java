@@ -1,4 +1,4 @@
-package faang.school.postservice.moderator.comment.dictionary;
+package faang.school.postservice.moderator.dictionary;
 
 import lombok.Getter;
 import lombok.Setter;

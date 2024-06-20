@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class CommentModeratorStarter {
     private final CommentService commentService;
 
-    @Async("startExecutor")
+    @Async("postServicePool")
     @Scheduled(cron = "${commentModeratorCron}")
     public void commentModerator(){
         commentService.moderateComment();
