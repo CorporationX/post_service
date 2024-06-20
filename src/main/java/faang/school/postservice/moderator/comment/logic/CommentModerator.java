@@ -1,7 +1,7 @@
 package faang.school.postservice.moderator.comment.logic;
 
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.moderator.comment.dictionary.ModerationDictionary;
+import faang.school.postservice.moderator.dictionary.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;

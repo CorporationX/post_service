@@ -11,7 +11,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.moderation.logic.PostModerator;
+import faang.school.postservice.moderator.post.logic.PostModerator;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.ResourceService;

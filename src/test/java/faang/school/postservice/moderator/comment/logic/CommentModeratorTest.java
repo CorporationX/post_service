@@ -1,7 +1,7 @@
 package faang.school.postservice.moderator.comment.logic;
 
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.moderator.comment.dictionary.ModerationDictionary;
+import faang.school.postservice.moderator.dictionary.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +17,12 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentModeratorTest {

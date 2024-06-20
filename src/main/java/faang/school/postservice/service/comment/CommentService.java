@@ -8,7 +8,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderator.comment.logic.CommentModerator;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.threadPool.ThreadPoolForCommentModerator;
+import faang.school.postservice.threadpool.ThreadPoolForCommentModerator;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
