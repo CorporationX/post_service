@@ -1,7 +1,7 @@
 package faang.school.postservice.config.redis;
 
+import lombok.Data;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,17 +14,16 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @Setter
-@ConfigurationProperties(prefix = "spring.data.redis.channels")
-public class RedisConfiguration {
-    @Value("${spring.data.redis.port}")
+@ConfigurationProperties(prefix = "spring.data.redis")
+public class RedisContext {
     private int port;
-    @Value("${spring.data.redis.host}")
     private String host;
-    private String likesChannel;
+    private Channels channels;
+
 
     @Bean
     ChannelTopic likeTopic() {
-        return new ChannelTopic(likesChannel);
+        return new ChannelTopic(channels.getLikesChannel());
     }
 
     @Bean
@@ -41,5 +40,10 @@ public class RedisConfiguration {
         redisTemplate.setValueSerializer(new StringRedisSerializer());
 
         return redisTemplate;
+    }
+
+    @Data
+    private static class Channels {
+        private String likesChannel;
     }
 }
