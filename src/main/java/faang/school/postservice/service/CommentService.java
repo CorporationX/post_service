@@ -12,6 +12,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -24,11 +25,17 @@ import static faang.school.postservice.exception.MessagesForCommentsException.NO
 @Service
 @RequiredArgsConstructor
 public class CommentService {
+
     private final CommentMapper commentMapper;
+
     private final CommentRepository commentRepository;
+
     private final UserServiceClient userServiceClient;
+
     private final PostService postService;
+
     private final PostMapper postMapper;
+
     private final CommentEventPublisher commentEventPublisher;
 
     public CommentDto createComment(long id, CommentDto commentDto) {
@@ -36,13 +43,15 @@ public class CommentService {
 
         Comment comment = commentMapper.ToEntity(commentDto);
         comment.setPost(postMapper.toEntity(postService.getPostById(id)));
-        commentRepository.save(comment);
+
+        Comment savedComment = commentRepository.save(comment);
 
         sendCommentEvent(comment);
 
-        return commentMapper.ToDto(comment);
+        return commentMapper.ToDto(savedComment);
     }
 
+    @Transactional
     public CommentDto updateComment(CommentDto commentDto) {
         checkCommentDto(commentDto);
         Comment comment = returnCommentIfExists(commentDto);

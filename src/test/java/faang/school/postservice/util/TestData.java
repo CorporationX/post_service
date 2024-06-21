@@ -6,7 +6,6 @@ import faang.school.postservice.model.Post;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,10 +25,9 @@ public class TestData {
 
     public Comment returnComment() {
         Comment comment = new Comment();
-        comment.setId(2L);
+        comment.setCreatedAt(CREATED_AT);
         comment.setAuthorId(AUTHOR_ID);
         comment.setContent("NewContent");
-        comment.setCreatedAt(CREATED_AT);
         return comment;
     }
 

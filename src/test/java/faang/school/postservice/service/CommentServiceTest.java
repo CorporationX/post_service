@@ -86,7 +86,7 @@ public class CommentServiceTest {
     @Test
     void testForCreateCommentAndSave() {
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(new UserDto());
-        when(postService.getPostById(postId)).thenReturn(new PostDto());
+        when(postService.getPostById(postId)).thenReturn(postDto);
 
         commentService.createComment(postId, commentDto);
 

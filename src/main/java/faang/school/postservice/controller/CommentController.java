@@ -14,30 +14,31 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Validated
+@RequestMapping("/comments")
 public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/createComment/{postId}")
     @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/{postId}")
     CommentDto createComment(@Min(1) @PathVariable long postId, @Valid @RequestBody CommentDto commentDto) {
         return commentService.createComment(postId, commentDto);
     }
 
-    @PutMapping("/updateComment")
     @ResponseStatus(HttpStatus.OK)
+    @PutMapping
     CommentDto updateComment(@Valid @RequestBody CommentDto commentDto) {
         return commentService.updateComment(commentDto);
     }
 
-    @GetMapping("/getAllComments/{postId}")
     @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{postId}")
     List<CommentDto> getAllComments(@Min(1) @PathVariable long postId) {
         return commentService.getAllComments(postId);
     }
 
-    @DeleteMapping("/deleteComment")
     @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping
     void deleteComment(@Valid @RequestBody CommentDto commentDto) {
         commentService.deleteComment(commentDto);
     }

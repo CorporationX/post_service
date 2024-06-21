@@ -10,8 +10,6 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,10 +36,9 @@ public class CommentMapperTest {
         comment = testData.returnComment();
 
         commentDto = new CommentDto();
-        commentDto.setId(2L);
         commentDto.setAuthorId(1L);
         commentDto.setContent("NewContent");
-        commentDto.setCreatedAt(LocalDateTime.of(2024, Month.MAY, 31, 0, 0, 0));
+        commentDto.setId(0L);
 
         commentDtos = new ArrayList<>();
         commentDtos.add(commentDto);
@@ -51,6 +48,7 @@ public class CommentMapperTest {
 
     @Test
     void testToEntity() {
+        comment.setCreatedAt(null);
         assertEquals(comment, commentMapper.ToEntity(commentDto));
     }
 
