@@ -25,6 +25,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.post_view_channel.name}")
     private String postViewChannelName;
 
+    @Value("${spring.data.redis.channels.comment-event-chanel.name}")
+    private String commentEventChannelName;
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(redisHost, redisPort);
@@ -49,5 +52,10 @@ public class RedisConfig {
     @Bean
     public ChannelTopic postViewChannel() {
         return new ChannelTopic(postViewChannelName);
+    }
+
+    @Bean()
+    public ChannelTopic commentEventTopic() {
+        return new ChannelTopic(commentEventChannelName);
     }
 }
