@@ -1,10 +1,13 @@
-package faang.school.postservice.moderation.logic;
+package faang.school.postservice.moderator.post.logic;
 
 import faang.school.postservice.model.Post;
-import faang.school.postservice.moderation.dictionary.ModerationDictionary;
+import faang.school.postservice.moderator.dictionary.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityManager;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -23,15 +26,16 @@ public class PostModerator {
     private final EntityManager entityManager;
     private final ExecutorService executorService;
 
-    @Value("${poolToPostVerified.poolAmount}")
+    @Value("${postServiceThreadPool.poolAmount}")
     private int nThreads;
 
     @Autowired
-    public PostModerator(ModerationDictionary moderationDictionary, PostRepository postRepository, EntityManager entityManager) {
+    public PostModerator(ModerationDictionary moderationDictionary, PostRepository postRepository, EntityManager entityManager,
+                         @Qualifier("poolForPostModeration") ExecutorService executorService) {
         this.moderationDictionary = moderationDictionary;
         this.postRepository = postRepository;
         this.entityManager = entityManager;
-        this.executorService = Executors.newFixedThreadPool(nThreads);
+        this.executorService = executorService;
     }
 
     public void moderatePosts(List<Post> unverifiedPosts) {

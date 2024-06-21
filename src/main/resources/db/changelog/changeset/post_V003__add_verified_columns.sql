@@ -1,3 +1,2 @@
-ALTER TABLE comment
-    ADD COLUMN verified_date timestamptz,
-    ADD COLUMN verified bool DEFAULT false NOT NULL;
+ALTER TABLE post ADD COLUMN verified BOOLEAN;
+ALTER TABLE post ADD COLUMN verified_date TIMESTAMP;

@@ -7,8 +7,9 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderator.comment.logic.CommentModerator;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.threadPool.ThreadPoolForCommentModerator;
+import faang.school.postservice.threadpool.ThreadPoolForCommentModerator;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -32,6 +33,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentValidator commentValidator;
     private final ThreadPoolForCommentModerator threadPoolForCommentModerator;
+    private final CommentEventPublisher commentEventPublisher;
     private final CommentModerator commentModerator;
     @Value("${postServiceThreadPool.poolComment}")
     @Setter
@@ -80,9 +82,11 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(createCommentDto);
         Comment commentSaved = commentRepository.save(comment);
         log.debug("Comment saved in db. Comment: {}", commentSaved);
+        commentEventPublisher.sendEvent(commentMapper.toEventDto(commentSaved));
 
         return commentMapper.toDto(commentSaved);
     }
+
 
     @Transactional
     public CreateCommentDto changeComment(ChangeCommentDto changeCommentDto) {

@@ -8,13 +8,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Configuration
-public class PostServiceThreadPool {
+public class ThreadPoolForCommentModerator {
+
+    @Value("${postServiceThreadPool.poolComment}")
+    private int pullNumbers;
 
     @Value("${postServiceThreadPool.poolAmount}")
-    private int nThreads;
+    private int startNumbers;
+
 
     @Bean
-    public ExecutorService postServicePool() {
-        return Executors.newFixedThreadPool(nThreads);
+    public ExecutorService taskExecutor() {
+        return Executors.newFixedThreadPool(pullNumbers);
+    }
+
+    @Bean
+    public ExecutorService startExecutor() {
+        return Executors.newFixedThreadPool(startNumbers);
     }
 }

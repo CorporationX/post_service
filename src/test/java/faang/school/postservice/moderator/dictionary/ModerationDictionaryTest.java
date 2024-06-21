@@ -1,6 +1,6 @@
 package faang.school.postservice.moderator.dictionary;
 
-import faang.school.postservice.moderation.dictionary.ModerationDictionary;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

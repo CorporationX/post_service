@@ -8,13 +8,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Configuration
-public class PostServiceThreadPool {
+public class ThreadPoolForPostModerator {
 
-    @Value("${postServiceThreadPool.poolAmount}")
+    @Value("${postServiceThreadPool.poolPost}")
     private int nThreads;
 
     @Bean
-    public ExecutorService postServicePool() {
+    public ExecutorService poolForPostModeration() {
         return Executors.newFixedThreadPool(nThreads);
     }
 }

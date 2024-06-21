@@ -2,6 +2,8 @@ package faang.school.postservice.controller.comment;
 
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.service.comment.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -17,11 +19,14 @@ import java.util.List;
 @RequestMapping("/comments")
 public class CommentController {
     private final CommentService commentService;
+//    private final CommentEventPublisher commentEventPublisher;
+//    private final CommentMapper commentMapper;
 
     @Operation(summary = "Add comment")
     @PostMapping("/create")
     public CreateCommentDto createComment(@RequestBody @Valid CreateCommentDto createCommentDto) {
         log.info("Received create comment request {}", createCommentDto);
+//        commentEventPublisher.publish(commentMapper.toEventDto(createCommentDto));
         return commentService.createComment(createCommentDto);
     }
 

@@ -1,6 +1,6 @@
 package faang.school.postservice.moderator.comment.dictionary;
 
-import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.moderator.dictionary.ModerationDictionary;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

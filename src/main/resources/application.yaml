@@ -22,6 +22,9 @@ spring:
       port: 6379
       host: localhost
       channels:
+        profile-view: profile_view_channel
+        post-view-channel: post_view_channel
+        comment-event-chanel: comment_event_chanel;
         calculations_channel:
           name: calculations_channel
   servlet:
@@ -75,6 +78,7 @@ commentModeratorCron: "0 0 0 * * *"
 postServiceThreadPool:
   poolAmount: 4
   poolComment: 4
+  poolPost: 4
 
 servlet:
   PathV1: /api/v1

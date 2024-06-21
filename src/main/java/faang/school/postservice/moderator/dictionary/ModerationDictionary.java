@@ -1,5 +1,6 @@
-package faang.school.postservice.moderator.comment.dictionary;
+package faang.school.postservice.moderator.dictionary;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +23,8 @@ public class ModerationDictionary {
     @Setter
     private Set<String> badWords = new HashSet<>();
 
-    @EventListener(ApplicationReadyEvent.class)
+    @PostConstruct
+//    @EventListener(ApplicationReadyEvent.class)
     public void readBadWords() {
         String file = pathToFile;
 
