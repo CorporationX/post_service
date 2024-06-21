@@ -24,11 +24,17 @@ import static faang.school.postservice.exception.MessagesForCommentsException.NO
 @Service
 @RequiredArgsConstructor
 public class CommentService {
+
     private final CommentMapper commentMapper;
+
     private final CommentRepository commentRepository;
+
     private final UserServiceClient userServiceClient;
+
     private final PostService postService;
+
     private final PostMapper postMapper;
+
     private final CommentEventPublisher commentEventPublisher;
 
     public CommentDto createComment(long id, CommentDto commentDto) {

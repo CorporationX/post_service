@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class CommentDto {
+
     private Long id;
 
     @NotNull(message = "content shouldn't be null")
