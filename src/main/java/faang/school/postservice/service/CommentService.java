@@ -43,6 +43,7 @@ public class CommentService {
 
         Comment comment = commentMapper.ToEntity(commentDto);
         comment.setPost(postMapper.toEntity(postService.getPostById(id)));
+
         Comment savedComment = commentRepository.save(comment);
 
         sendCommentEvent(comment);

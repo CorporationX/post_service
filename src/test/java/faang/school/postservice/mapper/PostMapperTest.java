@@ -28,6 +28,8 @@ public class PostMapperTest {
     void init() {
         post = new Post();
         post.setId(2L);
+        post.setContent("content");
+        post.setAuthorId(1L);
         postDto = testData.returnPostDto();
     }
 
