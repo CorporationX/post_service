@@ -28,16 +28,8 @@ public class CommentService {
     public CommentDto createComment(CommentDto commentDto) {
         Comment comment = commentMapper.fromDto(commentDto);
         comment = commentRepository.save(comment);
-
-        CommentEvent commentEvent = CommentEvent.builder()
-                .commentAuthorId(comment.getAuthorId())
-                .postAuthorId(comment.getPost().getAuthorId())
-                .postId(comment.getPost().getId())
-                .commentId(comment.getId())
-                .build();
-
+        CommentEvent commentEvent = commentMapper.toCommentEvent(comment);
         commentEventPublisher.publish(commentEvent);
-
         return commentMapper.toDto(comment);
     }
 

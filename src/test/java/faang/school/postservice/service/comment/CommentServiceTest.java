@@ -85,11 +85,14 @@ class CommentServiceTest {
                 .commentId(comment.getId())
                 .build();
 
+        when(commentMapper.toCommentEvent(comment)).thenReturn(expectedEvent);
+
         CommentDto result = commentService.createComment(commentDto);
         assertEquals(commentDto, result);
         verify(commentMapper).fromDto(commentDto);
         verify(commentRepository).save(comment);
         verify(commentMapper).toDto(comment);
+        verify(commentMapper).toCommentEvent(comment);
         verify(commentEventPublisher).publish(expectedEvent);
     }
 
