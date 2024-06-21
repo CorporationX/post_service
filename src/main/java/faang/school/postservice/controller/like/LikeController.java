@@ -3,6 +3,7 @@ package faang.school.postservice.controller.like;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.like.LikeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/likes")
 @RequiredArgsConstructor
+@Validated
 public class LikeController {
     private final LikeService likeService;
 
