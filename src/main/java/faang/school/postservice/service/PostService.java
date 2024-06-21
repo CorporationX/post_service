@@ -11,6 +11,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,12 +29,14 @@ public class PostService {
     private final PostValidator postValidator;
     private final PostViewEventPublisher postViewEventPublisher;
     private final ModerationDictionary moderationDictionary;
+    private final HashtagService hashtagService;
 
     @Transactional
     public PostDto create(PostDto postDto) {
         log.info("Trying to create post with ID: {}", postDto.getId());
         postValidator.validateAuthorIdAndProjectId(postDto.getAuthorId(), postDto.getProjectId());
-        Post post = postRepository.save(postMapper.toEntity(postDto));
+        Post post = postRepository.saveAndFlush(postMapper.toEntity(postDto));
+        hashtagService.parsePostAndCreateHashtags(post);
         log.info("Post with ID:{} created.", postDto.getId());
         return postMapper.toDto(post);
     }
@@ -167,5 +170,12 @@ public class PostService {
             post.setVerifyStatus(status);
             post.setVerifiedDate(LocalDateTime.now());
         });
+    }
+
+    @Cacheable(value = "posts", key = "#hashtag")
+    public List<PostDto> findByHashtag(String hashtag) {
+        log.info("Find posts with hashtag: {}", hashtag);
+        List<Post> posts = hashtagService.findByName(hashtag).getPosts();
+        return postMapper.toListDto(posts);
     }
 }

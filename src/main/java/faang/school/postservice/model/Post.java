@@ -6,14 +6,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@ToString(exclude = "hashtags")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -34,11 +37,13 @@ public class Post {
     @Column(name = "project_id")
     private Long projectId;
 
+    @Builder.Default
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Like> likes;
+    private List<Like> likes = new ArrayList<>();;
 
+    @Builder.Default
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Comment> comments;
+    private List<Comment> comments = new ArrayList<>();;
 
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;
@@ -46,8 +51,9 @@ public class Post {
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private Ad ad;
 
+    @Builder.Default
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Resource> resources;
+    private List<Resource> resources = new ArrayList<>();;
 
     @Column(name = "published", nullable = false)
     private boolean published;
@@ -81,4 +87,8 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_date")
     private LocalDateTime verifiedDate;
+
+    @Builder.Default
+    @ManyToMany(mappedBy = "posts")
+    private List<Hashtag> hashtags = new ArrayList<>();
 }
