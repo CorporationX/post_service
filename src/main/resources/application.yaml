@@ -24,6 +24,7 @@ spring:
       channels:
         calculationsChannel: calculations_channel
         likesChannel: likes_channel
+        commentsChannel: comments_channel
 
 server:
   port: 8085

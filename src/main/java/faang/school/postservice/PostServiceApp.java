@@ -19,7 +19,7 @@ public class PostServiceApp {
     }
 
     @Bean
-    ObjectMapper objectMapper() {
+    public ObjectMapper objectMapper() {
         return new ObjectMapper();
     }
 }

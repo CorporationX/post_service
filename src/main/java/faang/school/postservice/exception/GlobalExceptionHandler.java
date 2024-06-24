@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -30,12 +29,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleMethodArgumentNotValidException(MethodArgumentNotValidException methodArgumentNotValidException) {
-        return methodArgumentNotValidException.getBindingResult().getAllErrors().stream()
-                .collect(Collectors.toMap(
-                        error -> ((FieldError) error).getField(),
-                        error -> Objects.requireNonNullElse(error.getDefaultMessage(), "")
-                ));
+    public Map<String, String> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+        return exception.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.groupingBy(FieldError::getField,
+                        Collectors.mapping(FieldError::getDefaultMessage,
+                                Collectors.joining(" and "))));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -48,7 +46,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handlePostOperationException(DataOperationException e) {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
-    
+
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<String> handleRuntimeExceptions(RuntimeException ex) {

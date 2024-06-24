@@ -15,6 +15,7 @@ public abstract class AbstractEventPublisher {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChannelTopic topic;
 
+
     public void publish(EventDto event) {
         try {
             redisTemplate.convertAndSend(topic.getTopic(), objectMapper.writeValueAsString(event));
