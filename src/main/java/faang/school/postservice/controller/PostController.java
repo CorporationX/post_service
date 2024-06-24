@@ -66,4 +66,9 @@ public class PostController {
         long userId = userContext.getUserId();
         return postService.getAllPublishedNonDeletedPostsByProjectAuthorId(userId, projectId);
     }
+
+    @GetMapping
+    public List<PostDto> findAllByHashtag(@RequestParam("hashtag") String hashtag) {
+        return postService.findByHashtag(hashtag);
+    }
 }

@@ -5,6 +5,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +37,8 @@ public class PostServiceTest {
     private PostValidator postValidator;
     @Mock
     private PostViewEventPublisher postViewEventPublisher;
+    @Mock
+    private HashtagService hashtagService;
 
     private PostDto postDto1;
     private PostDto postDto2;
@@ -121,12 +124,12 @@ public class PostServiceTest {
     public void testCreatePost() {
         when(postMapper.toEntity(any(PostDto.class))).thenReturn(post1);
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto1);
-        when(postRepository.save(any(Post.class))).thenReturn(post1);
+        when(postRepository.saveAndFlush(any(Post.class))).thenReturn(post1);
 
         PostDto createdPost = postService.create(postDto1);
 
         verify(postValidator).validateAuthorIdAndProjectId(postDto1.getAuthorId(), postDto1.getProjectId());
-        verify(postRepository).save(post1);
+        verify(postRepository).saveAndFlush(post1);
         verify(postMapper).toEntity(postDto1);
         verify(postMapper).toDto(post1);
 

@@ -7,3 +7,9 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003__insert_data.sql
   - include:
       file: db/changelog/changeset/post_V004__alter_post.sql
+  - include:
+      file: db/changelog/changeset/post_V005__create_hashtag.sql
+  - include:
+      file: db/changelog/changeset/post_V006__link_post_hashtag.sql
+  - include:
+      file: db/changelog/changeset/post_V007__resource.sql

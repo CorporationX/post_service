@@ -8,13 +8,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostDto {
+public class PostDto implements Serializable {
 
     @NotNull(message = "")
     @Min(value = 1, message = "Post ID cannot be less or equal 0")
