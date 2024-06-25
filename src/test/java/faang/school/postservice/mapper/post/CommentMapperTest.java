@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper.post;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,5 +68,18 @@ public class CommentMapperTest {
         assertEquals(commentDto.getCreatedAt(), comment.getCreatedAt());
         assertNull(comment.getLikes());
         assertNull(comment.getPost());
+    }
+
+    @Test
+    void testToCommentEventWorksCorrectly() {
+        CommentEvent commentEvent = mapper.toCommentEvent(comment);
+        assertCommentEvent(commentEvent);
+    }
+
+    private void assertCommentEvent(CommentEvent commentEvent) {
+        assertEquals(comment.getAuthorId(), commentEvent.getCommentAuthorId());
+        assertEquals(comment.getPost().getAuthorId(), commentEvent.getPostAuthorId());
+        assertEquals(comment.getPost().getId(), commentEvent.getPostId());
+        assertEquals(comment.getId(), commentEvent.getCommentId());
     }
 }

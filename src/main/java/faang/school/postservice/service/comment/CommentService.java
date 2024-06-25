@@ -1,15 +1,15 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.EntityWrongParameterException;
 import faang.school.postservice.exception.NoAccessException;
 import faang.school.postservice.mapper.post.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.Comparator;
@@ -22,12 +22,14 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostService postService;
-    private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
+    private final CommentEventPublisher commentEventPublisher;
 
     public CommentDto createComment(CommentDto commentDto) {
         Comment comment = commentMapper.fromDto(commentDto);
         comment = commentRepository.save(comment);
+        CommentEvent commentEvent = commentMapper.toCommentEvent(comment);
+        commentEventPublisher.publish(commentEvent);
         return commentMapper.toDto(comment);
     }
 
