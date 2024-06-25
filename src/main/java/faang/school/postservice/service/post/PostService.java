@@ -3,14 +3,13 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.redis.PostInRedisDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.PostRedis;
 import faang.school.postservice.model.resource.Resource;
-import faang.school.postservice.publisher.postview.PostViewEventPublisher;
-import faang.school.postservice.publisher.userban.UserBanPublisher;
+import faang.school.postservice.publisher.redis.postview.PostViewEventPublisher;
+import faang.school.postservice.publisher.redis.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.resource.ResourceService;
@@ -19,7 +18,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -52,6 +51,9 @@ public class PostService {
     @Value("${post.banner.post-count}")
     private Integer postsCountToBan;
 
+    @Value("${spring.data.redis.ttl}")
+    private Long ttl;
+
     @Transactional
     public PostDto create(PostDto postDto, MultipartFile[] images) {
         postValidator.validatePostAuthor(postDto);
@@ -74,7 +76,6 @@ public class PostService {
         if (post.getAuthorId() != userId) {
             publishPostViewEvent(userId, post);
         }
-        log.info("Post {} view event published", postId);
         return postMapper.toDto(post);
     }
 
@@ -93,16 +94,21 @@ public class PostService {
         PostRedis postRedis = PostRedis.builder()
                 .id(String.valueOf(post.getId()))
                 .postDto(postMapper.toDto(post))
+                .expiration(ttl)
                 .build();
         log.info("Send post in redis: {}", post);
         try {
             redisPostRepository.save(postRedis);
-            if (!redisPostRepository.existsById(String.valueOf(post.getId()))) {
+            if (!redisPostRepository.existsById(post.getId())) {
                 log.error("Failed to save post to Redis cache: {}", post.getId());
             }
         } catch (Exception e) {
             log.error("Error saving post to Redis: ", e);
         }
+    }
+
+    public PostRedis getPostFromRedis(long id){
+        return redisPostRepository.findById(id).orElseThrow();
     }
 
     @Transactional

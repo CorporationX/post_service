@@ -3,6 +3,7 @@ package faang.school.postservice.controller.post;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.model.redis.PostRedis;
 import faang.school.postservice.service.post.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @Validated
 @RestController
@@ -41,10 +43,15 @@ public class PostController {
     }
 
     @Operation(summary = "Get post by id")
-    @GetMapping("/{postId}")
+    @GetMapping("/1/{postId}")
     public PostDto getPostById(@PathVariable @Min(1) long postId) {
         long userId = userContext.getUserId();
         return postService.getPostById(userId, postId);
+    }
+
+    @GetMapping("/{postId}")
+    public PostRedis getPostByIdFromRedis(@PathVariable long postId){
+        return postService.getPostFromRedis(postId);
     }
 
     @Operation(summary = "Update existing post")

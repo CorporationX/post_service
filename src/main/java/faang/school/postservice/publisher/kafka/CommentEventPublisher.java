@@ -1,4 +1,4 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.publisher.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

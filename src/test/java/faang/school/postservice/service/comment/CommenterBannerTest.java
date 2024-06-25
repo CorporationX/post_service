@@ -2,7 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.publisher.userban.UserBanPublisher;
+import faang.school.postservice.publisher.redis.userban.UserBanPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -2,7 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.event.UserEvent;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.publisher.userban.UserBanPublisher;
+import faang.school.postservice.publisher.redis.userban.UserBanPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

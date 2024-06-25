@@ -33,6 +33,7 @@ spring:
           name: user_ban
         post-view:
           name: post_view
+      ttl: 60000
     kafka:
       port: 9092
       host: localhost

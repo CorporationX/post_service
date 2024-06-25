@@ -1,7 +1,6 @@
 package faang.school.postservice.model.redis;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.redis.PostInRedisDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +11,6 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -24,4 +22,8 @@ public class PostRedis implements Serializable {
     @Id
     private String id;
     private PostDto postDto;
+    @TimeToLive
+    private Long expiration;
+    @Version
+    private Long version;
 }
