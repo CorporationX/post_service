@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @Builder
-public class CommentEventDto implements Serializable {
+public class CommentEventDto extends EventDto implements Serializable {
     private long commentAuthorId;
     private long postAuthorId;
     private long postId;

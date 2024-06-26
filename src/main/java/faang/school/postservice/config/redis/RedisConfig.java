@@ -27,6 +27,11 @@ public class RedisConfig {
     }
 
     @Bean
+    public ChannelTopic commentTopic() {
+        return new ChannelTopic(channels.getCommentsChannel());
+    }
+
+    @Bean
     public RedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         return new JedisConnectionFactory(config);
@@ -49,5 +54,6 @@ public class RedisConfig {
     @Data
     private static class Channels {
         private String likesChannel;
+        private String commentsChannel;
     }
 }
