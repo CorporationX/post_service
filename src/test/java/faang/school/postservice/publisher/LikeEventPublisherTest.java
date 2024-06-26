@@ -1,5 +1,7 @@
 package faang.school.postservice.publisher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.like.LikeEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -20,19 +23,24 @@ public class LikeEventPublisherTest {
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
 
-    private final String likeChannelName = "likeChannel";
+    @Mock
+    private ObjectMapper objectMapper;
+
+    @Mock
+    private ChannelTopic channelTopic;
 
     @BeforeEach
     public void setUp() {
-        likeEventPublisher = new LikeEventPublisher(redisTemplate);
-        likeEventPublisher.setLikeChannelName(likeChannelName);
+
     }
 
     @Test
-    public void testPublish() {
+    public void testSendEvent() throws JsonProcessingException {
         LikeEvent likeEvent = LikeEvent.builder().postId(1L).build();
-        likeEventPublisher.publish(likeEvent);
+        String json = objectMapper.writeValueAsString(likeEvent);
 
-        verify(redisTemplate, times(1)).convertAndSend(likeChannelName, likeEvent);
+        likeEventPublisher.sendEvent(likeEvent);
+
+        verify(redisTemplate, times(1)).convertAndSend(channelTopic.getTopic(), json);
     }
 }
