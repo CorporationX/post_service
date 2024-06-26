@@ -1,14 +1,14 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.dto.event.PostViewEvent;
-import faang.school.postservice.dto.event.UserEvent;
+import faang.school.postservice.dto.redis.event.PostViewEvent;
+import faang.school.postservice.dto.redis.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.resource.Resource;
-import faang.school.postservice.publisher.redis.postview.PostViewEventPublisher;
-import faang.school.postservice.publisher.redis.userban.UserBanPublisher;
+import faang.school.postservice.publisher.redis.postview.PostViewEventRedisPublisher;
+import faang.school.postservice.publisher.redis.userban.UserBanRedisPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.redis.RedisCachePostService;
 import faang.school.postservice.service.resource.ResourceService;
@@ -39,8 +39,8 @@ public class PostService {
     private final PostMapper postMapper;
     private final ResourceService resourceService;
     private final ExecutorService threadPool;
-    private final UserBanPublisher userBanPublisher;
-    private final PostViewEventPublisher postViewEventPublisher;
+    private final UserBanRedisPublisher userBanPublisher;
+    private final PostViewEventRedisPublisher postViewEventPublisher;
     private final RedisCachePostService redisCachePostService;
 
     @Value("${post.publisher.batch-size}")

@@ -1,12 +1,12 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.dto.event.PostViewEvent;
-import faang.school.postservice.dto.event.UserEvent;
+import faang.school.postservice.dto.redis.event.PostViewEvent;
+import faang.school.postservice.dto.redis.event.UserEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.redis.postview.PostViewEventPublisher;
-import faang.school.postservice.publisher.redis.userban.UserBanPublisher;
+import faang.school.postservice.publisher.redis.postview.PostViewEventRedisPublisher;
+import faang.school.postservice.publisher.redis.userban.UserBanRedisPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.redis.RedisCachePostService;
 import faang.school.postservice.service.resource.ResourceService;
@@ -55,9 +55,9 @@ class PostServiceTest {
     @Mock
     private ResourceService resourceService;
     @Mock
-    private UserBanPublisher userBanPublisher;
+    private UserBanRedisPublisher userBanPublisher;
     @Mock
-    private PostViewEventPublisher postViewEventPublisher;
+    private PostViewEventRedisPublisher postViewEventPublisher;
     private ExecutorService threadPool;
     private PostService postService;
     @Mock

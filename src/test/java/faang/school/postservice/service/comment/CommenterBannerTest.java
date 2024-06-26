@@ -1,8 +1,8 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.event.UserEvent;
+import faang.school.postservice.dto.redis.event.UserEvent;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.publisher.redis.userban.UserBanPublisher;
+import faang.school.postservice.publisher.redis.userban.UserBanRedisPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +25,7 @@ class CommenterBannerTest {
     private CommentService commentService;
 
     @Mock
-    private UserBanPublisher userBanPublisher;
+    private UserBanRedisPublisher userBanPublisher;
 
     @InjectMocks
     private CommenterBanner commenterBanner;
