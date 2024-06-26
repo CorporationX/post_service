@@ -7,6 +7,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -19,6 +20,12 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.port}")
     private int redisPort;
+
+    @Value("${spring.data.redis.channels.calculations_channel.name}")
+    private String calculationsChannelName;
+
+    @Value("${spring.data.redis.channels.post_view_channel.name}")
+    private String postViewChannelName;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
@@ -36,6 +43,18 @@ public class RedisConfig {
     }
 
     @Bean
+    public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory connectionFactory) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        return container;
+    }
+
+    @Bean
+    public ChannelTopic postViewChannel() {
+        return new ChannelTopic(postViewChannelName);
+    }
+}
+
     public ChannelTopic likeEventTopic() {
         return new ChannelTopic(likeChannelName);
     }

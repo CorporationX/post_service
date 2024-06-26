@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.PostValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;

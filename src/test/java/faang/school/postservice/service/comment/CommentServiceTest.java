@@ -3,10 +3,12 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderator.comment.logic.CommentModerator;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.threadpool.ThreadPoolForCommentModerator;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,15 +18,22 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -41,9 +50,16 @@ public class CommentServiceTest {
     @Mock
     private CommentValidator commentValidator;
 
+    @Mock
+    private ThreadPoolForCommentModerator threadPoolForCommentModerator;
+
+    @Mock
+    private CommentModerator commentModerator;
+
     private CreateCommentDto createCommentDto;
     private ChangeCommentDto changeCommentDto;
     private Comment comment;
+    private List<Comment> commentList;
     private Long id;
 
     @BeforeEach
@@ -52,6 +68,7 @@ public class CommentServiceTest {
         createCommentDto = CreateCommentDto.builder().id(1L).content("content").authorId(1L).postId(1L).build();
         changeCommentDto = ChangeCommentDto.builder().id(1L).content("content").build();
         comment = Comment.builder().id(1L).content("content").authorId(1L).post(post).build();
+        commentList = new ArrayList<>(List.of(comment, comment, comment, comment));
         id = 1L;
     }
 
@@ -119,5 +136,19 @@ public class CommentServiceTest {
         doNothing().when(commentRepository).deleteById(id);
         commentService.deleteComment(id);
         verify(commentRepository, times(1)).deleteById(id);
+    }
+
+    @Test
+    public void testCorrectWorkModerateComment() {
+        commentService.setPullNumbers(4);
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+
+        when(commentRepository.findUnVerifiedComments()).thenReturn(commentList);
+        when(threadPoolForCommentModerator.taskExecutor()).thenReturn(executorService);
+
+        commentService.moderateComment();
+
+        verify(commentModerator, times(4)).moderateComment(anyList());
+        executorService.shutdownNow();
     }
 }

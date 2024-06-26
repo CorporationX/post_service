@@ -1,4 +1,4 @@
-package faang.school.postservice.mapper.comment;
+package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.model.Comment;

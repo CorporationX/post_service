@@ -46,7 +46,7 @@ public class PostValidator {
 
     public void validatePostsExists(List<Post> posts) {
         if (posts == null || posts.isEmpty()) {
-            throw new EntityNotFoundException("Posts not found");
+            throw new DataValidationException("Posts not found");
         }
     }
 }

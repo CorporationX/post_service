@@ -8,6 +8,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +32,7 @@ public class LikeService {
     public LikeDto addLikePost(Long postId, LikeDto likeDto) {
         likeValidator.checkExistAuthor(likeDto);
 
-        Post post = postService.getPostById(postId);
+        Post post = postService.findPostById(postId);
         Like like = likeMapper.toEntity(likeDto);
 
         likeValidator.checkIsStandLikeWithIdOnPost(post, like);
@@ -65,7 +67,7 @@ public class LikeService {
     public LikeDto deleteLikePost(Long postId, LikeDto likeDto) {
         likeValidator.checkExistAuthor(likeDto);
 
-        Post post = postService.getPostById(postId);
+        Post post = postService.findPostById(postId);
         Like like = likeMapper.toEntity(likeDto);
 
         post.setLikes(post.getLikes().stream()

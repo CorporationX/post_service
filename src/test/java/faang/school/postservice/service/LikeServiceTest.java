@@ -7,6 +7,8 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.LikeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,7 +60,7 @@ public class LikeServiceTest {
 
     @Test
     public void testAddLikePost_notPostInBd() {
-        when(postService.getPostById(id)).thenThrow(DataLikeValidation.class);
+        when(postService.findPostById(id)).thenThrow(DataLikeValidation.class);
         assertThrows(DataLikeValidation.class, () -> likeService.addLikePost(id, likeDto));
     }
 
@@ -70,7 +72,7 @@ public class LikeServiceTest {
 
     @Test
     public void testDeleteLikePost_notPostInBd() {
-        when(postService.getPostById(id)).thenThrow(DataLikeValidation.class);
+        when(postService.findPostById(id)).thenThrow(DataLikeValidation.class);
         assertThrows(DataLikeValidation.class, () -> likeService.deleteLikePost(id, likeDto));
     }
 
