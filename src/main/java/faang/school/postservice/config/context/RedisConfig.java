@@ -53,8 +53,8 @@ public class RedisConfig {
     public ChannelTopic postViewChannel() {
         return new ChannelTopic(postViewChannelName);
     }
-}
 
+    @Bean
     public ChannelTopic likeEventTopic() {
         return new ChannelTopic(likeChannelName);
     }
