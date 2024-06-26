@@ -8,7 +8,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.redis.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.redis.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.redis.RedisCachePostService;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
