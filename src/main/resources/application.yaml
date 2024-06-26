@@ -43,9 +43,11 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   inspector:
     scheduler:
-      cron: "0 * * * * *"
+      cron: "0 1 * * * *"
     file:
       swearwords: files/list-of-swearwords-and-offensive-gestures.csv
+  redis:
+    ttl:
 
 
 user-service:

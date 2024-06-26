@@ -8,6 +8,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifyStatus;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ public class PostService {
     private final PostViewEventPublisher postViewEventPublisher;
     private final ModerationDictionary moderationDictionary;
     private final HashtagService hashtagService;
+    private final RedisPostRepository redisPostRepository;
 
     @Transactional
     public PostDto create(PostDto postDto) {
@@ -48,7 +50,9 @@ public class PostService {
         postValidator.validatePublicationPost(post);
         post.setPublished(true);
         log.info("Post with ID: {} published.", postId);
-        return postMapper.toDto(post);
+        PostDto postDto = postMapper.toDto(post);
+        redisPostRepository.save(postDto);
+        return postDto;
     }
 
     @Transactional
