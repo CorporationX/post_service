@@ -77,7 +77,8 @@ public class RedisCachePostService {
                 () -> redisPostRepository.save(postRedis)
         );
     }
-    public PostRedis getPostFromRedis(long id){
+
+    public PostRedis getPostFromRedis(long id) {
         return redisPostRepository.findById(id).orElseThrow();
     }
 

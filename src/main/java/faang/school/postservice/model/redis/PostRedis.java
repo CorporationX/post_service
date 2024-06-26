@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
@@ -26,7 +25,7 @@ public class PostRedis implements Serializable {
     private Long expiration;
     private Long version;
 
-    public void incrementVersion(){
+    public void incrementVersion() {
         this.version++;
     }
 }

@@ -9,6 +9,7 @@ import faang.school.postservice.publisher.redis.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.redis.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.service.redis.RedisCachePostService;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -61,7 +62,7 @@ class PostServiceTest {
     private ExecutorService threadPool;
     private PostService postService;
     @Mock
-    private RedisPostRepository redisPostRepository;
+    private RedisCachePostService redisCachePostService;
 
     private Post firstPost;
     private Post secondPost;
@@ -102,7 +103,7 @@ class PostServiceTest {
                 .build();
         threadPool = Executors.newFixedThreadPool(10);
         postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool,
-                userBanPublisher, postViewEventPublisher, redisPostRepository);
+                userBanPublisher, postViewEventPublisher, redisCachePostService);
     }
 
     @Test
@@ -153,7 +154,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postRepository, times(1)).findById(firstPost.getId()),
                 () -> verify(postRepository, times(1)).save(firstPost),
-                () -> verify(postMapper, times(2)).toDto(firstPost),
+                () -> verify(postMapper, times(1)).toDto(firstPost),
                 () -> assertTrue(returned.isPublished()),
                 () -> assertNotNull(returned.getPublishedAt()),
                 () -> assertNotEquals(firstPostDto, returned)
