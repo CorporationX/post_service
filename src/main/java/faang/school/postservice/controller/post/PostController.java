@@ -43,16 +43,16 @@ public class PostController {
     }
 
     @Operation(summary = "Get post by id")
-    @GetMapping("/1/{postId}")
+    @GetMapping("/{postId}")
     public PostDto getPostById(@PathVariable @Min(1) long postId) {
         long userId = userContext.getUserId();
         return postService.getPostById(userId, postId);
     }
-
-    @GetMapping("/{postId}")
-    public PostRedis getPostByIdFromRedis(@PathVariable long postId){
-        return postService.getPostFromRedis(postId);
-    }
+//    @Operation(summary = "Get post from redis")
+//    @GetMapping("/redis/{postId}")
+//    public PostRedis getPostByIdFromRedis(@PathVariable long postId){
+//        return postService.(postId);
+//    }
 
     @Operation(summary = "Update existing post")
     @PutMapping

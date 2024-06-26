@@ -24,6 +24,9 @@ public class PostRedis implements Serializable {
     private PostDto postDto;
     @TimeToLive
     private Long expiration;
-    @Version
     private Long version;
+
+    public void incrementVersion(){
+        this.version++;
+    }
 }

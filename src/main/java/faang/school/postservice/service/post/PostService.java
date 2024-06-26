@@ -12,12 +12,14 @@ import faang.school.postservice.publisher.redis.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.redis.userban.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.service.redis.RedisCachePostService;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisKeyValueTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,16 +45,13 @@ public class PostService {
     private final ExecutorService threadPool;
     private final UserBanPublisher userBanPublisher;
     private final PostViewEventPublisher postViewEventPublisher;
-    private final RedisPostRepository redisPostRepository;
+    private final RedisCachePostService redisCachePostService;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
 
     @Value("${post.banner.post-count}")
     private Integer postsCountToBan;
-
-    @Value("${spring.data.redis.ttl}")
-    private Long ttl;
 
     @Transactional
     public PostDto create(PostDto postDto, MultipartFile[] images) {
@@ -86,29 +85,8 @@ public class PostService {
         postValidator.validateIfPostIsDeleted(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        sendPostInCacheRedis(post);
+        redisCachePostService.sendPostInCacheRedis(post);
         return postMapper.toDto(postRepository.save(post));
-    }
-
-    private void sendPostInCacheRedis(Post post) {
-        PostRedis postRedis = PostRedis.builder()
-                .id(String.valueOf(post.getId()))
-                .postDto(postMapper.toDto(post))
-                .expiration(ttl)
-                .build();
-        log.info("Send post in redis: {}", post);
-        try {
-            redisPostRepository.save(postRedis);
-            if (!redisPostRepository.existsById(post.getId())) {
-                log.error("Failed to save post to Redis cache: {}", post.getId());
-            }
-        } catch (Exception e) {
-            log.error("Error saving post to Redis: ", e);
-        }
-    }
-
-    public PostRedis getPostFromRedis(long id){
-        return redisPostRepository.findById(id).orElseThrow();
     }
 
     @Transactional
