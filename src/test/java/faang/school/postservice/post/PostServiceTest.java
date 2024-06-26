@@ -5,6 +5,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
@@ -39,6 +40,8 @@ public class PostServiceTest {
     private PostViewEventPublisher postViewEventPublisher;
     @Mock
     private HashtagService hashtagService;
+    @Mock
+    private RedisPostRepository redisPostRepository;
 
     private PostDto postDto1;
     private PostDto postDto2;

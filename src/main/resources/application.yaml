@@ -26,6 +26,8 @@ spring:
           name: calculations_channel
         post_view_event_channel:
           name: post_view_event_channel
+      cache-ttl: 3600
+      data-ttl: 86400
 
 server:
   port: 8081
@@ -46,9 +48,6 @@ post:
       cron: "0 1 * * * *"
     file:
       swearwords: files/list-of-swearwords-and-offensive-gestures.csv
-  redis:
-    ttl:
-
 
 user-service:
   host: localhost
