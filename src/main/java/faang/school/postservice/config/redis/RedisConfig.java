@@ -31,7 +31,6 @@ public class RedisConfig {
         return new ChannelTopic(channels.getCommentsChannel());
     }
 
-
     @Bean
     public RedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
