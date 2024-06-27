@@ -2,11 +2,13 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderator.comment.logic.CommentModerator;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.threadpool.ThreadPoolForCommentModerator;
 import faang.school.postservice.validator.CommentValidator;
@@ -54,10 +56,14 @@ public class CommentServiceTest {
     private ThreadPoolForCommentModerator threadPoolForCommentModerator;
 
     @Mock
+    private CommentEventPublisher commentEventPublisher;
+
+    @Mock
     private CommentModerator commentModerator;
 
     private CreateCommentDto createCommentDto;
     private ChangeCommentDto changeCommentDto;
+    private CommentEventDto commentEventDto;
     private Comment comment;
     private List<Comment> commentList;
     private Long id;
@@ -67,6 +73,7 @@ public class CommentServiceTest {
         Post post = Post.builder().id(1L).build();
         createCommentDto = CreateCommentDto.builder().id(1L).content("content").authorId(1L).postId(1L).build();
         changeCommentDto = ChangeCommentDto.builder().id(1L).content("content").build();
+        commentEventDto = CommentEventDto.builder().commentId(1L).createdAt(null).postId(1L).authorId(1L).build();
         comment = Comment.builder().id(1L).content("content").authorId(1L).post(post).build();
         commentList = new ArrayList<>(List.of(comment, comment, comment, comment));
         id = 1L;
@@ -76,12 +83,16 @@ public class CommentServiceTest {
     public void testCorrectWorkCreateComment() {
         when(commentMapper.toEntity(createCommentDto)).thenReturn(comment);
         when(commentRepository.save(comment)).thenReturn(comment);
+        when(commentMapper.toEventDto(comment)).thenReturn(commentEventDto);
+        doNothing().when(commentEventPublisher).sendEvent(commentEventDto);
         when(commentMapper.toDto(comment)).thenReturn(createCommentDto);
 
         CreateCommentDto result = commentService.createComment(createCommentDto);
 
         assertEquals(createCommentDto, result);
         verify(commentMapper).toEntity(createCommentDto);
+        verify(commentMapper).toEventDto(comment);
+        verify(commentEventPublisher).sendEvent(commentEventDto);
         verify(commentRepository).save(comment);
         verify(commentMapper).toDto(comment);
     }

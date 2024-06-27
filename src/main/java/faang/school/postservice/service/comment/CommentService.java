@@ -7,6 +7,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderator.comment.logic.CommentModerator;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.threadpool.ThreadPoolForCommentModerator;
 import faang.school.postservice.validator.CommentValidator;
@@ -32,6 +33,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentValidator commentValidator;
     private final ThreadPoolForCommentModerator threadPoolForCommentModerator;
+    private final CommentEventPublisher commentEventPublisher;
     private final CommentModerator commentModerator;
     @Value("${postServiceThreadPool.poolComment}")
     @Setter
@@ -79,6 +81,7 @@ public class CommentService {
     public CreateCommentDto createComment(CreateCommentDto createCommentDto) {
         Comment comment = commentMapper.toEntity(createCommentDto);
         Comment commentSaved = commentRepository.save(comment);
+        commentEventPublisher.sendEvent(commentMapper.toEventDto(commentSaved));
         log.debug("Comment saved in db. Comment: {}", commentSaved);
 
         return commentMapper.toDto(commentSaved);
