@@ -6,7 +6,6 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
 import java.util.List;
@@ -21,9 +20,11 @@ public interface PostMapper {
     @Mapping(source = "comments", target = "commentsIds", qualifiedByName = "commentsToCommentsIds")
     PostDto toDto(Post post);
 
+    List<PostDto> toDto(List<Post> posts);
+
     @Named("likesToLikesIds")
     default List<Long> likesToLikesIds(List<Like> likes) {
-        if(likes == null) {
+        if (likes == null) {
             return null;
         }
 
@@ -34,7 +35,7 @@ public interface PostMapper {
 
     @Named("commentsToCommentsIds")
     default List<Long> commentsToCommentsIds(List<Comment> comments) {
-        if(comments == null) {
+        if (comments == null) {
             return null;
         }
 
