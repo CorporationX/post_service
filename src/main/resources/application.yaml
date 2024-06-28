@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        like_channel:
+          name: like_view_channel
         post_view_channel:
           name: post_view_channel
         comment-event-chanel:

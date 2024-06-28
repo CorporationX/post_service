@@ -13,11 +13,15 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
+
     @Value("${spring.data.redis.host}")
     private String redisHost;
 
     @Value("${spring.data.redis.port}")
     private int redisPort;
+
+    @Value("${spring.data.redis.channels.like_channel.name}")
+    private String likeChannelName;
 
     @Value("${spring.data.redis.channels.calculations_channel.name}")
     private String calculationsChannelName;
@@ -39,6 +43,7 @@ public class RedisConfig {
         template.setConnectionFactory(redisConnectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new StringRedisSerializer());
+
         return template;
     }
 
@@ -52,6 +57,11 @@ public class RedisConfig {
     @Bean
     public ChannelTopic postViewChannel() {
         return new ChannelTopic(postViewChannelName);
+    }
+
+    @Bean
+    public ChannelTopic likeEventTopic() {
+        return new ChannelTopic(likeChannelName);
     }
 
     @Bean()

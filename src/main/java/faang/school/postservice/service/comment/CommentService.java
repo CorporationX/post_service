@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.exception.DataLikeValidation;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
@@ -35,10 +36,10 @@ public class CommentService {
     private final ThreadPoolForCommentModerator threadPoolForCommentModerator;
     private final CommentEventPublisher commentEventPublisher;
     private final CommentModerator commentModerator;
+
     @Value("${postServiceThreadPool.poolComment}")
     @Setter
     private int pullNumbers;
-
 
     public void moderateComment() {
         List<Comment> comments = commentRepository.findUnVerifiedComments();
