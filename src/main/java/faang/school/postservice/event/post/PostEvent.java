@@ -12,5 +12,5 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostEvent {
-    List<Long> subscribersId;
+    List<Long> authorSubscribersId;
 }

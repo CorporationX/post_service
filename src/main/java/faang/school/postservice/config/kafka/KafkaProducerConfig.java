@@ -21,12 +21,28 @@ public class KafkaProducerConfig {
     @Value("${spring.data.kafka.port}")
     private int port;
 
+    @Value("${spring.data.kafka.acks}")
+    private String acks;
+
+    @Value("${spring.data.kafka.retries}")
+    private int retries;
+
+    @Value("${spring.data.kafka.retry}")
+    private int retry;
+
+    @Value("${spring.data.kafka.idempotence}")
+    private boolean idempotence;
+
     @Bean
     public ProducerFactory<String, String> kafkaProducerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, String.format("%s:%s", host, port));
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
+        props.put(ProducerConfig.RETRIES_CONFIG,10);
+        props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG,1000);
+        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         return new DefaultKafkaProducerFactory<>(props);
     }
 
