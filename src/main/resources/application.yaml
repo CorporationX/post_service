@@ -28,6 +28,8 @@ spring:
           name: like_view_channel
         post_view_channel:
           name: post_view_channel
+        comment-event-chanel:
+          name: comment_event_chanel;
   servlet:
     multipart:
       enabled: true
