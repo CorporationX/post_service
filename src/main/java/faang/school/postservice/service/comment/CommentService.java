@@ -1,37 +1,42 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validator.comment.CommentValidator;
+import faang.school.postservice.repository.RedisUserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
-    private final PostRepository postRepository;
     private final CommentMapper commentMapper;
-    private final CommentValidator commentValidator;
+    private final RedisUserRepository redisUserRepository;
+    private final UserServiceClient userServiceClient;
 
+    @Transactional
     public CommentDto createComment(long postId, CommentDto commentDto) {
-        commentValidator.checkCommentAuthor(commentDto);
-        Optional<Post> optionalPost = postRepository.findById(postId);
-        Post post = optionalPost.orElseThrow(() -> new EntityNotFoundException("Post with Id " + postId + " not found."));
+        UserDto author = userServiceClient.getUser(commentDto.getAuthorId());
+        if (author == null) {
+            throw new DataValidationException("Comment author does not exist.");
+        }
         Comment commentEntity = commentMapper.toEntity(commentDto);
-        commentEntity.setPost(post);
-
+        addToRedisAndSendEvents(author);
         return commentMapper.toDto(commentRepository.save(commentEntity));
     }
 
+    @Transactional
     public CommentDto updateComment(CommentDto commentDto) {
         Long commentDtoId = commentDto.getId();
         Comment commentEntity = commentRepository.findById(commentDtoId)
@@ -41,12 +46,19 @@ public class CommentService {
         return commentMapper.toDto(commentRepository.save(commentEntity));
     }
 
+    @Transactional
     public void deleteComment(long commentId) {
         commentRepository.deleteById(commentId);
     }
 
+    @Transactional(readOnly = true)
     public List<CommentDto> getAllComments(long postId) {
         List<Comment> commentByPostId = commentRepository.findAllByPostId(postId);
         return commentMapper.toDtoList(commentByPostId);
+    }
+
+    private void addToRedisAndSendEvents(UserDto userDto) {
+        log.info("Save user with ID: {} to Redis", userDto.getId());
+        redisUserRepository.save(userDto);
     }
 }
