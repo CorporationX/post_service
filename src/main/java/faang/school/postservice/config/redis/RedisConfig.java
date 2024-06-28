@@ -2,6 +2,7 @@ package faang.school.postservice.config.redis;
 
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -75,10 +76,12 @@ public class RedisConfig {
         @Override
         public KeyspaceSettings getKeyspaceSettings(Class<?> type) {
 
-            KeyspaceSettings keyspaceSettings = new KeyspaceSettings(PostDto.class, "Post");
-            keyspaceSettings.setTimeToLive(redisDataExpiration);
+            KeyspaceSettings keyspacePostSettings = new KeyspaceSettings(PostDto.class, "Posts");
+            KeyspaceSettings keyspaceUserSettings = new KeyspaceSettings(UserDto.class, "Users");
+            keyspacePostSettings.setTimeToLive(redisDataExpiration);
+            keyspaceUserSettings.setTimeToLive(redisDataExpiration);
 
-            return keyspaceSettings;
+            return keyspacePostSettings;
         }
     }
 }
