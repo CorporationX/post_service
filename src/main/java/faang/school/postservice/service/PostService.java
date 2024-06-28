@@ -63,11 +63,11 @@ public class PostService {
         post.setPublished(true);
         log.info("Post with ID: {} published.", postId);
         PostDto postDto = postMapper.toDto(post);
-        createEvents(postDto);
+        addToRedisAndSendEvents(postDto);
         return postDto;
     }
 
-    public void createEvents(PostDto postDto) {
+    private void addToRedisAndSendEvents(PostDto postDto) {
         Long authorId = postDto.getAuthorId();
         userContext.setUserId(authorId);
         UserDto userDto = userServiceClient.getUser(authorId);

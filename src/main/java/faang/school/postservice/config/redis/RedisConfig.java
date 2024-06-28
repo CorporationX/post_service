@@ -26,7 +26,10 @@ import java.time.temporal.ChronoUnit;
 
 @EnableCaching
 @Configuration
-@EnableRedisRepositories(enableKeyspaceEvents = RedisKeyValueAdapter.EnableKeyspaceEvents.ON_STARTUP, keyspaceConfiguration = RedisConfig.MyKeyspaceConfiguration.class)
+@EnableRedisRepositories(
+        enableKeyspaceEvents = RedisKeyValueAdapter.EnableKeyspaceEvents.ON_STARTUP,
+        keyspaceConfiguration = RedisConfig.MyKeyspaceConfiguration.class
+)
 public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
