@@ -1,5 +1,6 @@
 package faang.school.postservice.integration;
 
+import com.redis.testcontainers.RedisContainer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -22,6 +23,9 @@ public abstract class IntegrationTestBase {
     static final KafkaContainer KAFKA_CONTAINER = new KafkaContainer(
             DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
 
+    @Container
+    static RedisContainer REDIS_CONTAINER = new RedisContainer(DockerImageName.parse("redis:6.2.6-alpine")).withExposedPorts(6379);
+
     @DynamicPropertySource
     static void postgresProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", POSTGRES_CONTAINER::getJdbcUrl);
@@ -31,5 +35,11 @@ public abstract class IntegrationTestBase {
     static void kafkaProperties(DynamicPropertyRegistry registry) {
         System.out.println(KAFKA_CONTAINER.getBootstrapServers());
         registry.add("spring.data.kafka.bootstrap-servers", KAFKA_CONTAINER::getBootstrapServers);
+    }
+
+    @DynamicPropertySource
+    private static void redisProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.redis.host", REDIS_CONTAINER::getHost);
+        registry.add("spring.data.redis.port", () -> REDIS_CONTAINER.getMappedPort(6379).toString());
     }
 }
