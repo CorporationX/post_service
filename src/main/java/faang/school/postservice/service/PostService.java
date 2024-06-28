@@ -1,14 +1,17 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.event.PostKafkaEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifyStatus;
+import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.RedisPostRepository;
+import faang.school.postservice.repository.UserJdbcRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +35,8 @@ public class PostService {
     private final ModerationDictionary moderationDictionary;
     private final HashtagService hashtagService;
     private final RedisPostRepository redisPostRepository;
+    private final KafkaPostProducer kafkaPostProducer;
+    private final UserJdbcRepository userJdbcRepository;
 
     @Transactional
     public PostDto create(PostDto postDto) {
@@ -52,6 +57,8 @@ public class PostService {
         log.info("Post with ID: {} published.", postId);
         PostDto postDto = postMapper.toDto(post);
         redisPostRepository.save(postDto);
+        PostKafkaEvent postKafkaEvent = new PostKafkaEvent(post.getAuthorId(), userJdbcRepository.getSubscribers(post.getAuthorId()));
+        kafkaPostProducer.sendEvent(postKafkaEvent);
         return postDto;
     }
 

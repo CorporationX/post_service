@@ -28,6 +28,11 @@ spring:
           name: post_view_event_channel
       cache-ttl: 3600
       data-ttl: 86400
+    kafka:
+      bootstrap-servers: localhost:29092
+      topics:
+        posts:
+          name: posts
 
 server:
   port: 8081
