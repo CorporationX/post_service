@@ -55,6 +55,7 @@ dependencies {
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
     testImplementation("org.testcontainers:kafka")
     testImplementation("org.springframework.kafka:spring-kafka-test")
+    testImplementation("org.wiremock:wiremock-standalone:3.6.0")
 
     /**
      * Tests

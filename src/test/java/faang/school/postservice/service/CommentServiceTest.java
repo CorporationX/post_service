@@ -1,11 +1,13 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.RedisUserRepository;
@@ -39,24 +41,22 @@ public class CommentServiceTest {
 
     @Mock
     private CommentRepository commentRepository;
-
     @Mock
     private PostRepository postRepository;
-
     @Mock
     private CommentMapper commentMapper;
-
     @Mock
     private CommentValidator commentValidator;
-
     @Mock
     private PostService postService;
-
     @Mock
     private UserServiceClient userServiceClient;
-
     @Mock
     private RedisUserRepository redisUserRepository;
+    @Mock
+    private KafkaCommentProducer kafkaCommentProducer;
+    @Mock
+    private UserContext userContext;
 
     @InjectMocks
     private CommentService commentService;

@@ -23,12 +23,20 @@ public class KafkaConfig {
     @Value("${spring.data.kafka.topics.posts.name}")
     private String postsTopic;
 
+    @Value("${spring.data.kafka.topics.comments.name}")
+    private String commentsTopic;
+
     @Value("${spring.data.kafka.bootstrap-servers}")
     private String bootstrapAddress;
 
     @Bean
     public NewTopic posts() {
         return TopicBuilder.name(postsTopic).build();
+    }
+
+    @Bean
+    public NewTopic comments() {
+        return TopicBuilder.name(commentsTopic).build();
     }
 
     @Bean

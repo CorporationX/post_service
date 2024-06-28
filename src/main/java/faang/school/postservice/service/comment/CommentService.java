@@ -1,11 +1,14 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentKafkaEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.RedisUserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,15 +27,20 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final RedisUserRepository redisUserRepository;
     private final UserServiceClient userServiceClient;
+    private final KafkaCommentProducer kafkaCommentProducer;
+    private final UserContext userContext;
 
     @Transactional
     public CommentDto createComment(long postId, CommentDto commentDto) {
-        UserDto author = userServiceClient.getUser(commentDto.getAuthorId());
-        if (author == null) {
+        userContext.setUserId(commentDto.getAuthorId());
+        UserDto userDto = userServiceClient.getUser(commentDto.getAuthorId());
+        if (userDto == null) {
             throw new DataValidationException("Comment author does not exist.");
         }
         Comment commentEntity = commentMapper.toEntity(commentDto);
-        addToRedisAndSendEvents(author);
+
+        addToRedisAndSendEvents(userDto, commentDto);
+
         return commentMapper.toDto(commentRepository.save(commentEntity));
     }
 
@@ -57,8 +65,12 @@ public class CommentService {
         return commentMapper.toDtoList(commentByPostId);
     }
 
-    private void addToRedisAndSendEvents(UserDto userDto) {
+    private void addToRedisAndSendEvents(UserDto userDto, CommentDto commentDto) {
         log.info("Save user with ID: {} to Redis", userDto.getId());
         redisUserRepository.save(userDto);
+
+        CommentKafkaEvent commentKafkaEvent = new CommentKafkaEvent(userDto.getId(), commentDto.getPostId(), commentDto.getContent());
+        log.info("Send event with Comment ID: {} to Kafka", commentDto.getPostId());
+        kafkaCommentProducer.sendEvent(commentKafkaEvent);
     }
 }

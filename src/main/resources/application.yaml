@@ -33,6 +33,8 @@ spring:
       topics:
         posts:
           name: posts
+        comments:
+          name: comments
 
 server:
   port: 8081
