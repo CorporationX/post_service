@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@RedisHash(value = "post")
+@RedisHash(value = "Posts")
 public class PostDto implements Serializable {
 
     @NotNull(message = "")

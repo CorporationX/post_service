@@ -1,8 +1,11 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostKafkaEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
@@ -11,6 +14,7 @@ import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.RedisPostRepository;
+import faang.school.postservice.repository.RedisUserRepository;
 import faang.school.postservice.repository.UserJdbcRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +41,9 @@ public class PostService {
     private final RedisPostRepository redisPostRepository;
     private final KafkaPostProducer kafkaPostProducer;
     private final UserJdbcRepository userJdbcRepository;
+    private final UserServiceClient userServiceClient;
+    private final RedisUserRepository redisUserRepository;
+    private final UserContext userContext;
 
     @Transactional
     public PostDto create(PostDto postDto) {
@@ -56,10 +63,21 @@ public class PostService {
         post.setPublished(true);
         log.info("Post with ID: {} published.", postId);
         PostDto postDto = postMapper.toDto(post);
-        redisPostRepository.save(postDto);
-        PostKafkaEvent postKafkaEvent = new PostKafkaEvent(post.getAuthorId(), userJdbcRepository.getSubscribers(post.getAuthorId()));
-        kafkaPostProducer.sendEvent(postKafkaEvent);
+        createEvents(postDto);
         return postDto;
+    }
+
+    public void createEvents(PostDto postDto) {
+        Long authorId = postDto.getAuthorId();
+        userContext.setUserId(authorId);
+        UserDto userDto = userServiceClient.getUser(authorId);
+        log.info("Save user with ID: {} to Redis", authorId);
+        redisUserRepository.save(userDto);
+        log.info("Save post with ID: {} to Redis", postDto.getId());
+        redisPostRepository.save(postDto);
+        PostKafkaEvent postKafkaEvent = new PostKafkaEvent(authorId, userJdbcRepository.getSubscribers(authorId));
+        log.info("Send event with Post ID: {} to Kafka", postDto.getId());
+        kafkaPostProducer.sendEvent(postKafkaEvent);
     }
 
     @Transactional
@@ -167,9 +185,7 @@ public class PostService {
     private void viewEvents(long userId, List<PostDto> postsDtos) {
         postsDtos.stream()
                 .map(postMapper::toEntity)
-                .forEach(post -> {
-                    publishPostViewEvent(userId, post);
-                });
+                .forEach(post -> publishPostViewEvent(userId, post));
     }
 
     @Transactional
