@@ -44,6 +44,11 @@ public class PostService {
     private final UserContext userContext;
     private final PostModerator postModerator;
 
+    @Transactional(readOnly = true)
+    public long getUserIdByPostId(long postId) {
+        return postRepository.findByPostId(postId);
+    }
+
     @Transactional
     public PostDto createDraftPost(PostDto postDto, List<MultipartFile> files) {
         UserDto author = userServiceClient.getUser(postDto.getAuthorId());

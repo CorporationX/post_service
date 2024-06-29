@@ -224,4 +224,12 @@ public class PostServiceTest {
         verify(postModerator, times(1)).moderatePosts(posts);
     }
 
+    @Test
+    public void getUserIdByPostIdTest() {
+        when(postRepository.findByPostId(1L)).thenReturn(1L);
+
+        postService.getUserIdByPostId(1L);
+
+        verify(postRepository, times(1)).findByPostId(1L);
+    }
 }
