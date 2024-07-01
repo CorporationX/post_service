@@ -3,22 +3,25 @@ package faang.school.postservice.integration.service;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.integration.IntegrationTestBase;
-import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.LikeService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles(value = "test")
 @DirtiesContext
-public class CommentEventIntegrationTest extends IntegrationTestBase {
+public class LikeEventIntegrationTest extends IntegrationTestBase {
 
+    private static final Long USER_ID = 1L;
     private static final int USER_SERVICE_PORT = 9080;
 
     @Autowired
-    private CommentService commentService;
+    private LikeService likeService;
 
     private static WireMockServer wireMockServer;
 
@@ -51,12 +54,11 @@ public class CommentEventIntegrationTest extends IntegrationTestBase {
 
     @Test
     public void shouldSendKafkaEvent() {
-        CommentDto commentDto = CommentDto.builder()
-                .authorId(1L)
+        LikeDto likeDto = LikeDto.builder()
+                .userId(USER_ID)
                 .postId(POST_ID)
-                .content("Good comment")
                 .build();
 
-        commentService.createComment(POST_ID, commentDto);
+        likeService.addLikeToPost(POST_ID, likeDto);
     }
 }
