@@ -17,7 +17,7 @@ public class RedisCacheConfig {
     @Bean
     public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
         return (builder) -> builder
-                .withCacheConfiguration("PostInRedis",
-                        RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ttl)));
+                .withCacheConfiguration("PostInRedis", RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ttl)))
+                .withCacheConfiguration("AuthorInRedis", RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ttl)));
     }
 }

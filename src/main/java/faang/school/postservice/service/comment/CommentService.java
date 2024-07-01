@@ -5,13 +5,16 @@ import faang.school.postservice.event.comment.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.AuthorInRedis;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisAuthorRepository;
 import faang.school.postservice.validation.user.UserValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,15 +31,27 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserValidator userValidator;
     private final CommentEventPublisher commentEventPublisher;
+    private final RedisAuthorRepository redisAuthorRepository;
 
     @Transactional
     public CommentDto createComment(Long userId, Long postId, CommentDto commentDto) {
         userValidator.validateUserExist(userId);
         Comment comment = getComment(userId, postId, commentDto);
         Comment savedComment = commentRepository.save(comment);
+        sendAuthorCommentInCashRedis(commentDto);
         log.info("Saved comment {}", savedComment.getId());
         publishCommentEvent(savedComment);
         return commentMapper.toDto(savedComment);
+    }
+
+    @Cacheable("AuthorInRedis")
+    private void sendAuthorCommentInCashRedis(CommentDto commentDto) {
+        AuthorInRedis authorCommentInRedis = AuthorInRedis.builder()
+                .commentId(commentDto.getId())
+                .postId(commentDto.getPostId())
+                .build();
+        log.info("Send author comment in redis: {}", authorCommentInRedis);
+        redisAuthorRepository.save(authorCommentInRedis);
     }
 
     @Transactional
