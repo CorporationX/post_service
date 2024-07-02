@@ -26,6 +26,9 @@ public class KafkaConfig {
     @Value("${spring.data.kafka.topics.comments.name}")
     private String commentsTopic;
 
+    @Value("${spring.data.kafka.topics.likes.name}")
+    private String likesTopic;
+
     @Value("${spring.data.kafka.bootstrap-servers}")
     private String bootstrapAddress;
 
@@ -37,6 +40,10 @@ public class KafkaConfig {
     @Bean
     public NewTopic comments() {
         return TopicBuilder.name(commentsTopic).build();
+    }
+
+    @Bean NewTopic likes() {
+        return TopicBuilder.name(likesTopic).build();
     }
 
     @Bean
