@@ -10,6 +10,8 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifyStatus;
+import faang.school.postservice.model.redis.PostRedis;
+import faang.school.postservice.model.redis.UserRedis;
 import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
@@ -63,20 +65,20 @@ public class PostService {
         post.setPublished(true);
         log.info("Post with ID: {} published.", postId);
         PostDto postDto = postMapper.toDto(post);
-        addToRedisAndSendEvents(postDto);
+        addToRedisAndSendEvents(postMapper.toRedis(post));
         return postDto;
     }
 
-    private void addToRedisAndSendEvents(PostDto postDto) {
-        Long authorId = postDto.getAuthorId();
+    private void addToRedisAndSendEvents(PostRedis postRedis) {
+        Long authorId = postRedis.getAuthorId();
         userContext.setUserId(authorId);
         UserDto userDto = userServiceClient.getUser(authorId);
         log.info("Save user with ID: {} to Redis", authorId);
-        redisUserRepository.save(userDto);
-        log.info("Save post with ID: {} to Redis", postDto.getId());
-        redisPostRepository.save(postDto);
+        redisUserRepository.save(new UserRedis(userDto.getId(), userDto.getUsername()));
+        log.info("Save post with ID: {} to Redis", postRedis.getId());
+        redisPostRepository.save(postRedis);
         PostKafkaEvent postKafkaEvent = new PostKafkaEvent(authorId, userJdbcRepository.getSubscribers(authorId));
-        log.info("Send event with Post ID: {} to Kafka", postDto.getId());
+        log.info("Send event with Post ID: {} to Kafka", postRedis.getId());
         kafkaPostProducer.sendEvent(postKafkaEvent);
     }
 

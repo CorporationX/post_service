@@ -3,8 +3,10 @@ package faang.school.postservice.post;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.PostRedis;
 import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
@@ -33,6 +35,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
+
+    private static final long POST_ID = 1L;
+    private static final long AUTHOR_ID = 1L;
+
     @InjectMocks
     private PostService postService;
     @Mock
@@ -161,13 +167,22 @@ public class PostServiceTest {
     @Test
     @DisplayName("Publishing post")
     public void testPublishPost() {
+        PostRedis postRedis = PostRedis.builder()
+                .id(POST_ID)
+                .authorId(AUTHOR_ID)
+                .build();
+
+        UserDto userDto = new UserDto(AUTHOR_ID, "IVAN", "ivan@test.com");
+
         doNothing().when(postValidator).validatePublicationPost(post1);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto1);
+        when(postMapper.toRedis(any(Post.class))).thenReturn(postRedis);
+        when(userServiceClient.getUser(AUTHOR_ID)).thenReturn(userDto);
 
-        PostDto publishPost = postService.publish(1L);
+        PostDto publishPost = postService.publish(POST_ID);
 
-        verify(postRepository).findById(1L);
+        verify(postRepository).findById(POST_ID);
         verify(postValidator).validatePublicationPost(post1);
         assertTrue(post1.isPublished());
         verify(postMapper).toDto(post1);
