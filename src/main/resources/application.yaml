@@ -33,7 +33,9 @@ logging:
   level:
     root: info
 
+# properties for corrector API
 corrector:
+  request-delay: 1010 # millis
   grammar-bot:
     spellCheckerUri: https://grammarbot-neural.p.rapidapi.com/v1/check
     keyValue: eba230c503mshd6f5ee13879a0c2p1756d7jsn538dcde5de26

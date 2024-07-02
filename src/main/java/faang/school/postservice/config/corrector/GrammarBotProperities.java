@@ -2,12 +2,12 @@ package faang.school.postservice.config.corrector;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 @Data
-@Configuration
+@Component
 @ConfigurationProperties(prefix = "corrector.grammar-bot")
-public class GrammarBotConfig {
+public class GrammarBotProperities {
     private String spellCheckerUri;
     private String keyValue;
     private String keyHeader;

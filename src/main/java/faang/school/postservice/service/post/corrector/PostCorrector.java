@@ -1,11 +1,12 @@
 package faang.school.postservice.service.post.corrector;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.config.corrector.GrammarBotConfig;
+import faang.school.postservice.config.corrector.GrammarBotProperities;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,9 +24,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostCorrector {
     private static final String POST = "POST";
-    public static final long REQUEST_DELAY = 1010;
-    public static final String LANG = "en";
-    private final GrammarBotConfig correctorConfig;
+    private static final String LANG = "en";
+    @Value("${corrector.request-delay}")
+    private long requestDelay;
+    private final GrammarBotProperities correctorProperties;
     private final ObjectMapper objectMapper;
     private final PostService postService;
 
@@ -56,13 +58,13 @@ public class PostCorrector {
     @Retryable
     private CorrectorResponse getCorrectorResponse(Content contentToBeCorrected) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(correctorConfig.getSpellCheckerUri()))
-                .header(correctorConfig.getKeyHeader(), correctorConfig.getKeyValue())
-                .header(correctorConfig.getContentTypeHeader(), correctorConfig.getContentTypeValue())
+                .uri(URI.create(correctorProperties.getSpellCheckerUri()))
+                .header(correctorProperties.getKeyHeader(), correctorProperties.getKeyValue())
+                .header(correctorProperties.getContentTypeHeader(), correctorProperties.getContentTypeValue())
                 .method(POST, HttpRequest.BodyPublishers.ofString(contentToBeCorrected.toString()))
                 .build();
 
-        Thread.sleep(REQUEST_DELAY);
+        Thread.sleep(requestDelay);
         HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
         return objectMapper.readValue(response.body(), CorrectorResponse.class);
     }
