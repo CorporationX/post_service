@@ -1,6 +1,7 @@
 package faang.school.postservice.config.redis;
 
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -13,27 +14,24 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@Setter
-@ConfigurationProperties(prefix = "spring.data.redis")
+@RequiredArgsConstructor
 public class RedisConfig {
-    private int port;
-    private String host;
-    private Channels channels;
+    private final RedisProperties redisProperties;
 
 
     @Bean
     public ChannelTopic likeTopic() {
-        return new ChannelTopic(channels.getLikesChannel());
+        return new ChannelTopic(redisProperties.getChannels().getLikesChannel());
     }
 
     @Bean
     public ChannelTopic commentTopic() {
-        return new ChannelTopic(channels.getCommentsChannel());
+        return new ChannelTopic(redisProperties.getChannels().getCommentsChannel());
     }
 
     @Bean
     public RedisConnectionFactory jedisConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
         return new JedisConnectionFactory(config);
     }
 
@@ -45,15 +43,5 @@ public class RedisConfig {
         redisTemplate.setValueSerializer(new StringRedisSerializer());
 
         return redisTemplate;
-    }
-
-    /**
-     * В этом классе хранятся названия всех топиков (каналов) редиса,
-     * получаемые из application.yaml по пути spring.data.redis.channels
-     */
-    @Data
-    private static class Channels {
-        private String likesChannel;
-        private String commentsChannel;
     }
 }
