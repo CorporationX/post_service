@@ -46,7 +46,7 @@ corrector:
 post:
   corrector:
     scheduler:
-      cron: "0 0 12 * * *" # every day at 12:00 AM
+      cron: "0 43 23 * * *" # every day at 12:00 AM
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute

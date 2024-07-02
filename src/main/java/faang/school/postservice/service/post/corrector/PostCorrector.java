@@ -7,16 +7,16 @@ import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.List;
 
 @Slf4j
@@ -57,15 +57,17 @@ public class PostCorrector {
 
     @Retryable
     private CorrectorResponse getCorrectorResponse(Content contentToBeCorrected) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(correctorProperties.getSpellCheckerUri()))
-                .header(correctorProperties.getKeyHeader(), correctorProperties.getKeyValue())
-                .header(correctorProperties.getContentTypeHeader(), correctorProperties.getContentTypeValue())
-                .method(POST, HttpRequest.BodyPublishers.ofString(contentToBeCorrected.toString()))
-                .build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(correctorProperties.getKeyHeader(), correctorProperties.getKeyValue());
+        headers.set(correctorProperties.getContentTypeHeader(), correctorProperties.getContentTypeValue());
+
+        HttpEntity<String> request = new HttpEntity<>(contentToBeCorrected.toString(), headers);
 
         Thread.sleep(requestDelay);
-        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-        return objectMapper.readValue(response.body(), CorrectorResponse.class);
+
+        ResponseEntity<String> response = new RestTemplate().postForEntity(correctorProperties.getSpellCheckerUri(),
+                request,
+                String.class);
+        return objectMapper.readValue(response.getBody(), CorrectorResponse.class);
     }
 }
