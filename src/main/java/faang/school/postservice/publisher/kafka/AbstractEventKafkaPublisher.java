@@ -24,6 +24,7 @@ public abstract class AbstractEventKafkaPublisher<T> implements MessagePublisher
     private final ObjectMapper objectMapper;
     private final NewTopic topic;
 
+    @Retryable(retryFor = FeignException.class, maxAttempts = 5)
     public void publish(T event) {
         try {
             kafkaTemplate.send(topic.name(), objectMapper.writeValueAsString(event));
@@ -32,27 +33,27 @@ public abstract class AbstractEventKafkaPublisher<T> implements MessagePublisher
             throw new SerializationException(e.getMessage());
         }
     }
-    private final UserServiceClient userServiceClient;
-
-    public PostKafkaPublisher(KafkaTemplate<String, Object> kafkaTemplate, UserServiceClient userServiceClient) {
-        super(kafkaTemplate);
-        this.userServiceClient = userServiceClient;
-    }
-
-    @Retryable(retryFor = FeignException.class, maxAttempts = 5)
-    public void publish(long postId, long ownerId, LocalDateTime publishedAt, KafkaKey kafkaKey) {
-        List<Long> followers = userServiceClient.getFollowerIdsById(ownerId);
-
-        ListUtils.partition(followers, batchSize).forEach(followersPartition -> {
-                    PostEventDto postEventDto = PostEventDto.builder()
-                            .postId(postId)
-                            .authorId(ownerId)
-                            .publishedAt(publishedAt)
-                            .authorSubscriberIds(new HashSet<>(followersPartition))
-                            .build();
-
-                    send(postTopic, kafkaKey, postEventDto);
-                }
-        );
-    }
+//    private final UserServiceClient userServiceClient;
+//
+//    public PostKafkaPublisher(KafkaTemplate<String, Object> kafkaTemplate, UserServiceClient userServiceClient) {
+//        super(kafkaTemplate);
+//        this.userServiceClient = userServiceClient;
+//    }
+//
+//    @Retryable(retryFor = FeignException.class, maxAttempts = 5)
+//    public void publish(long postId, long ownerId, LocalDateTime publishedAt, KafkaKey kafkaKey) {
+//        List<Long> followers = userServiceClient.getFollowerIdsById(ownerId);
+//
+//        ListUtils.partition(followers, batchSize).forEach(followersPartition -> {
+//                    PostEventDto postEventDto = PostEventDto.builder()
+//                            .postId(postId)
+//                            .authorId(ownerId)
+//                            .publishedAt(publishedAt)
+//                            .authorSubscriberIds(new HashSet<>(followersPartition))
+//                            .build();
+//
+//                    send(postTopic, kafkaKey, postEventDto);
+//                }
+//        );
+//    }
 }
