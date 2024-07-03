@@ -6,6 +6,7 @@ import faang.school.postservice.publisher.kafka.post.PostEventPublisher;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
@@ -18,15 +19,18 @@ public class KafkaPostService {
     private final UserServiceClient userServiceClient;
     private final PostEventPublisher postEventPublisher;
 
+    @Value("${spring.data.kafka.batch-followers}")
+    private int batchSize;
+
     @Retryable(retryFor = FeignException.class, maxAttempts = 5)
     public void sendPostToKafka(Long id) {
         List<Long> followers = userServiceClient.getFollowerIdsById(id);
-        ListUtils.partition(followers, batchSize).forEach(followersPartition
-
+        ListUtils.partition(followers, batchSize).forEach(followersPartition -> {
+                    PostEventDto postEventDto = PostEventDto.builder()
+                            .authorSubscriberIds(followersPartition)
+                            .build();
+                    postEventPublisher.publish(postEventDto);
+                }
         );
-        PostEventDto postEventDto = PostEventDto.builder()
-                .authorSubscriberIds(followers)
-                .build();
-        postEventPublisher.publish(postEventDto);
     }
 }

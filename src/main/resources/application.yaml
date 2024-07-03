@@ -35,6 +35,7 @@ spring:
           name: post_view
       ttl: 60000
     kafka:
+      batch-followers: 100
       idempotence: true
       acks: all
       retries: 10
