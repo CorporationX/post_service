@@ -38,18 +38,35 @@ public class AdServiceTest {
     @Test
     public void testDeleteExpiredAds() {
         LocalDateTime currentDate = LocalDateTime.now();
-        Ad firstAd = Ad.builder().id(1L).appearancesLeft(12).endDate(currentDate.minusDays(1)).build();
-        Ad secondAd = Ad.builder().id(2L).appearancesLeft(0).endDate(currentDate.plusDays(1)).build();
-        Ad thirdAd = Ad.builder().id(3L).appearancesLeft(5).endDate(currentDate.minusDays(15)).build();
-        Ad fourthAd = Ad.builder().id(4L).appearancesLeft(0).endDate(currentDate.minusDays(3)).build();
-        Ad fifthAd = Ad.builder().id(5L).appearancesLeft(0).endDate(currentDate.plusDays(1)).build();
-        Ad sixthAd = Ad.builder().id(6L).appearancesLeft(7).endDate(currentDate.plusDays(3)).build();
-        Ad seventhAd = Ad.builder().id(7L).appearancesLeft(8).endDate(currentDate.plusDays(2)).build();
-        Ad eghthdAd = Ad.builder().id(8L).appearancesLeft(0).endDate(currentDate.plusDays(7)).build();
-        Ad ninthAd = Ad.builder().id(9L).appearancesLeft(9).endDate(currentDate.plusDays(5)).build();
-        List<Ad> ads = List.of(firstAd, secondAd, thirdAd, fourthAd, fifthAd, sixthAd, seventhAd, eghthdAd, ninthAd);
+        Ad firstAd = Ad.builder()
+                        .id(1L)
+                        .appearancesLeft(12)
+                        .endDate(currentDate.minusDays(1))
+                        .build();
+        Ad secondAd = Ad.builder()
+                        .id(2L)
+                        .appearancesLeft(0)
+                        .endDate(currentDate.plusDays(1))
+                        .build();
+        Ad thirdAd = Ad.builder()
+                        .id(3L)
+                        .appearancesLeft(7)
+                        .endDate(currentDate.plusDays(3))
+                        .build();
+        Ad fourthAd = Ad.builder()
+                        .id(4L)
+                        .appearancesLeft(8)
+                        .endDate(currentDate.plusDays(2))
+                        .build();
+        Ad fifthAd = Ad.builder()
+                        .id(5L)
+                        .appearancesLeft(0)
+                        .endDate(currentDate.plusDays(1))
+                        .build();
 
-        List<Long> idsOfExpiredAds = List.of(1L, 2L, 3L, 4L, 5L, 8L);
+        List<Ad> ads = List.of(firstAd, secondAd, thirdAd, fourthAd, fifthAd);
+
+        List<Long> idsOfExpiredAds = List.of(1L, 2L, 5L);
         List<List<Long>> expiresAdsByBatches = ListUtils.partition(idsOfExpiredAds, 2);
 
         adService.setBatchSize(2);

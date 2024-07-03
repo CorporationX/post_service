@@ -33,8 +33,9 @@ public class AdService {
     public void deleteExpiredAds() {
         List<Long> idsOfExpiredAds = filteringExpiredAds(findAll());
         if (!idsOfExpiredAds.isEmpty()) {
-            List<List<Long>> expiresAdsByBatches = ListUtils.partition(idsOfExpiredAds, batchSize);
-            expiresAdsByBatches.parallelStream().forEach(this::deleteByIds);
+            ListUtils.partition(idsOfExpiredAds, batchSize)
+                    .parallelStream()
+                    .forEach(this::deleteByIds);
         }
     }
 
