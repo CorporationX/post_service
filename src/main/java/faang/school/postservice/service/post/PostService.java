@@ -10,6 +10,7 @@ import faang.school.postservice.model.resource.Resource;
 import faang.school.postservice.publisher.redis.postview.PostViewEventRedisPublisher;
 import faang.school.postservice.publisher.redis.userban.UserBanRedisPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.kafka.KafkaPostService;
 import faang.school.postservice.service.redis.RedisCachePostService;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -42,6 +43,7 @@ public class PostService {
     private final UserBanRedisPublisher userBanPublisher;
     private final PostViewEventRedisPublisher postViewEventPublisher;
     private final RedisCachePostService redisCachePostService;
+    private final KafkaPostService kafkaPostService;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -82,6 +84,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         redisCachePostService.sendPostInCacheRedis(post);
+        kafkaPostService.sendPostToKafka(post.getAuthorId());
         return postMapper.toDto(postRepository.save(post));
     }
 

@@ -8,6 +8,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.redis.postview.PostViewEventRedisPublisher;
 import faang.school.postservice.publisher.redis.userban.UserBanRedisPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.kafka.KafkaPostService;
 import faang.school.postservice.service.redis.RedisCachePostService;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.post.PostValidator;
@@ -62,6 +63,8 @@ class PostServiceTest {
     private PostService postService;
     @Mock
     private RedisCachePostService redisCachePostService;
+    @Mock
+    private KafkaPostService kafkaPostService;
 
     private Post firstPost;
     private Post secondPost;
@@ -102,7 +105,7 @@ class PostServiceTest {
                 .build();
         threadPool = Executors.newFixedThreadPool(10);
         postService = new PostService(postRepository, postValidator, postMapper, resourceService, threadPool,
-                userBanPublisher, postViewEventPublisher, redisCachePostService);
+                userBanPublisher, postViewEventPublisher, redisCachePostService, kafkaPostService);
     }
 
     @Test
