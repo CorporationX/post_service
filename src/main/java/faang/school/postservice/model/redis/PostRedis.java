@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -21,6 +22,7 @@ public class PostRedis {
     private String content;
     private Long authorId;
     private Long projectId;
+    private List<LikeRedis> likes;
     private LocalDateTime publishedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
