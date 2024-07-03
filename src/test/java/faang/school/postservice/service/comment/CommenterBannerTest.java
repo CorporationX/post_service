@@ -1,6 +1,6 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.redis.event.UserEvent;
+import faang.school.postservice.dto.redis.event.UserEventDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.publisher.redis.userban.UserBanRedisPublisher;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +45,7 @@ class CommenterBannerTest {
         commenterBanner.sendUsersToBan();
 
         verify(commentService, times(1)).findCommentsByVerified(anyBoolean());
-        verify(userBanPublisher, times(1)).publish(new UserEvent(userId));
+        verify(userBanPublisher, times(1)).publish(new UserEventDto(userId));
     }
 
     private List<Comment> getComments(Long userId) {

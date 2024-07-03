@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostViewEvent {
+public class PostViewEventDto {
     private long postId;
     private long authorId;
     private long userId;

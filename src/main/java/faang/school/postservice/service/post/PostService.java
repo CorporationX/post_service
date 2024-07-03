@@ -1,7 +1,7 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.dto.redis.event.PostViewEvent;
-import faang.school.postservice.dto.redis.event.UserEvent;
+import faang.school.postservice.dto.redis.event.PostViewEventDto;
+import faang.school.postservice.dto.redis.event.UserEventDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.post.PostMapper;
@@ -125,7 +125,7 @@ public class PostService {
                 .entrySet().stream()
                 .filter(entry -> entry.getValue() > postsCountToBan)
                 .map(Map.Entry::getKey)
-                .forEach(userId -> userBanPublisher.publish(new UserEvent(userId)));
+                .forEach(userId -> userBanPublisher.publish(new UserEventDto(userId)));
     }
 
     public void delete(long postId) {
@@ -182,7 +182,7 @@ public class PostService {
     }
 
     private void publishPostViewEvent(long userId, Post post) {
-        PostViewEvent event = PostViewEvent.builder()
+        PostViewEventDto event = PostViewEventDto.builder()
                 .postId(post.getId())
                 .userId(userId)
                 .build();

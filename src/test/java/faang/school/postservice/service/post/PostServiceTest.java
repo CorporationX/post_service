@@ -1,7 +1,7 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.dto.redis.event.PostViewEvent;
-import faang.school.postservice.dto.redis.event.UserEvent;
+import faang.school.postservice.dto.redis.event.PostViewEventDto;
+import faang.school.postservice.dto.redis.event.UserEventDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
@@ -67,7 +67,7 @@ class PostServiceTest {
     private Post secondPost;
     private Post thirdPost;
     private PostDto firstPostDto;
-    private UserEvent userBanMessage;
+    private UserEventDto userBanMessage;
 
     @BeforeEach
     void setUp() {
@@ -97,7 +97,7 @@ class PostServiceTest {
                 .content(firstPost.getContent())
                 .authorId(firstPost.getAuthorId())
                 .build();
-        userBanMessage = UserEvent.builder()
+        userBanMessage = UserEventDto.builder()
                 .userId(firstPost.getAuthorId())
                 .build();
         threadPool = Executors.newFixedThreadPool(10);
@@ -130,7 +130,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postRepository, times(1)).findById(firstPost.getId()),
                 () -> verify(postMapper, times(1)).toDto(firstPost),
-                () -> verify(postViewEventPublisher, never()).publish(any(PostViewEvent.class)),
+                () -> verify(postViewEventPublisher, never()).publish(any(PostViewEventDto.class)),
                 () -> assertEquals(firstPostDto, returned)
         );
     }
@@ -276,7 +276,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postRepository, times(1)).findByAuthorId(1L),
                 () -> verify(postMapper, times(1)).toDto(List.of(secondPost, firstPost)),
-                () -> verify(postViewEventPublisher, times(2)).publish(any(PostViewEvent.class)),
+                () -> verify(postViewEventPublisher, times(2)).publish(any(PostViewEventDto.class)),
                 () -> assertEquals(2, returned.size()),
                 () -> assertEquals(postMapper.toDto(secondPost), returned.get(0))
         );
@@ -295,7 +295,7 @@ class PostServiceTest {
         assertAll(
                 () -> verify(postRepository, times(1)).findByProjectId(2L),
                 () -> verify(postMapper, times(1)).toDto(List.of(secondPost, firstPost)),
-                () -> verify(postViewEventPublisher, times(2)).publish(any(PostViewEvent.class)),
+                () -> verify(postViewEventPublisher, times(2)).publish(any(PostViewEventDto.class)),
                 () -> assertEquals(2, returned.size()),
                 () -> assertEquals(postMapper.toDto(firstPost), returned.get(1))
         );

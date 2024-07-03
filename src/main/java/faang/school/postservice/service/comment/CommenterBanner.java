@@ -1,6 +1,6 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.redis.event.UserEvent;
+import faang.school.postservice.dto.redis.event.UserEventDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.publisher.redis.userban.UserBanRedisPublisher;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class CommenterBanner {
     }
 
     private void send(Long userId) {
-        userBanPublisher.publish(new UserEvent(userId));
+        userBanPublisher.publish(new UserEventDto(userId));
         log.info("User {} has published to topic", userId);
     }
 }

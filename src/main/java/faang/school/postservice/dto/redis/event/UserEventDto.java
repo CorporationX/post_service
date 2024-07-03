@@ -13,7 +13,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-public class UserEvent implements Serializable {
+public class UserEventDto implements Serializable {
 
     private Long userId;
 }
