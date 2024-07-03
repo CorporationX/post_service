@@ -25,4 +25,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.verifiedDate IS NULL OR p.verifyStatus = 'UNCHECKED'")
     List<Post> findNotVerifiedPosts();
+
+    @Query("SELECT p.id FROM Post p WHERE p.authorId = :authorId ORDER BY p.id DESC")
+    List<Long> findPostIdsByAuthorIdOrderByIdDesc(long authorId);
 }

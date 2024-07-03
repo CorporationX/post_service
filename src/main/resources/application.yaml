@@ -26,10 +26,16 @@ spring:
           name: calculations_channel
         post_view_event_channel:
           name: post_view_event_channel
+      topic:
+        feed:
+          name: Feed
       cache-ttl: 3600
       data-ttl: 86400
+      news-feed-post-ids-max: 3
     kafka:
       bootstrap-servers: localhost:29092
+      consumer:
+        group-id: post-1
       topics:
         posts:
           name: posts

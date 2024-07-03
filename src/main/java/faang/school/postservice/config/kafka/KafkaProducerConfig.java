@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class KafkaConfig {
+public class KafkaProducerConfig {
 
     @Value("${spring.data.kafka.topics.posts.name}")
     private String postsTopic;

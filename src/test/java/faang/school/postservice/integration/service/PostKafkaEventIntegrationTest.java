@@ -19,5 +19,11 @@ public class PostKafkaEventIntegrationTest extends IntegrationTestBase {
     public void shouldSendKafkaEvent() {
         PostKafkaEvent event = new PostKafkaEvent(1L, List.of(2L, 3L, 4L, 5L));
         kafkaPostProducer.sendEvent(event);
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

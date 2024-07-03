@@ -8,6 +8,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.redis.UserRedis;
 import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.RedisUserRepository;
@@ -67,7 +68,7 @@ public class CommentService {
 
     private void addToRedisAndSendEvents(UserDto userDto, CommentDto commentDto) {
         log.info("Save user with ID: {} to Redis", userDto.getId());
-        redisUserRepository.save(userDto);
+        redisUserRepository.save(new UserRedis(userDto.getId(), userDto.getUsername()));
 
         CommentKafkaEvent commentKafkaEvent = new CommentKafkaEvent(userDto.getId(), commentDto.getPostId(), commentDto.getContent());
         log.info("Send event with Comment ID: {} to Kafka", commentDto.getPostId());
