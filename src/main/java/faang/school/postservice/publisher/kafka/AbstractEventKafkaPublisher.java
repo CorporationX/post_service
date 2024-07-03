@@ -24,7 +24,6 @@ public abstract class AbstractEventKafkaPublisher<T> implements MessagePublisher
     private final ObjectMapper objectMapper;
     private final NewTopic topic;
 
-    @Retryable(retryFor = FeignException.class, maxAttempts = 5)
     public void publish(T event) {
         try {
             kafkaTemplate.send(topic.name(), objectMapper.writeValueAsString(event));
