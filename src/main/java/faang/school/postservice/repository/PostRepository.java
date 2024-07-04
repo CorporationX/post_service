@@ -39,4 +39,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.isVerify = 'UNCHECKED'")
     List<Post> findAllUncheckedPosts();
+
+    @Query("SELECT p FROM Post p WHERE p.isVerify = 'NOT_VERIFIED'")
+    List<Post> findAllNotVerifiedPosts();
 }

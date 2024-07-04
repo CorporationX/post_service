@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -141,4 +142,14 @@ public class PostServiceImpl implements PostService {
             postRepository.save(post);
         }
     }
+
+    @Override
+    public List<Long> findAllAuthorIdsWithNotVerifiedPosts() {
+        return postRepository.findAllNotVerifiedPosts().stream()
+                .map(Post::getAuthorId)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+
 }
