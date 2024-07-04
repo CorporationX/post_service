@@ -23,7 +23,6 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class PostCorrector {
-    private static final String POST = "POST";
     private static final String LANG = "en";
     @Value("${corrector.request-delay}")
     private long requestDelay;
