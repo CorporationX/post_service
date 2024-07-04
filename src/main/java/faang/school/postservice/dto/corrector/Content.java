@@ -1,4 +1,4 @@
-package faang.school.postservice.service.post.corrector;
+package faang.school.postservice.dto.corrector;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

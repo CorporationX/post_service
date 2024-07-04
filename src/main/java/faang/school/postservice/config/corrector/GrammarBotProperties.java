@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @ConfigurationProperties(prefix = "corrector.grammar-bot")
-public class GrammarBotProperities {
+public class GrammarBotProperties {
     private String spellCheckerUri;
     private String keyValue;
     private String keyHeader;

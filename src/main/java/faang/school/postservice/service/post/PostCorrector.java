@@ -1,9 +1,10 @@
-package faang.school.postservice.service.post.corrector;
+package faang.school.postservice.service.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.config.corrector.GrammarBotProperities;
+import faang.school.postservice.config.corrector.GrammarBotProperties;
+import faang.school.postservice.dto.corrector.Content;
+import faang.school.postservice.dto.corrector.CorrectorResponse;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,9 +27,10 @@ public class PostCorrector {
     private static final String LANG = "en";
     @Value("${corrector.request-delay}")
     private long requestDelay;
-    private final GrammarBotProperities correctorProperties;
+    private final GrammarBotProperties correctorProperties;
     private final ObjectMapper objectMapper;
     private final PostService postService;
+    private final RestTemplate restTemplate;
 
 
     @Scheduled(cron = "${post.corrector.scheduler.cron}")
@@ -38,6 +40,22 @@ public class PostCorrector {
         postsToBeCorrected.forEach(post -> post.setContent(correctPostContent(post.getContent())));
 
         postService.updatePosts(postsToBeCorrected);
+    }
+
+    @Retryable
+    public CorrectorResponse getCorrectorResponse(Content contentToBeCorrected) throws IOException, InterruptedException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(correctorProperties.getKeyHeader(), correctorProperties.getKeyValue());
+        headers.set(correctorProperties.getContentTypeHeader(), correctorProperties.getContentTypeValue());
+
+        HttpEntity<String> request = new HttpEntity<>(contentToBeCorrected.toString(), headers);
+
+        Thread.sleep(requestDelay);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(correctorProperties.getSpellCheckerUri(),
+                request,
+                String.class);
+        return objectMapper.readValue(response.getBody(), CorrectorResponse.class);
     }
 
     private String correctPostContent(String postContent) {
@@ -52,21 +70,5 @@ public class PostCorrector {
             log.error("Spell checking request failed: {}", e.getMessage());
         }
         return contentToBeCorrected.getText();
-    }
-
-    @Retryable
-    private CorrectorResponse getCorrectorResponse(Content contentToBeCorrected) throws IOException, InterruptedException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(correctorProperties.getKeyHeader(), correctorProperties.getKeyValue());
-        headers.set(correctorProperties.getContentTypeHeader(), correctorProperties.getContentTypeValue());
-
-        HttpEntity<String> request = new HttpEntity<>(contentToBeCorrected.toString(), headers);
-
-        Thread.sleep(requestDelay);
-
-        ResponseEntity<String> response = new RestTemplate().postForEntity(correctorProperties.getSpellCheckerUri(),
-                request,
-                String.class);
-        return objectMapper.readValue(response.getBody(), CorrectorResponse.class);
     }
 }

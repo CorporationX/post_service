@@ -1,4 +1,4 @@
-package faang.school.postservice.service.post.corrector;
+package faang.school.postservice.dto.corrector;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
