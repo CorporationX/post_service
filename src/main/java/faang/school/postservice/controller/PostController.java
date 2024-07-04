@@ -81,5 +81,10 @@ public class PostController {
     public List<PostDto> getProjectPosts(@PathVariable Long projectId) {
         return postService.getProjectPosts(projectId);
     }
+
+    @GetMapping
+    public long getUserIdByPostId(@RequestParam long id) {
+        return postService.getUserIdByPostId(id);
+    }
 }
 
