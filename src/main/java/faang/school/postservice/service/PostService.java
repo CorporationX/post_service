@@ -7,6 +7,7 @@ import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifyStatus;
@@ -46,6 +47,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final RedisUserRepository redisUserRepository;
     private final UserContext userContext;
+    private final LikeMapper likeMapper;
 
     @Transactional
     public PostDto create(PostDto postDto) {

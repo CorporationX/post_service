@@ -30,15 +30,16 @@ public class KafkaPostConsumer {
     public void listenPostEvent(PostKafkaEvent event, Acknowledgment acknowledgment) {
         log.info("Post event received. Author ID: {}", event.getAuthorId());
         List<Long> authorPostIds = postRepository.findPostIdsByAuthorIdOrderByIdDesc(event.getAuthorId());
+
+        TreeSet<Long> ids = new TreeSet<>(Comparator.reverseOrder());
+        ids.addAll(authorPostIds.subList(0, authorPostIds.size() > feedRedisPostIdsMax ? feedRedisPostIdsMax : authorPostIds.size()));
         for (Long subscriberId : event.getSubscribers()) {
             FeedRedis foundNewsFeed = redisFeedRepository.getById(subscriberId);
             if (foundNewsFeed != null) {
                 log.info("Add new post ids for User ID: {} news feed", subscriberId);
-                foundNewsFeed.setPostIds(postIdsUpdate(foundNewsFeed.getPostIds(), authorPostIds));
+                postIdsUpdate(foundNewsFeed.getPostIds(), authorPostIds);
             } else {
                 log.info("For user ID: {} create new Feed in Redis", subscriberId);
-                TreeSet<Long> ids = new TreeSet<>(Comparator.reverseOrder());
-                ids.addAll(authorPostIds.subList(0, authorPostIds.size() > feedRedisPostIdsMax ? feedRedisPostIdsMax : authorPostIds.size()));
                 foundNewsFeed = FeedRedis.builder()
                         .id(subscriberId)
                         .postIds(ids)
@@ -49,11 +50,10 @@ public class KafkaPostConsumer {
         acknowledgment.acknowledge();
     }
 
-    private TreeSet<Long> postIdsUpdate(TreeSet<Long> currentFeedIds, List<Long> authorPostIds) {
+    private void postIdsUpdate(TreeSet<Long> currentFeedIds, List<Long> authorPostIds) {
         currentFeedIds.addAll(authorPostIds);
         while (currentFeedIds.size() > feedRedisPostIdsMax) {
             currentFeedIds.remove(currentFeedIds.last());
         }
-        return currentFeedIds;
     }
 }
