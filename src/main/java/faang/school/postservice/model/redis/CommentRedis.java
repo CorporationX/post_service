@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.event;
+package faang.school.postservice.model.redis;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,15 +7,20 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Data
 @Builder
-public class CommentKafkaEvent {
+public class CommentRedis implements Comparable<CommentRedis> {
 
     private Long id;
-    private Long postId;
     private Long authorId;
+    private Long postId;
     private String content;
     private LocalDateTime updatedAt;
+
+    @Override
+    public int compareTo(CommentRedis object) {
+        return object.getUpdatedAt().compareTo(updatedAt);
+    }
 }

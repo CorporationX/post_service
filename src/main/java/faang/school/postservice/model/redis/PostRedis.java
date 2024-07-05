@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.TreeSet;
 
 @Data
 @AllArgsConstructor
@@ -23,6 +24,7 @@ public class PostRedis {
     private Long authorId;
     private Long projectId;
     private List<LikeRedis> likes;
+    private TreeSet<CommentRedis> comments;
     private LocalDateTime publishedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

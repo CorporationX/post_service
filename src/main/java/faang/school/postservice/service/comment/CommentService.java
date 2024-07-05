@@ -39,10 +39,10 @@ public class CommentService {
             throw new DataValidationException("Comment author does not exist.");
         }
         Comment commentEntity = commentMapper.toEntity(commentDto);
+        CommentDto savedCommentDto = commentMapper.toDto(commentRepository.save(commentEntity));
 
-        addToRedisAndSendEvents(userDto, commentDto);
-
-        return commentMapper.toDto(commentRepository.save(commentEntity));
+        addToRedisAndSendEvents(userDto, savedCommentDto);
+        return savedCommentDto;
     }
 
     @Transactional
@@ -70,7 +70,7 @@ public class CommentService {
         log.info("Save user with ID: {} to Redis", userDto.getId());
         redisUserRepository.save(new UserRedis(userDto.getId(), userDto.getUsername()));
 
-        CommentKafkaEvent commentKafkaEvent = new CommentKafkaEvent(userDto.getId(), commentDto.getPostId(), commentDto.getContent());
+        CommentKafkaEvent commentKafkaEvent = commentMapper.fromDtoToKafkaEvent(commentDto);
         log.info("Send event with Comment ID: {} to Kafka", commentDto.getPostId());
         kafkaCommentProducer.sendEvent(commentKafkaEvent);
     }
