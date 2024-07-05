@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.PostRedis;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
@@ -16,5 +17,6 @@ public interface PostMapper {
 
     List<PostDto> toListDto(List<Post> posts);
 
+    @Mapping(target = "comments", ignore = true)
     PostRedis toRedis(Post post);
 }

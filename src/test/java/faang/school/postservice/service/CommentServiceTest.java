@@ -63,7 +63,9 @@ public class CommentServiceTest {
 
     private Post post;
     private Comment commentEntity;
+    private Comment savedCommentEntity;
     private CommentDto commentDto;
+    private CommentDto savedCommentDto;
     private UserDto userDto;
 
     @BeforeEach
@@ -72,12 +74,20 @@ public class CommentServiceTest {
                 .id(POST_ID)
                 .build();
         commentEntity = Comment.builder()
+                .authorId(AUTHOR_ID)
+                .build();
+        savedCommentEntity = Comment.builder()
                 .id(COMMENT_ID)
                 .authorId(AUTHOR_ID)
                 .build();
         commentDto = CommentDto.builder()
+                .authorId(AUTHOR_ID)
+                .postId(POST_ID)
+                .build();
+        savedCommentDto = CommentDto.builder()
                 .id(COMMENT_ID)
                 .authorId(AUTHOR_ID)
+                .postId(POST_ID)
                 .build();
         userDto = new UserDto(AUTHOR_ID, "Ivan", "ivan@test.com");
     }
@@ -86,22 +96,27 @@ public class CommentServiceTest {
     public void testCommentIsCreated() {
         when(commentMapper.toEntity(commentDto)).thenReturn(commentEntity);
         when(userServiceClient.getUser(AUTHOR_ID)).thenReturn(userDto);
+        when(commentRepository.save(commentEntity)).thenReturn(savedCommentEntity);
+        when(commentMapper.toDto(savedCommentEntity)).thenReturn(savedCommentDto);
 
         commentService.createComment(POST_ID, commentDto);
+
         verify(commentRepository, Mockito.times(1)).save(commentEntity);
     }
 
     @Test
     public void testCommentIsUpdated() {
-        commentDto.setContent(COMMENT_CONTENT);
-        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentEntity));
-        when(commentRepository.save(commentEntity)).thenReturn(commentEntity);
-        when(commentMapper.toDto(commentEntity)).thenReturn(commentDto);
+        commentDto.setId(COMMENT_ID);
+        savedCommentEntity.setContent(COMMENT_CONTENT);
+        savedCommentDto.setContent(COMMENT_CONTENT);
+
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(savedCommentEntity));
+        when(commentRepository.save(savedCommentEntity)).thenReturn(savedCommentEntity);
+        when(commentMapper.toDto(savedCommentEntity)).thenReturn(savedCommentDto);
 
         CommentDto actualResult = commentService.updateComment(commentDto);
 
         assertEquals(COMMENT_CONTENT, actualResult.getContent());
-        verify(commentRepository, Mockito.times(1)).save(commentEntity);
     }
 
     @Test
