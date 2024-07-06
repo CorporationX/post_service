@@ -40,7 +40,6 @@ public class CommentService {
 
     public CommentDto createComment(long id, CommentDto commentDto) {
         checkCommentDto(commentDto);
-
         Comment comment = commentMapper.ToEntity(commentDto);
         comment.setPost(postMapper.toEntity(postService.getPostById(id)));
 
@@ -104,6 +103,7 @@ public class CommentService {
                 .postId(comment.getPost().getId())
                 .commentId(comment.getId())
                 .commentText(comment.getContent())
+                .createdAt(comment.getCreatedAt())
                 .build();
 
         commentEventPublisher.publish(commentEventDto);
