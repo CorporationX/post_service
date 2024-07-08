@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostKafkaEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.dto.event.PostViewKafkaEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -14,6 +15,7 @@ import faang.school.postservice.model.VerifyStatus;
 import faang.school.postservice.model.redis.PostRedis;
 import faang.school.postservice.model.redis.UserRedis;
 import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.RedisPostRepository;
@@ -48,6 +50,7 @@ public class PostService {
     private final RedisUserRepository redisUserRepository;
     private final UserContext userContext;
     private final LikeMapper likeMapper;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
 
     @Transactional
     public PostDto create(PostDto postDto) {
@@ -67,11 +70,11 @@ public class PostService {
         post.setPublished(true);
         log.info("Post with ID: {} published.", postId);
         PostDto postDto = postMapper.toDto(post);
-        addToRedisAndSendEvents(postMapper.toRedis(post));
+        addToRedisAndSendEventToKafkaWhenPostPublished(postMapper.toRedis(post));
         return postDto;
     }
 
-    private void addToRedisAndSendEvents(PostRedis postRedis) {
+    private void addToRedisAndSendEventToKafkaWhenPostPublished(PostRedis postRedis) {
         Long authorId = postRedis.getAuthorId();
         userContext.setUserId(authorId);
         UserDto userDto = userServiceClient.getUser(authorId);
@@ -102,14 +105,20 @@ public class PostService {
         log.info("A post with this ID: {} has been added to the deleted list.", postId);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public PostDto getPostById(long userId, Long postId) {
         log.info("Trying to get a post by ID: {}", postId);
         Post post = findById(postId);
         PostDto postDto = postMapper.toDto(post);
         log.info("Post with ID {} received successfully", postId);
         publishPostViewEvent(userId, post);
+        sendKafkaEventWhenPostViewed(postId);
         return postDto;
+    }
+
+    private void sendKafkaEventWhenPostViewed(Long postId) {
+        log.info("Send Post-view event with Post ID: {} to Kafka", postId);
+        kafkaPostViewProducer.sendEvent(new PostViewKafkaEvent(postId));
     }
 
     @Transactional
@@ -158,6 +167,8 @@ public class PostService {
                     return new DataValidationException(String.format("Post with this ID: %s was not found", postId));
                 });
     }
+
+
 
     private List<PostDto> getNonDeletedPosts(List<Post> posts, Predicate<Post> predicate) {
         return posts.stream()
