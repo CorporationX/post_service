@@ -23,6 +23,9 @@ public class KafkaProducerConfig {
     @Value("${spring.data.kafka.topics.posts.name}")
     private String postsTopic;
 
+    @Value("${spring.data.kafka.topics.post_views.name}")
+    private String postViewsTopic;
+
     @Value("${spring.data.kafka.topics.comments.name}")
     private String commentsTopic;
 
@@ -42,8 +45,14 @@ public class KafkaProducerConfig {
         return TopicBuilder.name(commentsTopic).build();
     }
 
-    @Bean NewTopic likes() {
+    @Bean
+    public NewTopic likes() {
         return TopicBuilder.name(likesTopic).build();
+    }
+
+    @Bean
+    public NewTopic postViews() {
+        return TopicBuilder.name(postViewsTopic).build();
     }
 
     @Bean
