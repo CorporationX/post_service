@@ -25,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -184,13 +183,7 @@ public class PostService {
         }
     }
 
-    public List<Long> banAuthors() {
-        List<Post> unverifiedPosts = postRepository.findAllUnverifiedPosts();
-        return unverifiedPosts.stream()
-                .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()))
-                .entrySet().stream()
-                .filter(entry -> entry.getValue() > 5)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+    public List<Long> getAuthorIdsToBan() {
+        return postRepository.findAuthorsToBan();
     }
 }

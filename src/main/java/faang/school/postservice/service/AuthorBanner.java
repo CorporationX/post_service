@@ -23,10 +23,8 @@ public class AuthorBanner {
 
     @Scheduled(cron = "${post.banner.scheduler.cron}")
     public void checkAndBanAuthors() {
-        List<Long> authorIds = postService.banAuthors();
-        authorIds.forEach(authorId -> {
-            UserBanEvent event = new UserBanEvent(authorIds);
-            userBanPublisher.sendUserBanEvent(event);
-        });
+        List<Long> authorIds = postService.getAuthorIdsToBan();
+        UserBanEvent event = new UserBanEvent(authorIds);
+        userBanPublisher.sendUserBanEvent(event);
     }
 }
