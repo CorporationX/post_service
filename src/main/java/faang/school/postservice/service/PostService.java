@@ -105,10 +105,12 @@ public class PostService {
         log.info("A post with this ID: {} has been added to the deleted list.", postId);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PostDto getPostById(long userId, Long postId) {
         log.info("Trying to get a post by ID: {}", postId);
         Post post = findById(postId);
+        post.setViews(post.getViews() + 1);
+        postRepository.save(post);
         PostDto postDto = postMapper.toDto(post);
         log.info("Post with ID {} received successfully", postId);
         publishPostViewEvent(userId, post);

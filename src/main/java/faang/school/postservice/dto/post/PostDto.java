@@ -33,14 +33,10 @@ public class PostDto implements Serializable {
     private Long projectId;
 
     private Boolean published;
-
     private LocalDateTime publishedAt;
-
     private LocalDateTime scheduledAt;
-
     private Boolean deleted;
-
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
+    private int views;
 }

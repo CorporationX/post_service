@@ -1,6 +1,7 @@
 package faang.school.postservice.config.redis;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,8 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.integration.redis.util.RedisLockRegistry;
+import org.springframework.integration.support.locks.ExpirableLockRegistry;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -32,6 +35,8 @@ import java.time.temporal.ChronoUnit;
 )
 public class RedisConfig {
 
+    private static final Duration RELEASE_TIME_DURATION = Duration.ofSeconds(30);
+
     @Value("${spring.data.redis.port}")
     private int port;
     @Value("${spring.data.redis.host}")
@@ -42,6 +47,8 @@ public class RedisConfig {
     private long redisCacheExpiration;
     @Value("${spring.data.redis.data-ttl}")
     private long redisDataExpiration;
+    @Value("${spring.data.redis.lock-key}")
+    private String redisLockKey;
 
     @Bean
     public ChannelTopic postViewEventTopic() {
@@ -55,11 +62,12 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory,
+                                                       ObjectMapper mapper) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(connectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer(mapper));
         return redisTemplate;
     }
 
@@ -87,5 +95,11 @@ public class RedisConfig {
 
             return keyspacePostSettings;
         }
+    }
+
+    @Bean
+    public ExpirableLockRegistry lockRegistry(RedisConnectionFactory redisConnectionFactory) {
+       return new RedisLockRegistry(redisConnectionFactory, redisLockKey,
+                        RELEASE_TIME_DURATION.toMillis());
     }
 }

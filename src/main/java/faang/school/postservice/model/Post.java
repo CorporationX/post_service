@@ -39,11 +39,11 @@ public class Post {
 
     @Builder.Default
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Like> likes = new ArrayList<>();;
+    private List<Like> likes = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Comment> comments = new ArrayList<>();;
+    private List<Comment> comments = new ArrayList<>();
 
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;
@@ -53,7 +53,7 @@ public class Post {
 
     @Builder.Default
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Resource> resources = new ArrayList<>();;
+    private List<Resource> resources = new ArrayList<>();
 
     @Column(name = "published", nullable = false)
     private boolean published;
@@ -91,4 +91,7 @@ public class Post {
     @Builder.Default
     @ManyToMany(mappedBy = "posts")
     private List<Hashtag> hashtags = new ArrayList<>();
+
+    @Column(name = "views")
+    private int views;
 }
