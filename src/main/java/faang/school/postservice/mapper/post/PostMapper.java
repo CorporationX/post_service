@@ -11,6 +11,8 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
+
+    @Mapping(target = "views", ignore = true)
     Post toEntity(PostDto postDto);
 
     PostDto toDto(Post post);

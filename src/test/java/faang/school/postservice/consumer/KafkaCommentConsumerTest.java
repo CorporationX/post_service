@@ -11,12 +11,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.integration.support.locks.ExpirableLockRegistry;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -31,6 +35,7 @@ class KafkaCommentConsumerTest {
     private static final LocalDateTime UPDATED_AT = LocalDateTime.of(2024, 7, 5, 12, 3, 25);
     private static final Long NEW_COMMENT_ID = 2L;
     private static final LocalDateTime NEW_UPDATED_AT = LocalDateTime.of(2024, 7, 6, 12, 3, 25);
+    private static final Object LOCK_KEY = "LOCK_KEY";
 
     @Mock
     private RedisPostRepository redisPostRepository;
@@ -38,6 +43,8 @@ class KafkaCommentConsumerTest {
     private CommentMapper commentMapper;
     @Mock
     private Acknowledgment acknowledgment;
+    @Mock
+    private ExpirableLockRegistry lockRegistry;
 
     @InjectMocks
     private KafkaCommentConsumer kafkaCommentConsumer;
@@ -45,6 +52,7 @@ class KafkaCommentConsumerTest {
     PostRedis postRedis;
     CommentKafkaEvent commentKafkaEvent;
     CommentRedis commentRedis;
+    Lock lock = new ReentrantLock();
 
     @BeforeEach
     public void init() {
@@ -60,10 +68,12 @@ class KafkaCommentConsumerTest {
                 .id(COMMENT_ID)
                 .updatedAt(UPDATED_AT)
                 .build();
+        ReflectionTestUtils.setField(kafkaCommentConsumer, "redisLockKey", LOCK_KEY);
     }
 
     @Test
     public void listenCommentEventWhenPostInRedisAndNoComments() {
+        when(lockRegistry.obtain(LOCK_KEY)).thenReturn(lock);
         when(redisPostRepository.findById(POST_ID)).thenReturn(Optional.ofNullable(postRedis));
         when(commentMapper.fromKafkaEventToRedis(commentKafkaEvent)).thenReturn(commentRedis);
 
@@ -86,6 +96,7 @@ class KafkaCommentConsumerTest {
 
         commentKafkaEvent.setId(NEW_COMMENT_ID);
 
+        when(lockRegistry.obtain(LOCK_KEY)).thenReturn(lock);
         when(redisPostRepository.findById(POST_ID)).thenReturn(Optional.ofNullable(postRedis));
         when(commentMapper.fromKafkaEventToRedis(commentKafkaEvent)).thenReturn(newCommentRedis);
 

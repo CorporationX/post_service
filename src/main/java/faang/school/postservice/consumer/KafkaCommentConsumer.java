@@ -8,12 +8,14 @@ import faang.school.postservice.repository.RedisPostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.integration.support.locks.ExpirableLockRegistry;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.TreeSet;
+import java.util.concurrent.locks.Lock;
 
 @Slf4j
 @Component
@@ -22,6 +24,11 @@ public class KafkaCommentConsumer {
 
     private final RedisPostRepository redisPostRepository;
     private final CommentMapper commentMapper;
+
+    private final ExpirableLockRegistry lockRegistry;
+
+    @Value("${spring.data.redis.lock-key}")
+    private String redisLockKey;
 
     @Value("${spring.data.redis.post-comments-max}")
     private int maxCommentsInRedisPost;
@@ -33,21 +40,28 @@ public class KafkaCommentConsumer {
         PostRedis foundPost = redisPostRepository.findById(event.getPostId()).orElse(null);
 
         if (foundPost != null) {
-            CommentRedis comment = commentMapper.fromKafkaEventToRedis(event);
-            if (foundPost.getComments() == null) {
-                log.info("No comments in Redis post. Add last comment");
-                TreeSet<CommentRedis> comments = new TreeSet<>(Comparator.comparing(CommentRedis::getUpdatedAt).reversed());
-                comments.add(comment);
-                foundPost.setComments(comments);
-            } else {
-                foundPost.getComments().add(comment);
-                foundPost.getComments().forEach(c -> System.out.println(c.getId()));
-                while (foundPost.getComments().size() > maxCommentsInRedisPost) {
-                    foundPost.getComments().remove(foundPost.getComments().last());
+            Lock lock = lockRegistry.obtain(redisLockKey);
+            if (lock.tryLock()) {
+                try {
+                    CommentRedis comment = commentMapper.fromKafkaEventToRedis(event);
+                    if (foundPost.getComments() == null) {
+                        log.info("No comments in Redis post. Add last comment");
+                        TreeSet<CommentRedis> comments = new TreeSet<>(Comparator.comparing(CommentRedis::getUpdatedAt).reversed());
+                        comments.add(comment);
+                        foundPost.setComments(comments);
+                    } else {
+                        foundPost.getComments().add(comment);
+                        foundPost.getComments().forEach(c -> System.out.println(c.getId()));
+                        while (foundPost.getComments().size() > maxCommentsInRedisPost) {
+                            foundPost.getComments().remove(foundPost.getComments().last());
+                        }
+                        foundPost.getComments().forEach(c -> System.out.println(c.getId()));
+                    }
+                    redisPostRepository.save(foundPost);
+                } finally {
+                    lock.unlock();
                 }
-                foundPost.getComments().forEach(c -> System.out.println(c.getId()));
             }
-            redisPostRepository.save(foundPost);
         }
         acknowledgment.acknowledge();
     }

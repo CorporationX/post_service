@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V006__link_post_hashtag.sql
   - include:
       file: db/changelog/changeset/post_V007__resource.sql
+  - include:
+      file: db/changelog/changeset/post_V008__add_views_to_post.sql

@@ -33,6 +33,7 @@ spring:
       data-ttl: 86400
       news-feed-post-ids-max: 3
       post-comments-max: 3
+      lock-key: LOCK_KEY
     kafka:
       bootstrap-servers: localhost:29092
       consumer:
