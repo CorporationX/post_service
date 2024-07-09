@@ -89,7 +89,11 @@ public class CommentServiceTest {
                 .authorId(AUTHOR_ID)
                 .postId(POST_ID)
                 .build();
-        userDto = new UserDto(AUTHOR_ID, "Ivan", "ivan@test.com");
+        userDto = UserDto.builder()
+                .id(AUTHOR_ID)
+                .username("IVAN")
+                .email("ivan@test.com")
+                .build();
     }
 
     @Test

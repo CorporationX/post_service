@@ -28,4 +28,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p.id FROM Post p WHERE p.authorId = :authorId ORDER BY p.id DESC")
     List<Long> findPostIdsByAuthorIdOrderByIdDesc(long authorId);
+
+    @Query("SELECT p FROM Post p WHERE p.published = true AND p.deleted = false AND p.authorId IN :authors AND p.id >= :postId ORDER BY p.id DESC LIMIT :countPosts")
+    List<Post> findByAuthorsAndLimitAndStartFromPostId(List<Long> authors, int countPosts, long postId);
 }
