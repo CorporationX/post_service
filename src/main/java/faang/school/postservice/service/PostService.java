@@ -82,7 +82,7 @@ public class PostService {
         redisUserRepository.save(new UserRedis(userDto.getId(), userDto.getUsername()));
         log.info("Save post with ID: {} to Redis", postRedis.getId());
         redisPostRepository.save(postRedis);
-        PostKafkaEvent postKafkaEvent = new PostKafkaEvent(authorId, userJdbcRepository.getSubscribers(authorId));
+        PostKafkaEvent postKafkaEvent = new PostKafkaEvent(authorId, userDto.getFollowersIds());
         log.info("Send event with Post ID: {} to Kafka", postRedis.getId());
         kafkaPostProducer.sendEvent(postKafkaEvent);
     }

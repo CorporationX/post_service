@@ -172,7 +172,11 @@ public class PostServiceTest {
                 .authorId(AUTHOR_ID)
                 .build();
 
-        UserDto userDto = new UserDto(AUTHOR_ID, "IVAN", "ivan@test.com");
+        UserDto userDto = UserDto.builder()
+                .id(AUTHOR_ID)
+                .username("IVAN")
+                .email("ivan@test.com")
+                .build();
 
         doNothing().when(postValidator).validatePublicationPost(post1);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post1));

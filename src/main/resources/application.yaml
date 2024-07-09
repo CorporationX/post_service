@@ -66,6 +66,7 @@ post:
       cron: "0 1 * * * *"
     file:
       swearwords: files/list-of-swearwords-and-offensive-gestures.csv
+  news-feed-batch-size: 3
 
 user-service:
   host: localhost

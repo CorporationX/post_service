@@ -4,8 +4,12 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
+@Builder
 @Data
 @AllArgsConstructor
 public class UserDto {
@@ -18,4 +22,7 @@ public class UserDto {
 
     @Email(message = "Email should be valid")
     private String email;
+
+    private List<Long> followeesIds;
+    private List<Long> followersIds;
 }
