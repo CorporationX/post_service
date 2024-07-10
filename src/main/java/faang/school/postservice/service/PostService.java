@@ -8,7 +8,6 @@ import faang.school.postservice.dto.event.PostViewKafkaEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifyStatus;
@@ -20,7 +19,6 @@ import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.repository.RedisUserRepository;
-import faang.school.postservice.repository.UserJdbcRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,11 +43,9 @@ public class PostService {
     private final HashtagService hashtagService;
     private final RedisPostRepository redisPostRepository;
     private final KafkaPostProducer kafkaPostProducer;
-    private final UserJdbcRepository userJdbcRepository;
     private final UserServiceClient userServiceClient;
     private final RedisUserRepository redisUserRepository;
     private final UserContext userContext;
-    private final LikeMapper likeMapper;
     private final KafkaPostViewProducer kafkaPostViewProducer;
 
     @Transactional
@@ -221,5 +217,12 @@ public class PostService {
         log.info("Find posts with hashtag: {}", hashtag);
         List<Post> posts = hashtagService.findByName(hashtag).getPosts();
         return postMapper.toListDto(posts);
+    }
+
+    @Transactional
+    public Post findPostWithCommentsAndLikes(long postId) {
+        log.info("Find post with ID: {}, with comments and likes", postId);
+        Post post = postRepository.findByIdWithComments(postId);
+        return post != null ? postRepository.findByIdWithLikes(postId) : null;
     }
 }

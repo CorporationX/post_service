@@ -1,5 +1,7 @@
 package faang.school.postservice.post;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -17,8 +19,13 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostValidatorTest {
+
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
     @InjectMocks
     private PostValidator postValidator;
     private Post post;
@@ -34,14 +41,14 @@ public class PostValidatorTest {
 
     @Test
     public void testValidateAuthorIdAndProjectIdUserDoesNotExist() {
-        when(postRepository.existsById(authorId)).thenReturn(false);
+        when(userServiceClient.getUser(authorId)).thenReturn(null);
 
         assertThrows(DataValidationException.class, () -> postValidator.validateAuthorIdAndProjectId(authorId, projectId));
     }
 
     @Test
     public void testValidateAuthorIdAndProjectIdProjectDoesNotExist() {
-        when(postRepository.existsById(authorId)).thenReturn(true);
+        when(userServiceClient.getUser(authorId)).thenReturn(UserDto.builder().build());
         when(postRepository.existsById(projectId)).thenReturn(false);
 
         assertThrows(DataValidationException.class, () -> postValidator.validateAuthorIdAndProjectId(authorId, projectId));
@@ -49,7 +56,7 @@ public class PostValidatorTest {
 
     @Test
     public void testValidateAuthorIdAndProjectIdProject() {
-        when(postRepository.existsById(authorId)).thenReturn(true);
+        when(userServiceClient.getUser(authorId)).thenReturn(UserDto.builder().build());
         when(postRepository.existsById(projectId)).thenReturn(true);
 
         assertDoesNotThrow(() -> postValidator.validateAuthorIdAndProjectId(authorId, projectId));
