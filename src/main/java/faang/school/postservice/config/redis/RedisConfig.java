@@ -47,8 +47,8 @@ public class RedisConfig {
     private long redisCacheExpiration;
     @Value("${spring.data.redis.data-ttl}")
     private long redisDataExpiration;
-    @Value("${spring.data.redis.lock-key}")
-    private String redisLockKey;
+    @Value("${spring.data.redis.post-lock-key}")
+    private String redisPostLockKey;
 
     @Bean
     public ChannelTopic postViewEventTopic() {
@@ -99,7 +99,7 @@ public class RedisConfig {
 
     @Bean
     public ExpirableLockRegistry lockRegistry(RedisConnectionFactory redisConnectionFactory) {
-       return new RedisLockRegistry(redisConnectionFactory, redisLockKey,
+       return new RedisLockRegistry(redisConnectionFactory, redisPostLockKey,
                         RELEASE_TIME_DURATION.toMillis());
     }
 }

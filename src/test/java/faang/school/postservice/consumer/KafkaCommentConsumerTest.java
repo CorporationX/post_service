@@ -35,7 +35,7 @@ class KafkaCommentConsumerTest {
     private static final LocalDateTime UPDATED_AT = LocalDateTime.of(2024, 7, 5, 12, 3, 25);
     private static final Long NEW_COMMENT_ID = 2L;
     private static final LocalDateTime NEW_UPDATED_AT = LocalDateTime.of(2024, 7, 6, 12, 3, 25);
-    private static final Object LOCK_KEY = "LOCK_KEY";
+    private static final Object LOCK_KEY = "POST_LOCK_KEY";
 
     @Mock
     private RedisPostRepository redisPostRepository;
@@ -68,7 +68,7 @@ class KafkaCommentConsumerTest {
                 .id(COMMENT_ID)
                 .updatedAt(UPDATED_AT)
                 .build();
-        ReflectionTestUtils.setField(kafkaCommentConsumer, "redisLockKey", LOCK_KEY);
+        ReflectionTestUtils.setField(kafkaCommentConsumer, "redisPostLockKey", LOCK_KEY);
     }
 
     @Test

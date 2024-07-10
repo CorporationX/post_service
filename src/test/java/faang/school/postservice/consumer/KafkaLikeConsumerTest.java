@@ -25,7 +25,7 @@ class KafkaLikeConsumerTest {
 
     private static final Long AUTHOR_ID = 1L;
     private static final Long POST_ID = 1L;
-    private static final Object LOCK_KEY = "LOCK_KEY";
+    private static final Object LOCK_KEY = "POST_LOCK_KEY";
     @Mock
     private RedisPostRepository redisPostRepository;
 
@@ -42,7 +42,7 @@ class KafkaLikeConsumerTest {
     public void listenLikeEventWhenPostFoundInRedis() {
         LikeKafkaEvent likeKafkaEvent = new LikeKafkaEvent(AUTHOR_ID, POST_ID, null);
         PostRedis postRedis = PostRedis.builder().build();
-        ReflectionTestUtils.setField(kafkaLikeConsumer, "redisLockKey", LOCK_KEY);
+        ReflectionTestUtils.setField(kafkaLikeConsumer, "redisPostLockKey", LOCK_KEY);
         Lock lock = new ReentrantLock();
 
         when(lockRegistry.obtain(LOCK_KEY)).thenReturn(lock);

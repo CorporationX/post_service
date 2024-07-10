@@ -1,5 +1,7 @@
 package faang.school.postservice.config.kafka;
 
+import faang.school.postservice.exception.LockBusyException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,11 +12,15 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.util.backoff.BackOff;
+import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @EnableKafka
 @Configuration
 public class KafkaConsumerConfig {
@@ -24,6 +30,12 @@ public class KafkaConsumerConfig {
 
     @Value("${spring.data.kafka.consumer.group-id}")
     private String consumerGroupId;
+
+    @Value(value = "${spring.data.kafka.backoff.interval}")
+    private Long interval;
+
+    @Value(value = "${spring.data.kafka.backoff.max_failure}")
+    private Long maxAttempts;
 
     @Bean
     public ConsumerFactory<String, Object> consumerFactory() {
@@ -50,6 +62,17 @@ public class KafkaConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+        factory.setCommonErrorHandler(errorHandler());
         return factory;
+    }
+
+    @Bean
+    public DefaultErrorHandler errorHandler() {
+        BackOff fixedBackOff = new FixedBackOff(interval, maxAttempts);
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler((consumerRecord, exception) -> {
+            log.error("All attempts to proceed events exhausted");
+        }, fixedBackOff);
+        errorHandler.addRetryableExceptions(LockBusyException.class);
+        return errorHandler;
     }
 }

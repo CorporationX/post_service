@@ -1,6 +1,7 @@
 package faang.school.postservice.consumer;
 
 import faang.school.postservice.dto.event.CommentKafkaEvent;
+import faang.school.postservice.exception.LockBusyException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.redis.CommentRedis;
 import faang.school.postservice.model.redis.PostRedis;
@@ -27,8 +28,8 @@ public class KafkaCommentConsumer {
 
     private final ExpirableLockRegistry lockRegistry;
 
-    @Value("${spring.data.redis.lock-key}")
-    private String redisLockKey;
+    @Value("${spring.data.redis.post-lock-key}")
+    private String redisPostLockKey;
 
     @Value("${spring.data.redis.post-comments-max}")
     private int maxCommentsInRedisPost;
@@ -40,8 +41,10 @@ public class KafkaCommentConsumer {
         PostRedis foundPost = redisPostRepository.findById(event.getPostId()).orElse(null);
 
         if (foundPost != null) {
-            Lock lock = lockRegistry.obtain(redisLockKey);
+            log.info("Post found. Try to lock");
+            Lock lock = lockRegistry.obtain(redisPostLockKey);
             if (lock.tryLock()) {
+                log.info("Lock in Comment event");
                 try {
                     CommentRedis comment = commentMapper.fromKafkaEventToRedis(event);
                     if (foundPost.getComments() == null) {
@@ -51,18 +54,24 @@ public class KafkaCommentConsumer {
                         foundPost.setComments(comments);
                     } else {
                         foundPost.getComments().add(comment);
-                        foundPost.getComments().forEach(c -> System.out.println(c.getId()));
                         while (foundPost.getComments().size() > maxCommentsInRedisPost) {
                             foundPost.getComments().remove(foundPost.getComments().last());
                         }
-                        foundPost.getComments().forEach(c -> System.out.println(c.getId()));
                     }
                     redisPostRepository.save(foundPost);
                 } finally {
                     lock.unlock();
+                    log.info("Unlock comment event. Send acknowledge to Kafka");
+                    acknowledgment.acknowledge();
                 }
+            } else {
+                String errMessage = "Lock is busy. Comment Kafka Event not proceed";
+                log.warn(errMessage);
+                throw new LockBusyException(errMessage);
             }
+        } else {
+            acknowledgment.acknowledge();
+            log.info("Post not found in Redis. Send acknowledge to Kafka");
         }
-        acknowledgment.acknowledge();
     }
 }
