@@ -1,5 +1,6 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.dto.post.PostForFeedHeater;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -31,4 +32,23 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = true AND p.deleted = false AND p.authorId IN :authors AND p.id >= :postId ORDER BY p.id DESC LIMIT :countPosts")
     List<Post> findByAuthorsAndLimitAndStartFromPostId(List<Long> authors, int countPosts, long postId);
+
+    @Query("SELECT p.id FROM Post p WHERE p.published = true AND p.deleted = false")
+    List<Long> findAllIds();
+
+    @Query("SELECT p FROM Post p JOIN FETCH p.comments WHERE p.id = :postId")
+    Post findByIdWithComments(long postId);
+
+    @Query("SELECT p FROM Post p JOIN FETCH p.likes WHERE p.id = :postId")
+    Post findByIdWithLikes(long postId);
+
+    @Query("""
+                SELECT 
+                new faang.school.postservice.dto.post.PostForFeedHeater(p.id, p.authorId)
+                FROM Post p 
+                WHERE p.published = true 
+                AND p.deleted = false
+                """)
+    List<PostForFeedHeater> findAllWithIdAndAuthorId();
+
 }

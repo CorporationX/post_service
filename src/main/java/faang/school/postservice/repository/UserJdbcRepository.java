@@ -1,10 +1,9 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.model.redis.UserRedis;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -12,7 +11,11 @@ public class UserJdbcRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public List<Long> getSubscribers(long followeeId) {
-        return jdbcTemplate.queryForList("SELECT follower_id FROM subscription WHERE followee_id = ?", Long.class, followeeId);
+    public UserRedis findUserById(long userId) {
+        return jdbcTemplate.queryForObject("SELECT id, username FROM users WHERE id = ? AND active is true", (rs, rowNum) ->
+                new UserRedis(
+                        rs.getLong("id"),
+                        rs.getString("username")
+                ), userId);
     }
 }
