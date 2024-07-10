@@ -19,7 +19,6 @@ public interface PostMapper {
 
     List<PostDto> toListDto(List<Post> posts);
 
-    @Mapping(target = "comments", ignore = true)
     PostRedis toRedis(Post post);
 
     List<PostDto> fromRedisToListDto(List<PostRedis> posts);

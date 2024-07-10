@@ -1,5 +1,7 @@
 package faang.school.postservice.validator;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -11,12 +13,16 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class PostValidator {
+
     private final PostRepository postRepository;
+    private final UserServiceClient userServiceClient;
 
     public void validateAuthorIdAndProjectId(Long authorId, Long projectId) {
-        if (!postRepository.existsById(authorId)) {
-            log.error("User with ID {}, does not exist", authorId);
-            throw new DataValidationException("There is no user with this ID");
+        UserDto userDto = userServiceClient.getUser(authorId);
+        if (userDto == null) {
+            String errMsg = String.format("User with ID: %d, does not exists", authorId);
+            log.error(errMsg);
+            throw new DataValidationException(errMsg);
         }
         if (!postRepository.existsById(projectId)) {
             log.error("Porject with ID {}, does not exist", projectId);
