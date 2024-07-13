@@ -15,7 +15,9 @@ import faang.school.postservice.validation.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -220,5 +222,14 @@ public class PostServiceTest {
         postService.moderatePosts();
 
         verify(postModerator, times(1)).moderatePosts(posts);
+    }
+
+    @Test
+    public void getUserIdByPostIdTest() {
+        when(postRepository.findByPostId(1L)).thenReturn(1L);
+
+        postService.getUserIdByPostId(1L);
+
+        verify(postRepository, times(1)).findByPostId(1L);
     }
 }

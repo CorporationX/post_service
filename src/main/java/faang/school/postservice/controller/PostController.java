@@ -22,7 +22,6 @@ public class PostController {
 
     private final PostService postService;
     private final PostValidator postValidator;
-    private final AuthorBanner authorBanner;
 
     @PostMapping(value = "/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public PostDto createDraftPost(
@@ -84,8 +83,14 @@ public class PostController {
         return postService.getProjectPosts(projectId);
     }
 
+    @GetMapping
+    public long getUserIdByPostId(@RequestParam long id) {
+        return postService.getUserIdByPostId(id);
+    }
+
     @PostMapping("/banUser")
     public void banUser() {
         authorBanner.checkAndBanAuthors();
     }
 }
+
