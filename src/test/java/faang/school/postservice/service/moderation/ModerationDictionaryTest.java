@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
-class ModerationDictionaryServiceTest {
+class ModerationDictionaryTest {
 
     @Mock
     private ResourceLoader resourceLoader;
@@ -28,26 +28,26 @@ class ModerationDictionaryServiceTest {
     private Resource resource;
 
     @InjectMocks
-    private ModerationDictionaryService moderationDictionaryService;
+    private ModerationDictionary moderationDictionary;
 
     @BeforeEach
     void setUp() throws IOException, NoSuchFieldException, IllegalAccessException {
 
-        moderationDictionaryService = new ModerationDictionaryService(resourceLoader);
-        Field field = ModerationDictionaryService.class.getDeclaredField("filepath");
+        moderationDictionary = new ModerationDictionary(resourceLoader);
+        Field field = ModerationDictionary.class.getDeclaredField("filepath");
         field.setAccessible(true);
-        field.set(moderationDictionaryService, "classpath:bad-words.txt");
+        field.set(moderationDictionary, "classpath:bad-words.txt");
         InputStream inputStream = new ByteArrayInputStream("badword1\nbadword2\nbadword3".getBytes());
 
         doReturn(resource).when(resourceLoader).getResource("classpath:bad-words.txt");
         doReturn(inputStream).when(resource).getInputStream();
 
-        moderationDictionaryService.loadDictionary();
+        moderationDictionary.loadDictionary();
     }
 
     @Test
     void containsBadWord() {
-        assertTrue(moderationDictionaryService.containsBadWord("This is a badword1 test"));
-        assertFalse(moderationDictionaryService.containsBadWord("This is a clean comment"));
+        assertTrue(moderationDictionary.containsBadWord("This is a badword1 test"));
+        assertFalse(moderationDictionary.containsBadWord("This is a clean comment"));
     }
 }

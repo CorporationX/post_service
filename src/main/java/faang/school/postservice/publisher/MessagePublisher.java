@@ -1,7 +1,5 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.event.Event;
-
-public interface MessagePublisher<T extends Event> {
+public interface MessagePublisher<T> {
     void publish(T event);
 }

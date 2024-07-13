@@ -10,7 +10,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,7 +17,7 @@ import java.util.List;
 @Builder
 @Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PostHashtagDto implements Serializable {
+public class PostHashtagDto {
 
     private long id;
     private String content;
