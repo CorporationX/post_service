@@ -22,6 +22,7 @@ public class PostController {
 
     private final PostService postService;
     private final PostValidator postValidator;
+    private final AuthorBanner authorBanner;
 
     @PostMapping(value = "/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public PostDto createDraftPost(
@@ -93,4 +94,3 @@ public class PostController {
         authorBanner.checkAndBanAuthors();
     }
 }
-
