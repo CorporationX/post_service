@@ -49,7 +49,7 @@ public class PostService {
                 .orElseThrow(() -> new DataValidationException("Post not found"));
         postServiceValidator.validateDeletePost(postFromTheDatabase);
 
-        if (postFromTheDatabase.isDeleted()) {
+        if (!postFromTheDatabase.isDeleted()) {
             postFromTheDatabase.setDeleted(true);
         }
         if (postFromTheDatabase.isPublished()) {

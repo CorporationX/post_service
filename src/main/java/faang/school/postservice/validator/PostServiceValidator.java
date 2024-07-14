@@ -36,11 +36,13 @@ public class PostServiceValidator {
         Post postFromTheDatabase = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> new DataValidationException("Post not found"));
 
-        if (!postFromTheDatabase.getAuthorId().equals(postDto.getAuthorId())) {
+        if (postFromTheDatabase.getAuthorId() != null &&
+                !postFromTheDatabase.getAuthorId().equals(postDto.getAuthorId())) {
             throw new InvalidPutException("The Author Id should not be different");
         }
 
-        if (!postFromTheDatabase.getProjectId().equals(postDto.getProjectId())) {
+        if (postFromTheDatabase.getProjectId() != null &&
+                !postFromTheDatabase.getProjectId().equals(postDto.getProjectId())) {
             throw new InvalidPutException("The Project Id should not be different");
         }
 
