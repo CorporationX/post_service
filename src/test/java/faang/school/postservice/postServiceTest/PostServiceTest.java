@@ -1,12 +1,12 @@
 package faang.school.postservice.postServiceTest;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostServiceValidator;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -154,7 +154,7 @@ public class PostServiceTest {
     public void testDeletePostPostNotFound() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(DataValidationException.class, () -> postService.deletePost(1L));
+        assertThrows(EntityNotFoundException.class, () -> postService.deletePost(1L));
     }
 
 
@@ -162,7 +162,7 @@ public class PostServiceTest {
     public void testGetPostByPostIdPostNotFound() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(DataValidationException.class, () -> postService.getPostByPostId(1L));
+        assertThrows(EntityNotFoundException.class, () -> postService.getPostByPostId(1L));
     }
 
     @Test

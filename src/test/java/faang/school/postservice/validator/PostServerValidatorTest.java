@@ -6,8 +6,6 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.InvalidPostException;
-import faang.school.postservice.exception.InvalidPutException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,7 +81,7 @@ public class PostServerValidatorTest {
     void testCreatePostBothIdsNull() {
         postDto = postDto.builder().authorId(null).projectId(null).build();
 
-        assertThrows(InvalidPostException.class, () -> postServiceValidator.validateCreatePost(postDto));
+        assertThrows(DataValidationException.class, () -> postServiceValidator.validateCreatePost(postDto));
     }
 
     @Test
@@ -91,7 +89,7 @@ public class PostServerValidatorTest {
     void testCreatePostBothIdsNotNull() {
         postDto = postDto.builder().authorId(1L).projectId(1L).build();
 
-        assertThrows(InvalidPostException.class, () -> postServiceValidator.validateCreatePost(postDto));
+        assertThrows(DataValidationException.class, () -> postServiceValidator.validateCreatePost(postDto));
     }
 
     @Test
@@ -120,7 +118,7 @@ public class PostServerValidatorTest {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
         postDto = PostDto.builder().id(1L).authorId(2L).build();
 
-        assertThrows(InvalidPutException.class, () -> postServiceValidator.validateUpdatePost(postDto));
+        assertThrows(DataValidationException.class, () -> postServiceValidator.validateUpdatePost(postDto));
         verify(postRepository).findById(postDto.getId());
     }
 
@@ -136,7 +134,7 @@ public class PostServerValidatorTest {
                 .deleted(false)
                 .build();
 
-        assertThrows(InvalidPutException.class, () -> postServiceValidator.validateUpdatePost(postDtoWithProjectOwner));
+        assertThrows(DataValidationException.class, () -> postServiceValidator.validateUpdatePost(postDtoWithProjectOwner));
         verify(postRepository).findById(postDtoWithProjectOwner.getId());
     }
 
@@ -152,7 +150,7 @@ public class PostServerValidatorTest {
                 .deleted(true)
                 .build();
 
-        assertThrows(InvalidPutException.class, () -> postServiceValidator.validateUpdatePost(postDto));
+        assertThrows(DataValidationException.class, () -> postServiceValidator.validateUpdatePost(postDto));
         verify(postRepository).findById(postDto.getId());
     }
 
@@ -168,7 +166,7 @@ public class PostServerValidatorTest {
                 .deleted(false)
                 .build();
 
-        assertThrows(InvalidPutException.class, () -> postServiceValidator.validateUpdatePost(postDto));
+        assertThrows(DataValidationException.class, () -> postServiceValidator.validateUpdatePost(postDto));
         verify(postRepository).findById(postDto.getId());
     }
 
@@ -178,7 +176,7 @@ public class PostServerValidatorTest {
         post = Post.builder().published(true).build();
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
 
-        assertThrows(InvalidPutException.class, () -> postServiceValidator.validatePublishPost(postDto));
+        assertThrows(DataValidationException.class, () -> postServiceValidator.validatePublishPost(postDto));
     }
 
     @Test

@@ -1,11 +1,11 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +46,7 @@ public class PostService {
 
     public void deletePost(Long postId) {
         Post postFromTheDatabase = postRepository.findById(postId)
-                .orElseThrow(() -> new DataValidationException("Post not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
         postServiceValidator.validateDeletePost(postFromTheDatabase);
 
         if (!postFromTheDatabase.isDeleted()) {
@@ -62,7 +62,7 @@ public class PostService {
 
     public PostDto getPostByPostId(Long postId) {
         return postMapper.toDto(postRepository.findById(postId)
-                .orElseThrow(() -> new DataValidationException("Post not found")));
+                .orElseThrow(() -> new EntityNotFoundException("Post not found")));
     }
 
 
