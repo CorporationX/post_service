@@ -1,8 +1,8 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.DataOperationException;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -61,6 +61,10 @@ public class PostService {
         return postMapper.toDto(postRepository.save(postToBeUpdated));
     }
 
+    public List<Post> updatePosts(List<Post> posts) {
+        return postRepository.saveAll(posts);
+    }
+
     public void deletePost(long postId) {
         Post postToBeDeleted = getPost(postId);
 
@@ -75,6 +79,11 @@ public class PostService {
 
     public PostDto getPostById(long postId) {
         return postMapper.toDto(getPost(postId));
+    }
+
+
+    public List<Post> getAllDrafts() {
+        return postRepository.findAllDrafts();
     }
 
     public List<PostDto> getDraftsOfUser(long userId) {
