@@ -15,17 +15,17 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public void createPost(@Valid PostDto postDto) {
+    public void createPost(@RequestBody @Valid PostDto postDto) {
         postService.createPost(postDto);
     }
 
     @PutMapping
-    public void updatePost(@Valid PostDto postDto) {
+    public void updatePost(@RequestBody @Valid PostDto postDto) {
         postService.updatePost(postDto);
     }
 
     @PutMapping("/publish")
-    public void publishPost(@Valid PostDto postDto) {
+    public void publishPost(@RequestBody @Valid PostDto postDto) {
         postService.publishPost(postDto);
     }
 
