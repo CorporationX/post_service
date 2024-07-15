@@ -12,6 +12,10 @@ services:
     image: redis/redis-stack:latest
     ports:
       - "6379:6379"
+  master_kafka:
+    image: apache/kafka:latest
+    ports:
+      - "9092:9092"
   minio:
     image: minio/minio
     ports:

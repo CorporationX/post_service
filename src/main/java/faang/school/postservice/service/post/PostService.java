@@ -1,7 +1,10 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.DataOperationException;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.kafka.PostProducer;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -26,6 +29,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostVerifier postVerifier;
+    private final PostProducer postProducer;
 
     public PostDto createPost(@Valid PostDto postDto) {
         postVerifier.verifyAuthorExistence(postDto.getAuthorId(), postDto.getProjectId());
@@ -47,7 +51,10 @@ public class PostService {
         postToBePublished.setPublished(true);
         postToBePublished.setPublishedAt(LocalDateTime.now());
 
-        return postMapper.toDto(postRepository.save(postToBePublished));
+        Post publishedPost = postRepository.save(postToBePublished);
+        postProducer.sendPostEvent(publishedPost);
+
+        return postMapper.toDto(publishedPost);
     }
 
     public PostDto updatePost(PostDto postDto) {

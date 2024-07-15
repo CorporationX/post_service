@@ -26,7 +26,14 @@ spring:
         likesChannel: likes_channel
         commentsChannel: comments_channel
 
+  kafka:
+    host: localhost
+    port: 9092
+    topics-names:
+      post-topic: post_topic
+
 server:
+  host: localhost
   port: 8085
 
 logging:
