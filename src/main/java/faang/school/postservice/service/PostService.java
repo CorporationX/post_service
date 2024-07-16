@@ -20,44 +20,54 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
 
-    public void createPost(PostDto postDto) {
+    public PostDto createPost(PostDto postDto) {
         postServiceValidator.validateCreatePost(postDto);
-        postDto.setCreatedAt(LocalDateTime.now());
-        postDto.setUpdatedAt(LocalDateTime.now());
+        Post post = postMapper.toEntity(postDto);
+        post.setCreatedAt(LocalDateTime.now());
+        post.setUpdatedAt(LocalDateTime.now());
 
-        postRepository.save(postMapper.toEntity(postDto));
+        postRepository.save(post);
+        return postMapper.toDto(post);
     }
 
-    public void updatePost(PostDto postDto) {
-        postServiceValidator.validateUpdatePost(postDto);
-        postDto.setUpdatedAt(LocalDateTime.now());
-
-        postRepository.save(postMapper.toEntity(postDto));
-    }
-
-    public void publishPost(PostDto postDto) {
-        postServiceValidator.validatePublishPost(postDto);
-        postDto.setPublished(true);
-        postDto.setPublishedAt(LocalDateTime.now());
-        postDto.setUpdatedAt(LocalDateTime.now());
-
-        postRepository.save(postMapper.toEntity(postDto));
-    }
-
-    public void deletePost(Long postId) {
-        Post postFromTheDatabase = postRepository.findById(postId)
+    public PostDto updatePost(PostDto postDto) {
+        Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
-        postServiceValidator.validateDeletePost(postFromTheDatabase);
+        postServiceValidator.validateUpdatePost(post, postDto);
 
-        if (!postFromTheDatabase.isDeleted()) {
-            postFromTheDatabase.setDeleted(true);
-        }
-        if (postFromTheDatabase.isPublished()) {
-            postFromTheDatabase.setPublished(false);
-        }
-        postFromTheDatabase.setUpdatedAt(LocalDateTime.now());
+        post.setUpdatedAt(LocalDateTime.now());
+        post.setContent(postDto.getContent());
 
-        postRepository.save(postFromTheDatabase);
+        postRepository.save(post);
+        return postMapper.toDto(post);
+    }
+
+    public PostDto publishPost(PostDto postDto) {
+        Post post = postRepository.findById(postDto.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        postServiceValidator.validatePublishPost(post ,postDto);
+
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+        post.setUpdatedAt(LocalDateTime.now());
+
+        postRepository.save(post);
+        return postMapper.toDto(post);
+    }
+
+    public PostDto deletePost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        postServiceValidator.validateDeletePost(post);
+        post.setDeleted(true);
+
+        if (post.isPublished()) {
+            post.setPublished(false);
+        }
+        post.setUpdatedAt(LocalDateTime.now());
+
+        postRepository.save(post);
+        return postMapper.toDto(post);
     }
 
     public PostDto getPostByPostId(Long postId) {

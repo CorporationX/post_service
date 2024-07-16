@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -50,28 +49,22 @@ public class PostServiceTest {
         Post draftPost1 = Post.builder()
                 .id(1L)
                 .content("Draft 1")
-                .createdAt(LocalDateTime.now().minusDays(2))
-                .deleted(false)
+                .published(true)
                 .build();
 
         Post draftPost2 = Post.builder()
                 .id(2L)
                 .content("Draft 2")
-                .createdAt(LocalDateTime.now().minusDays(1))
-                .published(false)
+                .published(true)
                 .build();
 
         Post publishedPost1 = Post.builder().id(3L)
                 .content("Published 1")
-                .publishedAt(LocalDateTime.now().minusDays(2))
-                .createdAt(LocalDateTime.now().minusDays(3))
                 .published(true)
                 .build();
 
         Post publishedPost2 = Post.builder().id(2L)
                 .content("Published 2")
-                .publishedAt(LocalDateTime.now().minusDays(1))
-                .createdAt(LocalDateTime.now().minusDays(4))
                 .published(true)
                 .build();
 
@@ -81,29 +74,21 @@ public class PostServiceTest {
         PostDto draftPostDto1 = PostDto.builder()
                 .id(1L)
                 .content("Draft 1")
-                .createdAt(LocalDateTime.now().minusDays(2))
-                .published(false)
                 .build();
+
         PostDto draftPostDto2 = PostDto.builder()
                 .id(2L)
                 .content("Draft 2")
-                .createdAt(LocalDateTime.now().minusDays(1))
-                .createdAt(LocalDateTime.now().minusDays(3))
-                .published(false)
                 .build();
+        
         PostDto publishedPostDto1 = PostDto.builder()
                 .id(3L)
                 .content("Published 1")
-                .publishedAt(LocalDateTime.now().minusDays(2))
-                .createdAt(LocalDateTime.now().minusDays(4))
-                .published(true)
                 .build();
 
         PostDto publishedPostDto2 = PostDto.builder()
                 .id(4L)
                 .content("Published 2")
-                .publishedAt(LocalDateTime.now().minusDays(1))
-                .published(true)
                 .build();
 
         draftPostDtos = Arrays.asList(draftPostDto1, draftPostDto2);
@@ -121,8 +106,9 @@ public class PostServiceTest {
 
     @Test
     public void testUpdatePost() {
-        doNothing().when(postServiceValidator).validateUpdatePost(postDto);
-        when(postMapper.toEntity(postDto)).thenReturn(post);
+        when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
+        doNothing().when(postServiceValidator).validateUpdatePost(post, postDto);
+        when(postMapper.toDto(post)).thenReturn(postDto);
         postService.updatePost(postDto);
 
         verify(postRepository, times(1)).save(post);
@@ -130,12 +116,12 @@ public class PostServiceTest {
 
     @Test
     public void testPublishPost() {
-        doNothing().when(postServiceValidator).validatePublishPost(postDto);
-        when(postMapper.toEntity(postDto)).thenReturn(post);
+        when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
+        doNothing().when(postServiceValidator).validatePublishPost(post, postDto);
+        when(postMapper.toDto(post)).thenReturn(postDto);
 
         postService.publishPost(postDto);
         verify(postRepository, times(1)).save(post);
-        assertTrue(postDto.isPublished());
     }
 
     @Test

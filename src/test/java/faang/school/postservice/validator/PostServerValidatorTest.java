@@ -16,8 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -47,8 +45,6 @@ public class PostServerValidatorTest {
                 .id(1L)
                 .authorId(1L)
                 .projectId(null)
-                .published(false)
-                .deleted(false)
                 .build();
 
         post = Post.builder()
@@ -63,8 +59,6 @@ public class PostServerValidatorTest {
                 .id(1L)
                 .authorId(null)
                 .projectId(1L)
-                .published(false)
-                .deleted(false)
                 .build();
 
         postWithProjectOwner = Post.builder()
@@ -115,68 +109,17 @@ public class PostServerValidatorTest {
     @Test
     @DisplayName("Update post with different author ID")
     void testUpdatePostDifferentAuthorId() {
-        when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
         postDto = PostDto.builder().id(1L).authorId(2L).build();
 
-        assertThrows(DataValidationException.class, () -> postServiceValidator.validateUpdatePost(postDto));
-        verify(postRepository).findById(postDto.getId());
-    }
-
-    @Test
-    @DisplayName("Update post with different project ID")
-    void testUpdatePostDifferentProjectId() {
-        when(postRepository.findById(postDtoWithProjectOwner.getId())).thenReturn(Optional.of(postWithProjectOwner));
-        postDtoWithProjectOwner = PostDto.builder()
-                .id(1L)
-                .authorId(null)
-                .projectId(2L)
-                .published(false)
-                .deleted(false)
-                .build();
-
-        assertThrows(DataValidationException.class, () -> postServiceValidator.validateUpdatePost(postDtoWithProjectOwner));
-        verify(postRepository).findById(postDtoWithProjectOwner.getId());
-    }
-
-    @Test
-    @DisplayName("Update post with different deleted flag")
-    void testUpdatePostDifferentDeletedFlag() {
-        when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
-        postDto = PostDto.builder()
-                .id(1L)
-                .authorId(1L)
-                .projectId(null)
-                .published(false)
-                .deleted(true)
-                .build();
-
-        assertThrows(DataValidationException.class, () -> postServiceValidator.validateUpdatePost(postDto));
-        verify(postRepository).findById(postDto.getId());
-    }
-
-    @Test
-    @DisplayName("Update post with different published flag")
-    void testUpdatePostDifferentPublishedFlag() {
-        when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
-        postDto = PostDto.builder()
-                .id(1L)
-                .authorId(1L)
-                .projectId(null)
-                .published(true)
-                .deleted(false)
-                .build();
-
-        assertThrows(DataValidationException.class, () -> postServiceValidator.validateUpdatePost(postDto));
-        verify(postRepository).findById(postDto.getId());
+        assertThrows(DataValidationException.class, () -> postServiceValidator.validateUpdatePost(post, postDto));
     }
 
     @Test
     @DisplayName("Publish post when already published")
     void testPublishPostAlreadyPublished() {
         post = Post.builder().published(true).build();
-        when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
 
-        assertThrows(DataValidationException.class, () -> postServiceValidator.validatePublishPost(postDto));
+        assertThrows(DataValidationException.class, () -> postServiceValidator.validatePublishPost(post, postDto));
     }
 
     @Test

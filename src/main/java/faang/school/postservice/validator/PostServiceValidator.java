@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 public class PostServiceValidator {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
-    private final PostRepository postRepository;
 
     public void validateCreatePost(PostDto postDto) {
         if ((postDto.getAuthorId() == null) && (postDto.getProjectId() == null) ||
@@ -31,37 +30,22 @@ public class PostServiceValidator {
         }
     }
 
-    public void validateUpdatePost(PostDto postDto) {
-        Post postFromTheDatabase = postRepository.findById(postDto.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
-
-        if (postFromTheDatabase.getAuthorId() != null &&
-                !postFromTheDatabase.getAuthorId().equals(postDto.getAuthorId())) {
+    public void validateUpdatePost(Post post, PostDto postDto) {
+        if (post.getAuthorId() != null &&
+                !post.getAuthorId().equals(postDto.getAuthorId())) {
             throw new DataValidationException("The Author Id should not be different");
         }
 
-        if (postFromTheDatabase.getProjectId() != null &&
-                !postFromTheDatabase.getProjectId().equals(postDto.getProjectId())) {
+        if (post.getProjectId() != null &&
+                !post.getProjectId().equals(postDto.getProjectId())) {
             throw new DataValidationException("The Project Id should not be different");
-        }
-
-        if (postFromTheDatabase.isDeleted() != postDto.isDeleted()) {
-            throw new DataValidationException("The Post flag deleted should not be different");
-        }
-
-        if (postFromTheDatabase.isPublished() != postDto.isPublished()) {
-            throw new DataValidationException("The Post flag published should not be different");
         }
     }
 
-    public void validatePublishPost(PostDto postDto) {
-        Post postFromTheDatabase = postRepository.findById(postDto.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
-
-        if (postFromTheDatabase.isPublished()) {
-            throw new DataValidationException("The Post flag published must be false");
+    public void validatePublishPost(Post post, PostDto postDto) {
+        if (post.isPublished()) {
+            throw new DataValidationException("Post has already been published");
         }
-
     }
 
     public void validateDeletePost(Post postFromTheDatabase) {

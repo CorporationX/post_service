@@ -15,23 +15,23 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public void createPost(@RequestBody @Valid PostDto postDto) {
-        postService.createPost(postDto);
+    public PostDto createPost(@RequestBody @Valid PostDto postDto) {
+        return postService.createPost(postDto);
     }
 
     @PutMapping
-    public void updatePost(@RequestBody @Valid PostDto postDto) {
-        postService.updatePost(postDto);
+    public PostDto updatePost(@RequestBody @Valid PostDto postDto) {
+        return postService.updatePost(postDto);
     }
 
     @PutMapping("/publish")
-    public void publishPost(@RequestBody @Valid PostDto postDto) {
-        postService.publishPost(postDto);
+    public PostDto publishPost(@RequestBody @Valid PostDto postDto) {
+        return postService.publishPost(postDto);
     }
 
     @DeleteMapping("/{postId}")
-    public void deletePost(@PathVariable Long postId) {
-        postService.deletePost(postId);
+    public PostDto deletePost(@PathVariable Long postId) {
+        return postService.deletePost(postId);
     }
 
     @GetMapping("/{postId}")
