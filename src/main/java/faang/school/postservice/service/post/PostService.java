@@ -32,5 +32,7 @@ public interface PostService {
 
     void verifyPost(List<Post> posts);
 
+    List<Long> findAllAuthorIdsWithNotVerifiedPosts();
+
     void correctPosts();
 }

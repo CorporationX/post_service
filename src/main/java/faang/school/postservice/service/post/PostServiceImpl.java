@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -150,6 +151,16 @@ public class PostServiceImpl implements PostService {
             postRepository.save(post);
         }
     }
+
+    @Override
+    public List<Long> findAllAuthorIdsWithNotVerifiedPosts() {
+        return postRepository.findAllNotVerifiedPosts().stream()
+                .map(Post::getAuthorId)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+
 
     @Override
     public void correctPosts(){

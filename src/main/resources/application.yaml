@@ -70,6 +70,11 @@ post:
       cron: "0 0 * * * ?" # every midnight
     threads-count: 20
     max-list-size: 100
+  user-ban:
+    scheduler:
+      cron: "0 0 * * * ?"
+    channel:
+      name: user_ban_channel
   correcter:
     scheduler:
       cron: "0 0 0 * * *"
