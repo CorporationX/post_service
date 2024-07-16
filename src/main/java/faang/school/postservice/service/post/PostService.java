@@ -31,4 +31,8 @@ public interface PostService {
     List<PostDto> findPostPublicationsByProjectAuthorId(Long id);
 
     void verifyPost(List<Post> posts);
+
+    List<Long> findAllAuthorIdsWithNotVerifiedPosts();
+
+    void correctPosts();
 }
