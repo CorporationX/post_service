@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.NewPostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
@@ -46,6 +47,8 @@ class PostServiceImplTest {
     private AsyncHashtagService hashtagService;
     @Mock
     private SpellingService spellingService;
+    @Mock
+    private NewPostEventPublisher newPostEventPublisher;
 
     @InjectMocks
     private PostServiceImpl postServiceImpl;
@@ -72,6 +75,7 @@ class PostServiceImplTest {
     void successPublish() {
         Post post = Post.builder()
                 .id(1L)
+                .projectId(2L)
                 .content("test")
                 .published(false)
                 .build();
