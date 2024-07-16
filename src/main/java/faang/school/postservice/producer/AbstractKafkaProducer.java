@@ -2,6 +2,7 @@ package faang.school.postservice.producer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.event.kafka.KafkaEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -12,7 +13,7 @@ import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract class AbstractKafkaProducer<T> implements KafkaProducer<T> {
+public abstract class AbstractKafkaProducer<T extends KafkaEvent> implements KafkaProducer<T> {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;

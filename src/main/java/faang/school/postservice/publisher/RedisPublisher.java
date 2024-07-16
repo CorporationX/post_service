@@ -1,5 +1,7 @@
 package faang.school.postservice.publisher;
 
-public interface RedisPublisher<T> {
+import faang.school.postservice.event.redis.RedisEvent;
+
+public interface RedisPublisher<T extends RedisEvent> {
     void publish(T event);
 }

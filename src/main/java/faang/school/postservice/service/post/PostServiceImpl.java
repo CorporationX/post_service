@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
@@ -10,6 +11,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationStatus;
 import faang.school.postservice.producer.post.PostProducer;
+import faang.school.postservice.producer.post.PostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
@@ -43,11 +45,18 @@ public class PostServiceImpl implements PostService {
     private final ModerationDictionary moderationDictionary;
     private final SpellingService spellingService;
     private final PostProducer postProducer;
+    private final PostViewProducer postViewProducer;
+    private final UserContext userContext;
 
     @Override
     public Post findById(Long id) {
-        return postRepository.findById(id)
+
+        Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Post with id %s not found", id)));
+
+        postViewProducer.produce(postMapper.toViewKafkaEvent(post, userContext.getUserId()));
+
+        return post;
     }
 
     @Override
