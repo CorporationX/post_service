@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostHashtagDto;
 import faang.school.postservice.event.kafka.PostKafkaEvent;
+import faang.school.postservice.event.kafka.PostViewKafkaEvent;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
@@ -30,7 +31,11 @@ public interface PostMapper {
     @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
     PostDto toDto(Post post);
 
+    @Mapping(source = "post.id", target = "postId")
     PostKafkaEvent toKafkaEvent(Post post, List<Long> subscriberIds);
+
+    @Mapping(source = "post.id", target = "postId")
+    PostViewKafkaEvent toViewKafkaEvent(Post post, long viewerId);
 
     @Named("getCountFromLikeList")
     default int getCountFromLikeList(List<Like> likes) {

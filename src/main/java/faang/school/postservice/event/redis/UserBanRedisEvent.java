@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class UserBanRedisEvent {
+public class UserBanRedisEvent implements RedisEvent {
     private List<Long> userIds;
 }

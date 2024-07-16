@@ -14,12 +14,12 @@ import java.time.LocalDateTime;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-public class LikeKafkaEvent {
+public class LikeKafkaEvent implements KafkaEvent {
 
     private Long postId;
     private Long userId;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    private LocalDateTime completedAt;
+    private LocalDateTime createdAt;
 }

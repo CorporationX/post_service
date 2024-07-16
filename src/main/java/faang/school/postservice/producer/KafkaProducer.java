@@ -1,5 +1,7 @@
 package faang.school.postservice.producer;
 
-public interface KafkaProducer<T> {
+import faang.school.postservice.event.kafka.KafkaEvent;
+
+public interface KafkaProducer<T extends KafkaEvent> {
     void produce(T event);
 }

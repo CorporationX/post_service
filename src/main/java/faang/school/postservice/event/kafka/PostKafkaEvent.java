@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-public class PostKafkaEvent {
+public class PostKafkaEvent implements KafkaEvent {
 
     private Long postId;
     private Long authorId;
@@ -23,5 +23,5 @@ public class PostKafkaEvent {
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    private LocalDateTime completedAt;
+    private LocalDateTime createdAt;
 }

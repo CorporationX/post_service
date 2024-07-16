@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @AllArgsConstructor
-public class LikeRedisEvent {
+public class LikeRedisEvent implements RedisEvent {
     private Long postId;
     private Long authorId;
     private Long userId;
