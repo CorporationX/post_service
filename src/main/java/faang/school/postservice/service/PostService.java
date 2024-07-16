@@ -9,6 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -42,6 +43,7 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
         postServiceValidator.validatePublishPost(post ,postDto);
         post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
 
         postRepository.save(post);
         return postMapper.toDto(post);
