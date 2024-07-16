@@ -16,4 +16,5 @@ class PostServiceAppTests {
     void contextLoadsWithException() {
         fail("test fail");
     }
+
 }
