@@ -23,8 +23,6 @@ public class PostService {
     public PostDto createPost(PostDto postDto) {
         postServiceValidator.validateCreatePost(postDto);
         Post post = postMapper.toEntity(postDto);
-        post.setCreatedAt(LocalDateTime.now());
-        post.setUpdatedAt(LocalDateTime.now());
 
         postRepository.save(post);
         return postMapper.toDto(post);
@@ -34,8 +32,6 @@ public class PostService {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
         postServiceValidator.validateUpdatePost(post, postDto);
-
-        post.setUpdatedAt(LocalDateTime.now());
         post.setContent(postDto.getContent());
 
         postRepository.save(post);
@@ -46,10 +42,7 @@ public class PostService {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
         postServiceValidator.validatePublishPost(post ,postDto);
-
         post.setPublished(true);
-        post.setPublishedAt(LocalDateTime.now());
-        post.setUpdatedAt(LocalDateTime.now());
 
         postRepository.save(post);
         return postMapper.toDto(post);
@@ -60,11 +53,9 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
         postServiceValidator.validateDeletePost(post);
         post.setDeleted(true);
-
         if (post.isPublished()) {
             post.setPublished(false);
         }
-        post.setUpdatedAt(LocalDateTime.now());
 
         postRepository.save(post);
         return postMapper.toDto(post);
