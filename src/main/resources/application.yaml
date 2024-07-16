@@ -44,6 +44,10 @@ spring:
         name: posts
         partition: 1
         replication: 3
+      comments:
+        name: comments
+        partition: 1
+        replication: 3
       post-views:
         name: posts
         partition: 1

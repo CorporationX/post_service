@@ -6,6 +6,7 @@ import faang.school.postservice.dto.comment.CommentToUpdateDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.comment.CommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.commonMethods.CommonServiceMethods;
@@ -28,6 +29,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommonServiceMethods commonServiceMethods;
+    private final CommentProducer commentProducer;
 
     @Override
     public CommentDto createComment(long postId, long userId, CommentToCreateDto commentDto) {
@@ -39,8 +41,12 @@ public class CommentServiceImpl implements CommentService {
 
         commentValidator.validateCreateComment(userId);
 
-        commentRepository.save(comment);
+        comment = commentRepository.save(comment);
+
+        commentProducer.produce(commentMapper.toKafkaEvent(comment));
+
         log.info("Created comment on post {} authored by {}", postId, userId);
+
         return commentMapper.toDto(comment);
     }
 
