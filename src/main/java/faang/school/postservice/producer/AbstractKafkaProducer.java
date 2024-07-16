@@ -1,42 +1,38 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.producer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.event.NewPostEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.errors.SerializationException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
-public class NewPostEventPublisher implements MessagePublisher<NewPostEvent> {
+public abstract class AbstractKafkaProducer<T> implements KafkaProducer<T> {
 
-    @Value("${spring.data.channels.new_post_channel.name}")
-    private String channelTopic;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
     private final Map<String, NewTopic> topicMap;
 
     @Override
-    public void publish(NewPostEvent event) {
-
-        NewTopic newCommentTopic = topicMap.get(channelTopic);
+    public void produce(T event) {
+        
+        NewTopic newCommentTopic = topicMap.get(getTopic());
 
         String message;
         try {
             message = objectMapper.writeValueAsString(event);
         } catch (JsonProcessingException e) {
-            throw new SerializationException("Error serializing like post event", e);
+            throw new SerializationException("Error serializing event", e);
         }
 
         kafkaTemplate.send(newCommentTopic.name(), message);
-        log.info("Published new comment event to Kafka - {}: {}", newCommentTopic.name(), message);
+        log.info("Published new event to Kafka - {}: {}", newCommentTopic.name(), message);
     }
+
+    public abstract String getTopic();
 }

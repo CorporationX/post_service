@@ -34,8 +34,14 @@ spring:
         name: calculations_channel
       like_post_channel:
         name: like_channel
-      new_post_channel:
-        name: new_post_channel
+
+    topics:
+      likes:
+        name: likes
+        partition: 1
+        replication: 3
+      posts:
+        name: posts
         partition: 1
         replication: 3
 

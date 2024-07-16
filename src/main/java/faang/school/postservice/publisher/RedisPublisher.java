@@ -1,5 +1,5 @@
 package faang.school.postservice.publisher;
 
-public interface MessagePublisher<T> {
+public interface RedisPublisher<T> {
     void publish(T event);
 }

@@ -1,6 +1,6 @@
 package faang.school.postservice.scheduler;
 
-import faang.school.postservice.event.UserBanEvent;
+import faang.school.postservice.event.redis.UserBanRedisEvent;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class AuthorBannerScheduler {
                 .toList();
 
         if (!authorIdsToBan.isEmpty()) {
-            userBanEventPublisher.publish(new UserBanEvent(authorIdsToBan));
+            userBanEventPublisher.publish(new UserBanRedisEvent(authorIdsToBan));
         }
     }
 }

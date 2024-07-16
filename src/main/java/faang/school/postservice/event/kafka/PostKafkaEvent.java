@@ -1,4 +1,4 @@
-package faang.school.postservice.event;
+package faang.school.postservice.event.kafka;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-public class NewPostEvent {
+public class PostKafkaEvent {
 
     private Long postId;
     private Long authorId;

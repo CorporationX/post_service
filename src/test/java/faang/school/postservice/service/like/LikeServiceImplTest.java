@@ -1,11 +1,13 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.event.kafka.LikeKafkaEvent;
+import faang.school.postservice.event.redis.LikeRedisEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.like.LikeProducer;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -21,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -28,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -48,10 +50,14 @@ class LikeServiceImplTest {
     private LikeMapper mapper;
     @Mock
     private LikeEventPublisher likePostPublisher;
+    @Mock
+    private LikeProducer likeProducer;
     @InjectMocks
     private LikeServiceImpl likeService;
     @Captor
-    private ArgumentCaptor<LikeEvent> captorForLikeEvent;
+    private ArgumentCaptor<LikeRedisEvent> captorForLikeEvent;
+    @Captor
+    private ArgumentCaptor<LikeKafkaEvent> captorForLikeKafkaEvent;
 
     private final long userId = 4L;
     private final long postId = 2L;
@@ -89,25 +95,30 @@ class LikeServiceImplTest {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(likeRepository.save(like)).thenReturn(like);
         when(mapper.toDto(like)).thenReturn(likeDto);
-        doNothing().when(likePostPublisher).publish(any(LikeEvent.class));
+        when(mapper.toKafkaEvent(like)).thenReturn(new LikeKafkaEvent(postId, userId, LocalDateTime.now()));
 
         LikeDto actual = likeService.addLikeOnPost(userId, postId);
         assertEquals(likeDto, actual);
         assertFalse(post.getLikes().isEmpty());
 
-        InOrder inOrder = inOrder(likeValidator, mapper, likeRepository, postRepository, likePostPublisher);
+        InOrder inOrder = inOrder(likeValidator, mapper, likeRepository, postRepository, likePostPublisher, likeProducer);
         inOrder.verify(likeValidator, times(1)).validateUserExistence(userId);
         inOrder.verify(postRepository, times(1)).findById(postId);
         inOrder.verify(likeValidator, times(1)).validateAndGetPostToLike(userId, post);
         inOrder.verify(mapper, times(1)).toEntity(any(LikeDto.class));
         inOrder.verify(likeRepository, times(1)).save(like);
         inOrder.verify(likePostPublisher, times(1)).publish(captorForLikeEvent.capture());
+        inOrder.verify(likeProducer, times(1)).produce(captorForLikeKafkaEvent.capture());
         inOrder.verify(mapper, times(1)).toDto(like);
 
-        LikeEvent captured = captorForLikeEvent.getValue();
-        assertEquals(captured.getPostId(),postId);
-        assertEquals(captured.getUserId(),userId);
-        assertEquals(captured.getAuthorId(),post.getAuthorId());
+        LikeRedisEvent capturedRedis = captorForLikeEvent.getValue();
+        assertEquals(capturedRedis.getPostId(),postId);
+        assertEquals(capturedRedis.getUserId(),userId);
+        assertEquals(capturedRedis.getAuthorId(),post.getAuthorId());
+
+        LikeKafkaEvent capturedKafka = captorForLikeKafkaEvent.getValue();
+        assertEquals(capturedKafka.getPostId(), postId);
+        assertEquals(capturedKafka.getUserId(),userId);
     }
 
     @Test
