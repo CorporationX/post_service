@@ -9,7 +9,7 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "spring.data")
 public class ChannelProperty {
 
-    private Map<String, Channel> channels;
+    private Map<String, Channel> topics;
 
     @Data
     public static class Channel {

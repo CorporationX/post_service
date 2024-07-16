@@ -9,7 +9,7 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationStatus;
-import faang.school.postservice.publisher.NewPostEventPublisher;
+import faang.school.postservice.producer.post.PostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
@@ -42,7 +42,7 @@ public class PostServiceImpl implements PostService {
     private final AsyncHashtagService asyncHashtagService;
     private final ModerationDictionary moderationDictionary;
     private final SpellingService spellingService;
-    private final NewPostEventPublisher newPostEventPublisher;
+    private final PostProducer postProducer;
 
     @Override
     public Post findById(Long id) {
@@ -72,7 +72,7 @@ public class PostServiceImpl implements PostService {
         asyncHashtagService.addHashtags(postHashtagDto);
 
         List<Long> subscriberIds = postRepository.getAuthorSubscriberIds(post.getProjectId());
-        newPostEventPublisher.publish(postMapper.toNewPostEvent(post, subscriberIds));
+        postProducer.produce(postMapper.toKafkaEvent(post, subscriberIds));
 
         return postMapper.toDto(post);
     }

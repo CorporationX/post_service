@@ -4,7 +4,6 @@ import faang.school.postservice.dto.post.PostHashtagDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -49,7 +48,7 @@ public class RedisConfig {
     }
 
     @Bean
-    ChannelTopic likeTopic(@Value("${spring.data.redis.channels.like_post_channel.name}") String topicName) {
+    ChannelTopic likeTopic(@Value("${spring.data.channels.like_post_channel.name}") String topicName) {
         return new ChannelTopic(topicName);
     }
 }

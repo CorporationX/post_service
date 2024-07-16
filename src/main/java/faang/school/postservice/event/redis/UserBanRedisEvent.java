@@ -1,4 +1,4 @@
-package faang.school.postservice.event;
+package faang.school.postservice.event.redis;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class UserBanEvent {
+public class UserBanRedisEvent {
     private List<Long> userIds;
 }

@@ -6,7 +6,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.NewPostEventPublisher;
+import faang.school.postservice.producer.post.PostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
@@ -48,7 +48,7 @@ class PostServiceImplTest {
     @Mock
     private SpellingService spellingService;
     @Mock
-    private NewPostEventPublisher newPostEventPublisher;
+    private PostProducer postProducer;
 
     @InjectMocks
     private PostServiceImpl postServiceImpl;

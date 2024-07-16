@@ -23,7 +23,7 @@ public class KafkaNewPostTopicConfig {
     @Bean
     public Map<String, NewTopic> topicMap() {
 
-        return channelProperty.getChannels().entrySet().stream()
+        return channelProperty.getTopics().entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> {
