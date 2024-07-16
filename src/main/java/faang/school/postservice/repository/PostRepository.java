@@ -10,10 +10,6 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    List<Post> findByAuthorId(long authorId);
-
-    List<Post> findByProjectId(long projectId);
-
     @Query("""
             SELECT p FROM Post p
             LEFT JOIN FETCH p.likes
@@ -28,12 +24,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             """)
     List<Post> findByProjectIdAndPublishedAndDeletedWithLikes(long projectId, boolean published, boolean deleted);
 
-    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
-    List<Post> findByProjectIdWithLikes(long projectId);
-
-    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.authorId = :authorId")
-    List<Post> findByAuthorIdWithLikes(long authorId);
-
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
@@ -42,4 +32,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.isVerify = 'NOT_VERIFIED'")
     List<Post> findAllNotVerifiedPosts();
+
+    @Query(nativeQuery = true, value = """
+            SELECT subscriber_user_id FROM user_subscriptions
+            WHERE user_id = :authorId
+            """)
+    List<Long> getAuthorSubscriberIds(long authorId);
 }

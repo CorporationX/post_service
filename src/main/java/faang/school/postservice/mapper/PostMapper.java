@@ -3,6 +3,7 @@ package faang.school.postservice.mapper;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostHashtagDto;
+import faang.school.postservice.event.NewPostEvent;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
@@ -28,6 +29,8 @@ public interface PostMapper {
 
     @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
     PostDto toDto(Post post);
+
+    NewPostEvent toNewPostEvent(Post post, List<Long> subscriberIds);
 
     @Named("getCountFromLikeList")
     default int getCountFromLikeList(List<Like> likes) {
