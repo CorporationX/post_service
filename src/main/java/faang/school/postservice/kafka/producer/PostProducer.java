@@ -1,10 +1,12 @@
-package faang.school.postservice.kafka;
+package faang.school.postservice.kafka.producer;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.EventDto;
 import faang.school.postservice.dto.event.PostEventDto;
 import faang.school.postservice.model.Post;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +17,7 @@ public class PostProducer extends AbstractEventProducer {
     private final UserServiceClient userServiceClient;
 
     public PostProducer(
-            KafkaTemplate<String, Object> kafkaTemplate,
+            KafkaTemplate<String, EventDto> kafkaTemplate,
             NewTopic postKafkaTopic,
             UserServiceClient userServiceClient
     ) {
@@ -25,8 +27,9 @@ public class PostProducer extends AbstractEventProducer {
     }
 
     @Async
+    @Retryable
     public void sendPostEvent(Post post) {
-        List<Long> postAuthorFollowersIds = userServiceClient.getFollowers(post.getAuthorId());
+        List<Long> postAuthorFollowersIds = userServiceClient.getFollowersIds(post.getAuthorId());
 
         PostEventDto postEventDto = PostEventDto.builder()
                 .authorId(post.getAuthorId())
@@ -34,6 +37,6 @@ public class PostProducer extends AbstractEventProducer {
                 .postId(post.getId())
                 .build();
 
-        sendEvent(postEventDto);
+        sendEvent(postEventDto, String.valueOf(post.getAuthorId()));
     }
 }

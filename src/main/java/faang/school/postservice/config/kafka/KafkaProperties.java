@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 public class KafkaProperties {
 
     private String host;
-
     private String port;
+    private String groupId;
 
     private TopicsNames topicsNames;
 
@@ -22,6 +22,7 @@ public class KafkaProperties {
 
     @Data
     static class TopicsNames {
-        private String postTopic;
+        private String post;
+        private String comment;
     }
 }

@@ -1,4 +1,4 @@
-package faang.school.postservice.redis;
+package faang.school.postservice.redis.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-public class LikeEventPublisher extends AbstractEventPublisher {
-    public LikeEventPublisher(ObjectMapper objectMapper,
-                              RedisTemplate<String, Object> redisTemplate,
-                              @Qualifier("likeTopic") ChannelTopic topic) {
+public class CommentEventPublisher extends AbstractEventPublisher {
+    public CommentEventPublisher(ObjectMapper objectMapper,
+                                 RedisTemplate<String, Object> redisTemplate,
+                                 @Qualifier("commentTopic") ChannelTopic topic) {
         super(objectMapper, redisTemplate, topic);
     }
 }

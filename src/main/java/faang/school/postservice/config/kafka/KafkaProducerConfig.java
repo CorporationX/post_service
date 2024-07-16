@@ -1,6 +1,8 @@
 package faang.school.postservice.config.kafka;
 
+import faang.school.postservice.dto.event.EventDto;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +21,7 @@ public class KafkaProducerConfig {
     private final KafkaProperties kafkaProperties;
 
     @Bean
-    public ProducerFactory<String, Object> producerFactory() {
+    public ProducerFactory<String, EventDto> producerFactory() {
         Map<String, Object> producerProps = new HashMap<>();
         producerProps.put(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
@@ -30,14 +33,32 @@ public class KafkaProducerConfig {
         );
         producerProps.put(
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                StringSerializer.class
+                JsonSerializer.class
         );
 
         return new DefaultKafkaProducerFactory<>(producerProps);
     }
 
     @Bean
-    public KafkaTemplate<String, Object> kafkaTemplate() {
+    public KafkaTemplate<String, EventDto> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
+    }
+
+    @Bean
+    public NewTopic postKafkaTopic() {
+        return new NewTopic(
+                kafkaProperties.getTopicsNames().getPost(),
+                1,
+                (short) 1
+        );
+    }
+
+    @Bean
+    public NewTopic commentKafkaTopic() {
+        return new NewTopic(
+                kafkaProperties.getTopicsNames().getComment(),
+                1,
+                (short) 1
+        );
     }
 }

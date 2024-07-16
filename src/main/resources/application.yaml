@@ -25,12 +25,17 @@ spring:
         calculationsChannel: calculations_channel
         likesChannel: likes_channel
         commentsChannel: comments_channel
+      feed-cache:
+        max-posts-amount: 3
+        ttl: 3 #time to live in days
+
 
   kafka:
     host: localhost
     port: 9092
+    group-id: news_feed
     topics-names:
-      post-topic: post_topic
+      post: post_topic
 
 server:
   host: localhost

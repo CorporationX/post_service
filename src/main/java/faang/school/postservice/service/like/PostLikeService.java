@@ -6,7 +6,7 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.redis.LikeEventPublisher;
+import faang.school.postservice.redis.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.like.post.PostLikeValidator;

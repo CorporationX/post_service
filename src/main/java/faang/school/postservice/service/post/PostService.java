@@ -1,11 +1,9 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.DataOperationException;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.kafka.PostProducer;
-import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.kafka.producer.PostProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
