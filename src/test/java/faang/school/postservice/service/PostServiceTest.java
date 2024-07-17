@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -49,22 +50,26 @@ public class PostServiceTest {
                 .id(1L)
                 .content("Draft 1")
                 .published(true)
+                .publishedAt(LocalDateTime.now())
                 .build();
 
         Post draftPost2 = Post.builder()
                 .id(2L)
                 .content("Draft 2")
                 .published(true)
+                .publishedAt(LocalDateTime.now())
                 .build();
 
         Post publishedPost1 = Post.builder().id(3L)
                 .content("Published 1")
                 .published(true)
+                .publishedAt(LocalDateTime.now())
                 .build();
 
         Post publishedPost2 = Post.builder().id(2L)
                 .content("Published 2")
                 .published(true)
+                .publishedAt(LocalDateTime.now())
                 .build();
 
         draftPosts = Arrays.asList(draftPost1, draftPost2);
