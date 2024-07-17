@@ -9,13 +9,11 @@ import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.s3.AmazonS3Service;
 import faang.school.postservice.validator.resource.ResourceValidator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,8 +23,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceServiceImplTest {
@@ -62,7 +65,7 @@ class ResourceServiceImplTest {
         Post post = Post.builder().id(1L).build();
         String key = UUID.randomUUID().toString();
 
-        when(postService.findById(1L)).thenReturn(post);
+        when(postService.findPostById(1L)).thenReturn(post);
         when(amazonS3Service.uploadFile(file)).thenReturn(key);
         when(resourceRepository.save(any(Resource.class))).thenAnswer(i -> i.getArguments()[0]);
 

@@ -13,13 +13,14 @@ import faang.school.postservice.model.VerificationStatus;
 import faang.school.postservice.producer.post.PostProducer;
 import faang.school.postservice.producer.post.PostViewProducer;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
+import faang.school.postservice.service.redis.AuthorRedisCacheService;
+import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +28,8 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -47,16 +48,23 @@ public class PostServiceImpl implements PostService {
     private final PostProducer postProducer;
     private final PostViewProducer postViewProducer;
     private final UserContext userContext;
+    private final AuthorRedisCacheService authorRedisCacheService;
 
     @Override
-    public Post findById(Long id) {
+    public PostDto findById(Long id) {
 
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Post with id %s not found", id)));
 
         postViewProducer.produce(postMapper.toViewKafkaEvent(post, userContext.getUserId()));
 
-        return post;
+        return postMapper.toDto(post);
+    }
+
+    @Override
+    public Post findPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Post with id %s not found", id)));
     }
 
     @Override
@@ -71,25 +79,28 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto publish(Long id) {
-        Post post = findById(id);
+        Post post = findPostById(id);
         postValidator.validatePublicationPost(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        post = postRepository.save(post);
+        final Post entity = postRepository.save(post);
 
-        PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
+        PostHashtagDto postHashtagDto = postMapper.toHashtagDto(entity);
         asyncHashtagService.addHashtags(postHashtagDto);
 
-        List<Long> subscriberIds = postRepository.getAuthorSubscriberIds(post.getProjectId());
-        postProducer.produce(postMapper.toKafkaEvent(post, subscriberIds));
+        if (post.getAuthorId() != null) {
+            List<Long> subscriberIds = postRepository.getAuthorSubscriberIds(entity.getAuthorId());
+            postProducer.produce(postMapper.toKafkaEvent(entity, subscriberIds));
+            authorRedisCacheService.save(postMapper.toAuthorCache(entity));
+        }
 
-        return postMapper.toDto(post);
+        return postMapper.toDto(entity);
     }
 
     @Override
     @Transactional
     public PostDto update(Long id, PostUpdateDto postUpdateDto) {
-        Post post = findById(id);
+        Post post = findPostById(id);
         postValidator.validatePostContent(post.getContent());
         post.setContent(postUpdateDto.getContent());
         post = postRepository.save(post);
@@ -97,18 +108,22 @@ public class PostServiceImpl implements PostService {
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.updateHashtags(postHashtagDto);
 
+        authorRedisCacheService.save(postMapper.toAuthorCache(post));
+
         return postMapper.toDto(post);
     }
 
     @Override
     @Transactional
     public void deleteById(Long id) {
-        Post post = findById(id);
+        Post post = findPostById(id);
         post.setDeleted(true);
         postRepository.save(post);
 
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.removeHashtags(postHashtagDto);
+
+        authorRedisCacheService.delete(post.getAuthorId());
     }
 
     @Override

@@ -7,6 +7,7 @@ import faang.school.postservice.event.kafka.PostKafkaEvent;
 import faang.school.postservice.event.kafka.PostViewKafkaEvent;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.AuthorRedisCache;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -36,6 +37,9 @@ public interface PostMapper {
 
     @Mapping(source = "post.id", target = "postId")
     PostViewKafkaEvent toViewKafkaEvent(Post post, long viewerId);
+
+    @Mapping(source = "authorId", target = "id")
+    AuthorRedisCache toAuthorCache(Post post);
 
     @Named("getCountFromLikeList")
     default int getCountFromLikeList(List<Like> likes) {

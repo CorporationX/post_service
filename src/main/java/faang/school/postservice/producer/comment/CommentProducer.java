@@ -15,7 +15,7 @@ import java.util.Map;
 @Component
 public class CommentProducer extends AbstractKafkaProducer<CommentKafkaEvent> {
 
-    @Value("${spring.data.topics.comments.name}")
+    @Value("${spring.data.topics.topic-settings.comments.name}")
     private String channelTopic;
 
     public CommentProducer(KafkaTemplate<String, String> kafkaTemplate,

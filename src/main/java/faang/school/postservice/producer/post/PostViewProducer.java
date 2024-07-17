@@ -15,7 +15,7 @@ import java.util.Map;
 @Component
 public class PostViewProducer extends AbstractKafkaProducer<PostViewKafkaEvent> {
 
-    @Value("${spring.data.topics.post-views.name}")
+    @Value("${spring.data.topics.topic-settings.post-views.name}")
     private String channelTopic;
 
     public PostViewProducer(KafkaTemplate<String, String> kafkaTemplate,

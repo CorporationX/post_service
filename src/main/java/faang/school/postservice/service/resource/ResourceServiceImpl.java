@@ -48,7 +48,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Transactional
     public List<ResourceDto> create(Long postId, Long userId, List<MultipartFile> files) {
 
-        Post post = postService.findById(postId);
+        Post post = postService.findPostById(postId);
         resourceValidator.validatePostAuthorAndResourceAuthor(post.getAuthorId(), post.getProjectId(), userId);
         resourceValidator.validateCountFilesPerPost(postId, files.size());
 

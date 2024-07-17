@@ -86,7 +86,7 @@ class AlbumValidatorTest {
         album.setAuthorId(2L);
         album.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
 
-        when(userServiceClient.getFollowers(2L)).thenReturn(List.of(new UserDto(3L, "", "")));
+        when(userServiceClient.getFollowers(2L)).thenReturn(List.of(UserDto.builder().id(3L).username("").email("").build()));
 
         assertThrows(NoAccessException.class, () -> albumValidator.validateAccess(album, 4L));
     }
