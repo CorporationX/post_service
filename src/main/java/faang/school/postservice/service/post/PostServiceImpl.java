@@ -1,14 +1,18 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostHashtagDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.PostCreatedEvent;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationStatus;
+import faang.school.postservice.publisher.KafkaPostPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
@@ -41,6 +45,8 @@ public class PostServiceImpl implements PostService {
     private final AsyncHashtagService asyncHashtagService;
     private final ModerationDictionary moderationDictionary;
     private final SpellingService spellingService;
+    private final KafkaPostPublisher kafkaPostPublisher;
+    private final UserServiceClient userServiceClient;
 
     @Override
     public Post findById(Long id) {
@@ -68,6 +74,11 @@ public class PostServiceImpl implements PostService {
 
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.addHashtags(postHashtagDto);
+
+        List<Long> followersIds = userServiceClient.getFollowers(post.getAuthorId()).stream()
+                .map(UserDto::getId)
+                .toList();
+        kafkaPostPublisher.publish(new PostCreatedEvent(post.getId(), followersIds));
 
         return postMapper.toDto(post);
     }
@@ -161,23 +172,21 @@ public class PostServiceImpl implements PostService {
     }
 
 
-
     @Override
-    public void correctPosts(){
+    public void correctPosts() {
         List<Post> unpublishedPosts = postRepository.findReadyToPublish();
         Map<Post, CompletableFuture<Optional<String>>> correctedContents = new HashMap<>();
         unpublishedPosts.stream()
                 .filter(post -> !post.isCheckedForSpelling())
-                .forEach(post->correctedContents.put(post, spellingService.checkSpelling(post.getContent())));
+                .forEach(post -> correctedContents.put(post, spellingService.checkSpelling(post.getContent())));
 
-        correctedContents.forEach((post, correctedContent)->{
+        correctedContents.forEach((post, correctedContent) -> {
             try {
                 correctedContent.get().ifPresent((content) -> {
                     post.setContent(content);
                     post.setCheckedForSpelling(true);
                 });
-            }
-            catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 log.error("Error when updating a post with an id: {}", post.getId(), e);
                 throw new RuntimeException(e);
             }
