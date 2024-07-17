@@ -1,12 +1,15 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataOperationException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.kafka.producer.PostProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.redis.cache.RedisPostRepository;
+import faang.school.postservice.redis.cache.RedisUserRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +30,18 @@ import static faang.school.postservice.exception.message.PostValidationException
 @Slf4j
 public class PostService {
     private final PostRepository postRepository;
+    private final RedisUserRepository userRepository;
+    private final UserServiceClient userServiceClient;
     private final RedisPostRepository postCache;
     private final PostMapper postMapper;
     private final PostVerifier postVerifier;
     private final PostProducer postProducer;
+
     @Value("${spring.data.redis.post-cache.ttl}")
     private int postTtlInCache;
+    @Value("${spring.data.redis.user-cache.ttl}")
+    private int userTtlInCache;
+
 
     public PostDto createPost(@Valid PostDto postDto) {
         postVerifier.verifyAuthorExistence(postDto.getAuthorId(), postDto.getProjectId());
@@ -47,18 +56,18 @@ public class PostService {
     public PostDto publishPost(long postId) {
         Post postToBePublished = getPost(postId);
 
-        if (postToBePublished.isPublished()) {
-            throw new DataOperationException(RE_PUBLISHING_POST_EXCEPTION.getMessage());
-        }
+        postVerifier.verifyIsPublished(postToBePublished);
 
         postToBePublished.setPublished(true);
         postToBePublished.setPublishedAt(LocalDateTime.now());
-
         Post publishedPost = postRepository.save(postToBePublished);
+
         postProducer.sendPostEvent(publishedPost);
 
         PostDto publishedPostDto = postMapper.toDto(publishedPost);
+
         cachePost(publishedPostDto);
+        cachePostAuthor(publishedPostDto.getAuthorId());
 
         return publishedPostDto;
     }
@@ -147,5 +156,11 @@ public class PostService {
     private void cachePost(PostDto postDto) {
         postDto.setTtl(postTtlInCache);
         postCache.save(postDto);
+    }
+
+    private void cachePostAuthor(long authorId) {
+        UserDto user = userServiceClient.getUser(authorId);
+        user.setTtl(userTtlInCache);
+        userRepository.save(user);
     }
 }

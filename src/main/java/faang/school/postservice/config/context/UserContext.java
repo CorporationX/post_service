@@ -2,6 +2,7 @@ package faang.school.postservice.config.context;
 
 import org.springframework.stereotype.Component;
 
+
 @Component
 public class UserContext {
 

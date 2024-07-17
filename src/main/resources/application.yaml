@@ -30,6 +30,8 @@ spring:
         ttl: 3 #time to live in days
       post-cache:
         ttl: 1 #time to live in days
+      user-cache:
+          ttl: 1 #time to live in days
 
 
   kafka:
