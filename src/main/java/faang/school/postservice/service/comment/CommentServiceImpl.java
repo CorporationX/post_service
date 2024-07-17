@@ -10,6 +10,7 @@ import faang.school.postservice.producer.comment.CommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.commonMethods.CommonServiceMethods;
+import faang.school.postservice.service.redis.AuthorRedisCacheService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,12 +25,14 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
+
     private final CommentValidator commentValidator;
     private final CommentMapper commentMapper;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommonServiceMethods commonServiceMethods;
     private final CommentProducer commentProducer;
+    private final AuthorRedisCacheService authorRedisCacheService;
 
     @Override
     public CommentDto createComment(long postId, long userId, CommentToCreateDto commentDto) {
@@ -44,6 +47,7 @@ public class CommentServiceImpl implements CommentService {
         comment = commentRepository.save(comment);
 
         commentProducer.produce(commentMapper.toKafkaEvent(comment));
+        authorRedisCacheService.save(commentMapper.toAuthorCache(comment));
 
         log.info("Created comment on post {} authored by {}", postId, userId);
 
@@ -68,8 +72,10 @@ public class CommentServiceImpl implements CommentService {
         commentValidator.validateUpdateAlbum(commentToUpdate, userId);
 
         commentMapper.update(updatedCommentDto, commentToUpdate);
+        commentToUpdate = commentRepository.save(commentToUpdate);
+
         log.info("Updated comment {} on post {} authored by {}", commentId, commentToUpdate.getPost().getId(), userId);
-        commentRepository.save(commentToUpdate);
+
         return commentMapper.toDto(commentToUpdate);
     }
 
@@ -82,7 +88,9 @@ public class CommentServiceImpl implements CommentService {
         commentValidator.validateDeleteAlbum(postId, userId, comment);
 
         commentRepository.deleteById(commentId);
+
         log.info("Deleted comment {} on post {} authored by {}", commentId, comment.getPost().getId(), userId);
+
         return commentToDelete;
     }
 }

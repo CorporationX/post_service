@@ -6,6 +6,8 @@ import faang.school.postservice.dto.comment.CommentToCreateDto;
 import faang.school.postservice.dto.comment.CommentToUpdateDto;
 import faang.school.postservice.service.comment.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -41,6 +43,7 @@ public class CommentController {
     })
     @PostMapping("/post/{postId}")
     @ResponseStatus(HttpStatus.CREATED)
+    @Parameter(in = ParameterIn.HEADER, name = "x-user-id", required = true)
     public CommentDto createComment(@PathVariable("postId") long postId,
                                     @RequestBody @Valid CommentToCreateDto commentDto) {
         long userId = userContext.getUserId();
