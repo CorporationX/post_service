@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.post.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -19,13 +20,15 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
+    private final HashtagService hashtagService;
+
 
     public PostDto createPost(PostDto postDto) {
         postServiceValidator.validateCreatePost(postDto);
         Post post = postMapper.toEntity(postDto);
 
         postRepository.save(post);
-        return postMapper.toDto(post);
+        return postDto;
     }
 
     public PostDto updatePost(PostDto postDto) {
@@ -33,6 +36,7 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
         postServiceValidator.validateUpdatePost(post, postDto);
         post.setContent(postDto.getContent());
+        post.setHashtags(postDto.getHashtags());
 
         postRepository.save(post);
         return postMapper.toDto(post);
@@ -41,7 +45,7 @@ public class PostService {
     public PostDto publishPost(PostDto postDto) {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
-        postServiceValidator.validatePublishPost(post ,postDto);
+        postServiceValidator.validatePublishPost(post, postDto);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
@@ -62,11 +66,14 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    public List<PostDto> getPostsByHashtag(HashtagDto hashtagDto) {
+        return postMapper.toDto(hashtagService.getPostsByHashtag(hashtagDto));
+    }
+
     public PostDto getPostByPostId(Long postId) {
         return postMapper.toDto(postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found")));
     }
-
 
     public List<PostDto> getAllDraftPostsByUserId(Long userId) {
         List<Post> posts = postRepository.findByAuthorId(userId);
