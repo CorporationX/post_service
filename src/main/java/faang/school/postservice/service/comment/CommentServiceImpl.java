@@ -10,7 +10,7 @@ import faang.school.postservice.producer.comment.CommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.commonMethods.CommonServiceMethods;
-import faang.school.postservice.service.redis.author.AuthorRedisCacheService;
+import faang.school.postservice.service.redis.author.AuthorRedisCacheServiceImpl;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final CommonServiceMethods commonServiceMethods;
     private final CommentProducer commentProducer;
-    private final AuthorRedisCacheService authorRedisCacheService;
+    private final AuthorRedisCacheServiceImpl authorRedisCacheService;
 
     @Override
     public CommentDto createComment(long postId, long userId, CommentToCreateDto commentDto) {
@@ -46,8 +46,8 @@ public class CommentServiceImpl implements CommentService {
 
         comment = commentRepository.save(comment);
 
-        commentProducer.produce(commentMapper.toKafkaEvent(comment));
         authorRedisCacheService.save(commentMapper.toAuthorCache(comment));
+        commentProducer.produce(commentMapper.toKafkaEvent(comment));
 
         log.info("Created comment on post {} authored by {}", postId, userId);
 

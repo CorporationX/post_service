@@ -126,9 +126,7 @@ public class PostServiceImpl implements PostService {
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.removeHashtags(postHashtagDto);
 
-        postRedisCacheService.delete(id);
-
-        authorRedisCacheService.delete(post.getAuthorId());
+        postRedisCacheService.deleteById(id);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package faang.school.postservice.producer.post;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.kafka.PostKafkaEvent;
 import faang.school.postservice.producer.AbstractKafkaProducer;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +17,11 @@ public class PostProducer extends AbstractKafkaProducer<PostKafkaEvent> {
     @Value("${spring.data.topics.topic-settings.posts.name}")
     private String channelTopic;
 
-    public PostProducer(KafkaTemplate<String, String> kafkaTemplate,
-                        ObjectMapper objectMapper,
+    public PostProducer(KafkaTemplate<String, Object> kafkaTemplate,
                         Map<String, NewTopic> topicMap) {
-        super(kafkaTemplate, objectMapper, topicMap);
+        super(kafkaTemplate, topicMap);
     }
+
 
     @Override
     public String getTopic() {

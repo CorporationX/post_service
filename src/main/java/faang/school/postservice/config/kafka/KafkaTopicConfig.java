@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 @Configuration
 @RequiredArgsConstructor
-public class KafkaNewPostTopicConfig {
+public class KafkaTopicConfig {
 
     private final ChannelProperty channelProperty;
 

@@ -1,6 +1,5 @@
 package faang.school.postservice.producer.comment;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.kafka.CommentKafkaEvent;
 import faang.school.postservice.producer.AbstractKafkaProducer;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +17,11 @@ public class CommentProducer extends AbstractKafkaProducer<CommentKafkaEvent> {
     @Value("${spring.data.topics.topic-settings.comments.name}")
     private String channelTopic;
 
-    public CommentProducer(KafkaTemplate<String, String> kafkaTemplate,
-                        ObjectMapper objectMapper,
-                        Map<String, NewTopic> topicMap) {
-        super(kafkaTemplate, objectMapper, topicMap);
+    public CommentProducer(KafkaTemplate<String, Object> kafkaTemplate,
+                            Map<String, NewTopic> topicMap) {
+        super(kafkaTemplate, topicMap);
     }
+
 
     @Override
     public String getTopic() {

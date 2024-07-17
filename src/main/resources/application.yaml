@@ -40,35 +40,34 @@ spring:
         likes:
           name: likes
           partition: 1
-          replication: 3
+          replication: 1
         posts:
           name: posts
           partition: 1
-          replication: 3
+          replication: 1
         comments:
           name: comments
           partition: 1
-          replication: 3
+          replication: 1
         post-views:
           name: posts
           partition: 1
-          replication: 3
+          replication: 1
 
   cache:
     default-ttl: 3600
     default-max-size: 1000
+    max-post-comments-size: 3
     cache-settings:
       hashtag:
         name: hashtags
         max-size: 1000
       users:
         name: users
-        max-size: 1000
-        ttl: 3600
       posts:
         name: posts
-        max-size: 1000
-        ttl: 3600
+      comments:
+        name: comments
 
   servlet:
     multipart:
@@ -130,6 +129,10 @@ payment-service:
   port: 9080
 
 async:
+  kafka:
+    corePoolSize: 5
+    maxPoolSize: 10
+    queueCapacity: 100
   corePoolSize: 5
   maxPoolSize: 10
   queueCapacity: 100
