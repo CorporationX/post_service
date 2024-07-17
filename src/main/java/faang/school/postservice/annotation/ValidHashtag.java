@@ -1,6 +1,6 @@
 package faang.school.postservice.annotation;
 
-import faang.school.postservice.validator.HashtagValidator;
+import faang.school.postservice.validator.HashtagAnnotationValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -9,7 +9,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Constraint(validatedBy = HashtagValidator.class)
+@Constraint(validatedBy = HashtagAnnotationValidator.class)
 @Target({ ElementType.FIELD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 

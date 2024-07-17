@@ -1,10 +1,12 @@
-package faang.school.postservice.postServiceTest;
+package faang.school.postservice.service;
 
+import faang.school.postservice.dto.post.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.HashtagMapper;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +38,13 @@ public class PostServiceTest {
     @Mock
     private PostServiceValidator postServiceValidator;
 
+    @Mock
+    private HashtagService hashtagService;
+
+    @Mock
+    private HashtagMapper hashtagMapper;
+
+
     private PostDto postDto;
     private Post post;
     private List<Post> draftPosts;
@@ -50,22 +60,26 @@ public class PostServiceTest {
                 .id(1L)
                 .content("Draft 1")
                 .published(true)
+                .publishedAt(LocalDateTime.now())
                 .build();
 
         Post draftPost2 = Post.builder()
                 .id(2L)
                 .content("Draft 2")
+                .publishedAt(LocalDateTime.now())
                 .published(true)
                 .build();
 
         Post publishedPost1 = Post.builder().id(3L)
                 .content("Published 1")
                 .published(true)
+                .publishedAt(LocalDateTime.now())
                 .build();
 
         Post publishedPost2 = Post.builder().id(2L)
                 .content("Published 2")
                 .published(true)
+                .publishedAt(LocalDateTime.now())
                 .build();
 
         draftPosts = Arrays.asList(draftPost1, draftPost2);
@@ -84,11 +98,13 @@ public class PostServiceTest {
         PostDto publishedPostDto1 = PostDto.builder()
                 .id(3L)
                 .content("Published 1")
+                .hashtags(List.of(new Hashtag()))
                 .build();
 
         PostDto publishedPostDto2 = PostDto.builder()
                 .id(4L)
                 .content("Published 2")
+                .hashtags(List.of(new Hashtag()))
                 .build();
 
         draftPostDtos = Arrays.asList(draftPostDto1, draftPostDto2);
@@ -134,6 +150,16 @@ public class PostServiceTest {
         verify(postRepository, times(1)).save(post);
         assertTrue(post.isDeleted());
         assertFalse(post.isPublished());
+    }
+
+    @Test
+    public void testGetPostsByHashtag(){
+        HashtagDto hashtagDto = new HashtagDto();
+        when(hashtagService.getPostsByHashtag(hashtagDto)).thenReturn(draftPosts);
+
+        postService.getPostsByHashtag(hashtagDto);
+
+        verify(postMapper, times(1)).toDto(draftPosts);
     }
 
     @Test

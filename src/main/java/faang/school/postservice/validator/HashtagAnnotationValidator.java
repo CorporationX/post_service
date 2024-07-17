@@ -5,14 +5,14 @@ import faang.school.postservice.annotation.ValidHashtag;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class HashtagValidator implements ConstraintValidator<ValidHashtag, String> {
+public class HashtagAnnotationValidator implements ConstraintValidator<ValidHashtag, String> {
 
-    private static final String HASHTAG_PATTERN = "^#[A-Za-z0-9_]+$";
+    private static final String HASHTAG_PATTERN = "^#[A-Za-z0-9А-Яа-я_]+$";
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value == null || value.isEmpty()) {
-            return true; // Можно изменить на false, если хотите проверять на null
+            return true;
         }
         return value.matches(HASHTAG_PATTERN);
     }

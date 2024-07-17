@@ -6,6 +6,7 @@ import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.HashtagRepository;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,11 +17,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Getter
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
     private final HashtagMapper hashtagMapper;
 
-    private final HashMap<Hashtag, List<Post>> postsByHashtag = new HashMap<>();
+    private final HashMap<Hashtag, List<Post>> hashtagsWithPosts = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -29,15 +31,15 @@ public class HashtagService {
 
     @Scheduled(fixedRate = 60000)
     public void updateHashtagMap() {
-        synchronized (postsByHashtag) {
-            postsByHashtag.clear();
+        synchronized (hashtagsWithPosts) {
+            hashtagsWithPosts.clear();
             hashtagRepository.findAll()
-                    .forEach(hashtag -> postsByHashtag.put(hashtag, hashtag.getPosts()));
+                    .forEach(hashtag -> hashtagsWithPosts.put(hashtag, hashtag.getPosts()));
         }
     }
 
     public List<Post> getPostsByHashtag(HashtagDto hashtagDto) {
-        return postsByHashtag.get(hashtagMapper.toEntity(hashtagDto));
+        return hashtagsWithPosts.get(hashtagMapper.toEntity(hashtagDto));
     }
 
     public List<HashtagDto> findTopXPopularHashtags(int x) {

@@ -6,8 +6,11 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.HashtagRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.HashtagService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,17 +30,11 @@ public class PostServerValidatorTest {
     @Mock
     private ProjectServiceClient projectServiceClient;
 
-    @Mock
-    private PostRepository postRepository;
-
     @InjectMocks
     private PostServiceValidator postServiceValidator;
 
     private PostDto postDto;
     private Post post;
-    private PostDto postDtoWithProjectOwner;
-    private Post postWithProjectOwner;
-
 
     @BeforeEach
     void setUp() {
@@ -51,20 +48,6 @@ public class PostServerValidatorTest {
                 .id(1L)
                 .authorId(1L)
                 .projectId(null)
-                .published(false)
-                .deleted(false)
-                .build();
-
-        postDtoWithProjectOwner = PostDto.builder()
-                .id(1L)
-                .authorId(null)
-                .projectId(1L)
-                .build();
-
-        postWithProjectOwner = Post.builder()
-                .id(1L)
-                .authorId(null)
-                .projectId(1L)
                 .published(false)
                 .deleted(false)
                 .build();
