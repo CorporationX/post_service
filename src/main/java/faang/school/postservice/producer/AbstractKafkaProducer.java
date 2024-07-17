@@ -21,8 +21,27 @@ public abstract class AbstractKafkaProducer<T extends KafkaEvent> implements Kaf
 
     @Override
     public void produce(T event) {
+
+        String message = processEvent(event);
         
         NewTopic newCommentTopic = topicMap.get(getTopic());
+        kafkaTemplate.send(newCommentTopic.name(), message);
+        log.info("Published new event to Kafka - {}: {}", newCommentTopic.name(), message);
+    }
+
+    @Override
+    public void produce(T event, Runnable runnable) {
+
+        String message = processEvent(event);
+
+        NewTopic newCommentTopic = topicMap.get(getTopic());
+        kafkaTemplate.send(newCommentTopic.name(), message).thenRun(runnable);
+        log.info("Published new event to Kafka with a runnable task - {}: {}", newCommentTopic.name(), message);
+    }
+
+    public abstract String getTopic();
+
+    private String processEvent(T event) {
 
         String message;
         try {
@@ -30,10 +49,6 @@ public abstract class AbstractKafkaProducer<T extends KafkaEvent> implements Kaf
         } catch (JsonProcessingException e) {
             throw new SerializationException("Error serializing event", e);
         }
-
-        kafkaTemplate.send(newCommentTopic.name(), message);
-        log.info("Published new event to Kafka - {}: {}", newCommentTopic.name(), message);
+        return message;
     }
-
-    public abstract String getTopic();
 }

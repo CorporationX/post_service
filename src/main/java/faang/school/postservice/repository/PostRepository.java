@@ -34,8 +34,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllNotVerifiedPosts();
 
     @Query(nativeQuery = true, value = """
-            SELECT subscriber_user_id FROM user_subscriptions
-            WHERE user_id = :authorId
+            SELECT follower_id FROM subscription
+            WHERE followee_id = :authorId
             """)
     List<Long> getAuthorSubscriberIds(long authorId);
 }

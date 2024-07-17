@@ -6,10 +6,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.Map;
 
 @Data
-@ConfigurationProperties(prefix = "spring.data")
+@ConfigurationProperties(prefix = "spring.data.topics")
 public class ChannelProperty {
 
-    private Map<String, Channel> topics;
+    private Short defaultReplication;
+    private Integer defaultPartition;
+    private Map<String, Channel> topicSettings;
 
     @Data
     public static class Channel {

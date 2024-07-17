@@ -15,7 +15,7 @@ import java.util.Map;
 @Component
 public class LikeProducer extends AbstractKafkaProducer<LikeKafkaEvent> {
 
-    @Value("${spring.data.topics.likes.name}")
+    @Value("${spring.data.topics.topic-settings.likes.name}")
     private String channelTopic;
 
     public LikeProducer(KafkaTemplate<String, String> kafkaTemplate,

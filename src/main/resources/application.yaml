@@ -36,26 +36,37 @@ spring:
         name: like_channel
 
     topics:
-      likes:
-        name: likes
-        partition: 1
-        replication: 3
-      posts:
-        name: posts
-        partition: 1
-        replication: 3
-      comments:
-        name: comments
-        partition: 1
-        replication: 3
-      post-views:
-        name: posts
-        partition: 1
-        replication: 3
+      default-partition: 1
+      default-replication: 3
+      topic-settings:
+        likes:
+          name: likes
+          partition: 1
+          replication: 3
+        posts:
+          name: posts
+          partition: 1
+          replication: 3
+        comments:
+          name: comments
+          partition: 1
+          replication: 3
+        post-views:
+          name: posts
+          partition: 1
+          replication: 3
 
-    cache:
+  cache:
+    default-ttl: 3600
+    default-max-size: 1000
+    cache-settings:
       hashtag:
-        max_size: 1000
+        name: hashtags
+        max-size: 1000
+      users:
+        name: users
+        max-size: 1000
+        ttl: 3600
 
   servlet:
     multipart:
