@@ -6,6 +6,7 @@ import faang.school.postservice.dto.comment.CommentToUpdateDto;
 import faang.school.postservice.event.kafka.CommentKafkaEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.redis.AuthorRedisCache;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -26,6 +27,9 @@ public interface CommentMapper {
 
     @Mapping(source = "post.id", target = "postId")
     CommentKafkaEvent toKafkaEvent(Comment comment);
+
+    @Mapping(source = "authorId", target = "id")
+    AuthorRedisCache toAuthorCache(Comment comment);
 
     @Mapping(target = "id", ignore = true)
     void update(CommentToUpdateDto commentDto, @MappingTarget Comment comment);

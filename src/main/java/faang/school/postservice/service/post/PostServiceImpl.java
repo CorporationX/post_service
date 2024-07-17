@@ -108,8 +108,6 @@ public class PostServiceImpl implements PostService {
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.updateHashtags(postHashtagDto);
 
-        authorRedisCacheService.save(postMapper.toAuthorCache(post));
-
         return postMapper.toDto(post);
     }
 

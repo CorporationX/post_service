@@ -42,7 +42,9 @@ public class AuthorRedisCacheService implements RedisCacheService<AuthorRedisCac
         AuthorRedisCache redisUser = authorMapper.toAuthorCache(userDto);
         redisUser.setTtl(ttl);
 
-        redisUser = authorRedisRepository.save(redisUser);
+        authorRedisRepository.findById(entity.getId()).ifPresent(authorRedisRepository::delete);
+
+        authorRedisRepository.save(redisUser);
 
         return redisUser;
     }

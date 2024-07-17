@@ -26,8 +26,6 @@ spring:
       port: 9092
       host: localhost
       group-id: account_service
-      default-partition: 1
-      default-replication: 3
 
     channels:
       calculations_channel:
