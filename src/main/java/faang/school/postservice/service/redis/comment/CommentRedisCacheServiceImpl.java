@@ -11,7 +11,10 @@ import org.hibernate.dialect.lock.OptimisticEntityLockException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -32,8 +35,9 @@ public class CommentRedisCacheServiceImpl implements CommentRedisCacheService {
     }
 
     @Override
+    @Async("cacheTaskExecutor")
     @Retryable(retryFor = {OptimisticEntityLockException.class}, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
-    public CommentRedisCache save(CommentRedisCache entity) {
+    public CompletableFuture<CommentRedisCache> save(CommentRedisCache entity) {
 
         entity.setTtl(ttl);
         entity = updateOrSave(entity);
@@ -42,7 +46,7 @@ public class CommentRedisCacheServiceImpl implements CommentRedisCacheService {
 
         log.info("Saved post with id {} to cache: {}", entity.getId(), entity);
 
-        return entity;
+        return CompletableFuture.completedFuture(entity);
     }
 
     private CommentRedisCache updateOrSave(CommentRedisCache entity) {

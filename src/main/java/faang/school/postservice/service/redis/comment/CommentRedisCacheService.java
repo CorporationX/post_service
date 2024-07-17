@@ -2,7 +2,9 @@ package faang.school.postservice.service.redis.comment;
 
 import faang.school.postservice.model.redis.CommentRedisCache;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface CommentRedisCacheService {
 
-    CommentRedisCache save(CommentRedisCache entity);
+    CompletableFuture<CommentRedisCache> save(CommentRedisCache entity);
 }

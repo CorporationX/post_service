@@ -1,5 +1,6 @@
 package faang.school.postservice.service.redis.author;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.model.redis.AuthorRedisCache;
 import faang.school.postservice.property.CacheProperty;
 import faang.school.postservice.repository.redis.AuthorRedisRepository;
@@ -11,7 +12,10 @@ import org.hibernate.dialect.lock.OptimisticEntityLockException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -25,6 +29,7 @@ public class AuthorRedisCacheServiceImpl implements AuthorRedisCacheService {
     private final CacheProperty cacheProperty;
     private final AuthorRedisRepository authorRedisRepository;
     private final UserService userService;
+    private final UserContext userContext;
 
     @PostConstruct
     public void init() {
@@ -32,8 +37,11 @@ public class AuthorRedisCacheServiceImpl implements AuthorRedisCacheService {
     }
 
     @Override
+    @Async("cacheTaskExecutor")
     @Retryable(retryFor = { OptimisticEntityLockException.class }, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
-    public AuthorRedisCache save(AuthorRedisCache entity) {
+    public CompletableFuture<AuthorRedisCache> save(AuthorRedisCache entity) {
+
+        userContext.setUserId(entity.getId());
 
         AuthorRedisCache redisUser = userService.getUserAuthorCacheById(entity.getId());
 
@@ -42,7 +50,7 @@ public class AuthorRedisCacheServiceImpl implements AuthorRedisCacheService {
 
         log.info("Saved author with id {} to cache: {}", entity.getId(), redisUser);
 
-        return redisUser;
+        return CompletableFuture.completedFuture(redisUser);
     }
 
     private AuthorRedisCache updateOrSave(AuthorRedisCache entity) {

@@ -12,11 +12,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.NavigableSet;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -38,18 +40,20 @@ public class PostRedisCacheServiceImpl implements PostRedisCacheService {
     }
 
     @Override
+    @Async("cacheTaskExecutor")
     @Retryable(retryFor = {OptimisticEntityLockException.class}, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
-    public PostRedisCache save(PostRedisCache entity) {
+    public CompletableFuture<PostRedisCache> save(PostRedisCache entity) {
 
         entity.setTtl(ttl);
         entity = updateOrSave(entity);
 
         log.info("Saved post with id {} to cache: {}", entity.getId(), entity);
 
-        return entity;
+        return CompletableFuture.completedFuture(entity);
     }
 
     @Override
+    @Async("cacheTaskExecutor")
     @Retryable(retryFor = OptimisticLockingFailureException.class, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
     public void addCommentToPost(CommentRedisCache comment) {
 
@@ -70,6 +74,7 @@ public class PostRedisCacheServiceImpl implements PostRedisCacheService {
     }
 
     @Override
+    @Async("cacheTaskExecutor")
     public void deleteById(long postId) {
 
         postRedisRepository.deleteById(postId);
