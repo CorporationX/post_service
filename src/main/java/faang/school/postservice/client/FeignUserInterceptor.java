@@ -12,6 +12,6 @@ public class FeignUserInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
-        //TODO: разобраться, почему запрос на getUser крашится template.header("x-user-id", String.valueOf(userContext.getUserId()));
+        template.header("x-user-id", String.valueOf(userContext.getUserId()));
     }
 }

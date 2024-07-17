@@ -24,7 +24,7 @@ public class UserHeaderFilter implements Filter {
         try {
             chain.doFilter(request, response);
         } finally {
-              userContext.clear();
+            userContext.clear();
         }
     }
 }
