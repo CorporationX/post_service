@@ -18,12 +18,12 @@ public class LikeController {
     private final LikeService likeService;
 
     @GetMapping("/post/{postId}")
-    public List<UserDto> getLikesUsersByPostId(@PathVariable Long postId) {
+    public List<UserDto> getLikesUsersByPostId(@PathVariable long postId) {
         return likeService.getLikesUsersByPostId(postId);
     }
 
     @GetMapping("/comment/{commentId}")
-    public List<UserDto> getLikesUsersByCommentId(@PathVariable Long commentId) {
+    public List<UserDto> getLikesUsersByCommentId(@PathVariable long commentId) {
         return likeService.getLikesUsersByCommentId(commentId);
     }
 }

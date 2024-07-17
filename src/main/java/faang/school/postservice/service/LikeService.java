@@ -1,7 +1,6 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.ExecutorServiceConfig;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +20,6 @@ public class LikeService {
     @Setter
     private int BATCH_SIZE;
 
-    private final ExecutorServiceConfig executorServiceConfig;
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
 
@@ -44,22 +41,24 @@ public class LikeService {
         return getUsersDto(userIdsLikedComment);
     }
 
-    private List<UserDto> getUsersDto(List<Long> userIdsLikedComment) {
-        List<CompletableFuture<List<UserDto>>> usersDtoFutures = new ArrayList<>();
+    private List<UserDto> getUsersDto(List<Long> userIdsLiked) {
 
-        for (int i = 0; i < userIdsLikedComment.size(); i += BATCH_SIZE) {
-            List<Long> batch = userIdsLikedComment.subList(i, Math.min(i + BATCH_SIZE, userIdsLikedComment.size()));
-            usersDtoFutures.add(CompletableFuture.supplyAsync(
-                    () -> userServiceClient.getUsersByIds(batch)));
+        List<List<Long>> batchesList = new ArrayList<>();
+
+        for (int i = 0; i < userIdsLiked.size(); i += BATCH_SIZE) {
+            List<Long> batch = userIdsLiked.subList(i, Math.min(i + BATCH_SIZE, userIdsLiked.size()));
+            batchesList.add(batch);
         }
-        return getReadyUsersDtoFuture(usersDtoFutures).join();
+        return collectUsersDto(batchesList);
     }
 
-    private CompletableFuture<List<UserDto>> getReadyUsersDtoFuture(List<CompletableFuture<List<UserDto>>> usersDtoFutures) {
-        return CompletableFuture.allOf(usersDtoFutures.toArray(new CompletableFuture[0]))
-                .thenApply(v -> usersDtoFutures.stream()
-                        .map(CompletableFuture::join)
-                        .flatMap(List::stream)
-                        .toList());
+    private List<UserDto> collectUsersDto(List<List<Long>> batchesList) {
+
+        List<UserDto> result = new ArrayList<>();
+
+        for (List<Long> batch : batchesList) {
+            result.addAll(userServiceClient.getUsersByIds(batch));
+        }
+        return result;
     }
 }

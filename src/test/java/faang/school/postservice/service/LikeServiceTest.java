@@ -1,36 +1,22 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.ExecutorServiceConfig;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
-import org.junit.BeforeClass;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
@@ -40,8 +26,6 @@ public class LikeServiceTest {
 
     public static int BATCH_SIZE = 100;
 
-    @Mock
-    private ExecutorServiceConfig executorServiceConfig;
 
     @Mock
     private LikeRepository likeRepository;
@@ -87,7 +71,6 @@ public class LikeServiceTest {
     @DisplayName("get all likes userDto by postId")
     public void getLikesUsersByPostIdTest() {
 
-        when(executorServiceConfig.getExecutorService()).thenReturn(Executors.newFixedThreadPool(10));
         when(likeRepository.findByPostId(anyLong())).thenReturn(likes);
         when(userServiceClient.getUsersByIds(anyList())).thenReturn(usersDto);
 
@@ -105,7 +88,6 @@ public class LikeServiceTest {
     @DisplayName("get all likes userDto by commentId")
     public void getLikesUsersByCommentIdTest() {
 
-        when(executorServiceConfig.getExecutorService()).thenReturn(Executors.newFixedThreadPool(10));
         when(likeRepository.findByCommentId(anyLong())).thenReturn(likes);
         when(userServiceClient.getUsersByIds(anyList())).thenReturn(usersDto);
 
