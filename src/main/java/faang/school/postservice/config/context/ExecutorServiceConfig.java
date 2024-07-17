@@ -8,13 +8,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Configuration
-public class Config {
+public class ExecutorServiceConfig {
 
     @Value("${executor.thread.pool.size}")
     private int threadCount;
 
     @Bean
-    public ExecutorService executorService() {
+    public ExecutorService getExecutorService() {
         return Executors.newFixedThreadPool(threadCount);
     }
 }

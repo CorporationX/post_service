@@ -1,20 +1,18 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.ExecutorServiceConfig;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +22,7 @@ public class LikeService {
     @Setter
     private int BATCH_SIZE;
 
-    private final ExecutorService executorService;
+    private final ExecutorServiceConfig executorServiceConfig;
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
 
@@ -51,7 +49,8 @@ public class LikeService {
 
         for (int i = 0; i < userIdsLikedComment.size(); i += BATCH_SIZE) {
             List<Long> batch = userIdsLikedComment.subList(i, Math.min(i + BATCH_SIZE, userIdsLikedComment.size()));
-            usersDtoFutures.add(CompletableFuture.supplyAsync(() -> userServiceClient.getUsersByIds(batch), executorService));
+            usersDtoFutures.add(CompletableFuture.supplyAsync(
+                    () -> userServiceClient.getUsersByIds(batch)));
         }
         return getReadyUsersDtoFuture(usersDtoFutures).join();
     }

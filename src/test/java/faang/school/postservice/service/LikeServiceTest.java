@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.ExecutorServiceConfig;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -20,7 +21,10 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -32,13 +36,12 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@RunWith(SpringRunner.class)
 public class LikeServiceTest {
 
     public static int BATCH_SIZE = 100;
 
-    @Spy
-    private ExecutorService executorService;
+    @Mock
+    private ExecutorServiceConfig executorServiceConfig;
 
     @Mock
     private LikeRepository likeRepository;
@@ -84,6 +87,7 @@ public class LikeServiceTest {
     @DisplayName("get all likes userDto by postId")
     public void getLikesUsersByPostIdTest() {
 
+        when(executorServiceConfig.getExecutorService()).thenReturn(Executors.newFixedThreadPool(10));
         when(likeRepository.findByPostId(anyLong())).thenReturn(likes);
         when(userServiceClient.getUsersByIds(anyList())).thenReturn(usersDto);
 
@@ -101,6 +105,7 @@ public class LikeServiceTest {
     @DisplayName("get all likes userDto by commentId")
     public void getLikesUsersByCommentIdTest() {
 
+        when(executorServiceConfig.getExecutorService()).thenReturn(Executors.newFixedThreadPool(10));
         when(likeRepository.findByCommentId(anyLong())).thenReturn(likes);
         when(userServiceClient.getUsersByIds(anyList())).thenReturn(usersDto);
 
