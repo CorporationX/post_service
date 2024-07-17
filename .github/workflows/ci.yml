@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
     branches:
-      - 'griffon-master-bc5-feature/pipline-BC-BJS2-16356'
+      - 'griffon-master-bc5'
 
 jobs:
   test:
