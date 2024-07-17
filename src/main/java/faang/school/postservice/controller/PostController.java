@@ -41,6 +41,7 @@ public class PostController {
     }
 
     @PostMapping("publication/{postId}")
+    @Parameter(in = ParameterIn.HEADER, name = "x-user-id", required = true)
     public PostDto publish(@PathVariable Long postId) {
         return postService.publish(postId);
     }

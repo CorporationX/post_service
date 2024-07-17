@@ -9,6 +9,6 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AuthorMapper {
 
-    @Mapping(source = "userProfilePicDto.fileId", target = "smallFileId")
+    @Mapping(source = "userProfilePic.fileId", target = "smallFileId")
     AuthorRedisCache toAuthorCache(UserDto userDto);
 }
