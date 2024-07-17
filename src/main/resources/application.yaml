@@ -28,6 +28,8 @@ spring:
       feed-cache:
         max-posts-amount: 3
         ttl: 3 #time to live in days
+      post-cache:
+        ttl: 1 #time to live in days
 
 
   kafka:
