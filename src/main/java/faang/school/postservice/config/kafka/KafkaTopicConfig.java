@@ -10,9 +10,16 @@ public class KafkaTopicConfig {
 
     @Value("${spring.data.kafka.posts-topic}")
     private String postsTopic;
+    @Value("${spring.data.kafka.comments-topic}")
+    private String commentTopic;
+
+    @Bean
+    public NewTopic postEventTopic() {
+        return new NewTopic(postsTopic, 1, (short) 1);
+    }
 
     @Bean
     public NewTopic commentEventTopic() {
-        return new NewTopic(postsTopic, 1, (short) 1);
+        return new NewTopic(commentTopic, 1, (short) 1);
     }
 }

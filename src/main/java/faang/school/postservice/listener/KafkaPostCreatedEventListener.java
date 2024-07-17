@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class KafkaPostCreatedEventListener extends AbstractKafkaListener<PostCreatedEvent> {
 
-    @KafkaListener(topics = "${spring.data.kafka.posts-topic}", groupId = "test")
+    @KafkaListener(topics = "${spring.data.kafka.posts-topic}", groupId = "posts")
     public void listen(String data) {
         consume(data, PostCreatedEvent.class, this::handle);
     }
