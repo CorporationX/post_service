@@ -1,12 +1,14 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.event.LikeCreatedEvent;
 import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.KafkaLikesPublisher;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
@@ -32,6 +34,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeMapper likeMapper;
     private final LikeValidatorImpl likeValidator;
     private final LikeEventPublisher likeEventPublisher;
+    private final KafkaLikesPublisher kafkaLikesPublisher;
 
     @Override
     @Transactional
@@ -52,6 +55,8 @@ public class LikeServiceImpl implements LikeService {
         likeEventPublisher.publish(new LikeEvent(postId, post.getAuthorId(), userId, LocalDateTime.now()));
 
         log.info("Like with likeId = {} was added on post with postId = {} by user with userId = {}", like.getId(), postId, userId);
+
+        kafkaLikesPublisher.publish(new LikeCreatedEvent(postId, userId));
 
         return likeMapper.toDto(like);
     }

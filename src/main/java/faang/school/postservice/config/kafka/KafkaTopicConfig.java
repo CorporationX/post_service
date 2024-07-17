@@ -12,6 +12,8 @@ public class KafkaTopicConfig {
     private String postsTopic;
     @Value("${spring.data.kafka.comments-topic}")
     private String commentTopic;
+    @Value("${spring.data.kafka.likes-topic}")
+    private String likesTopic;
 
     @Bean
     public NewTopic postEventTopic() {
@@ -21,5 +23,10 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic commentEventTopic() {
         return new NewTopic(commentTopic, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic likesEventTopic() {
+        return new NewTopic(likesTopic, 1, (short) 1);
     }
 }
