@@ -35,13 +35,13 @@ public class Feed implements Serializable {
         this.ttl = ttl;
     }
 
-    public void addNewPost(PostEventDto postEventDto, int maxPostsAmount) {
+    public void addNewPost(long postId, int maxPostsAmount) {
         if (postsIds.size() >= maxPostsAmount) {
             Long firstElement = postsIds.iterator().next();
             postsIds.remove(firstElement);
         }
 
-        postsIds.add(postEventDto.getPostId());
+        postsIds.add(postId);
         version++;
 
     }
