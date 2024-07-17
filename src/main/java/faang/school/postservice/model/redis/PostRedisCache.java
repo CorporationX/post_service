@@ -10,13 +10,15 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash("authors")
-public class AuthorRedisCache implements Serializable {
+@RedisHash("posts")
+public class PostRedisCache implements Serializable {
 
     @Id
     private Long id;
@@ -25,6 +27,11 @@ public class AuthorRedisCache implements Serializable {
     @Version
     private long version;
 
-    private String username;
-    private String smallFileId;
+    private String content;
+    private Long authorId;
+    private Long projectId;
+    private List<String> resourceIds;
+    private LocalDateTime publishedAt;
+    private LocalDateTime createdAt;
+    private int likesCount;
 }

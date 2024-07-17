@@ -65,6 +65,10 @@ spring:
         name: users
         max-size: 1000
         ttl: 3600
+      posts:
+        name: posts
+        max-size: 1000
+        ttl: 3600
 
   servlet:
     multipart:
