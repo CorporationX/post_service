@@ -1,4 +1,4 @@
-package faang.school.postservice.mapper.post;
+package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentDto;

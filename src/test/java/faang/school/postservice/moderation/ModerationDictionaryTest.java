@@ -1,5 +1,6 @@
 package faang.school.postservice.moderation;
 
+import faang.school.postservice.dto.moderation.ModerationDictionary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

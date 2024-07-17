@@ -1,4 +1,4 @@
-package faang.school.postservice.mapper.post;
+package faang.school.postservice.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +14,7 @@ public class JsonMapper<T> {
         try {
             return mapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            log.error("Ошибка при преобразовании объекта в json: {}", e);
+            log.error("Ошибка при преобразовании объекта в json: ", e);
             throw new RuntimeException(e);
         }
     }

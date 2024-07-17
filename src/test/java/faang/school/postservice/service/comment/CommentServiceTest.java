@@ -5,7 +5,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.EntityWrongParameterException;
 import faang.school.postservice.exception.NoAccessException;
-import faang.school.postservice.mapper.post.CommentMapper;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -183,19 +184,15 @@ class CommentServiceTest {
         verify(commentRepository, never()).deleteById(1L);
     }
 
-    private void verifyCommentDependencies(CommentDto commentDto, Comment comment) {
-        verify(commentMapper, times(1)).fromDto(commentDto);
-        verify(commentRepository, times(1)).save(comment);
-        verify(commentMapper, times(1)).toDto(comment);
+    @Test
+    void whenExistsByIdThenTrue() {
+        when(commentRepository.existsById(anyLong())).thenReturn(true);
+        assertTrue(commentService.existsById(1));
     }
 
-    private CommentDto createTestCommentDto(String content, Long authorId, Long postId) {
-        return CommentDto.builder()
-                .id(1L)
-                .content(content)
-                .authorId(authorId)
-                .postId(postId)
-                .createdAt(LocalDateTime.now())
-                .build();
+    @Test
+    void whenExistsByIdThenFalse() {
+        when(commentRepository.existsById(anyLong())).thenReturn(false);
+        assertFalse(commentService.existsById(1));
     }
 }

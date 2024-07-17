@@ -7,4 +7,5 @@ public interface PostService {
     Post getPostById(long id);
     Post createPost(PostDto postDto);
     void publishScheduledPosts();
+    boolean existsById(long id);
 }

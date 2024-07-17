@@ -30,4 +30,6 @@ public class PostDto {
 
     @Future
     private LocalDateTime scheduledAt;
+
+    //private long likesAmount;
 }
