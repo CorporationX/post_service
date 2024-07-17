@@ -14,7 +14,8 @@ import faang.school.postservice.producer.post.PostProducer;
 import faang.school.postservice.producer.post.PostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
-import faang.school.postservice.service.redis.AuthorRedisCacheService;
+import faang.school.postservice.service.redis.author.AuthorRedisCacheService;
+import faang.school.postservice.service.redis.post.PostRedisCacheService;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,7 @@ public class PostServiceImpl implements PostService {
     private final PostViewProducer postViewProducer;
     private final UserContext userContext;
     private final AuthorRedisCacheService authorRedisCacheService;
+    private final PostRedisCacheService postRedisCacheService;
 
     @Override
     public PostDto findById(Long id) {
@@ -92,6 +94,7 @@ public class PostServiceImpl implements PostService {
             List<Long> subscriberIds = postRepository.getAuthorSubscriberIds(entity.getAuthorId());
             postProducer.produce(postMapper.toKafkaEvent(entity, subscriberIds));
             authorRedisCacheService.save(postMapper.toAuthorCache(entity));
+            postRedisCacheService.save(postMapper.toRedisCache(entity));
         }
 
         return postMapper.toDto(entity);
@@ -108,6 +111,8 @@ public class PostServiceImpl implements PostService {
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.updateHashtags(postHashtagDto);
 
+        postRedisCacheService.save(postMapper.toRedisCache(post));
+
         return postMapper.toDto(post);
     }
 
@@ -120,6 +125,8 @@ public class PostServiceImpl implements PostService {
 
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.removeHashtags(postHashtagDto);
+
+        postRedisCacheService.delete(id);
 
         authorRedisCacheService.delete(post.getAuthorId());
     }

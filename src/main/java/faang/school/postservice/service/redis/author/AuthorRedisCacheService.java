@@ -1,4 +1,4 @@
-package faang.school.postservice.service.redis;
+package faang.school.postservice.service.redis.author;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
@@ -6,6 +6,7 @@ import faang.school.postservice.mapper.AuthorMapper;
 import faang.school.postservice.model.redis.AuthorRedisCache;
 import faang.school.postservice.property.CacheProperty;
 import faang.school.postservice.repository.redis.AuthorRedisRepository;
+import faang.school.postservice.service.redis.RedisCacheService;
 import feign.FeignException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,9 @@ public class AuthorRedisCacheService implements RedisCacheService<AuthorRedisCac
 
         authorRedisRepository.findById(entity.getId()).ifPresent(authorRedisRepository::delete);
 
-        authorRedisRepository.save(redisUser);
+        redisUser = authorRedisRepository.save(redisUser);
+
+        log.info("Saved author with id {} to cache: {}", entity.getId(), redisUser);
 
         return redisUser;
     }

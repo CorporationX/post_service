@@ -11,7 +11,8 @@ import faang.school.postservice.producer.post.PostProducer;
 import faang.school.postservice.producer.post.PostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
-import faang.school.postservice.service.redis.AuthorRedisCacheService;
+import faang.school.postservice.service.redis.author.AuthorRedisCacheService;
+import faang.school.postservice.service.redis.post.PostRedisCacheService;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.Test;
@@ -62,6 +63,8 @@ class PostServiceImplTest {
     private UserContext userContext;
     @Mock
     private AuthorRedisCacheService authorRedisCacheService;
+    @Mock
+    private PostRedisCacheService postRedisCacheService;
 
     @InjectMocks
     private PostServiceImpl postServiceImpl;
