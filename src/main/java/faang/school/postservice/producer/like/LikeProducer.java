@@ -1,6 +1,5 @@
 package faang.school.postservice.producer.like;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.kafka.LikeKafkaEvent;
 import faang.school.postservice.producer.AbstractKafkaProducer;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +17,11 @@ public class LikeProducer extends AbstractKafkaProducer<LikeKafkaEvent> {
     @Value("${spring.data.topics.topic-settings.likes.name}")
     private String channelTopic;
 
-    public LikeProducer(KafkaTemplate<String, String> kafkaTemplate,
-                        ObjectMapper objectMapper,
-                        Map<String, NewTopic> topicMap) {
-        super(kafkaTemplate, objectMapper, topicMap);
+    public LikeProducer(KafkaTemplate<String, Object> kafkaTemplate,
+                            Map<String, NewTopic> topicMap) {
+        super(kafkaTemplate, topicMap);
     }
+
 
     @Override
     public String getTopic() {

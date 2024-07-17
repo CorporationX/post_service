@@ -16,8 +16,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CommentKafkaEvent implements KafkaEvent {
 
-    private Long postId;
+    private Long id;
+    private String content;
     private Long userId;
+    private long likesCount;
+    private Long postId;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)

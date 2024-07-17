@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
@@ -14,8 +15,6 @@ import org.springframework.data.redis.core.TimeToLive;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.NavigableSet;
 
 @Getter
 @Setter
@@ -23,8 +22,8 @@ import java.util.NavigableSet;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash("posts")
-public class PostRedisCache implements Serializable {
+@RedisHash("comments")
+public class CommentRedisCache implements Serializable, Comparable<CommentRedisCache> {
 
     @Id
     private long id;
@@ -35,22 +34,32 @@ public class PostRedisCache implements Serializable {
 
     @Reference
     @ToString.Exclude
-    private NavigableSet<CommentRedisCache> commentRedisCaches;
-    @Reference
-    @ToString.Exclude
     private AuthorRedisCache author;
 
     private String content;
-    private List<String> resourceIds;
-    private LocalDateTime publishedAt;
+    private long likesCount;
+    private long postId;
     private LocalDateTime createdAt;
-    private int likesCount;
+
+    @Override
+    public int compareTo(@NonNull CommentRedisCache o) {
+
+        if (this.likesCount == 0) {
+            return -1;
+        }
+
+        if (o.likesCount == 0) {
+            return 1;
+        }
+
+        return (int) (this.likesCount - o.likesCount);
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PostRedisCache that = (PostRedisCache) o;
+        CommentRedisCache that = (CommentRedisCache) o;
         return getId() == that.getId();
     }
 

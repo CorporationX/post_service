@@ -10,7 +10,7 @@ import faang.school.postservice.producer.comment.CommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.commonMethods.CommonServiceMethods;
-import faang.school.postservice.service.redis.author.AuthorRedisCacheService;
+import faang.school.postservice.service.redis.author.AuthorRedisCacheServiceImpl;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +45,7 @@ class CommentServiceImplTest {
     @Mock
     private CommentProducer commentProducer;
     @Mock
-    private AuthorRedisCacheService authorRedisCacheService;
+    private AuthorRedisCacheServiceImpl authorRedisCacheService;
 
     @InjectMocks
     private CommentServiceImpl commentService;

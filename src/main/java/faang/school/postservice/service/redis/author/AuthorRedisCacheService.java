@@ -1,67 +1,10 @@
 package faang.school.postservice.service.redis.author;
 
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.AuthorMapper;
 import faang.school.postservice.model.redis.AuthorRedisCache;
-import faang.school.postservice.property.CacheProperty;
-import faang.school.postservice.repository.redis.AuthorRedisRepository;
-import faang.school.postservice.service.redis.RedisCacheService;
-import feign.FeignException;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.hibernate.dialect.lock.OptimisticEntityLockException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.stereotype.Service;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class AuthorRedisCacheService implements RedisCacheService<AuthorRedisCache, Long> {
+import java.util.concurrent.CompletableFuture;
 
-    @Value("${spring.cache.cache-settings.users.name}")
-    private String cacheName;
-    private int ttl;
-    private final CacheProperty cacheProperty;
-    private final UserServiceClient userServiceClient;
-    private final AuthorRedisRepository authorRedisRepository;
-    private final AuthorMapper authorMapper;
+public interface AuthorRedisCacheService {
 
-    @PostConstruct
-    public void init() {
-        ttl = cacheProperty.getCacheSettings().get(cacheName).getTtl();
-    }
-
-    @Override
-    @Retryable(retryFor = {FeignException.class, OptimisticEntityLockException.class}, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
-    public AuthorRedisCache save(AuthorRedisCache entity) {
-
-        UserDto userDto = userServiceClient.getUser(entity.getId());
-        AuthorRedisCache redisUser = authorMapper.toAuthorCache(userDto);
-        redisUser.setTtl(ttl);
-
-        authorRedisRepository.findById(entity.getId()).ifPresent(authorRedisRepository::delete);
-
-        redisUser = authorRedisRepository.save(redisUser);
-
-        log.info("Saved author with id {} to cache: {}", entity.getId(), redisUser);
-
-        return redisUser;
-    }
-
-    @Override
-    public void delete(Long id) {
-
-        authorRedisRepository.deleteById(id);
-        log.info("Removed author with id {} from cache", id);
-    }
-
-    @Override
-    public AuthorRedisCache findById(Long id) {
-
-        return authorRedisRepository.findById(id).orElse(null);
-    }
+    CompletableFuture<AuthorRedisCache> save(AuthorRedisCache entity);
 }

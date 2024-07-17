@@ -45,6 +45,7 @@ public interface PostMapper {
 
     @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "getIdFromResource")
     @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
+    @Mapping(source = "authorId", target = "author.id")
     PostRedisCache toRedisCache(Post post);
 
     @Named("getCountFromLikeList")

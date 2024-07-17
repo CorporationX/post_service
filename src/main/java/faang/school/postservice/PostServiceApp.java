@@ -17,7 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableAsync
+@EnableAsync(proxyTargetClass = true)
 @EnableKafka
 @EnableCaching
 @EnableRedisRepositories
