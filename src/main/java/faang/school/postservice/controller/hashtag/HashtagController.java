@@ -1,10 +1,10 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.hashtag;
 
-import faang.school.postservice.dto.post.HashtagDto;
-import faang.school.postservice.service.HashtagService;
+import faang.school.postservice.annotation.ValidHashtag;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.service.hashtag.HashtagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,8 +16,8 @@ import java.util.List;
 public class HashtagController {
     private final HashtagService hashtagService;
 
-    @GetMapping("/{count}")
-    public List<HashtagDto> getTopXPopularHashtags(@PathVariable int count) {
-        return hashtagService.findTopXPopularHashtags(count);
+    @GetMapping
+    public List<PostDto> getPostsByHashtag(@ValidHashtag String hashtag) {
+        return hashtagService.getPostsByHashtag(hashtag);
     }
 }

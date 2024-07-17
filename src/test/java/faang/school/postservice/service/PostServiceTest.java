@@ -7,6 +7,8 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.hashtag.HashtagService;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -133,7 +135,7 @@ public class PostServiceTest {
     @Test
     public void testPublishPost() {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
-        doNothing().when(postServiceValidator).validatePublishPost(post, postDto);
+        doNothing().when(postServiceValidator).validatePublishPost(post);
         when(postMapper.toDto(post)).thenReturn(postDto);
 
         postService.publishPost(postDto);
@@ -150,16 +152,6 @@ public class PostServiceTest {
         verify(postRepository, times(1)).save(post);
         assertTrue(post.isDeleted());
         assertFalse(post.isPublished());
-    }
-
-    @Test
-    public void testGetPostsByHashtag(){
-        HashtagDto hashtagDto = new HashtagDto();
-        when(hashtagService.getPostsByHashtag(hashtagDto)).thenReturn(draftPosts);
-
-        postService.getPostsByHashtag(hashtagDto);
-
-        verify(postMapper, times(1)).toDto(draftPosts);
     }
 
     @Test

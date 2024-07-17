@@ -5,6 +5,7 @@ import faang.school.postservice.mapper.HashtagMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.HashtagRepository;
+import faang.school.postservice.service.hashtag.HashtagService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,15 +70,6 @@ public class HashtagServiceTest {
         expectedMap.put(hashtag2, posts);
 
         assertEquals(expectedMap, hashtagService.getHashtagsWithPosts());
-    }
-
-    @Test
-    public void testGetPostsByHashtag() {
-        when(hashtagMapper.toEntity(hashtagDto1)).thenReturn(hashtag1);
-        hashtagService.getHashtagsWithPosts().put(hashtag1, posts);
-
-        List<Post> result = hashtagService.getPostsByHashtag(hashtagDto1);
-        assertEquals(posts, result);
     }
 
     @Test

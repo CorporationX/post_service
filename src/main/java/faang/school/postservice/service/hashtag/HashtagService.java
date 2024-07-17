@@ -1,7 +1,9 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.hashtag;
 
 import faang.school.postservice.dto.post.HashtagDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.HashtagMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.HashtagRepository;
@@ -21,6 +23,7 @@ import java.util.List;
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
     private final HashtagMapper hashtagMapper;
+    private final PostMapper postMapper;
 
     private final HashMap<Hashtag, List<Post>> hashtagsWithPosts = new HashMap<>();
 
@@ -38,8 +41,8 @@ public class HashtagService {
         }
     }
 
-    public List<Post> getPostsByHashtag(HashtagDto hashtagDto) {
-        return hashtagsWithPosts.get(hashtagMapper.toEntity(hashtagDto));
+    public List<PostDto> getPostsByHashtag(String hashtag) {
+        return postMapper.toDto(hashtagsWithPosts.get(hashtag));
     }
 
     public List<HashtagDto> findTopXPopularHashtags(int x) {

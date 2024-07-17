@@ -1,11 +1,9 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.model.Hashtag;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,10 +58,5 @@ public class PostController {
     @GetMapping("/published/project/{projectId}")
     public List<PostDto> getAllPublishPostsByProjectId(@PathVariable Long projectId) {
         return postService.getAllPublishPostsByProjectId(projectId);
-    }
-
-    @GetMapping("/hashtag")
-    public List<PostDto> getPostsByHashtag(@RequestBody @Valid HashtagDto hashtagDto) {
-        return postService.getPostsByHashtag(hashtagDto);
     }
 }

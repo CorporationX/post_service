@@ -1,10 +1,10 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.post;
 
-import faang.school.postservice.dto.post.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ public class PostService {
     public PostDto publishPost(PostDto postDto) {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
-        postServiceValidator.validatePublishPost(post, postDto);
+        postServiceValidator.validatePublishPost(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
@@ -64,10 +64,6 @@ public class PostService {
 
         postRepository.save(post);
         return postMapper.toDto(post);
-    }
-
-    public List<PostDto> getPostsByHashtag(HashtagDto hashtagDto) {
-        return postMapper.toDto(hashtagService.getPostsByHashtag(hashtagDto));
     }
 
     public PostDto getPostByPostId(Long postId) {

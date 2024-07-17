@@ -25,6 +25,12 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  spring:
+    data:
+      elasticsearch:
+        client:
+          uris: http://localhost:9200
+
 server:
   port: 8081
 
