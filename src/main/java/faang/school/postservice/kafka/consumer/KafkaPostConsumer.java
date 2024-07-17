@@ -21,8 +21,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class KafkaPostConsumer {
     private final RedisFeedRepository feedRepository;
-    private final RedisUserRepository userRepository;
-    private final UserServiceClient userServiceClient;
 
     private int maxPostsAmount;
 
@@ -32,26 +30,16 @@ public class KafkaPostConsumer {
     @Value("${spring.data.redis.feed-cache.ttl}")
     private int feedTtl;
 
-    /**
-     * User time to live in days (in cache)
-     */
-    @Value("${spring.data.redis.user-cache.ttl}")
-    private int userTtl;
 
     @KafkaListener(topics = "post_topic", groupId = "news_feed")
     public void handleNewPost(PostEventDto postEventDto, Acknowledgment acknowledgment) {
         postEventDto.getAuthorFollowersIds()
                 .forEach(followerId -> addPostToFeed(postEventDto, followerId));
-        cachePostAuthor(postEventDto.getAuthorId());
 
         acknowledgment.acknowledge();
     }
 
-    public void cachePostAuthor(long authorId) {
-        UserDto user = userServiceClient.getUser(authorId);
-        user.setTtl(userTtl);
-        userRepository.save(user);
-    }
+
 
     private void addPostToFeed(PostEventDto postEventDto, Long followerId) {
         Feed followerFeed = feedRepository.findById(followerId)
