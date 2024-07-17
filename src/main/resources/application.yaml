@@ -23,6 +23,7 @@ spring:
   data:
     kafka:
       posts-topic: posts
+      comments-topic: comments
     redis:
       port: 6379
       host: localhost
