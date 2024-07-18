@@ -42,7 +42,12 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+
+    /**
+     * Elasticsearch
+     */
     implementation("org.elasticsearch.client:elasticsearch-rest-high-level-client:7.17.22")
+    implementation("org.springframework.data:spring-data-elasticsearch:4.3.4")
 
     /**
      * Test containers

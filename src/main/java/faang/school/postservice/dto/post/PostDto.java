@@ -25,5 +25,5 @@ public class PostDto {
     private String content;
 
     @NotNull
-    private List<Hashtag> hashtags;
+    private List<String> hashtags;
 }

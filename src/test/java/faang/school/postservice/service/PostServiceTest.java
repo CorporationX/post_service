@@ -1,13 +1,10 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.post.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.mapper.HashtagMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -40,11 +37,6 @@ public class PostServiceTest {
     @Mock
     private PostServiceValidator postServiceValidator;
 
-    @Mock
-    private HashtagService hashtagService;
-
-    @Mock
-    private HashtagMapper hashtagMapper;
 
 
     private PostDto postDto;
@@ -100,13 +92,13 @@ public class PostServiceTest {
         PostDto publishedPostDto1 = PostDto.builder()
                 .id(3L)
                 .content("Published 1")
-                .hashtags(List.of(new Hashtag()))
+                .hashtags(List.of(""))
                 .build();
 
         PostDto publishedPostDto2 = PostDto.builder()
                 .id(4L)
                 .content("Published 2")
-                .hashtags(List.of(new Hashtag()))
+                .hashtags(List.of(""))
                 .build();
 
         draftPostDtos = Arrays.asList(draftPostDto1, draftPostDto2);
@@ -116,7 +108,6 @@ public class PostServiceTest {
     @Test
     public void testCreatePost() {
         doNothing().when(postServiceValidator).validateCreatePost(postDto);
-        when(postMapper.toEntity(postDto)).thenReturn(post);
         postService.createPost(postDto);
 
         verify(postRepository, times(1)).save(post);

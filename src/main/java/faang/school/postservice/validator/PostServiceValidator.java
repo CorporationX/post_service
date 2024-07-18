@@ -41,7 +41,7 @@ public class PostServiceValidator {
         }
     }
 
-    public void validatePublishPost(Post post, PostDto postDto) {
+    public void validatePublishPost(Post post) {
         if (post.isPublished()) {
             throw new DataValidationException("Post has already been published");
         }
