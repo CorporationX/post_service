@@ -31,7 +31,7 @@ public class CommentController {
     }
 
     @PutMapping("/update/comment")
-    @ResponseStatus(HttpStatus.UPGRADE_REQUIRED)
+    @ResponseStatus(HttpStatus.OK)
     public void updateComment(@RequestBody @Validated(UpdateContent.class) CommentDto commentDto) {
         commentService.updateComment(commentDto);
     }
