@@ -17,13 +17,39 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      post:
+       publication: post_publication
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: my-consumer-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: '*'
+#              packages need to be changed
   data:
     redis:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
+        user_ban_channel:
+          name: user_ban
+        notification_like_channel:
+          name: notification_like_channel
+        comment_channel:
+          name: comment_channel
+
+  mvc:
+    servlet:
+      path: /api/v1
 
 server:
   port: 8081
@@ -35,10 +61,10 @@ logging:
 post:
   publisher:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "0 0/1 * 1/1 * ?" # every minute #TODO: не используется, но может потом пригодится
   ad-remover:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "0 0/1 * 1/1 * ?" # every minute #TODO: не используется, если нет, то удалить
 
 user-service:
   host: localhost
@@ -49,3 +75,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+scheduled:
+  author-banner: "@daily"
+
+limits:
+  unverified_post_limit: 5
