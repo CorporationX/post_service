@@ -70,7 +70,7 @@ public class PostController {
 
     @GetMapping("/user/{userId}")
     public List<PostDto> getPostsOfUser(@PathVariable long userId) {
-        return postService.getPostsBatchByUserId(userId);
+        return postService.getFeedForUser(userId);
     }
 
     @GetMapping("/project/{projectId}")

@@ -66,6 +66,7 @@ public class PostService {
 
         PostDto publishedPostDto = postMapper.toDto(publishedPost);
 
+        //TODO: мб убрать в кафка листенер
         cachePost(publishedPostDto);
         cachePostAuthor(publishedPostDto.getAuthorId());
 
@@ -120,25 +121,25 @@ public class PostService {
         return getSortedDrafts(postRepository.findByProjectId(projectId));
     }
 
-    public List<PostDto> getPostsBatchByUserId(long userId) {
+    public List<PostDto> getFeedForUser(long userId) {
         postVerifier.verifyUserExistence(userId);
 
         return getSortedPosts(postRepository.findByAuthorId(userId));
     }
 
     /**
-     * @param userId      posts author id
+     * @param userId      user whose feed will be returned
      * @param batchSize   how much posts method will return
      * @param postPointer returned posts should be published before this post
      * @return batch of posts dtos
      */
-    public List<PostDto> getPostsBatchByUserId(Long userId, int batchSize, Optional<PostDto> postPointer) {
-        postVerifier.verifyUserExistence(userId);
+    public List<PostDto> getFeedForUser(Long userId, int batchSize, Optional<PostDto> postPointer) {
+        List<Long> userSubscriptions = userServiceClient.getFollowingIds(userId);
 
         final List<Post> postsBatch = new ArrayList<>();
         postPointer.ifPresentOrElse(
-                pointer -> postsBatch.addAll(postRepository.getPostsBatchByAuthorId(userId, pointer.getId(), batchSize)),
-                () -> postsBatch.addAll(postRepository.getPostsBatchByAuthorId(userId, batchSize))
+                pointer -> postsBatch.addAll(postRepository.getFeedForUser(userSubscriptions, pointer.getId(), batchSize)),
+                () -> postsBatch.addAll(postRepository.getFeedForUser(userSubscriptions, batchSize))
         );
 
         return postMapper.toDto(postsBatch);

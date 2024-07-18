@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class KafkaPostConsumer {
     private final RedisFeedCache feedRepository;
-
+    @Value("${spring.data.redis.feed-cache.max-posts-amount}")
     private int maxPostsAmount;
 
     /**

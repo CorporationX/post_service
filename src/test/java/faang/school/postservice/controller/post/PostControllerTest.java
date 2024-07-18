@@ -115,7 +115,7 @@ class PostControllerTest {
         void getPostsOfUserTest() {
             assertDoesNotThrow(() -> postController.getPostsOfUser(anyLong()));
 
-            verify(postService).getPostsBatchByUserId(anyLong());
+            verify(postService).getFeedForUser(anyLong());
         }
 
         @Test

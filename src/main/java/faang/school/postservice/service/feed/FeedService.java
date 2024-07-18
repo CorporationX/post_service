@@ -42,6 +42,7 @@ public class FeedService {
     }
 
     public List<PostForFeedDto> getFeed(Long userId, Long lastViewedPostId) {
+        //TODO: fix this
         Optional<Feed> userFeed = feedCache.findById(userId);
         Optional<List<PostDto>> postsFromCache = userFeed.map(mapFeedToPostDtos(lastViewedPostId));
         List<PostDto> fullPostsBatch = getFullPostsBatch(userId, postsFromCache);
@@ -51,13 +52,13 @@ public class FeedService {
 
     private List<PostDto> getFullPostsBatch(Long userId, Optional<List<PostDto>> postsFromCache) {
         List<PostDto> fullPostsBatch = new ArrayList<>(
-                postsFromCache.orElseGet(() -> postService.getPostsBatchByUserId(userId, feedBatchSize, Optional.empty()))
+                postsFromCache.orElseGet(() -> postService.getFeedForUser(userId, feedBatchSize, Optional.empty()))
         );
 
         int feedLack = feedBatchSize - fullPostsBatch.size();
         if (feedLack > 0) {
             PostDto postPointer = fullPostsBatch.get(fullPostsBatch.size() - 1);
-            fullPostsBatch.addAll(postService.getPostsBatchByUserId(userId, feedLack, Optional.of(postPointer)));
+            fullPostsBatch.addAll(postService.getFeedForUser(userId, feedLack, Optional.of(postPointer)));
         }
         return fullPostsBatch;
     }

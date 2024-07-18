@@ -26,7 +26,7 @@ spring:
         likesChannel: likes_channel
         commentsChannel: comments_channel
       feed-cache:
-        max-posts-amount: 3
+        max-posts-amount: 10
         ttl: 3 #time to live in days
       post-cache:
         ttl: 1 #time to live in days
@@ -70,7 +70,7 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   feed:
-    get-batch-size: 20
+    get-batch-size: 12
 
 user-service:
   host: localhost

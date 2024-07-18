@@ -1,5 +1,6 @@
 package faang.school.postservice.config.context;
 
+import faang.school.postservice.exception.DataValidationException;
 import org.springframework.stereotype.Component;
 
 
@@ -13,6 +14,9 @@ public class UserContext {
     }
 
     public long getUserId() {
+        if (userIdHolder.get() == null) {
+            throw new DataValidationException("x-user-id hedder is required for this request.");
+        }
         return userIdHolder.get();
     }
 

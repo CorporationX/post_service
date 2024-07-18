@@ -24,6 +24,7 @@ public class FeedController {
         //TODO: testing
 
         Long userId = userContext.getUserId();
+
         if (lastViewedPostId != null) {
             return feedService.getFeed(userId, lastViewedPostId);
         }

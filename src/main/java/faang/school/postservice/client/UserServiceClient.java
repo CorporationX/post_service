@@ -23,4 +23,7 @@ public interface UserServiceClient {
 
     @GetMapping("/subscriptions/followers/{followeeId}")
     List<Long> getFollowersIds(@PathVariable long followeeId);
+
+    @GetMapping("/subscriptions/followings/{followerId}")
+    List<Long> getFollowingIds(@PathVariable long followerId);
 }
