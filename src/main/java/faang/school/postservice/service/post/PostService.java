@@ -15,7 +15,7 @@ public class PostService {
     public Post getPost(long id) {
         return postRepository.findById(id).orElseThrow(() -> {
             log.error("Поста по такому id не существует");
-            return new IllegalArgumentException("Поста по такому id не существует");
+            return new NullPointerException("Поста по такому id не существует");
         });
     }
 }
