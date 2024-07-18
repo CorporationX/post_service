@@ -55,6 +55,10 @@ post:
     cron: "30 6 * * * *" # every day in 6:30
     batch-size: 2
 
+redis:
+  cache:
+    ttl: "1"
+
 moderationScheduler:
   cron: "0 0 0 * * *" # every day
 
@@ -80,9 +84,6 @@ postServiceThreadPool:
   poolAmount: 4
   poolComment: 4
   poolPost: 4
-
-servlet:
-  PathV1: /api/v1
 
 file:
   fileWithBadWords:

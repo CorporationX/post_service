@@ -15,7 +15,7 @@ import java.util.Objects;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
 
-    @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "toResourceIds")
+//    @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "toResourceIds")//todo
     PostDto toDto(Post post);
 
     @Mapping(target = "resources", ignore = true)

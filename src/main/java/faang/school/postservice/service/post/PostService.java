@@ -13,11 +13,13 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderator.post.logic.PostModerator;
 import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.ResourceService;
 import faang.school.postservice.validation.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +45,10 @@ public class PostService {
     private final PostViewEventPublisher postViewEventPublisher;
     private final UserContext userContext;
     private final PostModerator postModerator;
+    private final PostCacheRepository postCacheRepository;
+
+    @Value("${redis.cache.ttl}")
+    private int ttl;
 
     @Transactional(readOnly = true)
     public long getUserIdByPostId(long postId) {
@@ -71,7 +77,12 @@ public class PostService {
         Post post = findPostById(id);
         postValidator.validateIsNotPublished(post);
         post.setPublished(true);
-        return postMapper.toDto(post);
+
+        PostDto postDto = postMapper.toDto(post);
+        postDto.setTtl(ttl);
+        postCacheRepository.save(postDto);
+
+        return postDto;
     }
 
     @Transactional
