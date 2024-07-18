@@ -37,7 +37,7 @@ public class CommentService {
         Comment comment = commentRepository.findAllByPostId(id).stream()
                 .filter(commentOne -> commentOne.getId() == commentDto.getId())
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Комментария с таким id нет"));
+                .orElseThrow(() -> new IllegalArgumentException("Комментария с таким id нет!"));
         comment.setContent(commentDto.getContent());
         commentRepository.save(comment);
         return commentMapper.toDto(comment);
