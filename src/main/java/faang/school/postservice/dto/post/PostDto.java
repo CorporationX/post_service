@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.post;
 
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -7,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -15,10 +17,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@RedisHash(value = "post")
 public class PostDto implements Serializable {
 
     @NotNull(message = "")
     @Min(value = 1, message = "Post ID cannot be less or equal 0")
+    @Id
     private long id;
 
     @NotBlank(message = "Meet name can't be empty")

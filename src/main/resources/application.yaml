@@ -26,6 +26,8 @@ spring:
           name: calculations_channel
         post_view_event_channel:
           name: post_view_event_channel
+      cache-ttl: 3600
+      data-ttl: 86400
 
 server:
   port: 8081
@@ -43,10 +45,9 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   inspector:
     scheduler:
-      cron: "0 * * * * *"
+      cron: "0 1 * * * *"
     file:
       swearwords: files/list-of-swearwords-and-offensive-gestures.csv
-
 
 user-service:
   host: localhost
