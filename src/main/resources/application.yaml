@@ -31,7 +31,7 @@ spring:
       post-cache:
         ttl: 1 #time to live in days
       user-cache:
-          ttl: 1 #time to live in days
+        ttl: 1 #time to live in days
 
 
   kafka:
@@ -69,6 +69,8 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  feed:
+    get-batch-size: 20
 
 user-service:
   host: localhost

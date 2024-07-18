@@ -25,4 +25,31 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false")
     List<Post> findAllDrafts();
+
+    @Query("""
+            SELECT p
+            FROM Post p
+            WHERE p.published = true
+                AND p.deleted = false
+                AND p.authorId = :userId
+                AND p.publishedAt < (
+                    SELECT p.publishedAt
+                    FROM Post p
+                    WHERE p.id = :postPointerId
+                )
+            ORDER BY p.publishedAt
+            LIMIT :batchSize
+                        """)
+    List<Post> getPostsBatchByAuthorId(Long userId, Long postPointerId, int batchSize);
+
+    @Query("""
+            SELECT p
+            FROM Post p
+            WHERE p.published = true
+                AND p.deleted = false 
+                AND p.authorId = :userId
+            ORDER BY p.publishedAt
+            LIMIT :batchSize
+                        """)
+    List<Post> getPostsBatchByAuthorId(Long userId, int batchSize);
 }

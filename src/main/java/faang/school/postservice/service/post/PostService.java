@@ -3,13 +3,12 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.DataOperationException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.kafka.producer.PostProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.redis.cache.RedisPostRepository;
-import faang.school.postservice.redis.cache.RedisUserRepository;
+import faang.school.postservice.redis.cache.RedisPostCache;
+import faang.school.postservice.redis.cache.RedisUserCache;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +17,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import static faang.school.postservice.exception.message.PostOperationExceptionMessage.RE_DELETING_POST_EXCEPTION;
-import static faang.school.postservice.exception.message.PostOperationExceptionMessage.RE_PUBLISHING_POST_EXCEPTION;
 import static faang.school.postservice.exception.message.PostValidationExceptionMessage.NON_EXISTING_POST_EXCEPTION;
 
 @Service
@@ -30,9 +30,9 @@ import static faang.school.postservice.exception.message.PostValidationException
 @Slf4j
 public class PostService {
     private final PostRepository postRepository;
-    private final RedisUserRepository userRepository;
+    private final RedisUserCache userRepository;
     private final UserServiceClient userServiceClient;
-    private final RedisPostRepository postCache;
+    private final RedisPostCache postCache;
     private final PostMapper postMapper;
     private final PostVerifier postVerifier;
     private final PostProducer postProducer;
@@ -120,10 +120,28 @@ public class PostService {
         return getSortedDrafts(postRepository.findByProjectId(projectId));
     }
 
-    public List<PostDto> getPostsOfUser(long userId) {
+    public List<PostDto> getPostsBatchByUserId(long userId) {
         postVerifier.verifyUserExistence(userId);
 
         return getSortedPosts(postRepository.findByAuthorId(userId));
+    }
+
+    /**
+     * @param userId      posts author id
+     * @param batchSize   how much posts method will return
+     * @param postPointer returned posts should be published before this post
+     * @return batch of posts dtos
+     */
+    public List<PostDto> getPostsBatchByUserId(Long userId, int batchSize, Optional<PostDto> postPointer) {
+        postVerifier.verifyUserExistence(userId);
+
+        final List<Post> postsBatch = new ArrayList<>();
+        postPointer.ifPresentOrElse(
+                pointer -> postsBatch.addAll(postRepository.getPostsBatchByAuthorId(userId, pointer.getId(), batchSize)),
+                () -> postsBatch.addAll(postRepository.getPostsBatchByAuthorId(userId, batchSize))
+        );
+
+        return postMapper.toDto(postsBatch);
     }
 
     public List<PostDto> getPostsOfProject(long projectId) {

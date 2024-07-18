@@ -14,8 +14,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -115,7 +115,7 @@ class PostControllerTest {
         void getPostsOfUserTest() {
             assertDoesNotThrow(() -> postController.getPostsOfUser(anyLong()));
 
-            verify(postService).getPostsOfUser(anyLong());
+            verify(postService).getPostsBatchByUserId(anyLong());
         }
 
         @Test
