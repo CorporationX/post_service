@@ -68,6 +68,7 @@ public class CommentService {
     private void validateAuthorExists(long authorId) {
         UserDto user = userServiceClient.getUser(authorId);
         if (user == null) {
+            log.error("Пользователь с таким ID не найден");
             throw new NullPointerException("Пользователь с таким ID не найден");
         }
     }
