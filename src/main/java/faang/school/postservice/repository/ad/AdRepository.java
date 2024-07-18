@@ -1,6 +1,7 @@
 package faang.school.postservice.repository.ad;
 
 import faang.school.postservice.model.ad.Ad;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface AdRepository extends CrudRepository<Ad, Long> {
+public interface AdRepository extends JpaRepository<Ad, Long> {
 
     @Query("SELECT a FROM Ad a WHERE a.post.id = ?1")
     Optional<Ad> findByPostId(long postId);
@@ -21,7 +22,7 @@ public interface AdRepository extends CrudRepository<Ad, Long> {
     @Modifying
     void deleteExpiredAds();
 
-    @Query("SELECT * FROM post_ad pa ")
+    @Query(nativeQuery = true, value = "SELECT * FROM post_ad pa ")
     List<Ad> findAll();
 
     @Query(nativeQuery = true, value = "DELETE FROM post_ad pa WHERE id = :id")
