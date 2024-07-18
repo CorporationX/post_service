@@ -1,7 +1,6 @@
 package faang.school.postservice.validator;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.user.UserDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +13,10 @@ public class UserValidator {
     private final UserServiceClient userServiceClient;
 
     public void validateUserExistence(long userId) {
-        userServiceClient.getUser(userId);
+        if (!userServiceClient.checkUserExistence(userId)) {
+            String errMessage = String.format("User with ID: %d was not found in Database", userId);
+            log.info(errMessage);
+            throw new EntityNotFoundException(errMessage);
+        }
     }
 }
