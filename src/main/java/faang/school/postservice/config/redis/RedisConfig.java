@@ -54,15 +54,22 @@ public class RedisConfig {
     }
 
 
-    public static class MyKeyspaceConfiguration extends KeyspaceConfiguration {
+    public class MyKeyspaceConfiguration extends KeyspaceConfiguration {
         @Override
         protected Iterable<KeyspaceSettings> initialConfiguration() {
-            KeyspaceSettings feedKeyspaceSettings = new KeyspaceSettings(Feed.class, "Feed");
-            feedKeyspaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(3));
-            KeyspaceSettings postKeyspaceSettings = new KeyspaceSettings(PostDto.class, "Post");
-            postKeyspaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(3));
-            KeyspaceSettings userKeyspaceSettings = new KeyspaceSettings(UserDto.class, "User");
-            userKeyspaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(3));
+            RedisProperties.Cache feedCache = redisProperties.getFeedCache();
+            RedisProperties.Cache postCache = redisProperties.getPostCache();
+            RedisProperties.Cache userCache = redisProperties.getUserCache();
+
+            KeyspaceSettings feedKeyspaceSettings = new KeyspaceSettings(Feed.class, feedCache.getKeyspace());
+            feedKeyspaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(feedCache.getTtl()));
+
+            KeyspaceSettings postKeyspaceSettings = new KeyspaceSettings(PostDto.class, postCache.getKeyspace());
+            postKeyspaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(postCache.getTtl()));
+
+            KeyspaceSettings userKeyspaceSettings = new KeyspaceSettings(UserDto.class, userCache.getKeyspace());
+            userKeyspaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(userCache.getTtl()));
+
             return List.of(feedKeyspaceSettings, postKeyspaceSettings, userKeyspaceSettings);
         }
     }

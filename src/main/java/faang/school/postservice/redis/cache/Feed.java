@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 
 @Data
-@RedisHash(value = "Feed", timeToLive = 60)
+@RedisHash(value = "Feed")//, timeToLive = 60)
 public class Feed implements Serializable {
     @Id
     private Long userId;

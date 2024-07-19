@@ -10,18 +10,27 @@ import org.springframework.stereotype.Component;
  * получаемые из application.yaml по пути spring.data.redis.channels
  */
 @Data
-@Setter
 @Component
 @ConfigurationProperties(prefix = "spring.data.redis")
 public class RedisProperties {
     private int port;
     private String host;
     private Channels channels;
+    private Cache feedCache;
+    private Cache postCache;
+    private Cache userCache;
 
 
     @Data
     public static class Channels {
         private String likesChannel;
         private String commentsChannel;
+    }
+
+    @Data
+    public static class Cache {
+        private Long maxPostsAmount;
+        private Long ttl;
+        private String keyspace;
     }
 }
