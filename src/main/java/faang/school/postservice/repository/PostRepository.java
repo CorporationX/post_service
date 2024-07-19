@@ -37,7 +37,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                 FROM Post p2
                 WHERE p2.id = :postPointerId
               )
-            ORDER BY p.publishedAt
+            ORDER BY p.publishedAt DESC
             LIMIT :batchSize
             """)
     List<Post> getFeedForUser(List<Long> userSubscriptions, Long postPointerId, int batchSize);
@@ -48,7 +48,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             WHERE p.published = true
               AND p.deleted = false
               AND p.authorId IN :userSubscriptions
-            ORDER BY p.publishedAt
+            ORDER BY p.publishedAt  DESC
             LIMIT :batchSize
                         """)
     List<Post> getFeedForUser(List<Long> userSubscriptions, int batchSize);

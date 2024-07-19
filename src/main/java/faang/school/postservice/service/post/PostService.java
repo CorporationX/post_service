@@ -13,7 +13,6 @@ import faang.school.postservice.repository.PostRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -36,11 +35,6 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostVerifier postVerifier;
     private final PostProducer postProducer;
-
-    @Value("${spring.data.redis.post-cache.ttl}")
-    private int postTtlInCache;
-    @Value("${spring.data.redis.user-cache.ttl}")
-    private int userTtlInCache;
 
 
     public PostDto createPost(@Valid PostDto postDto) {
@@ -173,13 +167,11 @@ public class PostService {
     }
 
     private void cachePost(PostDto postDto) {
-        postDto.setTtl(postTtlInCache);
         postCache.save(postDto);
     }
 
     private void cachePostAuthor(long authorId) {
         UserDto user = userServiceClient.getUser(authorId);
-        user.setTtl(userTtlInCache);
         userRepository.save(user);
     }
 }

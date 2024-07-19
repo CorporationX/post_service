@@ -84,7 +84,7 @@ public class FeedService {
             int lastViewedPostIndex = cachedIds.indexOf(lastViewedPostId);
 
             return cachedIds.stream()
-                    .skip(lastViewedPostIndex)
+                    .skip(lastViewedPostIndex + 1)
                     .limit(feedBatchSize)
                     .map(this::getPostDto)
                     .toList();
@@ -95,7 +95,7 @@ public class FeedService {
         return fullPostsBatch.stream()
                 .map(postDto -> PostForFeedDto.builder()
                         .post(postDto)
-                        .postAuthor(getPostAuthorDto(postDto.getAuthorId()))
+                        // .postAuthor(getPostAuthorDto(postDto.getAuthorId()))
                         .build())
                 .toList();
     }
