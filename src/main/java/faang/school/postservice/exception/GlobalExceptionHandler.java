@@ -51,6 +51,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(FeignException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleFeignException(FeignException exception){
         return new ErrorResponse("Feign Exception", exception.getMessage());
     }
