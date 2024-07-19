@@ -51,13 +51,16 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
     scheduler:
-      #cron: "0 0/1 * 1/1 * ?" # every minute
+    #cron: "0 0/1 * 1/1 * ?" # every minute
     cron: "30 6 * * * *" # every day in 6:30
     batch-size: 2
 
 redis:
   cache:
-    ttl: "1"
+    post:
+      ttl-post: "1"
+      time-unit-post: "DAYS"
+
 
 moderationScheduler:
   cron: "0 0 0 * * *" # every day
