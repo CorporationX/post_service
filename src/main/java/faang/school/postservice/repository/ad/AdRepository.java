@@ -21,7 +21,7 @@ public interface AdRepository extends CrudRepository<Ad, Long> {
     @Modifying
     void deleteExpiredAds();
 
-    @Query("SELECT * FROM post_ad pa ")
+    @Query(nativeQuery = true, value = "SELECT * FROM post_ad pa ")
     List<Ad> findAll();
 
     @Query(nativeQuery = true, value = "DELETE FROM post_ad pa WHERE id = :id")

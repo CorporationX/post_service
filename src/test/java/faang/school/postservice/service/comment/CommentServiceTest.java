@@ -1,8 +1,10 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.event.CommentEventDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -10,6 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.moderator.comment.logic.CommentModerator;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.cache.RedisCacheService;
 import faang.school.postservice.threadpool.ThreadPoolForCommentModerator;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +62,12 @@ public class CommentServiceTest {
     private CommentEventPublisher commentEventPublisher;
 
     @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private RedisCacheService redisCacheService;
+
+    @Mock
     private CommentModerator commentModerator;
 
     private CreateCommentDto createCommentDto;
@@ -67,16 +76,20 @@ public class CommentServiceTest {
     private Comment comment;
     private List<Comment> commentList;
     private Long id;
+    private String patternByInfAuthor = "InfAuthor";
+    private UserDto authorCommentDto;
 
     @BeforeEach
     public void setUp() {
         Post post = Post.builder().id(1L).build();
         createCommentDto = CreateCommentDto.builder().id(1L).content("content").authorId(1L).postId(1L).build();
+        authorCommentDto = UserDto.builder().id(1L).build();
         changeCommentDto = ChangeCommentDto.builder().id(1L).content("content").build();
         commentEventDto = CommentEventDto.builder().commentId(1L).createdAt(null).postId(1L).authorId(1L).build();
         comment = Comment.builder().id(1L).content("content").authorId(1L).post(post).build();
         commentList = new ArrayList<>(List.of(comment, comment, comment, comment));
         id = 1L;
+        commentService.setPatternByInfAuthor("InfAuthor");
     }
 
     @Test
@@ -86,6 +99,7 @@ public class CommentServiceTest {
         when(commentMapper.toEventDto(comment)).thenReturn(commentEventDto);
         doNothing().when(commentEventPublisher).sendEvent(commentEventDto);
         when(commentMapper.toDto(comment)).thenReturn(createCommentDto);
+        when(userServiceClient.getUser(createCommentDto.getAuthorId())).thenReturn(authorCommentDto);
 
         CreateCommentDto result = commentService.createComment(createCommentDto);
 
@@ -95,6 +109,7 @@ public class CommentServiceTest {
         verify(commentEventPublisher).sendEvent(commentEventDto);
         verify(commentRepository).save(comment);
         verify(commentMapper).toDto(comment);
+        verify(redisCacheService, times(1)).saveToCache(patternByInfAuthor, authorCommentDto.getId(), authorCommentDto);
     }
 
     @Test

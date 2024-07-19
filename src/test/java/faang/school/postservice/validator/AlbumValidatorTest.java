@@ -89,7 +89,7 @@ public class AlbumValidatorTest {
 
     @Test
     void testValidateUser() {
-        when(userServiceClient.getUser(userId)).thenReturn(new UserDto(1L, "qwe", "qwe"));
+        when(userServiceClient.getUser(userId)).thenReturn(new UserDto(1L, "qwe", "qwe", "qwe"));
         assertDoesNotThrow(() -> validator.validateUser(userId));
     }
 
