@@ -58,7 +58,7 @@ public class PostService {
     }
 
     public PostDto publishPost(final long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        Post post = getPostByIdOrFail(postId);
 
         validatePostPublishing(post);
 
@@ -78,7 +78,7 @@ public class PostService {
 
     public PostDto updatePost(final long postId, final PostDto postDto) {
         Post newPost = postMapper.toEntity(postDto);
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        Post post = getPostByIdOrFail(postId);
 
         post.setContent(newPost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
@@ -88,7 +88,7 @@ public class PostService {
 
 
     public void deletePost(final long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        Post post = getPostByIdOrFail(postId);
 
         post.setDeleted(true);
         post.setUpdatedAt(LocalDateTime.now());
@@ -97,7 +97,7 @@ public class PostService {
     }
 
     public PostDto getPost(final long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        Post post = getPostByIdOrFail(postId);
 
         return postMapper.toDto(post);
     }
@@ -113,5 +113,9 @@ public class PostService {
         }
 
         return result.stream().map((postMapper::toDto)).toList();
+    }
+
+    private Post getPostByIdOrFail(long postId) {
+        return postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
     }
 }
