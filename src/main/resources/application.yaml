@@ -21,6 +21,11 @@ spring:
     redis:
       port: 6379
       host: localhost
+      directory:
+        post: Post
+        infAuthor: InfAuthor
+      settings:
+        ttl: 1
       channels:
         calculations_channel:
           name: calculations_channel
@@ -52,7 +57,7 @@ post:
   ad-remover:
     scheduler:
       #cron: "0 0/1 * 1/1 * ?" # every minute
-      cron: "30 6 * * *" # every day in 6:30
+      cron: "0 30 6 * * ?" # every day in 6:30
     batch-size: 2
 
 moderationScheduler:

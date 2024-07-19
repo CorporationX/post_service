@@ -4,12 +4,14 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderator.post.logic.PostModerator;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.cache.RedisCacheService;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,6 +63,9 @@ public class PostServiceTest {
     @Mock
     private PostViewEventPublisher postViewEventPublisher;
 
+    @Mock
+    private RedisCacheService redisCacheService;
+
     @Spy
     private PostMapperImpl postMapper;
 
@@ -68,16 +73,20 @@ public class PostServiceTest {
     private PostModerator postModerator;
 
     private PostDto postDto;
+    private UserDto userDto;
     private long postId;
     private Post postToUpdate;
     private List<Post> posts;
     private Long id;
     private LocalDateTime time;
+    private String patternByPost = "Post";
+    private String patternByInfAuthor = "InfAuthor";
 
     @BeforeEach
     void setUp() {
         id = 1L;
         postDto = PostDto.builder()
+                .id(1L)
                 .content("qwe")
                 .projectId(3L)
                 .authorId(3L)
@@ -88,7 +97,11 @@ public class PostServiceTest {
                 .id(postId)
                 .content("123123123")
                 .authorId(3L)
-                .published(false)
+                .published(true)
+                .build();
+
+        userDto = UserDto.builder()
+                .id(3L)
                 .build();
 
         time = LocalDateTime.now();
@@ -101,6 +114,9 @@ public class PostServiceTest {
         posts.add(Post.builder().content("4").deleted(false).published(false).createdAt(time.minusDays(12)).build());
         posts.add(Post.builder().content("5").deleted(false).published(false).createdAt(time.minusDays(1)).build());
         posts.add(Post.builder().content("6").deleted(true).published(false).createdAt(time.minusDays(2)).build());
+
+        postService.setPatternByPost("Post");
+        postService.setPatternByInfAuthor("InfAuthor");
     }
 
     @Test
@@ -133,9 +149,16 @@ public class PostServiceTest {
     @Test
     void publishDraftPost() {
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToUpdate));
+        when(userServiceClient.getUser(postToUpdate.getAuthorId())).thenReturn(userDto);
         PostDto actual = postService.publishDraftPost(postId);
 
         assertTrue(actual.isPublished());
+
+
+        verify(postValidator, times(1)).validateIsNotPublished(postToUpdate);
+        verify(postRepository, times(1)).save(postToUpdate);
+        verify(redisCacheService, times(1)).saveToCache(patternByPost, postToUpdate.getId(), actual);
+        verify(redisCacheService, times(1)).saveToCache(patternByInfAuthor, userDto.getId(), userDto);
     }
 
     @Test
