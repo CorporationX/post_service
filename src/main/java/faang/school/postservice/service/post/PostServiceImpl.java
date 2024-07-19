@@ -14,6 +14,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationStatus;
 import faang.school.postservice.publisher.KafkaPostPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.redis.RedisPostCacheService;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
 import faang.school.postservice.validator.post.PostValidator;
@@ -47,6 +48,7 @@ public class PostServiceImpl implements PostService {
     private final SpellingService spellingService;
     private final KafkaPostPublisher kafkaPostPublisher;
     private final UserServiceClient userServiceClient;
+    private final RedisPostCacheService redisPostCacheService;
 
     @Override
     public Post findById(Long id) {
@@ -78,6 +80,7 @@ public class PostServiceImpl implements PostService {
         List<Long> followersIds = userServiceClient.getFollowers(post.getAuthorId()).stream()
                 .map(UserDto::getId)
                 .toList();
+        redisPostCacheService.save(postMapper.toDto(post));
         kafkaPostPublisher.publish(new PostCreatedEvent(post.getId(), followersIds));
 
         return postMapper.toDto(post);
@@ -93,6 +96,7 @@ public class PostServiceImpl implements PostService {
 
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.updateHashtags(postHashtagDto);
+        redisPostCacheService.save(postMapper.toDto(post));
 
         return postMapper.toDto(post);
     }
@@ -106,6 +110,7 @@ public class PostServiceImpl implements PostService {
 
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.removeHashtags(postHashtagDto);
+        redisPostCacheService.deletePostById(id);
     }
 
     @Override

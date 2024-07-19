@@ -34,6 +34,7 @@ spring:
         like_post_channel:
           name: like_channel
       cache:
+        ttl: 86400
         hashtag:
           max_size: 1000
 
