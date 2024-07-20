@@ -27,7 +27,6 @@ public class CommentValidator {
             "User with id:%d is not the author of the comment with id:%d";
 
     public void existUser(long userId) {
-
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException e) {
@@ -55,6 +54,5 @@ public class CommentValidator {
             throw new OperationNotAvailableException(
                     String.format(USER_OPERATION_NOT_AVAILABLE_EXCEPTION_MSG, userId, comment.getId()));
         }
-
     }
 }
