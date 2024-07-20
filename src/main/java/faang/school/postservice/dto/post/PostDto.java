@@ -20,4 +20,5 @@ public class PostDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private int likesCount;
+    private long viewsCount;
 }

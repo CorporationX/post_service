@@ -23,12 +23,12 @@ public class CommentConsumer implements KafkaConsumer<CommentKafkaEvent> {
     @KafkaListener(topics = "${spring.data.kafka.topics.topic-settings.comments.name}", groupId = "${spring.data.kafka.group-id}")
     public void consume(@Payload CommentKafkaEvent event, Acknowledgment ack) {
 
+        log.info("Received new comment event {}", event);
+
         switch (event.getState()) {
             case ADD, UPDATE -> commentRedisCacheService.save(commentMapper.toRedisCache(event));
             case DELETE -> commentRedisCacheService.deleteById(event.getId());
         }
-
-        log.info("Received new comment event {}", event);
 
         ack.acknowledge();
     }

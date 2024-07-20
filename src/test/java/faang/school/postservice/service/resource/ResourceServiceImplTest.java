@@ -5,8 +5,8 @@ import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.s3.AmazonS3Service;
 import faang.school.postservice.validator.resource.ResourceValidator;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class ResourceServiceImplTest {
     @Mock
     private AmazonS3Service amazonS3Service;
     @Mock
-    private PostService postService;
+    private PostRepository postRepository;
 
     @InjectMocks
     private ResourceServiceImpl resourceServiceImpl;
@@ -65,7 +65,7 @@ class ResourceServiceImplTest {
         Post post = Post.builder().id(1L).build();
         String key = UUID.randomUUID().toString();
 
-        when(postService.findPostById(1L)).thenReturn(post);
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(amazonS3Service.uploadFile(file)).thenReturn(key);
         when(resourceRepository.save(any(Resource.class))).thenAnswer(i -> i.getArguments()[0]);
 

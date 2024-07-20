@@ -39,6 +39,7 @@ public class PostRedisCache implements Serializable {
     private LocalDateTime publishedAt;
     private LocalDateTime createdAt;
     private long likesCount;
+    private long viewsCount;
 
     @Override
     public boolean equals(Object o) {

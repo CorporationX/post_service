@@ -30,7 +30,6 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping("{postId}")
-    @Parameter(in = ParameterIn.HEADER, name = "x-user-id", required = true)
     public PostDto findById(@PathVariable Long postId) {
         return postService.findById(postId);
     }

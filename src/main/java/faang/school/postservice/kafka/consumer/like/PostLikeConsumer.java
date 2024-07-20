@@ -21,12 +21,12 @@ public class PostLikeConsumer implements KafkaConsumer<PostLikeKafkaEvent> {
     @KafkaListener(topics = "${spring.data.kafka.topics.topic-settings.post-likes.name}", groupId = "${spring.data.kafka.group-id}")
     public void consume(@Payload PostLikeKafkaEvent event, Acknowledgment ack) {
 
+        log.info("Received new post like event {}", event);
+
         switch (event.getState()) {
             case ADD -> commentRedisCacheService.incrementLikes(event.getPostId());
             case DELETE -> commentRedisCacheService.decrementLikes(event.getPostId());
         }
-
-        log.info("Received new post like event {}", event);
 
         ack.acknowledge();
     }

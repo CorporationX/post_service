@@ -1,21 +1,20 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostHashtagDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.exception.NotFoundException;
+import faang.school.postservice.kafka.producer.post.PostProducer;
+import faang.school.postservice.kafka.producer.post.PostViewProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationStatus;
-import faang.school.postservice.kafka.producer.post.PostProducer;
-import faang.school.postservice.kafka.producer.post.PostViewProducer;
-import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
 import faang.school.postservice.redis.cache.service.author.AuthorRedisCacheService;
 import faang.school.postservice.redis.cache.service.post.PostRedisCacheService;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -48,26 +47,21 @@ public class PostServiceImpl implements PostService {
     private final SpellingService spellingService;
     private final PostProducer postProducer;
     private final PostViewProducer postViewProducer;
-    private final UserContext userContext;
     private final AuthorRedisCacheService authorRedisCacheService;
     private final PostRedisCacheService postRedisCacheService;
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public PostDto findById(Long id) {
 
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Post with id %s not found", id)));
 
-        postViewProducer.produce(postMapper.toViewKafkaEvent(post, userContext.getUserId()));
+        post.setViewsCount(post.getViewsCount() + 1);
+
+        postViewProducer.produce(postMapper.toViewKafkaEvent(post));
 
         return postMapper.toDto(post);
-    }
-
-    @Override
-    public Post findPostById(Long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Post with id %s not found", id)));
     }
 
     @Override
@@ -215,5 +209,10 @@ public class PostServiceImpl implements PostService {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private Post findPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Post with id %s not found", id)));
     }
 }

@@ -10,6 +10,8 @@ public interface PostRedisCacheService {
 
     void incrementLikes(long postId);
 
+    void incrementViews(long postId);
+
     void decrementLikes(long postId);
 
     void deleteById(long postId);

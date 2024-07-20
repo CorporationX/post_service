@@ -21,12 +21,12 @@ public class CommentLikeConsumer implements KafkaConsumer<CommentLikeKafkaEvent>
     @KafkaListener(topics = "${spring.data.kafka.topics.topic-settings.comment-likes.name}", groupId = "${spring.data.kafka.group-id}")
     public void consume(@Payload CommentLikeKafkaEvent event, Acknowledgment ack) {
 
+        log.info("Received new comment like event {}", event);
+
         switch (event.getState()) {
             case ADD -> commentRedisCacheService.incrementLikes(event.getCommentId());
             case DELETE -> commentRedisCacheService.decrementLikes(event.getCommentId());
         }
-
-        log.info("Received new comment like event {}", event);
 
         ack.acknowledge();
     }
