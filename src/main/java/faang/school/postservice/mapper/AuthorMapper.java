@@ -1,7 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.model.redis.AuthorRedisCache;
+import faang.school.postservice.redis.cache.entity.AuthorRedisCache;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;

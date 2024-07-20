@@ -21,53 +21,52 @@ spring:
     redis:
       port: 6379
       host: localhost
+      channels:
+        calculations_channel:
+          name: calculations_channel
+        like_post_channel:
+          name: like_channel
+        user_ban_channel:
+          name: user_ban_channel
+      cache:
+        default-ttl: 3600
+        cache-settings:
+          hashtag:
+            name: hashtags
+            # noinspection SpringBootApplicationYaml
+            max-size: 1000
+          users:
+            name: users
+          authors:
+            name: authors
+          posts:
+            name: posts
+            # noinspection SpringBootApplicationYaml
+            max-post-comments-size: 3
+          comments:
+            name: comments
+      lock-registry:
+        post-lock-key: POST_LOCK_KEY
+        release-time-duration-millis: 10000
 
     kafka:
       port: 9092
       host: localhost
       group-id: account_service
-
-    channels:
-      calculations_channel:
-        name: calculations_channel
-      like_post_channel:
-        name: like_channel
-
-    topics:
-      default-partition: 1
-      default-replication: 3
-      topic-settings:
-        likes:
-          name: likes
-          partition: 1
-          replication: 1
-        posts:
-          name: posts
-          partition: 1
-          replication: 1
-        comments:
-          name: comments
-          partition: 1
-          replication: 1
-        post-views:
-          name: posts
-          partition: 1
-          replication: 1
-
-  cache:
-    default-ttl: 3600
-    default-max-size: 1000
-    max-post-comments-size: 3
-    cache-settings:
-      hashtag:
-        name: hashtags
-        max-size: 1000
-      users:
-        name: users
-      posts:
-        name: posts
-      comments:
-        name: comments
+      topics:
+        default-partition: 1
+        default-replication: 1
+        topic-settings:
+          post-likes:
+            name: post-likes
+          comment-likes:
+            name: comment-likes
+          posts:
+            name: posts
+          comments:
+            name: comments
+          post-views:
+            name: post-views
 
   servlet:
     multipart:
@@ -112,8 +111,6 @@ post:
   user-ban:
     scheduler:
       cron: "0 0 * * * ?"
-    channel:
-      name: user_ban_channel
   correcter:
     scheduler:
       cron: "0 0 0 * * *"
