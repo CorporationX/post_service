@@ -12,8 +12,6 @@ public interface PostService {
 
     PostDto findById(Long id);
 
-    Post findPostById(Long id);
-
     PostDto create(PostCreateDto postCreateDto);
 
     PostDto publish(Long id);

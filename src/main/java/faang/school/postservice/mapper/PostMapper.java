@@ -38,7 +38,7 @@ public interface PostMapper {
     PostKafkaEvent toKafkaEvent(Post post, List<Long> subscriberIds);
 
     @Mapping(source = "post.id", target = "postId")
-    PostViewKafkaEvent toViewKafkaEvent(Post post, long viewerId);
+    PostViewKafkaEvent toViewKafkaEvent(Post post);
 
     @Mapping(source = "authorId", target = "id")
     AuthorRedisCache toAuthorCache(Post post);

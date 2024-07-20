@@ -39,6 +39,15 @@ public class PostRedisCacheServiceImpl implements PostRedisCacheService {
     }
 
     @Override
+    public void incrementViews(long postId) {
+
+        redisOperations.findById(postRedisRepository, postId).ifPresent(post -> {
+            post.setViewsCount(post.getViewsCount() + 1);
+            redisOperations.updateOrSave(postRedisRepository, post, postId);
+        });
+    }
+
+    @Override
     public void decrementLikes(long postId) {
 
         redisOperations.findById(postRedisRepository, postId).ifPresent(post -> {
