@@ -3,7 +3,7 @@ package faang.school.postservice.service.user;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.AuthorMapper;
-import faang.school.postservice.model.redis.AuthorRedisCache;
+import faang.school.postservice.redis.cache.entity.AuthorRedisCache;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

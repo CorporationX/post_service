@@ -10,12 +10,12 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationStatus;
-import faang.school.postservice.producer.post.PostProducer;
-import faang.school.postservice.producer.post.PostViewProducer;
+import faang.school.postservice.kafka.producer.post.PostProducer;
+import faang.school.postservice.kafka.producer.post.PostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
-import faang.school.postservice.service.redis.author.AuthorRedisCacheService;
-import faang.school.postservice.service.redis.post.PostRedisCacheService;
+import faang.school.postservice.redis.cache.service.author.AuthorRedisCacheService;
+import faang.school.postservice.redis.cache.service.post.PostRedisCacheService;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +53,7 @@ public class PostServiceImpl implements PostService {
     private final PostRedisCacheService postRedisCacheService;
 
     @Override
+    @Transactional(readOnly = true)
     public PostDto findById(Long id) {
 
         Post post = postRepository.findById(id)

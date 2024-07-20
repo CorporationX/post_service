@@ -3,13 +3,13 @@ package faang.school.postservice.mapper;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostHashtagDto;
-import faang.school.postservice.event.kafka.PostKafkaEvent;
-import faang.school.postservice.event.kafka.PostViewKafkaEvent;
-import faang.school.postservice.model.Like;
+import faang.school.postservice.kafka.event.post.PostKafkaEvent;
+import faang.school.postservice.kafka.event.post.PostViewKafkaEvent;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.PostLike;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.model.redis.AuthorRedisCache;
-import faang.school.postservice.model.redis.PostRedisCache;
+import faang.school.postservice.redis.cache.entity.AuthorRedisCache;
+import faang.school.postservice.redis.cache.entity.PostRedisCache;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -49,7 +49,7 @@ public interface PostMapper {
     PostRedisCache toRedisCache(Post post);
 
     @Named("getCountFromLikeList")
-    default int getCountFromLikeList(List<Like> likes) {
+    default int getCountFromLikeList(List<PostLike> likes) {
         return likes != null ? likes.size() : 0;
     }
 
@@ -59,7 +59,7 @@ public interface PostMapper {
     }
 
     @Named("getIdFromLike")
-    default long getIdFromLike(Like like) {
+    default long getIdFromLike(PostLike like) {
         return like != null ? like.getId() : 0;
     }
 
@@ -69,7 +69,7 @@ public interface PostMapper {
     }
 
     @Named("getLikeFromId")
-    default Like getLikeFromId(Long id) {
-        return Like.builder().id(id).build();
+    default PostLike getLikeFromId(Long id) {
+        return PostLike.builder().id(id).build();
     }
 }

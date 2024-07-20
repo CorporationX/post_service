@@ -1,11 +1,25 @@
 package faang.school.postservice.model;
 
 import faang.school.postservice.model.ad.Ad;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -35,21 +49,26 @@ public class Post {
     private Long projectId;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Like> likes;
+    @ToString.Exclude
+    private List<PostLike> likes;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
+    @ToString.Exclude
     private List<Hashtag> hashtags;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
+    @ToString.Exclude
     private List<Comment> comments;
 
     @ManyToMany(mappedBy = "posts")
+    @ToString.Exclude
     private List<Album> albums;
 
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private Ad ad;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
+    @ToString.Exclude
     private List<Resource> resources;
 
     @Column(name = "published", nullable = false)

@@ -14,7 +14,7 @@ import java.util.Set;
 @Service
 public class HashtagCacheServiceImpl implements HashtagCacheService {
 
-    @Value("${spring.cache.cache-settings.hashtag.max-size}")
+    @Value("${spring.data.redis.cache.cache-settings.hashtag.max-size}")
     private long maxCacheSize;
     private final RedisTemplate<String, PostHashtagDto> redisTemplate;
     private final ZSetOperations<String, PostHashtagDto> zSetOps;

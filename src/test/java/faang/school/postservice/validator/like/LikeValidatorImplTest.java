@@ -4,8 +4,11 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Like;
+import faang.school.postservice.model.CommentLike;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.PostLike;
+import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
@@ -19,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,6 +33,10 @@ import static org.mockito.Mockito.when;
 class LikeValidatorImplTest {
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private PostRepository postRepository;
+    @Mock
+    private CommentRepository commentRepository;
     @InjectMocks
     private LikeValidatorImpl validator;
 
@@ -37,7 +45,8 @@ class LikeValidatorImplTest {
     private final long postId = 3L;
     private Post post;
     private Comment comment;
-    private Like like;
+    private CommentLike commentLike;
+    private PostLike postLike;
 
     @BeforeEach
     void init() {
@@ -51,7 +60,12 @@ class LikeValidatorImplTest {
                 .likes(new ArrayList<>())
                 .build();
 
-        like = Like.builder()
+        commentLike = CommentLike.builder()
+                .id(4L)
+                .userId(userId)
+                .build();
+
+        postLike = PostLike.builder()
                 .id(4L)
                 .userId(userId)
                 .build();
@@ -59,10 +73,12 @@ class LikeValidatorImplTest {
 
     @Test
     void validateCommentToLikeAlreadyLikedComment() {
-        comment.setLikes(List.of(like));
-        like.setComment(comment);
+        comment.setLikes(List.of(commentLike));
+        commentLike.setComment(comment);
 
-        DataValidationException e = assertThrows(DataValidationException.class, () -> validator.validateCommentToLike(userId, comment));
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+
+        DataValidationException e = assertThrows(DataValidationException.class, () -> validator.validateAndGetCommentToLike(userId, commentId));
         assertEquals(
                 "user with userId:" + userId + " can't like comment with commentId:" + commentId + " two times",
                 e.getMessage()
@@ -71,17 +87,21 @@ class LikeValidatorImplTest {
 
     @Test
     void validateCommentToLike() {
-        like.setComment(comment);
+        commentLike.setComment(comment);
 
-        assertDoesNotThrow(() -> validator.validateCommentToLike(userId, comment));
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+
+        assertDoesNotThrow(() -> validator.validateAndGetCommentToLike(userId, commentId));
     }
 
     @Test
     void validatePostToLikeAlreadyLikedAndGetPost() {
-        post.setLikes(List.of(like));
-        like.setPost(post);
+        post.setLikes(List.of(postLike));
+        postLike.setPost(post);
 
-        DataValidationException e = assertThrows(DataValidationException.class, () -> validator.validateAndGetPostToLike(userId, post));
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        DataValidationException e = assertThrows(DataValidationException.class, () -> validator.validateAndGetPostToLike(userId, postId));
         assertEquals(
                 "user with userId:" + userId + " can't like post with postId:" + postId + " two times",
                 e.getMessage()
@@ -90,9 +110,11 @@ class LikeValidatorImplTest {
 
     @Test
     void validatePostToLike() {
-        like.setPost(post);
+        postLike.setPost(post);
 
-        assertDoesNotThrow(() -> validator.validateAndGetPostToLike(userId, post));
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        assertDoesNotThrow(() -> validator.validateAndGetPostToLike(userId, postId));
     }
 
     @Test
