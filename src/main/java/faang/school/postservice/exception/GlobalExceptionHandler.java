@@ -13,4 +13,10 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleDataValidationException(DataValidationException e) {
         return new ErrorResponse(e.getMessage());
     }
+
+    @ExceptionHandler(RedisCacheException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleRedisCacheException(RedisCacheException e) {
+        return new ErrorResponse(e.getMessage());
+    }
 }

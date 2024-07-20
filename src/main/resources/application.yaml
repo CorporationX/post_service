@@ -57,10 +57,12 @@ post:
 
 redis:
   cache:
-    post:
-      ttl-post: "1"
-      time-unit-post: "DAYS"
-
+    ttl:
+      post: "1"
+      author: "1"
+    time-unit:
+      post: "DAYS"
+      author: "DAYS"
 
 moderationScheduler:
   cron: "0 0 0 * * *" # every day

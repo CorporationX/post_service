@@ -1,8 +1,9 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
-import faang.school.postservice.exception.DataLikeValidation;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
@@ -10,6 +11,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderator.comment.logic.CommentModerator;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.RedisCacheService;
 import faang.school.postservice.threadpool.ThreadPoolForCommentModerator;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,8 @@ public class CommentService {
     private final ThreadPoolForCommentModerator threadPoolForCommentModerator;
     private final CommentEventPublisher commentEventPublisher;
     private final CommentModerator commentModerator;
+    private final RedisCacheService redisCacheService;
+    private final UserServiceClient userServiceClient;
 
     @Value("${postServiceThreadPool.poolComment}")
     @Setter
@@ -82,6 +86,10 @@ public class CommentService {
     public CreateCommentDto createComment(CreateCommentDto createCommentDto) {
         Comment comment = commentMapper.toEntity(createCommentDto);
         Comment commentSaved = commentRepository.save(comment);
+
+        UserDto userDto = userServiceClient.getUser(commentSaved.getAuthorId());
+        redisCacheService.saveAuthor(userDto);
+
         commentEventPublisher.sendEvent(commentMapper.toEventDto(commentSaved));
         log.debug("Comment saved in db. Comment: {}", commentSaved);
 

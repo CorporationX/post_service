@@ -9,7 +9,6 @@ import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderator.post.logic.PostModerator;
 import faang.school.postservice.publisher.PostViewEventPublisher;
-import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.PostValidator;
@@ -26,14 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -63,7 +56,7 @@ public class PostServiceTest {
     private PostViewEventPublisher postViewEventPublisher;
 
     @Mock
-    private PostCacheRepository postCacheRepository;
+    private RedisCacheService redisCacheService;
 
     @Spy
     private PostMapperImpl postMapper;
