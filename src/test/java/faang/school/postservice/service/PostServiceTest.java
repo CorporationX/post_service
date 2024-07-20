@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
@@ -70,6 +71,7 @@ public class PostServiceTest {
     private List<Post> posts;
     private Long id;
     private LocalDateTime time;
+    private UserDto userDto;
 
     @BeforeEach
     void setUp() {
@@ -87,6 +89,8 @@ public class PostServiceTest {
                 .authorId(3L)
                 .published(false)
                 .build();
+
+        userDto = UserDto.builder().id(1L).username("name").email("email").build();
 
         time = LocalDateTime.now();
 
@@ -130,9 +134,14 @@ public class PostServiceTest {
     @Test
     void publishDraftPost() {
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToUpdate));
+        when(userServiceClient.getUser(3L)).thenReturn(userDto);
         PostDto actual = postService.publishDraftPost(postId);
 
         assertTrue(actual.isPublished());
+        verify(postMapper, times(1)).toDto(postToUpdate);
+        verify(userServiceClient, times(1)).getUser(postToUpdate.getAuthorId());
+        verify(redisCacheService, times(1)).savePost(actual);
+        verify(redisCacheService, times(1)).saveAuthor(userDto);
     }
 
     @Test

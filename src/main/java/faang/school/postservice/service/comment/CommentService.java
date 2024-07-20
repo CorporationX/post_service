@@ -87,8 +87,8 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(createCommentDto);
         Comment commentSaved = commentRepository.save(comment);
 
-        UserDto userDto = userServiceClient.getUser(commentSaved.getAuthorId());
-        redisCacheService.saveAuthor(userDto);
+        UserDto commentAuthor = userServiceClient.getUser(commentSaved.getAuthorId());
+        redisCacheService.saveAuthor(commentAuthor);
 
         commentEventPublisher.sendEvent(commentMapper.toEventDto(commentSaved));
         log.debug("Comment saved in db. Comment: {}", commentSaved);

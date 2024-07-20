@@ -76,7 +76,11 @@ public class PostService {
         postRepository.save(post);
 
         PostDto postDto = postMapper.toDto(post);
+        UserDto postAuthor = userServiceClient.getUser(post.getAuthorId());
+
         redisCacheService.savePost(postDto);
+        redisCacheService.saveAuthor(postAuthor);
+
 
         return postDto;
     }
