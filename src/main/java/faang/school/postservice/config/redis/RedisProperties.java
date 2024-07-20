@@ -29,8 +29,8 @@ public class RedisProperties {
 
     @Data
     public static class Cache {
-        private Long maxPostsAmount;
-        private Long ttl;
+        private int maxPostsAmount;
+        private int ttl;
         private String keyspace;
     }
 }

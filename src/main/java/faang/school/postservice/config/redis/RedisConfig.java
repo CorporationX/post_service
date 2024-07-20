@@ -15,6 +15,7 @@ import org.springframework.data.redis.core.convert.KeyspaceConfiguration;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import redis.clients.jedis.Jedis;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -44,12 +45,17 @@ public class RedisConfig {
     }
 
     @Bean
+    public Jedis jedis() {
+        return new Jedis(redisProperties.getHost(), redisProperties.getPort());
+    }
+
+    @Bean
     public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(jedisConnectionFactory());
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
-
+        redisTemplate.setEnableTransactionSupport(true);
         return redisTemplate;
     }
 
