@@ -85,7 +85,6 @@ tasks.jacocoTestReport {
                 "**/postservice/validator/**",
                 "**/postservice/filter/**",
                 "**/postservice/controller/**")
-            //exclude("classes/kotlin/main/com/yourcompany/yourproject/excluded/**")
         }
     )
 }
