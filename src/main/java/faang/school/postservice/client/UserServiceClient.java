@@ -15,6 +15,11 @@ public interface UserServiceClient {
     @GetMapping("/users/{userId}")
     UserDto getUser(@PathVariable long userId);
 
+    @GetMapping("/users/exists/{userId}")
+    default boolean doesUserExist(@PathVariable long userId) {
+        return true;
+    }
+
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 }
