@@ -1,166 +1,222 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.exception.WrongTimeException;
-import faang.school.postservice.mapper.post.postMapper.PostMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PostServiceTest {
-
-    private Post post;
+public class PostServiceTest {
+    @InjectMocks
+    private PostServiceImpl postService;
 
     @Mock
     private PostRepository postRepository;
 
-    @InjectMocks
-    private PostServiceImpl postService;
-    private PostDto postDto;
-    private Post postEntity;
-
     @Mock
     private PostMapper postMapper;
-
+    
     @Mock
-    private ExecutorService executorService;
+    private PostValidator postValidator;
+
+    private PostDto postDto1;
+    private PostDto postDto2;
+    private Post post1;
+    private Post post2;
+    private Post post3;
+    private Post post4;
+    private Post post5;
+    private Long postId;
+    private String content;
+    private LocalDateTime publicationTime;
 
     @BeforeEach
     void setUp() {
-        post = Post.builder()
-                .id(1L)
-                .content("Test post")
-                .build();
+        postId = 10L;
+        content = "text";
+        publicationTime = LocalDateTime.now();
 
-        postDto = PostDto.builder()
-                .id(1L)
-                .content("Test post")
-                .authorId(123L)
-                .projectId(456L)
-                .build();
-        postEntity = Post.builder()
-                .id(1L)
-                .content("Test post")
-                .authorId(123L)
-                .projectId(456L)
-                .build();
+        postDto1 = new PostDto();
+        postDto1.setId(1L);
+        postDto1.setAuthorId(1L);
+        postDto1.setProjectId(1L);
+        postDto1.setContent("content");
+        postDto1.setCreatedAt(LocalDateTime.now().minusDays(1));
+
+        postDto2 = new PostDto();
+        postDto2.setId(2L);
+        postDto2.setAuthorId(2L);
+        postDto2.setProjectId(2L);
+        postDto2.setContent("Content");
+        postDto2.setCreatedAt(LocalDateTime.now());
+
+        post1 = new Post();
+        post1.setId(1L);
+        post1.setAuthorId(1L);
+        post1.setProjectId(1L);
+        post1.setContent("content");
+        post1.setPublished(false);
+        post1.setDeleted(false);
+
+        post2 = new Post();
+        post2.setId(2L);
+        post2.setAuthorId(2L);
+        post2.setProjectId(2L);
+        post2.setContent("Content");
+        post2.setPublished(false);
+        post2.setDeleted(false);
+
+        post3 = new Post();
+        post3.setId(3L);
+        post3.setPublished(true);
+        post3.setDeleted(false);
+        post3.setCreatedAt(LocalDateTime.now());
+
+        post4 = new Post();
+        post4.setId(2L);
+        post4.setPublished(true);
+        post4.setDeleted(false);
+        post4.setCreatedAt(LocalDateTime.now().minusDays(1));
+
+        post5 = new Post();
+        post5.setId(5L);
+        post5.setPublished(false);
+        post5.setDeleted(true);
     }
 
     @Test
-    void getPostByIdValidIdShouldReturnPost() {
-        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-        Post result = postService.getPostById(1L);
-        assertEquals(post, result);
-        verify(postRepository, times(1)).findById(1L);
+    public void shouldCreatePost() {
+        when(postMapper.toEntity(any(PostDto.class))).thenReturn(post1);
+        when(postMapper.toDto(any(Post.class))).thenReturn(postDto1);
+        when(postRepository.save(any(Post.class))).thenReturn(post1);
+        PostDto createdPost = postService.createPost(postDto1);
+        verify(postValidator).validateAuthorIdAndProjectId(postDto1.getAuthorId(), postDto1.getProjectId());
+        verify(postRepository).save(post1);
+        verify(postMapper).toEntity(postDto1);
+        verify(postMapper).toDto(post1);
+        assertNotNull(createdPost);
+        assertEquals(postDto1.getId(), createdPost.getId());
+        assertEquals(postDto1.getAuthorId(), createdPost.getAuthorId());
+        assertEquals(postDto1.getProjectId(), createdPost.getProjectId());
+        assertEquals(postDto1.getContent(), createdPost.getContent());
     }
 
     @Test
-    void getPostByIdInvalidIdShouldThrowEntityNotFoundException() {
-        when(postRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> postService.getPostById(1L));
-        verify(postRepository, times(1)).findById(1L);
+    public void shouldPublishPost() {
+        doNothing().when(postValidator).validatePublicationPost(post1);
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
+        when(postMapper.toDto(any(Post.class))).thenReturn(postDto1);
+        PostDto publishPost = postService.publishPost(1L);
+        verify(postRepository).findById(1L);
+        verify(postValidator).validatePublicationPost(post1);
+        assertTrue(post1.isPublished());
+        verify(postMapper).toDto(post1);
+        assertNotNull(publishPost);
+        assertEquals(postDto1.getId(), publishPost.getId());
     }
 
     @Test
-    void publishScheduledPostsShouldNotPublishIfNoPosts() {
-        when(postRepository.findReadyToPublish()).thenReturn(List.of());
-        postService.publishScheduledPosts();
-        verify(postRepository, never()).saveAll(anyList());
+    public void shouldUpdatePost() {
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post1));
+        when(postMapper.toDto(any(Post.class))).thenReturn(postDto1);
+        PostDto updatedPost = postService.updatePost(postId, content, publicationTime);
+        verify(postRepository).findById(postId);
+        assertNotNull(post1.getContent());
+        verify(postMapper).toDto(post1);
+        assertNotNull(updatedPost);
+        assertEquals(postDto1.getId(), post1.getId());
     }
 
     @Test
-    void publishScheduledPostsShouldCallFindReadyToPublishAndPublishPostBatch() {
-        List<Post> readyToPublishPosts = List.of(post);
-        when(postRepository.findReadyToPublish()).thenReturn(readyToPublishPosts);
-        postService.publishScheduledPosts();
-        verify(postRepository, times(1)).findReadyToPublish();
-        verify(executorService, times(1)).execute(any(Runnable.class));
+    public void shouldDeleteByIdPost() {
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post1));
+        postService.deletePostById(postId);
+        verify(postRepository).findById(postId);
+        assertTrue(post1.isDeleted());
     }
 
     @Test
-    void publishScheduledPostsShouldNotCallPublishPostBatchIfNoPostsToPublish() {
-        when(postRepository.findReadyToPublish()).thenReturn(new ArrayList<>());
-        postService.publishScheduledPosts();
-        verify(postRepository, times(1)).findReadyToPublish();
-        verify(executorService, never()).execute(any(Runnable.class));
+    public void shouldFindByIdPost() {
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post1));
+        Post foundPost = postService.findById(postId);
+        verify(postRepository).findById(postId);
+        assertNotNull(foundPost);
+        assertEquals(1L, foundPost.getId());
     }
 
     @Test
-    void publishScheduledPosts_shouldPartitionPostsIntoBatches() {
-        List<Post> readyToPublishPosts = new ArrayList<>();
-        for (int i = 0; i < 1500; i++) {
-            readyToPublishPosts.add(Post.builder()
-                    .id((long) i + 1)
-                    .content("Test post " + i)
-                    .scheduledAt(LocalDateTime.now().plusMinutes(1))
-                    .build());
-        }
-        when(postRepository.findReadyToPublish()).thenReturn(readyToPublishPosts);
-        postService.publishScheduledPosts();
-        verify(executorService, times(2)).execute(any(Runnable.class));
+    public void shouldGetAllPostsDraftsByUserAuthorId() {
+        when(postRepository.findByAuthorId(1L)).thenReturn(Arrays.asList(post1, post2));
+        when(postMapper.toDto(post1)).thenReturn(postDto1);
+        when(postMapper.toDto(post2)).thenReturn(postDto2);
+        List<PostDto> postsDrafts = postService.getAllPostsDraftsByUserAuthorId(1L);
+        verify(postRepository).findByAuthorId(1L);
+        verify(postMapper).toDto(post1);
+        verify(postMapper).toDto(post2);
+        assertNotNull(postsDrafts);
+        assertEquals(2, postsDrafts.size());
+        assertEquals(postDto2.getId(), postsDrafts.get(0).getId());
+        assertEquals(postDto1.getId(), postsDrafts.get(1).getId());
     }
 
     @Test
-    void publishScheduledPostsShouldHandleExceptionFromPublishPostBatch() {
-        List<Post> readyToPublishPosts = List.of(post);
-        when(postRepository.findReadyToPublish()).thenReturn(readyToPublishPosts);
-        doThrow(new RuntimeException("Error publishing posts")).when(executorService).execute(any(Runnable.class));
-        assertThrows(RuntimeException.class, () -> postService.publishScheduledPosts());
+    public void shouldGetAllPostsDraftsByProjectAuthorId() {
+        when(postRepository.findByProjectId(1L)).thenReturn(Arrays.asList(post1, post2));
+        when(postMapper.toDto(post1)).thenReturn(postDto1);
+        when(postMapper.toDto(post2)).thenReturn(postDto2);
+        List<PostDto> postsDrafts = postService.getAllPostsDraftsByProjectAuthorId(1L);
+        verify(postRepository).findByProjectId(1L);
+        verify(postMapper).toDto(post1);
+        verify(postMapper).toDto(post2);
+        assertNotNull(postsDrafts);
+        assertEquals(2, postsDrafts.size());
+        assertEquals(postDto2.getId(), postsDrafts.get(0).getId());
+        assertEquals(postDto1.getId(), postsDrafts.get(1).getId());
     }
 
     @Test
-    void createPostShouldSavePostWithCorrectFieldsWhenScheduledAtIsNull() {
-        when(postMapper.toEntity(postDto)).thenReturn(postEntity);
-        when(postRepository.save(postEntity)).thenReturn(postEntity);
-        Post createdPost = postService.createPost(postDto);
-        verify(postMapper, times(1)).toEntity(postDto);
-        verify(postRepository, times(1)).save(postEntity);
-        assertTrue(createdPost.isPublished());
-        assertEquals(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
-                createdPost.getPublishedAt().truncatedTo(ChronoUnit.SECONDS));
+    public void shouldGetAllPublishedNotDeletedPostsByUserAuthorId() {
+        when(postRepository.findByAuthorId(1L)).thenReturn(Arrays.asList(post3, post4, post5));
+        when(postMapper.toDto(post3)).thenReturn(postDto1);
+        when(postMapper.toDto(post4)).thenReturn(postDto2);
+        List<PostDto> publishedPosts = postService.getAllPublishedNotDeletedPostsByUserAuthorId(1L);
+        verify(postRepository).findByAuthorId(1L);
+        verify(postMapper).toDto(post3);
+        verify(postMapper).toDto(post4);
+        verify(postMapper, never()).toDto(post5);
+        assertNotNull(publishedPosts);
+        assertEquals(2, publishedPosts.size());
+        assertEquals(postDto2.getId(), publishedPosts.get(0).getId());
+        assertEquals(postDto1.getId(), publishedPosts.get(1).getId());
     }
 
     @Test
-    void createPostShouldSavePostWithCorrectFieldsWhenScheduledAtIsNotNull() {
-        LocalDateTime scheduledAt = LocalDateTime.now().plusDays(1);
-        postDto.setScheduledAt(scheduledAt);
-        when(postMapper.toEntity(postDto)).thenReturn(postEntity);
-        when(postRepository.save(postEntity)).thenReturn(postEntity);
-        Post createdPost = postService.createPost(postDto);
-        verify(postMapper, times(1)).toEntity(postDto);
-        verify(postRepository, times(1)).save(postEntity);
-        assertFalse(createdPost.isPublished());
-        assertEquals(scheduledAt, createdPost.getPublishedAt());
-    }
-
-    @Test
-    void createPostShouldThrowWrongTimeExceptionWhenScheduledAtIsInPast() {
-        LocalDateTime pastTime = LocalDateTime.now().minusDays(1);
-        postDto.setScheduledAt(pastTime);
-        assertThrows(WrongTimeException.class, () -> postService.createPost(postDto));
-        verify(postRepository, never()).save(postEntity);
+    public void shouldGetAllPublishedNotDeletedPostsByProjectAuthorId() {
+        when(postRepository.findByProjectId(1L)).thenReturn(Arrays.asList(post3, post4, post5));
+        when(postMapper.toDto(post3)).thenReturn(postDto1);
+        when(postMapper.toDto(post4)).thenReturn(postDto2);
+        List<PostDto> publishedPosts = postService.getAllPublishedNotDeletedPostsByProjectAuthorId(1L);
+        verify(postRepository).findByProjectId(1L);
+        verify(postMapper).toDto(post3);
+        verify(postMapper).toDto(post4);
+        verify(postMapper, never()).toDto(post5);
+        assertNotNull(publishedPosts);
+        assertEquals(2, publishedPosts.size());
+        assertEquals(postDto2.getId(), publishedPosts.get(0).getId());
+        assertEquals(postDto1.getId(), publishedPosts.get(1).getId());
     }
 }

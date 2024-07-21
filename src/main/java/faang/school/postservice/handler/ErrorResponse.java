@@ -1,4 +1,4 @@
-package faang.school.postservice.controller.comment;
+package faang.school.postservice.handler;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

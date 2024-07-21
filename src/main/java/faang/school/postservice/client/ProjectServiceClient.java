@@ -17,4 +17,7 @@ public interface ProjectServiceClient {
 
     @PostMapping("/projects")
     List<ProjectDto> getProjectsByIds(@RequestBody List<Long> ids);
+
+    @GetMapping("existsById/{userId}")
+    ProjectDto findProjectById(@PathVariable Long projectId);
 }

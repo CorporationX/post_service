@@ -2,7 +2,7 @@ package faang.school.postservice.publisher;
 
 import faang.school.postservice.dto.comment.CommentEvent;
 
-import faang.school.postservice.mapper.post.JsonMapper;
+import faang.school.postservice.mapper.JsonMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;

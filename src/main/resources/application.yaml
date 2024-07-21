@@ -36,6 +36,8 @@ logging:
 
 post:
   publisher:
+    thread-count: 10
+    batch-size: 1000
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
@@ -58,3 +60,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+notification-service:
+  host: localhost
+  port: 8083
