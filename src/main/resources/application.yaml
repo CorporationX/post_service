@@ -43,6 +43,8 @@ spring:
     group-id: news_feed
     topics-names:
       post: post_topic
+      comment: comment_topic
+      like: like_topic
 
 server:
   host: localhost

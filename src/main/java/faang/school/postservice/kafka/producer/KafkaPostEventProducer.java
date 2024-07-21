@@ -13,10 +13,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class PostProducer extends AbstractEventProducer {
+public class KafkaPostEventProducer extends AbstractEventProducer {
     private final UserServiceClient userServiceClient;
 
-    public PostProducer(
+    public KafkaPostEventProducer(
             KafkaTemplate<String, EventDto> kafkaTemplate,
             NewTopic postKafkaTopic,
             UserServiceClient userServiceClient

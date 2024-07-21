@@ -42,7 +42,6 @@ public class FeedService {
     }
 
     public List<PostForFeedDto> getFeed(Long userId, Long lastViewedPostId) {
-        //TODO: fix this
         Optional<Feed> userFeed = feedCache.findById(userId);
         Optional<List<PostDto>> postsFromCache = userFeed.map(mapFeedToPostDtos(lastViewedPostId));
         List<PostDto> fullPostsBatch = getFullPostsBatch(userId, postsFromCache);
@@ -95,7 +94,7 @@ public class FeedService {
         return fullPostsBatch.stream()
                 .map(postDto -> PostForFeedDto.builder()
                         .post(postDto)
-                        // .postAuthor(getPostAuthorDto(postDto.getAuthorId()))
+                        .postAuthor(getPostAuthorDto(postDto.getAuthorId()))
                         .build())
                 .toList();
     }

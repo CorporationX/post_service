@@ -2,13 +2,10 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.kafka.producer.PostProducer;
+import faang.school.postservice.kafka.producer.KafkaPostEventProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.redis.cache.RedisPostCache;
-import faang.school.postservice.redis.cache.RedisUserCache;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,12 +26,10 @@ import static faang.school.postservice.exception.message.PostValidationException
 @Slf4j
 public class PostService {
     private final PostRepository postRepository;
-    private final RedisUserCache userRepository;
     private final UserServiceClient userServiceClient;
-    private final RedisPostCache postCache;
     private final PostMapper postMapper;
     private final PostVerifier postVerifier;
-    private final PostProducer postProducer;
+    private final KafkaPostEventProducer kafkaPostEventProducer;
 
 
     public PostDto createPost(@Valid PostDto postDto) {
@@ -56,14 +51,9 @@ public class PostService {
         postToBePublished.setPublishedAt(LocalDateTime.now());
         Post publishedPost = postRepository.save(postToBePublished);
 
-        postProducer.sendPostEvent(publishedPost);
+        kafkaPostEventProducer.sendPostEvent(publishedPost);
 
         PostDto publishedPostDto = postMapper.toDto(publishedPost);
-
-        //TODO: мб убрать в кафка листенер
-        cachePost(publishedPostDto);
-        cachePostAuthor(publishedPostDto.getAuthorId());
-
         return publishedPostDto;
     }
 
@@ -164,14 +154,5 @@ public class PostService {
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
-    }
-
-    private void cachePost(PostDto postDto) {
-        postCache.save(postDto);
-    }
-
-    private void cachePostAuthor(long authorId) {
-        UserDto user = userServiceClient.getUser(authorId);
-        userRepository.save(user);
     }
 }

@@ -24,7 +24,6 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.kafka:spring-kafka:3.2.1")
-
     implementation("org.springframework.boot:spring-boot-starter-aop:3.3.0")
     implementation("org.springframework.retry:spring-retry:2.0.3")
 
@@ -73,4 +72,12 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+tasks.bootJar {
+    manifest {
+        attributes(
+            "Start-Class" to "faang.school.postservice.PostServiceApp"
+        )
+    }
 }
