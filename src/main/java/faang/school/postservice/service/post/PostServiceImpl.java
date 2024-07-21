@@ -3,9 +3,9 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.WrongTimeException;
-import faang.school.postservice.mapper.post.postMapper.PostMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.moderation.ModerationDictionary;
+import faang.school.postservice.dto.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,6 +64,11 @@ public class PostServiceImpl implements PostService {
         postBatches.forEach(batch ->
                 CompletableFuture.runAsync(() -> publishPostBatch(batch), executorService)
         );
+    }
+
+    @Override
+    public boolean existsById(long id) {
+        return postRepository.existsById(id);
     }
 
     private void publishPostBatch(List<Post> postBatch) {

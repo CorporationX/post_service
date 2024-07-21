@@ -3,7 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.WrongTimeException;
-import faang.school.postservice.mapper.post.postMapper.PostMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,8 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -162,5 +161,17 @@ class PostServiceTest {
         postDto.setScheduledAt(pastTime);
         assertThrows(WrongTimeException.class, () -> postService.createPost(postDto));
         verify(postRepository, never()).save(postEntity);
+    }
+
+    @Test
+    void whenExistsByIdThenTrue() {
+        when(postRepository.existsById(anyLong())).thenReturn(true);
+        assertTrue(postService.existsById(1));
+    }
+
+    @Test
+    void whenExistsByIdThenFalse() {
+        when(postRepository.existsById(anyLong())).thenReturn(false);
+        assertFalse(postService.existsById(1));
     }
 }

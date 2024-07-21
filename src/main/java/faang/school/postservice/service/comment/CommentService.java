@@ -5,7 +5,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.EntityWrongParameterException;
 import faang.school.postservice.exception.NoAccessException;
-import faang.school.postservice.mapper.post.CommentMapper;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
@@ -63,5 +63,9 @@ public class CommentService {
             throw new NoAccessException("Пользователь не имеет права удалять этот комментарий");
         }
         commentRepository.deleteById(commentId);
+    }
+
+    public boolean existsById(long id) {
+        return commentRepository.existsById(id);
     }
 }
