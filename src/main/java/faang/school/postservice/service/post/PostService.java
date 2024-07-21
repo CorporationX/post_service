@@ -2,10 +2,14 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostForFeedDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.kafka.producer.KafkaPostEventProducer;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.cache.RedisPostCache;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,8 +33,11 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final PostMapper postMapper;
+    private final LikeMapper likeMapper;
+    private final CommentMapper commentMapper;
     private final PostVerifier postVerifier;
     private final KafkaPostEventProducer kafkaPostEventProducer;
+    private final RedisPostCache postCache;
 
 
     public PostDto createPost(@Valid PostDto postDto) {
@@ -49,12 +57,27 @@ public class PostService {
 
         postToBePublished.setPublished(true);
         postToBePublished.setPublishedAt(LocalDateTime.now());
-        Post publishedPost = postRepository.save(postToBePublished);
 
+        Post publishedPost = postRepository.save(postToBePublished);
+        PostDto publishedPostDto = postMapper.toDto(publishedPost);
+
+        handlePostPublication(publishedPostDto);
+
+        return publishedPostDto;
+    }
+
+    private void handlePostPublication(PostDto publishedPost) {
         kafkaPostEventProducer.sendPostEvent(publishedPost);
 
-        PostDto publishedPostDto = postMapper.toDto(publishedPost);
-        return publishedPostDto;
+        PostForFeedDto postForFeedDto = PostForFeedDto.builder()
+                .postId(publishedPost.getId())
+                .post(publishedPost)
+                .likesList(new ArrayList<>())
+                .viewsCounter(0)
+                .comments(new LinkedHashSet<>())
+                .build();
+
+        postCache.save(postForFeedDto);
     }
 
     public PostDto updatePost(PostDto postDto) {
@@ -117,7 +140,7 @@ public class PostService {
      * @param postPointer returned posts should be published before this post
      * @return batch of posts dtos
      */
-    public List<PostDto> getFeedForUser(Long userId, int batchSize, Optional<PostDto> postPointer) {
+    public List<PostForFeedDto> getFeedForUser(Long userId, int batchSize, Optional<PostDto> postPointer) {
         List<Long> userSubscriptions = userServiceClient.getFollowingIds(userId);
 
         final List<Post> postsBatch = new ArrayList<>();
@@ -126,7 +149,17 @@ public class PostService {
                 () -> postsBatch.addAll(postRepository.getFeedForUser(userSubscriptions, batchSize))
         );
 
-        return postMapper.toDto(postsBatch);
+        return postsBatch.stream()
+                .map(
+                        post -> PostForFeedDto.builder()
+                                .postId(post.getId())
+                                .post(postMapper.toDto(post))
+                                .likesList(likeMapper.toDto(post.getLikes()))
+                                .comments(new LinkedHashSet<>(commentMapper.toDto(post.getComments())))
+                                .viewsCounter(0)
+                                .build()
+                )
+                .toList();
     }
 
     public List<PostDto> getPostsOfProject(long projectId) {

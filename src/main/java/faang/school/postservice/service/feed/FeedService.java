@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -35,34 +36,34 @@ public class FeedService {
 
     public List<PostForFeedDto> getFeed(Long userId) {
         Optional<Feed> userFeed = feedCache.findById(userId);
-        Optional<List<PostDto>> postsFromCache = userFeed.map(mapFeedToPostDtos());
-        List<PostDto> fullPostsBatch = getFullPostsBatch(userId, postsFromCache);
+        Optional<List<PostForFeedDto>> postsFromCache = userFeed.map(mapFeedToPostDtos());
+        List<PostForFeedDto> fullPostsBatch = getFullPostsBatch(userId, postsFromCache);
 
         return collectUserFeed(fullPostsBatch);
     }
 
     public List<PostForFeedDto> getFeed(Long userId, Long lastViewedPostId) {
         Optional<Feed> userFeed = feedCache.findById(userId);
-        Optional<List<PostDto>> postsFromCache = userFeed.map(mapFeedToPostDtos(lastViewedPostId));
-        List<PostDto> fullPostsBatch = getFullPostsBatch(userId, postsFromCache);
+        Optional<List<PostForFeedDto>> postsFromCache = userFeed.map(mapFeedToPostDtos(lastViewedPostId));
+        List<PostForFeedDto> fullPostsBatch = getFullPostsBatch(userId, postsFromCache);
 
         return collectUserFeed(fullPostsBatch);
     }
 
-    private List<PostDto> getFullPostsBatch(Long userId, Optional<List<PostDto>> postsFromCache) {
-        List<PostDto> fullPostsBatch = new ArrayList<>(
+    private List<PostForFeedDto> getFullPostsBatch(Long userId, Optional<List<PostForFeedDto>> postsFromCache) {
+        List<PostForFeedDto> fullPostsBatch = new ArrayList<>(
                 postsFromCache.orElseGet(() -> postService.getFeedForUser(userId, feedBatchSize, Optional.empty()))
         );
 
         int feedLack = feedBatchSize - fullPostsBatch.size();
         if (feedLack > 0) {
-            PostDto postPointer = fullPostsBatch.get(fullPostsBatch.size() - 1);
+            PostDto postPointer = fullPostsBatch.get(fullPostsBatch.size() - 1).getPost();
             fullPostsBatch.addAll(postService.getFeedForUser(userId, feedLack, Optional.of(postPointer)));
         }
         return fullPostsBatch;
     }
 
-    private Function<Feed, List<PostDto>> mapFeedToPostDtos() {
+    private Function<Feed, List<PostForFeedDto>> mapFeedToPostDtos() {
         return feed -> feed.getPostsIds().stream()
                 .sorted(Comparator.reverseOrder())
                 .limit(feedBatchSize)
@@ -74,7 +75,7 @@ public class FeedService {
      * @param lastViewedPostId id of post-pointer
      * @return posts before passed post
      */
-    private Function<Feed, List<PostDto>> mapFeedToPostDtos(Long lastViewedPostId) {
+    private Function<Feed, List<PostForFeedDto>> mapFeedToPostDtos(Long lastViewedPostId) {
         return feed -> {
             List<Long> cachedIds = feed.getPostsIds().stream()
                     .sorted(Comparator.reverseOrder())
@@ -90,12 +91,11 @@ public class FeedService {
         };
     }
 
-    private List<PostForFeedDto> collectUserFeed(List<PostDto> fullPostsBatch) {
+    private List<PostForFeedDto> collectUserFeed(List<PostForFeedDto> fullPostsBatch) {
         return fullPostsBatch.stream()
-                .map(postDto -> PostForFeedDto.builder()
-                        .post(postDto)
-                        .postAuthor(getPostAuthorDto(postDto.getAuthorId()))
-                        .build())
+                .peek(postForFeedDto -> {
+                    postForFeedDto.setPostAuthor(getPostAuthorDto(postForFeedDto.getPost().getAuthorId()));
+                })
                 .toList();
     }
 
@@ -104,8 +104,16 @@ public class FeedService {
                 .orElseGet(() -> userServiceClient.getUser(authorId));
     }
 
-    private PostDto getPostDto(Long postId) {
+    private PostForFeedDto getPostDto(Long postId) {
         return postCache.findById(postId)
-                .orElseGet(() -> postService.getPostById(postId));
+                .orElseGet(
+                        () -> PostForFeedDto.builder()
+                                .postId(postId)
+                                .post(postService.getPostById(postId))
+                                .likesList(new ArrayList<>())
+                                .viewsCounter(0)
+                                .comments(new LinkedHashSet<>())
+                                .build()
+                );
     }
 }

@@ -1,7 +1,6 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.kafka.producer.KafkaLikeEventProducer;
 import faang.school.postservice.mapper.like.LikeMapper;
@@ -42,6 +41,14 @@ public class PostLikeService {
         validator.verifyLikeExists(userId);
 
         likeRepository.deleteByPostIdAndUserId(dto.getPostId(), userId);
+    }
+
+    public LikeDto getLikeById(Long likeId) {
+        Like like = likeRepository.findById(likeId).orElseThrow(
+                () -> new NotFoundException(String.format("Like with id %d not found", likeId))
+        );
+
+        return mapper.toDto(like);
     }
 
     private Post getPostById(Long postId) {

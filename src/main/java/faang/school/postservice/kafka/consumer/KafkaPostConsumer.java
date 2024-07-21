@@ -30,7 +30,7 @@ public class KafkaPostConsumer {
     private int maxPostsAmount;
 
 
-    @KafkaListener(topics = "post_topic", groupId = "news_feed")
+    @KafkaListener(topics = "${spring.kafka.topics-names.post}", groupId = "spring.kafka.group-id")
     public void handleNewPost(PostEventDto postEventDto, Acknowledgment acknowledgment) {
         postEventDto.getAuthorFollowersIds()
                 .forEach(followerId -> addPostToFeed(postEventDto, followerId));

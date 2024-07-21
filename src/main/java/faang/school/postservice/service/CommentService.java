@@ -41,14 +41,14 @@ public class CommentService {
     public CommentDto createComment(long id, CommentDto commentDto) {
         checkCommentDto(commentDto);
 
-        Comment comment = commentMapper.ToEntity(commentDto);
+        Comment comment = commentMapper.toEntity(commentDto);
         comment.setPost(postMapper.toEntity(postService.getPostById(id)));
 
         Comment savedComment = commentRepository.save(comment);
 
         sendCommentEvent(comment);
 
-        return commentMapper.ToDto(savedComment);
+        return commentMapper.toDto(savedComment);
     }
 
     @Transactional
@@ -59,7 +59,7 @@ public class CommentService {
         comment.setContent(commentDto.getContent());
         commentRepository.save(comment);
 
-        return commentMapper.ToDto(comment);
+        return commentMapper.toDto(comment);
     }
 
     public List<CommentDto> getAllComments(long id) {
@@ -68,7 +68,7 @@ public class CommentService {
             throw new DataValidationException(NO_COMMENTS_IN_THE_POST.getMessage());
         }
         comments.sort(Comparator.comparing(Comment::getCreatedAt));
-        return commentMapper.ToDtoList(comments);
+        return commentMapper.toDto(comments);
     }
 
     public void deleteComment(CommentDto commentDto) {

@@ -7,9 +7,10 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
 import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Data
-@RedisHash(value = "Feed")//, timeToLive = 60)
+@RedisHash(value = "Feed")
 public class Feed implements Serializable {
     @Id
     private Long userId;
@@ -17,7 +18,7 @@ public class Feed implements Serializable {
     /**
      * Top n feed posts
      */
-    private LinkedHashSet<Long> postsIds;
+    private Set<Long> postsIds;
 
     @Version
     private long version;
