@@ -19,4 +19,5 @@ public interface PostService {
     List<PostDto> getAllPublishedNotDeletedPostsByProjectAuthorId(Long projectId);
     Post findById(Long postId);
     void publishScheduledPosts();
+    boolean existsById(long id);
 }

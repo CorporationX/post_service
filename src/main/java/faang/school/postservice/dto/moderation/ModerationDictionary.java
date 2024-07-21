@@ -1,4 +1,4 @@
-package faang.school.postservice.moderation;
+package faang.school.postservice.dto.moderation;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;

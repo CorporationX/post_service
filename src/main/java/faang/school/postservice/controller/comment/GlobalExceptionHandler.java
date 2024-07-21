@@ -1,4 +1,4 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.comment;
 
 import faang.school.postservice.exception.EntityWrongParameterException;
 import faang.school.postservice.exception.NoAccessException;
@@ -15,31 +15,31 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<faang.school.postservice.handler.ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         List<String> errors = e.getBindingResult().getFieldErrors()
                 .stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.toList());
 
-        ErrorResponse errorResponse = new ErrorResponse("Validation Error", errors);
+        faang.school.postservice.handler.ErrorResponse errorResponse = new faang.school.postservice.handler.ErrorResponse("Validation Error", errors);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e) {
-        ErrorResponse errorResponse = new ErrorResponse("Entity Not Found", List.of(e.getMessage()));
+    public ResponseEntity<faang.school.postservice.handler.ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e) {
+        faang.school.postservice.handler.ErrorResponse errorResponse = new faang.school.postservice.handler.ErrorResponse("Entity Not Found", List.of(e.getMessage()));
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(EntityWrongParameterException.class)
-    public ResponseEntity<ErrorResponse> handleEntityWrongParameterException(EntityWrongParameterException e) {
-        ErrorResponse errorResponse = new ErrorResponse("Entity Wrong Parameter", List.of(e.getMessage()));
+    public ResponseEntity<faang.school.postservice.handler.ErrorResponse> handleEntityWrongParameterException(EntityWrongParameterException e) {
+        faang.school.postservice.handler.ErrorResponse errorResponse = new faang.school.postservice.handler.ErrorResponse("Entity Wrong Parameter", List.of(e.getMessage()));
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NoAccessException.class)
-    public ResponseEntity<ErrorResponse> handleNoAccessException(NoAccessException e) {
-        ErrorResponse errorResponse = new ErrorResponse("No Access", List.of(e.getMessage()));
+    public ResponseEntity<faang.school.postservice.handler.ErrorResponse> handleNoAccessException(NoAccessException e) {
+        faang.school.postservice.handler.ErrorResponse errorResponse = new faang.school.postservice.handler.ErrorResponse("No Access", List.of(e.getMessage()));
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 }
