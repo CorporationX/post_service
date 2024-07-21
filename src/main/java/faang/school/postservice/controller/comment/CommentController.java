@@ -16,27 +16,27 @@ import java.util.List;
 public class CommentController {
     private final CommentService commentService;
 
-    @PostMapping("/post/{id}")
-    public ResponseEntity<CommentDto> addCommentController(@PathVariable Long id,
+    @PostMapping("/post/{postId}")
+    public ResponseEntity<CommentDto> addComment(@PathVariable Long postId,
                                                            @RequestBody @Valid CommentDto commentDto) {
-        return ResponseEntity.ok(commentService.addCommentService(id, commentDto));
+        return ResponseEntity.ok(commentService.addNewCommentInPost(postId, commentDto));
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<CommentDto> updateCommentController(@PathVariable Long id,
+    @PutMapping("/update/{postId}")
+    public ResponseEntity<CommentDto> updateComment(@PathVariable Long postId,
                                                               @RequestBody @Valid CommentDto commentDto) {
-        return ResponseEntity.ok(commentService.updateCommentService(id, commentDto));
+        return ResponseEntity.ok(commentService.updateExistingComment(postId, commentDto));
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<List<CommentDto>> getCommentsController(@PathVariable Long id) {
-        return ResponseEntity.ok(commentService.getCommentsService(id));
+    @GetMapping("/get/{postId}")
+    public ResponseEntity<List<CommentDto>> getComments(@PathVariable Long postId) {
+        return ResponseEntity.ok(commentService.getCommentsForPost(postId));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<CommentDto> deleteCommentController(@PathVariable Long id,
+    @DeleteMapping("/delete/{postId}")
+    public ResponseEntity<CommentDto> deleteComment(@PathVariable Long postId,
                                                               @RequestBody @Valid CommentDto commentDto) {
-        return ResponseEntity.ok(commentService.deleteCommentService(id, commentDto));
+        return ResponseEntity.ok(commentService.deleteExistingCommentInPost(postId, commentDto));
     }
 
 }

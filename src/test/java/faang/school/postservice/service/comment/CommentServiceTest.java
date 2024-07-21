@@ -8,6 +8,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,7 +72,7 @@ class CommentServiceTest {
                 .thenReturn(existingComment);
         when(commentMapper.toDto(any(Comment.class))).thenReturn(new CommentDto());
 
-        commentService.addCommentService(1L, commentDto);
+        commentService.addNewCommentInPost(1L, commentDto);
 
         verify(commentMapper, times(1))
                 .toEntity(any(CommentDto.class));
@@ -100,7 +101,7 @@ class CommentServiceTest {
         when(commentMapper.toDto(updatedComment))
                 .thenReturn(commentDto);
 
-        CommentDto result = commentService.updateCommentService(postId, commentDto);
+        CommentDto result = commentService.updateExistingComment(postId, commentDto);
 
         verify(commentRepository, times(1))
                 .findAllByPostId(anyLong());
@@ -120,7 +121,7 @@ class CommentServiceTest {
         when(postService.getPost(postId)).thenReturn(post1);
         when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDto);
 
-        commentService.getCommentsService(postId);
+        commentService.getCommentsForPost(postId);
 
         verify(postService, times(1)).getPost(postId);
         verify(commentMapper, times(1)).toDto(commentOne);
@@ -139,7 +140,7 @@ class CommentServiceTest {
         when(commentRepository.findAllByPostId(anyLong())).thenReturn(List.of(updatedComment));
         when(commentMapper.toDto(updatedComment)).thenReturn(commentDto);
 
-        CommentDto resultTest = commentService.deleteCommentService(postId, commentDto);
+        CommentDto resultTest = commentService.deleteExistingCommentInPost(postId, commentDto);
 
         verify(userServiceClient, times(1)).getUser(anyLong());
         verify(commentRepository, times(1)).findAllByPostId(postId);
@@ -153,7 +154,7 @@ class CommentServiceTest {
         Long postId = 1L;
         when(userServiceClient.getUser(anyLong()))
                 .thenReturn(null);
-        assertThrows(NullPointerException.class,
-                () -> commentService.addCommentService(postId, commentDto));
+        assertThrows(EntityNotFoundException.class,
+                () -> commentService.addNewCommentInPost(postId, commentDto));
     }
 }

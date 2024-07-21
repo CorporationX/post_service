@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class CommentService {
     private final PostService postService;
     private final CommentMapper commentMapper;
 
-    public CommentDto addCommentService(Long id, CommentDto commentDto) {
+    public CommentDto addNewCommentInPost(Long id, CommentDto commentDto) {
         validateAuthorExists(commentDto.getAuthorId());
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setPost(postService.getPost(id));
@@ -32,7 +33,7 @@ public class CommentService {
         return commentMapper.toDto(comment);
     }
 
-    public CommentDto updateCommentService(Long id, CommentDto commentDto) {
+    public CommentDto updateExistingComment(Long id, CommentDto commentDto) {
         validateAuthorExists(commentDto.getAuthorId());
         Comment comment = commentRepository.findAllByPostId(id).stream()
                 .filter(commentOne -> commentOne.getId() == commentDto.getId())
@@ -43,13 +44,13 @@ public class CommentService {
         return commentMapper.toDto(comment);
     }
 
-    public List<CommentDto> getCommentsService(Long id) {
+    public List<CommentDto> getCommentsForPost(Long id) {
         return postService.getPost(id).getComments().stream()
                 .map(commentMapper::toDto)
                 .toList();
     }
 
-    public CommentDto deleteCommentService(Long id, CommentDto commentDto) {
+    public CommentDto deleteExistingCommentInPost(Long id, CommentDto commentDto) {
         validateAuthorExists(commentDto.getAuthorId());
         Comment comments = findCommentInPost(id, commentDto);
         commentRepository.deleteById(comments.getId());
@@ -69,7 +70,7 @@ public class CommentService {
         UserDto user = userServiceClient.getUser(authorId);
         if (user == null) {
             log.error("Пользователь с таким ID не найден");
-            throw new NullPointerException("Пользователь с таким ID не найден");
+            throw new EntityNotFoundException("Пользователь с таким ID не найден");
         }
     }
 }
