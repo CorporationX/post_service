@@ -1,5 +1,7 @@
 package faang.school.postservice.model;
 
+import faang.school.postservice.dto.album.AlbumVisibilityDto;
+import faang.school.postservice.dto.user.UserDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,6 +47,12 @@ public class Album {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    private VisibilityType visibilityType;
+
+    @OneToMany(mappedBy = "album", orphanRemoval = true)
+    private List<UserVisibility> visibilityUsers;
 
     public void addPost(Post post) {
         posts.add(post);
