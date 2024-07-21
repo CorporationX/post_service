@@ -20,3 +20,14 @@ jobs:
 
       - name: Test application
         run: ./gradlew test
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build application
+        run: ./gradlew build
+
+      - name: Jar application
+        run: ./gradlew bootJar
