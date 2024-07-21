@@ -15,4 +15,6 @@ public class PostDto {
     private Long authorId;
 
     private Long projectId;
+
+    private boolean published;
 }
