@@ -79,6 +79,15 @@ tasks.jacocoTestReport {
         csv.required.set(false)
         html.outputLocation.set(file("${buildDir}/jacocoHtml"))
     }
+    classDirectories.setFrom(
+        fileTree(project.buildDir) {
+            include("**/postservice/service/**",
+                "**/postservice/validator/**",
+                "**/postservice/filter/**",
+                "**/postservice/controller/**")
+            //exclude("classes/kotlin/main/com/yourcompany/yourproject/excluded/**")
+        }
+    )
 }
 
 tasks.test {
