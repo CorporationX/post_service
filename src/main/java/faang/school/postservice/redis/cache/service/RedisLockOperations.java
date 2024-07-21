@@ -3,7 +3,6 @@ package faang.school.postservice.redis.cache.service;
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.dialect.lock.OptimisticEntityLockException;
 import org.springframework.data.keyvalue.repository.KeyValueRepository;
 import org.springframework.integration.support.locks.ExpirableLockRegistry;
 import org.springframework.retry.annotation.Backoff;
@@ -17,6 +16,7 @@ import java.util.concurrent.locks.Lock;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Retryable(retryFor = {OptimisticLockException.class}, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
 public class RedisLockOperations implements RedisOperations {
 
     private final ExpirableLockRegistry expirableLockRegistry;
@@ -45,7 +45,6 @@ public class RedisLockOperations implements RedisOperations {
         return lock(callable, id.toString());
     }
 
-    @Retryable(retryFor = {OptimisticEntityLockException.class}, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
     private void lock(Runnable operation, String lockKey) {
 
         Lock lock = expirableLockRegistry.obtain(lockKey);
@@ -53,8 +52,6 @@ public class RedisLockOperations implements RedisOperations {
         if (lock.tryLock()) {
             try {
                 operation.run();
-            } catch (Exception e) {
-                throw new OptimisticLockException("Failed to execute operation with key: " + lockKey, e);
             } finally {
                 lock.unlock();
             }
@@ -63,16 +60,18 @@ public class RedisLockOperations implements RedisOperations {
         }
     }
 
-    @Retryable(retryFor = {OptimisticEntityLockException.class}, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
     private <T> T lock(Callable<T> operation, String lockKey) {
 
         Lock lock = expirableLockRegistry.obtain(lockKey);
 
         if (lock.tryLock()) {
             try {
-                return operation.call();
-            } catch (Exception e) {
-                throw new OptimisticLockException("Failed to execute operation with key: " + lockKey, e);
+                try {
+                    return operation.call();
+                } catch (Exception e) {
+                    log.warn("Failed to execute operation: ", e);
+                    return null;
+                }
             } finally {
                 lock.unlock();
             }

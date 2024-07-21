@@ -4,6 +4,7 @@ import faang.school.postservice.property.RedisCacheProperty;
 import faang.school.postservice.property.RedisLockRegistryProperty;
 import faang.school.postservice.redis.cache.entity.AuthorRedisCache;
 import faang.school.postservice.redis.cache.entity.CommentRedisCache;
+import faang.school.postservice.redis.cache.entity.FeedRedisCache;
 import faang.school.postservice.redis.cache.entity.PostRedisCache;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -50,26 +51,14 @@ public class RedisCacheConfig {
         private static final List<Class<?>> entityClasses = List.of(
                 PostRedisCache.class,
                 AuthorRedisCache.class,
-                CommentRedisCache.class
+                CommentRedisCache.class,
+                FeedRedisCache.class
         );
 
         @Override
         protected @NonNull Iterable<KeyspaceSettings> initialConfiguration() {
 
             return entityClasses.stream().map(this::getKeyspaceSettings).toList();
-        }
-
-        @Override
-        public boolean hasSettingsFor(@NonNull Class<?> type) {
-
-            String cacheName;
-            try {
-                cacheName = type.getAnnotation(RedisHash.class).value();
-            } catch (NullPointerException e) {
-                return false;
-            }
-
-            return redisCacheProperty.getCacheSettings().containsKey(cacheName);
         }
 
         @Override

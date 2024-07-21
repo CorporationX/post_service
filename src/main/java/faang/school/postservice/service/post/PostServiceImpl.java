@@ -6,13 +6,12 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostHashtagDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.exception.NotFoundException;
+import faang.school.postservice.kafka.event.State;
 import faang.school.postservice.kafka.producer.post.PostProducer;
 import faang.school.postservice.kafka.producer.post.PostViewProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationStatus;
-import faang.school.postservice.redis.cache.service.author.AuthorRedisCacheService;
-import faang.school.postservice.redis.cache.service.post.PostRedisCacheService;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
 import faang.school.postservice.service.spelling.SpellingService;
@@ -47,8 +46,6 @@ public class PostServiceImpl implements PostService {
     private final SpellingService spellingService;
     private final PostProducer postProducer;
     private final PostViewProducer postViewProducer;
-    private final AuthorRedisCacheService authorRedisCacheService;
-    private final PostRedisCacheService postRedisCacheService;
 
     @Override
     @Transactional
@@ -85,12 +82,7 @@ public class PostServiceImpl implements PostService {
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(entity);
         asyncHashtagService.addHashtags(postHashtagDto);
 
-        if (post.getAuthorId() != null) {
-            List<Long> subscriberIds = postRepository.getAuthorSubscriberIds(entity.getAuthorId());
-            postProducer.produce(postMapper.toKafkaEvent(entity, subscriberIds));
-            authorRedisCacheService.save(postMapper.toAuthorCache(entity));
-            postRedisCacheService.save(postMapper.toRedisCache(entity));
-        }
+        sendMessageToKafka(post, State.ADD);
 
         return postMapper.toDto(entity);
     }
@@ -106,7 +98,7 @@ public class PostServiceImpl implements PostService {
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.updateHashtags(postHashtagDto);
 
-        postRedisCacheService.save(postMapper.toRedisCache(post));
+        sendMessageToKafka(post, State.UPDATE);
 
         return postMapper.toDto(post);
     }
@@ -121,7 +113,7 @@ public class PostServiceImpl implements PostService {
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.removeHashtags(postHashtagDto);
 
-        postRedisCacheService.deleteById(id);
+        sendMessageToKafka(post, State.DELETE);
     }
 
     @Override
@@ -187,8 +179,6 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
-
-
     @Override
     public void correctPosts(){
         List<Post> unpublishedPosts = postRepository.findReadyToPublish();
@@ -214,5 +204,12 @@ public class PostServiceImpl implements PostService {
     private Post findPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Post with id %s not found", id)));
+    }
+
+    private void sendMessageToKafka(Post post, State state) {
+        if (post.getAuthorId() != null) {
+            List<Long> subscriberIds = postRepository.getAuthorSubscriberIds(post.getAuthorId());
+            postProducer.produce(postMapper.toKafkaEvent(post, subscriberIds, state));
+        }
     }
 }

@@ -4,14 +4,13 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentToCreateDto;
 import faang.school.postservice.dto.comment.CommentToUpdateDto;
 import faang.school.postservice.kafka.event.State;
+import faang.school.postservice.kafka.producer.comment.CommentProducer;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.kafka.producer.comment.CommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.commonMethods.CommonServiceMethods;
-import faang.school.postservice.redis.cache.service.author.AuthorRedisCacheService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +32,6 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final CommonServiceMethods commonServiceMethods;
     private final CommentProducer commentProducer;
-    private final AuthorRedisCacheService authorRedisCacheService;
 
     @Override
     public CommentDto createComment(long postId, long userId, CommentToCreateDto commentDto) {
@@ -47,7 +45,6 @@ public class CommentServiceImpl implements CommentService {
 
         comment = commentRepository.save(comment);
 
-        authorRedisCacheService.save(commentMapper.toAuthorCache(comment));
         commentProducer.produce(commentMapper.toKafkaEvent(comment, State.ADD));
 
         log.info("Created comment on post {} authored by {}", postId, userId);
