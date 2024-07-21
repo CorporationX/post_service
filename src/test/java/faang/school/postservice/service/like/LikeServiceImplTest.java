@@ -6,7 +6,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -47,7 +47,7 @@ class LikeServiceImplTest {
     @Mock
     private LikeMapper mapper;
     @Mock
-    private LikeEventPublisher likePostPublisher;
+    private MessagePublisher<LikeEvent> likeEventPublisher;
     @InjectMocks
     private LikeServiceImpl likeService;
     @Captor
@@ -89,19 +89,19 @@ class LikeServiceImplTest {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(likeRepository.save(like)).thenReturn(like);
         when(mapper.toDto(like)).thenReturn(likeDto);
-        doNothing().when(likePostPublisher).publish(any(LikeEvent.class));
+        doNothing().when(likeEventPublisher).publish(any(LikeEvent.class));
 
         LikeDto actual = likeService.addLikeOnPost(userId, postId);
         assertEquals(likeDto, actual);
         assertFalse(post.getLikes().isEmpty());
 
-        InOrder inOrder = inOrder(likeValidator, mapper, likeRepository, postRepository, likePostPublisher);
+        InOrder inOrder = inOrder(likeValidator, mapper, likeRepository, postRepository, likeEventPublisher);
         inOrder.verify(likeValidator, times(1)).validateUserExistence(userId);
         inOrder.verify(postRepository, times(1)).findById(postId);
         inOrder.verify(likeValidator, times(1)).validateAndGetPostToLike(userId, post);
         inOrder.verify(mapper, times(1)).toEntity(any(LikeDto.class));
         inOrder.verify(likeRepository, times(1)).save(like);
-        inOrder.verify(likePostPublisher, times(1)).publish(captorForLikeEvent.capture());
+        inOrder.verify(likeEventPublisher, times(1)).publish(captorForLikeEvent.capture());
         inOrder.verify(mapper, times(1)).toDto(like);
 
         LikeEvent captured = captorForLikeEvent.getValue();
