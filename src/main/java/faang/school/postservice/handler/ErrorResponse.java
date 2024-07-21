@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-class ErrorResponse {
+public class ErrorResponse {
     private String message;
     private List<String> details;
 }

@@ -2,7 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.comment.CommentServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/comments")
 public class CommentController {
 
-    private final CommentService commentService;
+    private final CommentServiceImpl commentService;
     private final UserContext userContext;
 
     @PostMapping("/create/{postId}")

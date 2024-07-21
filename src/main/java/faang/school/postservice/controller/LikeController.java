@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping( "${spring.mvc.servlet.path}/like")
+@RequestMapping("/like")
 @AllArgsConstructor
 public class LikeController {
     private final LikeService likeService;

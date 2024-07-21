@@ -40,7 +40,7 @@ class CommentServiceTest {
     @Mock
     private UserValidator userValidator;
     @InjectMocks
-    private CommentService commentService;
+    private CommentServiceImpl commentService;
 
     @Mock
     private CommentEventPublisher commentEventPublisher;

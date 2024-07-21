@@ -1,10 +1,10 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.moderation.ModerationDictionary;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -156,5 +156,10 @@ public class PostServiceImpl implements PostService {
                         post.setPublishedAt(LocalDateTime.now());
                     });
                 }, threadPool));
+    }
+
+    @Override
+    public boolean existsById(long id) {
+        return postRepository.existsById(id);
     }
 }

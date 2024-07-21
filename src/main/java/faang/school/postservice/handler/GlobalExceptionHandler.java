@@ -1,4 +1,4 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.handler;
 
 import faang.school.postservice.exception.EntityWrongParameterException;
 import faang.school.postservice.exception.NoAccessException;
@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import faang.school.postservice.handler.ErrorResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
