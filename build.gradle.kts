@@ -66,11 +66,11 @@ dependencies {
 }
 
 jacoco {
-    toolVersion = "0.8.7" // Убедитесь, что используете последнюю версию Jacoco
+    toolVersion = "0.8.7"
 }
 
 tasks.test {
-    finalizedBy(tasks.jacocoTestReport) // Генерация отчета после выполнения тестов
+    finalizedBy(tasks.jacocoTestReport)
 }
 
 tasks.jacocoTestReport {
