@@ -1,27 +1,45 @@
 package faang.school.postservice.config.elasticsearch;
 
-import org.elasticsearch.client.RestHighLevelClient;
+import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.elasticsearch.client.ClientConfiguration;
-import org.springframework.data.elasticsearch.client.RestClients;
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
-import org.springframework.data.elasticsearch.core.convert.ElasticsearchConverter;
-import org.springframework.data.elasticsearch.core.convert.MappingElasticsearchConverter;
-import org.springframework.data.elasticsearch.core.mapping.SimpleElasticsearchMappingContext;
-
 
 @Configuration
 public class ElasticsearchConfig {
+
+    @Value("${spring.data.elasticsearch.rest.uris}")
+    private String elasticsearchUris;
+
     @Bean
-    public ElasticsearchRestTemplate elasticsearchRestTemplate() {
-        ClientConfiguration clientConfiguration = ClientConfiguration.builder()
-                .connectedTo("localhost:9200")
-                .build();
+    public ElasticsearchClient elasticsearchClient(ObjectMapper objectMapper) {
+        RestClient restClient = RestClient.builder(
+                HttpHost.create(elasticsearchUris)
+        ).build();
 
-        RestHighLevelClient client = RestClients.create(clientConfiguration).rest();
-        ElasticsearchConverter elasticsearchConverter = new MappingElasticsearchConverter(new SimpleElasticsearchMappingContext());
+        RestClientTransport transport = new RestClientTransport(
+                restClient, new JacksonJsonpMapper(objectMapper)
+        );
 
-        return new ElasticsearchRestTemplate(client, elasticsearchConverter);
+        return new ElasticsearchClient(transport);
+    }
+
+    @Bean
+    public ElasticsearchAsyncClient elasticsearchAsyncClient(ObjectMapper objectMapper) {
+        RestClient restClient = RestClient.builder(
+                HttpHost.create(elasticsearchUris)
+        ).build();
+
+        RestClientTransport transport = new RestClientTransport(
+                restClient, new JacksonJsonpMapper(objectMapper)
+        );
+
+        return new ElasticsearchAsyncClient(transport);
     }
 }

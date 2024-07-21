@@ -1,7 +1,9 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.annotation.ValidHashtag;
+import faang.school.postservice.dto.hashtag.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +63,7 @@ public class PostController {
     }
 
     @GetMapping("/findByHashtag")
-    public List<PostDto> findPostsByHashtag(@RequestParam @ValidHashtag String hashtag) {
-        return postService.findPostsByHashtag(hashtag);
+    public List<PostDto> findPostsByHashtag(@RequestBody @Valid HashtagDto hashtagDto) {
+        return postService.findPostsByHashtag(hashtagDto);
     }
 }

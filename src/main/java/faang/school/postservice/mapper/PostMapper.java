@@ -12,7 +12,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
-    @Mapping(source = "hashtags", target = "hashtags", qualifiedByName = "hashtagToHashtagName")
+    @Mapping(source = "hashtags", target = "hashtagNames", qualifiedByName = "hashtagToHashtagName")
     PostDto toDto(Post post);
 
     List<PostDto> toDto(List<Post> posts);

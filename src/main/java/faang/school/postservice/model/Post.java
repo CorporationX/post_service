@@ -1,5 +1,8 @@
 package faang.school.postservice.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -15,6 +18,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @AllArgsConstructor
 @Builder
 @Entity
@@ -62,10 +66,12 @@ public class Post {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "published_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime publishedAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "scheduled_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime scheduledAt;
 
     @Column(name = "deleted", nullable = false)
@@ -74,10 +80,12 @@ public class Post {
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 }

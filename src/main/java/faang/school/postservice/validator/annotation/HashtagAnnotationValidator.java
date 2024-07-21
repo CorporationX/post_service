@@ -1,4 +1,4 @@
-package faang.school.postservice.validator;
+package faang.school.postservice.validator.annotation;
 
 import faang.school.postservice.annotation.ValidHashtag;
 

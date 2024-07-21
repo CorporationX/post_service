@@ -1,14 +1,16 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface PostRepository extends CrudRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByAuthorId(long authorId);
 
@@ -23,6 +25,10 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
-    List<Post> findByHashtagsNameOrderByCreatedAtDesc(String hashtag);
+    @Query("SELECT p.id FROM Post p JOIN p.hashtags h WHERE h.name = :hashtagName ORDER BY p.createdAt DESC")
+    List<Long> findPostIdsByHashtagsNameOrderByCreatedAtDesc(@Param("hashtagName") String hashtagName);
+
+    @Query("SELECT p FROM Post p JOIN p.hashtags h WHERE h.name = :name ORDER BY p.createdAt DESC")
+    List<Post> findByHashtagsNameOrderByCreatedAtDesc(String name);
 }
 

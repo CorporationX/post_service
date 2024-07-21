@@ -1,6 +1,6 @@
 package faang.school.postservice.annotation;
 
-import faang.school.postservice.validator.annotation.HashtagAnnotationValidator;
+import faang.school.postservice.validator.annotation.HashtagsAnnotationValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -9,11 +9,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Constraint(validatedBy = HashtagAnnotationValidator.class)
+@Constraint(validatedBy = HashtagsAnnotationValidator.class)
 @Target({ ElementType.FIELD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidHashtag {
-    String message() default "Invalid hashtag format";
+public @interface ValidHashtags {
+    String message() default "Invalid hashtag format in list";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

@@ -42,12 +42,12 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
 
     /**
      * Elasticsearch
      */
-    implementation("org.elasticsearch.client:elasticsearch-rest-high-level-client:7.17.22")
-    implementation("org.springframework.data:spring-data-elasticsearch:4.3.4")
+    implementation("co.elastic.clients:elasticsearch-java:8.8.0")
 
     /**
      * Test containers

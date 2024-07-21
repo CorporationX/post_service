@@ -1,54 +1,51 @@
 package faang.school.postservice.config.redis;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.io.Serializable;
+
 @Configuration
 @AutoConfigureAfter(RedisAutoConfiguration.class)
 @EnableCaching
+@RequiredArgsConstructor
 public class RedisConfig {
-
-
-    @Value("${spring.data.redis.host}")
-    private String redisHost;
-
-    @Value("${spring.data.redis.port}")
-    private int redisPort;
-
+    private final ObjectMapper objectMapper;
 
     @Bean
-    public RedisTemplate<String, Serializable> redisCacheTemplate(LettuceConnectionFactory redisConnectionFactory) {
+    @Primary
+    public RedisTemplate<String, Serializable> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Serializable> template = new RedisTemplate<>();
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         template.setConnectionFactory(redisConnectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, Object.class));
         return template;
     }
 
     @Bean
-    public CacheManager cacheManager(RedisConnectionFactory factory) {
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
-        RedisCacheConfiguration redisCacheConfiguration = config
-                .serializeKeysWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer()));
-        RedisCacheManager redisCacheManager = RedisCacheManager.builder(factory).cacheDefaults(redisCacheConfiguration)
+                        .fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, Object.class)));
+
+        return RedisCacheManager.builder(RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory))
+                .cacheDefaults(config)
                 .build();
-        return redisCacheManager;
     }
 }

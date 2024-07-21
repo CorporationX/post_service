@@ -1,29 +1,25 @@
 package faang.school.postservice.service.post;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.hashtag.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.HashtagRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
+import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 
 @Service
 @RequiredArgsConstructor
@@ -32,39 +28,42 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
     private final RedisTemplate<String, Serializable> redisTemplate;
-    private final ElasticsearchRestTemplate elasticsearchRestTemplate;
-    private final HashtagRepository hashtagRepository;
-
-    private static final String POSTS_CACHE = "postsCache";
-
-    @Value("${spring.redis.cache.expiration:3600}")
-    private long cacheExpiration;
+    private final ElasticsearchService elasticsearchService;
+    private final HashtagService hashtagService;
+    private final ObjectMapper objectMapper;
 
     public PostDto createPost(PostDto postDto) {
         postServiceValidator.validateCreatePost(postDto);
+        postDto.getHashtagNames().forEach(hashtagService::saveHashtag);
+
         Post post = Post.builder()
                 .authorId(postDto.getAuthorId())
                 .projectId(postDto.getProjectId())
                 .content(postDto.getContent())
-                .hashtags(postDto.getHashtags().stream()
-                        .map(hashtagRepository::findByName)
+                .hashtags(postDto.getHashtagNames().stream()
+                        .map(hashtagService::getHashtag)
                         .toList())
                 .build();
 
-        postRepository.save(post);
-        return postDto;
+        post = postRepository.save(post);
+        elasticsearchService.indexPost(post);
+        return postMapper.toDto(post);
     }
 
     public PostDto updatePost(PostDto postDto) {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
         postServiceValidator.validateUpdatePost(post, postDto);
-        post.setContent(postDto.getContent());
-        post.setHashtags(postDto.getHashtags().stream()
-                .map(hashtagRepository::findByName)
-                .toList());
 
-        postRepository.save(post);
+        postDto.getHashtagNames().forEach(hashtagService::saveHashtag);
+
+        post.setContent(postDto.getContent());
+        post.setHashtags(new ArrayList<>(postDto.getHashtagNames().stream()
+                .map(hashtagService::getHashtag)
+                .toList()));
+
+        post = postRepository.save(post);
+        elasticsearchService.indexPost(post);
         return postMapper.toDto(post);
     }
 
@@ -75,7 +74,8 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
-        postRepository.save(post);
+        post = postRepository.save(post);
+        elasticsearchService.indexPost(post);
         return postMapper.toDto(post);
     }
 
@@ -88,26 +88,22 @@ public class PostService {
             post.setPublished(false);
         }
 
-        postRepository.save(post);
+        post = postRepository.save(post);
+        elasticsearchService.removePost(postId);
         return postMapper.toDto(post);
     }
 
-    @Cacheable(value = POSTS_CACHE, key = "#hashtag")
-    public List<PostDto> findPostsByHashtag(String hashtag) {
-        List<Post> cachedPosts = (List<Post>) redisTemplate.opsForValue().get(hashtag);
+    public List<PostDto> findPostsByHashtag(HashtagDto hashtagDto) {
+        List<?> cachedPosts = (List<?>) redisTemplate.opsForValue().get(hashtagDto.getName());
         if (cachedPosts != null) {
-            return postMapper.toDto(cachedPosts);
+            List<Post> posts = cachedPosts.stream()
+                    .map(map -> objectMapper.convertValue(map, Post.class))
+                    .toList();
+            return postMapper.toDto(posts);
         }
 
-        NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
-                .withQuery(matchQuery("hashtags.name", hashtag))
-                .build();
 
-        List<Post> posts = elasticsearchRestTemplate.search(searchQuery, Post.class)
-                .map(SearchHit::getContent)
-                .toList();
-
-        redisTemplate.opsForValue().set(hashtag, (Serializable) posts, cacheExpiration, TimeUnit.HOURS);
+        List<Post> posts = elasticsearchService.searchPostsByHashtag(hashtagDto.getName());
         return postMapper.toDto(posts);
     }
 

@@ -1,6 +1,6 @@
 package faang.school.postservice.dto.post;
 
-import faang.school.postservice.model.Hashtag;
+import faang.school.postservice.annotation.ValidHashtags;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -25,5 +25,6 @@ public class PostDto {
     private String content;
 
     @NotNull
-    private List<String> hashtags;
+    @ValidHashtags
+    private List<String> hashtagNames;
 }
