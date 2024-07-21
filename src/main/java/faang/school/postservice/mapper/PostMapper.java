@@ -3,6 +3,7 @@ package faang.school.postservice.mapper;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostHashtagDto;
+import faang.school.postservice.kafka.event.State;
 import faang.school.postservice.kafka.event.post.PostKafkaEvent;
 import faang.school.postservice.kafka.event.post.PostViewKafkaEvent;
 import faang.school.postservice.model.Post;
@@ -34,19 +35,16 @@ public interface PostMapper {
     @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
     PostDto toDto(Post post);
 
+    @Mapping(source = "post.resources", target = "resourceIds", qualifiedByName = "getIdFromResource")
     @Mapping(source = "post.id", target = "postId")
-    PostKafkaEvent toKafkaEvent(Post post, List<Long> subscriberIds);
+    PostKafkaEvent toKafkaEvent(Post post, List<Long> subscriberIds, State state);
 
     @Mapping(source = "post.id", target = "postId")
     PostViewKafkaEvent toViewKafkaEvent(Post post);
 
-    @Mapping(source = "authorId", target = "id")
-    AuthorRedisCache toAuthorCache(Post post);
-
-    @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "getIdFromResource")
-    @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
+    @Mapping(source = "postId", target = "id")
     @Mapping(source = "authorId", target = "author.id")
-    PostRedisCache toRedisCache(Post post);
+    PostRedisCache toRedisCache(PostKafkaEvent post);
 
     @Named("getCountFromLikeList")
     default int getCountFromLikeList(List<PostLike> likes) {

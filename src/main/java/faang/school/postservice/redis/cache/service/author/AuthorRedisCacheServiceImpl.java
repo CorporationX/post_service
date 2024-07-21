@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Async("cacheTaskExecutor")
+@Async("authorsCacheTaskExecutor")
 public class AuthorRedisCacheServiceImpl implements AuthorRedisCacheService {
 
     private final AuthorRedisRepository authorRedisRepository;

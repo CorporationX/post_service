@@ -9,7 +9,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -33,18 +33,20 @@ spring:
         cache-settings:
           hashtag:
             name: hashtags
-            # noinspection SpringBootApplicationYaml
-            max-size: 1000
           users:
             name: users
           authors:
             name: authors
           posts:
             name: posts
-            # noinspection SpringBootApplicationYaml
-            max-post-comments-size: 3
           comments:
             name: comments
+          feed:
+            name: feed
+        settings:
+          max-hashtags-size: 1000
+          max-feed-size: 500
+          max-post-comments-size: 3
       lock-registry:
         post-lock-key: POST_LOCK_KEY
         release-time-duration-millis: 10000
@@ -53,6 +55,7 @@ spring:
       port: 9092
       host: localhost
       group-id: account_service
+
       topics:
         default-partition: 1
         default-replication: 1
@@ -80,7 +83,8 @@ server:
 
 logging:
   level:
-    root: info
+    root: error
+    org.apache.kafka: OFF
 
 services:
   s3:
@@ -130,10 +134,24 @@ async:
     corePoolSize: 5
     maxPoolSize: 10
     queueCapacity: 100
-  cache:
-    corePoolSize: 5
-    maxPoolSize: 10
-    queueCapacity: 100
+  redis:
+    settings:
+      posts:
+        corePoolSize: 5
+        maxPoolSize: 10
+        queueCapacity: 100
+      feed:
+        corePoolSize: 5
+        maxPoolSize: 10
+        queueCapacity: 100
+      comments:
+        corePoolSize: 5
+        maxPoolSize: 10
+        queueCapacity: 100
+      authors:
+        corePoolSize: 5
+        maxPoolSize: 10
+        queueCapacity: 100
   corePoolSize: 5
   maxPoolSize: 10
   queueCapacity: 100

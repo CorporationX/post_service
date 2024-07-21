@@ -21,10 +21,16 @@ public class PostKafkaEvent implements KafkaEvent {
 
     private Long postId;
     private Long authorId;
+    private String content;
+    private List<String> resourceIds;
     private List<Long> subscriberIds;
     private State state;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    private LocalDateTime publishedAt;
 }
