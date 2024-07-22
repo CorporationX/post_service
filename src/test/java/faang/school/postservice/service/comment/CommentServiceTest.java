@@ -10,6 +10,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,6 +41,7 @@ class CommentServiceTest {
     CommentDto commentDto;
     Comment existingComment;
     Post post;
+    long postId = 1L;
 
     @BeforeEach
     void init() {
@@ -56,11 +58,13 @@ class CommentServiceTest {
     }
 
     @Test
+    @DisplayName("testAddCommentServiceValidateAuthorExists")
     void testAddCommentServiceValidateAuthorExists() {
         testValidateAuthorExists();
     }
 
     @Test
+    @DisplayName("testAddCommentService")
     void testAddCommentService() {
         when(userServiceClient.getUser(anyLong()))
                 .thenReturn(new UserDto(1L, null, null));
@@ -85,9 +89,8 @@ class CommentServiceTest {
     }
 
     @Test
+    @DisplayName("testUpdateCommentService")
     void testUpdateCommentService() {
-        Long postId = 1L;
-
         Comment updatedComment = new Comment();
         updatedComment.setId(1L);
         updatedComment.setContent("Updated content");
@@ -114,8 +117,8 @@ class CommentServiceTest {
     }
 
     @Test
+    @DisplayName("testGetCommentsService")
     void testGetCommentsService() {
-        long postId = 1L;
         Comment commentOne = Comment.builder().id(1L).content("Updated content").build();
         Post post1 = Post.builder().id(postId).comments(List.of(commentOne)).build();
         when(postService.getPost(postId)).thenReturn(post1);
@@ -128,8 +131,8 @@ class CommentServiceTest {
     }
 
     @Test
+    @DisplayName("testDeleteCommentService")
     void testDeleteCommentService() {
-        long postId = 1L;
         Comment updatedComment = new Comment();
         updatedComment.setId(1L);
         updatedComment.setAuthorId(1L);
@@ -151,7 +154,6 @@ class CommentServiceTest {
     }
 
     private void testValidateAuthorExists() {
-        Long postId = 1L;
         when(userServiceClient.getUser(anyLong()))
                 .thenReturn(null);
         assertThrows(EntityNotFoundException.class,

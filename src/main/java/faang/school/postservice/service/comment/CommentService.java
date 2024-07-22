@@ -24,46 +24,54 @@ public class CommentService {
     private final PostService postService;
     private final CommentMapper commentMapper;
 
-    public CommentDto addNewCommentInPost(Long id, CommentDto commentDto) {
+    public CommentDto addNewCommentInPost(Long postId, CommentDto commentDto) {
         validateAuthorExists(commentDto.getAuthorId());
         Comment comment = commentMapper.toEntity(commentDto);
-        comment.setPost(postService.getPost(id));
+        comment.setPost(postService.getPost(postId));
         comment.setLikes(new ArrayList<>());
         commentRepository.save(comment);
         return commentMapper.toDto(comment);
     }
 
-    public CommentDto updateExistingComment(Long id, CommentDto commentDto) {
+    public CommentDto updateExistingComment(Long postId, CommentDto commentDto) {
         validateAuthorExists(commentDto.getAuthorId());
-        Comment comment = commentRepository.findAllByPostId(id).stream()
+        Comment comment = commentRepository.findAllByPostId(postId).stream()
                 .filter(commentOne -> commentOne.getId() == commentDto.getId())
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Комментария с таким id нет!"));
+                .orElseThrow(() -> {
+                    log.error("Комментария с id: {} нет!", postId);
+                    return new IllegalArgumentException("Комментария с таким id нет!");
+                });
         comment.setContent(commentDto.getContent());
         commentRepository.save(comment);
         return commentMapper.toDto(comment);
     }
 
-    public List<CommentDto> getCommentsForPost(Long id) {
-        return postService.getPost(id).getComments().stream()
+    public List<CommentDto> getCommentsForPost(Long postId) {
+        return postService.getPost(postId).getComments().stream()
                 .map(commentMapper::toDto)
                 .toList();
     }
 
-    public CommentDto deleteExistingCommentInPost(Long id, CommentDto commentDto) {
+    public CommentDto deleteExistingCommentInPost(Long postId, CommentDto commentDto) {
         validateAuthorExists(commentDto.getAuthorId());
-        Comment comments = findCommentInPost(id, commentDto);
+        if (commentDto.getPostId() == null){}
+        Comment comments = findCommentInPost(postId, commentDto);
         commentRepository.deleteById(comments.getId());
         return commentMapper.toDto(comments);
     }
 
-    private Comment findCommentInPost(Long id, CommentDto commentDto) {
-        return commentRepository.findAllByPostId(id).stream()
+    private Comment findCommentInPost(Long postId, CommentDto commentDto) {
+        return commentRepository.findAllByPostId(postId).stream()
                 .filter(comment ->
                         comment.getAuthorId() == commentDto.getAuthorId() &&
                                 comment.getContent().equals(commentDto.getContent()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Комментарий с таким содержанием и автором не найден"));
+                .orElseThrow(() -> {
+                    log.error("Комментарий с таким содержанием: {} и id автора: {} не найден",
+                            commentDto.getContent(), commentDto.getAuthorId());
+                    return new IllegalArgumentException("Комментарий с таким содержанием и автором не найден");
+                });
     }
 
     private void validateAuthorExists(long authorId) {
