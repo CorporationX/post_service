@@ -4,7 +4,7 @@ import faang.school.postservice.redis.cache.entity.CommentRedisCache;
 import faang.school.postservice.redis.cache.repository.CommentRedisRepository;
 import faang.school.postservice.redis.cache.service.RedisOperations;
 import faang.school.postservice.redis.cache.service.author.AuthorRedisCacheService;
-import faang.school.postservice.redis.cache.service.comment_post.CommentPostRedisService;
+import faang.school.postservice.redis.cache.service.comment_post.CommentPostRedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -20,7 +20,7 @@ public class CommentRedisCacheServiceImpl implements CommentRedisCacheService {
 
     private final CommentRedisRepository commentRedisRepository;
     private final RedisOperations redisOperations;
-    private  final CommentPostRedisService commentPostRedisService;
+    private  final CommentPostRedisCacheService commentPostRedisCacheService;
     private final AuthorRedisCacheService authorRedisCacheService;
 
     @Override
@@ -31,7 +31,7 @@ public class CommentRedisCacheServiceImpl implements CommentRedisCacheService {
         log.info("Saved comment with id {} to cache: {}", entity.getId(), entity);
 
         authorRedisCacheService.save(entity.getAuthor());
-        commentPostRedisService.tryAddCommentToPost(entity);
+        commentPostRedisCacheService.tryAddCommentToPost(entity);
 
         return CompletableFuture.completedFuture(entity);
     }
@@ -40,7 +40,7 @@ public class CommentRedisCacheServiceImpl implements CommentRedisCacheService {
     public void deleteById(long commentId) {
 
         CommentRedisCache comment = redisOperations.findById(commentRedisRepository, commentId).orElse(null);
-        commentPostRedisService.tryDeleteCommentFromPost(comment);
+        commentPostRedisCacheService.tryDeleteCommentFromPost(comment);
         redisOperations.deleteById(commentRedisRepository, commentId);
         log.info("Deleted comment with id={} from cache", commentId);
     }
@@ -50,7 +50,7 @@ public class CommentRedisCacheServiceImpl implements CommentRedisCacheService {
 
         commentRedisRepository.findById(commentId).ifPresent(comment -> {
             comment.setLikesCount(comment.getLikesCount() + 1);
-            commentPostRedisService.tryAddCommentToPost(comment);
+            commentPostRedisCacheService.tryAddCommentToPost(comment);
             redisOperations.updateOrSave(commentRedisRepository, comment, commentId);
         });
     }
@@ -60,7 +60,7 @@ public class CommentRedisCacheServiceImpl implements CommentRedisCacheService {
 
         redisOperations.findById(commentRedisRepository, commentId).ifPresent(comment -> {
             comment.setLikesCount(comment.getLikesCount() - 1);
-            commentPostRedisService.tryAddCommentToPost(comment);
+            commentPostRedisCacheService.tryAddCommentToPost(comment);
             redisOperations.updateOrSave(commentRedisRepository, comment, commentId);
         });
     }

@@ -8,8 +8,6 @@ import faang.school.postservice.kafka.event.post.PostKafkaEvent;
 import faang.school.postservice.kafka.event.post.PostViewKafkaEvent;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.PostLike;
-import faang.school.postservice.model.Resource;
-import faang.school.postservice.redis.cache.entity.AuthorRedisCache;
 import faang.school.postservice.redis.cache.entity.PostRedisCache;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -35,7 +33,9 @@ public interface PostMapper {
     @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
     PostDto toDto(Post post);
 
-    @Mapping(source = "post.resources", target = "resourceIds", qualifiedByName = "getIdFromResource")
+    @Mapping(source = "author.id", target = "authorId")
+    PostDto toDto(PostRedisCache post);
+
     @Mapping(source = "post.id", target = "postId")
     PostKafkaEvent toKafkaEvent(Post post, List<Long> subscriberIds, State state);
 
@@ -45,6 +45,9 @@ public interface PostMapper {
     @Mapping(source = "postId", target = "id")
     @Mapping(source = "authorId", target = "author.id")
     PostRedisCache toRedisCache(PostKafkaEvent post);
+
+    @Mapping(source = "authorId", target = "author.id")
+    PostRedisCache toRedisCache(Post post);
 
     @Named("getCountFromLikeList")
     default int getCountFromLikeList(List<PostLike> likes) {
@@ -59,11 +62,6 @@ public interface PostMapper {
     @Named("getIdFromLike")
     default long getIdFromLike(PostLike like) {
         return like != null ? like.getId() : 0;
-    }
-
-    @Named("getIdFromResource")
-    default long getIdFromResource(Resource resource) {
-        return resource != null ? resource.getId() : 0;
     }
 
     @Named("getLikeFromId")

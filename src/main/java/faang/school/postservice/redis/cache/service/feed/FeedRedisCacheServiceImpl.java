@@ -16,8 +16,7 @@ import java.util.TreeSet;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Async("feedCacheTaskExecutor")
-public class FeedRedisServiceImpl implements FeedRedisService {
+public class FeedRedisCacheServiceImpl implements FeedRedisCacheService {
 
     @Value("${spring.data.redis.cache.settings.max-feed-size}")
     private long maxFeedSize;
@@ -25,6 +24,7 @@ public class FeedRedisServiceImpl implements FeedRedisService {
     private final RedisOperations redisOperations;
 
     @Override
+    @Async("feedCacheTaskExecutor")
     public void addPostToFeed(PostRedisCache post, long subscriberId) {
 
         FeedRedisCache foundNewsFeed = redisOperations.findById(feedRedisRepository, subscriberId).orElse(null);
@@ -51,6 +51,7 @@ public class FeedRedisServiceImpl implements FeedRedisService {
     }
 
     @Override
+    @Async("feedCacheTaskExecutor")
     public void deletePostFromFeed(PostRedisCache post, long subscriberId) {
 
         FeedRedisCache foundNewsFeed = redisOperations.findById(feedRedisRepository, subscriberId).orElse(null);
@@ -61,5 +62,10 @@ public class FeedRedisServiceImpl implements FeedRedisService {
             currentFeed.remove(post);
             redisOperations.updateOrSave(feedRedisRepository, foundNewsFeed, subscriberId);
         }
+    }
+
+    @Override
+    public FeedRedisCache findByUserId(long userId) {
+        return redisOperations.findById(feedRedisRepository, userId).orElse(null);
     }
 }

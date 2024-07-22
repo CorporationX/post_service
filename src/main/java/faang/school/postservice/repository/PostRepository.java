@@ -1,6 +1,7 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -38,4 +39,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             WHERE followee_id = :authorId
             """)
     List<Long> getAuthorSubscriberIds(long authorId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT p.* FROM post p
+            WHERE p.author_id IN (
+                SELECT follower_id FROM subscription
+                WHERE followee_id = :userId
+            )
+            """)
+    List<Post> findFeedByUserId(long userId, Pageable pageable);
 }

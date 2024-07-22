@@ -169,3 +169,7 @@ moderation:
 
 api:
   path: /api/v1
+
+batches:
+  feed:
+    size: 100

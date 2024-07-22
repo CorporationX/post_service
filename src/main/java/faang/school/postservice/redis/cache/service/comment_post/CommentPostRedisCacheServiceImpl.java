@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CommentPostRedisServiceImpl implements CommentPostRedisService {
+public class CommentPostRedisCacheServiceImpl implements CommentPostRedisCacheService {
 
     @Value("${spring.data.redis.cache.settings.max-post-comments-size}")
     private long maxPostCommentsSize;

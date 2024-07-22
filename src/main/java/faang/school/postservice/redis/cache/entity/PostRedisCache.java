@@ -12,7 +12,6 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.NavigableSet;
 
 @Getter
@@ -35,7 +34,6 @@ public class PostRedisCache implements Serializable, Comparable<PostRedisCache> 
     private AuthorRedisCache author;
 
     private String content;
-    private List<String> resourceIds;
     private LocalDateTime publishedAt;
     private LocalDateTime createdAt;
     private long likesCount;

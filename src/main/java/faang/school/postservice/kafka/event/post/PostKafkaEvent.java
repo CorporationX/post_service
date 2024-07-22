@@ -22,7 +22,6 @@ public class PostKafkaEvent implements KafkaEvent {
     private Long postId;
     private Long authorId;
     private String content;
-    private List<String> resourceIds;
     private List<Long> subscriberIds;
     private State state;
 

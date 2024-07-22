@@ -4,7 +4,7 @@ import faang.school.postservice.redis.cache.entity.PostRedisCache;
 import faang.school.postservice.redis.cache.repository.PostRedisRepository;
 import faang.school.postservice.redis.cache.service.RedisOperations;
 import faang.school.postservice.redis.cache.service.author.AuthorRedisCacheService;
-import faang.school.postservice.redis.cache.service.feed.FeedRedisService;
+import faang.school.postservice.redis.cache.service.feed.FeedRedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -21,7 +21,7 @@ public class PostRedisCacheServiceImpl implements PostRedisCacheService {
 
     private final PostRedisRepository postRedisRepository;
     private final RedisOperations redisOperations;
-    private final FeedRedisService feedRedisService;
+    private final FeedRedisCacheService feedRedisCacheService;
     private final AuthorRedisCacheService authorRedisCacheService;
 
     @Override
@@ -31,7 +31,7 @@ public class PostRedisCacheServiceImpl implements PostRedisCacheService {
 
         PostRedisCache finalEntity = entity;
         authorRedisCacheService.save(entity.getAuthor());
-        subscriberIds.forEach(subscriberId -> feedRedisService.addPostToFeed(finalEntity, subscriberId));
+        subscriberIds.forEach(subscriberId -> feedRedisCacheService.addPostToFeed(finalEntity, subscriberId));
 
         log.info("Saved post with id {} to cache: {}", entity.getId(), entity);
 
@@ -44,7 +44,7 @@ public class PostRedisCacheServiceImpl implements PostRedisCacheService {
         PostRedisCache post = redisOperations.findById(postRedisRepository, postId).orElse(null);
         redisOperations.deleteById(postRedisRepository, postId);
 
-        subscriberIds.forEach(subscriberId -> feedRedisService.deletePostFromFeed(post, subscriberId));
+        subscriberIds.forEach(subscriberId -> feedRedisCacheService.deletePostFromFeed(post, subscriberId));
 
         log.info("Deleted post with id={} from cache", postId);
     }
