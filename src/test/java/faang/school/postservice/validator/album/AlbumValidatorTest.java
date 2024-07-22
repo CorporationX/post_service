@@ -7,6 +7,7 @@ import faang.school.postservice.exception.NoAccessException;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.PreferredContact;
 import faang.school.postservice.repository.AlbumRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
