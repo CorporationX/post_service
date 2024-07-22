@@ -32,6 +32,8 @@ public class CommentServiceTest {
     private CommentMapper commentMapper;
     @Mock
     private CommentValidator commentValidator;
+    @Mock
+    private UserContext userContext;
 
     private long commentId;
     private long postId;

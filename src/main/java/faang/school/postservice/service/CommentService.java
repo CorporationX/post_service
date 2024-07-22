@@ -2,12 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,7 +39,6 @@ public class CommentService {
         commentValidator.existComment(commentDto.getId());
         Comment comment = commentRepository.findById(commentDto.getId()).orElseThrow();
         commentValidator.checkUserIsAuthorComment(comment, userContext.getUserId());
-        comment.setUpdatedAt(LocalDateTime.now());
         comment.setContent(commentDto.getContent());
         return commentMapper.entityToDto(commentRepository.save(comment));
     }
