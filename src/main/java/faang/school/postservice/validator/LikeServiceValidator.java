@@ -5,12 +5,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+
 @Component
 public class LikeServiceValidator {
 
-    public void validActiveLike(Optional<Like> like) {
-        if (like.isPresent()) {
-            throw new IllegalArgumentException("This user already put like"); // сменить IllegalArgumentException
-        }
+    public void validDuplicateLike(Optional<Like> optionalLike) {
+        optionalLike.ifPresent(like -> {
+            throw new IllegalArgumentException("This has already been like");
+        });
     }
 }

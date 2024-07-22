@@ -1,29 +1,19 @@
 package faang.school.postservice.validator;
 
-import faang.school.postservice.dto.like.LikeDto;
 import org.springframework.stereotype.Component;
 
 @Component
 public class LikeControllerValidator {
 
-    public void validAddLikeToPost(long userId, long postId) {
-
+    public void validAddLikeToPost(long postId) {
+        if (postId <= 0) {
+            throw new IllegalArgumentException("Post id not specified or negative");
+        }
     }
 
-    public void validDeleteLikeFromPost(LikeDto likeDto) {
-
+    public void validAddLikeToComment(long commentId) {
+        if (commentId <= 0) {
+            throw new IllegalArgumentException("Comment id not specified or negative");
+        }
     }
-
-    public void validAddLikeTOComment(long userId, long commentId) {
-
-    }
-
-    public void validDeleteLikeFromComment(LikeDto likeDto) {
-
-    }
-
-    public void validGetCountLikeForPost(long postId) {
-
-    }
-
 }

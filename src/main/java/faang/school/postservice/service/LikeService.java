@@ -14,9 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
-// обработать FeignException при получении user в тг ссылка на статью
 
 @Service
 @RequiredArgsConstructor
@@ -29,56 +27,53 @@ public class LikeService {
     private final CommentService commentService;
     private final LikeMapper likeMapper;
 
-    public void addLikeToPost(long userId, long postId) {
-        Post post = postService.getPost(postId);
-        verifyUser(userId);
-        Like like = getLike(() -> likeRepository.findByPostIdAndUserId(postId, userId));
+    public void addLikeToPost(LikeDto likeDto) {
+        Post post = postService.getPost(likeDto.getPostId());
+        UserDto userDto = getUser(likeDto.getUserId());
+        Like like = likeMapper.toLike(likeDto);
+
+        Optional<Like> optionalLike = likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId());
+        validator.validDuplicateLike(optionalLike);
 
         post.getLikes().add(like);
         likeRepository.save(like);
     }
 
-    public void deleteLikeFromPost(LikeDto likeDto) {
-        long postId = likeDto.getPostId();
+    public void deleteLikeFromPost(long postId, long userId) {
+        Like like = likeRepository.findByPostIdAndUserId(postId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("Like was not found using the passed identifier"));
         Post post = postService.getPost(postId);
 
-        post.getLikes().remove(likeDto.getId());
-        likeRepository.deleteByPostIdAndUserId(postId, likeDto.getUserId());
+        post.getLikes().remove(like.getId());
+        likeRepository.deleteByPostIdAndUserId(postId, userId);
     }
 
-    public void addLikeTOComment(long userId, long commentId) {
-        Comment comment = commentService.getComment(commentId);
-        verifyUser(userId);
-        Like like = getLike(() -> likeRepository.findByCommentIdAndUserId(commentId, userId));
+    public void addLikeToComment(LikeDto likeDto) {
+        Comment comment = commentService.getComment(likeDto.getCommentId());
+        UserDto user = getUser(likeDto.getUserId());
+        Like like = likeMapper.toLike(likeDto);
+
+        Optional<Like> optionalLike = likeRepository.findByCommentIdAndUserId(comment.getId(), user.getId());
+        validator.validDuplicateLike(optionalLike);
 
         comment.getLikes().add(like);
         likeRepository.save(like);
     }
 
-    public void deleteLikeFromComment(LikeDto likeDto) {
-        long commentId = likeDto.getCommentId();
+    public void deleteLikeFromComment(long commentId, long userId) {
+        Like like = likeRepository.findByCommentIdAndUserId(commentId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("Like was not found using the passed identifier"));
         Comment comment = commentService.getComment(commentId);
 
-        comment.getLikes().remove(likeDto.getId());
-        likeRepository.deleteByCommentIdAndUserId(commentId, likeDto.getUserId());
+        comment.getLikes().remove(like.getId());
+        likeRepository.deleteByCommentIdAndUserId(commentId, userId);
     }
 
-//    public long getCountLikeForPost(long postId) {
-//        return getPost(postId).getLikes().size();
-//    }
-
-    private Like getLike(Supplier<Optional<Like>> likeSupplier) {
-        Optional<Like> likeOptional = likeSupplier.get();
-        validator.validActiveLike(likeOptional);
-        return likeOptional.get();
-    }
-
-    private void verifyUser(long userId) {
+    private UserDto getUser(long userId) {
         try {
-            UserDto userDto = userServiceClient.getUser(userId);
+            return userServiceClient.getUser(userId);
         } catch (FeignException e) {
             throw new IllegalArgumentException("User with id not found");
         }
     }
 }
-

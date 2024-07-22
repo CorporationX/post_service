@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class PostDto {
-    long id;
-    long countLike;
+    private Long id;
+    private long countLike;
 }

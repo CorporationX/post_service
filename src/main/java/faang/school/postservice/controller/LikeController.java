@@ -3,50 +3,46 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.validator.LikeControllerValidator;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/like")
+@RequestMapping("/api/like")
 public class LikeController {
 
     private final LikeControllerValidator validator;
     private final LikeService likeService;
 
-    @PutMapping
-    public void addLikeToPost(@RequestParam("userId") long userId, @RequestParam("id") long postId) {
-        validator.validAddLikeToPost(userId, postId);
-        likeService.addLikeToPost(userId, postId);
+    @PostMapping("/post")
+    public void addLikeToPost(@Valid @RequestBody LikeDto likeDto) {
+        validator.validAddLikeToPost(likeDto.getPostId());
+        likeService.addLikeToPost(likeDto);
     }
 
-    @DeleteMapping
-    public void deleteLikeFromPost(@RequestBody LikeDto likeDto) {
-        validator.validDeleteLikeFromPost(likeDto);
-        likeService.deleteLikeFromPost(likeDto);
+    @DeleteMapping("/post/{postId}/{userId}")
+    public String deleteLikeFromPost(@Positive @PathVariable("postId") long postId,
+                                   @Positive @PathVariable("userId") long userId) {
+        likeService.deleteLikeFromPost(postId, userId);
+        return "test";
     }
 
-    @PutMapping
-    public void addLikeTOComment(@RequestParam("userId") long userId, @RequestParam("id") long commentId) {
-        validator.validAddLikeTOComment(userId, commentId);
-        likeService.addLikeTOComment(userId, commentId);
+    @PostMapping("/comment")
+    public void addLikeToComment(@Valid @RequestBody LikeDto likeDto) {
+        validator.validAddLikeToComment(likeDto.getCommentId());
+        likeService.addLikeToComment(likeDto);
     }
 
-    @DeleteMapping
-    public void deleteLikeFromComment(@RequestBody LikeDto likeDto) {
-        validator.validDeleteLikeFromComment(likeDto);
-        likeService.deleteLikeFromComment(likeDto);
-    }
-
-    @GetMapping
-    public long getCountLikeForPost(@RequestParam("id") long postId) {
-        validator.validGetCountLikeForPost(postId);
-        return likeService.getCountLikeForPost(postId);
+    @DeleteMapping("/comment/{commentId}/{userId}")
+    public void deleteLikeFromComment(@Positive @PathVariable("commentId") long commentId,
+                                      @Positive @PathVariable("userId") long userId) {
+        likeService.deleteLikeFromComment(commentId, userId);
     }
 }
