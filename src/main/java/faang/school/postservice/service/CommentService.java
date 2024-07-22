@@ -39,8 +39,7 @@ public class CommentService {
         validateCommentContent(dto);
         Comment comment = mapper.toEntity(dto);
         comment.setPost(post);
-        commentRepository.save(comment);
-        return mapper.toDto(comment);
+        return mapper.toDto(commentRepository.save(comment));
     }
 
     public CommentDto changeComment(Long postId, CommentDto dto) {
@@ -48,8 +47,7 @@ public class CommentService {
         Comment comment = getCommentFromDatabase(dto);
         validatePostId(postId, comment);
         comment.setContent(content);
-        commentRepository.save(comment);
-        return mapper.toDto(comment);
+        return mapper.toDto( commentRepository.save(comment));
     }
 
     public List<CommentDto> getAllCommentsOfPost(Long postId) {

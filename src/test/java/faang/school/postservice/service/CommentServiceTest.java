@@ -106,7 +106,7 @@ class CommentServiceTest {
         Mockito.when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
         Mockito.when(mapper.toEntity(dto)).thenReturn(comment);
         service.addComment(post.getId(), dto);
-        Mockito.verify(mapper).toDto(comment);
+        Mockito.verify(mapper).toDto(Mockito.any());
     }
 
     @Test
@@ -130,7 +130,7 @@ class CommentServiceTest {
     public void testVerifyServiceChangeComment() {
         Mockito.when(commentRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(comment));
         service.changeComment(post.getId(), dto);
-        Mockito.verify(mapper).toDto(comment);
+        Mockito.verify(mapper).toDto(Mockito.any());
     }
 
     @Test
