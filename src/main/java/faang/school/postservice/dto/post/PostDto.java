@@ -26,4 +26,5 @@ public class PostDto {
     @PastOrPresent(message = "Post can't be published in future")
     private LocalDateTime publishedAt;
     private boolean deleted;
+    //
 }
