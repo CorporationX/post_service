@@ -129,8 +129,16 @@ payment-service:
   host: localhost
   port: 9080
 
-async:
+async.settings:
   kafka:
+    corePoolSize: 5
+    maxPoolSize: 10
+    queueCapacity: 100
+  feed:
+    corePoolSize: 5
+    maxPoolSize: 10
+    queueCapacity: 100
+  hashtags:
     corePoolSize: 5
     maxPoolSize: 10
     queueCapacity: 100
@@ -152,9 +160,6 @@ async:
         corePoolSize: 5
         maxPoolSize: 10
         queueCapacity: 100
-  corePoolSize: 5
-  maxPoolSize: 10
-  queueCapacity: 100
 
 spelling:
   url: https://speller.yandex.net/services/spellservice.json/checkText?text=

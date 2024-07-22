@@ -7,7 +7,6 @@ import faang.school.postservice.kafka.event.State;
 import faang.school.postservice.kafka.event.comment.CommentKafkaEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.CommentLike;
-import faang.school.postservice.redis.cache.entity.AuthorRedisCache;
 import faang.school.postservice.redis.cache.entity.CommentRedisCache;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -31,9 +30,6 @@ public interface CommentMapper {
     @Mapping(source = "comment.post.id", target = "postId")
     @Mapping(source = "comment.authorId", target = "userId")
     CommentKafkaEvent toKafkaEvent(Comment comment, State state);
-
-    @Mapping(source = "authorId", target = "id")
-    AuthorRedisCache toAuthorCache(Comment comment);
 
     @Mapping(source = "userId", target = "author.id")
     CommentRedisCache toRedisCache(CommentKafkaEvent comment);

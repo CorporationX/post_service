@@ -20,7 +20,7 @@ public class CommentRedisCacheServiceImpl implements CommentRedisCacheService {
 
     private final CommentRedisRepository commentRedisRepository;
     private final RedisOperations redisOperations;
-    private  final CommentPostRedisCacheService commentPostRedisCacheService;
+    private final CommentPostRedisCacheService commentPostRedisCacheService;
     private final AuthorRedisCacheService authorRedisCacheService;
 
     @Override

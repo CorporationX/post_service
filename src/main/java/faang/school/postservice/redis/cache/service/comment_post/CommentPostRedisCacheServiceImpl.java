@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 public class CommentPostRedisCacheServiceImpl implements CommentPostRedisCacheService {
 
     @Value("${spring.data.redis.cache.settings.max-post-comments-size}")
-    private long maxPostCommentsSize;
+    private int maxPostCommentsSize;
     private final PostRedisRepository postRedisRepository;
     private final RedisOperations redisOperations;
 
