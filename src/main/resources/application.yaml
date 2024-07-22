@@ -70,6 +70,8 @@ spring:
             name: comments
           post-views:
             name: post-views
+          feed-heater:
+            name: feed-heater
 
   servlet:
     multipart:
@@ -176,5 +178,5 @@ api:
   path: /api/v1
 
 batches:
-  feed:
+  feed-heater:
     size: 100

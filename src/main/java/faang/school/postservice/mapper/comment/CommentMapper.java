@@ -34,6 +34,11 @@ public interface CommentMapper {
     @Mapping(source = "userId", target = "author.id")
     CommentCache toRedisCache(CommentEvent comment);
 
+    @Mapping(source = "authorId", target = "author.id")
+    @Mapping(source = "post.id", target = "postId")
+    @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
+    CommentCache toRedisCache(Comment comment);
+
     @Mapping(target = "id", ignore = true)
     void update(CommentToUpdateDto commentDto, @MappingTarget Comment comment);
 

@@ -51,6 +51,10 @@ public interface PostMapper {
     @Mapping(source = "authorId", target = "author.id")
     PostCache toRedisCache(PostEvent post);
 
+    @Mapping(source = "authorId", target = "author.id")
+    @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
+    PostCache toRedisCache(Post post);
+
     @Named("getCountFromLikeList")
     default long getCountFromLikeList(List<PostLike> likes) {
         return likes != null ? likes.size() : 0;

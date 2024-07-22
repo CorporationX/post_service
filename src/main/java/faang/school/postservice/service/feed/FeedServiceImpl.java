@@ -94,7 +94,7 @@ public class FeedServiceImpl implements FeedService {
 
     private List<FeedPublicationDto> getFromDataBase(List<Long> subscriberIds, Pageable pageable) {
 
-        return postRepository.findFeedPostIdsByUserId(subscriberIds, pageable).stream()
+        return postRepository.findFeedPostIdsBySubscriberIds(subscriberIds, pageable).stream()
                 .map(this::getFeedPublicationFromDataBase)
                 .toList();
     }

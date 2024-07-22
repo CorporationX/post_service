@@ -39,5 +39,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             WHERE p.author_id IN :subscriberIds AND p.published = true AND p.deleted = false
             ORDER BY p.published_at DESC
             """)
-    List<Long> findFeedPostIdsByUserId(List<Long> subscriberIds, Pageable pageable);
+    List<Long> findFeedPostIdsBySubscriberIds(List<Long> subscriberIds, Pageable pageable);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post p
+            WHERE p.author_id = :authorId AND p.published = true AND p.deleted = false
+            ORDER BY p.published_at DESC
+            LIMIT :amount
+            """)
+    List<Post> findFeedPostsByAuthorId(long authorId, int amount);
 }
