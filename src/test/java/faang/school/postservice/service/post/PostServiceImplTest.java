@@ -11,8 +11,8 @@ import faang.school.postservice.kafka.producer.post.PostProducer;
 import faang.school.postservice.kafka.producer.post.PostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
-import faang.school.postservice.redis.cache.service.author.AuthorRedisCacheServiceImpl;
-import faang.school.postservice.redis.cache.service.post.PostRedisCacheServiceImpl;
+import faang.school.postservice.redis.cache.service.author.AuthorCacheServiceImpl;
+import faang.school.postservice.redis.cache.service.post.PostCacheServiceImpl;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.Test;
@@ -62,9 +62,9 @@ class PostServiceImplTest {
     @Mock
     private UserContext userContext;
     @Mock
-    private AuthorRedisCacheServiceImpl authorRedisCacheService;
+    private AuthorCacheServiceImpl authorRedisCacheService;
     @Mock
-    private PostRedisCacheServiceImpl postRedisCacheService;
+    private PostCacheServiceImpl postRedisCacheService;
 
     @InjectMocks
     private PostServiceImpl postServiceImpl;

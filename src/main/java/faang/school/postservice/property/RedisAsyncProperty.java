@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.Map;
 
 @Data
-@ConfigurationProperties(prefix = "async.redis")
+@ConfigurationProperties(prefix = "async.settings.redis")
 public class RedisAsyncProperty {
 
     private Map<String, AsyncSettings> settings;

@@ -1,9 +1,9 @@
 package faang.school.postservice.kafka.consumer.post;
 
 import faang.school.postservice.kafka.consumer.KafkaConsumer;
-import faang.school.postservice.kafka.event.post.PostKafkaEvent;
+import faang.school.postservice.kafka.event.post.PostEvent;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.redis.cache.service.post.PostRedisCacheService;
+import faang.school.postservice.redis.cache.service.post.PostCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -14,20 +14,20 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PostConsumer implements KafkaConsumer<PostKafkaEvent> {
+public class PostConsumer implements KafkaConsumer<PostEvent> {
 
     private final PostMapper postMapper;
-    private final PostRedisCacheService postRedisCacheService;
+    private final PostCacheService postCacheService;
 
     @Override
     @KafkaListener(topics = "${spring.data.kafka.topics.topic-settings.posts.name}", groupId = "${spring.data.kafka.group-id}")
-    public void consume(@Payload PostKafkaEvent event, Acknowledgment ack) {
+    public void consume(@Payload PostEvent event, Acknowledgment ack) {
 
         log.info("Received new post event {}", event);
 
         switch (event.getState()) {
-            case ADD, UPDATE -> postRedisCacheService.save(postMapper.toRedisCache(event), event.getSubscriberIds());
-            case DELETE -> postRedisCacheService.deleteById(event.getPostId(), event.getSubscriberIds());
+            case ADD, UPDATE -> postCacheService.save(postMapper.toRedisCache(event), event.getSubscriberIds());
+            case DELETE -> postCacheService.deleteById(event.getPostId(), event.getSubscriberIds());
         }
 
         ack.acknowledge();

@@ -2,10 +2,10 @@ package faang.school.postservice.config.redis;
 
 import faang.school.postservice.property.RedisCacheProperty;
 import faang.school.postservice.property.RedisLockRegistryProperty;
-import faang.school.postservice.redis.cache.entity.AuthorRedisCache;
-import faang.school.postservice.redis.cache.entity.CommentRedisCache;
-import faang.school.postservice.redis.cache.entity.FeedRedisCache;
-import faang.school.postservice.redis.cache.entity.PostRedisCache;
+import faang.school.postservice.redis.cache.entity.AuthorCache;
+import faang.school.postservice.redis.cache.entity.CommentCache;
+import faang.school.postservice.redis.cache.entity.FeedCache;
+import faang.school.postservice.redis.cache.entity.PostCache;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -49,10 +49,10 @@ public class RedisCacheConfig {
     public class RedisKeyspaceConfiguration extends KeyspaceConfiguration {
 
         private static final List<Class<?>> entityClasses = List.of(
-                PostRedisCache.class,
-                AuthorRedisCache.class,
-                CommentRedisCache.class,
-                FeedRedisCache.class
+                PostCache.class,
+                AuthorCache.class,
+                CommentCache.class,
+                FeedCache.class
         );
 
         @Override

@@ -1,6 +1,6 @@
 package faang.school.postservice.kafka.producer.like;
 
-import faang.school.postservice.kafka.event.like.CommentLikeKafkaEvent;
+import faang.school.postservice.kafka.event.like.CommentLikeEvent;
 import faang.school.postservice.kafka.producer.AbstractKafkaProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class CommentLikeProducer extends AbstractKafkaProducer<CommentLikeKafkaEvent> {
+public class CommentLikeProducer extends AbstractKafkaProducer<CommentLikeEvent> {
 
     @Value("${spring.data.kafka.topics.topic-settings.comment-likes.name}")
     private String channelTopic;
