@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.kafka.producer.KafkaCommentEventProducer;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
@@ -37,6 +38,9 @@ public class CommentService {
     private final PostMapper postMapper;
 
     private final CommentEventPublisher commentEventPublisher;
+
+    private final KafkaCommentEventProducer kafkaCommentEventProducer;
+
 
     public CommentDto createComment(long id, CommentDto commentDto) {
         checkCommentDto(commentDto);
@@ -92,20 +96,9 @@ public class CommentService {
     }
 
     private void sendCommentEvent(Comment comment) {
-        long commentAuthorId = comment.getAuthorId();
-        long postAuthorId = comment.getPost().getAuthorId();
-
-        if (commentAuthorId == postAuthorId) {
-            return;
-        }
-        CommentEventDto commentEventDto = CommentEventDto.builder()
-                .commentAuthorId(commentAuthorId)
-                .postAuthorId(postAuthorId)
-                .postId(comment.getPost().getId())
-                .commentId(comment.getId())
-                .commentText(comment.getContent())
-                .build();
+        CommentEventDto commentEventDto = commentMapper.toEventDto(comment);
 
         commentEventPublisher.publish(commentEventDto);
+        kafkaCommentEventProducer.sendCommentEvent(commentEventDto);
     }
 }
