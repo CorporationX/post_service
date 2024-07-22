@@ -5,9 +5,9 @@ import faang.school.postservice.model.Post;
 
 public interface LikeValidator {
 
-    void validateAndGetPostToLike(long userId, Post post);
+    Post validateAndGetPostToLike(long userId, long postId);
 
-    void validateCommentToLike(long userId, Comment comment);
+    Comment validateAndGetCommentToLike(long userId, long commentId);
 
     void validateUserExistence(long userId);
 }

@@ -6,9 +6,11 @@ import faang.school.postservice.dto.comment.CommentToUpdateDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.kafka.producer.comment.CommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.commonMethods.CommonServiceMethods;
+import faang.school.postservice.redis.cache.service.author.AuthorCacheServiceImpl;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,18 +34,18 @@ class CommentServiceImplTest {
 
     @Mock
     private CommentValidator commentValidator;
-
     @Mock
     private CommentMapper commentMapper;
-
     @Mock
     private CommentRepository commentRepository;
-
     @Mock
     private PostRepository postRepository;
-
     @Mock
     private CommonServiceMethods commonServiceMethods;
+    @Mock
+    private CommentProducer commentProducer;
+    @Mock
+    private AuthorCacheServiceImpl authorRedisCacheService;
 
     @InjectMocks
     private CommentServiceImpl commentService;

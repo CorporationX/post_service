@@ -3,8 +3,12 @@ package faang.school.postservice.mapper;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostHashtagDto;
-import faang.school.postservice.model.Like;
+import faang.school.postservice.kafka.event.State;
+import faang.school.postservice.kafka.event.post.PostEvent;
+import faang.school.postservice.kafka.event.post.PostViewEvent;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.PostLike;
+import faang.school.postservice.redis.cache.entity.PostCache;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -29,23 +33,45 @@ public interface PostMapper {
     @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
     PostDto toDto(Post post);
 
+    @Mapping(source = "author.id", target = "authorId")
+    PostDto toDto(PostCache post);
+
+    @Mapping(source = "state", target = "state")
+    @Mapping(source = "post.id", target = "postId")
+    @Mapping(source = "post.authorId", target = "authorId")
+    @Mapping(source = "post.createdAt", target = "createdAt")
+    @Mapping(source = "post.publishedAt", target = "publishedAt")
+    @Mapping(source = "post.content", target = "content")
+    PostEvent toKafkaEvent(Post post, State state);
+
+    @Mapping(source = "post.id", target = "postId")
+    PostViewEvent toViewKafkaEvent(Post post);
+
+    @Mapping(source = "postId", target = "id")
+    @Mapping(source = "authorId", target = "author.id")
+    PostCache toRedisCache(PostEvent post);
+
+    @Mapping(source = "authorId", target = "author.id")
+    @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
+    PostCache toRedisCache(Post post);
+
     @Named("getCountFromLikeList")
-    default int getCountFromLikeList(List<Like> likes) {
+    default long getCountFromLikeList(List<PostLike> likes) {
         return likes != null ? likes.size() : 0;
     }
 
     @Named("getCountFromList")
-    default int getCountFromList(List<Long> ids) {
+    default long getCountFromList(List<Long> ids) {
         return ids != null ? ids.size() : 0;
     }
 
     @Named("getIdFromLike")
-    default long getIdFromLike(Like like) {
+    default long getIdFromLike(PostLike like) {
         return like != null ? like.getId() : 0;
     }
 
     @Named("getLikeFromId")
-    default Like getLikeFromId(Long id) {
-        return Like.builder().id(id).build();
+    default PostLike getLikeFromId(Long id) {
+        return PostLike.builder().id(id).build();
     }
 }

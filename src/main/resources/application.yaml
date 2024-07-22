@@ -9,7 +9,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -26,9 +26,52 @@ spring:
           name: calculations_channel
         like_post_channel:
           name: like_channel
+        user_ban_channel:
+          name: user_ban_channel
       cache:
-        hashtag:
-          max_size: 1000
+        default-ttl: 3600
+        cache-settings:
+          hashtag:
+            name: hashtags
+          users:
+            name: users
+          authors:
+            name: authors
+          posts:
+            name: posts
+          comments:
+            name: comments
+          feed:
+            name: feed
+        settings:
+          max-hashtags-size: 1000
+          max-feed-size: 500
+          max-post-comments-size: 3
+      lock-registry:
+        post-lock-key: POST_LOCK_KEY
+        release-time-duration-millis: 10000
+
+    kafka:
+      port: 9092
+      host: localhost
+      group-id: account_service
+
+      topics:
+        default-partition: 1
+        default-replication: 1
+        topic-settings:
+          post-likes:
+            name: post-likes
+          comment-likes:
+            name: comment-likes
+          posts:
+            name: posts
+          comments:
+            name: comments
+          post-views:
+            name: post-views
+          feed-heater:
+            name: feed-heater
 
   servlet:
     multipart:
@@ -42,7 +85,8 @@ server:
 
 logging:
   level:
-    root: info
+    root: error
+    org.apache.kafka: OFF
 
 services:
   s3:
@@ -73,8 +117,6 @@ post:
   user-ban:
     scheduler:
       cron: "0 0 * * * ?"
-    channel:
-      name: user_ban_channel
   correcter:
     scheduler:
       cron: "0 0 0 * * *"
@@ -89,10 +131,37 @@ payment-service:
   host: localhost
   port: 9080
 
-async:
-  corePoolSize: 5
-  maxPoolSize: 10
-  queueCapacity: 100
+async.settings:
+  kafka:
+    corePoolSize: 5
+    maxPoolSize: 10
+    queueCapacity: 100
+  feed:
+    corePoolSize: 5
+    maxPoolSize: 10
+    queueCapacity: 100
+  hashtags:
+    corePoolSize: 5
+    maxPoolSize: 10
+    queueCapacity: 100
+  redis:
+    settings:
+      posts:
+        corePoolSize: 5
+        maxPoolSize: 10
+        queueCapacity: 100
+      feed:
+        corePoolSize: 5
+        maxPoolSize: 10
+        queueCapacity: 100
+      comments:
+        corePoolSize: 5
+        maxPoolSize: 10
+        queueCapacity: 100
+      authors:
+        corePoolSize: 5
+        maxPoolSize: 10
+        queueCapacity: 100
 
 spelling:
   url: https://speller.yandex.net/services/spellservice.json/checkText?text=
@@ -107,3 +176,7 @@ moderation:
 
 api:
   path: /api/v1
+
+batches:
+  feed-heater:
+    size: 100
