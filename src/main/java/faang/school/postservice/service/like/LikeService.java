@@ -29,7 +29,7 @@ public class LikeService {
     @Transactional
     public LikeDto likePost(Long postId, Long userId) {
         Post post = postService.findById(postId).orElseThrow(() -> {
-            log.error("Post with id {} does not exist", postId);
+            log.info("Post with id {} does not exist", postId);
             return new EntityNotFoundException("Post with id " + postId + " does not exist");
         });
         likeServiceValidator.validateByUserAndPostLikePossibility(post, userId);
@@ -48,7 +48,7 @@ public class LikeService {
     @Transactional
     public LikeDto likeComment(Long commentId, Long userId) {
         Comment comment = commentService.findById(commentId).orElseThrow(() -> {
-            log.error("Comment with id {} does not exist", commentId);
+            log.info("Comment with id {} does not exist", commentId);
             return new EntityNotFoundException("Comment with id " + commentId + " does not exist");
         });
         likeServiceValidator.validateByUserAndCommentLikePossibility(comment, userId);
