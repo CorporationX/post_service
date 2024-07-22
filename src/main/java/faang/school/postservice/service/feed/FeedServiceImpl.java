@@ -1,13 +1,18 @@
 package faang.school.postservice.service.feed;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.feed.CommentFeedDto;
+import faang.school.postservice.dto.feed.PostFeedDto;
 import faang.school.postservice.exception.NotFoundException;
+import faang.school.postservice.mapper.PostFeedMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.redis.cache.entity.FeedRedisCache;
 import faang.school.postservice.redis.cache.entity.PostRedisCache;
 import faang.school.postservice.redis.cache.service.feed.FeedRedisCacheService;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.feed.comment.async.AsyncCommentFeedService;
+import faang.school.postservice.service.feed.post.async.AsyncPostFeedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -24,14 +30,18 @@ import java.util.TreeSet;
 public class FeedServiceImpl implements FeedService {
 
     private final FeedRedisCacheService feedRedisCacheService;
+    private final AsyncCommentFeedService asyncCommentFeedService;
+    private final AsyncPostFeedService asyncPostFeedService;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final PostFeedMapper postFeedMapper;
+    private final UserContext userContext;
 
     @Override
     @Transactional(readOnly = true)
-    public List<PostDto> getNewsFeed(long userId, Pageable pageable) {
+    public List<PostFeedDto> getNewsFeed(long userId, Pageable pageable) {
 
-        List<PostDto> cachePosts = getFromRedisCache(userId, pageable);
+        List<PostFeedDto> cachePosts = getFromRedisCache(userId, pageable);
 
         if (cachePosts != null) {
             return cachePosts;
@@ -40,7 +50,7 @@ public class FeedServiceImpl implements FeedService {
         return getFromDataBase(userId, pageable);
     }
 
-    private List<PostDto> getFromRedisCache(long userId, Pageable pageable) {
+    private List<PostFeedDto> getFromRedisCache(long userId, Pageable pageable) {
 
         FeedRedisCache feedRedis = feedRedisCacheService.findByUserId(userId);
 
@@ -68,22 +78,35 @@ public class FeedServiceImpl implements FeedService {
         }
 
         return out.stream()
-                .map(postMapper::toDto)
+                .map(postFeedMapper::toDto)
                 .toList();
     }
 
-    private List<PostDto> getFromDataBase(long userId, Pageable pageable) {
+    private List<PostFeedDto> getFromDataBase(long userId, Pageable pageable) {
 
-        return postRepository.findFeedByUserId(userId, pageable)
-                .stream()
-                .map(postMapper::toDto)
+        return postRepository.findFeedPostIdsByUserId(userId, pageable).stream()
+                .map(this::getFeedPostFromDataBase)
                 .toList();
     }
 
     private Post getPostFromDataBase(long postId) {
 
         return postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundException("Post not found: " + postId));
+                .orElseThrow(() -> new NotFoundException("Post with id " + postId + " not found"));
+    }
+
+    private PostFeedDto getFeedPostFromDataBase(long postId) {
+
+        long currentUserId = userContext.getUserId();
+        CompletableFuture<PostFeedDto> post = asyncPostFeedService.getPostsWithAuthor(postId, currentUserId);
+        CompletableFuture<List<CommentFeedDto>> comments = asyncCommentFeedService.getCommentsWithAuthors(postId, currentUserId);
+
+        return post
+                .thenCombine(comments, (p, c) -> {
+                    p.setComments(c);
+                    return p;
+                })
+                .join();
     }
 
     private List<PostRedisCache> getPage(NavigableSet<PostRedisCache> posts, Pageable pageable) {

@@ -38,6 +38,8 @@ public class FeedRedisCacheServiceImpl implements FeedRedisCacheService {
                     .id(subscriberId)
                     .posts(posts)
                     .build();
+
+            log.info("Creating new feed for user with id: {}", subscriberId);
         } else {
 
             NavigableSet<PostRedisCache> currentFeed = foundNewsFeed.getPosts();
@@ -46,6 +48,8 @@ public class FeedRedisCacheServiceImpl implements FeedRedisCacheService {
                 currentFeed.pollLast();
             }
         }
+
+        log.info("Adding post to feed for user with id: {}", subscriberId);
 
         redisOperations.updateOrSave(feedRedisRepository, foundNewsFeed, subscriberId);
     }
@@ -61,6 +65,8 @@ public class FeedRedisCacheServiceImpl implements FeedRedisCacheService {
             NavigableSet<PostRedisCache> currentFeed = foundNewsFeed.getPosts();
             currentFeed.remove(post);
             redisOperations.updateOrSave(feedRedisRepository, foundNewsFeed, subscriberId);
+
+            log.info("Deleting post from feed for user with id: {}", subscriberId);
         }
     }
 

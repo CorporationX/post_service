@@ -41,11 +41,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Long> getAuthorSubscriberIds(long authorId);
 
     @Query(nativeQuery = true, value = """
-            SELECT p.* FROM post p
+            SELECT p.id FROM post p
             WHERE p.author_id IN (
-                SELECT follower_id FROM subscription
-                WHERE followee_id = :userId
+                SELECT followee_id FROM subscription
+                WHERE follower_id = :userId
             )
+            ORDER BY p.published_at DESC
             """)
-    List<Post> findFeedByUserId(long userId, Pageable pageable);
+    List<Long> findFeedPostIdsByUserId(long userId, Pageable pageable);
 }

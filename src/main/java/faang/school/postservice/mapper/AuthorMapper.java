@@ -11,4 +11,7 @@ public interface AuthorMapper {
 
     @Mapping(source = "userProfilePic.fileId", target = "smallFileId")
     AuthorRedisCache toAuthorCache(UserDto userDto);
+
+    @Mapping(source = "smallFileId", target = "userProfilePic.fileId")
+    UserDto fromAuthorCache(AuthorRedisCache authorRedisCache);
 }
