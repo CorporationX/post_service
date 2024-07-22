@@ -1,7 +1,7 @@
 package faang.school.postservice.controller.postController;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.filter.post.PostFilterDto;
+import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.service.postController.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +24,11 @@ public class PostController {
 
     @PostMapping("/")
     public PostDto create(@Valid @RequestBody PostDto postDto) {
-        System.out.println("create: Успешно приконектились");
         return postService.create(postDto);
     }
 
     @PutMapping("/publish/{id}")
     public PostDto publish(@PathVariable Long postId) {
-        System.out.println("create: Успешно приконектились");
         return postService.publish(postId);
     }
 

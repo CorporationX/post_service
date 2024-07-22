@@ -7,7 +7,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.post.PostException;
 import faang.school.postservice.exception.post.PostValidatorException;
 import faang.school.postservice.filter.post.PostFilter;
-import faang.school.postservice.filter.post.PostFilterDto;
+import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.filter.post.filterImpl.PostFilterProjectDraftNonDeleted;
 import faang.school.postservice.filter.post.filterImpl.PostFilterProjectPostNonDeleted;
 import faang.school.postservice.filter.post.filterImpl.PostFilterUserDraftNonDeleted;

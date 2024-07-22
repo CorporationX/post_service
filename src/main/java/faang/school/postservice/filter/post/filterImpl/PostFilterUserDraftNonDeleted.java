@@ -1,7 +1,7 @@
 package faang.school.postservice.filter.post.filterImpl;
 
 import faang.school.postservice.filter.post.PostFilter;
-import faang.school.postservice.filter.post.PostFilterDto;
+import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.model.Post;
 import org.springframework.stereotype.Component;
 

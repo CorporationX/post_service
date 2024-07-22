@@ -24,11 +24,6 @@ public interface PostMapper {
     @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "mapResources")
     PostDto toDto(Post entity);
 
-    @Mapping(target = "likes", ignore = true)
-    @Mapping(target = "comments", ignore = true)
-    @Mapping(target = "albums", ignore = true)
-    @Mapping(target = "ad", ignore = true)
-    @Mapping(target = "resources", ignore = true)
     Post toEntity(PostDto dto);
 
     @Named("mapLikes")
