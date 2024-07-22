@@ -23,7 +23,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @Setter
@@ -77,7 +76,7 @@ public class FeedService {
 
     /**
      * @param lastViewedPostId id of post-pointer
-     * @return posts before passed post
+     * @return posts published before passed post-pointer
      */
     private Function<Feed, List<PostForFeedDto>> mapFeedToPostDtos(Long lastViewedPostId) {
         return feed -> {
@@ -102,7 +101,7 @@ public class FeedService {
                 })
                 .peek(postForFeedDto -> {
                     Set<CommentForFeedDto> comments = postForFeedDto.getComments();
-                    if(comments != null) {
+                    if (comments != null) {
                         comments.forEach(setCommentAuthor());
                     }
                 })

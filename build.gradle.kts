@@ -73,11 +73,3 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 tasks.bootJar {
     archiveFileName.set("service.jar")
 }
-
-tasks.bootJar {
-    manifest {
-        attributes(
-            "Start-Class" to "faang.school.postservice.PostServiceApp"
-        )
-    }
-}

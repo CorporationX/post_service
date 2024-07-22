@@ -21,14 +21,10 @@ public class FeedController {
 
     @GetMapping
     public List<PostForFeedDto> getFeed(@RequestParam(required = false) Long lastViewedPostId) {
-        //TODO: testing
-
         Long userId = userContext.getUserId();
 
-        if (lastViewedPostId != null) {
-            return feedService.getFeed(userId, lastViewedPostId);
-        }
-
-        return feedService.getFeed(userId);
+        return lastViewedPostId != null
+                ? feedService.getFeed(userId, lastViewedPostId)
+                : feedService.getFeed(userId);
     }
 }
