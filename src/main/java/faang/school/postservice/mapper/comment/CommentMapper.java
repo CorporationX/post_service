@@ -38,7 +38,7 @@ public interface CommentMapper {
     void update(CommentToUpdateDto commentDto, @MappingTarget Comment comment);
 
     @Named("getCountFromLikeList")
-    default int getCountFromLikeList(List<CommentLike> likes) {
+    default long getCountFromLikeList(List<CommentLike> likes) {
         return likes != null ? likes.size() : 0;
     }
 

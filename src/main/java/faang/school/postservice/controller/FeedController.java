@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.feed.PostFeedDto;
+import faang.school.postservice.dto.feed.FeedPublicationDto;
 import faang.school.postservice.service.feed.FeedService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +30,7 @@ public class FeedController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get news feed page for user")
     @Parameter(in = ParameterIn.HEADER, name = "x-user-id", required = true)
-    public List<PostFeedDto> getFeed(Pageable pageable) {
+    public List<FeedPublicationDto> getFeed(Pageable pageable) {
 
         long userId = userContext.getUserId();
         return feedService.getNewsFeed(userId, pageable);

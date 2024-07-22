@@ -11,7 +11,6 @@ import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder
@@ -22,7 +21,6 @@ public class PostEvent implements KafkaEvent {
     private Long postId;
     private Long authorId;
     private String content;
-    private List<Long> subscriberIds;
     private State state;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
