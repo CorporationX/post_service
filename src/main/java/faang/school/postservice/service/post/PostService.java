@@ -72,9 +72,7 @@ public class PostService {
         PostForFeedDto postForFeedDto = PostForFeedDto.builder()
                 .postId(publishedPost.getId())
                 .post(publishedPost)
-                .likesList(new ArrayList<>())
                 .viewsCounter(0)
-                .comments(new LinkedHashSet<>())
                 .build();
 
         postCache.save(postForFeedDto);
