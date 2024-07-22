@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.post;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,11 @@ public class PostFilterDto {
 
     private Long projectId;
     private Long authorId;
+
+    @NotBlank
     private Boolean deleted;
+
+    @NotBlank
     private Boolean published;
     private SortField sortField;
     private String direction;
