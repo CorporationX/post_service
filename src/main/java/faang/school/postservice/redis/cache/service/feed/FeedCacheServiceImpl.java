@@ -1,8 +1,8 @@
 package faang.school.postservice.redis.cache.service.feed;
 
-import faang.school.postservice.redis.cache.entity.FeedRedisCache;
-import faang.school.postservice.redis.cache.entity.PostRedisCache;
-import faang.school.postservice.redis.cache.repository.FeedRedisRepository;
+import faang.school.postservice.redis.cache.entity.FeedCache;
+import faang.school.postservice.redis.cache.entity.PostCache;
+import faang.school.postservice.redis.cache.repository.FeedCacheRepository;
 import faang.school.postservice.redis.cache.service.RedisOperations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,25 +16,25 @@ import java.util.TreeSet;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FeedRedisCacheServiceImpl implements FeedRedisCacheService {
+public class FeedCacheServiceImpl implements FeedCacheService {
 
     @Value("${spring.data.redis.cache.settings.max-feed-size}")
     private long maxFeedSize;
-    private final FeedRedisRepository feedRedisRepository;
+    private final FeedCacheRepository feedCacheRepository;
     private final RedisOperations redisOperations;
 
     @Override
     @Async("feedCacheTaskExecutor")
-    public void addPostToFeed(PostRedisCache post, long subscriberId) {
+    public void addPostToFeed(PostCache post, long subscriberId) {
 
-        FeedRedisCache foundNewsFeed = redisOperations.findById(feedRedisRepository, subscriberId).orElse(null);
+        FeedCache foundNewsFeed = redisOperations.findById(feedCacheRepository, subscriberId).orElse(null);
 
         if (foundNewsFeed == null) {
 
-            NavigableSet<PostRedisCache> posts = new TreeSet<>();
+            NavigableSet<PostCache> posts = new TreeSet<>();
             posts.add(post);
 
-            foundNewsFeed = FeedRedisCache.builder()
+            foundNewsFeed = FeedCache.builder()
                     .id(subscriberId)
                     .posts(posts)
                     .build();
@@ -42,7 +42,7 @@ public class FeedRedisCacheServiceImpl implements FeedRedisCacheService {
             log.info("Creating new feed for user with id: {}", subscriberId);
         } else {
 
-            NavigableSet<PostRedisCache> currentFeed = foundNewsFeed.getPosts();
+            NavigableSet<PostCache> currentFeed = foundNewsFeed.getPosts();
             currentFeed.add(post);
             while (currentFeed.size() > maxFeedSize) {
                 currentFeed.pollLast();
@@ -51,27 +51,27 @@ public class FeedRedisCacheServiceImpl implements FeedRedisCacheService {
 
         log.info("Adding post to feed for user with id: {}", subscriberId);
 
-        redisOperations.updateOrSave(feedRedisRepository, foundNewsFeed, subscriberId);
+        redisOperations.updateOrSave(feedCacheRepository, foundNewsFeed, subscriberId);
     }
 
     @Override
     @Async("feedCacheTaskExecutor")
-    public void deletePostFromFeed(PostRedisCache post, long subscriberId) {
+    public void deletePostFromFeed(PostCache post, long subscriberId) {
 
-        FeedRedisCache foundNewsFeed = redisOperations.findById(feedRedisRepository, subscriberId).orElse(null);
+        FeedCache foundNewsFeed = redisOperations.findById(feedCacheRepository, subscriberId).orElse(null);
 
         if (foundNewsFeed != null) {
 
-            NavigableSet<PostRedisCache> currentFeed = foundNewsFeed.getPosts();
+            NavigableSet<PostCache> currentFeed = foundNewsFeed.getPosts();
             currentFeed.remove(post);
-            redisOperations.updateOrSave(feedRedisRepository, foundNewsFeed, subscriberId);
+            redisOperations.updateOrSave(feedCacheRepository, foundNewsFeed, subscriberId);
 
             log.info("Deleting post from feed for user with id: {}", subscriberId);
         }
     }
 
     @Override
-    public FeedRedisCache findByUserId(long userId) {
-        return redisOperations.findById(feedRedisRepository, userId).orElse(null);
+    public FeedCache findByUserId(long userId) {
+        return redisOperations.findById(feedCacheRepository, userId).orElse(null);
     }
 }

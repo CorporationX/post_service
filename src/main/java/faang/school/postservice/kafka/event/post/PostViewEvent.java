@@ -10,7 +10,7 @@ import lombok.extern.jackson.Jacksonized;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-public class PostViewKafkaEvent implements KafkaEvent {
+public class PostViewEvent implements KafkaEvent {
 
     private Long postId;
 }

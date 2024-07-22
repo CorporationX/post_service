@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-public class PostLikeKafkaEvent implements KafkaEvent {
+public class PostLikeEvent implements KafkaEvent {
 
     private Long postId;
     private Long userId;

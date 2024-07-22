@@ -5,7 +5,7 @@ import faang.school.postservice.dto.feed.CommentFeedDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.redis.cache.entity.CommentRedisCache;
+import faang.school.postservice.redis.cache.entity.CommentCache;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,10 +20,10 @@ public interface CommentFeedMapper {
 
     @Mapping(source = "cache", target = "comment", qualifiedByName = "buildCommentDto")
     @Mapping(source = "author", target = "author")
-    CommentFeedDto toDto(CommentRedisCache cache);
+    CommentFeedDto toDto(CommentCache cache);
 
     @Named("buildCommentDto")
-    default CommentDto buildCommentDto(CommentRedisCache cache) {
+    default CommentDto buildCommentDto(CommentCache cache) {
 
         return CommentDto.builder()
                 .id(cache.getId())

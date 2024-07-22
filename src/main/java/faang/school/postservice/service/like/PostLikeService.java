@@ -2,8 +2,8 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.dto.like.PostLikeDto;
 import faang.school.postservice.kafka.event.State;
-import faang.school.postservice.kafka.event.like.PostLikeKafkaEvent;
-import faang.school.postservice.redis.pubsub.event.LikeRedisEvent;
+import faang.school.postservice.kafka.event.like.PostLikeEvent;
+import faang.school.postservice.redis.pubsub.event.LikeEvent;
 import faang.school.postservice.mapper.like.PostLikeMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.PostLike;
@@ -42,8 +42,8 @@ public class PostLikeService implements LikeService<PostLikeDto> {
         like.setPost(post);
         like = postLikeRepository.save(like);
 
-        likeEventPublisher.publish(new LikeRedisEvent(id, post.getAuthorId(), userId, LocalDateTime.now()));
-        PostLikeKafkaEvent kafkaEvent = postLikeMapper.toKafkaEvent(like, State.ADD);
+        likeEventPublisher.publish(new LikeEvent(id, post.getAuthorId(), userId, LocalDateTime.now()));
+        PostLikeEvent kafkaEvent = postLikeMapper.toKafkaEvent(like, State.ADD);
         postLikeProducer.produce(kafkaEvent);
 
         log.info("Like with likeId = {} was added on post with postId = {} by user with userId = {}", like.getId(), id, userId);

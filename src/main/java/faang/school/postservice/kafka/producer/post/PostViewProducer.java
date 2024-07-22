@@ -1,6 +1,6 @@
 package faang.school.postservice.kafka.producer.post;
 
-import faang.school.postservice.kafka.event.post.PostViewKafkaEvent;
+import faang.school.postservice.kafka.event.post.PostViewEvent;
 import faang.school.postservice.kafka.producer.AbstractKafkaProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class PostViewProducer extends AbstractKafkaProducer<PostViewKafkaEvent> {
+public class PostViewProducer extends AbstractKafkaProducer<PostViewEvent> {
 
     @Value("${spring.data.kafka.topics.topic-settings.post-views.name}")
     private String channelTopic;

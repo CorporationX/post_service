@@ -7,9 +7,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
+import java.util.NavigableSet;
 
 @Getter
 @Setter
@@ -17,21 +19,21 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash("authors")
-public class AuthorRedisCache implements Serializable {
+@RedisHash("feed")
+public class FeedCache implements Serializable {
 
     @Id
     private long id;
 
-    private String email;
-    private String username;
-    private String smallFileId;
+    @Reference
+    @ToString.Exclude
+    private NavigableSet<PostCache> posts;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AuthorRedisCache that = (AuthorRedisCache) o;
+        FeedCache that = (FeedCache) o;
         return getId() == that.getId();
     }
 

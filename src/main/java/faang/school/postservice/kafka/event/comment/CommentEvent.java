@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-public class CommentKafkaEvent implements KafkaEvent {
+public class CommentEvent implements KafkaEvent {
 
     private Long id;
     private String content;

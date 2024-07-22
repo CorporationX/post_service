@@ -1,8 +1,8 @@
 package faang.school.postservice.redis.cache.service.author;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.redis.cache.entity.AuthorRedisCache;
-import faang.school.postservice.redis.cache.repository.AuthorRedisRepository;
+import faang.school.postservice.redis.cache.entity.AuthorCache;
+import faang.school.postservice.redis.cache.repository.AuthorCacheRepository;
 import faang.school.postservice.redis.cache.service.RedisOperations;
 import faang.school.postservice.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,21 +16,21 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @RequiredArgsConstructor
 @Async("authorsCacheTaskExecutor")
-public class AuthorRedisCacheServiceImpl implements AuthorRedisCacheService {
+public class AuthorCacheServiceImpl implements AuthorCacheService {
 
-    private final AuthorRedisRepository authorRedisRepository;
+    private final AuthorCacheRepository authorCacheRepository;
     private final RedisOperations redisOperations;
     private final UserService userService;
     private final UserContext userContext;
 
     @Override
-    public CompletableFuture<AuthorRedisCache> save(AuthorRedisCache entity) {
+    public CompletableFuture<AuthorCache> save(AuthorCache entity) {
 
         userContext.setUserId(entity.getId());
 
-        AuthorRedisCache redisUser = userService.getUserAuthorCacheById(entity.getId());
+        AuthorCache redisUser = userService.getUserAuthorCacheById(entity.getId());
 
-        entity = redisOperations.updateOrSave(authorRedisRepository, redisUser, redisUser.getId());
+        entity = redisOperations.updateOrSave(authorCacheRepository, redisUser, redisUser.getId());
 
         log.info("Saved author with id {} to cache: {}", entity.getId(), redisUser);
 

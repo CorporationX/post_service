@@ -1,8 +1,8 @@
 package faang.school.postservice.redis.cache.service.comment_post;
 
-import faang.school.postservice.redis.cache.entity.CommentRedisCache;
-import faang.school.postservice.redis.cache.entity.PostRedisCache;
-import faang.school.postservice.redis.cache.repository.PostRedisRepository;
+import faang.school.postservice.redis.cache.entity.CommentCache;
+import faang.school.postservice.redis.cache.entity.PostCache;
+import faang.school.postservice.redis.cache.repository.PostCacheRepository;
 import faang.school.postservice.redis.cache.service.RedisOperations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,41 +17,41 @@ import java.util.function.Consumer;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CommentPostRedisCacheServiceImpl implements CommentPostRedisCacheService {
+public class CommentPostCacheServiceImpl implements CommentPostCacheService {
 
     @Value("${spring.data.redis.cache.settings.max-post-comments-size}")
     private int maxPostCommentsSize;
-    private final PostRedisRepository postRedisRepository;
+    private final PostCacheRepository postCacheRepository;
     private final RedisOperations redisOperations;
 
     @Override
-    public void tryDeleteCommentFromPost(CommentRedisCache comment) {
+    public void tryDeleteCommentFromPost(CommentCache comment) {
 
         getPostAndPerform(comment, (post) -> {
 
-            NavigableSet<CommentRedisCache> comments = post.getCommentRedisCaches();
+            NavigableSet<CommentCache> comments = post.getComments();
 
             if (comments != null) {
                 comments.remove(comment);
             }
 
-            redisOperations.updateOrSave(postRedisRepository, post, post.getId());
+            redisOperations.updateOrSave(postCacheRepository, post, post.getId());
 
             log.info("Removed comment with id={} from post cache: {}", comment.getId(), post);
         });
     }
 
     @Override
-    public void tryAddCommentToPost(CommentRedisCache comment) {
+    public void tryAddCommentToPost(CommentCache comment) {
 
         getPostAndPerform(comment, (post) -> {
 
-            NavigableSet<CommentRedisCache> comments = post.getCommentRedisCaches();
+            NavigableSet<CommentCache> comments = post.getComments();
 
             if (comments == null) {
-                comments = new TreeSet<>(Comparator.comparing(CommentRedisCache::getCreatedAt));
+                comments = new TreeSet<>(Comparator.comparing(CommentCache::getCreatedAt));
                 comments.add(comment);
-                post.setCommentRedisCaches(comments);
+                post.setComments(comments);
             } else {
                 comments.add(comment);
                 while (comments.size() > maxPostCommentsSize) {
@@ -59,15 +59,15 @@ public class CommentPostRedisCacheServiceImpl implements CommentPostRedisCacheSe
                 }
             }
 
-            redisOperations.updateOrSave(postRedisRepository, post, post.getId());
+            redisOperations.updateOrSave(postCacheRepository, post, post.getId());
 
             log.info("Added comment with id={} to post cache: {}", comment.getId(), post);
         });
     }
 
-    private void getPostAndPerform(CommentRedisCache comment, Consumer<PostRedisCache> consumer) {
+    private void getPostAndPerform(CommentCache comment, Consumer<PostCache> consumer) {
 
-        redisOperations.findById(postRedisRepository, comment.getPostId()).ifPresentOrElse(
+        redisOperations.findById(postCacheRepository, comment.getPostId()).ifPresentOrElse(
                 consumer,
                 () -> log.warn("Post with id={} not found", comment.getPostId())
         );

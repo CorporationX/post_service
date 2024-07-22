@@ -3,13 +3,11 @@ package faang.school.postservice.service.feed;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.feed.CommentFeedDto;
 import faang.school.postservice.dto.feed.PostFeedDto;
-import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.PostFeedMapper;
-import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.redis.cache.entity.FeedRedisCache;
-import faang.school.postservice.redis.cache.entity.PostRedisCache;
-import faang.school.postservice.redis.cache.service.feed.FeedRedisCacheService;
+import faang.school.postservice.redis.cache.entity.CommentCache;
+import faang.school.postservice.redis.cache.entity.FeedCache;
+import faang.school.postservice.redis.cache.entity.PostCache;
+import faang.school.postservice.redis.cache.service.feed.FeedCacheService;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.feed.comment.async.AsyncCommentFeedService;
 import faang.school.postservice.service.feed.post.async.AsyncPostFeedService;
@@ -19,9 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableSet;
-import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -29,11 +27,10 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class FeedServiceImpl implements FeedService {
 
-    private final FeedRedisCacheService feedRedisCacheService;
+    private final FeedCacheService feedCacheService;
     private final AsyncCommentFeedService asyncCommentFeedService;
     private final AsyncPostFeedService asyncPostFeedService;
     private final PostRepository postRepository;
-    private final PostMapper postMapper;
     private final PostFeedMapper postFeedMapper;
     private final UserContext userContext;
 
@@ -52,34 +49,42 @@ public class FeedServiceImpl implements FeedService {
 
     private List<PostFeedDto> getFromRedisCache(long userId, Pageable pageable) {
 
-        FeedRedisCache feedRedis = feedRedisCacheService.findByUserId(userId);
+        FeedCache feedRedis = feedCacheService.findByUserId(userId);
 
         if (feedRedis == null || feedRedis.getPosts().isEmpty()) {
             return null;
         }
 
-        NavigableSet<PostRedisCache> posts = feedRedis.getPosts();
+        NavigableSet<PostCache> posts = feedRedis.getPosts();
 
         if (pageable.getOffset() + pageable.getPageSize() > posts.size()) {
             return null;
         }
 
-        List<PostRedisCache> caches = getPage(posts, pageable);
-        NavigableSet<PostRedisCache> out = new TreeSet<>();
+        List<PostCache> caches = getPage(posts, pageable);
+        List<PostFeedDto> out = new ArrayList<>();
 
-        for (PostRedisCache cache : caches) {
-
-            if (cache.getAuthor() == null) {
-                Post post = getPostFromDataBase(cache.getId());
-                out.add(postMapper.toRedisCache(post));
-            }
-
-            out.add(cache);
+        for (PostCache cache : caches) {
+            PostFeedDto post = getFeedPostFromCache(cache);
+            out.add(post);
         }
 
-        return out.stream()
-                .map(postFeedMapper::toDto)
-                .toList();
+        return out;
+    }
+
+    private PostFeedDto getFeedPostFromCache(PostCache cache) {
+
+        for (CommentCache commentCache : cache.getComments()) {
+            if (commentCache.getAuthor() == null) {
+                return getFeedPostFromDataBase(cache.getId());
+            }
+        }
+
+        if (cache.getAuthor() == null) {
+            return getFeedPostFromDataBase(cache.getId());
+        }
+
+        return postFeedMapper.toDto(cache);
     }
 
     private List<PostFeedDto> getFromDataBase(long userId, Pageable pageable) {
@@ -87,12 +92,6 @@ public class FeedServiceImpl implements FeedService {
         return postRepository.findFeedPostIdsByUserId(userId, pageable).stream()
                 .map(this::getFeedPostFromDataBase)
                 .toList();
-    }
-
-    private Post getPostFromDataBase(long postId) {
-
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundException("Post with id " + postId + " not found"));
     }
 
     private PostFeedDto getFeedPostFromDataBase(long postId) {
@@ -109,7 +108,7 @@ public class FeedServiceImpl implements FeedService {
                 .join();
     }
 
-    private List<PostRedisCache> getPage(NavigableSet<PostRedisCache> posts, Pageable pageable) {
+    private List<PostCache> getPage(NavigableSet<PostCache> posts, Pageable pageable) {
 
         return posts.stream()
                 .skip(pageable.getOffset())

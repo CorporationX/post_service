@@ -5,7 +5,7 @@ import faang.school.postservice.dto.feed.PostFeedDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.redis.cache.entity.PostRedisCache;
+import faang.school.postservice.redis.cache.entity.PostCache;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -26,21 +26,21 @@ public interface PostFeedMapper {
     @Mapping(source = "comments", target = "comments")
     PostFeedDto toDto(Post post, UserDto author, List<CommentFeedDto> comments);
 
-    @Mapping(source = "postRedisCache", target = "post", qualifiedByName = "buildPostDto")
+    @Mapping(source = "postCache", target = "post", qualifiedByName = "buildPostDto")
     @Mapping(source = "author", target = "author")
-    @Mapping(source = "commentRedisCaches", target = "comments")
-    PostFeedDto toDto(PostRedisCache postRedisCache);
+    @Mapping(source = "comments", target = "comments")
+    PostFeedDto toDto(PostCache postCache);
 
     @Named("buildPostDto")
-    default PostDto buildPostDto(PostRedisCache postRedisCache) {
+    default PostDto buildPostDto(PostCache postCache) {
 
         return PostDto.builder()
-                .id(postRedisCache.getId())
-                .content(postRedisCache.getContent())
-                .publishedAt(postRedisCache.getPublishedAt())
-                .createdAt(postRedisCache.getCreatedAt())
-                .likesCount(postRedisCache.getLikesCount())
-                .viewsCount(postRedisCache.getViewsCount())
+                .id(postCache.getId())
+                .content(postCache.getContent())
+                .publishedAt(postCache.getPublishedAt())
+                .createdAt(postCache.getCreatedAt())
+                .likesCount(postCache.getLikesCount())
+                .viewsCount(postCache.getViewsCount())
                 .build();
     }
 }

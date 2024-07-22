@@ -11,6 +11,7 @@ import org.springframework.data.annotation.Reference;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.NavigableSet;
 
 @Getter
@@ -19,21 +20,35 @@ import java.util.NavigableSet;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash("feed")
-public class FeedRedisCache implements Serializable {
+@RedisHash("posts")
+public class PostCache implements Serializable, Comparable<PostCache> {
 
     @Id
     private long id;
 
     @Reference
     @ToString.Exclude
-    private NavigableSet<PostRedisCache> posts;
+    private NavigableSet<CommentCache> comments;
+    @Reference
+    @ToString.Exclude
+    private AuthorCache author;
+
+    private String content;
+    private LocalDateTime publishedAt;
+    private LocalDateTime createdAt;
+    private long likesCount;
+    private long viewsCount;
+
+    @Override
+    public int compareTo(PostCache o) {
+        return o.getPublishedAt().compareTo(this.getPublishedAt());
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FeedRedisCache that = (FeedRedisCache) o;
+        PostCache that = (PostCache) o;
         return getId() == that.getId();
     }
 

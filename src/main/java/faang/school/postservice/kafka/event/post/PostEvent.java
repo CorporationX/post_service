@@ -17,7 +17,7 @@ import java.util.List;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-public class PostKafkaEvent implements KafkaEvent {
+public class PostEvent implements KafkaEvent {
 
     private Long postId;
     private Long authorId;

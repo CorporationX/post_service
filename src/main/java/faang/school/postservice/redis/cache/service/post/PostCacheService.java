@@ -1,13 +1,13 @@
 package faang.school.postservice.redis.cache.service.post;
 
-import faang.school.postservice.redis.cache.entity.PostRedisCache;
+import faang.school.postservice.redis.cache.entity.PostCache;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public interface PostRedisCacheService {
+public interface PostCacheService {
 
-    CompletableFuture<PostRedisCache> save(PostRedisCache entity, List<Long> subscriberIds);
+    CompletableFuture<PostCache> save(PostCache entity, List<Long> subscriberIds);
 
     void incrementLikes(long postId);
 

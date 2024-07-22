@@ -20,14 +20,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @RedisHash("comments")
-public class CommentRedisCache implements Serializable, Comparable<CommentRedisCache> {
+public class CommentCache implements Serializable, Comparable<CommentCache> {
 
     @Id
     private long id;
 
     @Reference
     @ToString.Exclude
-    private AuthorRedisCache author;
+    private AuthorCache author;
 
     private String content;
     private long likesCount;
@@ -35,7 +35,7 @@ public class CommentRedisCache implements Serializable, Comparable<CommentRedisC
     private LocalDateTime createdAt;
 
     @Override
-    public int compareTo(CommentRedisCache o) {
+    public int compareTo(CommentCache o) {
         return o.getCreatedAt().compareTo(this.getCreatedAt());
     }
 
@@ -44,7 +44,7 @@ public class CommentRedisCache implements Serializable, Comparable<CommentRedisC
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        CommentRedisCache that = (CommentRedisCache) o;
+        CommentCache that = (CommentCache) o;
         return getId() == that.getId() && getLikesCount() == that.getLikesCount() && getCreatedAt().equals(that.getCreatedAt());
     }
 
