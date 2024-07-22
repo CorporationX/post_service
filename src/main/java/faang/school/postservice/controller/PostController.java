@@ -39,7 +39,7 @@ public class PostController {
     }
 
     @PutMapping("/update")
-    public PostDto publishPost(@RequestBody PostUpdateDto postDto) {
+    public PostDto publishPost(@Valid @RequestBody PostUpdateDto postDto) {
         return postService.update(postDto);
     }
 
@@ -55,12 +55,12 @@ public class PostController {
     }
 
     @PostMapping("/draft")
-    public Page<PostDto> getDraftPosts(@RequestBody PostFilterDto postFilterDto) {
+    public Page<PostDto> getDraftPosts(@Valid @RequestBody PostFilterDto postFilterDto) {
         return postService.getPostsByPublishedStatus(postFilterDto);
     }
 
     @PostMapping("/published")
-    public Page<PostDto> getPublishedPosts(@RequestBody PostFilterDto postFilterDto) {
+    public Page<PostDto> getPublishedPosts(@Valid @RequestBody PostFilterDto postFilterDto) {
         return postService.getPostsByPublishedStatus(postFilterDto);
     }
 }
