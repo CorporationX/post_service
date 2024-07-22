@@ -16,8 +16,14 @@ public interface UserServiceClient {
     UserDto getUser(@PathVariable long userId);
 
     @GetMapping("/users/exists/{userId}")
-    boolean checkUserExistence(@PathVariable Long userId);
+    boolean checkUserExistence(@PathVariable long userId);
 
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
+    @GetMapping("/users/{userId}/followers")
+    List<UserDto> getUserFollowers(@PathVariable long userId);
+
+    @PostMapping("/users/exists/followers")
+    boolean doesFollowersExist(@RequestBody List<Long> followerIds);
 }

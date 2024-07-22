@@ -1,5 +1,6 @@
 package faang.school.postservice.dto;
 
+import faang.school.postservice.model.AlbumVisibility;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -29,11 +30,12 @@ public class AlbumDto {
     @Size(max = 4096)
     private String description;
 
-    @NotNull
-    private Long authorId;
-
     private List<Long> postIds;
 
+    @NotNull
+    private AlbumVisibility visibility;
+    @NotNull
+    private List<Long> allowedUserIds;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
