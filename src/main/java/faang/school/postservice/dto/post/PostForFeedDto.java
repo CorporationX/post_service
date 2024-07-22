@@ -2,6 +2,7 @@ package faang.school.postservice.dto.post;
 
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentForFeedDto;
 import faang.school.postservice.dto.user.UserDto;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,7 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,13 +24,19 @@ public class PostForFeedDto implements Serializable {
     @Id
     private Long postId;
 
+    private Long postAuthorId;
+
     private UserDto postAuthor;
 
-    private PostDto post;
-    private List<LikeDto> likesList;
+    private String content;
+
+    private LocalDateTime publishedAt;
 
     private int viewsCounter;
-    private Set<CommentDto> comments;
+
+    private List<LikeDto> likesList;
+
+    private Set<CommentForFeedDto> comments;
 
     @Version
     private long version;
@@ -49,11 +57,11 @@ public class PostForFeedDto implements Serializable {
         }
 
         if (comments.size() >= maxCommentsAmount) {
-            CommentDto firstElement = comments.iterator().next();
+            CommentForFeedDto firstElement = comments.iterator().next();
             comments.remove(firstElement);
         }
 
-        comments.add(commentDto);
+        comments.add(new CommentForFeedDto(commentDto, null));
 
         version++;
     }

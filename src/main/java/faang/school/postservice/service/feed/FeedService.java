@@ -1,6 +1,7 @@
 package faang.school.postservice.service.feed;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentForFeedDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostForFeedDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -19,7 +20,10 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Setter
@@ -57,8 +61,8 @@ public class FeedService {
 
         int feedLack = feedBatchSize - fullPostsBatch.size();
         if (feedLack > 0) {
-            PostDto postPointer = fullPostsBatch.get(fullPostsBatch.size() - 1).getPost();
-            fullPostsBatch.addAll(postService.getFeedForUser(userId, feedLack, Optional.of(postPointer)));
+            Long postPointerId = fullPostsBatch.get(fullPostsBatch.size() - 1).getPostId();
+            fullPostsBatch.addAll(postService.getFeedForUser(userId, feedLack, Optional.of(postPointerId)));
         }
         return fullPostsBatch;
     }
@@ -94,26 +98,44 @@ public class FeedService {
     private List<PostForFeedDto> collectUserFeed(List<PostForFeedDto> fullPostsBatch) {
         return fullPostsBatch.stream()
                 .peek(postForFeedDto -> {
-                    postForFeedDto.setPostAuthor(getPostAuthorDto(postForFeedDto.getPost().getAuthorId()));
+                    postForFeedDto.setPostAuthor(getUserDto(postForFeedDto.getPostAuthorId()));
+                })
+                .peek(postForFeedDto -> {
+                    Set<CommentForFeedDto> comments = postForFeedDto.getComments();
+                    if(comments != null) {
+                        comments.forEach(setCommentAuthor());
+                    }
                 })
                 .toList();
     }
 
-    private UserDto getPostAuthorDto(Long authorId) {
-        return userCache.findById(authorId)
-                .orElseGet(() -> userServiceClient.getUser(authorId));
+    private Consumer<CommentForFeedDto> setCommentAuthor() {
+        return commentForFeed -> {
+            Long authorId = commentForFeed.getCommentDto().getAuthorId();
+            commentForFeed.setCommentAuthor(getUserDto(authorId));
+        };
+    }
+
+    private UserDto getUserDto(Long userId) {
+        return userCache.findById(userId)
+                .orElseGet(() -> userServiceClient.getUser(userId));
     }
 
     private PostForFeedDto getPostDto(Long postId) {
         return postCache.findById(postId)
                 .orElseGet(
-                        () -> PostForFeedDto.builder()
-                                .postId(postId)
-                                .post(postService.getPostById(postId))
-                                .likesList(new ArrayList<>())
-                                .viewsCounter(0)
-                                .comments(new LinkedHashSet<>())
-                                .build()
+                        () -> {
+                            PostDto post = postService.getPostById(postId);
+                            return PostForFeedDto.builder()
+                                    .postId(postId)
+                                    .postAuthorId(post.getAuthorId())
+                                    .content(post.getContent())
+                                    .publishedAt(post.getPublishedAt())
+                                    .likesList(new ArrayList<>())
+                                    .viewsCounter(0)
+                                    .comments(new LinkedHashSet<>())
+                                    .build();
+                        }
                 );
     }
 }

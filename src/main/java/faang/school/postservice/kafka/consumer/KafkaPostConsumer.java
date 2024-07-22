@@ -32,8 +32,7 @@ public class KafkaPostConsumer {
 
     @KafkaListener(topics = "${spring.kafka.topics-names.post}", groupId = "spring.kafka.group-id")
     public void handleNewPost(PostEventDto postEventDto, Acknowledgment acknowledgment) {
-        postEventDto.getAuthorFollowersIds()
-                .forEach(followerId -> addPostToFeed(postEventDto, followerId));
+        postEventDto.getAuthorFollowersIds().forEach(followerId -> addPostToFeed(postEventDto, followerId));
 
         cachePostAuthor(postEventDto.getAuthorId());
 

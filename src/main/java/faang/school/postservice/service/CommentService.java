@@ -50,7 +50,7 @@ public class CommentService {
 
         Comment savedComment = commentRepository.save(comment);
 
-        sendCommentEvent(comment);
+        handleNewComment(comment);
 
         return commentMapper.toDto(savedComment);
     }
@@ -95,10 +95,10 @@ public class CommentService {
                 orElseThrow(() -> new DataValidationException(NO_COMMENT_IN_DB.getMessage()));
     }
 
-    private void sendCommentEvent(Comment comment) {
+    private void handleNewComment(Comment comment) {
         CommentEventDto commentEventDto = commentMapper.toEventDto(comment);
 
         commentEventPublisher.publish(commentEventDto);
-        kafkaCommentEventProducer.sendCommentEvent(commentEventDto);
+        kafkaCommentEventProducer.handleNewCommentEvent(commentEventDto);
     }
 }

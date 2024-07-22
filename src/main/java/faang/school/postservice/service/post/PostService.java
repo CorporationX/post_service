@@ -1,13 +1,17 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentForFeedDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostForFeedDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.kafka.producer.KafkaPostEventProducer;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.like.LikeMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.redis.cache.RedisPostCache;
 import faang.school.postservice.repository.PostRepository;
@@ -15,13 +19,17 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static faang.school.postservice.exception.message.PostOperationExceptionMessage.RE_DELETING_POST_EXCEPTION;
 import static faang.school.postservice.exception.message.PostValidationExceptionMessage.NON_EXISTING_POST_EXCEPTION;
@@ -40,6 +48,7 @@ public class PostService {
     private final RedisPostCache postCache;
 
 
+    @Transactional
     public PostDto createPost(@Valid PostDto postDto) {
         postVerifier.verifyAuthorExistence(postDto.getAuthorId(), postDto.getProjectId());
 
@@ -50,6 +59,7 @@ public class PostService {
         return postMapper.toDto(postRepository.save(postDraft));
     }
 
+    @Transactional
     public PostDto publishPost(long postId) {
         Post postToBePublished = getPost(postId);
 
@@ -66,18 +76,7 @@ public class PostService {
         return publishedPostDto;
     }
 
-    private void handlePostPublication(PostDto publishedPost) {
-        kafkaPostEventProducer.sendPostEvent(publishedPost);
-
-        PostForFeedDto postForFeedDto = PostForFeedDto.builder()
-                .postId(publishedPost.getId())
-                .post(publishedPost)
-                .viewsCounter(0)
-                .build();
-
-        postCache.save(postForFeedDto);
-    }
-
+    @Transactional
     public PostDto updatePost(PostDto postDto) {
         postVerifier.verifyAuthorExistence(postDto.getAuthorId(), postDto.getProjectId());
 
@@ -89,10 +88,12 @@ public class PostService {
         return postMapper.toDto(postRepository.save(postToBeUpdated));
     }
 
+    @Transactional
     public List<Post> updatePosts(List<Post> posts) {
         return postRepository.saveAll(posts);
     }
 
+    @Transactional
     public void deletePost(long postId) {
         Post postToBeDeleted = getPost(postId);
 
@@ -105,27 +106,31 @@ public class PostService {
         postMapper.toDto(postRepository.save(postToBeDeleted));
     }
 
+    @Transactional(readOnly = true)
     public PostDto getPostById(long postId) {
         return postMapper.toDto(getPost(postId));
     }
 
-
+    @Transactional(readOnly = true)
     public List<Post> getAllDrafts() {
         return postRepository.findAllDrafts();
     }
 
+    @Transactional(readOnly = true)
     public List<PostDto> getDraftsOfUser(long userId) {
         postVerifier.verifyUserExistence(userId);
 
         return getSortedDrafts(postRepository.findByAuthorId(userId));
     }
 
+    @Transactional(readOnly = true)
     public List<PostDto> getDraftsOfProject(long projectId) {
         postVerifier.verifyProjectExistence(projectId);
 
         return getSortedDrafts(postRepository.findByProjectId(projectId));
     }
 
+    @Transactional(readOnly = true)
     public List<PostDto> getFeedForUser(long userId) {
         postVerifier.verifyUserExistence(userId);
 
@@ -135,15 +140,16 @@ public class PostService {
     /**
      * @param userId      user whose feed will be returned
      * @param batchSize   how much posts method will return
-     * @param postPointer returned posts should be published before this post
+     * @param postPointerId returned posts should be published before this post
      * @return batch of posts dtos
      */
-    public List<PostForFeedDto> getFeedForUser(Long userId, int batchSize, Optional<PostDto> postPointer) {
+    @Transactional(readOnly = true)
+    public List<PostForFeedDto> getFeedForUser(Long userId, int batchSize, Optional<Long> postPointerId) {
         List<Long> userSubscriptions = userServiceClient.getFollowingIds(userId);
 
         final List<Post> postsBatch = new ArrayList<>();
-        postPointer.ifPresentOrElse(
-                pointer -> postsBatch.addAll(postRepository.getFeedForUser(userSubscriptions, pointer.getId(), batchSize)),
+        postPointerId.ifPresentOrElse(
+                pointer -> postsBatch.addAll(postRepository.getFeedForUser(userSubscriptions, pointer, batchSize)),
                 () -> postsBatch.addAll(postRepository.getFeedForUser(userSubscriptions, batchSize))
         );
 
@@ -151,19 +157,52 @@ public class PostService {
                 .map(
                         post -> PostForFeedDto.builder()
                                 .postId(post.getId())
-                                .post(postMapper.toDto(post))
+                                .content(post.getContent())
                                 .likesList(likeMapper.toDto(post.getLikes()))
-                                .comments(new LinkedHashSet<>(commentMapper.toDto(post.getComments())))
+                                .comments(getCommentsForFeed(post))
                                 .viewsCounter(0)
                                 .build()
                 )
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<PostDto> getPostsOfProject(long projectId) {
         postVerifier.verifyProjectExistence(projectId);
 
         return getSortedPosts(postRepository.findByProjectId(projectId));
+    }
+
+    private void handlePostPublication(PostDto publishedPost) {
+        kafkaPostEventProducer.sendPostEvent(publishedPost);
+
+        PostForFeedDto postForFeedDto = PostForFeedDto.builder()
+                .postId(publishedPost.getId())
+                .postAuthorId(publishedPost.getAuthorId())
+                .content(publishedPost.getContent())
+                .publishedAt(publishedPost.getPublishedAt())
+                .viewsCounter(0)
+                .build();
+
+        postCache.save(postForFeedDto);
+    }
+
+    private LinkedHashSet<CommentForFeedDto> getCommentsForFeed(Post post) {
+        Map<Long, UserDto> authors = getCommentsAuthors(post);
+
+        List<CommentForFeedDto> commentDtos = commentMapper.toDto(post.getComments()).stream()
+                .map(comment -> new CommentForFeedDto(comment, authors.get(comment.getAuthorId())))
+                .toList();
+        return new LinkedHashSet<>(commentDtos);
+    }
+
+    private Map<Long, UserDto> getCommentsAuthors(Post post) {
+        List<Long> authorsIds = post.getComments().stream()
+                .map(Comment::getAuthorId)
+                .toList();
+
+        return userServiceClient.getUsersByIds(authorsIds).stream()
+                .collect(Collectors.toMap(UserDto::getId, Function.identity()));
     }
 
     private Post getPost(long postId) {
