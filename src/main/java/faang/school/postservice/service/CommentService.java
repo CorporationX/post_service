@@ -2,7 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -28,7 +27,7 @@ public class CommentService {
     @Transactional
     public void createComment(CommentDto commentDto) {
         validateUserById(commentDto.getAuthorId());
-        Post post = getValidatePostById(commentDto.getPostId());
+        Post post = postService.getPostById(commentDto.getPostId());
         post.getComments().add(commentRepository
                 .save(commentMapper.toEntity(commentDto)));
         postService.updatePost(post);
@@ -43,7 +42,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentDto> getAllByPostId(Long postId) {
-        Post post = getValidatePostById(postId);
+        Post post = postService.getPostById(postId);
         return commentMapper.toDtos(post.getComments()
                 .stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
@@ -52,16 +51,7 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long commentId) {
-        Comment comment = getValidatedCommentById(commentId);
-        commentRepository.delete(comment);
-    }
-
-    private Post getValidatePostById(Long postId) {
-        return postService
-                .getPostById(postId).orElseThrow(() -> {
-                    log.info("Post not found, method: createComment");
-                    return new DataValidationException("Post not found");
-                });
+        commentRepository.deleteById(commentId);
     }
 
     private Comment getValidatedCommentById(Long commentId) {

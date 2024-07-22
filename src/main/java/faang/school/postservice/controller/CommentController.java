@@ -7,6 +7,7 @@ import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,18 +20,18 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/comments")
+@RequestMapping("/comment")
 @RequiredArgsConstructor
 public class CommentController {
     private final CommentService commentService;
 
-    @PostMapping("/create/new")
+    @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
     public void createComment(@RequestBody @Validated(New.class) CommentDto commentDto) {
         commentService.createComment(commentDto);
     }
 
-    @PutMapping("/update/comment")
+    @PutMapping("/")
     @ResponseStatus(HttpStatus.OK)
     public void updateComment(@RequestBody @Validated(UpdateContent.class) CommentDto commentDto) {
         commentService.updateComment(commentDto);
@@ -41,7 +42,7 @@ public class CommentController {
         return commentService.getAllByPostId(postId);
     }
 
-    @PostMapping("/delete/{commentId}")
+    @DeleteMapping("/{commentId}")
     public void deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
     }

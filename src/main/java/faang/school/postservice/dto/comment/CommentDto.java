@@ -24,7 +24,7 @@ public class CommentDto {
     private Long id;
 
     @NotNull(groups = {New.class, Exists.class}, message = "Content cannot be empty")
-    @Size(max = 4096, groups = {New.class, Exists.class})
+    @Size(min = 1, max = 4096, groups = {New.class, Exists.class})
     private String content;
 
     @NotNull(groups = {New.class}, message = "You need write authorId here")
