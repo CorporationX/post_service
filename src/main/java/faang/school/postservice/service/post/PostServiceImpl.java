@@ -208,8 +208,7 @@ public class PostServiceImpl implements PostService {
 
     private void sendMessageToKafka(Post post, State state) {
         if (post.getAuthorId() != null) {
-            List<Long> subscriberIds = postRepository.getAuthorSubscriberIds(post.getAuthorId());
-            postProducer.produce(postMapper.toKafkaEvent(post, subscriberIds, state));
+            postProducer.produce(postMapper.toKafkaEvent(post, state));
         }
     }
 }

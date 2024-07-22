@@ -35,18 +35,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllNotVerifiedPosts();
 
     @Query(nativeQuery = true, value = """
-            SELECT follower_id FROM subscription
-            WHERE followee_id = :authorId
-            """)
-    List<Long> getAuthorSubscriberIds(long authorId);
-
-    @Query(nativeQuery = true, value = """
             SELECT p.id FROM post p
-            WHERE p.author_id IN (
-                SELECT followee_id FROM subscription
-                WHERE follower_id = :userId
-            )
+            WHERE p.author_id IN :subscriberIds AND p.published = true AND p.deleted = false
             ORDER BY p.published_at DESC
             """)
-    List<Long> findFeedPostIdsByUserId(long userId, Pageable pageable);
+    List<Long> findFeedPostIdsBySubscriberIds(List<Long> subscriberIds, Pageable pageable);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post p
+            WHERE p.author_id = :authorId AND p.published = true AND p.deleted = false
+            ORDER BY p.published_at DESC
+            LIMIT :amount
+            """)
+    List<Post> findFeedPostsByAuthorId(long authorId, int amount);
 }

@@ -26,8 +26,8 @@ public class PostConsumer implements KafkaConsumer<PostEvent> {
         log.info("Received new post event {}", event);
 
         switch (event.getState()) {
-            case ADD, UPDATE -> postCacheService.save(postMapper.toRedisCache(event), event.getSubscriberIds());
-            case DELETE -> postCacheService.deleteById(event.getPostId(), event.getSubscriberIds());
+            case ADD, UPDATE -> postCacheService.save(postMapper.toRedisCache(event));
+            case DELETE -> postCacheService.deleteById(event.getPostId());
         }
 
         ack.acknowledge();

@@ -22,8 +22,6 @@ public class AuthorCache implements Serializable {
 
     @Id
     private long id;
-
-    private String email;
     private String username;
     private String smallFileId;
 

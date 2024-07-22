@@ -10,8 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.CompletableFuture;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -24,7 +22,7 @@ public class CommentCacheServiceImpl implements CommentCacheService {
     private final AuthorCacheService authorCacheService;
 
     @Override
-    public CompletableFuture<CommentCache> save(CommentCache entity) {
+    public void save(CommentCache entity) {
 
         entity = redisOperations.updateOrSave(commentCacheRepository, entity, entity.getId());
 
@@ -32,8 +30,6 @@ public class CommentCacheServiceImpl implements CommentCacheService {
 
         authorCacheService.save(entity.getAuthor());
         commentPostCacheService.tryAddCommentToPost(entity);
-
-        return CompletableFuture.completedFuture(entity);
     }
 
     @Override

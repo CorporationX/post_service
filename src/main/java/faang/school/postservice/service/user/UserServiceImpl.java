@@ -2,8 +2,6 @@ package faang.school.postservice.service.user;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.AuthorMapper;
-import faang.school.postservice.redis.cache.entity.AuthorCache;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +9,14 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserServiceClient userServiceClient;
-    private final AuthorMapper authorMapper;
 
     @Override
     @Retryable(retryFor = { FeignException.class }, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
@@ -28,9 +27,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Retryable(retryFor = { FeignException.class }, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
-    public AuthorCache getUserAuthorCacheById(long userId) {
+    public List<UserDto> getAllUsers() {
 
-        UserDto userDto = userServiceClient.getUser(userId);
-        return authorMapper.toAuthorCache(userDto);
+        return userServiceClient.getAllUsers();
     }
 }

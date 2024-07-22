@@ -2,8 +2,10 @@ package faang.school.postservice.service.feed;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.feed.CommentFeedDto;
+import faang.school.postservice.dto.feed.FeedPublicationDto;
 import faang.school.postservice.dto.feed.PostFeedDto;
-import faang.school.postservice.mapper.PostFeedMapper;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.FeedPublicationMapper;
 import faang.school.postservice.redis.cache.entity.CommentCache;
 import faang.school.postservice.redis.cache.entity.FeedCache;
 import faang.school.postservice.redis.cache.entity.PostCache;
@@ -11,6 +13,7 @@ import faang.school.postservice.redis.cache.service.feed.FeedCacheService;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.feed.comment.async.AsyncCommentFeedService;
 import faang.school.postservice.service.feed.post.async.AsyncPostFeedService;
+import faang.school.postservice.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -31,23 +34,25 @@ public class FeedServiceImpl implements FeedService {
     private final AsyncCommentFeedService asyncCommentFeedService;
     private final AsyncPostFeedService asyncPostFeedService;
     private final PostRepository postRepository;
-    private final PostFeedMapper postFeedMapper;
     private final UserContext userContext;
+    private final UserService userService;
+    private final FeedPublicationMapper feedPublicationMapper;
 
     @Override
     @Transactional(readOnly = true)
-    public List<PostFeedDto> getNewsFeed(long userId, Pageable pageable) {
+    public List<FeedPublicationDto> getNewsFeed(long userId, Pageable pageable) {
 
-        List<PostFeedDto> cachePosts = getFromRedisCache(userId, pageable);
+        UserDto user = userService.getUserById(userId);
+        List<FeedPublicationDto> cachePosts = getFromRedisCache(userId, pageable);
 
         if (cachePosts != null) {
             return cachePosts;
         }
 
-        return getFromDataBase(userId, pageable);
+        return getFromDataBase(user.getSubscriberIds(), pageable);
     }
 
-    private List<PostFeedDto> getFromRedisCache(long userId, Pageable pageable) {
+    private List<FeedPublicationDto> getFromRedisCache(long userId, Pageable pageable) {
 
         FeedCache feedRedis = feedCacheService.findByUserId(userId);
 
@@ -62,49 +67,46 @@ public class FeedServiceImpl implements FeedService {
         }
 
         List<PostCache> caches = getPage(posts, pageable);
-        List<PostFeedDto> out = new ArrayList<>();
+        List<FeedPublicationDto> out = new ArrayList<>();
 
         for (PostCache cache : caches) {
-            PostFeedDto post = getFeedPostFromCache(cache);
+            FeedPublicationDto post = getFeedPublicationFromCache(cache);
             out.add(post);
         }
 
         return out;
     }
 
-    private PostFeedDto getFeedPostFromCache(PostCache cache) {
+    private FeedPublicationDto getFeedPublicationFromCache(PostCache cache) {
 
         for (CommentCache commentCache : cache.getComments()) {
             if (commentCache.getAuthor() == null) {
-                return getFeedPostFromDataBase(cache.getId());
+                return getFeedPublicationFromDataBase(cache.getId());
             }
         }
 
         if (cache.getAuthor() == null) {
-            return getFeedPostFromDataBase(cache.getId());
+            return getFeedPublicationFromDataBase(cache.getId());
         }
 
-        return postFeedMapper.toDto(cache);
+        return feedPublicationMapper.toDto(cache);
     }
 
-    private List<PostFeedDto> getFromDataBase(long userId, Pageable pageable) {
+    private List<FeedPublicationDto> getFromDataBase(List<Long> subscriberIds, Pageable pageable) {
 
-        return postRepository.findFeedPostIdsByUserId(userId, pageable).stream()
-                .map(this::getFeedPostFromDataBase)
+        return postRepository.findFeedPostIdsBySubscriberIds(subscriberIds, pageable).stream()
+                .map(this::getFeedPublicationFromDataBase)
                 .toList();
     }
 
-    private PostFeedDto getFeedPostFromDataBase(long postId) {
+    private FeedPublicationDto getFeedPublicationFromDataBase(long postId) {
 
         long currentUserId = userContext.getUserId();
         CompletableFuture<PostFeedDto> post = asyncPostFeedService.getPostsWithAuthor(postId, currentUserId);
         CompletableFuture<List<CommentFeedDto>> comments = asyncCommentFeedService.getCommentsWithAuthors(postId, currentUserId);
 
         return post
-                .thenCombine(comments, (p, c) -> {
-                    p.setComments(c);
-                    return p;
-                })
+                .thenCombine(comments, feedPublicationMapper::toDto)
                 .join();
     }
 

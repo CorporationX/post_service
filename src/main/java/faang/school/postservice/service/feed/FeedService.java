@@ -1,10 +1,10 @@
 package faang.school.postservice.service.feed;
 
-import faang.school.postservice.dto.feed.PostFeedDto;
+import faang.school.postservice.dto.feed.FeedPublicationDto;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface FeedService {
-    List<PostFeedDto> getNewsFeed(long userId, Pageable pageable);
+    List<FeedPublicationDto> getNewsFeed(long userId, Pageable pageable);
 }
