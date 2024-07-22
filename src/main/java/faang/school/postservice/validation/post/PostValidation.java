@@ -3,11 +3,9 @@ package faang.school.postservice.validation.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.exception.DataValidationException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class PostValidation {
 
     private final int MINIMUM_SIZE_OF_CONTENT = 3;
