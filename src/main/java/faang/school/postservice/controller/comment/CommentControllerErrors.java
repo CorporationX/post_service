@@ -5,7 +5,7 @@ public enum CommentControllerErrors {
     POST_ID_ZERO("ИД поста не может иметь значение 0"),
     COMMENT_DTO_NULL("Дто не может быть пустым");
 
-    final String value;
+    public final String value;
 
     CommentControllerErrors(String value) {
         this.value = value;

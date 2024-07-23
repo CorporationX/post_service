@@ -27,7 +27,6 @@ public class CommentService {
         if (commentDto.getContent().length() > 4096) {
             throw new IllegalArgumentException(CommentServiceErrors.COMMENT_TOO_LONG.value);
         }
-        // Тут надо бы сделать проверку, что пользователь есть в системе, но нет такого репозитория
 
         Comment comment = mapper.toEntity(commentDto);
         Post post = getPost(postId);
@@ -60,15 +59,7 @@ public class CommentService {
         List<Comment> comments = repository.findAllByPostId(postId);
         List<CommentDto> commentDtos = mapper.toDto(comments);
         return commentDtos.stream()
-                .sorted((comment1, comment2) -> {
-                    if (comment1.getCreatedAt().isAfter(comment2.getCreatedAt())) {
-                        return 1;
-                    } else if (comment1.getCreatedAt().isBefore(comment2.getCreatedAt())) {
-                        return -1;
-                    } else {
-                        return 0;
-                    }
-                })
+                .sorted(this::localDateComparator)
                 .toList();
     }
 
@@ -94,6 +85,16 @@ public class CommentService {
             || !Objects.equals(commentDto.getUpdatedAt(), currentCommentDto.getUpdatedAt())
         ) {
             throw new IllegalArgumentException(CommentServiceErrors.CHANGE_NOT_COMMENT.value);
+        }
+    }
+
+    private int localDateComparator(CommentDto comment1, CommentDto comment2) {
+        if (comment1.getCreatedAt().isAfter(comment2.getCreatedAt())) {
+            return 1;
+        } else if (comment1.getCreatedAt().isBefore(comment2.getCreatedAt())) {
+            return -1;
+        } else {
+            return 0;
         }
     }
 }
