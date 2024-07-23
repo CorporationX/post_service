@@ -3,15 +3,17 @@ package faang.school.postservice.redis.cache;
 import faang.school.postservice.config.redis.RedisProperties;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -30,21 +32,45 @@ public class ZSetFeed {
     }
 
     //TODO: заменить текущую реализацию кеша постов на эту
-    @Transactional
-    public void addNewPost(String followerId, String postId) {
-        Long currentFeedSize = zSet.size(followerId);
 
-        if (currentFeedSize == null) {
-            return;
-        }
+    public void addNewValueToZSet(String key, String value) {
+        feedRedisTemplate.execute(new SessionCallback<>() {
+            @Override
+            public Object execute(RedisOperations operations) {
+                boolean updated = false;
+                while (!updated) {
+                    operations.watch(key);
 
-        if (currentFeedSize == maxPostsAmount) {
-            zSet.popMin(followerId);
-        }
+                    operations.multi();
 
-        double score = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
-        zSet.add(followerId, postId, score);
+                    getAddNewZSetValueRunnable(operations, key, value).run();
 
-        feedRedisTemplate.expire(followerId, Duration.of(feedTtl, ChronoUnit.DAYS));
+                    List<Object> results = operations.exec();
+                    if (results.size() == 0) {
+                        continue;
+                    }
+
+                    updated = true;
+                }
+                return null;
+            }
+        });
+    }
+
+    private Runnable getAddNewZSetValueRunnable(RedisOperations operations, String followerId, String postId) {
+       return () ->{
+           ZSetOperations<String, String> zSetOperations = operations.opsForZSet();
+
+           Long currentFeedSize = zSetOperations.size(followerId);
+
+           if (currentFeedSize != null && currentFeedSize == maxPostsAmount) {
+               zSetOperations.popMin(followerId);
+           }
+
+           double score = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+           zSetOperations.add(followerId, postId, score);
+
+           operations.expire(followerId, Duration.of(feedTtl, ChronoUnit.DAYS));
+       };
     }
 }

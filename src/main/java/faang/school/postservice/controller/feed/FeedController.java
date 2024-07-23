@@ -24,8 +24,6 @@ public class FeedController {
 
     @GetMapping
     public List<PostForFeedDto> getFeed(@RequestParam(required = false) Long lastViewedPostId) {
-        //TODO: testing
-
         Long userId = userContext.getUserId();
 
         if (lastViewedPostId != null) {
@@ -33,5 +31,10 @@ public class FeedController {
         }
 
         return feedService.getFeed(userId);
+    }
+
+    @PostMapping
+    public void addPostToFeed(@RequestParam String userId, @RequestParam String postId) {
+        zSetFeed.addNewValueToZSet(userId, postId);
     }
 }
