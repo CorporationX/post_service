@@ -1,9 +1,10 @@
-package faang.school.postservice.service.redis;
+package faang.school.postservice.service.redis.impl;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.redis.RedisPostMapper;
 import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.service.redis.RedisPostCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisKeyValueTemplate;
