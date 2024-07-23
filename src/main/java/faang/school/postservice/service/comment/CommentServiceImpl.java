@@ -1,5 +1,6 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentToCreateDto;
 import faang.school.postservice.dto.comment.CommentToUpdateDto;
@@ -11,6 +12,7 @@ import faang.school.postservice.publisher.KafkaCommentPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.commonMethods.CommonServiceMethods;
+import faang.school.postservice.service.redis.RedisUserCacheService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +27,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
+
     private final CommentValidator commentValidator;
     private final CommentMapper commentMapper;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommonServiceMethods commonServiceMethods;
     private final KafkaCommentPublisher kafkaCommentPublisher;
+    private final RedisUserCacheService redisUserCacheService;
+    private final UserServiceClient userServiceClient;
 
     @Override
     public CommentDto createComment(long postId, long userId, CommentToCreateDto commentDto) {
@@ -44,6 +49,8 @@ public class CommentServiceImpl implements CommentService {
 
         comment = commentRepository.save(comment);
         log.info("Created comment on post {} authored by {}", postId, userId);
+
+        redisUserCacheService.save(userServiceClient.getUser(userId));
         kafkaCommentPublisher.publish(new CommentCreatedEvent(comment.getId(), postId, comment.getAuthorId()));
 
         return commentMapper.toDto(comment);
