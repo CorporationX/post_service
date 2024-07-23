@@ -1,16 +1,51 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.validation.PostControllerValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/post")
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
+    private final PostControllerValidator postControllerValidator;
+
+    @GetMapping("/drafts/user/{id}")
+    public List<PostDto> getDraftsByUser(@PathVariable Long id) {
+        postControllerValidator.isIdCorrect(id);
+        return postService.getDraftsByUser(id);
+    }
+    @GetMapping("/drafts/project/{id}")
+    public List<PostDto> getDraftsByProject(@PathVariable Long id) {
+        postControllerValidator.isIdCorrect(id);
+        return postService.getDraftsByProject(id);
+    }
+
+    @GetMapping("/published/user/{id}")
+    public List<PostDto> getPublishedByUser(@PathVariable Long id) {
+        postControllerValidator.isIdCorrect(id);
+        return postService.getPublishedByUser(id);
+    }
+
+    @GetMapping("/published/project/{id}")
+    public List<PostDto> getPublishedByProject(@PathVariable Long id) {
+        postControllerValidator.isIdCorrect(id);
+        return postService.getPublishedByProject(id);
+    }
+
+    @GetMapping("/{id}")
+    public PostDto getPostById(@PathVariable Long id) {
+        return postService.getPostById(id);
+    }
 
     @PostMapping("/create")
     public PostDto createDraft(@RequestBody PostDto postDto) {
@@ -22,9 +57,20 @@ public class PostController {
 
     @GetMapping("/publish/{postId}")
     public PostDto publishDraft(@PathVariable Long postId) {
-        if (postId == null) {
-            throw new DataValidationException("Invalid postId!");
-        }
+        postControllerValidator.isIdCorrect(postId);
         return postService.publishDraft(postId);
+    }
+
+    @PostMapping("/update/{id}")
+    public PostDto updatePost(@PathVariable Long id, @RequestBody UpdatePostDto updatePostDto) {
+        postControllerValidator.isIdCorrect(id);
+        return postService.updatePost(id, updatePostDto);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Map<String, String>> deletePost(@PathVariable Long id) {
+        postControllerValidator.isIdCorrect(id);
+        postService.delete(id);
+        return ResponseEntity.status(200).body(Map.of("message", "Deleted post with id: " + id));
     }
 }

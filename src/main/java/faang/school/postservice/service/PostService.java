@@ -4,6 +4,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -25,24 +26,6 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
-
-    private PostDto createPostToProject(PostDto postDto) {
-        ProjectDto project = projectServiceClient.getProject(postDto.getProjectId());
-        if (project == null) {
-            throw new DataValidationException("Project not found");
-        }
-        Post createdDraft = postRepository.save(postMapper.toEntity(postDto));
-        return postMapper.toDto(createdDraft);
-    }
-
-    private PostDto createPostToAuthor(PostDto postDto) {
-        UserDto user = userServiceClient.getUser(postDto.getAuthorId());
-        if (user == null) {
-            throw new DataValidationException("User not found");
-        }
-        Post createdDraft = postRepository.save(postMapper.toEntity(postDto));
-        return postMapper.toDto(createdDraft);
-    }
 
     public PostDto createDraft(PostDto postDto) {
         if (postDto.getAuthorId() != null) {
@@ -66,5 +49,92 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         return postMapper.toDto(postRepository.save(post));
+    }
+
+    public PostDto updatePost(Long id, UpdatePostDto updatePostDto) {
+        Post postToUpdate = getPost(id);
+        postToUpdate.setContent(updatePostDto.getContent());
+        postRepository.save(postToUpdate);
+        return postMapper.toDto(postRepository.save(postToUpdate));
+    }
+
+    public void delete(Long id) {
+        Post postToDelete = getPost(id);
+        postToDelete.setDeleted(true);
+        postRepository.save(postToDelete);
+    }
+
+    public PostDto getPostById(Long id) {
+        Post post = getPost(id);
+        return postMapper.toDto(post);
+    }
+
+    public List<PostDto> getDraftsByUser(Long id) {
+        UserDto user = getUser(id);
+        List<Post> postsByAuthor = postRepository.findByAuthorId(user.getId())
+                .stream().filter(el-> !el.isPublished()).toList();
+        return postsByAuthor.stream().map(postMapper::toDto).toList();
+    }
+
+
+    public List<PostDto> getDraftsByProject(Long id) {
+        ProjectDto projectDto = getProject(id);
+        List<Post> postsByProject = postRepository.findByProjectId(projectDto.getId())
+                .stream().filter(el->!el.isPublished()).toList();
+        return postsByProject.stream().map(postMapper::toDto).toList();
+    }
+
+
+    public List<PostDto> getPublishedByUser(Long id) {
+        UserDto user = getUser(id);
+        List<Post> publishedPostsByAuthor = postRepository
+                .findByAuthorId(user.getId()).stream().filter(Post::isPublished).toList();
+        return publishedPostsByAuthor.stream().map(postMapper::toDto).toList();
+    }
+
+    public List<PostDto> getPublishedByProject(Long id) {
+        ProjectDto projectDto = getProject(id);
+        List<Post> publishedPostsByProject = postRepository
+                .findByAuthorId(projectDto.getId()).stream().filter(Post::isPublished).toList();
+        return publishedPostsByProject.stream().map(postMapper::toDto).toList();
+    }
+
+    private Post getPost(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+    }
+
+    private ProjectDto getProject(Long id) {
+        ProjectDto projectDto = projectServiceClient.getProject(id);
+        if (projectDto == null) {
+            throw new EntityNotFoundException("Project not found");
+        }
+        return projectDto;
+    }
+
+    private PostDto createPostToProject(PostDto postDto) {
+        ProjectDto project = projectServiceClient.getProject(postDto.getProjectId());
+        if (project == null) {
+            throw new DataValidationException("Project not found");
+        }
+        Post createdDraft = postRepository.save(postMapper.toEntity(postDto));
+        return postMapper.toDto(createdDraft);
+    }
+
+    private PostDto createPostToAuthor(PostDto postDto) {
+        UserDto user = userServiceClient.getUser(postDto.getAuthorId());
+        if (user == null) {
+            throw new DataValidationException("User not found");
+        }
+        Post createdDraft = postRepository.save(postMapper.toEntity(postDto));
+        return postMapper.toDto(createdDraft);
+    }
+
+    private UserDto getUser(Long id) {
+        UserDto user = userServiceClient.getUser(id);
+        if (user == null) {
+            throw new EntityNotFoundException("User not found");
+        }
+        return user;
     }
 }
