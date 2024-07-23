@@ -78,13 +78,13 @@ public class CommentService {
         return postRepository.findById(postId).orElseThrow(() -> new RuntimeException(MESSAGE_POST_NOT_IN_DB));
     }
 
-    private static void validatePostId(Long postId, Comment comment) {
+    private void validatePostId(Long postId, Comment comment) {
         if (comment.getPost().getId() != postId) {
             throw new RuntimeException(MESSAGE_POST_ID_AND_COMMENT_POST_ID_NOT_EQUAL);
         }
     }
 
-    private static String validateCommentContent(CommentDto dto) {
+    private String validateCommentContent(CommentDto dto) {
         String content = dto.getContent();
         if (content.isEmpty() || content.isBlank() || content.length() > MAX_LEN_CONTENT) {
             throw new RuntimeException(MESSAGE_INVALID_TEXT_OF_COMMENT);
@@ -92,7 +92,7 @@ public class CommentService {
         return content;
     }
 
-    private static Comment getCommentForDelete(Long commentId, List<Comment> comments) {
+    private Comment getCommentForDelete(Long commentId, List<Comment> comments) {
         return comments.stream()
                 .filter(comment -> commentId.equals(comment.getId()))
                 .findFirst()

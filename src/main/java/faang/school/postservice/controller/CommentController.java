@@ -50,13 +50,13 @@ public class CommentController {
         return service.deleteComment(postId, commentId);
     }
 
-    private static void validateId(Long id, String message) {
+    private void validateId(Long id, String message) {
         if (id < 0) {
             throw new RuntimeException(message);
         }
     }
 
-    private static void validateDto(CommentDto dto) {
+    private void validateDto(CommentDto dto) {
         if (dto == null) {
             throw new RuntimeException(MESSAGE_COMMENT_IS_NULL);
         }

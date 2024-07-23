@@ -22,6 +22,7 @@ class CommentMapperTest {
 
     @BeforeEach
     public void setUp() {
+        //Arrange
         mapper = new CommentMapperImpl();
 
         Like likeOne = new Like();
@@ -48,12 +49,15 @@ class CommentMapperTest {
 
     @Test
     void testToDto() {
+        //Assert
         assertEquals(dto, mapper.toDto(comment));
     }
 
     @Test
     void testToEntity() {
+        //Act
         Comment entity = mapper.toEntity(dto);
+        //Assert
         assertEquals(comment.getId(), entity.getId());
         assertEquals(comment.getContent(), entity.getContent());
         assertEquals(comment.getAuthorId(), entity.getAuthorId());
@@ -61,13 +65,18 @@ class CommentMapperTest {
 
     @Test
     void testLikesIsNull() {
+        //Assert
         assertEquals(List.of(), mapper.likesToLikesId(null));
     }
 
     @Test
     void testLikesToLikesIdValid() {
+        //Arrange
         List<Like> likes = comment.getLikes();
         List<Long> likesId = dto.getLikesId();
-        assertEquals(likesId, mapper.likesToLikesId(likes));
+        //Act
+        List<Long> actualList = mapper.likesToLikesId(likes);
+        //Assert
+        assertEquals(likesId, actualList);
     }
 }
