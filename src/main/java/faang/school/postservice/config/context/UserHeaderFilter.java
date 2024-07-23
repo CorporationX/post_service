@@ -35,11 +35,12 @@ public class UserHeaderFilter implements Filter {
             } catch (NumberFormatException e) {
                 res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 res.getWriter().println("Invalid 'x-user-id' format'");
+            } finally {
+                userContext.clear();
             }
         }
         else {
-            res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            res.getWriter().write("Missing required header 'x-user-id'. Please include 'x-user-id' header with a valid user ID in your request.");
+            throw new IllegalArgumentException("Missing required header 'x-user-id'. Please include 'x-user-id' header with a valid user ID in your request.");
         }
     }
 }
