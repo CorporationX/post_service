@@ -8,6 +8,6 @@ public class FailingTest {
 
     @Test
     public void testThatFails() {
-        fail("This test is designed to fail");// dd
+        fail("This test is designed to fail");// bb
     }
 }
