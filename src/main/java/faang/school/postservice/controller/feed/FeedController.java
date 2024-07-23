@@ -23,8 +23,6 @@ public class FeedController {
     public List<PostForFeedDto> getFeed(@RequestParam(required = false) Long lastViewedPostId) {
         Long userId = userContext.getUserId();
 
-        return lastViewedPostId != null
-                ? feedService.getFeed(userId, lastViewedPostId)
-                : feedService.getFeed(userId);
+        return feedService.getFeed(userId, lastViewedPostId);
     }
 }

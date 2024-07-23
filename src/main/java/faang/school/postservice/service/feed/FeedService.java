@@ -2,9 +2,12 @@ package faang.school.postservice.service.feed;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentForFeedDto;
+import faang.school.postservice.dto.event.PostEventDto;
+import faang.school.postservice.dto.event.PostViewEventDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostForFeedDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.kafka.producer.KafkaPostViewEventProducer;
 import faang.school.postservice.redis.cache.Feed;
 import faang.school.postservice.redis.cache.RedisFeedCache;
 import faang.school.postservice.redis.cache.RedisPostCache;
@@ -33,24 +36,34 @@ public class FeedService {
     private final RedisPostCache postCache;
     private final PostService postService;
     private final UserServiceClient userServiceClient;
+    private final KafkaPostViewEventProducer kafkaPostViewEventProducer;
 
     @Value("${post.feed.get-batch-size}")
     private int feedBatchSize;
 
-    public List<PostForFeedDto> getFeed(Long userId) {
-        Optional<Feed> userFeed = feedCache.findById(userId);
-        Optional<List<PostForFeedDto>> postsFromCache = userFeed.map(mapFeedToPostDtos());
-        List<PostForFeedDto> fullPostsBatch = getFullPostsBatch(userId, postsFromCache);
-
-        return collectUserFeed(fullPostsBatch);
-    }
 
     public List<PostForFeedDto> getFeed(Long userId, Long lastViewedPostId) {
         Optional<Feed> userFeed = feedCache.findById(userId);
-        Optional<List<PostForFeedDto>> postsFromCache = userFeed.map(mapFeedToPostDtos(lastViewedPostId));
-        List<PostForFeedDto> fullPostsBatch = getFullPostsBatch(userId, postsFromCache);
+        Optional<List<PostForFeedDto>> postsFromCache;
 
-        return collectUserFeed(fullPostsBatch);
+        if (lastViewedPostId == null) {
+            postsFromCache = userFeed.map(mapFeedToPostDtos());
+        } else {
+            postsFromCache = userFeed.map(mapFeedToPostDtos(lastViewedPostId));
+        }
+
+        List<PostForFeedDto> fullPostsBatch = getFullPostsBatch(userId, postsFromCache);
+        List<PostForFeedDto> readyToViewFeed = collectUserFeed(fullPostsBatch);
+
+        handlePostViews(readyToViewFeed);
+
+        return readyToViewFeed;
+    }
+
+    private void handlePostViews(List<PostForFeedDto> readyToViewFeed) {
+        readyToViewFeed.stream()
+                .map(post -> new PostViewEventDto(post.getPostId()))
+                .forEach(kafkaPostViewEventProducer::handleNewPostView);
     }
 
     private List<PostForFeedDto> getFullPostsBatch(Long userId, Optional<List<PostForFeedDto>> postsFromCache) {

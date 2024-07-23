@@ -46,6 +46,7 @@ spring:
       post: post_topic
       comment: comment_topic
       like: like_topic
+      post-view: post_view_topic
 
 server:
   host: localhost
