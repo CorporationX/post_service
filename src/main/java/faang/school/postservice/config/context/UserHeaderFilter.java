@@ -2,6 +2,7 @@ package faang.school.postservice.config.context;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,16 +18,28 @@ public class UserHeaderFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         HttpServletRequest req = (HttpServletRequest) request;
-        String userId = req.getHeader("x-user-id");
-        if (userId != null) {
-            userContext.setUserId(Long.parseLong(userId));
-        }else {
-            throw new IllegalArgumentException("Missing required header 'x-user-id'. Please include 'x-user-id' header with a valid user ID in your request.");
-        }
-        try {
+        HttpServletResponse res = (HttpServletResponse) response;
+
+        String path = req.getRequestURI();
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
             chain.doFilter(request, response);
-        } finally {
-            userContext.clear();
+            return;
+        }
+
+        String userId = req.getHeader("x-user-id");
+
+        if (userId != null) {
+            try {
+                userContext.setUserId(Long.parseLong(userId));
+                chain.doFilter(request, response);
+            } catch (NumberFormatException e) {
+                res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                res.getWriter().println("Invalid 'x-user-id' format'");
+            }
+        }
+        else {
+            res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            res.getWriter().write("Missing required header 'x-user-id'. Please include 'x-user-id' header with a valid user ID in your request.");
         }
     }
 }
