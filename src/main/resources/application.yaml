@@ -37,6 +37,9 @@ spring:
         ttl: 86400
         hashtag:
           max_size: 1000
+      z-set-key:
+        feed: redisFeed
+      news-feed-post-ids-max: 500
 
   servlet:
     multipart:
