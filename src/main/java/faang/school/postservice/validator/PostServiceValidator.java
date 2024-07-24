@@ -8,9 +8,14 @@ import faang.school.postservice.model.Post;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class PostServiceValidator {
     private final UserServiceClient userServiceClient;
@@ -53,19 +58,20 @@ public class PostServiceValidator {
         }
     }
 
+    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
     private void validateProjectId(Long projectId) {
-        try {
-            projectServiceClient.getProject(projectId);
-        } catch (FeignException c) {
-            throw new EntityNotFoundException("Project id " + projectId + " not found");
-        }
+        projectServiceClient.getProject(projectId);
+        log.info("Project ID validated successfully: " + projectId);
     }
 
+    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
     private void validateAuthorId(Long authorId) {
-        try {
-            userServiceClient.getUser(authorId);
-        } catch (FeignException c) {
-            throw new EntityNotFoundException("Author id " + authorId + " not found");
-        }
+        userServiceClient.getUser(authorId);
+        log.info("Author ID validated successfully: " + authorId);
+    }
+
+    @Recover
+    public void recover(FeignException e, Long id) {
+        throw new EntityNotFoundException("Entity with ID " + id + " not found");
     }
 }

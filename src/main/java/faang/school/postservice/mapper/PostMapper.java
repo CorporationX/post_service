@@ -14,7 +14,8 @@ import java.util.List;
 public interface PostMapper {
     @Mapping(source = "hashtags", target = "hashtagNames", qualifiedByName = "hashtagToHashtagName")
     PostDto toDto(Post post);
-
+    
+    @Mapping(source = "hashtags", target = "hashtagNames", qualifiedByName = "hashtagToHashtagName")
     List<PostDto> toDto(List<Post> posts);
 
     @Named("hashtagToHashtagName")

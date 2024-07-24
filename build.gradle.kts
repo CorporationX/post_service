@@ -24,6 +24,9 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.retry:spring-retry:2.0.6")
+    implementation("org.springframework:spring-aspects:6.1.11")
+
 
     /**
      * Database
