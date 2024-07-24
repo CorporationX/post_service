@@ -1,13 +1,10 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,40 +18,14 @@ public class PostService {
 
     private final PostMapper postMapper;
     private final PostRepository postRepository;
-    private final UserServiceClient userServiceClient;
-    private final ProjectServiceClient projectServiceClient;
+    private final PostServiceValidator<PostDto> validator;
 
     public PostDto createPost(final PostDto postDto) {
+        validator.validate(postDto);
+
         Post post = postMapper.toEntity(postDto);
 
-        validatePostCreation(post);
-
         return postMapper.toDto(postRepository.save(post));
-    }
-
-    private void validatePostCreation(Post post) {
-        Long authorId = post.getAuthorId();
-        Long projectId = post.getProjectId();
-
-        if (authorId == null && projectId == null || authorId != null && projectId != null) {
-            throw new IllegalArgumentException("Post must have either author or project");
-        }
-
-        if (authorId != null) {
-            UserDto user = userServiceClient.getUser(authorId);
-
-            if (user == null) {
-                throw new IllegalArgumentException("User not found");
-            }
-        }
-
-        if (projectId != null) {
-            ProjectDto project = projectServiceClient.getProject(projectId);
-
-            if (project == null) {
-                throw new IllegalArgumentException("Project not found");
-            }
-        }
     }
 
     public PostDto publishPost(final long postId) {

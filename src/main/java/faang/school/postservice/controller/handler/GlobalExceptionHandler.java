@@ -1,4 +1,4 @@
-package faang.school.postservice.exception;
+package faang.school.postservice.controller.handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

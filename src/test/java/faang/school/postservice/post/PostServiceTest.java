@@ -1,12 +1,11 @@
 package faang.school.postservice.post;
 
-import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.validator.PostServiceValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,12 +25,9 @@ import static faang.school.postservice.post.PostMock.authorId;
 import static faang.school.postservice.post.PostMock.generatePost;
 import static faang.school.postservice.post.PostMock.generatePostDto;
 import static faang.school.postservice.post.PostMock.generateFilteredPosts;
-import static faang.school.postservice.post.PostMock.generateProjectDto;
-import static faang.school.postservice.post.PostMock.generateUserDto;
 import static faang.school.postservice.post.PostMock.newContent;
 import static faang.school.postservice.post.PostMock.postId;
 import static faang.school.postservice.post.PostMock.projectId;
-import static faang.school.postservice.post.PostMock.userId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -46,9 +42,7 @@ public class PostServiceTest {
     @Mock
     private PostRepository postRepository;
     @Mock
-    private UserServiceClient userServiceClient;
-    @Mock
-    private ProjectServiceClient projectServiceClient;
+    private PostServiceValidator<PostDto> validator;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
@@ -63,7 +57,6 @@ public class PostServiceTest {
         PostDto expectedPostDto = generatePostDto(authorId, null, false, content);
         Post post = postMapper.toEntity(expectedPostDto);
 
-        when(userServiceClient.getUser(userId)).thenReturn(generateUserDto());
         when(postRepository.save(post)).thenReturn(post);
 
         // Act
@@ -84,7 +77,6 @@ public class PostServiceTest {
         PostDto expectedPostDto = generatePostDto(null, projectId, false, content);
         Post post = postMapper.toEntity(expectedPostDto);
 
-        when(projectServiceClient.getProject(projectId)).thenReturn(generateProjectDto());
         when(postRepository.save(post)).thenReturn(post);
 
         // Act
@@ -96,40 +88,6 @@ public class PostServiceTest {
         assertEquals(expectedPostDto.content(), actual.content());
         assertEquals(expectedPostDto.authorId(), actual.authorId());
         assertEquals(expectedPostDto.projectId(), actual.projectId());
-    }
-
-    @Test
-    @DisplayName("Create post should fail when author id and project id are both set")
-    public void testCreatePostWithAuthorAndProject() {
-        // Arrange
-        PostDto postDto = generatePostDto(authorId, projectId, false, content);
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> service.createPost(postDto));
-    }
-
-    @Test
-    @DisplayName("Create post should fail when author id is not existed")
-    public void testCreatePostWithNoAuthor() {
-        // Arrange
-        PostDto expectedPostDto = generatePostDto(authorId, null, false, content);
-
-        when(userServiceClient.getUser(userId)).thenReturn(null);
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> service.createPost(expectedPostDto));
-    }
-
-    @Test
-    @DisplayName("Create post should fail when project id is not existed")
-    public void testCreatePostWithNoProject() {
-        // Arrange
-        PostDto expectedPostDto = generatePostDto(null, projectId, false, content);
-
-        when(projectServiceClient.getProject(projectId)).thenReturn(null);
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> service.createPost(expectedPostDto));
     }
 
     @Test
