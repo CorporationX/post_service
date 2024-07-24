@@ -55,17 +55,17 @@ public class CommentController {
 
     private void validatePostId(Long postId) {
         if (postId == null) {
-            throw new IllegalArgumentException(CommentControllerErrors.POST_ID_NULL.value);
+            throw new IllegalArgumentException(CommentControllerErrors.POST_ID_NULL.getValue());
         }
 
         if (postId == 0) {
-            throw new IllegalArgumentException(CommentControllerErrors.POST_ID_ZERO.value);
+            throw new IllegalArgumentException(CommentControllerErrors.POST_ID_ZERO.getValue());
         }
     }
 
     private void validateCommentDto(CommentDto commentDto) {
         if (commentDto == null) {
-            throw new IllegalArgumentException(CommentControllerErrors.COMMENT_DTO_NULL.value);
+            throw new IllegalArgumentException(CommentControllerErrors.COMMENT_DTO_NULL.getValue());
         }
     }
 }
