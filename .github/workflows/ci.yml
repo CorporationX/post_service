@@ -2,10 +2,10 @@ name: CI with Gradle
 on:
   push:
     branches:
-      - "medusa-master-bc5"
+      - "feature-BJS2-16167"
   pull_request:
     branches:
-      - "medusa-master-bc5"
+      - "feature-BJS2-16167"
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '19'
           distribution: 'corretto'
 
       - name: Setup Gradle
