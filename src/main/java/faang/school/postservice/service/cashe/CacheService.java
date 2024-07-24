@@ -26,13 +26,16 @@ public class CacheService {
     @Value("${spring.data.redis.cache.expiration:3600}")
     private long cacheExpiration;
 
+    @Value("${spring.data.cache.size}")
+    private int cacheSize;
+
     public void cachePostsByHashtag(String hashtag, List<Post> posts) {
         redisTemplate.opsForValue().set(hashtag, (Serializable) posts, cacheExpiration, TimeUnit.SECONDS);
     }
 
     @Transactional
     public void initializeCache() {
-        List<Hashtag> popularHashtags = hashtagRepository.findPopularHashtags(PageRequest.of(0, 100));
+        List<Hashtag> popularHashtags = hashtagRepository.findPopularHashtags(PageRequest.of(0, cacheSize));
         for (Hashtag hashtag : popularHashtags) {
             List<Post> posts = postRepository.findByHashtagsNameOrderByCreatedAtDesc(hashtag.getName());
             posts.forEach(this::initializeLazyCollections);
@@ -40,7 +43,7 @@ public class CacheService {
         }
     }
 
-    @Scheduled(fixedRateString = "${cache.refresh.rate:3600000}")
+    @Scheduled(fixedRateString = "${spring.data.cache.refresh.rate:3600000}")
     @Transactional
     public void refreshCache() {
         initializeCache();
@@ -61,6 +64,9 @@ public class CacheService {
         }
         if (post.getAd() != null) {
             post.getAd().getId();
+        }
+        if (post.getHashtags() != null) {
+            post.getHashtags().forEach(Hashtag::getId);
         }
     }
 }

@@ -11,7 +11,6 @@ import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -45,8 +44,8 @@ public class PostService {
                         .toList())
                 .build();
 
-        post = postRepository.save(post);
-        elasticsearchService.indexPost(post);
+        Post savedPost = post = postRepository.save(post);
+        elasticsearchService.indexPost(savedPost);
         return postMapper.toDto(post);
     }
 
@@ -101,7 +100,6 @@ public class PostService {
                     .toList();
             return postMapper.toDto(posts);
         }
-
 
         List<Post> posts = elasticsearchService.searchPostsByHashtag(hashtagDto.getName());
         return postMapper.toDto(posts);

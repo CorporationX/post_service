@@ -33,7 +33,7 @@ public class RedisConfig {
         RedisTemplate<String, Serializable> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, Object.class));
+        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, Serializable.class));
         return template;
     }
 
@@ -42,7 +42,7 @@ public class RedisConfig {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, Object.class)));
+                        .fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, Serializable.class)));
 
         return RedisCacheManager.builder(RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory))
                 .cacheDefaults(config)

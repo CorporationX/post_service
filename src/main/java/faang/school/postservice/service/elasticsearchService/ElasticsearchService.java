@@ -8,11 +8,18 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Hashtag;
+import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Album;
+import faang.school.postservice.model.Resource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -20,10 +27,10 @@ public class ElasticsearchService {
     private final ElasticsearchClient elasticsearchClient;
 
     public void indexPost(Post post) {
-        IndexRequest<Post> request = new IndexRequest.Builder<Post>()
+        IndexRequest<Map<String, Object>> request = new IndexRequest.Builder<Map<String, Object>>()
                 .index("post")
                 .id(String.valueOf(post.getId()))
-                .document(post)
+                .document(convertPostToMap(post))
                 .build();
         try {
             elasticsearchClient.index(request);
@@ -65,5 +72,24 @@ public class ElasticsearchService {
         return searchResponse.hits().hits().stream()
                 .map(Hit::source)
                 .toList();
+    }
+
+    private Map<String, Object> convertPostToMap(Post post) {
+        Map<String, Object> postMap = new HashMap<>();
+        postMap.put("id", post.getId());
+        postMap.put("content", post.getContent());
+        postMap.put("authorId", post.getAuthorId());
+        postMap.put("projectId", post.getProjectId());
+        postMap.put("published", post.isPublished());
+        postMap.put("publishedAt", post.getPublishedAt());
+        postMap.put("deleted", post.isDeleted());
+        postMap.put("createdAt", post.getCreatedAt());
+        postMap.put("updatedAt", post.getUpdatedAt());
+        postMap.put("scheduledAt", post.getScheduledAt());
+        postMap.put("hashtagIds", post.getHashtags().stream().map(Hashtag::getId).toList());
+        if (post.getAd() != null) {
+            postMap.put("adId", post.getAd().getId());
+        }
+        return postMap;
     }
 }
