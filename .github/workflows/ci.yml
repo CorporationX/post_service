@@ -2,10 +2,10 @@ name: CI with Gradle
 on:
   push:
     branches:
-      - "feature-BJS2-16167"
+      - "medusa-master-bc5"
   pull_request:
     branches:
-      - "feature-BJS2-16167"
+      - "medusa-master-bc5"
 
 jobs:
   build:
