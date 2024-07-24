@@ -9,4 +9,5 @@ public class TestForCI {
     public void failTest() {
         fail("This is fail test");
     }
+
 }
