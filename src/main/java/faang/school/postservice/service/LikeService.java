@@ -79,9 +79,9 @@ public class LikeService {
     }
 
     public void validateUser(Long id) {
-//        if (userServiceClient.getUser(id) == null) {
-//            throw new IllegalArgumentException("Пользователь не найден");
-//        }
+        if (userServiceClient.getUser(id) == null) {
+            throw new IllegalArgumentException("Пользователь не найден");
+        }
     }
 
 }
