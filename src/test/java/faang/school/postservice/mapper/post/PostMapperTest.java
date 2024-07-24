@@ -1,6 +1,7 @@
-package faang.school.postservice.mapper;
+package faang.school.postservice.mapper.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
