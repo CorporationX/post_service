@@ -160,7 +160,7 @@ class PostServiceTest {
 
             when(postRepository.findByAuthorId(anyLong())).thenReturn(postsOfUser);
 
-            List<PostDto> actualPosts = assertDoesNotThrow(() -> postService.getFeedForUser(anyLong()));
+            List<PostDto> actualPosts = assertDoesNotThrow(() -> postService.getPostsOfUser(anyLong()));
 
             assertEquals(expectedPosts, actualPosts);
         }

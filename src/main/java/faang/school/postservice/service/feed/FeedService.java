@@ -2,7 +2,6 @@ package faang.school.postservice.service.feed;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentForFeedDto;
-import faang.school.postservice.dto.event.PostEventDto;
 import faang.school.postservice.dto.event.PostViewEventDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostForFeedDto;
@@ -144,7 +143,7 @@ public class FeedService {
                                     .content(post.getContent())
                                     .publishedAt(post.getPublishedAt())
                                     .likesList(new ArrayList<>())
-                                    .viewsCounter(0)
+                                    .viewsCounter(0L)
                                     .comments(new LinkedHashSet<>())
                                     .build();
                         }

@@ -1,7 +1,6 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentForFeedDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostForFeedDto;
@@ -89,6 +88,18 @@ public class PostService {
     }
 
     @Transactional
+    public Long incrementPostViews(Long postId) {
+        Post post = getPost(postId);
+
+        if (!post.isPublished()) {
+            return 0L;
+        }
+
+        post.incrementViews();
+        return postRepository.save(post).getViews();
+    }
+
+    @Transactional
     public List<Post> updatePosts(List<Post> posts) {
         return postRepository.saveAll(posts);
     }
@@ -131,15 +142,15 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostDto> getFeedForUser(long userId) {
+    public List<PostDto> getPostsOfUser(long userId) {
         postVerifier.verifyUserExistence(userId);
 
         return getSortedPosts(postRepository.findByAuthorId(userId));
     }
 
     /**
-     * @param userId      user whose feed will be returned
-     * @param batchSize   how much posts method will return
+     * @param userId        user whose feed will be returned
+     * @param batchSize     how much posts method will return
      * @param postPointerId returned posts should be published before this post
      * @return batch of posts dtos
      */
@@ -160,7 +171,7 @@ public class PostService {
                                 .content(post.getContent())
                                 .likesList(likeMapper.toDto(post.getLikes()))
                                 .comments(getCommentsForFeed(post))
-                                .viewsCounter(0)
+                                .viewsCounter(0L)
                                 .build()
                 )
                 .toList();
@@ -181,7 +192,7 @@ public class PostService {
                 .postAuthorId(publishedPost.getAuthorId())
                 .content(publishedPost.getContent())
                 .publishedAt(publishedPost.getPublishedAt())
-                .viewsCounter(0)
+                .viewsCounter(0L)
                 .build();
 
         postCache.save(postForFeedDto);

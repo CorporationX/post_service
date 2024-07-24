@@ -13,8 +13,8 @@ public class KafkaPostViewEventProducer extends AbstractEventProducer {
 
     public KafkaPostViewEventProducer(
             KafkaTemplate<String, EventDto> kafkaTemplate,
-            NewTopic commentKafkaTopic) {
-        super(kafkaTemplate, commentKafkaTopic);
+            NewTopic postViewKafkaTopic) {
+        super(kafkaTemplate, postViewKafkaTopic);
     }
 
     @Async
