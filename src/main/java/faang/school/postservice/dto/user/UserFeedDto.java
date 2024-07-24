@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-public class UserDto {
+public class UserFeedDto {
     private Long id;
-    private String username;
-    private String email;
-    private String smallPicId;
 }

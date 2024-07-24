@@ -9,8 +9,9 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderator.post.logic.PostModerator;
-import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.publisher.redis.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.kafkadecomposer.KafkaDecomposer;
 import faang.school.postservice.service.cache.RedisCacheService;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.PostValidator;
@@ -72,6 +73,9 @@ public class PostServiceTest {
     @Mock
     private PostModerator postModerator;
 
+    @Mock
+    private KafkaDecomposer kafkaDecomposer;
+
     private PostDto postDto;
     private UserDto userDto;
     private long postId;
@@ -86,7 +90,7 @@ public class PostServiceTest {
     void setUp() {
         id = 1L;
         postDto = PostDto.builder()
-                .id(1L)
+                .id(10L)
                 .content("qwe")
                 .projectId(3L)
                 .authorId(3L)
@@ -159,6 +163,7 @@ public class PostServiceTest {
         verify(postRepository, times(1)).save(postToUpdate);
         verify(redisCacheService, times(1)).saveToCache(patternByPost, postToUpdate.getId(), actual);
         verify(redisCacheService, times(1)).saveToCache(patternByInfAuthor, userDto.getId(), userDto);
+        verify(kafkaDecomposer, times(1)).decompose(postDto.getAuthorId(), postDto.getId());
     }
 
     @Test

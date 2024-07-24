@@ -10,7 +10,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderator.comment.logic.CommentModerator;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.cache.RedisCacheService;
 import faang.school.postservice.threadpool.ThreadPoolForCommentModerator;
