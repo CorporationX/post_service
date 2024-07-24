@@ -4,10 +4,10 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.UserValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +25,12 @@ public class CommentServiceImpl implements CommentService{
     private final PostRepository postRepository;
     private final UserValidator userValidator;
     private final CommentEventPublisher commentEventPublisher;
+    private final PostService postService;
 
     @Transactional
     public CommentDto createComment(Long userId, Long postId, CommentDto commentDto) {
         userValidator.validateUserExist(userId);
-        Comment comment = getComment(userId, postId, commentDto);
+        Comment comment = createCommentEntity(userId, postId, commentDto);
         commentRepository.save(comment);
         CommentEvent commentEvent = CommentEvent.builder()
                 .commentAuthorId(comment.getAuthorId())
@@ -67,15 +68,10 @@ public class CommentServiceImpl implements CommentService{
         return postRepository.existsById(id);
     }
 
-    private Comment getComment(Long userId, Long postId, CommentDto commentDto) {
+    private Comment createCommentEntity(Long userId, Long postId, CommentDto commentDto) {
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setAuthorId(userId);
-        comment.setPost(getPost(postId));
+        comment.setPost(postService.getPostById(postId));
         return comment;
-    }
-
-    private Post getPost(Long postId) {
-        return postRepository.findById(postId).orElseThrow(()
-                -> new EntityNotFoundException(String.format("Post with id %d not found", postId)));
     }
 }

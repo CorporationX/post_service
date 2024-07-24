@@ -24,12 +24,12 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("/create")
+    @PostMapping
     public PostDto createPost(@Valid @RequestBody PostDto postDto) {
         return postService.createPost(postDto);
     }
 
-    @PostMapping("/published")
+    @PostMapping("/status")
     public PostDto publishPost(@Valid @RequestBody PostDto postDto) {
         return postService.publishPost(postDto.getId());
     }

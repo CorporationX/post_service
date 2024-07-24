@@ -24,12 +24,12 @@ public class CommentController {
     private final CommentServiceImpl commentService;
     private final UserContext userContext;
 
-    @PostMapping("/create/{postId}")
+    @PostMapping("/post/{postId}/comment")
     public CommentDto createComment(@PathVariable Long postId, @RequestBody @Valid CommentDto commentDto) {
         return commentService.createComment(userContext.getUserId(), postId, commentDto);
     }
 
-    @PutMapping("/update/{commentId}")
+    @PutMapping("/{commentId}")
     public CommentDto updateComment(@PathVariable Long commentId, @RequestBody @Valid CommentDto commentDto) {
         return commentService.updateComment(commentId, commentDto);
     }

@@ -10,6 +10,7 @@ import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class PostServiceImpl implements PostService {
     private final ModerationDictionary moderationDictionary;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
-    private final ExecutorService threadPool;
+    private final @Qualifier("executorService")ExecutorService threadPool;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -144,18 +145,20 @@ public class PostServiceImpl implements PostService {
                         new DataValidationException(String.format("Post with this Id: %s was not found", postId)));
     }
 
+    @Async("threadPool")
     @Transactional
     public void publishScheduledPosts() {
         List<Post> posts = postRepository.findReadyToPublish();
-        IntStream.iterate(0, i -> i < posts.size(), i -> i + scheduledPostsBatchSize)
-                .mapToObj(i -> posts.subList(i, Math.min(i + scheduledPostsBatchSize, posts.size())))
-                .toList()
-                .forEach(batch -> CompletableFuture.runAsync(() -> {
-                    batch.forEach(post -> {
-                        post.setPublished(true);
-                        post.setPublishedAt(LocalDateTime.now());
-                    });
-                }, threadPool));
+        for (int i = 0; i < posts.size(); i += scheduledPostsBatchSize) {
+            List<Post> batch = posts.subList(i, Math.min(i + scheduledPostsBatchSize, posts.size()));
+            CompletableFuture.runAsync(() -> {
+                batch.forEach(post -> {
+                    post.setPublished(true);
+                    post.setPublishedAt(LocalDateTime.now());
+                    postRepository.save(post);
+                });
+            }, threadPool);
+        }
     }
 
     @Override

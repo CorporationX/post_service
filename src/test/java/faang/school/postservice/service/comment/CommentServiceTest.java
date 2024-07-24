@@ -8,6 +8,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.PostServiceImpl;
 import faang.school.postservice.validator.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,8 @@ class CommentServiceTest {
     private PostRepository postRepository;
     @Mock
     private UserValidator userValidator;
+    @Mock
+    private PostServiceImpl postService;
     @InjectMocks
     private CommentServiceImpl commentService;
 
@@ -103,7 +106,7 @@ class CommentServiceTest {
 
     @Test
     void shouldCreateComment() {
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(postService.getPostById(anyLong())).thenReturn(post);
         when(commentMapper.toEntity(commentDto)).thenReturn(comment);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(commentMapper.toDto(comment)).thenReturn(commentDto);
@@ -119,7 +122,7 @@ class CommentServiceTest {
 
         assertEquals(commentDto, actual);
         verify(userValidator).validateUserExist(userId);
-        verify(postRepository).findById(postId);
+        verify(postService).getPostById(postId);
         verify(commentMapper).toEntity(commentDto);
         verify(commentRepository).save(any(Comment.class));
         verify(commentMapper).toDto(comment);

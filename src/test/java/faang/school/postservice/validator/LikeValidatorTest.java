@@ -39,10 +39,10 @@ class LikeValidatorTest {
 
     @Test
     public void validate() {
-        when(userServiceClient.getUser(anyLong())).thenReturn(new UserDto());
+        when(userServiceClient.existById(anyLong())).thenReturn(true);
         when(commentService.existsById(anyLong())).thenReturn(true);
         likeValidator.validate(likeDto);
-        verify(userServiceClient).getUser(anyLong());
+        verify(userServiceClient).existById(anyLong());
         verify(commentService).existsById(anyLong());
     }
 }

@@ -3,9 +3,8 @@ package faang.school.postservice.config.threadpool;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 public class ThreadPoolConfig {
@@ -14,7 +13,12 @@ public class ThreadPoolConfig {
     private Integer threadCount;
 
     @Bean
-    public ExecutorService threadPool() {
-        return Executors.newFixedThreadPool(threadCount);
+    public TaskExecutor taskExecutor(){
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(threadCount);
+        executor.setMaxPoolSize(threadCount);
+        executor.setThreadNamePrefix("PostPublisher-");
+        executor.initialize();
+        return executor;
     }
 }
