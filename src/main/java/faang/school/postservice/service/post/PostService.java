@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -168,6 +169,7 @@ public class PostService {
                 .map(
                         post -> PostForFeedDto.builder()
                                 .postId(post.getId())
+                                .postAuthorId(post.getAuthorId())
                                 .content(post.getContent())
                                 .likesList(likeMapper.toDto(post.getLikes()))
                                 .comments(getCommentsForFeed(post))
@@ -211,6 +213,10 @@ public class PostService {
         List<Long> authorsIds = post.getComments().stream()
                 .map(Comment::getAuthorId)
                 .toList();
+
+        if (authorsIds.size() == 0) {
+            return new HashMap<>();
+        }
 
         return userServiceClient.getUsersByIds(authorsIds).stream()
                 .collect(Collectors.toMap(UserDto::getId, Function.identity()));

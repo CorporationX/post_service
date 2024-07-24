@@ -79,4 +79,13 @@ public class KafkaProducerConfig {
                 (short) 1
         );
     }
+
+    @Bean
+    public NewTopic feedHeatKafkaTopic() {
+        return new NewTopic(
+                kafkaProperties.getTopicsNames().getFeedHeat(),
+                1,
+                (short) 1
+        );
+    }
 }

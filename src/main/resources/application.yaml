@@ -26,6 +26,7 @@ spring:
         likesChannel: likes_channel
         commentsChannel: comments_channel
       feed-cache:
+        heater-batch-size: 10
         max-posts-amount: 5
         ttl: 3 #time to live in days
         keyspace: Feed
@@ -47,6 +48,7 @@ spring:
       comment: comment_topic
       like: like_topic
       post-view: post_view_topic
+      feed-heat: feed_heat_topic
 
 server:
   host: localhost

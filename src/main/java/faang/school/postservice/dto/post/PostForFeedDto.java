@@ -71,4 +71,8 @@ public class PostForFeedDto implements Serializable {
         version++;
         return this;
     }
+
+    public void incrementVersion() {
+        version++;
+    }
 }

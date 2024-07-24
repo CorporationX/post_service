@@ -5,6 +5,7 @@ import faang.school.postservice.dto.post.PostForFeedDto;
 import faang.school.postservice.service.feed.FeedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,5 +25,10 @@ public class FeedController {
         Long userId = userContext.getUserId();
 
         return feedService.getFeed(userId, lastViewedPostId);
+    }
+
+    @PostMapping("/heat")
+    public void heatFeed() {
+        feedService.heatFeed();
     }
 }
