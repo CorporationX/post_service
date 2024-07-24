@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.service.AuthorBanner;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.PostValidator;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +22,7 @@ public class PostController {
 
     private final PostService postService;
     private final PostValidator postValidator;
+    private final AuthorBanner authorBanner;
 
     @PostMapping(value = "/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public PostDto createDraftPost(
@@ -86,5 +88,9 @@ public class PostController {
     public long getUserIdByPostId(@RequestParam long id) {
         return postService.getUserIdByPostId(id);
     }
-}
 
+    @PostMapping("/banUser")
+    public void banUser() {
+        authorBanner.checkAndBanAuthors();
+    }
+}

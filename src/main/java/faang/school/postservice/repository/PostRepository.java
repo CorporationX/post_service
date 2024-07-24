@@ -33,6 +33,9 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.verified IS NULL OR p.verifiedDate < p.updatedAt")
     List<Post> findAllUnverifiedPosts();
 
+    @Query("SELECT p.authorId FROM Post p WHERE p.verified = false GROUP BY p.authorId HAVING COUNT(p.authorId) > 5")
+    List<Long> findAuthorsToBan();
+
     @Modifying
     @Transactional
     @Query(value = "UPDATE post SET verified = :verified, verified_Date = :verifiedDate WHERE id = :id", nativeQuery = true)

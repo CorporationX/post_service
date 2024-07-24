@@ -32,6 +32,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.comment-event-chanel.name}")
     private String commentEventChannelName;
 
+    @Value("${spring.data.redis.channels.user_ban_channel.name}")
+    private String userBanChannelName;
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(redisHost, redisPort);
@@ -67,5 +70,10 @@ public class RedisConfig {
     @Bean()
     public ChannelTopic commentEventTopic() {
         return new ChannelTopic(commentEventChannelName);
+    }
+
+    @Bean
+    public ChannelTopic userBanChannel(){
+        return new ChannelTopic(userBanChannelName);
     }
 }

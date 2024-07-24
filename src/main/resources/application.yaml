@@ -22,6 +22,8 @@ spring:
       port: 6379
       host: localhost
       channels:
+        user_ban_channel:
+          name: user_ban_channel
         calculations_channel:
           name: calculations_channel
         like_channel:
@@ -46,6 +48,9 @@ logging:
     root: info
 
 post:
+  banner:
+    scheduler:
+      cron: "0 6 * * * ?" #every day at 6 pm
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute

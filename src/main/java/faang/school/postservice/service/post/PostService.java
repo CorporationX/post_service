@@ -23,10 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 @Service
@@ -189,5 +186,9 @@ public class PostService {
         if (!unverifiedPosts.isEmpty()) {
             postModerator.moderatePosts(unverifiedPosts);
         }
+    }
+
+    public List<Long> getAuthorIdsToBan() {
+        return postRepository.findAuthorsToBan();
     }
 }
