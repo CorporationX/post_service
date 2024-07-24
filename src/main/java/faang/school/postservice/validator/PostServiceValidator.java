@@ -5,13 +5,17 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class PostServiceValidator {
     private final UserServiceClient userServiceClient;
@@ -54,19 +58,20 @@ public class PostServiceValidator {
         }
     }
 
-    private void validateProjectId(Long projectId) {
-        try {
-            projectServiceClient.getProject(projectId);
-        } catch (FeignException c) {
-            throw new EntityNotFoundException("Project id " + projectId + " not found");
-        }
+    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    public void validateProjectId(Long projectId) {
+        projectServiceClient.getProject(projectId);
+        log.info("Project ID validated successfully: " + projectId);
     }
 
-    private void validateAuthorId(Long authorId) {
-        try {
-            userServiceClient.getUser(authorId);
-        } catch (FeignException c) {
-            throw new EntityNotFoundException("Author id " + authorId + " not found");
-        }
+    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    public void validateAuthorId(Long authorId) {
+        userServiceClient.getUser(authorId);
+        log.info("Author ID validated successfully: " + authorId);
+    }
+
+    @Recover
+    public void recover(FeignException e, Long id) {
+        throw new EntityNotFoundException("Entity with ID " + id + " not found");
     }
 }
