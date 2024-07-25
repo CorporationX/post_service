@@ -53,7 +53,6 @@ public class Post {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "hashtag_id")
     )
-    @JsonIdentityReference(alwaysAsId = true)
     private List<Hashtag> hashtags = new ArrayList<>();
 
     @ManyToMany(mappedBy = "posts")

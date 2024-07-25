@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.hashtag.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
@@ -98,7 +99,17 @@ public class PostService {
             List<Post> posts = cachedPosts.stream()
                     .map(map -> objectMapper.convertValue(map, Post.class))
                     .toList();
-            return postMapper.toDto(posts);
+            List<PostDto> postDtos = posts.stream()
+                    .map(post -> {
+                        PostDto postDto = postMapper.toDto(post);
+                        List<String> hashtagNames = post.getHashtags().stream()
+                                .map(Hashtag::getName)
+                                .toList();
+                        postDto.setHashtagNames(hashtagNames);
+                        return postDto;
+                    })
+                    .toList();
+            return postDtos;
         }
 
         List<Post> posts = elasticsearchService.searchPostsByHashtag(hashtagDto.getName());
