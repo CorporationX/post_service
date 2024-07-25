@@ -7,19 +7,23 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
 
+    @Transactional
     public PostDto createPost(PostDto postDto) {
         postServiceValidator.validateCreatePost(postDto);
         Post post = postMapper.toEntity(postDto);
@@ -28,9 +32,13 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostDto updatePost(PostDto postDto) {
         Post post = postRepository.findById(postDto.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+                .orElseThrow(() -> {
+                    log.error("Post {} not found", postDto.getId());
+                    return new EntityNotFoundException("Post " + postDto.getId() + " not found");
+                });
         postServiceValidator.validateUpdatePost(post, postDto);
         post.setContent(postDto.getContent());
 
@@ -38,10 +46,14 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostDto publishPost(PostDto postDto) {
         Post post = postRepository.findById(postDto.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
-        postServiceValidator.validatePublishPost(post ,postDto);
+                .orElseThrow(() -> {
+                    log.error("Post {} not found", postDto.getId());
+                    return new EntityNotFoundException("Post " + postDto.getId() + " not found");
+                });
+        postServiceValidator.validatePublishPost(post, postDto);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
@@ -49,9 +61,13 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostDto deletePost(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+                .orElseThrow(() -> {
+                    log.error("Post {} not found", postId);
+                    return new EntityNotFoundException("Post " + postId + " not found");
+                });
         postServiceValidator.validateDeletePost(post);
         post.setDeleted(true);
         if (post.isPublished()) {
@@ -64,9 +80,11 @@ public class PostService {
 
     public PostDto getPostByPostId(Long postId) {
         return postMapper.toDto(postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found")));
+                .orElseThrow(() -> {
+                    log.error("Post {} not found", postId);
+                    return new EntityNotFoundException("Post " + postId + " not found");
+                }));
     }
-
 
     public List<PostDto> getAllDraftPostsByUserId(Long userId) {
         List<Post> posts = postRepository.findByAuthorId(userId);

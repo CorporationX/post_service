@@ -28,9 +28,9 @@ public class PostServiceValidator {
         }
 
         if (postDto.getAuthorId() != null) {
-            validateAuthorId(postDto.getAuthorId());
+            checkIfAuthorExists(postDto.getAuthorId());
         } else {
-            validateProjectId(postDto.getProjectId());
+            checkIfProjectExists(postDto.getProjectId());
         }
     }
 
@@ -59,13 +59,13 @@ public class PostServiceValidator {
     }
 
     @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
-    public void validateProjectId(Long projectId) {
+    public void checkIfProjectExists(Long projectId) {
         projectServiceClient.getProject(projectId);
         log.info("Project ID validated successfully: " + projectId);
     }
 
     @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
-    public void validateAuthorId(Long authorId) {
+    public void checkIfAuthorExists(Long authorId) {
         userServiceClient.getUser(authorId);
         log.info("Author ID validated successfully: " + authorId);
     }
