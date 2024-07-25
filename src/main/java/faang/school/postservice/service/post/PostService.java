@@ -12,8 +12,9 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderator.post.logic.PostModerator;
-import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.publisher.redis.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.kafkadecomposer.KafkaDecomposer;
 import faang.school.postservice.service.ResourceService;
 import faang.school.postservice.service.cache.RedisCacheService;
 import faang.school.postservice.validation.PostValidator;
@@ -47,6 +48,7 @@ public class PostService {
     private final UserContext userContext;
     private final PostModerator postModerator;
     private final RedisCacheService redisCacheService;
+    private final KafkaDecomposer kafkaDecomposer;
 
     @Setter
     @Value("${spring.data.redis.directory.infAuthor}")
@@ -91,6 +93,8 @@ public class PostService {
 
         redisCacheService.saveToCache(patternByPost, postDto.getId(), postDto);
         redisCacheService.saveToCache(patternByInfAuthor, postDto.getAuthorId(), postUserDto);
+
+        kafkaDecomposer.decompose(postDto.getAuthorId(), postDto.getId());
 
         log.info("Post with id: {} has been published", id);
         return postDto;
