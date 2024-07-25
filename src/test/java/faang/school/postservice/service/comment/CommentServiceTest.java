@@ -49,6 +49,7 @@ class CommentServiceTest {
         commentDto.setId(1L);
         commentDto.setAuthorId(1L);
         commentDto.setContent("Updated content");
+        commentDto.setPostId(1L);
 
         existingComment = new Comment();
         existingComment.setId(1L);
@@ -76,7 +77,7 @@ class CommentServiceTest {
                 .thenReturn(existingComment);
         when(commentMapper.toDto(any(Comment.class))).thenReturn(new CommentDto());
 
-        commentService.addNewCommentInPost(1L, commentDto);
+        commentService.addNewCommentInPost(commentDto);
 
         verify(commentMapper, times(1))
                 .toEntity(any(CommentDto.class));
@@ -104,7 +105,7 @@ class CommentServiceTest {
         when(commentMapper.toDto(updatedComment))
                 .thenReturn(commentDto);
 
-        CommentDto result = commentService.updateExistingComment(postId, commentDto);
+        CommentDto result = commentService.updateExistingComment(commentDto);
 
         verify(commentRepository, times(1))
                 .findAllByPostId(anyLong());
@@ -138,14 +139,11 @@ class CommentServiceTest {
         updatedComment.setAuthorId(1L);
         updatedComment.setContent("Updated content");
 
-        when(userServiceClient.getUser(anyLong()))
-                .thenReturn(new UserDto(1L, null, null));
         when(commentRepository.findAllByPostId(anyLong())).thenReturn(List.of(updatedComment));
         when(commentMapper.toDto(updatedComment)).thenReturn(commentDto);
 
-        CommentDto resultTest = commentService.deleteExistingCommentInPost(postId, commentDto);
+        CommentDto resultTest = commentService.deleteExistingCommentInPost(commentDto);
 
-        verify(userServiceClient, times(1)).getUser(anyLong());
         verify(commentRepository, times(1)).findAllByPostId(postId);
         verify(commentRepository, times(1)).deleteById(updatedComment.getId());
         verify(commentMapper, times(1)).toDto(updatedComment);
@@ -157,6 +155,6 @@ class CommentServiceTest {
         when(userServiceClient.getUser(anyLong()))
                 .thenReturn(null);
         assertThrows(EntityNotFoundException.class,
-                () -> commentService.addNewCommentInPost(postId, commentDto));
+                () -> commentService.addNewCommentInPost(commentDto));
     }
 }

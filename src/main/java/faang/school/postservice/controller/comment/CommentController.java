@@ -16,27 +16,24 @@ import java.util.List;
 public class CommentController {
     private final CommentService commentService;
 
-    @PostMapping("/post/{postId}")
-    public ResponseEntity<CommentDto> addComment(@PathVariable Long postId,
-                                                           @RequestBody @Valid CommentDto commentDto) {
-        return ResponseEntity.ok(commentService.addNewCommentInPost(postId, commentDto));
+    @PostMapping()
+    public ResponseEntity<CommentDto> addComment(@RequestBody @Valid CommentDto commentDto) {
+        return ResponseEntity.ok(commentService.addNewCommentInPost(commentDto));
     }
 
-    @PutMapping("/update/{postId}")
-    public ResponseEntity<CommentDto> updateComment(@PathVariable Long postId,
-                                                              @RequestBody @Valid CommentDto commentDto) {
-        return ResponseEntity.ok(commentService.updateExistingComment(postId, commentDto));
+    @PutMapping()
+    public ResponseEntity<CommentDto> updateComment(@RequestBody @Valid CommentDto commentDto) {
+        return ResponseEntity.ok(commentService.updateExistingComment(commentDto));
     }
 
-    @GetMapping("/get/{postId}")
+    @GetMapping("/{postId}")
     public ResponseEntity<List<CommentDto>> getComments(@PathVariable Long postId) {
         return ResponseEntity.ok(commentService.getCommentsForPost(postId));
     }
 
-    @DeleteMapping("/delete/{postId}")
-    public ResponseEntity<CommentDto> deleteComment(@PathVariable Long postId,
-                                                              @RequestBody @Valid CommentDto commentDto) {
-        return ResponseEntity.ok(commentService.deleteExistingCommentInPost(postId, commentDto));
+    @DeleteMapping()
+    public ResponseEntity<CommentDto> deleteComment(@RequestBody @Valid CommentDto commentDto) {
+        return ResponseEntity.ok(commentService.deleteExistingCommentInPost(commentDto));
     }
 
 }
