@@ -3,7 +3,8 @@ name: CI-TITAN
 on:
   pull_request:
     branches:
-      - titan-master-bc5
+      - feature/pipeline-BJS2-15600
+#      - #      - titan-master-bc5
 
 jobs:
   test:
