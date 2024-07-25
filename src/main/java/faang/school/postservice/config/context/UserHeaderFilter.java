@@ -30,8 +30,12 @@ public class UserHeaderFilter implements Filter {
 
         if (userId != null) {
             try {
-                userContext.setUserId(Long.parseLong(userId));
-                chain.doFilter(request, response);
+                if (Long.parseLong(userId) > 0) {
+                    userContext.setUserId(Long.parseLong(userId));
+                    chain.doFilter(request, response);
+                }
+                else throw new IllegalArgumentException("Invalid user id");
+
             } catch (NumberFormatException e) {
                 res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 res.getWriter().println("Invalid 'x-user-id' format'");

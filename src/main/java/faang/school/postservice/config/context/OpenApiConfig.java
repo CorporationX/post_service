@@ -15,7 +15,7 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI api() {
         return new OpenAPI()
-                .info(new Info().title("Post server").version("v1"))
+                .info(new Info().title("Post Service").version("v1"))
                 .components(new Components()
                         .addParameters("x-user-id", new Parameter()
                                 .name("x-user-id")
