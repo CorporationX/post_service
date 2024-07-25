@@ -1,10 +1,7 @@
 package faang.school.postservice.service.post;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.hashtag.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
@@ -12,6 +9,7 @@ import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
@@ -30,7 +29,6 @@ public class PostService {
     private final RedisTemplate<String, Serializable> redisTemplate;
     private final ElasticsearchService elasticsearchService;
     private final HashtagService hashtagService;
-    private final ObjectMapper objectMapper;
 
     public PostDto createPost(PostDto postDto) {
         postServiceValidator.validateCreatePost(postDto);
@@ -45,9 +43,10 @@ public class PostService {
                         .toList())
                 .build();
 
-        Post savedPost = post = postRepository.save(post);
-        elasticsearchService.indexPost(savedPost);
-        return postMapper.toDto(post);
+        post = postRepository.save(post);
+        PostDto postDtoForReturns = postMapper.toDto(post);
+        elasticsearchService.indexPost(postDtoForReturns);
+        return postDtoForReturns;
     }
 
     public PostDto updatePost(PostDto postDto) {
@@ -63,8 +62,9 @@ public class PostService {
                 .toList()));
 
         post = postRepository.save(post);
-        elasticsearchService.indexPost(post);
-        return postMapper.toDto(post);
+        PostDto postDtoForReturns = postMapper.toDto(post);
+        elasticsearchService.indexPost(postDtoForReturns);
+        return postDtoForReturns;
     }
 
     public PostDto publishPost(PostDto postDto) {
@@ -75,8 +75,9 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
-        elasticsearchService.indexPost(post);
-        return postMapper.toDto(post);
+        PostDto postDtoForReturns = postMapper.toDto(post);
+        elasticsearchService.indexPost(postDtoForReturns);
+        return postDtoForReturns;
     }
 
     public PostDto deletePost(Long postId) {
@@ -93,27 +94,31 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
-    public List<PostDto> findPostsByHashtag(HashtagDto hashtagDto) {
-        List<?> cachedPosts = (List<?>) redisTemplate.opsForValue().get(hashtagDto.getName());
-        if (cachedPosts != null) {
-            List<Post> posts = cachedPosts.stream()
-                    .map(map -> objectMapper.convertValue(map, Post.class))
-                    .toList();
-            List<PostDto> postDtos = posts.stream()
-                    .map(post -> {
-                        PostDto postDto = postMapper.toDto(post);
-                        List<String> hashtagNames = post.getHashtags().stream()
-                                .map(Hashtag::getName)
-                                .toList();
-                        postDto.setHashtagNames(hashtagNames);
-                        return postDto;
-                    })
-                    .toList();
+    public List<PostDto> findPostsByHashtag(String hashtagName) {
+        List<Long> cachedPostIds = (List<Long>) redisTemplate.opsForValue().get("hashtag:" + hashtagName);
+
+        if (cachedPostIds != null) {
+            List<PostDto> postDtos = new ArrayList<>();
+
+            for (Long postId : cachedPostIds) {
+                PostDto cachedPost = (PostDto) redisTemplate.opsForValue().get("post:" + postId);
+                if (cachedPost != null) {
+                    postDtos.add(cachedPost);
+                } else {
+                    Post post = postRepository.findById(postId)
+                            .orElseThrow(() -> {
+                                log.error("Post {} not found", postId);
+                                return new EntityNotFoundException("Post " + postId + " not found");
+                            });
+
+                    PostDto postDto = postMapper.toDto(post);
+                    postDtos.add(postDto);
+                }
+            }
             return postDtos;
         }
 
-        List<Post> posts = elasticsearchService.searchPostsByHashtag(hashtagDto.getName());
-        return postMapper.toDto(posts);
+        return elasticsearchService.searchPostsByHashtag(hashtagName);
     }
 
     public PostDto getPostByPostId(Long postId) {

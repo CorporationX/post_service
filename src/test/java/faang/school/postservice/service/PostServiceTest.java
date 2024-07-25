@@ -92,13 +92,13 @@ public class PostServiceTest {
         PostDto publishedPostDto1 = PostDto.builder()
                 .id(3L)
                 .content("Published 1")
-                .hashtags(List.of(""))
+                .hashtagNames(List.of(""))
                 .build();
 
         PostDto publishedPostDto2 = PostDto.builder()
                 .id(4L)
                 .content("Published 2")
-                .hashtags(List.of(""))
+                .hashtagNames(List.of(""))
                 .build();
 
         draftPostDtos = Arrays.asList(draftPostDto1, draftPostDto2);

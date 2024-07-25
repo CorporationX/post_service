@@ -7,6 +7,7 @@ import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Like;
@@ -26,11 +27,11 @@ import java.util.Map;
 public class ElasticsearchService {
     private final ElasticsearchClient elasticsearchClient;
 
-    public void indexPost(Post post) {
-        IndexRequest<Map<String, Object>> request = new IndexRequest.Builder<Map<String, Object>>()
+    public void indexPost(PostDto postDto) {
+        IndexRequest<PostDto> request = new IndexRequest.Builder<PostDto>()
                 .index("post")
-                .id(String.valueOf(post.getId()))
-                .document(convertPostToMap(post))
+                .id(String.valueOf(postDto.getId()))
+                .document(postDto)
                 .build();
         try {
             elasticsearchClient.index(request);
@@ -51,20 +52,20 @@ public class ElasticsearchService {
         }
     }
 
-    public List<Post> searchPostsByHashtag(String hashtag) {
+    public List<PostDto> searchPostsByHashtag(String hashtag) {
         SearchRequest searchRequest = new SearchRequest.Builder()
                 .index("post")
                 .query(q -> q
                         .match(m -> m
-                                .field("hashtags.name")
+                                .field("hashtagNames")
                                 .query(hashtag)
                         )
                 )
                 .build();
 
-        SearchResponse<Post> searchResponse;
+        SearchResponse<PostDto> searchResponse;
         try {
-            searchResponse = elasticsearchClient.search(searchRequest, Post.class);
+            searchResponse = elasticsearchClient.search(searchRequest, PostDto.class);
         } catch (IOException e) {
             throw new RuntimeException("Failed to execute Elasticsearch search request", e);
         }
@@ -72,24 +73,5 @@ public class ElasticsearchService {
         return searchResponse.hits().hits().stream()
                 .map(Hit::source)
                 .toList();
-    }
-
-    private Map<String, Object> convertPostToMap(Post post) {
-        Map<String, Object> postMap = new HashMap<>();
-        postMap.put("id", post.getId());
-        postMap.put("content", post.getContent());
-        postMap.put("authorId", post.getAuthorId());
-        postMap.put("projectId", post.getProjectId());
-        postMap.put("published", post.isPublished());
-        postMap.put("publishedAt", post.getPublishedAt());
-        postMap.put("deleted", post.isDeleted());
-        postMap.put("createdAt", post.getCreatedAt());
-        postMap.put("updatedAt", post.getUpdatedAt());
-        postMap.put("scheduledAt", post.getScheduledAt());
-        postMap.put("hashtagIds", post.getHashtags().stream().map(Hashtag::getId).toList());
-        if (post.getAd() != null) {
-            postMap.put("adId", post.getAd().getId());
-        }
-        return postMap;
     }
 }

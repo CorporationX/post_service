@@ -1,5 +1,6 @@
 package faang.school.postservice.controller.post;
 
+import faang.school.postservice.annotation.ValidHashtag;
 import faang.school.postservice.dto.hashtag.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
@@ -60,8 +61,8 @@ public class PostController {
         return postService.getAllPublishPostsByProjectId(projectId);
     }
 
-    @GetMapping("/findByHashtag")
-    public List<PostDto> findPostsByHashtag(@RequestBody @Valid HashtagDto hashtagDto) {
-        return postService.findPostsByHashtag(hashtagDto);
+    @GetMapping("/hashtag")
+    public List<PostDto> findPostsByHashtag(@RequestParam @ValidHashtag String hashtagName) {
+        return postService.findPostsByHashtag(hashtagName);
     }
 }
