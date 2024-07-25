@@ -4,6 +4,7 @@ package faang.school.postservice.service.amazonS3;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import faang.school.postservice.config.context.s3.AmazonS3Config;
+import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.util.ImageCompressor;
 import io.lettuce.core.XTrimArgs;
@@ -30,7 +31,7 @@ public class AmazonS3Service {
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
-    public Resource uploadFile(MultipartFile file, String folder) {
+    public ResourceDto uploadFile(MultipartFile file, String folder) {
         try {
             BufferedImage originalImage = ImageIO.read(file.getInputStream());
             BufferedImage compressedImage = imageCompressor.compressImage(originalImage);
@@ -58,8 +59,8 @@ public class AmazonS3Service {
         }
     }
 
-    private static Resource getResource(String fileKey, String fileName, long fileSize, String contentType) {
-        return Resource.builder()
+    private ResourceDto getResource(String fileKey, String fileName, long fileSize, String contentType) {
+        return ResourceDto.builder()
                 .key(fileKey)
                 .name(fileName)
                 .size(fileSize)

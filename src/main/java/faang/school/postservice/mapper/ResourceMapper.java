@@ -10,6 +10,6 @@ import org.mapstruct.ReportingPolicy;
 public interface ResourceMapper {
     @Mapping(source = "post.id", target = "postId")
     ResourceDto toDto(Resource resource);
-
+    @Mapping(source = "postId", target = "post.id")
     Resource toEntity(ResourceDto resourceDto);
 }

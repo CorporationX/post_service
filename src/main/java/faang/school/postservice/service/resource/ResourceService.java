@@ -36,10 +36,16 @@ public class ResourceService {
 
         imageValidator.validateFileSize(file);
         String folderName = String.format("post%d", postId);
-        Resource resource = amazonS3Service.uploadFile(file, folderName);
+        ResourceDto resourceDto = amazonS3Service.uploadFile(file, folderName);
+        resourceDto.setPostId(postId);
 
-        List<Resource> resourceList = resourceRepository.saveAll(List.of(resource));
+        Resource resourceToSave = resourceMapper.toEntity(resourceDto);
+        Resource savedResource = resourceRepository.save(resourceToSave);
 
-        return resourceMapper.toDto(resourceList.get(0));
+        post.getResources().add(savedResource);
+        postRepository.save(post);
+
+
+        return resourceMapper.toDto(savedResource);
     }
 }
