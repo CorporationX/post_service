@@ -3,8 +3,7 @@ package faang.school.postservice.validator;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.comment.CommentServiceImpl;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class LikeValidatorTest {
@@ -25,7 +23,7 @@ class LikeValidatorTest {
     @Mock
     private PostService postService;
     @Mock
-    private CommentService commentService;
+    private CommentServiceImpl commentService;
     @InjectMocks
     private LikeValidator likeValidator;
     private LikeDto likeDto;
@@ -41,10 +39,10 @@ class LikeValidatorTest {
 
     @Test
     public void validate() {
-        when(userServiceClient.getUser(anyLong())).thenReturn(new UserDto());
+        when(userServiceClient.existById(anyLong())).thenReturn(true);
         when(commentService.existsById(anyLong())).thenReturn(true);
         likeValidator.validate(likeDto);
-        verify(userServiceClient).getUser(anyLong());
+        verify(userServiceClient).existById(anyLong());
         verify(commentService).existsById(anyLong());
     }
 }

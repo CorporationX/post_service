@@ -1,7 +1,6 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -10,6 +9,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.LikeValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -92,3 +92,4 @@ public class LikeServiceImpl implements LikeService {
         return like;
     }
 }
+

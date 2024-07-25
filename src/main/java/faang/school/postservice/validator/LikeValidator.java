@@ -2,7 +2,7 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.comment.CommentServiceImpl;
 import faang.school.postservice.service.post.PostService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import java.util.NoSuchElementException;
 public class LikeValidator {
     private final UserServiceClient userServiceClient;
     private final PostService postService;
-    private final CommentService commentService;
+    private final CommentServiceImpl commentService;
 
     public void validate(LikeDto likeDto) {
         checkOnlyPostOrCommentNotNull(likeDto);

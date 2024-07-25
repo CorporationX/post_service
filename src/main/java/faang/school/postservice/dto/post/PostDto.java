@@ -16,19 +16,27 @@ import java.time.LocalDateTime;
 @Builder
 public class PostDto {
 
-    @NotNull
+    @NotNull(message = "Post id can't be null")
     private long id;
 
-    @NotBlank
+    @NotBlank(message = "Content can't be empty")
     private String content;
 
-    @NotNull
     private Long authorId;
 
-    @NotNull
     private Long projectId;
 
-    @Future
+    private Boolean published;
+
+    private LocalDateTime publishedAt;
+
+    private Boolean deleted;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    @Future(message = "Scheduled date must be in the future")
     private LocalDateTime scheduledAt;
 
     //private long likesAmount;
