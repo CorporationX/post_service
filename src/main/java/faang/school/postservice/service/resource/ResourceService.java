@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -35,9 +37,9 @@ public class ResourceService {
         imageValidator.validateFileSize(file);
         String folderName = String.format("post%d", postId);
         Resource resource = amazonS3Service.uploadFile(file, folderName);
-        Resource savedResource = resourceRepository.save(resource);
-        post.getResources().add(savedResource);
-        postRepository.save(post);
-        return resourceMapper.toDto(savedResource);
+
+        List<Resource> resourceList = resourceRepository.saveAll(List.of(resource));
+
+        return resourceMapper.toDto(resourceList.get(0));
     }
 }

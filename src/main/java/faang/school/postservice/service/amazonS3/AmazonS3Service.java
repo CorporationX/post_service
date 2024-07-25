@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +40,7 @@ public class AmazonS3Service {
             InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
 
             String fileName = file.getOriginalFilename();
-            long fileSize = outputStream.size();
+            long fileSize = outputStream.toByteArray().length;
             String contentType = file.getContentType();
             String fileKey = String.format("%s%s%d", folder, fileName, System.currentTimeMillis());
 
@@ -63,6 +64,7 @@ public class AmazonS3Service {
                 .name(fileName)
                 .size(fileSize)
                 .type(contentType)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 }
