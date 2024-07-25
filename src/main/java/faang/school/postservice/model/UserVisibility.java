@@ -28,13 +28,13 @@ public class UserVisibility {
     @JoinColumn(name = "album_id")
     private Album album;
 
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+//    @CreationTimestamp
+//    @Temporal(TemporalType.TIMESTAMP)
+//    @Column(name = "created_at")
+//    private LocalDateTime createdAt;
+//
+//    @UpdateTimestamp
+//    @Temporal(TemporalType.TIMESTAMP)
+//    @Column(name = "updated_at")
+//    private LocalDateTime updatedAt;
 }

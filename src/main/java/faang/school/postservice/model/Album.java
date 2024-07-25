@@ -1,7 +1,5 @@
 package faang.school.postservice.model;
 
-import faang.school.postservice.dto.album.AlbumVisibilityDto;
-import faang.school.postservice.dto.user.UserDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
