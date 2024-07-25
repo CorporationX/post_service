@@ -19,7 +19,6 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @AllArgsConstructor
 @Builder
 @Entity
@@ -40,11 +39,9 @@ public class Post {
     private Long projectId;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    @JsonIdentityReference(alwaysAsId = true)
     private List<Like> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    @JsonIdentityReference(alwaysAsId = true)
     private List<Comment> comments = new ArrayList<>();
 
     @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
@@ -56,15 +53,12 @@ public class Post {
     private List<Hashtag> hashtags = new ArrayList<>();
 
     @ManyToMany(mappedBy = "posts")
-    @JsonIdentityReference(alwaysAsId = true)
     private List<Album> albums = new ArrayList<>();
 
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
-    @JsonIdentityReference(alwaysAsId = true)
     private Ad ad;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    @JsonIdentityReference(alwaysAsId = true)
     private List<Resource> resources = new ArrayList<>();
 
     @Column(name = "published", nullable = false)
