@@ -21,3 +21,4 @@ public interface UserServiceClient {
     @GetMapping("existsById/{userId}")
     Boolean existById(@PathVariable long userId);
 }
+
