@@ -1,12 +1,15 @@
 package faang.school.postservice.validator.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.post.PostValidatorException;
+import faang.school.postservice.exception.post.PostWOAuthorException;
+import faang.school.postservice.exception.post.ImmutablePostDataException;
+import faang.school.postservice.exception.post.PostAlreadyPublishedException;
+import faang.school.postservice.exception.post.PostWithTwoAuthorsException;
 import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 public class PostValidatorTest {
     private PostValidator validator = new PostValidator();
@@ -24,27 +27,12 @@ public class PostValidatorTest {
         dtoBothAuthor.setAuthorId(authorId);
         dtoBothAuthor.setProjectId(projectId);
         dtoWithProject.setProjectId(projectId);
-        boolean flagWithAuthor = true;
-        boolean flagWithProject = true;
-
-        // Action
-        try {
-            validator.validateAuthor(dtoWithProject);
-        } catch (PostValidatorException e) {
-            flagWithAuthor = false;
-        }
-
-        try {
-            validator.validateAuthor(dtoWithProject);
-        } catch (PostValidatorException e) {
-            flagWithProject = false;
-        }
 
         // Assert
-        Assertions.assertThrows(PostValidatorException.class, () -> validator.validateAuthor(dtoAuthorNull));
-        Assertions.assertThrows(PostValidatorException.class, () -> validator.validateAuthor(dtoBothAuthor));
-        assertTrue(flagWithAuthor);
-        assertTrue(flagWithProject);
+        Assertions.assertThrows(PostWOAuthorException.class, () -> validator.validateAuthor(dtoAuthorNull));
+        Assertions.assertThrows(PostWithTwoAuthorsException.class, () -> validator.validateAuthor(dtoBothAuthor));
+        assertDoesNotThrow(() -> validator.validateAuthor(dtoWithAuthor));
+        assertDoesNotThrow(() -> validator.validateAuthor(dtoWithProject));
     }
 
     @Test
@@ -52,16 +40,9 @@ public class PostValidatorTest {
         Post postIsPublished = new Post();
         Post postIsNotPublished = new Post();
         postIsPublished.setPublished(true);
-        boolean isPublished = true;
 
-        try {
-            validator.validatePublished(postIsPublished);
-        } catch (PostValidatorException e) {
-            isPublished = false;
-        }
-
-        Assertions.assertThrows(PostValidatorException.class, () -> validator.validatePublished(postIsNotPublished));
-        assertTrue(isPublished);
+        Assertions.assertThrows(PostAlreadyPublishedException.class, () -> validator.validatePublished(postIsPublished));
+        assertDoesNotThrow(() -> validator.validatePublished(postIsNotPublished));
     }
 
     @Test
@@ -76,7 +57,7 @@ public class PostValidatorTest {
         postDto.setId(postId);
         postDto.setAuthorId(updateAuthorId);
 
-        Assertions.assertThrows(PostValidatorException.class, () -> validator.checkImmutableData(postDto, post));
+        Assertions.assertThrows(ImmutablePostDataException.class, () -> validator.checkImmutableData(postDto, post));
     }
 
 }

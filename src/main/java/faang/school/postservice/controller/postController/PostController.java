@@ -1,7 +1,7 @@
 package faang.school.postservice.controller.postController;
 
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.filter.PostFilterDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.postController.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

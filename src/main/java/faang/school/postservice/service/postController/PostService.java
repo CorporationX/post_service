@@ -2,10 +2,10 @@ package faang.school.postservice.service.postController;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.post.PostException;
-import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.dto.filter.PostFilterDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.Ad;
@@ -17,6 +17,7 @@ import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.repository.ad.AdRepository;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
     private final PostRepository postRepository;
     private final LikeRepository likeRepository;
@@ -41,11 +43,12 @@ public class PostService {
     public PostDto create(PostDto postDto) {
         validator.validateAuthor(postDto);
         Post postEntity = mapper.toEntity(postDto);
-
         validateAuthorExists(postEntity);
         fillEntityWithData(postDto, postEntity);
+        Post entity = postRepository.save(postEntity);
+        log.info("Created a post: {}", entity);
 
-        return mapper.toDto(postRepository.save(postEntity));
+        return mapper.toDto(entity);
     }
 
     public PostDto publish(Long postId) {
@@ -98,7 +101,9 @@ public class PostService {
             userServiceClient.getUser(authorId);
             return;
         }
-        projectServiceClient.getProject(projectId);
+        if(projectId != null){
+            projectServiceClient.getProject(projectId);
+        }
     }
 
     private void fillEntityWithData(PostDto postDto, Post postEntity) {
@@ -119,10 +124,13 @@ public class PostService {
     }
 
     private Ad getAd(Long adId) {
-        return adRepository.findById(adId).orElseThrow(() -> new PostException("Такого объявления не существует."));
+        if(adId == null){
+            return null;
+        }
+        return adRepository.findById(adId).orElseThrow(() -> new EntityNotFoundException("Такого объявления не существует."));
     }
 
     private Post getPostEntity(Long postId) {
-        return postRepository.findById(postId).orElseThrow(() -> new PostException("Такого сообщения не существует."));
+        return postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Такого сообщения не существует."));
     }
 }

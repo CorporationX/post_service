@@ -4,8 +4,10 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.post.PostException;
-import faang.school.postservice.exception.post.PostValidatorException;
+import faang.school.postservice.exception.post.PostWOAuthorException;
+import faang.school.postservice.exception.post.ImmutablePostDataException;
+import faang.school.postservice.exception.post.PostAlreadyPublishedException;
+import faang.school.postservice.exception.post.PostWithTwoAuthorsException;
 import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.filter.post.filterImpl.PostFilterProjectDraftNonDeleted;
@@ -107,23 +109,16 @@ public class PostServiceTest {
 
     @Test
     void testCreateWithInvalidAuthor() {
-        doThrow(PostValidatorException.class)
-                .when(validator).validateAuthor(dto);
+        PostDto dtoWOAuthors = new PostDto();
+        dtoWOAuthors.setAuthorId(1L);
+        PostDto dtoWithTwoAuthors = new PostDto();
+        dtoWithTwoAuthors.setAuthorId(2L);
 
-        Assertions.assertThrows(PostValidatorException.class, () -> postService.create(dto));
-    }
+        doThrow(PostWOAuthorException.class).when(validator).validateAuthor(dtoWOAuthors);
+        doThrow(PostWithTwoAuthorsException.class).when(validator).validateAuthor(dtoWithTwoAuthors);
 
-    @Test
-    void testCreateWithIsNotExistAuthor() {
-        PostDto dtoWithOuAuthor = new PostDto();
-        PostDto dtoWithOutProject = new PostDto();
-        dtoWithOuAuthor.setAuthorId(1L);
-        dtoWithOutProject.setProjectId(2L);
-        when(userServiceClient.getUser(dtoWithOuAuthor.getAuthorId())).thenThrow(PostException.class);
-        when(projectServiceClient.getProject(dtoWithOutProject.getProjectId())).thenThrow(PostException.class);
-
-        Assertions.assertThrows(PostException.class, () -> postService.create(dtoWithOuAuthor));
-        Assertions.assertThrows(PostException.class, () -> postService.create(dtoWithOutProject));
+        Assertions.assertThrows(PostWOAuthorException.class, () -> postService.create(dtoWOAuthors));
+        Assertions.assertThrows(PostWithTwoAuthorsException.class, () -> postService.create(dtoWithTwoAuthors));
     }
 
     @Test
@@ -158,9 +153,9 @@ public class PostServiceTest {
     void testPublishTwice() {
         Long postPublished = entity.getId();
         when(postRepository.findById(postPublished)).thenReturn(Optional.of(entity));
-        doThrow(PostValidatorException.class).when(validator).validatePublished(entity);
+        doThrow(PostAlreadyPublishedException.class).when(validator).validatePublished(entity);
 
-        Assertions.assertThrows(PostValidatorException.class, () -> postService.publish(postPublished));
+        Assertions.assertThrows(PostAlreadyPublishedException.class, () -> postService.publish(postPublished));
     }
 
     @Test
@@ -180,9 +175,9 @@ public class PostServiceTest {
     @Test
     void testUpdateWithChangedAuthor() {
         when(postRepository.findById(dto.getId())).thenReturn(Optional.of(entity));
-        doThrow(PostValidatorException.class).when(validator).checkImmutableData(dto, entity);
+        doThrow(ImmutablePostDataException.class).when(validator).checkImmutableData(dto, entity);
 
-        Assertions.assertThrows(PostValidatorException.class, () -> postService.update(dto));
+        Assertions.assertThrows(ImmutablePostDataException.class, () -> postService.update(dto));
     }
 
     @Test
