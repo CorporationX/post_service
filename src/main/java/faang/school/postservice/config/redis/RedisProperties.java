@@ -17,10 +17,17 @@ class RedisProperties {
     private int port;
     private String host;
     private Channels channels;
+    private Cache userCache;
 
     @Data
     public static class Channels {
         private String likesChannel;
         private String commentsChannel;
+    }
+
+    @Data
+    public static class Cache {
+        private Long ttl;
+        private String key;
     }
 }
