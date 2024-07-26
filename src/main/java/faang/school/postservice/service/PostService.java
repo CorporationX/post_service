@@ -15,8 +15,4 @@ public class PostService {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
     }
-
-    public void updatePost(Post post) {
-        postRepository.save(post);
-    }
 }

@@ -30,12 +30,11 @@ public class CommentService {
         Post post = postService.getPostById(commentDto.getPostId());
         post.getComments().add(commentRepository
                 .save(commentMapper.toEntity(commentDto)));
-        postService.updatePost(post);
     }
 
     @Transactional
     public void updateComment(CommentDto commentDto) {
-        Comment comment = getValidatedCommentById(commentDto.getId());
+        Comment comment = getCommentById(commentDto.getId());
         comment.setContent(commentDto.getContent());
         commentRepository.save(comment);
     }
@@ -54,7 +53,7 @@ public class CommentService {
         commentRepository.deleteById(commentId);
     }
 
-    private Comment getValidatedCommentById(Long commentId) {
+    private Comment getCommentById(Long commentId) {
         return commentRepository
                 .findById(commentId)
                 .orElseThrow(() -> {
@@ -64,7 +63,6 @@ public class CommentService {
     }
 
     private void validateUserById(Long userId) {
-        if (userServiceClient.getUser(userId) == null)
-            throw new RuntimeException("User not found");
+        userServiceClient.getUser(userId);
     }
 }
