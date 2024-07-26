@@ -32,7 +32,7 @@ public class PostForFeedDto implements Serializable {
 
     private LocalDateTime publishedAt;
 
-    private int viewsCounter;
+    private Long viewsCounter;
 
     private List<LikeDto> likesList;
 
@@ -63,6 +63,16 @@ public class PostForFeedDto implements Serializable {
 
         comments.add(new CommentForFeedDto(commentDto, null));
 
+        version++;
+    }
+
+    public PostForFeedDto setViewsCounter(Long viewsCounter) {
+        this.viewsCounter = viewsCounter;
+        version++;
+        return this;
+    }
+
+    public void incrementVersion() {
         version++;
     }
 }
