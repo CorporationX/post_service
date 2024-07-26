@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.RedisUserRepository;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,8 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
 
+    private final RedisUserRepository redisUserRepository;
+
     private final UserServiceClient userServiceClient;
 
     private final PostService postService;
@@ -38,6 +41,7 @@ public class CommentService {
 
     private final CommentEventPublisher commentEventPublisher;
 
+
     public CommentDto createComment(long id, CommentDto commentDto) {
         checkCommentDto(commentDto);
 
@@ -45,6 +49,7 @@ public class CommentService {
         comment.setPost(postMapper.toEntity(postService.getPostById(id)));
 
         Comment savedComment = commentRepository.save(comment);
+        redisUserRepository.save(userServiceClient.getUser(savedComment.getAuthorId()));
 
         sendCommentEvent(comment);
 
@@ -108,4 +113,5 @@ public class CommentService {
 
         commentEventPublisher.publish(commentEventDto);
     }
+
 }
