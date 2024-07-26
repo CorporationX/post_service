@@ -51,9 +51,18 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
     scheduler:
-      #cron: "0 0/1 * 1/1 * ?" # every minute
-      cron: "30 6 * * *" # every day in 6:30
+    #cron: "0 0/1 * 1/1 * ?" # every minute
+    cron: "30 6 * * * *" # every day in 6:30
     batch-size: 2
+
+redis:
+  cache:
+    ttl:
+      post: "1"
+      author: "1"
+    time-unit:
+      post: "DAYS"
+      author: "DAYS"
 
 moderationScheduler:
   cron: "0 0 0 * * *" # every day
@@ -80,9 +89,6 @@ postServiceThreadPool:
   poolAmount: 4
   poolComment: 4
   poolPost: 4
-
-servlet:
-  PathV1: /api/v1
 
 file:
   fileWithBadWords:

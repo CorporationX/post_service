@@ -1,8 +1,10 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.event.CommentEventDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -10,6 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.moderator.comment.logic.CommentModerator;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.RedisCacheService;
 import faang.school.postservice.threadpool.ThreadPoolForCommentModerator;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,15 +30,8 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -61,12 +57,19 @@ public class CommentServiceTest {
     @Mock
     private CommentModerator commentModerator;
 
+    @Mock
+    private RedisCacheService redisCacheService;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
     private CreateCommentDto createCommentDto;
     private ChangeCommentDto changeCommentDto;
     private CommentEventDto commentEventDto;
     private Comment comment;
     private List<Comment> commentList;
     private Long id;
+    private UserDto userDto;
 
     @BeforeEach
     public void setUp() {
@@ -77,6 +80,7 @@ public class CommentServiceTest {
         comment = Comment.builder().id(1L).content("content").authorId(1L).post(post).build();
         commentList = new ArrayList<>(List.of(comment, comment, comment, comment));
         id = 1L;
+        userDto = UserDto.builder().username("name").email("email").build();
     }
 
     @Test
@@ -86,6 +90,7 @@ public class CommentServiceTest {
         when(commentMapper.toEventDto(comment)).thenReturn(commentEventDto);
         doNothing().when(commentEventPublisher).sendEvent(commentEventDto);
         when(commentMapper.toDto(comment)).thenReturn(createCommentDto);
+        when(userServiceClient.getUser(id)).thenReturn(userDto);
 
         CreateCommentDto result = commentService.createComment(createCommentDto);
 
@@ -95,6 +100,8 @@ public class CommentServiceTest {
         verify(commentEventPublisher).sendEvent(commentEventDto);
         verify(commentRepository).save(comment);
         verify(commentMapper).toDto(comment);
+        verify(userServiceClient, times(1)).getUser(id);
+        verify(redisCacheService, times(1)).saveAuthor(userDto);
     }
 
     @Test
