@@ -26,10 +26,12 @@ spring:
         likesChannel: likes_channel
         commentsChannel: comments_channel
       feed-cache:
-        max-posts-amount: 10
+        heater-batch-size: 10
+        max-posts-amount: 5
         ttl: 3 #time to live in days
         keyspace: Feed
       post-cache:
+        max-comments-amount: 3
         ttl: 1 #time to live in days
         keyspace: Post
       user-cache:
@@ -43,6 +45,10 @@ spring:
     group-id: news_feed
     topics-names:
       post: post_topic
+      comment: comment_topic
+      like: like_topic
+      post-view: post_view_topic
+      feed-heat: feed_heat_topic
 
 server:
   host: localhost
@@ -73,7 +79,7 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   feed:
-    get-batch-size: 12
+    get-batch-size: 7
 
 user-service:
   host: localhost

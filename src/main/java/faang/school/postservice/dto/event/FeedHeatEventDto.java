@@ -5,12 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LikeEventDto extends EventDto {
-    private long authorId;
-    private long postId;
-    private long likeId;
+public class FeedHeatEventDto extends EventDto {
+    private List<Long> usersIds;
 }

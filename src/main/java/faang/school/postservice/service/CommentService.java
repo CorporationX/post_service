@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.kafka.producer.KafkaCommentEventProducer;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
@@ -38,17 +39,20 @@ public class CommentService {
 
     private final CommentEventPublisher commentEventPublisher;
 
+    private final KafkaCommentEventProducer kafkaCommentEventProducer;
+
+
     public CommentDto createComment(long id, CommentDto commentDto) {
         checkCommentDto(commentDto);
 
-        Comment comment = commentMapper.ToEntity(commentDto);
+        Comment comment = commentMapper.toEntity(commentDto);
         comment.setPost(postMapper.toEntity(postService.getPostById(id)));
 
         Comment savedComment = commentRepository.save(comment);
 
-        sendCommentEvent(comment);
+        handleNewComment(comment);
 
-        return commentMapper.ToDto(savedComment);
+        return commentMapper.toDto(savedComment);
     }
 
     @Transactional
@@ -59,7 +63,7 @@ public class CommentService {
         comment.setContent(commentDto.getContent());
         commentRepository.save(comment);
 
-        return commentMapper.ToDto(comment);
+        return commentMapper.toDto(comment);
     }
 
     public List<CommentDto> getAllComments(long id) {
@@ -68,7 +72,7 @@ public class CommentService {
             throw new DataValidationException(NO_COMMENTS_IN_THE_POST.getMessage());
         }
         comments.sort(Comparator.comparing(Comment::getCreatedAt));
-        return commentMapper.ToDtoList(comments);
+        return commentMapper.toDto(comments);
     }
 
     public void deleteComment(CommentDto commentDto) {
@@ -91,21 +95,10 @@ public class CommentService {
                 orElseThrow(() -> new DataValidationException(NO_COMMENT_IN_DB.getMessage()));
     }
 
-    private void sendCommentEvent(Comment comment) {
-        long commentAuthorId = comment.getAuthorId();
-        long postAuthorId = comment.getPost().getAuthorId();
-
-        if (commentAuthorId == postAuthorId) {
-            return;
-        }
-        CommentEventDto commentEventDto = CommentEventDto.builder()
-                .commentAuthorId(commentAuthorId)
-                .postAuthorId(postAuthorId)
-                .postId(comment.getPost().getId())
-                .commentId(comment.getId())
-                .commentText(comment.getContent())
-                .build();
+    private void handleNewComment(Comment comment) {
+        CommentEventDto commentEventDto = commentMapper.toEventDto(comment);
 
         commentEventPublisher.publish(commentEventDto);
+        kafkaCommentEventProducer.handleNewCommentEvent(commentEventDto);
     }
 }

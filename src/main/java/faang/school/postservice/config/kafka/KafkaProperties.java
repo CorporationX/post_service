@@ -24,5 +24,8 @@ public class KafkaProperties {
     static class TopicsNames {
         private String post;
         private String comment;
+        private String like;
+        private String postView;
+        private String feedHeat;
     }
 }

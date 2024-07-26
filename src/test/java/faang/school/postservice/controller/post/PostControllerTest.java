@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -26,14 +25,11 @@ class PostControllerTest {
     private PostController postController;
     @Mock
     private PostService postService;
-    @Spy
-    private TestData testData;
-
     private PostDto postDto;
 
     @BeforeEach
     void setUp() {
-        postDto = testData.returnPostDto();
+        postDto = new TestData().returnPostDto();
     }
 
     @Nested
@@ -115,7 +111,7 @@ class PostControllerTest {
         void getPostsOfUserTest() {
             assertDoesNotThrow(() -> postController.getPostsOfUser(anyLong()));
 
-            verify(postService).getFeedForUser(anyLong());
+            verify(postService).getPostsOfUser(anyLong());
         }
 
         @Test

@@ -21,7 +21,7 @@ public class CommentMapperTest {
     @Spy
     private TestData testData;
 
-    private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
+    private final CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
     private Comment comment;
 
@@ -49,16 +49,16 @@ public class CommentMapperTest {
     @Test
     void testToEntity() {
         comment.setCreatedAt(null);
-        assertEquals(comment, commentMapper.ToEntity(commentDto));
+        assertEquals(comment, commentMapper.toEntity(commentDto));
     }
 
     @Test
     void testToDto() {
-        assertEquals(commentMapper.ToDto(comment), commentDto);
+        assertEquals(commentMapper.toDto(comment), commentDto);
     }
 
     @Test
     void testToDtoList() {
-        assertEquals(commentMapper.ToDtoList(comments), commentDtos);
+        assertEquals(commentMapper.toDto(comments), commentDtos);
     }
 }

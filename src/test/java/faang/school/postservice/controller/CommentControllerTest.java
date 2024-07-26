@@ -8,7 +8,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,7 +45,7 @@ public class CommentControllerTest {
 
     @BeforeEach
     void init() {
-        commentDto = commentMapper.ToDto(testData.returnComment());
+        commentDto = commentMapper.toDto(testData.returnComment());
         postId = 1L;
     }
 

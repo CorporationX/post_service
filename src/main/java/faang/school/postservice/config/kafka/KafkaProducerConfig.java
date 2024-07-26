@@ -54,9 +54,36 @@ public class KafkaProducerConfig {
     }
 
     @Bean
+    public NewTopic likeKafkaTopic() {
+        return new NewTopic(
+                kafkaProperties.getTopicsNames().getLike(),
+                1,
+                (short) 1
+        );
+    }
+
+    @Bean
     public NewTopic commentKafkaTopic() {
         return new NewTopic(
                 kafkaProperties.getTopicsNames().getComment(),
+                1,
+                (short) 1
+        );
+    }
+
+    @Bean
+    public NewTopic postViewKafkaTopic() {
+        return new NewTopic(
+                kafkaProperties.getTopicsNames().getPostView(),
+                1,
+                (short) 1
+        );
+    }
+
+    @Bean
+    public NewTopic feedHeatKafkaTopic() {
+        return new NewTopic(
+                kafkaProperties.getTopicsNames().getFeedHeat(),
                 1,
                 (short) 1
         );

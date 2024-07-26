@@ -12,7 +12,7 @@ public abstract class AbstractEventProducer {
     private final KafkaTemplate<String, EventDto> kafkaTemplate;
     private final NewTopic topic;
 
-    protected void sendEvent(EventDto eventDto, String key) {
+    void sendEvent(EventDto eventDto, String key) {
         kafkaTemplate.send(topic.name(), key, eventDto);
     }
 }
