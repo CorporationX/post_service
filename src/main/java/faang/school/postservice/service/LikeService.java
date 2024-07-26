@@ -27,16 +27,17 @@ public class LikeService {
     private final CommentService commentService;
     private final LikeMapper likeMapper;
 
-    public void addLikeToPost(LikeDto likeDto) {
+    public LikeDto addLikeToPost(LikeDto likeDto) {
         Post post = postService.getPost(likeDto.getPostId());
         UserDto userDto = getUser(likeDto.getUserId());
-        Like like = likeMapper.toLike(likeDto);
 
         Optional<Like> optionalLike = likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId());
         validator.validDuplicateLike(optionalLike);
+        Like like = likeMapper.toLike(likeDto);
 
         post.getLikes().add(like);
         likeRepository.save(like);
+        return likeMapper.toLikeDto(like);
     }
 
     public void deleteLikeFromPost(long postId, long userId) {
@@ -48,16 +49,17 @@ public class LikeService {
         likeRepository.deleteByPostIdAndUserId(postId, userId);
     }
 
-    public void addLikeToComment(LikeDto likeDto) {
+    public LikeDto addLikeToComment(LikeDto likeDto) {
         Comment comment = commentService.getComment(likeDto.getCommentId());
         UserDto user = getUser(likeDto.getUserId());
-        Like like = likeMapper.toLike(likeDto);
 
         Optional<Like> optionalLike = likeRepository.findByCommentIdAndUserId(comment.getId(), user.getId());
         validator.validDuplicateLike(optionalLike);
+        Like like = likeMapper.toLike(likeDto);
 
         comment.getLikes().add(like);
         likeRepository.save(like);
+        return likeMapper.toLikeDto(like);
     }
 
     public void deleteLikeFromComment(long commentId, long userId) {

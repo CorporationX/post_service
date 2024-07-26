@@ -18,6 +18,7 @@ public class LikeDto {
     private Long id;
 
     @Min(value = 0, message = "User ID must be positive")
+    @NotNull(message = "User ID must be provided")
     private long userId;
 
     private long commentId;

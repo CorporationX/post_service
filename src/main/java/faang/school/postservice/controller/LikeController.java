@@ -6,6 +6,8 @@ import faang.school.postservice.validator.LikeControllerValidator;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,34 +17,38 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/like")
+@RequestMapping("/api/v1/like")
 public class LikeController {
 
     private final LikeControllerValidator validator;
     private final LikeService likeService;
 
     @PostMapping("/post")
-    public void addLikeToPost(@Valid @RequestBody LikeDto likeDto) {
+    public ResponseEntity<LikeDto> addLikeToPost(@Valid @RequestBody LikeDto likeDto) {
         validator.validAddLikeToPost(likeDto.getPostId());
-        likeService.addLikeToPost(likeDto);
+        LikeDto createLike = likeService.addLikeToPost(likeDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createLike);
     }
 
     @DeleteMapping("/post/{postId}/{userId}")
-    public String deleteLikeFromPost(@Positive @PathVariable("postId") long postId,
-                                   @Positive @PathVariable("userId") long userId) {
+    public ResponseEntity<String> deleteLikeFromPost(@Positive @PathVariable("postId") long postId,
+                                             @Positive @PathVariable("userId") long userId) {
         likeService.deleteLikeFromPost(postId, userId);
-        return "test";
+        return ResponseEntity.ok("Like successfully delete from post");
     }
 
     @PostMapping("/comment")
-    public void addLikeToComment(@Valid @RequestBody LikeDto likeDto) {
+    public ResponseEntity<LikeDto> addLikeToComment(@Valid @RequestBody LikeDto likeDto) {
         validator.validAddLikeToComment(likeDto.getCommentId());
-        likeService.addLikeToComment(likeDto);
+        LikeDto createLike = likeService.addLikeToComment(likeDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createLike);
+
     }
 
     @DeleteMapping("/comment/{commentId}/{userId}")
-    public void deleteLikeFromComment(@Positive @PathVariable("commentId") long commentId,
+    public ResponseEntity<String> deleteLikeFromComment(@Positive @PathVariable("commentId") long commentId,
                                       @Positive @PathVariable("userId") long userId) {
         likeService.deleteLikeFromComment(commentId, userId);
+        return ResponseEntity.ok("Like successfully delete from comment");
     }
 }
