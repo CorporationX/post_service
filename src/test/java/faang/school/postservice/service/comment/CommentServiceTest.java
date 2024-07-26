@@ -53,15 +53,15 @@ public class CommentServiceTest {
                 .content("Test content")
                 .authorId(1L)
                 .build();
+
+        lenient().when(commentMapper.toEntity(any(CommentDto.class))).thenReturn(comment);
+        lenient().when(commentRepository.save(any(Comment.class))).thenReturn(comment);
+        lenient().when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDto);
     }
 
     @Test
     @DisplayName("Создание комментария - Успешный сценарий")
     public void createComment_Success() {
-        when(commentMapper.toEntity(any(CommentDto.class))).thenReturn(comment);
-        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
-        when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDto);
-
         CommentDto result = commentService.createComment(1L, commentDto);
 
         assertNotNull(result);
@@ -88,8 +88,6 @@ public class CommentServiceTest {
     @DisplayName("Обновление комментария - Успешный сценарий")
     public void updateComment_Success() {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
-        when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDto);
 
         CommentDto result = commentService.updateComment(1L, 1L, commentDto);
 
@@ -119,7 +117,6 @@ public class CommentServiceTest {
     @DisplayName("Получение комментариев по посту - Успешный сценарий")
     public void getCommentsByPost_Success() {
         when(commentRepository.findAllByPostIdSorted(1L)).thenReturn(Collections.singletonList(comment));
-        when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDto);
 
         List<CommentDto> result = commentService.getCommentsByPost(1L);
 
@@ -133,9 +130,6 @@ public class CommentServiceTest {
     @Test
     @DisplayName("Удаление комментария - Успешный сценарий")
     public void deleteComment_Success() {
-        doNothing().when(commentValidator).findCommentById(1L);
-        doNothing().when(commentRepository).deleteById(1L);
-
         commentService.deleteComment(1L);
 
         verify(commentValidator, times(1)).findCommentById(1L);

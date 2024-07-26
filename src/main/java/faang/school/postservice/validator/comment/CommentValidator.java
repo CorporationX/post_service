@@ -18,17 +18,13 @@ public class CommentValidator {
     private final CommentRepository commentRepository;
 
     public void findPostById(Long id) {
-        Optional<Post> post = postRepository.findById(id);
-        if (post.isEmpty()) {
-            throw new RuntimeException("Post not found!");
-        }
+        Post post = postRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("Post not found!"));
     }
 
     public void findCommentById(Long commentId) {
-        Optional<Comment> comment = commentRepository.findById(commentId);
-        if (comment.isEmpty()) {
-            throw new RuntimeException("Comment not found!");
-        }
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
+                new RuntimeException("Comment not found!"));
     }
 
     public void checkUserRightsToChangeComment(Comment comment, CommentDto commentDto) {

@@ -10,16 +10,13 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
-    @Mappings({
-            @Mapping(source = "likes", target = "likeIds", qualifiedByName = "mapLikesToLikeIds"),
-            @Mapping(source = "post.id", target = "postId")
-    })
+
+    @Mapping(source = "likes", target = "likeIds", qualifiedByName = "mapLikesToLikeIds")
+    @Mapping(source = "post.id", target = "postId")
     CommentDto toDto(Comment comment);
 
-    @Mappings({
-            @Mapping(source = "likeIds", target = "likes", qualifiedByName = "mapLikeIdsToLike"),
-            @Mapping(source = "postId", target = "post.id")
-    })
+    @Mapping(source = "likeIds", target = "likes", qualifiedByName = "mapLikeIdsToLike")
+    @Mapping(source = "postId", target = "post.id")
     Comment toEntity(CommentDto commentDto);
 
     @Named("mapLikesToLikeIds")
