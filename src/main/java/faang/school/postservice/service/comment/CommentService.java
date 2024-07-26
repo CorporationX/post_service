@@ -6,6 +6,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.comment.error.CommentServiceErrors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +23,10 @@ public class CommentService {
 
     public CommentDto addComment(Long postId, CommentDto commentDto) {
         if (commentDto.getContent() == null || commentDto.getContent().isBlank()) {
-            throw new IllegalArgumentException(CommentServiceErrors.COMMENT_IS_EMPTY.value);
+            throw new IllegalArgumentException(CommentServiceErrors.COMMENT_IS_EMPTY.getValue());
         }
         if (commentDto.getContent().length() > 4096) {
-            throw new IllegalArgumentException(CommentServiceErrors.COMMENT_TOO_LONG.value);
+            throw new IllegalArgumentException(CommentServiceErrors.COMMENT_TOO_LONG.getValue());
         }
 
         Comment comment = mapper.toEntity(commentDto);
@@ -44,7 +45,7 @@ public class CommentService {
         getPost(postId);
         Comment comment = repository.findById(commentDto.getId()).orElse(null);
         if (comment == null) {
-            throw new IllegalArgumentException(CommentServiceErrors.COMMENT_NOT_FOUND.value);
+            throw new IllegalArgumentException(CommentServiceErrors.COMMENT_NOT_FOUND.getValue());
         }
         CommentDto currentCommentDto = mapper.toDto(comment);
         equalUpdateComment(commentDto, currentCommentDto);
@@ -72,7 +73,7 @@ public class CommentService {
     private Post getPost(Long postId) {
         Post post = postRepository.findById(postId).orElse(null);
         if (post == null) {
-            throw new IllegalArgumentException(CommentServiceErrors.POST_NOT_FOUND.value);
+            throw new IllegalArgumentException(CommentServiceErrors.POST_NOT_FOUND.getValue());
         }
         return post;
     }
@@ -84,14 +85,14 @@ public class CommentService {
             || !Objects.equals(commentDto.getCreatedAt(), currentCommentDto.getCreatedAt())
             || !Objects.equals(commentDto.getUpdatedAt(), currentCommentDto.getUpdatedAt())
         ) {
-            throw new IllegalArgumentException(CommentServiceErrors.CHANGE_NOT_COMMENT.value);
+            throw new IllegalArgumentException(CommentServiceErrors.CHANGE_NOT_COMMENT.getValue());
         }
     }
 
-    private int localDateComparator(CommentDto comment1, CommentDto comment2) {
-        if (comment1.getCreatedAt().isAfter(comment2.getCreatedAt())) {
+    private int localDateComparator(CommentDto commentLeft, CommentDto commentRight) {
+        if (commentLeft.getCreatedAt().isAfter(commentRight.getCreatedAt())) {
             return 1;
-        } else if (comment1.getCreatedAt().isBefore(comment2.getCreatedAt())) {
+        } else if (commentLeft.getCreatedAt().isBefore(commentRight.getCreatedAt())) {
             return -1;
         } else {
             return 0;

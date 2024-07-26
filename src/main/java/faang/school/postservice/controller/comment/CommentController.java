@@ -1,13 +1,10 @@
 package faang.school.postservice.controller.comment;
 
+import faang.school.postservice.controller.comment.error.CommentControllerErrors;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;

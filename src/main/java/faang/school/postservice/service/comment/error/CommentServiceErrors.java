@@ -1,5 +1,10 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.service.comment.error;
 
+import lombok.Getter;
+
+import javax.annotation.processing.Generated;
+
+@Getter
 public enum CommentServiceErrors {
     COMMENT_IS_EMPTY("Комментарий не может быть пустым"),
     COMMENT_TOO_LONG("Длинна комментария не может быть больше 4096 символов"),
@@ -8,7 +13,7 @@ public enum CommentServiceErrors {
     COMMENT_NOT_FOUND("Комментарий не найден"),
     CHANGE_NOT_COMMENT("Можно изменить только текст комментария");
 
-    final String value;
+    private final String value;
 
     CommentServiceErrors(String value) {
         this.value = value;
