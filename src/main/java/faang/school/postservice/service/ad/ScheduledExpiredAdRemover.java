@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class ScheduledExpiredAdRemover {
     private final AdService adService;
 
-    @Scheduled(cron = "${post.ad-remover.cron}")
+    @Scheduled(cron = "${post.ad-remover.scheduler.cron}")
     public void deleteExpiredAds() {
         adService.deleteExpiredAds();
     }
