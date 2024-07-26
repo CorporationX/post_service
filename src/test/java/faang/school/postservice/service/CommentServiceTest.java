@@ -15,13 +15,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
 
-import static faang.school.postservice.exception.MessagesForCommentsException.*;
+import static faang.school.postservice.exception.MessagesForCommentsException.ID_IS_NULL;
+import static faang.school.postservice.exception.MessagesForCommentsException.NO_COMMENTS_IN_THE_POST;
+import static faang.school.postservice.exception.MessagesForCommentsException.NO_COMMENT_IN_DB;
+import static faang.school.postservice.exception.MessagesForCommentsException.NO_USER_IN_DB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
@@ -68,7 +75,7 @@ public class CommentServiceTest {
     @BeforeEach
     void init() {
         comment = testData.returnComment();
-        commentDto = commentMapper.ToDto(testData.returnComment());
+        commentDto = commentMapper.toDto(testData.returnComment());
         postDto = testData.returnPostDto();
         postId = postDto.getId();
         comments = testData.returnListOfComments();
@@ -153,7 +160,7 @@ public class CommentServiceTest {
         when(postService.getPostById(postId)).thenReturn(postDto);
         when(commentRepository.findAllByPostId(postId)).thenReturn(comments);
 
-        assertEquals(commentMapper.ToDtoList(comments), commentService.getAllComments(postId));
+        assertEquals(commentMapper.toDto(comments), commentService.getAllComments(postId));
     }
 
     @Test

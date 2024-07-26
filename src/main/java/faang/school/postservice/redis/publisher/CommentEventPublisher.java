@@ -1,4 +1,4 @@
-package faang.school.postservice.redis;
+package faang.school.postservice.redis.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;

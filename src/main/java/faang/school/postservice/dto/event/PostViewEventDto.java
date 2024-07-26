@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LikeEventDto extends EventDto {
-    private long authorId;
+public class PostViewEventDto extends EventDto {
     private long postId;
-    private long likeId;
 }

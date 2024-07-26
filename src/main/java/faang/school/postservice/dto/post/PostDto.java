@@ -16,14 +16,22 @@ import java.util.List;
 @AllArgsConstructor
 public class PostDto {
     private Long id;
+
     @NotBlank(message = "Post content can't be blank")
     private String content;
+
     private Long authorId;
+
     private Long projectId;
+
     private List<Long> likesIds;
+
     private List<Long> commentsIds;
+
     private boolean published;
+
     @PastOrPresent(message = "Post can't be published in future")
     private LocalDateTime publishedAt;
+
     private boolean deleted;
 }
