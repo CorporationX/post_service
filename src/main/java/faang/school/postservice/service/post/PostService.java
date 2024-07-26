@@ -32,15 +32,13 @@ public class PostService {
 
     public PostDto createPost(PostDto postDto) {
         postServiceValidator.validateCreatePost(postDto);
-        postDto.getHashtagNames().forEach(hashtagService::saveHashtag);
+        hashtagService.saveAllHashtags(postDto.getHashtagNames());
 
         Post post = Post.builder()
                 .authorId(postDto.getAuthorId())
                 .projectId(postDto.getProjectId())
                 .content(postDto.getContent())
-                .hashtags(postDto.getHashtagNames().stream()
-                        .map(hashtagService::getHashtag)
-                        .toList())
+                .hashtags(hashtagService.getHashtagsByName(postDto.getHashtagNames()))
                 .build();
 
         post = postRepository.save(post);
@@ -54,12 +52,10 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
         postServiceValidator.validateUpdatePost(post, postDto);
 
-        postDto.getHashtagNames().forEach(hashtagService::saveHashtag);
+        hashtagService.saveAllHashtags(postDto.getHashtagNames());
 
         post.setContent(postDto.getContent());
-        post.setHashtags(new ArrayList<>(postDto.getHashtagNames().stream()
-                .map(hashtagService::getHashtag)
-                .toList()));
+        post.setHashtags(new ArrayList<>(hashtagService.getHashtagsByName(postDto.getHashtagNames())));
 
         post = postRepository.save(post);
         PostDto postDtoForReturns = postMapper.toDto(post);
@@ -75,9 +71,7 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
-        PostDto postDtoForReturns = postMapper.toDto(post);
-        elasticsearchService.indexPost(postDtoForReturns);
-        return postDtoForReturns;
+        return postMapper.toDto(post);
     }
 
     public PostDto deletePost(Long postId) {

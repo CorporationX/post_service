@@ -1,7 +1,6 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.annotation.ValidHashtag;
-import faang.school.postservice.dto.hashtag.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;

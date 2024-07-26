@@ -29,17 +29,4 @@ public class ElasticsearchConfig {
 
         return new ElasticsearchClient(transport);
     }
-
-    @Bean
-    public ElasticsearchAsyncClient elasticsearchAsyncClient(ObjectMapper objectMapper) {
-        RestClient restClient = RestClient.builder(
-                HttpHost.create(elasticsearchUris)
-        ).build();
-
-        RestClientTransport transport = new RestClientTransport(
-                restClient, new JacksonJsonpMapper(objectMapper)
-        );
-
-        return new ElasticsearchAsyncClient(transport);
-    }
 }
