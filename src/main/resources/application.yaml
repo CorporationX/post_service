@@ -63,6 +63,8 @@ services:
       maxSizeSquare: 1080
       maxFileSize : 5_000_000
       maxImagePerPost : 10
+    acceptedFormats: jpg, png
+
     client_config:
       connection_timeout: 10000
       socket_timeout: 10000

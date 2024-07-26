@@ -1,5 +1,6 @@
 package faang.school.postservice.util;
 
+import faang.school.postservice.exceptions.DataValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,5 +44,21 @@ public class ImageCompressor {
                 Scalr.Method.ULTRA_QUALITY,
                 Scalr.Mode.AUTOMATIC,
                 width, height);
+    }
+
+    public String getImageFormat(String fileName) {
+        if(fileName == null || fileName.isBlank()) {
+            throw new DataValidationException("File name is empty or nul");
+        }
+
+        int lastIndexOfDot = fileName.lastIndexOf('.');
+        if (lastIndexOfDot > 0 && lastIndexOfDot < fileName.length() - 1) {
+            String format = fileName.substring(lastIndexOfDot + 1).toLowerCase();
+            return format;
+        } else {
+            throw new DataValidationException("File doesn't have format");
+        }
+
+
     }
 }
