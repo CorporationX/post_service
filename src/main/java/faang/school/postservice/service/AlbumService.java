@@ -47,6 +47,7 @@ public class AlbumService {
                     return albumMapper.toDto(album.get());
                 } else {
                     log.info("user is not follower");
+                    return new AlbumDto();
                 }
             } else if (album.get().getVisibilityType().equals(VisibilityType.ONLY_USERS_SELECTED)) {
                 UserVisibility userVisibilityResult = album.get().getVisibilityUsers()
