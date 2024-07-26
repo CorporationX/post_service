@@ -1,10 +1,13 @@
 package faang.school.postservice.service.post;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -14,6 +17,7 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.moderator.post.logic.PostModerator;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.KafkaPostProducer;
 import faang.school.postservice.service.RedisCacheService;
 import faang.school.postservice.service.ResourceService;
 import faang.school.postservice.validation.PostValidator;
@@ -45,6 +49,8 @@ public class PostService {
     private final UserContext userContext;
     private final PostModerator postModerator;
     private final RedisCacheService redisCacheService;
+    private final KafkaPostProducer kafkaPostProducer;
+    private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
     public long getUserIdByPostId(long postId) {
@@ -57,8 +63,16 @@ public class PostService {
         ProjectDto project = projectServiceClient.getProject(postDto.getProjectId());
 
         postValidator.validateAuthorExist(author, project);
-
         Post saved = postRepository.save(postMapper.toEntity(postDto));
+
+        PostEvent postEvent = postMapper.toEvent(saved);
+        postEvent.setFollowersAuthor(userServiceClient.getIdsFollowersUser(saved.getAuthorId()));
+        try {
+            String postEventJson = objectMapper.writeValueAsString(postEvent);
+            kafkaPostProducer.sendMessage(postEventJson);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
         if (Objects.nonNull(files) && !files.isEmpty()) {
             List<Resource> resources = resourceService.createResourceToPost(files, saved);
@@ -76,7 +90,11 @@ public class PostService {
         postRepository.save(post);
 
         PostDto postDto = postMapper.toDto(post);
+        UserDto postAuthor = userServiceClient.getUser(post.getAuthorId());
+
         redisCacheService.savePost(postDto);
+        redisCacheService.saveAuthor(postAuthor);
+
 
         return postDto;
     }

@@ -36,6 +36,11 @@ spring:
       max-file-size: 5MB
       max-request-size: 50MB
 
+kafka:
+  host: "localhost:9092"
+  topic-name:
+    post: "posts"
+
 server:
   port: 8081
   servlet:

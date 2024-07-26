@@ -1,9 +1,13 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostEvent;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
@@ -58,6 +62,12 @@ public class PostServiceTest {
     @Mock
     private RedisCacheService redisCacheService;
 
+    @Mock
+    private KafkaPostProducer kafkaPostProducer;
+
+    @Mock
+    private ObjectMapper objectMapper;
+
     @Spy
     private PostMapperImpl postMapper;
 
@@ -70,6 +80,9 @@ public class PostServiceTest {
     private List<Post> posts;
     private Long id;
     private LocalDateTime time;
+    private UserDto userDto;
+    private PostEvent postEvent;
+    private String json;
 
     @BeforeEach
     void setUp() {
@@ -88,7 +101,10 @@ public class PostServiceTest {
                 .published(false)
                 .build();
 
+        userDto = UserDto.builder().id(1L).username("name").email("email").build();
+        postEvent = PostEvent.builder().authorId(1L).id(1L).followersAuthor(List.of(1L, 2L, 3L)).build();
         time = LocalDateTime.now();
+        json = "";
 
         posts = new ArrayList<>();
         posts.add(Post.builder().content("1").deleted(false).published(true).createdAt(time.minusDays(12)).build());
@@ -113,11 +129,18 @@ public class PostServiceTest {
     }
 
     @Test
-    void createDraftPost() {
+    void createDraftPost() throws JsonProcessingException {
         Post post = postMapper.toEntity(postDto);
+        when(postRepository.save(post)).thenReturn(post);
+        when(postMapper.toEvent(post)).thenReturn(postEvent);
+        when(objectMapper.writeValueAsString(postEvent)).thenReturn(json);
 
         postService.createDraftPost(postDto, null);
         verify(postRepository, times(1)).save(post);
+        verify(postMapper, times(1)).toEvent(post);
+        verify(userServiceClient, times(1)).getIdsFollowersUser(post.getAuthorId());
+        verify(objectMapper, times(1)).writeValueAsString(postEvent);
+        verify(kafkaPostProducer, times(1)).sendMessage(json);
     }
 
     @Test
@@ -130,9 +153,14 @@ public class PostServiceTest {
     @Test
     void publishDraftPost() {
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToUpdate));
+        when(userServiceClient.getUser(3L)).thenReturn(userDto);
         PostDto actual = postService.publishDraftPost(postId);
 
         assertTrue(actual.isPublished());
+        verify(postMapper, times(1)).toDto(postToUpdate);
+        verify(userServiceClient, times(1)).getUser(postToUpdate.getAuthorId());
+        verify(redisCacheService, times(1)).savePost(actual);
+        verify(redisCacheService, times(1)).saveAuthor(userDto);
     }
 
     @Test
