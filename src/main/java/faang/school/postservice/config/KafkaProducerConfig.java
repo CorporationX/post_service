@@ -23,6 +23,9 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.topics-name.posts}")
     private String postTopicName;
 
+    @Value("${spring.kafka.topics-name.comments}")
+    private String commentTopicName;
+
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configs = new HashMap<>();
@@ -40,6 +43,11 @@ public class KafkaProducerConfig {
     @Bean
     public NewTopic postTopic() {
         return TopicBuilder.name(postTopicName).build();
+    }
+
+    @Bean
+    public NewTopic commentsTopic() {
+        return TopicBuilder.name(commentTopicName).build();
     }
 
     @Bean

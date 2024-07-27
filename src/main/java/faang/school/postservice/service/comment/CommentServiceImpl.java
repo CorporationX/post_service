@@ -4,6 +4,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.kafka.CommentProducer;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -26,6 +27,7 @@ public class CommentServiceImpl implements CommentService{
     private final UserValidator userValidator;
     private final CommentEventPublisher commentEventPublisher;
     private final PostService postService;
+    private final CommentProducer commentProducer;
 
     @Transactional
     public CommentDto createComment(Long userId, Long postId, CommentDto commentDto) {
@@ -39,7 +41,14 @@ public class CommentServiceImpl implements CommentService{
                 .commentId(comment.getId())
                 .build();
         commentEventPublisher.publish(commentEvent);
-        return commentMapper.toDto(comment);
+        CommentDto resultDto = commentMapper.toDto(comment);
+        sendCreatingCommentEventToKafka(resultDto);
+        return resultDto;
+    }
+
+    private void sendCreatingCommentEventToKafka(CommentDto commentDto) {
+        CommentEvent commentEvent = commentMapper.toEvent(commentDto);
+        commentProducer.sendEvent(commentEvent);
     }
 
     @Transactional

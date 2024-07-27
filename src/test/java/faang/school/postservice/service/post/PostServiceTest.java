@@ -1,8 +1,11 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.kafka.PostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +35,12 @@ public class PostServiceTest {
     
     @Mock
     private PostValidator postValidator;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private PostProducer postProducer;
 
     private PostDto postDto1;
     private PostDto postDto2;
@@ -120,6 +129,7 @@ public class PostServiceTest {
         doNothing().when(postValidator).validatePublicationPost(post1);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post1));
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto1);
+        when(userServiceClient.getUser(anyLong())).thenReturn(new UserDto(1L, "test", "test", List.of(2L)));
         PostDto publishPost = postService.publishPost(1L);
         verify(postRepository).findById(1L);
         verify(postValidator).validatePublicationPost(post1);

@@ -34,6 +34,7 @@ spring:
     bootstrap-servers: localhost:2902
     topics-name:
       posts: posts
+      comments: comments
 
 server:
   port: 8081

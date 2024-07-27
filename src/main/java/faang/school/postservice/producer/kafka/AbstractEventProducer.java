@@ -9,10 +9,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 @AllArgsConstructor
 public abstract class AbstractEventProducer<T> {
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private NewTopic topic;
+    private String topicName;
 
     public void sendEvent(T event) {
-        log.info("event {} was send to kafka topic {}", event, topic.name());
-        kafkaTemplate.send(topic.name(), event);
+        log.info("event {} was send to kafka topic {}", event, topicName);
+        kafkaTemplate.send(topicName, event);
     }
 }
