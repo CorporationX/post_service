@@ -5,6 +5,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.kafka.LikeProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -35,6 +36,8 @@ class LikeServiceImplTest {
     private PostRepository postRepository;
     @Mock
     private CommentRepository commentRepository;
+    @Mock
+    private LikeProducer likeProducer;
     @InjectMocks
     private LikeServiceImpl likeService;
 
