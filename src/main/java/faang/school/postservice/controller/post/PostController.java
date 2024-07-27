@@ -23,7 +23,7 @@ public class PostController {
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public Post createPost(@Valid @RequestBody PostDto postDto) {
+    public PostDto createPost(@Valid @RequestBody PostDto postDto) {
         return postService.createPost(postDto);
     }
 

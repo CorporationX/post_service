@@ -30,6 +30,11 @@ spring:
         comment_channel:
           name: comment_channel
 
+  kafka:
+    bootstrap-servers: localhost:2902
+    topics-name:
+      posts: posts
+
 server:
   port: 8081
 

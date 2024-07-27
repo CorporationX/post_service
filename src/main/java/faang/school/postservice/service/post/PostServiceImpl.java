@@ -1,10 +1,14 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.moderation.ModerationDictionary;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostEvent;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.kafka.PostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,7 +26,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Predicate;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +35,8 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final PostValidator postValidator;
     private final @Qualifier("executorService")ExecutorService threadPool;
+    private final PostProducer postProducer;
+    private final UserServiceClient userServiceClient;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -88,7 +93,15 @@ public class PostServiceImpl implements PostService {
         Post post = findById(postId);
         postValidator.validatePublicationPost(post);
         post.setPublished(true);
-        return postMapper.toDto(post);
+        PostDto postDto = postMapper.toDto(post);
+        sendPublishingPostEventToKafka(postDto);
+        return postDto;
+    }
+
+    private void sendPublishingPostEventToKafka(PostDto postDto) {
+        UserDto userDto = userServiceClient.getUser(postDto.getAuthorId());
+        PostEvent event = new PostEvent(postDto.getId(), postDto.getAuthorId(), userDto.getSubscriberIds());
+        postProducer.sendEvent(event);
     }
 
     @Transactional
