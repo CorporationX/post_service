@@ -12,7 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static faang.school.postservice.exception.message.PostOperationExceptionMessage.RE_DELETING_POST_EXCEPTION;
@@ -40,14 +42,31 @@ public class PostService {
     public PostDto publishPost(long postId) {
         Post postToBePublished = getPost(postId);
 
-        if (postToBePublished.isPublished()) {
-            throw new DataOperationException(RE_PUBLISHING_POST_EXCEPTION.getMessage());
-        }
+        postVerifier.verifyIsPublished(postToBePublished);
 
         postToBePublished.setPublished(true);
         postToBePublished.setPublishedAt(LocalDateTime.now());
 
-        return postMapper.toDto(postRepository.save(postToBePublished));
+        Post publishedPost = postRepository.save(postToBePublished);
+        PostDto publishedPostDto = postMapper.toDto(publishedPost);
+
+        handlePostPublication(publishedPostDto);
+
+        return publishedPostDto;
+    }
+
+    private void handlePostPublication(PostDto publishedPost) {
+        kafkaPostEventProducer.sendPostEvent(publishedPost);
+
+        PostForFeedDto postForFeedDto = PostForFeedDto.builder()
+                .postId(publishedPost.getId())
+                .post(publishedPost)
+                .likesList(new ArrayList<>())
+                .viewsCounter(0)
+                .comments(new LinkedHashSet<>())
+                .build();
+
+        postCache.save(postForFeedDto);
     }
 
     public PostDto updatePost(PostDto postDto) {
@@ -102,6 +121,28 @@ public class PostService {
         postVerifier.verifyUserExistence(userId);
 
         return getSortedPosts(postRepository.findByAuthorId(userId));
+    }
+
+    public List<PostForFeedDto> getFeedForUser(Long userId, int batchSize, Optional<PostDto> postPointer) {
+        List<Long> userSubscriptions = userServiceClient.getFollowingIds(userId);
+
+        final List<Post> postsBatch = new ArrayList<>();
+        postPointer.ifPresentOrElse(
+                pointer -> postsBatch.addAll(postRepository.getFeedForUser(userSubscriptions, pointer.getId(), batchSize)),
+                () -> postsBatch.addAll(postRepository.getFeedForUser(userSubscriptions, batchSize))
+        );
+
+        return postsBatch.stream()
+                .map(
+                        post -> PostForFeedDto.builder()
+                                .postId(post.getId())
+                                .post(postMapper.toDto(post))
+                                .likesList(likeMapper.toDto(post.getLikes()))
+                                .comments(new LinkedHashSet<>(commentMapper.toDto(post.getComments())))
+                                .viewsCounter(0)
+                                .build()
+                )
+                .toList();
     }
 
     public List<PostDto> getPostsOfProject(long projectId) {

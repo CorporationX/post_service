@@ -12,9 +12,9 @@ import java.util.List;
 public interface CommentMapper {
 
     @Mapping(target = "id", ignore = true)
-    Comment ToEntity(CommentDto commentDto);
+    Comment toEntity(CommentDto commentDto);
 
-    CommentDto ToDto(Comment comment);
+    CommentDto toDto(Comment comment);
 
-    List<CommentDto> ToDtoList(List<Comment> comments);
+    List<CommentDto> toDto(List<Comment> comments);
 }
