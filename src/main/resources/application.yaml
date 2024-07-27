@@ -36,6 +36,7 @@ spring:
       posts: posts
       comments: comments
       likes: likes
+      post-views: post_views
 
 server:
   port: 8081

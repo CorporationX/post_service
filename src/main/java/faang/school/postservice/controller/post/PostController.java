@@ -1,7 +1,6 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ public class PostController {
 
     @GetMapping("/{postId}")
     @ResponseStatus(HttpStatus.OK)
-    public Post getPostById(@PathVariable long postId){
-        return postService.getPostById(postId);
+    public PostDto getPostById(@PathVariable long postId){
+        return postService.getPost(postId);
     }
 }

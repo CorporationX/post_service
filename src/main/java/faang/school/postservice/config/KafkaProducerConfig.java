@@ -29,6 +29,9 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.topics-name.likes}")
     private String likeTopicName;
 
+    @Value("${spring.kafka.topics-name.post-views}")
+    private String postViewTopicName;
+
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configs = new HashMap<>();
@@ -56,6 +59,11 @@ public class KafkaProducerConfig {
     @Bean
     public NewTopic likesTopic() {
         return TopicBuilder.name(likeTopicName).build();
+    }
+
+    @Bean
+    public NewTopic postViewsTopic() {
+        return TopicBuilder.name(postViewTopicName).build();
     }
 
     @Bean

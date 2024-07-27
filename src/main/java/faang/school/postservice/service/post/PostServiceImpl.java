@@ -4,11 +4,13 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.moderation.ModerationDictionary;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostEvent;
+import faang.school.postservice.dto.post.PostViewEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.kafka.PostProducer;
+import faang.school.postservice.producer.kafka.PostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -37,6 +39,7 @@ public class PostServiceImpl implements PostService {
     private final @Qualifier("executorService")ExecutorService threadPool;
     private final PostProducer postProducer;
     private final UserServiceClient userServiceClient;
+    private final PostViewProducer postViewProducer;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -121,7 +124,13 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDto getPost(Long postId) {
         Post post = findById(postId);
+        sendPostViewEventToKafka(postId);
         return postMapper.toDto(post);
+    }
+
+    private void sendPostViewEventToKafka(Long postId) {
+        PostViewEvent event = new PostViewEvent(postId);
+        postViewProducer.sendEvent(event);
     }
 
     @Transactional
