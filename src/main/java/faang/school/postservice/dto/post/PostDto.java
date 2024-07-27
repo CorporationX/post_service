@@ -38,6 +38,4 @@ public class PostDto {
 
     @Future(message = "Scheduled date must be in the future")
     private LocalDateTime scheduledAt;
-
-    //private long likesAmount;
 }
