@@ -47,9 +47,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
-    @ExceptionHandler(RuntimeException.class)
+    /*@ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<String> handleRuntimeExceptions(RuntimeException ex) {
         return ResponseEntity.internalServerError().body(String.format("Ошибка на стороне сервера: %s", ex.getMessage()));
-    }
+    }*/
 }
