@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.annotation.ValidHashtag;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/post")
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
@@ -57,5 +58,10 @@ public class PostController {
     @GetMapping("/published/project/{projectId}")
     public List<PostDto> getAllPublishPostsByProjectId(@PathVariable Long projectId) {
         return postService.getAllPublishPostsByProjectId(projectId);
+    }
+
+    @GetMapping("/hashtag")
+    public List<PostDto> findPostsByHashtag(@RequestParam @ValidHashtag String hashtagName) {
+        return postService.findPostsByHashtag(hashtagName);
     }
 }

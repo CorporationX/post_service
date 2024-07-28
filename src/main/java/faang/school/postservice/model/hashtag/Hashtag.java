@@ -1,7 +1,8 @@
-package faang.school.postservice.model;
+package faang.school.postservice.model.hashtag;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import faang.school.postservice.model.post.Post;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

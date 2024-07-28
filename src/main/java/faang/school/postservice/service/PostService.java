@@ -1,13 +1,15 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.HashtagServiceClient;
-import faang.school.postservice.config.elasticsearch.ElasticsearchConfig;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
+import faang.school.postservice.model.hashtag.Hashtag;
+import faang.school.postservice.model.hashtag.HashtagRequest;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,17 +30,23 @@ public class PostService {
     private final PostServiceValidator postServiceValidator;
     private final HashtagServiceClient hashtagServiceClient;
     private final ElasticsearchService elasticsearchService;
+    private final EntityManager entityManager;
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
         postServiceValidator.validateCreatePost(postDto);
-        hashtagServiceClient.saveHashtags(postDto.getHashtagNames());
+        hashtagServiceClient.saveHashtags(
+                HashtagRequest.builder().hashtagNames(postDto.getHashtagNames()).build());
+        List<Hashtag> hashtags = hashtagServiceClient.getHashtagsByNames(
+                HashtagRequest.builder().hashtagNames(postDto.getHashtagNames()).build()).getHashtags();
 
         Post post = Post.builder()
                 .authorId(postDto.getAuthorId())
                 .projectId(postDto.getProjectId())
                 .content(postDto.getContent())
-                .hashtags(hashtagServiceClient.getHashtagsByNames(postDto.getHashtagNames()))
+                .hashtags(hashtags.stream()
+                        .map(entityManager::merge)
+                        .toList())
                 .build();
 
         post = postRepository.save(post);
@@ -56,10 +64,12 @@ public class PostService {
                 });
         postServiceValidator.validateUpdatePost(post, postDto);
 
-        hashtagServiceClient.saveHashtags(postDto.getHashtagNames());
+        hashtagServiceClient.saveHashtags(
+                HashtagRequest.builder().hashtagNames(postDto.getHashtagNames()).build());
 
         post.setContent(postDto.getContent());
-        post.setHashtags(new ArrayList<>(hashtagServiceClient.getHashtagsByNames(postDto.getHashtagNames())));
+        post.setHashtags(new ArrayList<>(hashtagServiceClient.getHashtagsByNames(
+                HashtagRequest.builder().hashtagNames(postDto.getHashtagNames()).build()).getHashtags()));
 
         post = postRepository.save(post);
         PostDto postDtoForReturns = postMapper.toDto(post);
@@ -142,6 +152,15 @@ public class PostService {
                 .toList();
 
         return postMapper.toDto(sortPostsByPublishAt(filteredPosts));
+    }
+
+    public List<PostDto> findPostsByHashtag(String hashtagName) {
+        List<PostDto> postDtos = hashtagServiceClient.findPostsByHashtag(hashtagName).getPosts();
+        if (postDtos.isEmpty()) {
+            return postDtos;
+        } else {
+            return elasticsearchService.searchPostsByHashtag(hashtagName);
+        }
     }
 
     private List<Post> sortPostsByCreateAt(List<Post> posts) {

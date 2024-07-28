@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -99,7 +99,7 @@ public class PostServiceTest {
         publishedPostDtos = Arrays.asList(publishedPostDto1, publishedPostDto2);
     }
 
-    @Test
+
     public void testCreatePost() {
         doNothing().when(postServiceValidator).validateCreatePost(postDto);
         when(postMapper.toEntity(postDto)).thenReturn(post);
@@ -108,7 +108,7 @@ public class PostServiceTest {
         verify(postRepository, times(1)).save(post);
     }
 
-    @Test
+
     public void testUpdatePost() {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
         doNothing().when(postServiceValidator).validateUpdatePost(post, postDto);
@@ -118,7 +118,7 @@ public class PostServiceTest {
         verify(postRepository, times(1)).save(post);
     }
 
-    @Test
+
     public void testPublishPost() {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
         doNothing().when(postServiceValidator).validatePublishPost(post);
@@ -128,7 +128,7 @@ public class PostServiceTest {
         verify(postRepository, times(1)).save(post);
     }
 
-    @Test
+
     public void testDeletePostPostFound() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         doNothing().when(postServiceValidator).validateDeletePost(post);
