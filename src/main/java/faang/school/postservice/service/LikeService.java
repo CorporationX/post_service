@@ -5,6 +5,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.kafka.KafkaLikePublisher;
 import faang.school.postservice.publisher.redis.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
@@ -26,6 +27,7 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
     private final LikeEventPublisher likeEventPublisher;
+    private final KafkaLikePublisher kafkaLikePublisher;
 
     @Transactional
     public LikeDto addLikePost(Long postId, LikeDto likeDto) {
@@ -40,10 +42,13 @@ public class LikeService {
         like.setPost(post);
         post.getLikes().add(like);
 
-        Like like1 = likeRepository.save(like);
-        likeEventPublisher.sendEvent(likeMapper.toLikeEvent(like1));
+        Like likeSaved = likeRepository.save(like);
+        LikeDto likeDtoSaved = likeMapper.toDto(likeSaved);
 
-        return likeMapper.toDto(like);
+        likeEventPublisher.sendEvent(likeMapper.toLikeEvent(likeSaved));
+        kafkaLikePublisher.sendMessage(postId, likeDtoSaved);
+
+        return likeDtoSaved;
     }
 
     @Transactional

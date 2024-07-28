@@ -17,7 +17,10 @@ public class KafkaTopicConfig {
     private String bootstrapAddress;
     @Value(value = "${spring.kafka.topic.post}")
     private String post;
-
+    @Value(value = "${spring.kafka.topic.comment}")
+    private String comment;
+    @Value(value = "${spring.kafka.topic.like}")
+    private String like;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -29,5 +32,15 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic postTopic() {
         return new NewTopic(post, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic commentTopic() {
+        return new NewTopic(comment, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic likeTopic() {
+        return new NewTopic(like, 1,(short) 1);
     }
 }

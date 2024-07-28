@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.comment.CommentFeedDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.model.Comment;
@@ -18,6 +19,8 @@ public interface CommentMapper {
 
     @Mapping(target = "postId", source = "post.id")
     CreateCommentDto toDto(Comment comment);
+
+    CommentFeedDto toFeedDto(Comment comment);
 
     @Mapping(target = "postId", source = "post.id")
     @Mapping(target = "authorId", source = "authorId")
