@@ -12,6 +12,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CommentService {
 
     private final CommentRepository commentRepository;
@@ -28,9 +30,10 @@ public class CommentService {
 
     public CommentDto createComment(CommentDto commentDto) {
         validatedCommentAuthorId(commentDto);
-
         Comment comment = commentMapper.toEntity(commentDto);
-        return commentMapper.toDto(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+        log.info("Comment with ID = {} was created", savedComment.getId());
+        return commentMapper.toDto(savedComment);
     }
 
     private void validatedCommentAuthorId(CommentDto commentDto) {
@@ -42,11 +45,12 @@ public class CommentService {
     }
 
     public CommentDto updateComment(UpdatedCommentDto updatedCommentDto) {
-        Comment updatedComment = commentRepository.findById(updatedCommentDto.getId())
+        Comment comment = commentRepository.findById(updatedCommentDto.getId())
                 .orElseThrow(() -> new CommentException("Comment with ID = " + updatedCommentDto.getId() + " does not found"));
-        updatedComment.setContent(updatedCommentDto.getContent());
-
-        return commentMapper.toDto(commentRepository.save(updatedComment));
+        comment.setContent(updatedCommentDto.getContent());
+        Comment updatedComment = commentRepository.save(comment);
+        log.info("Comment with ID = {} was updated", updatedCommentDto.getId());
+        return commentMapper.toDto(updatedComment);
     }
 
     public List<CommentDto> getAllCommentsByPostIdSortedByCreatedDate(Long postId) {
@@ -58,10 +62,12 @@ public class CommentService {
                 .stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
                 .toList();
+        log.info("{} comments for post with ID = {} was found and sorted by created date", postsComments.size(), postId);
         return commentMapper.toDtoList(postsComments);
     }
 
     public void deleteComment(Long id) {
         commentRepository.deleteById(id);
+        log.info("Comment with ID = {} was deleted", id);
     }
 }
