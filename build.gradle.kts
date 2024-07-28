@@ -13,6 +13,11 @@ repositories {
     mavenCentral()
 }
 
+jacoco {
+    toolVersion = "0.8.9"
+    reportsDirectory.set(layout.buildDirectory.dir("customJacocoReportDir"))
+}
+
 dependencies {
     /**
      * Spring boot starters
@@ -38,10 +43,11 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
     implementation("org.slf4j:slf4j-api:2.0.5")
     implementation("ch.qos.logback:logback-classic:1.4.6")
-    implementation("org.projectlombok:lombok:1.18.28")
-    annotationProcessor("org.projectlombok:lombok:1.18.28")
-    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    implementation("org.projectlombok:lombok:1.18.26")
+    annotationProcessor("org.projectlombok:lombok:1.18.26")
+    implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
     /**
      * Test containers
@@ -61,23 +67,53 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    testLogging.showStandardStreams = true
 }
+
+val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
 }
 
-tasks.withType<JacocoReport> {
-    dependsOn(tasks.test)
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-        csv.required.set(false)
-        html.outputLocation.set(layout.buildDirectory.dir("reports/jacocoHtml"))
-    }
+tasks.test{
+    finalizedBy(tasks.jacocoTestReport)
 }
 
-jacoco {
-    toolVersion = "0.8.7"
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+    }
+
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it).apply {
+            exclude(
+                "faang/school/postservice/client/**",
+                "faang/school/postservice/config/**",
+                "faang/school/postservice/dto/**",
+                "faang/school/postservice/model/**",
+                "faang/school/postservice/repository/**",
+                "faang/school/postservice/PostServiceApp.class")
+        }
+    }))
+}
+
+tasks.jacocoTestCoverageVerification{
+    violationRules{
+        rule{
+            element = "CLASS"
+            excludes = listOf(
+                "faang/school/postservice/client/**",
+                "faang/school/postservice/config/**",
+                "faang/school/postservice/dto/**",
+                "faang/school/postservice/model/**",
+                "faang/school/postservice/repository/**",
+                "faang/school/postservice/PostServiceApp")
+            limit {
+                minimum = "0.7".toBigDecimal()
+            }
+        }
+    }
 }
