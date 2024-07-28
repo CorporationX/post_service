@@ -27,14 +27,12 @@ public class AmazonS3Config {
 
     @Bean
     public AmazonS3 s3Client(){
-        AWSCredentials credentials = new BasicAWSCredentials(
-                accessKey,
-                secretKey
-        );
-
        AmazonS3 s3Client = AmazonS3ClientBuilder
                 .standard()
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(
+                        accessKey,
+                        secretKey
+                )))
                 .withRegion(Regions.US_EAST_1)
                 .build();
         if (!s3Client.doesBucketExistV2(bucketName)) {

@@ -5,6 +5,7 @@ import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,8 +16,9 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public PostDto createPost(@RequestBody @Valid PostDto postDto) {
-        return postService.createPost(postDto);
+    public PostDto createPost(
+            @RequestBody @Valid PostDto postDto, @RequestBody(required = false) List<MultipartFile> files) {
+        return postService.createPost(postDto, files);
     }
 
     @PutMapping

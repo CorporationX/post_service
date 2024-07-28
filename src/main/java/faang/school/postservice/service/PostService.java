@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class PostService {
     private final PostServiceValidator postServiceValidator;
 
     @Transactional
-    public PostDto createPost(PostDto postDto) {
+    public PostDto createPost(PostDto postDto, List<MultipartFile> files) {
         postServiceValidator.validateCreatePost(postDto);
         Post post = postMapper.toEntity(postDto);
 
