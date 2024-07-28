@@ -43,10 +43,7 @@ public class CommentService {
 
     public CommentDto updateExistingComment(CommentDto commentDto) {
         validateAuthorExists(commentDto.getAuthorId());
-        Comment comment = commentRepository.findAllByPostId(commentDto.getPostId()).stream()
-                .filter(commentOne -> commentOne.getId() == commentDto.getId())
-                .findFirst()
-                .orElseThrow(() -> {
+        Comment comment = commentRepository.findById(commentDto.getId()).orElseThrow(() -> {
                     log.error(ExceptionMessages.COMMENT_NOT_FOUND);
                     return new NoSuchElementException(ExceptionMessages.COMMENT_NOT_FOUND);
                 });
@@ -62,28 +59,15 @@ public class CommentService {
     }
 
     public CommentDto deleteExistingCommentInPost(CommentDto commentDto) {
-        Comment comments = findCommentInPost(commentDto);
-        commentRepository.deleteById(comments.getId());
-        return commentMapper.toDto(comments);
-    }
-
-    private Comment findCommentInPost(CommentDto commentDto) {
-        return commentRepository.findAllByPostId(commentDto.getPostId()).stream()
-                .filter(comment ->
-                        comment.getAuthorId() == commentDto.getAuthorId() &&
-                                comment.getContent().equals(commentDto.getContent()))
-                .findFirst()
-                .orElseThrow(() -> {
-                    log.error(ExceptionMessages.COMMENT_NOT_FOUND);
-                    return new NoSuchElementException(ExceptionMessages.COMMENT_NOT_FOUND);
-                });
+        commentRepository.deleteById(commentDto.getId());
+        return commentDto;
     }
 
     private void validateAuthorExists(long authorId) {
         UserDto user = userServiceClient.getUser(authorId);
         if (user == null) {
-            log.error(ExceptionMessages.POST_NOT_FOUND);
-            throw new EntityNotFoundException(ExceptionMessages.POST_NOT_FOUND);
+            log.error(ExceptionMessages.COMMENT_NOT_FOUND);
+            throw new EntityNotFoundException(ExceptionMessages.COMMENT_NOT_FOUND);
         }
     }
 }

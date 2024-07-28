@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,8 +24,12 @@ class PostServiceTest {
 
     @Test
     void testGetPostNull() {
-        Long postId = null;
-        assertThrows(NullPointerException.class, () -> postService.getPost(postId));
+        long postId = 1L;
+        Mockito.when(postRepository.findById(Mockito.anyLong())).thenThrow(new EntityNotFoundException("exception"));
+
+        Exception exception =  assertThrows(EntityNotFoundException.class, () -> postService.getPost(postId));
+
+        assertEquals("exception", exception.getMessage());
     }
 
     @Test

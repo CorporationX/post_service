@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -98,8 +99,8 @@ class CommentServiceTest {
 
         Mockito.when(userServiceClient.getUser(anyLong()))
                 .thenReturn(new UserDto(1L, null, null));
-        when(commentRepository.findAllByPostId(anyLong()))
-                .thenReturn(List.of(existingComment));
+        when(commentRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(existingComment));
         when(commentRepository.save(any(Comment.class)))
                 .thenReturn(updatedComment);
         when(commentMapper.toDto(updatedComment))
@@ -108,7 +109,7 @@ class CommentServiceTest {
         CommentDto result = commentService.updateExistingComment(commentDto);
 
         verify(commentRepository, times(1))
-                .findAllByPostId(anyLong());
+                .findById(anyLong());
         verify(commentRepository, times(1))
                 .save(any(Comment.class));
         verify(commentMapper, times(1))
@@ -134,20 +135,11 @@ class CommentServiceTest {
     @Test
     @DisplayName("testDeleteCommentService")
     void testDeleteCommentService() {
-        Comment updatedComment = new Comment();
-        updatedComment.setId(1L);
-        updatedComment.setAuthorId(1L);
-        updatedComment.setContent("Updated content");
-
-        when(commentRepository.findAllByPostId(anyLong())).thenReturn(List.of(updatedComment));
-        when(commentMapper.toDto(updatedComment)).thenReturn(commentDto);
+        doNothing().when(commentRepository).deleteById(commentDto.getAuthorId());
 
         CommentDto resultTest = commentService.deleteExistingCommentInPost(commentDto);
 
-        verify(commentRepository, times(1)).findAllByPostId(postId);
-        verify(commentRepository, times(1)).deleteById(updatedComment.getId());
-        verify(commentMapper, times(1)).toDto(updatedComment);
-
+        verify(commentRepository, times(1)).deleteById(existingComment.getId());
         assertEquals(commentDto, resultTest);
     }
 
