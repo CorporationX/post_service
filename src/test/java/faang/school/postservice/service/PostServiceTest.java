@@ -121,7 +121,7 @@ public class PostServiceTest {
     @Test
     public void testPublishPost() {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
-        doNothing().when(postServiceValidator).validatePublishPost(post, postDto);
+        doNothing().when(postServiceValidator).validatePublishPost(post);
         when(postMapper.toDto(post)).thenReturn(postDto);
 
         postService.publishPost(postDto);

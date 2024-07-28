@@ -1,9 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.HashtagServiceClient;
+import faang.school.postservice.config.elasticsearch.ElasticsearchConfig;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -22,14 +26,25 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
+    private final HashtagServiceClient hashtagServiceClient;
+    private final ElasticsearchService elasticsearchService;
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
         postServiceValidator.validateCreatePost(postDto);
-        Post post = postMapper.toEntity(postDto);
+        hashtagServiceClient.saveHashtags(postDto.getHashtagNames());
 
-        postRepository.save(post);
-        return postMapper.toDto(post);
+        Post post = Post.builder()
+                .authorId(postDto.getAuthorId())
+                .projectId(postDto.getProjectId())
+                .content(postDto.getContent())
+                .hashtags(hashtagServiceClient.getHashtagsByNames(postDto.getHashtagNames()))
+                .build();
+
+        post = postRepository.save(post);
+        PostDto postDtoForReturns = postMapper.toDto(post);
+        elasticsearchService.indexPost(postDtoForReturns);
+        return postDtoForReturns;
     }
 
     @Transactional
@@ -40,10 +55,16 @@ public class PostService {
                     return new EntityNotFoundException("Post " + postDto.getId() + " not found");
                 });
         postServiceValidator.validateUpdatePost(post, postDto);
-        post.setContent(postDto.getContent());
 
-        postRepository.save(post);
-        return postMapper.toDto(post);
+        hashtagServiceClient.saveHashtags(postDto.getHashtagNames());
+
+        post.setContent(postDto.getContent());
+        post.setHashtags(new ArrayList<>(hashtagServiceClient.getHashtagsByNames(postDto.getHashtagNames())));
+
+        post = postRepository.save(post);
+        PostDto postDtoForReturns = postMapper.toDto(post);
+        elasticsearchService.indexPost(postDtoForReturns);
+        return postDtoForReturns;
     }
 
     @Transactional
@@ -53,11 +74,11 @@ public class PostService {
                     log.error("Post {} not found", postDto.getId());
                     return new EntityNotFoundException("Post " + postDto.getId() + " not found");
                 });
-        postServiceValidator.validatePublishPost(post, postDto);
+        postServiceValidator.validatePublishPost(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
-        postRepository.save(post);
+        post = postRepository.save(post);
         return postMapper.toDto(post);
     }
 
@@ -74,7 +95,8 @@ public class PostService {
             post.setPublished(false);
         }
 
-        postRepository.save(post);
+        post = postRepository.save(post);
+        elasticsearchService.removePost(postId);
         return postMapper.toDto(post);
     }
 

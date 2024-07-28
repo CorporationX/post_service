@@ -24,6 +24,9 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+    elasticsearch:
+      rest:
+        uris: http://localhost:9200
 
 server:
   port: 8081
@@ -40,6 +43,9 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+hashtag-service:
+  host: localhost
+  port: 8083
 user-service:
   host: localhost
   port: 8080

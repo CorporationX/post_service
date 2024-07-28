@@ -28,9 +28,9 @@ public class PostServiceValidator {
         }
 
         if (postDto.getAuthorId() != null) {
-            checkIfAuthorExists(postDto.getAuthorId());
+            validateAuthorId(postDto.getAuthorId());
         } else {
-            checkIfProjectExists(postDto.getProjectId());
+            validateProjectId(postDto.getProjectId());
         }
     }
 
@@ -46,7 +46,7 @@ public class PostServiceValidator {
         }
     }
 
-    public void validatePublishPost(Post post, PostDto postDto) {
+    public void validatePublishPost(Post post) {
         if (post.isPublished()) {
             throw new DataValidationException("Post has already been published");
         }
@@ -59,13 +59,13 @@ public class PostServiceValidator {
     }
 
     @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
-    public void checkIfProjectExists(Long projectId) {
+    private void validateProjectId(Long projectId) {
         projectServiceClient.getProject(projectId);
         log.info("Project ID validated successfully: " + projectId);
     }
 
     @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
-    public void checkIfAuthorExists(Long authorId) {
+    private void validateAuthorId(Long authorId) {
         userServiceClient.getUser(authorId);
         log.info("Author ID validated successfully: " + authorId);
     }
