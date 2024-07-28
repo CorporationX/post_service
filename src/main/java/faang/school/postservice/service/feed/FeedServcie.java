@@ -24,7 +24,7 @@ import java.util.function.Function;
 @Service
 @Setter
 @RequiredArgsConstructor
-public class FeedService {
+public class FeedServcie {
     private final RedisFeedCache feedCache;
     private final RedisUserCache userCache;
     private final RedisPostCache postCache;

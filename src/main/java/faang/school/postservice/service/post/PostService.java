@@ -1,10 +1,16 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostForFeedDto;
 import faang.school.postservice.exception.DataOperationException;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.kafka.producer.KafkaPostEventProducer;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.cache.RedisPostCache;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 
 import static faang.school.postservice.exception.message.PostOperationExceptionMessage.RE_DELETING_POST_EXCEPTION;
 import static faang.school.postservice.exception.message.PostOperationExceptionMessage.RE_PUBLISHING_POST_EXCEPTION;
@@ -28,6 +31,11 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostVerifier postVerifier;
+    private final RedisPostCache postCache;
+    private final LikeMapper likeMapper;
+    private final CommentMapper commentMapper;
+    private final KafkaPostEventProducer kafkaPostEventProducer;
+    private final UserServiceClient userServiceClient;
 
     public PostDto createPost(@Valid PostDto postDto) {
         postVerifier.verifyAuthorExistence(postDto.getAuthorId(), postDto.getProjectId());

@@ -25,6 +25,25 @@ spring:
         calculationsChannel: calculations_channel
         likesChannel: likes_channel
         commentsChannel: comments_channel
+      feed-cache:
+        max-posts-amount: 10
+        ttl: 3 #time to live in days
+        keyspace: Feed
+      post-cache:
+          ttl: 1 #time to live in days
+          keyspace: Post
+      user-cache:
+          ttl: 1 #time to live in days
+          keyspace: User
+
+  kafka:
+    host: localhost
+    port: 9092
+    group-id: news_feed
+    topics-names:
+      post: post_topic
+      comment: comment_topic
+      like: like_topic
 
 server:
   port: 8085
@@ -53,6 +72,8 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  feed:
+    get-batch-size: 12
 
 user-service:
   host: localhost

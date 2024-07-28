@@ -9,9 +9,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.redis.core.RedisHash;
 
 @Data
 @NoArgsConstructor
+@RedisHash("User")
 @AllArgsConstructor
 @Builder
 public class UserDto {

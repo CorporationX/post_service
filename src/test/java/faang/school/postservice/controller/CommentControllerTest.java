@@ -2,7 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
-import faang.school.postservice.service.CommentService;
+import faang.school.postservice.service.post.CommentService;
 import faang.school.postservice.util.TestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
