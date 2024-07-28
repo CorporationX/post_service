@@ -32,7 +32,7 @@ public class LikeController {
 
     @DeleteMapping("/post/{postId}/{userId}")
     public ResponseEntity<String> deleteLikeFromPost(@Positive @PathVariable("postId") long postId,
-                                             @Positive @PathVariable("userId") long userId) {
+                                                     @Positive @PathVariable("userId") long userId) {
         likeService.deleteLikeFromPost(postId, userId);
         return ResponseEntity.ok("Like successfully delete from post");
     }
@@ -47,7 +47,7 @@ public class LikeController {
 
     @DeleteMapping("/comment/{commentId}/{userId}")
     public ResponseEntity<String> deleteLikeFromComment(@Positive @PathVariable("commentId") long commentId,
-                                      @Positive @PathVariable("userId") long userId) {
+                                                        @Positive @PathVariable("userId") long userId) {
         likeService.deleteLikeFromComment(commentId, userId);
         return ResponseEntity.ok("Like successfully delete from comment");
     }

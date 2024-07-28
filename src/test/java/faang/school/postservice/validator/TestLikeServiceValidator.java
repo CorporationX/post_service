@@ -1,10 +1,10 @@
 package faang.school.postservice.validator;
 
 import faang.school.postservice.model.Like;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -13,9 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 public class TestLikeServiceValidator {
-
-    @InjectMocks
     private LikeServiceValidator validator;
+
+    @BeforeEach
+    public void setUp() {
+        validator = new LikeServiceValidator();
+    }
 
     @DisplayName("Если лайк уже был поставлен")
     @Test

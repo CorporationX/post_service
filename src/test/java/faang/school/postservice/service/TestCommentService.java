@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
@@ -38,7 +39,8 @@ public class TestCommentService {
         Comment comment = new Comment();
         when(repository.findById(commentId)).thenReturn(Optional.of(comment));
 
+        Comment result = service.getComment(commentId);
         assertDoesNotThrow(() -> service.getComment(commentId));
+        assertEquals(comment, result);
     }
-
 }

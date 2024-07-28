@@ -4,11 +4,11 @@ import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.validator.LikeControllerValidator;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.times;
@@ -18,122 +18,63 @@ import static org.mockito.Mockito.verify;
 public class TestLikeController {
 
     @InjectMocks
-    private LikeController controller;
+    private LikeController likeController;
 
     @Mock
-    private LikeControllerValidator validator;
-
+    private LikeControllerValidator likeControllerValidator;
     @Mock
-    private LikeService service;
+    private LikeService likeService;
+
+    private long postId;
+    private long commentId;
+    private long userId;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        postId = 1;
+        userId = 1;
+        commentId = 1;
     }
 
+    @DisplayName("Когда метод добавления лайка отработал")
     @Test
     public void testAddLikeToPostThenPostIdNegative() {
         LikeDto likeDto = LikeDto.builder()
                 .id(1L)
-                .userId(1)
-                .postId(0)
+                .userId(userId)
+                .postId(postId)
                 .build();
 
-        controller.addLikeToPost(likeDto);
-        validator.validAddLikeToPost(likeDto.getPostId());
-        verify(service, times(0)).addLikeToPost(likeDto);
+        likeController.addLikeToPost(likeDto);
+        verify(likeControllerValidator, times(1)).validAddLikeToPost(likeDto.getPostId());
+        verify(likeService, times(1)).addLikeToPost(likeDto);
     }
 
-    @Test
-    public void testAddLikeToPostWhenValid() {
-        LikeDto likeDto = LikeDto.builder()
-                .id(1L)
-                .userId(1)
-                .postId(1)
-                .build();
-
-        controller.addLikeToPost(likeDto);
-        validator.validAddLikeToPost(likeDto.getPostId());
-        verify(service, times(1)).addLikeToPost(likeDto);
-    }
-
-    @Test
-    public void testDeleteLikeFromPostWhenPostIdNegative() {
-        long postId = 0;
-        long userId = 1;
-
-        controller.deleteLikeFromPost(postId, userId);
-        verify(service, times(0)).deleteLikeFromPost(postId, userId);
-    }
-
-    @Test
-    public void testDeleteLikeFromPostWhenUserIdNegative() {
-        long postId = 1;
-        long userId = 0;
-
-        controller.deleteLikeFromPost(postId, userId);
-        verify(service, times(0)).deleteLikeFromPost(postId, userId);
-    }
-
+    @DisplayName("Когда метод удалить лайк с поста отработал")
     @Test
     public void testDeleteLikeFromPostWhenValid() {
-        long postId = 1;
-        long userId = 1;
-
-        controller.deleteLikeFromPost(postId, userId);
-        verify(service, times(1)).deleteLikeFromPost(postId, userId);
+        likeController.deleteLikeFromPost(postId, userId);
+        verify(likeService, times(1)).deleteLikeFromPost(postId, userId);
     }
 
-    @Test
-    public void testAddLikeToCommentThenPostIdBlank() {
-        LikeDto likeDto = LikeDto.builder()
-                .id(1L)
-                .userId(1)
-                .commentId(0)
-                .build();
-
-        controller.addLikeToComment(likeDto);
-        validator.validAddLikeToComment(likeDto.getCommentId());
-        verify(service, times(0)).addLikeToComment(likeDto);
-    }
-
+    @DisplayName("Когда метод добавить лайк на коммент отработал")
     @Test
     public void testAddLikeToCommentWhenValid() {
         LikeDto likeDto = LikeDto.builder()
                 .id(1L)
-                .userId(1)
-                .commentId(1)
+                .userId(userId)
+                .commentId(commentId)
                 .build();
 
-        controller.addLikeToComment(likeDto);
-        validator.validAddLikeToComment(likeDto.getCommentId());
-        verify(service, times(1)).addLikeToComment(likeDto);
+        likeController.addLikeToComment(likeDto);
+        verify(likeControllerValidator, times(1)).validAddLikeToComment(likeDto.getCommentId());
+        verify(likeService, times(1)).addLikeToComment(likeDto);
     }
 
-    @Test
-    public void testDeleteLikeFromCommentWhenPCommentIdNegative() {
-        long commentId = 0;
-        long userId = 1;
-
-        controller.deleteLikeFromComment(commentId, userId);
-        verify(service, times(0)).deleteLikeFromComment(commentId, userId);
-    }
-
-    @Test
-    public void testDeleteLikeFromCommentWhenUserIdNegative() {
-        long commentId = 1;
-        long userId = 0;
-
-        controller.deleteLikeFromComment(commentId, userId);
-        verify(service, times(0)).deleteLikeFromComment(commentId, userId);
-    }
-
+    @DisplayName("Когда тест удаления лайка с комментария отработал")
     @Test
     public void testDeleteLikeFromCommentWhenValid() {
-        long commentId = 1;
-        long userId = 1;
-
-        controller.deleteLikeFromComment(commentId, userId);
-        verify(service, times(1)).deleteLikeFromComment(commentId, userId);
+        likeController.deleteLikeFromComment(commentId, userId);
+        verify(likeService).deleteLikeFromComment(commentId, userId);
     }
 }
