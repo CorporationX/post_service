@@ -30,9 +30,9 @@ public class CommentService {
 
     public CommentDto createComment(CommentDto commentDto) {
         validatedCommentAuthorId(commentDto);
-        Comment comment = commentMapper.toEntity(commentDto);
-        Comment savedComment = commentRepository.save(comment);
-        log.info("Comment with ID = {} was created", savedComment.getId());
+        Comment savedComment = commentMapper.toEntity(commentDto);
+        savedComment = commentRepository.save(savedComment);
+        log.info("Comment was created");
         return commentMapper.toDto(savedComment);
     }
 
