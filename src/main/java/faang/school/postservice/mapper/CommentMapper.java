@@ -17,5 +17,6 @@ public interface CommentMapper {
     @Mapping(source = "postId", target = "post.id")
     Comment dtoToEntity(CommentDto commentDto);
 
+    @Mapping(source = "post.id", target = "postId")
     List<CommentDto> entitiesToDtos(List<Comment> projectList);
 }

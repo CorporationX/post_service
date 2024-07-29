@@ -5,6 +5,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,13 +27,15 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final UserContext userContext;
     private final CommentValidator commentValidator;
+    private final PostRepository postRepository;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
+        commentValidator.existUser(userContext.getUserId());
         commentDto.setAuthorId(userContext.getUserId());
-        commentValidator.existUser(commentDto.getId());
         commentValidator.existPost(commentDto.getPostId());
         Comment comment = commentMapper.dtoToEntity(commentDto);
+        comment.setPost(postRepository.findById(commentDto.getPostId()).get());
         return commentMapper.entityToDto(commentRepository.save(comment));
     }
 
@@ -61,8 +66,8 @@ public class CommentService {
             throw new EntityNotFoundException(String.format(msg, postId));
         }
         return comments.stream()
-                .sorted((commentOne, commentTwo) -> commentTwo.getCreatedAt().compareTo(commentOne.getCreatedAt()))
+                .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
                 .map(commentMapper::entityToDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 }
