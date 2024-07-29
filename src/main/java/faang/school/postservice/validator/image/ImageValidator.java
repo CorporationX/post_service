@@ -40,7 +40,7 @@ public class ImageValidator {
     }
     public void validateFileCurrentPostImages(Post post) {
         if(post.getResources().size() > maxImagePerPost) {
-            String errorMessage = "Number of files is more than " + maxImagePerPost;
+            String errorMessage = "Number of pictures in post are more than " + maxImagePerPost;
             log.error(errorMessage + " ImageValidator-validateFileSize");
             throw new DataValidationException(errorMessage);
         }

@@ -44,25 +44,19 @@ public class ResourceService {
         Resource resourceToSave = resourceMapper.toEntity(resourceDto);
         Resource savedResource = resourceRepository.save(resourceToSave);
 
-        post.getResources().add(savedResource);
-        postRepository.save(post);
-
         return resourceMapper.toDto(savedResource);
     }
 
     @Transactional
     public void deleteResource(long postId, long resourceId) {
-        Post post = getPost(postId);
+        Resource resource = getResource(resourceId);
 
-        int resourceIndex = resourceValidator.validateResourceInPost(post, resourceId);
-        List<Resource> resourceList = post.getResources();
-        String fileKey = resourceList.get(resourceIndex).getKey();
+        resourceValidator.validateResourceInPost(postId, resource);
+        String fileKey = resource.getKey();
 
         log.info("Start delete the file with key = {}", fileKey);
-        resourceList.remove(resourceIndex);
-        post.setResources(resourceList);
+
         resourceRepository.deleteById(resourceId);
-        postRepository.save(post);
         amazonS3Service.deleteFile(fileKey);
     }
 
@@ -87,22 +81,28 @@ public class ResourceService {
         return savedResources.stream().map(resourceMapper::toDto).toList();
     }
 
+    @Transactional
+    public InputStream downloadFile(long postId, long resourceId) {
+        Resource resource = getResource(resourceId);
+        resourceValidator.validateResourceInPost(postId, resource);
+
+        String fileKey = resource.getKey();
+        return amazonS3Service.downloadFile(fileKey);
+    }
 
     private Post getPost(long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> {
+        return postRepository.findById(postId).orElseThrow(() -> {
             log.error("Couldn't find post in Repository {}", postId);
             return new EntityNotFoundException("Couldn't find post in Repository ID = " + postId);
         });
-        return post;
     }
 
-    @Transactional
-    public InputStream downloadFile(long postId, long resourceId) {
-        Post post = getPost(postId);
-        int resourceIndex = resourceValidator.validateResourceInPost(post, resourceId);
-        List<Resource> resourceList = post.getResources();
-        String fileKey = resourceList.get(resourceIndex).getKey();
-
-        return amazonS3Service.downloadFile(fileKey);
+    private Resource getResource(long resourceId) {
+        return resourceRepository.findById(resourceId).orElseThrow(
+                () -> {
+                    log.error("Couldn't find resource in Repository {}", resourceId);
+                    return new EntityNotFoundException("Couldn't find resource in Repository = " + resourceId);
+                }
+        );
     }
 }

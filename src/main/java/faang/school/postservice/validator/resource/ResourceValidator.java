@@ -3,7 +3,9 @@ package faang.school.postservice.validator.resource;
 import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.repository.ResourceRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -12,20 +14,19 @@ import java.util.List;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class ResourceValidator {
     @Value("${services.s3.imageParameters.maxImagePerPost}")
     private int maxImagePerPost;
+    private final ResourceRepository resourceRepository;
 
-    public int validateResourceInPost(Post post, long resourceId) {
-        List<Resource> resourceList = post.getResources();
-        List<Long> resourceIds = resourceList.stream()
-                .map(Resource::getId).toList();
-        if (!resourceIds.contains(resourceId)) {
-            String errorMessage = "Post ID = " + post.getId() + " doesn't contain resource ID = " + resourceId;
+    public void validateResourceInPost(long postId, Resource resource) {
+        long postIdFromResource = resource.getPost().getId();
+        if (postId != postIdFromResource) {
+            String errorMessage = "Resource ID = " + resource.getId() + " doesn't contain Post ID = " + postId;
             log.error(errorMessage);
-            throw new EntityNotFoundException(errorMessage);
+            throw new DataValidationException(errorMessage);
         }
-        return resourceIds.indexOf(resourceId);
     }
 
     public void validateLimitResourcesPerPost(Post post, int numberOfNewResources) {
