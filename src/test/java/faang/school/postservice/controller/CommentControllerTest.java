@@ -2,6 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.CommentService;
+import faang.school.postservice.validator.ControllerValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -30,10 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 class CommentControllerTest {
-    private static final String MESSAGE_COMMENT_IS_NULL = "Comment is null";
-    private static final String MESSAGE_INVALID_COMMENT_ID = "Invalid commentId";
-    private static final String MESSAGE_INVALID_POST_ID = "Invalid postId";
-    private static final long INVALID_ID = -1L;
     private static final long VALID_ID = 3L;
     private static final String RANDOM_CONTENT = "Random content";
     private MockMvc mockMvc;
@@ -41,6 +36,8 @@ class CommentControllerTest {
     private ObjectWriter objectWriter;
     @Mock
     private CommentService service;
+    @Mock
+    private ControllerValidator validator;
     @InjectMocks
     private CommentController controller;
 
@@ -59,25 +56,11 @@ class CommentControllerTest {
     }
 
     @Test
-    public void testInvalidPostId() {
-        assertEquals(MESSAGE_INVALID_POST_ID,
-                assertThrows(RuntimeException.class,
-                        () -> controller.addComment(INVALID_ID, new CommentDto())).getMessage());
-    }
-
-    @Test
-    public void testDtoIsNull() {
-        assertEquals(MESSAGE_COMMENT_IS_NULL,
-                assertThrows(RuntimeException.class,
-                        () -> controller.addComment(VALID_ID, null)).getMessage());
-    }
-
-    @Test
     public void testVerifyServiceAddComment() throws Exception {
         //Act
         Mockito.when(service.addComment(VALID_ID, dto)).thenReturn(dto);
         //Assert
-        mockMvc.perform(post("/post/3")
+        mockMvc.perform(post("/post/3/comment")
                         .contentType(MediaType.APPLICATION_JSON).content(objectWriter.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(VALID_ID))
@@ -92,7 +75,7 @@ class CommentControllerTest {
         //Act
         Mockito.when(service.changeComment(VALID_ID, dto)).thenReturn(dto);
         //Assert
-        mockMvc.perform(put("/post/3")
+        mockMvc.perform(put("/post/3/comment")
                         .contentType(MediaType.APPLICATION_JSON).content(objectWriter.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(VALID_ID))
@@ -110,16 +93,9 @@ class CommentControllerTest {
         //Act
         Mockito.when(service.getAllCommentsOfPost(VALID_ID)).thenReturn(comments);
         //Assert
-        mockMvc.perform(get("/post/3"))
+        mockMvc.perform(get("/post/3/comments"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(comments.size())));
-    }
-
-    @Test
-    public void testInvalidCommentId() {
-        assertEquals(MESSAGE_INVALID_COMMENT_ID,
-                assertThrows(RuntimeException.class,
-                        () -> controller.deleteComment(VALID_ID, INVALID_ID)).getMessage());
     }
 
     @Test
@@ -127,7 +103,7 @@ class CommentControllerTest {
         //Act
         Mockito.when(service.deleteComment(VALID_ID, VALID_ID)).thenReturn(dto);
         //Assert
-        mockMvc.perform(delete("/post/3?commentId=3"))
+        mockMvc.perform(delete("/post/3/comment?commentId=3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(VALID_ID))
                 .andExpect(jsonPath("$.content").value(RANDOM_CONTENT))
