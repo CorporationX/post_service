@@ -1,10 +1,12 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -24,7 +26,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class LikeServiceImplTest {
 
-
     @Mock
     private LikeValidator likeValidator;
     @Mock
@@ -35,6 +36,8 @@ class LikeServiceImplTest {
     private PostRepository postRepository;
     @Mock
     private CommentRepository commentRepository;
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
     @InjectMocks
     private LikeServiceImpl likeService;
 
@@ -58,9 +61,12 @@ class LikeServiceImplTest {
         when(commentRepository.findById(likeDto.getCommentId())).thenReturn(Optional.of(new Comment()));
         when(likeRepository.save(like)).thenReturn(like);
         when(likeMapper.toDto(like)).thenReturn(likeDto);
+        when(likeMapper.toEvent(likeDto)).thenReturn(new LikeEvent());
         LikeDto result = likeService.likeComment(likeDto);
         assertNotNull(result);
         verify(likeValidator).validate(likeDto);
+        verify(likeRepository).save(any(Like.class));
+        verify(kafkaLikeProducer).sendEvent(any(LikeEvent.class));
     }
 
     @Test
@@ -71,6 +77,7 @@ class LikeServiceImplTest {
         assertNull(result);
         verify(likeValidator).validate(likeDto);
         verifyNoMoreInteractions(likeRepository);
+        verifyNoInteractions(kafkaLikeProducer);
     }
 
     @Test
@@ -81,9 +88,12 @@ class LikeServiceImplTest {
         when(postRepository.findById(likeDto.getPostId())).thenReturn(Optional.of(new Post()));
         when(likeRepository.save(like)).thenReturn(like);
         when(likeMapper.toDto(like)).thenReturn(likeDto);
+        when(likeMapper.toEvent(likeDto)).thenReturn(new LikeEvent());
         LikeDto result = likeService.likePost(likeDto);
         assertNotNull(result);
         verify(likeValidator).validate(likeDto);
+        verify(likeRepository).save(any(Like.class));
+        verify(kafkaLikeProducer).sendEvent(any(LikeEvent.class));
     }
 
     @Test
@@ -94,5 +104,6 @@ class LikeServiceImplTest {
         assertNull(result);
         verify(likeValidator).validate(likeDto);
         verifyNoMoreInteractions(likeRepository);
+        verifyNoInteractions(kafkaLikeProducer);
     }
 }

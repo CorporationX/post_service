@@ -1,10 +1,12 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -24,6 +26,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeMapper likeMapper;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final KafkaLikeProducer kafkaLikeProducer;
 
     @Override
     @Transactional
@@ -32,11 +35,18 @@ public class LikeServiceImpl implements LikeService {
         if (likeDto.getCommentId() != null) {
             if (findByCommentIdAndAuthorId(likeDto) == null) {
                 Like savedLike = setCommentFromDto(likeDto);
-                return likeMapper.toDto(likeRepository.save(savedLike));
+                LikeDto resultDto = likeMapper.toDto(likeRepository.save(savedLike));
+                sendLikeEventToKafka(likeDto);
+                return resultDto;
             }
         }
         log.warn("user with id {} try like comment with id {} second time", likeDto.getUserId(), likeDto.getCommentId());
         return null;
+    }
+
+    private void sendLikeEventToKafka(LikeDto likeDto) {
+        LikeEvent event = likeMapper.toEvent(likeDto);
+        kafkaLikeProducer.sendEvent(event);
     }
 
     @Override
@@ -53,7 +63,9 @@ public class LikeServiceImpl implements LikeService {
             if (findByPostIdAndAuthorId(likeDto) == null) {
                 Like savedLike = setPostFromDto(likeDto);
                 savedLike.setComment(null);
-                return likeMapper.toDto(likeRepository.save(savedLike));
+                LikeDto resultDto = likeMapper.toDto(likeRepository.save(savedLike));
+                sendLikeEventToKafka(likeDto);
+                return resultDto;
             }
         }
         log.warn("user with id {} try like post with id {} second time", likeDto.getUserId(), likeDto.getPostId());
