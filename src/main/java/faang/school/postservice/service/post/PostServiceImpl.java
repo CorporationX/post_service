@@ -1,10 +1,14 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.moderation.ModerationDictionary;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostEvent;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,6 +35,8 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final PostValidator postValidator;
     private final @Qualifier("executorService")ExecutorService threadPool;
+    private final KafkaPostProducer kafkaPostProducer;
+    private final UserServiceClient userServiceClient;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -163,6 +169,13 @@ public class PostServiceImpl implements PostService {
     @Override
     public boolean existsById(long id) {
         return postRepository.existsById(id);
+    }
+
+
+    private void sendPostEventToKafka(PostDto postDto) {
+        UserDto userDto = userServiceClient.getUser(postDto.getAuthorId());
+        PostEvent event = new PostEvent(postDto.getId(), postDto.getAuthorId(), userDto.getSubscriberId());
+        kafkaPostProducer.sendEvent(event);
     }
 }
 
