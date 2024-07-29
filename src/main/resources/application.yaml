@@ -32,6 +32,9 @@ spring:
       secretKey: password
       bucketName: projectbucket
 
+  resources:
+    max_size: 5 * 1024 * 1024
+
 server:
   port: 8081
 

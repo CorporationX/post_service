@@ -35,9 +35,9 @@ public class AmazonS3Config {
                 )))
                 .withRegion(Regions.US_EAST_1)
                 .build();
-        if (!s3Client.doesBucketExistV2(bucketName)) {
+        /*if (!s3Client.doesBucketExistV2(bucketName)) {
             s3Client.createBucket(new CreateBucketRequest(bucketName));
-        }
+        }*/
 
        return s3Client;
     }

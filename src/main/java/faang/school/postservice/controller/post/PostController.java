@@ -3,22 +3,31 @@ package faang.school.postservice.controller.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/post")
 @RequiredArgsConstructor
+@Slf4j
 public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public PostDto createPost(
-            @RequestBody @Valid PostDto postDto, @RequestBody(required = false) List<MultipartFile> files) {
-        return postService.createPost(postDto, files);
+    public PostDto createPost(@RequestBody @Valid PostDto postDto) {
+        return postService.createPost(postDto);
+    }
+
+    @PostMapping("/{postId}")
+    public ResponseEntity<String> addResourceToPost(
+            @PathVariable Long postId , @RequestBody @NonNull List<MultipartFile> files) {
+        return postService.addResourceToPost(postId, files);
     }
 
     @PutMapping
