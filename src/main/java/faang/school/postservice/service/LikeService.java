@@ -18,11 +18,13 @@ public class LikeService {
     private static final int USER_BATCH_SIZE = 100;
 
     public List<UserDto> getUsersThatLikedPost(Long postId) {
-
+        List<Long> userIdsThatLikedPost = getLikesFromPost(postId);
+        return getUsersFromUserService(userIdsThatLikedPost);
     }
 
     public List<UserDto> getUsersThatLikedComment(Long commentId) {
-
+        List<Long> userIdsThatLikedComment = getLikesFromComment(commentId);
+        return getUsersFromUserService(userIdsThatLikedComment);
     }
 
     private List<Long> getLikesFromPost(Long postId) {
@@ -33,11 +35,13 @@ public class LikeService {
         return likeRepository.findByCommentId(commentId).stream().map(Like::getUserId).toList();
     }
 
-    private List<UserDto> GetUsers(List<Long> userIds) {
+    private List<UserDto> getUsersFromUserService(List<Long> userIds) {
         List<UserDto> users = new ArrayList<>();
         for(int i=0; i<userIds.size(); i+=USER_BATCH_SIZE) {
             int bound = Math.min(i+USER_BATCH_SIZE, userIds.size());
-
+            List<UserDto> batchOfUsers = userServiceClient.getUsersByIds(userIds.subList(i, bound));
+            users.addAll(batchOfUsers);
         }
+        return users;
     }
 }
