@@ -19,8 +19,8 @@ public interface UserServiceClient {
 
     @GetMapping("/users/{userId}")
     UserDto getUser(@PathVariable @NotNull(message = "Поле не может отсутствовать!")
-                    @Min(value = 0,
-                            message = "Поле должно быть положительным.") long userId);
+                    @Min(value = 1,
+                            message = "Поле должно быть 1 или более.") long userId);
 
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody @NotEmpty(message = "Список не должен быть пустым.")

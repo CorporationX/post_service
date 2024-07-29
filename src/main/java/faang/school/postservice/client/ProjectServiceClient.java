@@ -19,8 +19,8 @@ public interface ProjectServiceClient {
 
     @GetMapping("/project/{projectId}")
     ProjectDto getProject(@PathVariable @NotNull(message = "Поле не может отсутствовать!")
-                          @Min(value = 0,
-                                  message = "Поле должно быть положительным.") long projectId);
+                          @Min(value = 1,
+                                  message = "Поле должно быть 1 или более.") long projectId);
 
     @PostMapping("/projects")
     List<ProjectDto> getProjectsByIds(@RequestBody

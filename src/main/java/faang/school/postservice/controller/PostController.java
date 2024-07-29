@@ -29,7 +29,7 @@ public class PostController {
     @GetMapping("/{postId}")
     public void getPost(@PathVariable("postId")
                         @NotNull(message = "Необходимо указать АйДи поста")
-                        @Min(value = 0, message = "АйДи поста должен быть положительным.")
+                        @Min(value = 1, message = "АйДи поста должен быть 1 или более.")
                         Long id) {
         log.info("Был вызван запрос на получение поста по его АйДи '{}'", id);
     }
