@@ -28,6 +28,8 @@ spring:
       enable-idempotence: true
     topic:
       post: Post
+      comment: Comment
+      like: Like
 
   data:
     redis:
@@ -37,10 +39,13 @@ spring:
         post: Post
         infAuthor: InfAuthor
         feed: Feed_
+        comment: Comment_By_Post_
+        like: Like_By_Post_
         timestamp: :timestamp
       settings:
-        ttl: 1
+        ttl: 86400
         maxSizeFeed: 500
+        maxSizeComment: 3
       channels:
         calculations_channel:
           name: calculations_channel
@@ -118,3 +123,4 @@ value:
     secondOptionBatch: 1000
     thirdOption: 100000
     thirdOptionBatch: 10000
+  feedSize: 20

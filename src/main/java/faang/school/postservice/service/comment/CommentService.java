@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.ChangeCommentDto;
+import faang.school.postservice.dto.comment.CommentFeedDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -9,6 +10,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderator.comment.logic.CommentModerator;
+import faang.school.postservice.publisher.kafka.KafkaCommentPublisher;
 import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.cache.RedisCacheService;
@@ -40,6 +42,7 @@ public class CommentService {
     private final CommentModerator commentModerator;
     private final RedisCacheService redisCacheService;
     private final UserServiceClient userServiceClient;
+    private final KafkaCommentPublisher kafkaCommentPublisher;
 
     @Value("${postServiceThreadPool.poolComment}")
     @Setter
@@ -90,11 +93,13 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(createCommentDto);
         Comment commentSaved = commentRepository.save(comment);
         CreateCommentDto authorCommentDto = commentMapper.toDto(commentSaved);
+        CommentFeedDto commentFeedDto = commentMapper.toFeedDto(commentSaved);
 
         commentEventPublisher.sendEvent(commentMapper.toEventDto(commentSaved));
         UserDto postUserDto =  userServiceClient.getUser(authorCommentDto.getAuthorId());
 
         redisCacheService.saveToCache(patternByInfAuthor, authorCommentDto.getAuthorId(), postUserDto);
+        kafkaCommentPublisher.sendMessage(createCommentDto.getPostId(), commentFeedDto);
         log.debug("Comment saved in db. Comment: {}", commentSaved);
 
         return authorCommentDto;

@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.ChangeCommentDto;
+import faang.school.postservice.dto.comment.CommentFeedDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -10,6 +11,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderator.comment.logic.CommentModerator;
+import faang.school.postservice.publisher.kafka.KafkaCommentPublisher;
 import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.cache.RedisCacheService;
@@ -70,6 +72,9 @@ public class CommentServiceTest {
     @Mock
     private CommentModerator commentModerator;
 
+    @Mock
+    private KafkaCommentPublisher kafkaCommentPublisher;
+
     private CreateCommentDto createCommentDto;
     private ChangeCommentDto changeCommentDto;
     private CommentEventDto commentEventDto;
@@ -78,6 +83,7 @@ public class CommentServiceTest {
     private Long id;
     private String patternByInfAuthor = "InfAuthor";
     private UserDto authorCommentDto;
+    private CommentFeedDto commentFeedDto;
 
     @BeforeEach
     public void setUp() {
@@ -90,6 +96,7 @@ public class CommentServiceTest {
         commentList = new ArrayList<>(List.of(comment, comment, comment, comment));
         id = 1L;
         commentService.setPatternByInfAuthor("InfAuthor");
+        commentFeedDto = CommentFeedDto.builder().build();
     }
 
     @Test
@@ -99,6 +106,7 @@ public class CommentServiceTest {
         when(commentMapper.toEventDto(comment)).thenReturn(commentEventDto);
         doNothing().when(commentEventPublisher).sendEvent(commentEventDto);
         when(commentMapper.toDto(comment)).thenReturn(createCommentDto);
+        when(commentMapper.toFeedDto(comment)).thenReturn(commentFeedDto);
         when(userServiceClient.getUser(createCommentDto.getAuthorId())).thenReturn(authorCommentDto);
 
         CreateCommentDto result = commentService.createComment(createCommentDto);
@@ -109,7 +117,9 @@ public class CommentServiceTest {
         verify(commentEventPublisher).sendEvent(commentEventDto);
         verify(commentRepository).save(comment);
         verify(commentMapper).toDto(comment);
+        verify(commentMapper).toFeedDto(comment);
         verify(redisCacheService, times(1)).saveToCache(patternByInfAuthor, authorCommentDto.getId(), authorCommentDto);
+        verify(kafkaCommentPublisher, times(1)).sendMessage(createCommentDto.getPostId(), commentFeedDto);
     }
 
     @Test
