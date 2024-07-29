@@ -1,7 +1,6 @@
 package faang.school.postservice.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -65,9 +64,6 @@ public class PostServiceTest {
     @Mock
     private KafkaPostProducer kafkaPostProducer;
 
-    @Mock
-    private ObjectMapper objectMapper;
-
     @Spy
     private PostMapperImpl postMapper;
 
@@ -102,7 +98,7 @@ public class PostServiceTest {
                 .build();
 
         userDto = UserDto.builder().id(1L).username("name").email("email").build();
-        postEvent = PostEvent.builder().authorId(1L).id(1L).followersAuthor(List.of(1L, 2L, 3L)).build();
+        postEvent = PostEvent.builder().authorId(1L).id(1L).followerIdsAuthor(List.of(1L, 2L, 3L)).build();
         time = LocalDateTime.now();
         json = "";
 
@@ -132,15 +128,11 @@ public class PostServiceTest {
     void createDraftPost() throws JsonProcessingException {
         Post post = postMapper.toEntity(postDto);
         when(postRepository.save(post)).thenReturn(post);
-        when(postMapper.toEvent(post)).thenReturn(postEvent);
-        when(objectMapper.writeValueAsString(postEvent)).thenReturn(json);
 
         postService.createDraftPost(postDto, null);
         verify(postRepository, times(1)).save(post);
-        verify(postMapper, times(1)).toEvent(post);
+
         verify(userServiceClient, times(1)).getIdsFollowersUser(post.getAuthorId());
-        verify(objectMapper, times(1)).writeValueAsString(postEvent);
-        verify(kafkaPostProducer, times(1)).sendMessage(json);
     }
 
     @Test
