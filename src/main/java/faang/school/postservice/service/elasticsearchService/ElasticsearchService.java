@@ -2,6 +2,7 @@ package faang.school.postservice.service.elasticsearchService;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch.core.DeleteRequest;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
@@ -51,6 +52,11 @@ public class ElasticsearchService {
                         .match(m -> m
                                 .field("hashtagNames")
                                 .query(hashtag)
+                        )
+                ).sort(s -> s
+                        .field(f -> f
+                                .field("_id")
+                                .order(SortOrder.Desc)
                         )
                 )
                 .build();
