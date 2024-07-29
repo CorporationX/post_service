@@ -40,6 +40,8 @@ kafka:
   host: "localhost:9092"
   topic-name:
     post: "posts"
+  post-producer:
+    batch-size: 100
 
 server:
   port: 8081
@@ -68,6 +70,7 @@ redis:
     time-unit:
       post: "DAYS"
       author: "DAYS"
+  feed-size: 500
 
 moderationScheduler:
   cron: "0 0 0 * * *" # every day

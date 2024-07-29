@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.RedisCacheException;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -21,17 +24,21 @@ public class RedisCacheService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
 
+
     @Value("${redis.cache.ttl.post}")
     private long ttlPost;
 
     @Value("${redis.cache.time-unit.post}")
-    String timeUnitPost;
+    private String timeUnitPost;
 
     @Value("${redis.cache.ttl.author}")
     private long ttlAuthor;
 
     @Value("${redis.cache.time-unit.author}")
-    String timeUnitAuthor;
+    private String timeUnitAuthor;
+
+    @Value("${redis.feed-size}")
+    private int feedSize;
 
     public void savePost(PostDto postDto) {
         String key = "post:" + postDto.getId();
@@ -51,6 +58,26 @@ public class RedisCacheService {
     public UserDto getAuthor(long authorId) {
         String key = "author:" + authorId;
         return getFromCache(key, UserDto.class);
+    }
+
+    public void addPostToFeed(PostEvent postEvent) {
+
+        List<Long> ids = postEvent.getFollowerIdsAuthor();
+        ids.forEach(id -> {
+            String key = "feed:" + id;
+            redisTemplate.opsForZSet().add(
+                    key, String.valueOf(postEvent.getId()), System.currentTimeMillis());
+
+            Long size = redisTemplate.opsForZSet().size(key);
+            if (size != null && size > feedSize) {
+                redisTemplate.opsForZSet().removeRange(key, 0, size - (feedSize + 1));
+            }
+        });
+
+    }
+
+    public Set<Object> getFeedByFollowerId(Long followerId) {
+        return redisTemplate.opsForZSet().reverseRange("feed:" + followerId, 0, -1);
     }
 
     private void saveToCache(Object dto, String timeUnit, String key, long ttl) {

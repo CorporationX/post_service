@@ -31,6 +31,6 @@ public interface PostMapper {
         return new ArrayList<>();
     }
 
-    @Mapping(target = "followersAuthor", ignore = true)
+    @Mapping(target = "followerIdsAuthor", ignore = true)
     PostEvent toEvent(Post post);
 }

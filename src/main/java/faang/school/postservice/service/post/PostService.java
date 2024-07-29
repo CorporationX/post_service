@@ -1,7 +1,6 @@
 package faang.school.postservice.service.post;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -23,6 +22,7 @@ import faang.school.postservice.service.ResourceService;
 import faang.school.postservice.validation.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,7 +50,9 @@ public class PostService {
     private final PostModerator postModerator;
     private final RedisCacheService redisCacheService;
     private final KafkaPostProducer kafkaPostProducer;
-    private final ObjectMapper objectMapper;
+
+    @Value("${kafka.post-producer.batch-size}")
+    private int batchSize;
 
     @Transactional(readOnly = true)
     public long getUserIdByPostId(long postId) {
@@ -65,13 +67,20 @@ public class PostService {
         postValidator.validateAuthorExist(author, project);
         Post saved = postRepository.save(postMapper.toEntity(postDto));
 
-        PostEvent postEvent = postMapper.toEvent(saved);
-        postEvent.setFollowersAuthor(userServiceClient.getIdsFollowersUser(saved.getAuthorId()));
-        try {
-            String postEventJson = objectMapper.writeValueAsString(postEvent);
-            kafkaPostProducer.sendMessage(postEventJson);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        List<Long> allFollowerIdsAuthor = userServiceClient.getIdsFollowersUser(saved.getAuthorId());
+
+        for (int i = 0; i < allFollowerIdsAuthor.size(); i += batchSize) {
+            int end = Math.max(allFollowerIdsAuthor.size(), i + batchSize);
+            List<Long> batchFollowerIds = allFollowerIdsAuthor.subList(i, end);
+
+            PostEvent batchPostEvent = postMapper.toEvent(saved);
+            batchPostEvent.setFollowerIdsAuthor(batchFollowerIds);
+
+            try {
+                kafkaPostProducer.sendMessage(batchPostEvent);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         if (Objects.nonNull(files) && !files.isEmpty()) {
