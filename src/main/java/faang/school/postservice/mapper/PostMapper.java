@@ -15,3 +15,4 @@ public interface PostMapper {
 
     List<PostDto> toDto(List<Post> posts);
 }
+
