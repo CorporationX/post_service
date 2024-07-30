@@ -37,6 +37,36 @@ public class AlbumService {
         }
     }
 
+    public void deleteAlbum(Long albumId) {
+        Optional<Album> album = albumRepository.findById(albumId);
+        if (!album.isEmpty()) {
+            Long authorId = album.get().getAuthorId();
+            if (authorId.equals(userContext.getUserId())) {
+                albumRepository.delete(album.get());
+            } else {
+                log.error("author album in not contain current user");
+            }
+        } else {
+            log.error("album is not exist");
+        }
+    }
+
+    public void updateAlbum(AlbumLightDto albumLightDto) {
+        Album albumEntity = albumMapper.toEntityLight(albumLightDto);
+
+        Optional<Album> album = albumRepository.findById(albumEntity.getId());
+        if (!album.isEmpty()) {
+            Long authorId = album.get().getAuthorId();
+            if (authorId.equals(userContext.getUserId())) {
+                albumRepository.save(albumEntity);
+            } else {
+                log.error("author album in not contain current user");
+            }
+        } else {
+           log.error("album is null");
+        }
+    }
+
     public void addPostForAlbum(Long albumId, Long postId) {
         if (albumRepository.findByIdWithPosts(albumId).isPresent()) {
             Optional<Album> album = albumRepository.findById(albumId);
@@ -69,6 +99,14 @@ public class AlbumService {
             log.error("album not found");
             throw new IllegalArgumentException("album is null");
         }
+    }
+
+    public void addAlbumFavorite(Long albumId) {
+        albumRepository.addAlbumToFavorites(albumId, userContext.getUserId());
+    }
+
+    public void deleteAlbumFavorite(Long albumId) {
+        albumRepository.deleteAlbumFromFavorites(albumId, userContext.getUserId());
     }
 
     public AlbumDto getAlbum(Long albumId) {

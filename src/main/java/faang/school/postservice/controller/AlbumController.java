@@ -19,7 +19,7 @@ public class AlbumController {
 
     @Operation(summary = "Создание альбома",
             description = "Создает новый пустой альбом")
-    @PutMapping("/createAlbum")
+    @PutMapping("/create")
     public AlbumLightDto createAlbum(AlbumLightDto albumLightDto) {
         if (albumLightDto == null) {
             log.error("albumLightDto is null");
@@ -29,9 +29,33 @@ public class AlbumController {
         }
     }
 
+    @Operation(summary = "Удалить альбом",
+            description = "Пользователь удаляет свой альбом по id")
+    @PutMapping("/delete")
+    public void deleteAlbum(Long albumId) {
+        if (albumId == null) {
+            log.error("albumId is null");
+            throw new IllegalArgumentException("albumId is null");
+        } else {
+            albumService.deleteAlbum(albumId);
+        }
+    }
+
+    @Operation(summary = "Обновить альбом",
+            description = "Пользователь обновляет свой альбом по id")
+    @PutMapping("/update")
+    public void updateAlbum(AlbumLightDto albumLightDto) {
+        if (albumLightDto == null) {
+            log.error("albumId is null");
+            throw new IllegalArgumentException("albumId is null");
+        } else {
+            albumService.updateAlbum(albumLightDto);
+        }
+    }
+
     @Operation(summary = "Добавление поста к альбому",
             description = "Добавляет пост к альбому по id альбома и id поста")
-    @PutMapping("/addPostForAlbum")
+    @PutMapping("/addPost/{albumId}/{postId}")
     public void addPostForAlbum(Long albumId, Long postId) {
         if (albumId == null) {
             log.error("albumId is null");
@@ -46,7 +70,7 @@ public class AlbumController {
 
     @Operation(summary = "Удаление поста",
             description = "Удаляет пост из альбома по id альбома и postId")
-    @DeleteMapping("/deletePost")
+    @DeleteMapping("/deletePost/{albumId}/{postId}")
     public void deletePostForAlbum(Long albumId, Long postId) {
         if (albumId == null) {
             log.error("albumId is null");
@@ -56,6 +80,28 @@ public class AlbumController {
             throw new IllegalArgumentException("postId is null");
         } else {
             albumService.deletePostForAlbum(albumId, postId);
+        }
+    }
+
+    @Operation(summary = "Добавить альбом в избранные",
+            description = "Добавляет альбом в избранные по id альбома")
+    public void addAlbumFavorite(Long albumId) {
+        if (albumId == null) {
+            log.error("albumId is null");
+            throw new IllegalArgumentException("albumId is null");
+        } else {
+            albumService.addAlbumFavorite(albumId);
+        }
+    }
+
+    @Operation(summary = "Удалить альбом из избранных",
+            description = "Добавить альбом в избранные по id альбома")
+    public void deleteAlbumFavorite(Long albumId) {
+        if (albumId == null) {
+            log.error("albumId is null");
+            throw new IllegalArgumentException("albumId is null");
+        } else {
+            albumService.deleteAlbumFavorite(albumId);
         }
     }
 
