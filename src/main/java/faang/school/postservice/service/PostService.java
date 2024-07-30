@@ -3,22 +3,26 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.post.Post;
 import faang.school.postservice.model.hashtag.Hashtag;
 import faang.school.postservice.model.hashtag.HashtagRequest;
+import faang.school.postservice.model.post.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
+import feign.FeignException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.ConnectException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -36,10 +40,11 @@ public class PostService {
     @Transactional
     public PostDto createPost(PostDto postDto) {
         postServiceValidator.validateCreatePost(postDto);
-        hashtagServiceClient.saveHashtags(
-                HashtagRequest.builder().hashtagNames(postDto.getHashtagNames()).build());
-        List<Hashtag> hashtags = hashtagServiceClient.getHashtagsByNames(
-                HashtagRequest.builder().hashtagNames(postDto.getHashtagNames()).build()).getHashtags();
+        HashtagRequest hashtagRequest = HashtagRequest.builder()
+                .hashtagNames(postDto.getHashtagNames())
+                .build();
+        saveHashtags(hashtagRequest);
+        List<Hashtag> hashtags = getHashtagsByNames(hashtagRequest);
 
         Post post = Post.builder()
                 .authorId(postDto.getAuthorId())
@@ -64,13 +69,13 @@ public class PostService {
                     return new EntityNotFoundException("Post " + postDto.getId() + " not found");
                 });
         postServiceValidator.validateUpdatePost(post, postDto);
+        HashtagRequest hashtagRequest = HashtagRequest.builder()
+                .hashtagNames(postDto.getHashtagNames())
+                .build();
+        saveHashtags(hashtagRequest);
 
-        hashtagServiceClient.saveHashtags(
-                HashtagRequest.builder().hashtagNames(postDto.getHashtagNames()).build());
-
+        post.setHashtags(new ArrayList<>(getHashtagsByNames(hashtagRequest)));
         post.setContent(postDto.getContent());
-        post.setHashtags(new ArrayList<>(hashtagServiceClient.getHashtagsByNames(
-                HashtagRequest.builder().hashtagNames(postDto.getHashtagNames()).build()).getHashtags()));
 
         post = postRepository.save(post);
         PostDto postDtoForReturns = postMapper.toDto(post);
@@ -174,5 +179,24 @@ public class PostService {
         return posts.stream()
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .toList();
+    }
+
+    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    private void saveHashtags(HashtagRequest hashtagRequest) {
+        hashtagServiceClient.saveHashtags(hashtagRequest);
+        log.info("Hashtags have been saved successfully");
+    }
+
+    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    private List<Hashtag> getHashtagsByNames(HashtagRequest hashtagRequest) {
+        List<Hashtag> hashtags = hashtagServiceClient.getHashtagsByNames(hashtagRequest).getHashtags();
+        log.info("Hashtags request was completed successfully");
+        return hashtags;
+    }
+
+    @Recover
+    public void recover(FeignException e) {
+        log.error(e.getMessage());
+        throw e;
     }
 }
