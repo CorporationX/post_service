@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.Mapper.AlbumMapper;
+import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
@@ -32,7 +32,9 @@ public class AlbumService {
     public AlbumDto getAlbum(Long albumId) {
         Long userId = userContext.getUserId();
         Optional<Album> album = albumRepository.findByIdWithPosts(albumId);
-        if (userId != null && album.isPresent()) {
+        if (userId == null || !album.isPresent()) {
+            return new AlbumDto();
+        } else {
             if (userId.equals(album.get().getAuthorId())) {
                 return albumMapper.toDto(album.get());
             } else if (album.get().getVisibilityType().equals(VisibilityType.All_USER)) {

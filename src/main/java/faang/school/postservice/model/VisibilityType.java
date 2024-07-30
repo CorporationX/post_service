@@ -5,13 +5,4 @@ public enum VisibilityType {
     ONLY_SUBSCRIBERS,
     ONLY_USERS_SELECTED,
     ONLY_AUTHOR;
-//    private final String visibility;
-
-//    VisibilityType(String visibility) {
-//        this.visibility = visibility;
-//    }
-
-//    public String getMessage() {
-//        return visibility;
-//    }
 }

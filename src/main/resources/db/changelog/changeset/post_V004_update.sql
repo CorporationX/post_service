@@ -9,5 +9,4 @@ CREATE TABLE user_visibility (
 );
 
 ALTER TABLE album
-    ADD COLUMN if not exists visibility_type varchar(128),
-    ADD COLUMN if not exists visibility_users bigint;
+    ADD COLUMN if not exists visibility_type varchar(128)

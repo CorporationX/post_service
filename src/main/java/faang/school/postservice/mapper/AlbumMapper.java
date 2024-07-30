@@ -1,4 +1,4 @@
-package faang.school.postservice.Mapper;
+package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.model.Album;
@@ -14,7 +14,6 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AlbumMapper {
 
-//    @Mapping(source = "postsId", target = "posts.id", qualifiedByName = "mapPosts")
     Album toEntity(AlbumDto albumDto);
 
     @Mapping(source = "posts", target = "postsId", qualifiedByName = "mapPost")
