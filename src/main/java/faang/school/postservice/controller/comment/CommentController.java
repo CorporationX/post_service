@@ -1,6 +1,6 @@
 package faang.school.postservice.controller.comment;
 
-import faang.school.postservice.controller.comment.error.CommentControllerErrors;
+import faang.school.postservice.controller.error.CommentControllerErrors;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;

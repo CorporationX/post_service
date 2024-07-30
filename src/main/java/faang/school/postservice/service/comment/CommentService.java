@@ -80,7 +80,7 @@ public class CommentService {
 
     private void equalUpdateComment(CommentDto commentDto, CommentDto currentCommentDto) {
         if (!Objects.equals(commentDto.getAuthorId(), currentCommentDto.getAuthorId())
-            || !Objects.equals(commentDto.getLikeIds(), currentCommentDto.getLikeIds())
+            || !Objects.equals(commentDto.getLikes(), currentCommentDto.getLikes())
             || !Objects.equals(commentDto.getPostId(), currentCommentDto.getPostId())
             || !Objects.equals(commentDto.getCreatedAt(), currentCommentDto.getCreatedAt())
             || !Objects.equals(commentDto.getUpdatedAt(), currentCommentDto.getUpdatedAt())
