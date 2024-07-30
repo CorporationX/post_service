@@ -73,9 +73,9 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
-    public List<PostDto> getFilteredPosts(final Long authorId, final Long projectId, final Boolean published) {
+    public List<PostDto> getFilteredPosts(final Long authorId, final Long projectId, final Boolean isPostPublished) {
         List<Post> result = new ArrayList<>();
-        boolean isPublished = published;
+        boolean isPublished = isPostPublished;
 
         if (authorId != null) {
             result = postRepository.findByAuthorIdAndPublishedAndDeletedIsFalseOrderByPublished(authorId, isPublished);
@@ -83,7 +83,9 @@ public class PostService {
             result = postRepository.findByProjectIdAndPublishedAndDeletedIsFalseOrderByPublished(projectId, isPublished);
         }
 
-        return result.stream().map((postMapper::toDto)).toList();
+        return result.stream()
+                .map((postMapper::toDto))
+                .toList();
     }
 
     private Post getPostByIdOrFail(long postId) {
