@@ -3,6 +3,7 @@ package faang.school.postservice.config.AmazonS3;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -25,20 +26,26 @@ public class AmazonS3Config {
     @Value("${spring.services.s3.bucketName}")
     private String bucketName;
 
+    @Value("${spring.services.s3.endpoint}")
+    private String endpoint;
+
     @Bean
-    public AmazonS3 s3Client(){
-       AmazonS3 s3Client = AmazonS3ClientBuilder
+    public AmazonS3 s3Client() {
+        AmazonS3 s3Client = AmazonS3ClientBuilder
                 .standard()
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint,
+                        Regions.US_EAST_1.getName()))
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(
                         accessKey,
                         secretKey
                 )))
-                .withRegion(Regions.US_EAST_1)
+                .withPathStyleAccessEnabled(true)
                 .build();
-        /*if (!s3Client.doesBucketExistV2(bucketName)) {
-            s3Client.createBucket(new CreateBucketRequest(bucketName));
-        }*/
 
-       return s3Client;
+        if (!s3Client.doesBucketExistV2(bucketName)) {
+            s3Client.createBucket(new CreateBucketRequest(bucketName));
+        }
+
+        return s3Client;
     }
 }

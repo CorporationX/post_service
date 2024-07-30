@@ -10,16 +10,10 @@ import faang.school.postservice.service.s3.S3Service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.coobird.thumbnailator.Thumbnails;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -32,8 +26,8 @@ public class ResourceService {
     private final PostRepository postRepository;
     private final ResizeService resizeService;
 
-    @Value("${spring.resources.max_size}")
-    private long MAX_FILE_SIZE;
+
+    private static final int MAX_FILE_SIZE = 5 * 1024 * 1024; //5mb
 
     @Transactional
     public void addResource(Long postId, MultipartFile file) {
@@ -56,9 +50,10 @@ public class ResourceService {
             throw new FileException("Failed to resize image: " + file.getOriginalFilename());
         }
 
-        String folder = "post:" + post.getId();
+        String folder = "post" + post.getId();
         Resource resource = s3Service.uploadFile(resizedFile, folder);
-
+        resource.setPost(post);
+        resourceRepository.save(resource);
         post.getResources().add(resource);
         postRepository.save(post);
     }
@@ -70,4 +65,6 @@ public class ResourceService {
         });
         return s3Service.downloadFile(resource.getKey());
     }
+
+
 }

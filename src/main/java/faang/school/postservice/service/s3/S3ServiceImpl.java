@@ -30,7 +30,7 @@ public class S3ServiceImpl implements S3Service {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(fileSize);
         objectMetadata.setContentType(file.getContentType());
-        String key = String.format("%s%s/%d", folder, file.getOriginalFilename(), System.currentTimeMillis());
+        String key = String.format("%s/%d%s", folder, System.currentTimeMillis(), file.getOriginalFilename());
         try {
             s3Client.putObject(new PutObjectRequest(bucketName, key, file.getInputStream(), objectMetadata));
         } catch (Exception e) {

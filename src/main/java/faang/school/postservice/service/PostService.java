@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -26,6 +27,8 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
     private final ResourceService resourceService;
+
+    private final static Set<String> SUPPORTED_IMAGE_TYPES = Set.of("image/png", "image/jpeg", "image/jpg");
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -38,7 +41,7 @@ public class PostService {
 
     public ResponseEntity<String> addResourceToPost(Long postId, List<MultipartFile> files) {
         List<MultipartFile> imageFiles = files.stream()
-                .filter(file -> file.getContentType().equals("SUPPORTED_IMAGE_TYPES"))
+                .filter(file -> SUPPORTED_IMAGE_TYPES.contains(file.getContentType()))
                 .toList();
         imageFiles.forEach(file -> resourceService.addResource(postId, file));
         return ResponseEntity.ok("Resources added successfully");
