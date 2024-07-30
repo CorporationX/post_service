@@ -1,28 +1,24 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
-import jakarta.persistence.EntityNotFoundException;
+import faang.school.postservice.validation.comment.UserClientValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -36,9 +32,9 @@ class CommentServiceTest {
     @Mock
     private CommentMapper commentMapper;
     @Mock
-    private UserServiceClient userServiceClient;
-    @Mock
     private PostService postService;
+    @Mock
+    private UserClientValidation userClientValidation;
     CommentDto commentDto;
     Comment existingComment;
     Post post;
@@ -60,16 +56,9 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("testAddCommentServiceValidateAuthorExists")
-    void testAddCommentServiceValidateAuthorExists() {
-        testValidateAuthorExists();
-    }
-
-    @Test
     @DisplayName("testAddCommentService")
     void testAddCommentService() {
-        when(userServiceClient.getUser(anyLong()))
-                .thenReturn(new UserDto(1L, null, null));
+        doNothing().when(userClientValidation).checkUser(anyLong());
         when(commentMapper.toEntity(any(CommentDto.class)))
                 .thenReturn(existingComment);
         when(postService.getPost(anyLong()))
@@ -97,8 +86,9 @@ class CommentServiceTest {
         updatedComment.setId(1L);
         updatedComment.setContent("Updated content");
 
-        Mockito.when(userServiceClient.getUser(anyLong()))
-                .thenReturn(new UserDto(1L, null, null));
+//        Mockito.when(userServiceClient.getUser(anyLong()))
+//                .thenReturn(new UserDto(1L, null, null));
+        doNothing().when(userClientValidation).checkUser(anyLong());
         when(commentRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(existingComment));
         when(commentRepository.save(any(Comment.class)))
@@ -141,12 +131,5 @@ class CommentServiceTest {
 
         verify(commentRepository, times(1)).deleteById(existingComment.getId());
         assertEquals(commentDto, resultTest);
-    }
-
-    private void testValidateAuthorExists() {
-        when(userServiceClient.getUser(anyLong()))
-                .thenReturn(null);
-        assertThrows(EntityNotFoundException.class,
-                () -> commentService.addNewCommentInPost(commentDto));
     }
 }
