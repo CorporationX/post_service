@@ -3,6 +3,7 @@ package faang.school.postservice.controller.comment;
 import faang.school.postservice.controller.comment.error.CommentControllerErrors;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.comment.CommentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,16 +22,15 @@ public class CommentController {
 
     private final CommentService service;
 
-
     @PostMapping("/comment")
-    public CommentDto addComment(@RequestParam Long postId, @RequestBody CommentDto commentDto) {
+    public CommentDto addComment(@RequestParam Long postId, @Valid @RequestBody CommentDto commentDto) {
         validatePostId(postId);
         validateCommentDto(commentDto);
         return service.addComment(postId, commentDto);
     }
 
     @PutMapping("/comment")
-    public CommentDto updateComment(@RequestParam Long postId, @RequestBody CommentDto commentDto) {
+    public CommentDto updateComment(@RequestParam Long postId, @Valid @RequestBody CommentDto commentDto) {
         validatePostId(postId);
         validateCommentDto(commentDto);
         return service.updateComment(postId, commentDto);
@@ -44,7 +44,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comment")
-    public CommentDto deleteComment(@RequestParam Long postId, @RequestBody CommentDto commentDto) {
+    public CommentDto deleteComment(@RequestParam Long postId, @Valid @RequestBody CommentDto commentDto) {
         validatePostId(postId);
         validateCommentDto(commentDto);
         return service.deleteComment(postId, commentDto);
