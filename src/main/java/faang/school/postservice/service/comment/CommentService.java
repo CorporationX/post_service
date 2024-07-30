@@ -29,7 +29,7 @@ public class CommentService {
     @Transactional
     public CommentDto updateComment(Long postId, Long commentId, CommentDto commentDto) {
         commentValidator.findPostById(postId);
-        Comment comment = getValidComment(commentId);
+        Comment comment = commentValidator.findCommentById(commentId);
         commentValidator.checkUserRightsToChangeComment(comment, commentDto);
         comment.setContent(commentDto.getContent());
         return commentMapper.toDto(commentRepository.save(comment));
@@ -48,10 +48,5 @@ public class CommentService {
     public void deleteComment(Long commentId) {
         commentValidator.findCommentById(commentId);
         commentRepository.deleteById(commentId);
-    }
-
-    private Comment getValidComment(Long commentId) {
-        commentValidator.findCommentById(commentId);
-        return commentRepository.findById(commentId).get();
     }
 }
