@@ -37,7 +37,6 @@ public class FeedService {
     private final RedisUserCache userCache;
     private final RedisPostCache postCache;
     private final PostService postService;
-    private final ListSplitter listSplitter;
     private final UserServiceClient userServiceClient;
     private final KafkaPostViewEventProducer postViewEventProducer;
     private final KafkaFeedHeatEventProducer feedHeatEventProducer;
@@ -49,6 +48,14 @@ public class FeedService {
     public int heaterBatchSize;
 
 
+    /**
+     * Returns feed for specified user
+     *
+     * @param userId           whose feed needs to be returned
+     * @param lastViewedPostId optional parameter specifying last viewed post.
+     *                         All returned feed will have date of publication before this post.
+     * @return list of special dtos describing posts in users feed (Post author, views counter, likes counter, and first 3 comments)
+     */
     public List<PostForFeedDto> getFeed(Long userId, Long lastViewedPostId) {
         Optional<Feed> userFeed = feedCache.findById(userId);
         Optional<List<PostForFeedDto>> postsFromCache;
@@ -60,11 +67,11 @@ public class FeedService {
         }
 
         List<PostForFeedDto> fullPostsBatch = getFullPostsBatch(userId, postsFromCache);
-        List<PostForFeedDto> readyToViewFeed = collectUserFeed(fullPostsBatch);
+        collectUserFeed(fullPostsBatch);
 
-        handlePostViews(readyToViewFeed);
+        handlePostViews(fullPostsBatch);
 
-        return readyToViewFeed;
+        return fullPostsBatch;
     }
 
     private void handlePostViews(List<PostForFeedDto> readyToViewFeed) {
@@ -124,19 +131,17 @@ public class FeedService {
         };
     }
 
-    private List<PostForFeedDto> collectUserFeed(List<PostForFeedDto> fullPostsBatch) {
-        return fullPostsBatch.stream()
-                .peek(postForFeedDto -> {
-                    postForFeedDto.setPostAuthor(getUserDto(postForFeedDto.getPostAuthorId()));
-                })
-                .peek(postForFeedDto -> {
-                    Set<CommentForFeedDto> comments = postForFeedDto.getComments();
-                    if (comments != null) {
-                        comments.forEach(setCommentAuthor());
-                    }
-                })
-                .peek(PostForFeedDto::incrementVersion)
-                .toList();
+    private void collectUserFeed(List<PostForFeedDto> fullPostsBatch) {
+        fullPostsBatch.forEach(postForFeedDto -> {
+            postForFeedDto.setPostAuthor(getUserDto(postForFeedDto.getPostAuthorId()));
+
+            Set<CommentForFeedDto> comments = postForFeedDto.getComments();
+            if (comments != null) {
+                comments.forEach(setCommentAuthor());
+            }
+
+            postForFeedDto.incrementVersion();
+        });
     }
 
     private Consumer<CommentForFeedDto> setCommentAuthor() {
@@ -171,7 +176,7 @@ public class FeedService {
 
     public void heatFeed() {
         List<Long> userIds = userServiceClient.getAllUsersIds();
-        List<List<Long>> batchedUserIds = listSplitter.splitList(userIds, heaterBatchSize);
+        List<List<Long>> batchedUserIds = ListSplitter.splitList(userIds, heaterBatchSize);
 
         batchedUserIds.stream()
                 .map(FeedHeatEventDto::new)

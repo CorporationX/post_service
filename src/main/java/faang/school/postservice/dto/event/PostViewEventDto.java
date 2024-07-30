@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostViewEventDto extends EventDto {
-    private long postId;
+    private Long postId;
 }

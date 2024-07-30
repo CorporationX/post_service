@@ -25,26 +25,12 @@ public class KafkaConsumerConfig {
     @Bean
     public ConsumerFactory<String, EventDto> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
-        props.put(
-                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                kafkaProperties.getAddress()
-        );
-        props.put(
-                ConsumerConfig.GROUP_ID_CONFIG,
-                kafkaProperties.getGroupId()
-        );
-        props.put(
-                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class
-        );
-        props.put(
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                JsonDeserializer.class
-        );
-        props.put(
-                JsonDeserializer.TRUSTED_PACKAGES,
-                "faang.school.postservice.dto.event, java.util, java.lang"
-        );
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getAddress());
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getGroupId());
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "faang.school.postservice.dto.event, java.util, java.lang");
+
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
@@ -53,6 +39,7 @@ public class KafkaConsumerConfig {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, EventDto>();
         factory.setConsumerFactory(consumerFactory());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+
         return factory;
     }
 }

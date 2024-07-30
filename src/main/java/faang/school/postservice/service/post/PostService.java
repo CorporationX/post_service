@@ -101,8 +101,8 @@ public class PostService {
     }
 
     @Transactional
-    public List<Post> updatePosts(List<Post> posts) {
-        return postRepository.saveAll(posts);
+    public void updatePosts(List<Post> posts) {
+        postRepository.saveAll(posts);
     }
 
     @Transactional

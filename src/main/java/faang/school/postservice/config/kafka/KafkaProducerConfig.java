@@ -23,18 +23,9 @@ public class KafkaProducerConfig {
     @Bean
     public ProducerFactory<String, EventDto> producerFactory() {
         Map<String, Object> producerProps = new HashMap<>();
-        producerProps.put(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                kafkaProperties.getAddress()
-        );
-        producerProps.put(
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                StringSerializer.class
-        );
-        producerProps.put(
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                JsonSerializer.class
-        );
+        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getAddress());
+        producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
         return new DefaultKafkaProducerFactory<>(producerProps);
     }
@@ -46,46 +37,26 @@ public class KafkaProducerConfig {
 
     @Bean
     public NewTopic postKafkaTopic() {
-        return new NewTopic(
-                kafkaProperties.getTopicsNames().getPost(),
-                1,
-                (short) 1
-        );
+        return new NewTopic(kafkaProperties.getTopicsNames().getPost(), 1, (short) 1);
     }
 
     @Bean
     public NewTopic likeKafkaTopic() {
-        return new NewTopic(
-                kafkaProperties.getTopicsNames().getLike(),
-                1,
-                (short) 1
-        );
+        return new NewTopic(kafkaProperties.getTopicsNames().getLike(), 1, (short) 1);
     }
 
     @Bean
     public NewTopic commentKafkaTopic() {
-        return new NewTopic(
-                kafkaProperties.getTopicsNames().getComment(),
-                1,
-                (short) 1
-        );
+        return new NewTopic(kafkaProperties.getTopicsNames().getComment(), 1, (short) 1);
     }
 
     @Bean
     public NewTopic postViewKafkaTopic() {
-        return new NewTopic(
-                kafkaProperties.getTopicsNames().getPostView(),
-                1,
-                (short) 1
-        );
+        return new NewTopic(kafkaProperties.getTopicsNames().getPostView(), 1, (short) 1);
     }
 
     @Bean
     public NewTopic feedHeatKafkaTopic() {
-        return new NewTopic(
-                kafkaProperties.getTopicsNames().getFeedHeat(),
-                1,
-                (short) 1
-        );
+        return new NewTopic(kafkaProperties.getTopicsNames().getFeedHeat(), 1, (short) 1);
     }
 }

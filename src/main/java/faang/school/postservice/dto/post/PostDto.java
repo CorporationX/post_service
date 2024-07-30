@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.post;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostDto {
+
     private Long id;
 
     @NotBlank(message = "Post content can't be blank")
@@ -31,6 +33,7 @@ public class PostDto {
     private boolean published;
 
     @PastOrPresent(message = "Post can't be published in future")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime publishedAt;
 
     private boolean deleted;

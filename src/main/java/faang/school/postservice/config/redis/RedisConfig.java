@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Setter
 @Configuration
 @RequiredArgsConstructor
-@EnableRedisRepositories(keyspaceConfiguration = RedisConfig.MyKeyspaceConfiguration.class)
+@EnableRedisRepositories(keyspaceConfiguration = RedisConfig.CustomKeyspaceConfiguration.class)
 public class RedisConfig {
     private final RedisProperties redisProperties;
 
@@ -60,7 +60,7 @@ public class RedisConfig {
     }
 
 
-    public class MyKeyspaceConfiguration extends KeyspaceConfiguration {
+    public class CustomKeyspaceConfiguration extends KeyspaceConfiguration {
         @Override
         protected Iterable<KeyspaceSettings> initialConfiguration() {
             RedisProperties.Cache feedCache = redisProperties.getFeedCache();
