@@ -87,7 +87,8 @@ public class CommentServiceTest {
     @Test
     @DisplayName("Обновление комментария - Успешный сценарий")
     public void updateComment_Success() {
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+        //when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+        when(commentValidator.findCommentById(1L)).thenReturn(comment);
 
         CommentDto result = commentService.updateComment(1L, 1L, commentDto);
 
