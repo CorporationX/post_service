@@ -4,6 +4,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.DataOperationException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
 import static faang.school.postservice.exception.message.PostOperationExceptionMessage.DELETED_STATUS_UPDATE_EXCEPTION;
 import static faang.school.postservice.exception.message.PostOperationExceptionMessage.LIKES_UPDATE_EXCEPTION;
 import static faang.school.postservice.exception.message.PostOperationExceptionMessage.PUBLISHED_DATE_UPDATE_EXCEPTION;
+import static faang.school.postservice.exception.message.PostOperationExceptionMessage.RE_PUBLISHING_POST_EXCEPTION;
 import static faang.school.postservice.exception.message.PostValidationExceptionMessage.NON_EXISTING_PROJECT_EXCEPTION;
 import static faang.school.postservice.exception.message.PostValidationExceptionMessage.NON_EXISTING_USER_EXCEPTION;
 import static faang.school.postservice.exception.message.PostValidationExceptionMessage.NON_MATCHING_AUTHORS_EXCEPTION;
@@ -38,6 +40,12 @@ class PostVerifier {
 
         if (projectId != null) {
             verifyProjectExistence(projectId);
+        }
+    }
+
+    public void verifyIsPublished(Post postToBePublished) {
+        if (postToBePublished.isPublished()) {
+            throw new DataOperationException(RE_PUBLISHING_POST_EXCEPTION.getMessage());
         }
     }
 
