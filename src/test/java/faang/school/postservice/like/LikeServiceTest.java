@@ -21,12 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-public class LikeServiceTest {
+class LikeServiceTest {
     @Mock
     private LikeRepository likeRepository;
 
@@ -70,7 +69,7 @@ public class LikeServiceTest {
 
 
     @Test
-    public void testLikePost() {
+    void testLikePost() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
         when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
@@ -81,7 +80,7 @@ public class LikeServiceTest {
     }
 
     @Test
-    public void testLikePost_AlreadyLiked() {
+    void testLikePost_AlreadyLiked() {
         when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.of(like));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> likeService.likePost(likeDto));
@@ -90,21 +89,21 @@ public class LikeServiceTest {
     }
 
     @Test
-    public void testUnlikePost() {
+    void testUnlikePost() {
         when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.of(like));
         likeService.unlikePost(likeDto);
         verify(likeRepository).delete(like);
     }
 
     @Test
-    public void testUnlikePost_NotFound() {
+    void testUnlikePost_NotFound() {
         when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> likeService.unlikePost(likeDto));
         assertEquals("Лайк не найден", exception.getMessage());
     }
 
     @Test
-    public void testLikeComment() {
+    void testLikeComment() {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
         likeService.likeComment(likeDto);
@@ -112,7 +111,7 @@ public class LikeServiceTest {
     }
 
     @Test
-    public void testLikeComment_AlreadyLiked() {
+    void testLikeComment_AlreadyLiked() {
         when(likeRepository.findByCommentIdAndUserId(1L, 1L)).thenReturn(Optional.of(like));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> likeService.likeComment(likeDto));
         assertEquals("Пользователь уже поставил лайк этому комментарию", exception.getMessage());
@@ -120,7 +119,7 @@ public class LikeServiceTest {
     }
 
     @Test
-    public void testUnlikeComment() {
+    void testUnlikeComment() {
         when(likeRepository.findByCommentIdAndUserId(1L, 1L)).thenReturn(Optional.of(like));
         likeService.unlikeComment(likeDto);
         verify(likeRepository, times(1)).delete(like);
