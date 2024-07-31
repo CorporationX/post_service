@@ -96,8 +96,11 @@ public class ResourceService {
                     return new EntityNotFoundException("Resource id: " + resourceId + " not found");
                 });
 
+        Post post = resource.getPost();
+        post.getResources().remove(resource);
         s3Service.deleteFile(resource.getKey());
         resourceRepository.deleteById(resourceId);
+
         return ResponseEntity.ok("Resource deleted successfully");
     }
 
