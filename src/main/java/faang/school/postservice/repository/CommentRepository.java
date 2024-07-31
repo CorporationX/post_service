@@ -8,6 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,4 +27,10 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     @Transactional
     @Query(value = "UPDATE comment SET verified = :verified, verified_date = :verifiedDate WHERE id = :id", nativeQuery = true)
     void updateVerifiedAndVerifiedDate(@Param("id") long id, @Param("verified") boolean verified, @Param("verifiedDate") LocalDateTime verifiedDate);
+
+    @Query(nativeQuery = true, value = "SELECT c.* FROM comment c WHERE c.post_id = :postId ORDER BY c.created_at desc LIMIT :commentLimit")
+    List<Comment> findLastLimitComment(Long postId, int commentLimit);
+
+    @Query(nativeQuery = true, value = "SELECT c.created_at FROM Comment c WHERE c.id = :commentId")
+    Timestamp getUpdatedTime(Long commentId);
 }

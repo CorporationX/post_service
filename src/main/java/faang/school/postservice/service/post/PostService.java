@@ -215,4 +215,9 @@ public class PostService {
             postModerator.moderatePosts(unverifiedPosts);
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<Long> findPostIdsByFolloweeId(Long userId, Long startPostId) {
+        return postRepository.findPostIdsByFolloweeId(userId, startPostId);
+    }
 }

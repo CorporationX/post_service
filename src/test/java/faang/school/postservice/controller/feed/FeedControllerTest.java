@@ -34,4 +34,10 @@ public class FeedControllerTest {
         assertDoesNotThrow(() -> feedController.getFeed(afterPostId));
         verify(feedService).getFeed(afterPostId);
     }
+
+    @Test
+    public void testCorrectWorkHeat() {
+        assertDoesNotThrow(() -> feedController.heatCache());
+        verify(feedService).heatCache();
+    }
 }

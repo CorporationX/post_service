@@ -1,11 +1,17 @@
 package faang.school.postservice.service.feed;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.feed.FeedDto;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.LikeService;
 import faang.school.postservice.service.cache.RedisCacheService;
+import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.feed.heat.HeatFeed;
+import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.threadpool.ThreadPoolForHeartingCache;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 @Slf4j
 @Service
@@ -23,6 +30,14 @@ public class FeedService {
     private final ZSetOperations<String, String> zSetOperations;
     private final UserContext userContext;
     private final RedisCacheService redisCacheService;
+    private final UserServiceClient userServiceClient;
+    private final ThreadPoolForHeartingCache threadPoolForHeartingCache;
+    private final PostService postService;
+    private final List<HeatFeed> heatFeedList;
+    private final ObjectMapper objectMapper;
+    private final CommentService commentService;
+    private final LikeService likeService;
+
 
     @Setter
     @Value("${spring.data.redis.directory.feed}")
@@ -64,7 +79,19 @@ public class FeedService {
                 return FeedDto.builder().postInfo(postInfo).authorInfo(authorInfo).commentInfo(commentInfo).likeInfo(likeInfo).build();
             }).toList();
         } else {
-            return null;
+            return createOldFeed(userId, (long) startScore);
+        }
+    }
+
+    public void heatCache() {
+        List<Long> ids = userServiceClient.getAllUsersId();
+
+        if (!ids.isEmpty()) {
+            ids.forEach(userId -> {
+                Future<?> future = threadPoolForHeartingCache.heartingCacheExecutor().submit(() -> {
+                    heatUserFeed(userId, null);
+                });
+            });
         }
     }
 
@@ -75,6 +102,32 @@ public class FeedService {
             return jsonNode.has("authorId") ? jsonNode.get("authorId").asLong() : null;
         } catch (Exception e) {
             log.error("Error processing JSON", e);
+            return null;
+        }
+    }
+
+    protected void heatUserFeed(Long userId, Long startPostId) {
+        List<Long> postList = postService.findPostIdsByFolloweeId(userId, startPostId);
+
+        postList.forEach(postId -> heatFeedList.forEach(heatFeed -> heatFeed.addInfoToRedis(userId, postId)));
+    }
+
+    protected List<FeedDto> createOldFeed(Long userId, Long StartPostId) {
+        List<Long> postList = postService.findPostIdsByFolloweeId(userId, StartPostId);
+
+        if (!postList.isEmpty()) {
+            return postList.stream().map(postId -> {
+                try {
+                    String postInfo = objectMapper.writeValueAsString(postService.getPost(postId));
+                    String authorInfo = objectMapper.writeValueAsString(userServiceClient.getUserByPostId(postId));
+                    Set<String> commentInfo = commentService.getTheLastCommentsForNewsFeed(postId);
+                    Long likeInfo = likeService.getNumberOfLike(postId);
+                    return FeedDto.builder().postInfo(postInfo).authorInfo(authorInfo).commentInfo(commentInfo).likeInfo(likeInfo).build();
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList();
+        } else {
             return null;
         }
     }

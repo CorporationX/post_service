@@ -101,4 +101,9 @@ public class LikeService {
 
         return likeMapper.toDto(like);
     }
+
+    @Transactional
+    public Long getNumberOfLike(Long postId) {
+        return likeRepository.getNumberOfLikeByPostId(postId);
+    }
 }

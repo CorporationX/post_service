@@ -8,6 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -37,4 +38,15 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Transactional
     @Query(value = "UPDATE post SET verified = :verified, verified_Date = :verifiedDate WHERE id = :id", nativeQuery = true)
     void setVerifiedAndVerifiedDate(@Param("id") long id, @Param("verified") boolean verified, @Param("verifiedDate") LocalDateTime verifiedDate);
+
+    @Query(nativeQuery = true, value = "SELECT p.id FROM post p JOIN subscription s ON s.follower_id = p.author_id" +
+            " JOIN users u ON s.follower_id = u.id WHERE s.followee_id = :userId AND (:postId IS NULL OR p.id < :postId)" +
+            " AND p.published = true ORDER BY p.updated_at DESC LIMIT 500")
+    List<Long> findPostIdsByFolloweeId(@Param("followeeId") Long userId, @Param("postId") Long postId);
+
+    @Query(nativeQuery = true, value = "SELECT p.* FROM Post p WHERE p.published = true AND p.id = ?1")
+    List<Post> findAllPublishedPostByID(Long postId);
+
+    @Query(nativeQuery = true, value = "SELECT p.updated_at FROM Post p WHERE p.id = :postId")
+    Timestamp getUpdatedTime(Long postId);
 }

@@ -21,4 +21,10 @@ public interface UserServiceClient {
 
     @GetMapping("/subscription/following/without-filters/{followerId}")
     List<UserFeedDto> getFollowingId(@PathVariable long followerId);
+
+    @GetMapping("/users/ids")
+    List<Long> getAllUsersId();
+
+    @GetMapping("/users/postId/{postId}")
+    UserDto getUserByPostId(@PathVariable long postId);
 }

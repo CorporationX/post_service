@@ -13,4 +13,5 @@ public class CommentFeedDto {
     private Long id;
     private String content;
     private Long authorId;
+    private Long postId;
 }

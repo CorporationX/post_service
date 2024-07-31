@@ -14,6 +14,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +28,6 @@ public class RedisCacheService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ZSetOperations<String, String> zSetOperations;
     private final ObjectMapper objectMapper;
-    private final Object lock = new Object();
 
     @Setter
     @Value("${spring.data.redis.settings.ttl}")
@@ -78,21 +78,27 @@ public class RedisCacheService {
     }
 
     public void addPostToUserFeed(Long postId, Long userId) {
+        addPostToUserFeed(postId, userId, new Timestamp(System.currentTimeMillis()).getTime());
+    }
+
+    public void addPostToUserFeed(Long postId, Long userId, long updatedTime) {
         String key = feed + userId;
         String timestampKey = key + timestamp;
         String postIdStr = postId.toString();
-        long currentTime = Instant.now().getEpochSecond();
 
-        saveZSetOption(key, currentTime, postIdStr, timestampKey);
+        saveZSetOption(key, updatedTime, postIdStr, timestampKey);
         checkLimitZSet(key, maxSizeFeed);
     }
 
     public void addCommentToCache(Long postId, String commentFeedJson) {
+        addCommentToCache(postId, commentFeedJson, new Timestamp(System.currentTimeMillis()).getTime());
+    }
+
+    public void addCommentToCache(Long postId, String commentFeedJson, long updatedTime) {
         String key = comment + postId;
         String timestampKey = key + timestamp;
-        long currentTime = Instant.now().getEpochSecond();
 
-        saveZSetOption(key, currentTime, commentFeedJson, timestampKey);
+        saveZSetOption(key, updatedTime, commentFeedJson, timestampKey);
         checkLimitZSet(key, maxSizeComment);
     }
 
@@ -113,7 +119,7 @@ public class RedisCacheService {
     }
 
     public Set<String> getAllZSetValues(String key) {
-        return zSetOperations.range(key, 0, -1);
+        return zSetOperations.reverseRange(key, 0, -1);
     }
 
     public Long getZSetSize(String key) {

@@ -153,12 +153,12 @@ public class RedisCacheServiceTest {
         String key = "testKey";
         Set<String> values = Set.of("value1", "value2");
 
-        when(zSetOperations.range(key, 0, -1)).thenReturn(values);
+        when(zSetOperations.reverseRange(key, 0, -1)).thenReturn(values);
 
         Set<String> result = redisCacheService.getAllZSetValues(key);
 
         assertEquals(values, result);
-        verify(zSetOperations, times(1)).range(key, 0, -1);
+        verify(zSetOperations, times(1)).reverseRange(key, 0, -1);
     }
 
     @Test
