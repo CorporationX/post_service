@@ -20,7 +20,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.ConnectException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -181,14 +180,14 @@ public class PostService {
                 .toList();
     }
 
-    @Retryable(retryFor = ConnectException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
-    private void saveHashtags(HashtagRequest hashtagRequest) {
+    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    public void saveHashtags(HashtagRequest hashtagRequest) {
         hashtagServiceClient.saveHashtags(hashtagRequest);
         log.info("Hashtags have been saved successfully");
     }
 
-    @Retryable(retryFor = ConnectException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
-    private List<Hashtag> getHashtagsByNames(HashtagRequest hashtagRequest) {
+    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    public List<Hashtag> getHashtagsByNames(HashtagRequest hashtagRequest) {
         List<Hashtag> hashtags = hashtagServiceClient.getHashtagsByNames(hashtagRequest).getHashtags();
         log.info("Hashtags request was completed successfully");
         return hashtags;
@@ -196,11 +195,8 @@ public class PostService {
 
     @Recover
     public void recover(FeignException e) {
-        if (e.getCause() instanceof ConnectException) {
-            log.error("Recover method called. Connection refused while trying to process request for hashtags: {}", e.getMessage());
-        } else {
-            log.error("Recover method called. Unable to process request for hashtags: {}", e.getMessage());
-        }
+        log.error("Recover method called. Unable to process request for hashtags: " + e.getMessage());
         throw e;
     }
 }
+
