@@ -36,7 +36,7 @@ public class PostService {
     public PostDto updatePost(PostDto postDto) {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> {
-                    log.error("Post {} not found", postDto.getId());
+                    log.error("Post ID " + postDto.getId() + " not found");
                     return new EntityNotFoundException("Post " + postDto.getId() + " not found");
                 });
         postServiceValidator.validateUpdatePost(post, postDto);
@@ -50,8 +50,8 @@ public class PostService {
     public PostDto publishPost(PostDto postDto) {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> {
-                    log.error("Post {} not found", postDto.getId());
-                    return new EntityNotFoundException("Post " + postDto.getId() + " not found");
+                    log.error("Post ID " + postDto.getId() + " not found");
+                    return new EntityNotFoundException("Post ID "+ postDto.getId() +" not found");
                 });
         postServiceValidator.validatePublishPost(post, postDto);
         post.setPublished(true);
@@ -65,8 +65,8 @@ public class PostService {
     public PostDto deletePost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.error("Post {} not found", postId);
-                    return new EntityNotFoundException("Post " + postId + " not found");
+                    log.error("Post ID "+ postId +" not found");
+                    return new EntityNotFoundException("Post ID "+ postId +" not found");
                 });
         postServiceValidator.validateDeletePost(post);
         post.setDeleted(true);
@@ -81,8 +81,8 @@ public class PostService {
     public PostDto getPostByPostId(Long postId) {
         return postMapper.toDto(postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.error("Post {} not found", postId);
-                    return new EntityNotFoundException("Post " + postId + " not found");
+                    log.error("Post ID "+ postId +" not found");
+                    return new EntityNotFoundException("Post ID "+ postId +" not found");
                 }));
     }
 
