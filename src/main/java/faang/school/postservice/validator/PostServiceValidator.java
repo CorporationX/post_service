@@ -61,13 +61,13 @@ public class PostServiceValidator {
     @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
     private void validateProjectId(Long projectId) {
         projectServiceClient.getProject(projectId);
-        log.info("Project ID validated successfully: " + projectId);
+        log.info("Project ID " + projectId + " validated successfully: " + projectId);
     }
 
     @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
     private void validateAuthorId(Long authorId) {
         userServiceClient.getUser(authorId);
-        log.info("Author ID validated successfully: " + authorId);
+        log.info("Author ID " + authorId + " validated successfully: ");
     }
 
     @Recover

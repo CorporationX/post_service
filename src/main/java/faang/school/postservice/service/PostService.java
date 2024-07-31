@@ -65,8 +65,8 @@ public class PostService {
     public PostDto updatePost(PostDto postDto) {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> {
-                    log.error("Post {} not found", postDto.getId());
-                    return new EntityNotFoundException("Post " + postDto.getId() + " not found");
+                    log.error("Post ID " + postDto.getId() + " not found");
+                    return new EntityNotFoundException("Post ID " + postDto.getId() + " not found");
                 });
         postServiceValidator.validateUpdatePost(post, postDto);
         HashtagRequest hashtagRequest = HashtagRequest.builder()
@@ -87,8 +87,8 @@ public class PostService {
     public PostDto publishPost(PostDto postDto) {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> {
-                    log.error("Post {} not found", postDto.getId());
-                    return new EntityNotFoundException("Post " + postDto.getId() + " not found");
+                    log.error("Post ID " + postDto.getId() + " not found");
+                    return new EntityNotFoundException("Post ID " + postDto.getId() + " not found");
                 });
         postServiceValidator.validatePublishPost(post);
         post.setPublished(true);
@@ -102,8 +102,8 @@ public class PostService {
     public PostDto deletePost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.error("Post {} not found", postId);
-                    return new EntityNotFoundException("Post " + postId + " not found");
+                    log.error("Post ID " + postId + " not found");
+                    return new EntityNotFoundException("Post ID " + postId + " not found");
                 });
         postServiceValidator.validateDeletePost(post);
         post.setDeleted(true);
@@ -119,8 +119,8 @@ public class PostService {
     public PostDto getPostByPostId(Long postId) {
         return postMapper.toDto(postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.error("Post {} not found", postId);
-                    return new EntityNotFoundException("Post " + postId + " not found");
+                    log.error("Post ID " + postId + " not found");
+                    return new EntityNotFoundException("Post ID " + postId + " not found");
                 }));
     }
 
@@ -181,13 +181,13 @@ public class PostService {
                 .toList();
     }
 
-    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    @Retryable(retryFor = ConnectException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
     private void saveHashtags(HashtagRequest hashtagRequest) {
         hashtagServiceClient.saveHashtags(hashtagRequest);
         log.info("Hashtags have been saved successfully");
     }
 
-    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    @Retryable(retryFor = ConnectException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
     private List<Hashtag> getHashtagsByNames(HashtagRequest hashtagRequest) {
         List<Hashtag> hashtags = hashtagServiceClient.getHashtagsByNames(hashtagRequest).getHashtags();
         log.info("Hashtags request was completed successfully");
@@ -196,7 +196,11 @@ public class PostService {
 
     @Recover
     public void recover(FeignException e) {
-        log.error(e.getMessage());
+        if (e.getCause() instanceof ConnectException) {
+            log.error("Recover method called. Connection refused while trying to process request for hashtags: {}", e.getMessage());
+        } else {
+            log.error("Recover method called. Unable to process request for hashtags: {}", e.getMessage());
+        }
         throw e;
     }
 }
