@@ -32,12 +32,12 @@ public class ResizeService {
                     (width > maxWidthHorizontal && height > maxHeightHorizontal && width > height)) {
                 Thumbnails.of(originalImage)
                         .size(maxWidthHorizontal, maxHeightHorizontal)
-                        .outputFormat("jpeg")
+                        .outputFormat("jpg")
                         .toOutputStream(resizedImageOutputStream);
             } else if (width > MaxSizeSquare || height > MaxSizeSquare) {
                 Thumbnails.of(originalImage)
                         .size(MaxSizeSquare, MaxSizeSquare)
-                        .outputFormat("jpeg")
+                        .outputFormat("jpg")
                         .toOutputStream(resizedImageOutputStream);
             } else {
                 return file;

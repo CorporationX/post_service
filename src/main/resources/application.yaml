@@ -38,6 +38,9 @@ spring:
       max-height-horizontal: 566
       max-size-square: 1080
 
+  post:
+    max-image-quantity: 10
+
 server:
   port: 8081
 

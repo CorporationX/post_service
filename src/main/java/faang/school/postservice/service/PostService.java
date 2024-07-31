@@ -4,20 +4,16 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @Slf4j
@@ -26,9 +22,6 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
-    private final ResourceService resourceService;
-
-    private final static Set<String> SUPPORTED_IMAGE_TYPES = Set.of("image/png", "image/jpeg", "image/jpg");
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -37,14 +30,6 @@ public class PostService {
 
         postRepository.save(post);
         return postMapper.toDto(post);
-    }
-
-    public ResponseEntity<String> addResourceToPost(Long postId, List<MultipartFile> files) {
-        List<MultipartFile> imageFiles = files.stream()
-                .filter(file -> SUPPORTED_IMAGE_TYPES.contains(file.getContentType()))
-                .toList();
-        imageFiles.forEach(file -> resourceService.addResource(postId, file));
-        return ResponseEntity.ok("Resources added successfully");
     }
 
     @Transactional

@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -44,6 +46,32 @@ public class S3ServiceImpl implements S3Service {
                 .name(file.getOriginalFilename())
                 .size(fileSize)
                 .build();
+    }
+
+    @Override
+    public List<Resource> uploadFiles(List<MultipartFile> files, String folder) {
+        List<Resource> resources = new ArrayList<>();
+        files.forEach(file -> {
+            long fileSize = file.getSize();
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentLength(fileSize);
+            objectMetadata.setContentType(file.getContentType());
+            String key = String.format("%s/%d%s", folder, System.currentTimeMillis(), file.getOriginalFilename());
+            try {
+                s3Client.putObject(new PutObjectRequest(bucketName, key, file.getInputStream(), objectMetadata));
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                throw new FileException("Failed to upload file " + file.getOriginalFilename() + " to S3");
+            }
+            resources.add(Resource.builder()
+                    .key(key)
+                    .type(file.getContentType())
+                    .name(file.getOriginalFilename())
+                    .size(fileSize)
+                    .build());
+        });
+
+        return resources;
     }
 
     @Override
