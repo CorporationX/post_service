@@ -16,4 +16,14 @@ public class FeedDto {
     private String authorInfo;
     private Set<String> commentInfo;
     private Long likeInfo;
+
+    public FeedDto setAuthorInfo(String authorInfo) {
+        this.authorInfo = authorInfo;
+        return this;
+    }
+
+    public FeedDto setCommentInfo(Set<String> commentInfo) {
+        this.commentInfo = commentInfo;
+        return this;
+    }
 }

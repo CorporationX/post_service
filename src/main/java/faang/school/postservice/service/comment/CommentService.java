@@ -1,5 +1,7 @@
 package faang.school.postservice.service.comment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CommentFeedDto;
@@ -25,10 +27,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -43,6 +47,7 @@ public class CommentService {
     private final RedisCacheService redisCacheService;
     private final UserServiceClient userServiceClient;
     private final KafkaCommentPublisher kafkaCommentPublisher;
+    private final ObjectMapper objectMapper;
 
     @Value("${postServiceThreadPool.poolComment}")
     @Setter
@@ -50,6 +55,9 @@ public class CommentService {
     @Setter
     @Value("${spring.data.redis.directory.infAuthor}")
     private String patternByInfAuthor;
+    @Setter
+    @Value("${spring.data.redis.settings.maxSizeComment}")
+    private int maxSizeComment;
 
     public void moderateComment() {
         List<Comment> comments = commentRepository.findUnVerifiedComments();
@@ -137,5 +145,19 @@ public class CommentService {
     public Comment getCommentById(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public Set<String> getTheLastCommentsForNewsFeed(Long postId) {
+        List<CommentFeedDto> commentFeedDtosList = commentRepository.findLastLimitComment(postId, maxSizeComment).stream().map(commentMapper::toFeedDto).toList();
+
+        return commentFeedDtosList.stream().map(comment -> {
+            try {
+                return objectMapper.writeValueAsString(userServiceClient.getUserByPostId(postId));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+        }).collect(Collectors.toSet());
     }
 }

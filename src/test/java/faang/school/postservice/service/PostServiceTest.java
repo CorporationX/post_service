@@ -28,10 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -259,5 +256,11 @@ public class PostServiceTest {
         postService.getUserIdByPostId(1L);
 
         verify(postRepository, times(1)).findByPostId(1L);
+    }
+
+    @Test
+    public void testFindPostIdsByFolloweeId() {
+        assertDoesNotThrow(() -> postService.findPostIdsByFolloweeId(userDto.getId(), 23L));
+        verify(postRepository).findPostIdsByFolloweeId(userDto.getId(), 23L);
     }
 }

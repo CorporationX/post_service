@@ -107,6 +107,7 @@ postServiceThreadPool:
   poolPost: 4
   poolFeed: 4
   poolFeedAlgo: 4
+  poolHeartingCache: 10
 
 servlet:
   PathV1: /api/v1

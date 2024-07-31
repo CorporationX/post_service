@@ -17,7 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -80,5 +82,11 @@ public class LikeServiceTest {
     public void testDeleteLikeComment_notCommentInBd() {
         when(commentService.getCommentById(id)).thenThrow(DataLikeValidation.class);
         assertThrows(DataLikeValidation.class, () -> likeService.deleteLikeComment(id, likeDto));
+    }
+
+    @Test
+    public void testFindPostIdsByFolloweeId() {
+        assertDoesNotThrow(() -> likeService.getNumberOfLike(23L));
+        verify(likeRepository).getNumberOfLikeByPostId(23L);
     }
 }

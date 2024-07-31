@@ -1,10 +1,19 @@
 package faang.school.postservice.service.feed;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.feed.FeedDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.service.LikeService;
 import faang.school.postservice.service.cache.RedisCacheService;
+import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.feed.heat.HeatFeed;
+import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.threadpool.ThreadPoolForHeartingCache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,14 +22,20 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,6 +52,18 @@ public class FeedServiceTest {
     private UserContext userContext;
     @Mock
     private RedisCacheService redisCacheService;
+    @Mock
+    private PostService postService;
+    @Mock
+    private UserServiceClient userServiceClient;
+    @Mock
+    private ThreadPoolForHeartingCache threadPoolForHeartingCache;
+    @Mock
+    private CommentService commentService;
+    @Mock
+    private LikeService likeService;
+    @Mock
+    private ObjectMapper objectMapper;
 
 
     @Value("${spring.data.redis.directory.feed}")
@@ -144,5 +171,88 @@ public class FeedServiceTest {
         Long authorId = feedService.extractAuthorIdFromJson(invalidJson);
 
         assertNull(authorId);
+    }
+
+    @Test
+    public void testHeatCache() {
+        List<Long> userIds = Arrays.asList(1L, 2L, 3L);
+        when(userServiceClient.getAllUsersId()).thenReturn(userIds);
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        when(threadPoolForHeartingCache.heartingCacheExecutor()).thenReturn(executorService);
+
+        feedService.heatCache();
+
+        verify(userServiceClient, times(1)).getAllUsersId();
+        verify(threadPoolForHeartingCache, times(3)).heartingCacheExecutor();
+    }
+
+    @Test
+    public void testHeatUserFeed() {
+        Long userId = 1L;
+        Long startPostId = null;
+        List<Long> postIds = Arrays.asList(101L, 102L);
+        when(postService.findPostIdsByFolloweeId(userId, startPostId)).thenReturn(postIds);
+
+        List<HeatFeed> heatFeedList = Collections.singletonList((userId1, postId) -> {});
+        ReflectionTestUtils.setField(feedService, "heatFeedList", heatFeedList);
+
+        feedService.heatUserFeed(userId, startPostId);
+
+        verify(postService, times(1)).findPostIdsByFolloweeId(userId, startPostId);
+    }
+
+    @Test
+    public void testCreateOldFeed() throws JsonProcessingException {
+        Long userId = 1L;
+        Long startPostId = null;
+        List<Long> postIds = Arrays.asList(101L, 102L);
+
+        String postInfo = "{\"content\": \"postContent\"}";
+        String authorInfo = "{\"name\": \"authorName\"}";
+        Set<String> commentInfo = Set.of("comment1", "comment2");
+        Long likeInfo = 10L;
+
+        when(postService.findPostIdsByFolloweeId(userId, startPostId)).thenReturn(postIds);
+        when(postService.getPost(101L)).thenReturn(new PostDto());
+        when(postService.getPost(102L)).thenReturn(new PostDto());
+        when(userServiceClient.getUserByPostId(101L)).thenReturn(new UserDto());
+        when(userServiceClient.getUserByPostId(102L)).thenReturn(new UserDto());
+        when(commentService.getTheLastCommentsForNewsFeed(101L)).thenReturn(commentInfo);
+        when(commentService.getTheLastCommentsForNewsFeed(102L)).thenReturn(commentInfo);
+        when(likeService.getNumberOfLike(101L)).thenReturn(likeInfo);
+        when(likeService.getNumberOfLike(102L)).thenReturn(likeInfo);
+        when(objectMapper.writeValueAsString(any())).thenReturn(postInfo).thenReturn(authorInfo);
+
+        List<FeedDto> result = feedService.createOldFeed(userId, startPostId);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        FeedDto feedDto = result.get(0);
+        assertEquals(postInfo, feedDto.getPostInfo());
+        assertEquals(authorInfo, feedDto.getAuthorInfo());
+        assertEquals(commentInfo, feedDto.getCommentInfo());
+        assertEquals(likeInfo, feedDto.getLikeInfo());
+
+        verify(postService, times(1)).findPostIdsByFolloweeId(userId, startPostId);
+        verify(commentService, times(2)).getTheLastCommentsForNewsFeed(anyLong());
+        verify(likeService, times(2)).getNumberOfLike(anyLong());
+        verify(objectMapper, times(4)).writeValueAsString(any());
+    }
+
+    @Test
+    public void testCreateOldFeedWithEmptyPosts() {
+        Long userId = 1L;
+        Long startPostId = null;
+        List<Long> postIds = Collections.emptyList();
+
+        when(postService.findPostIdsByFolloweeId(userId, startPostId)).thenReturn(postIds);
+
+        List<FeedDto> result = feedService.createOldFeed(userId, startPostId);
+
+        assertNull(result);
+
+        verify(postService, times(1)).findPostIdsByFolloweeId(userId, startPostId);
     }
 }

@@ -1,5 +1,7 @@
 package faang.school.postservice.service.comment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.ChangeCommentDto;
 import faang.school.postservice.dto.comment.CommentFeedDto;
@@ -25,16 +27,15 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -75,6 +76,9 @@ public class CommentServiceTest {
     @Mock
     private KafkaCommentPublisher kafkaCommentPublisher;
 
+    @Mock
+    private ObjectMapper objectMapper;
+
     private CreateCommentDto createCommentDto;
     private ChangeCommentDto changeCommentDto;
     private CommentEventDto commentEventDto;
@@ -84,6 +88,7 @@ public class CommentServiceTest {
     private String patternByInfAuthor = "InfAuthor";
     private UserDto authorCommentDto;
     private CommentFeedDto commentFeedDto;
+    private int maxSizeComment = 5;
 
     @BeforeEach
     public void setUp() {
@@ -96,6 +101,7 @@ public class CommentServiceTest {
         commentList = new ArrayList<>(List.of(comment, comment, comment, comment));
         id = 1L;
         commentService.setPatternByInfAuthor("InfAuthor");
+        commentService.setMaxSizeComment(5);
         commentFeedDto = CommentFeedDto.builder().build();
     }
 
@@ -186,5 +192,35 @@ public class CommentServiceTest {
 
         verify(commentModerator, times(4)).moderateComment(anyList());
         executorService.shutdownNow();
+    }
+
+    @Test
+    public void testGetTheLastCommentsForNewsFeed() throws JsonProcessingException {
+        Long postId = 1L;
+
+        CommentFeedDto commentFeedDto1 = CommentFeedDto.builder().build();
+        CommentFeedDto commentFeedDto2 = CommentFeedDto.builder().build();
+        List<CommentFeedDto> commentFeedDtosList = List.of(commentFeedDto1, commentFeedDto2);
+
+        UserDto userDto1 = UserDto.builder().id(1L).username("User1").build();
+        UserDto userDto2 = UserDto.builder().id(2L).username("User2").build();
+
+        when(commentRepository.findLastLimitComment(postId, maxSizeComment)).thenReturn(commentList);
+        when(commentMapper.toFeedDto(any(Comment.class))).thenReturn(commentFeedDto1, commentFeedDto2);
+        when(userServiceClient.getUserByPostId(postId)).thenReturn(userDto1, userDto2);
+        when(objectMapper.writeValueAsString(userDto1)).thenReturn("{\"id\":1,\"name\":\"User1\"}");
+        when(objectMapper.writeValueAsString(userDto2)).thenReturn("{\"id\":2,\"name\":\"User2\"}");
+
+        Set<String> result = commentService.getTheLastCommentsForNewsFeed(postId);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains("{\"id\":1,\"name\":\"User1\"}"));
+        assertTrue(result.contains("{\"id\":2,\"name\":\"User2\"}"));
+
+        verify(commentRepository, times(1)).findLastLimitComment(postId, maxSizeComment);
+        verify(commentMapper, times(4)).toFeedDto(any(Comment.class));
+        verify(userServiceClient, times(4)).getUserByPostId(postId);
+        verify(objectMapper, times(4)).writeValueAsString(any(UserDto.class));
     }
 }
