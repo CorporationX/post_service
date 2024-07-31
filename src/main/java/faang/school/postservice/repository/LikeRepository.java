@@ -10,9 +10,9 @@ import java.util.Optional;
 @Repository
 public interface LikeRepository extends CrudRepository<Like, Long> {
 
-    Optional<Like> deleteByPostIdAndUserId(long postId, long userId);
+    void deleteByPostIdAndUserId(long postId, long userId);
 
-    Optional<Like> deleteByCommentIdAndUserId(long commentId, long userId);
+    void deleteByCommentIdAndUserId(long commentId, long userId);
 
     List<Like> findByPostId(long postId);
 

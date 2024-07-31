@@ -13,6 +13,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,7 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
 
+    @Transactional
     public LikeResponseDto addLikeToPost(long userId, long postId) {
         Post post = postService.getById(postId);
         checkUserExistence(userId);
@@ -41,6 +43,7 @@ public class LikeService {
         return likeMapper.toResponseDto(like);
     }
 
+    @Transactional
     public LikeResponseDto addLikeToComment(long userId, long commentId) {
         Comment comment = commentService.getById(commentId);
         checkUserExistence(userId);
@@ -55,19 +58,33 @@ public class LikeService {
         return likeMapper.toResponseDto(like);
     }
 
-    public LikeResponseDto removeLikeFromPost(long userId, long postId) {
-        Like deletedLike = likeRepository.deleteByPostIdAndUserId(postId, userId)
+    @Transactional(readOnly = true)
+    public Like getByPostIdAndUserId(long postId, long userId) {
+        return likeRepository.findByPostIdAndUserId(postId, userId)
                 .orElseThrow(() -> new NotFoundException(String.format(
-                        "Like from user id=%d to post id=%d not exists",
+                        "Like from user id=%d to post id=%d not found",
                         userId, postId)));
+    }
+
+    @Transactional(readOnly = true)
+    public Like getByCommentIdAndUserId(long commentId, long userId) {
+        return likeRepository.findByCommentIdAndUserId(commentId, userId)
+                .orElseThrow(() -> new NotFoundException(String.format(
+                        "Like from user id=%d to comment id=%d not found",
+                        userId, commentId)));
+    }
+
+    @Transactional
+    public LikeResponseDto removeLikeFromPost(long userId, long postId) {
+        Like deletedLike = getByPostIdAndUserId(postId, userId);
+        likeRepository.delete(deletedLike);
         return likeMapper.toResponseDto(deletedLike);
     }
 
-    public LikeResponseDto removeLikeFromComment(long userId, long postId) {
-        Like deletedLike = likeRepository.deleteByCommentIdAndUserId(postId, userId)
-                .orElseThrow(() -> new NotFoundException(String.format(
-                        "Like from user id=%d to comment id=%d not exists",
-                        userId, postId)));
+    @Transactional
+    public LikeResponseDto removeLikeFromComment(long userId, long commentId) {
+        Like deletedLike = getByCommentIdAndUserId(commentId, userId);
+        likeRepository.delete(deletedLike);
         return likeMapper.toResponseDto(deletedLike);
     }
 
