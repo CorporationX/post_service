@@ -41,7 +41,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic commentTopic(){
+    public ChannelTopic commentTopic() {
         return new ChannelTopic(commentEventName);
     }
+
 }

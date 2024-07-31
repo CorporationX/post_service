@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Data
@@ -23,7 +24,6 @@ public class CommentDto {
     @NotNull(message = "Необходимо указать id автора")
     private Long authorId;
 
-    @NotNull
     private Long postId;
     private LocalDateTime createdAt;
 }

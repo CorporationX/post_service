@@ -7,11 +7,13 @@ import faang.school.postservice.exception.EntityWrongParameterException;
 import faang.school.postservice.exception.NoAccessException;
 import faang.school.postservice.mapper.post.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +29,8 @@ public class CommentService {
 
     public CommentDto createComment(CommentDto commentDto) {
         Comment comment = commentMapper.fromDto(commentDto);
+        Post post = postService.getPostById(commentDto.getPostId());
+        comment.setPost(post);
         comment = commentRepository.save(comment);
         CommentEvent commentEvent = commentMapper.toCommentEvent(comment);
         commentEventPublisher.publish(commentEvent);
