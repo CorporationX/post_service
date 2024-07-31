@@ -29,16 +29,6 @@ public class KafkaPostConsumer {
     @Value("${spring.data.redis.feed-cache.max-posts-amount}")
     private int maxPostsAmount;
 
-    @KafkaListener(topics = "${spring.kafka.topics-names.post}", groupId = "spring.kafka.group-id")
-    public void handleNewPost(PostEventDto postEventDto, Acknowledgment acknowledgment) {
-        postEventDto.getAuthorFollowersIds()
-                .forEach(followerId -> addPostToFeed(postEventDto, followerId));
-
-        cachePostAuthor(postEventDto.getAuthorId());
-
-        acknowledgment.acknowledge();
-    }
-
     @Transactional
     public void addPostToFeed(PostEventDto postEventDto, Long followerId) {
         Feed followerFeed = feedRepository.findById(followerId)

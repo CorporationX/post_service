@@ -1,6 +1,5 @@
 package faang.school.postservice.kafka.producer;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.event.EventDto;
 import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.mapper.like.LikeMapper;
