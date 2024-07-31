@@ -10,9 +10,9 @@ import java.util.Optional;
 @Repository
 public interface LikeRepository extends CrudRepository<Like, Long> {
 
-    void deleteByPostIdAndUserId(long postId, long userId);
+    Optional<Like> deleteByPostIdAndUserId(long postId, long userId);
 
-    void deleteByCommentIdAndUserId(long commentId, long userId);
+    Optional<Like> deleteByCommentIdAndUserId(long commentId, long userId);
 
     List<Like> findByPostId(long postId);
 
@@ -20,5 +20,9 @@ public interface LikeRepository extends CrudRepository<Like, Long> {
 
     Optional<Like> findByPostIdAndUserId(long postId, long userId);
 
+    boolean existsByPostIdAndUserId(long postId, long userId);
+
     Optional<Like> findByCommentIdAndUserId(long commentId, long userId);
+
+    boolean existsByCommentIdAndUserId(long commentId, long userId);
 }

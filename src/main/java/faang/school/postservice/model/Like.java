@@ -21,7 +21,7 @@ public class Like {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name="user_id", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @ManyToOne
