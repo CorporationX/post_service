@@ -13,8 +13,11 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 public class LikeEvent {
+    private Long authorLikeId;
     private Long postId;
-    private Long authorId;
+    private Long authorPostId;
+    private Long commentId;
+    private Long authorCommentId;
     private Long userId;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
