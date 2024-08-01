@@ -1,7 +1,6 @@
 package faang.school.postservice.producer.kafka;
 
-import faang.school.postservice.dto.post.PostEvent;
-import org.apache.kafka.clients.admin.NewTopic;
+import faang.school.postservice.dto.event.PostEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
