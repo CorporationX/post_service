@@ -197,6 +197,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<Long> findAllAuthorIdsWithNotVerifiedPosts() {
+        return postRepository.findAllNotVerifiedPosts().stream()
+                .map(Post::getAuthorId)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @Override
     public void correctPosts() {
         List<Post> unpublishedPosts = postRepository.findReadyToPublish();
         Map<Post, CompletableFuture<Optional<String>>> correctedContents = new HashMap<>();

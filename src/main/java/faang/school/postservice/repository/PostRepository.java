@@ -51,4 +51,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findUserFollowingsPosts(@Param("userId") Long userId,
                                        @Param("date") LocalDateTime date,
                                        Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.isVerify = 'NOT_VERIFIED'")
+    List<Post> findAllNotVerifiedPosts();
 }
