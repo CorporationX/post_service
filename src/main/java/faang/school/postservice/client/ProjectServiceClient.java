@@ -3,7 +3,6 @@ package faang.school.postservice.client;
 import faang.school.postservice.dto.project.ProjectDto;
 import jakarta.validation.constraints.Positive;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +14,7 @@ import java.util.List;
 public interface ProjectServiceClient {
 
     @GetMapping("/project/{projectId}")
-    ProjectDto getProject(@PathVariable @Positive long projectId);
+    ProjectDto getProject(@PathVariable (name = "projectId") @Positive long projectId);
 
     @PostMapping("/projects")
     List<ProjectDto> getProjectsByIds(@RequestBody @Positive List<Long> ids);
