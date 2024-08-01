@@ -5,14 +5,22 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @Builder
 public class CommentEventDto extends EventDto implements Serializable {
-    private long commentAuthorId;
-    private long postAuthorId;
-    private long postId;
-    private long commentId;
+
+    private Long commentAuthorId;
+
+    private Long postAuthorId;
+
+    private Long postId;
+
+    private Long commentId;
+
     private String commentText;
+
+    private LocalDateTime createdAt;
 }
