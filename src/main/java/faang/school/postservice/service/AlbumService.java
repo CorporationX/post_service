@@ -1,6 +1,8 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.album.AlbumLightDto;
+import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -16,7 +18,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
@@ -27,6 +32,7 @@ public class AlbumService {
     private final PostRepository postRepository;
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
+    private final List<AlbumFilter> albumsFilter;
 
     public AlbumLightDto createAlbum(AlbumLightDto albumLightDto) {
         Album album = albumMapper.toEntityLight(albumLightDto);
@@ -145,5 +151,22 @@ public class AlbumService {
             }
         }
         return new AlbumDto();
+    }
+
+    public List<AlbumDto> getAlbumForFilter(AlbumFilterDto albumFilterDto) {
+        if (albumFilterDto == null) {
+            log.error("filter is null");
+            throw new IllegalArgumentException("filter is null");
+        }
+
+        Iterable<Album> albums = albumRepository.findAll();
+        Stream<Album> albumStream = StreamSupport.stream(albums.spliterator(), false);
+
+        return albumsFilter.stream()
+                .filter(albumFilter -> albumFilter.isApplicable(albumFilterDto))
+                .reduce(albumStream, (cumulativeStream, albumsFilter) ->
+                        albumsFilter.apply(cumulativeStream, albumFilterDto), Stream::concat)
+                .map(albumMapper::toDto)
+                .toList();
     }
 }

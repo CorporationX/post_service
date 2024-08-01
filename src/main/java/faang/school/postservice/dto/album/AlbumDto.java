@@ -11,6 +11,7 @@ import java.util.List;
 public class AlbumDto {
     private Long id;
     private String title;
+    private String description;
     private Long authorId;
     private List<Long> postsId;
     private LocalDateTime createdAt;
