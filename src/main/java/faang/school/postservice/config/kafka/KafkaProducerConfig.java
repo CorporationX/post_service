@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.kafka;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -32,11 +32,15 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.topics-name.post-views}")
     private String postViewTopicName;
 
+    @Value("${spring.kafka.producer.idempotence}")
+    private boolean producerIdempotence;
+
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configs = new HashMap<>();
         configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 bootstrapServerAddress);
+        configs.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, producerIdempotence);
         configs.put(
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
                 StringSerializer.class

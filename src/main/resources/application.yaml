@@ -29,14 +29,28 @@ spring:
           name: calculations_channel
         comment_channel:
           name: comment_channel
+      max-feed-size: 500
+      key-spaces:
+        feed:
+          name: Feed
+          ttl: 3
 
   kafka:
-    bootstrap-servers: localhost:2902
+    bootstrap-servers: localhost:9092
     topics-name:
       posts: posts
       comments: comments
       likes: likes
       post-views: post_views
+    producer:
+      idempotence: true
+    consumer:
+      group-id: posts-group-id
+      deserializer-trusted-packages:
+        "java.util,java.lang,faang.school.postservice.dto.event"
+      backoff:
+        interval: 5000
+        max-attempts: 5
 
 server:
   port: 8081
@@ -61,6 +75,10 @@ moderation:
   post:
     badWords:
       cron: "0 0 * * * *" # every day at 00:00
+
+news-feed:
+  pool:
+    thread-count: 10
 
 user-service:
   host: localhost
