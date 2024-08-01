@@ -21,14 +21,34 @@ spring:
     redis:
       port: 6379
       host: localhost
-      channels:
-        calculations_channel:
-          name: calculations_channel
-        like_post_channel:
-          name: like_channel
-      cache:
-        hashtag:
-          max_size: 1000
+      ttl:
+        post: 604800  #1 Week
+        user: 86400 # 24 hrs
+        comment: 86400 # 24 hrs
+        feed: 604800 # 1 Week
+
+    kafka:
+      port: 9092
+      host: localhost
+      group-id: post_service
+
+    cache:
+      hashtag:
+        max_size: 1000
+
+    channel:
+      calculations_channel:
+        name: calculations_channel
+      like_post_channel:
+        name: like-post_channel
+      new_comment:
+        name: new-comment_channel
+      post_view:
+        name: post-view_channel
+      new_post:
+        name: new-post_channel
+      heat_users_feed:
+        name: heat-users-feed_channel
 
   servlet:
     multipart:
@@ -70,11 +90,6 @@ post:
       cron: "0 0 * * * ?" # every midnight
     threads-count: 20
     max-list-size: 100
-  user-ban:
-    scheduler:
-      cron: "0 0 * * * ?"
-    channel:
-      name: user_ban_channel
   correcter:
     scheduler:
       cron: "0 0 0 * * *"
@@ -90,9 +105,14 @@ payment-service:
   port: 9080
 
 async:
-  corePoolSize: 5
-  maxPoolSize: 10
-  queueCapacity: 100
+  task:
+    corePoolSize: 5
+    maxPoolSize: 10
+    queueCapacity: 100
+  post:
+    corePoolSize: 20
+    maxPoolSize: 50
+    queueCapacity: 100
 
 spelling:
   url: https://speller.yandex.net/services/spellservice.json/checkText?text=
@@ -107,3 +127,15 @@ moderation:
 
 api:
   path: /api/v1
+
+
+
+cache:
+  max-comments: 3
+
+batch:
+  get-user-followers: 100
+  feed:
+    size: 500
+    posts-fetch: 25
+    heat: 10000

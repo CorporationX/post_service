@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class UserBanEvent {
+public class UserBanEvent implements Event {
     private List<Long> userIds;
 }

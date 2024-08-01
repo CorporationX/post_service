@@ -1,7 +1,6 @@
 package faang.school.postservice.validator.user;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotFoundException;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +16,7 @@ public class UserValidator {
     public void validateUserExistence(long userId) {
         try {
             log.debug("Fetching user with ID: " + userId);
-            UserDto userDto = userServiceClient.getUser(userId);
-            log.info("Found user: {}", userDto);
+            userServiceClient.getUser(userId);
         } catch (FeignException.NotFound e) {
             throw new NotFoundException(String.format("User with id '%d' not exist", userId));
         } catch (FeignException e) {

@@ -1,13 +1,12 @@
 package faang.school.postservice.validator.album;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.entity.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NoAccessException;
-import faang.school.postservice.model.Album;
-import faang.school.postservice.model.AlbumVisibility;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.model.PreferredContact;
+import faang.school.postservice.entity.model.Album;
+import faang.school.postservice.entity.model.AlbumVisibility;
+import faang.school.postservice.entity.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -87,7 +86,7 @@ class AlbumValidatorTest {
         album.setAuthorId(2L);
         album.setVisibility(AlbumVisibility.ONLY_SUBSCRIBERS);
 
-        when(userServiceClient.getFollowers(2L)).thenReturn(List.of(new UserDto(3L, "", "", "", PreferredContact.TELEGRAM)));
+        when(userServiceClient.getFollowers(2L)).thenReturn(List.of(new UserDto(3L, "", "")));
 
         assertThrows(NoAccessException.class, () -> albumValidator.validateAccess(album, 4L));
     }

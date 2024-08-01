@@ -1,6 +1,6 @@
 package faang.school.postservice.service.hashtag.cache;
 
-import faang.school.postservice.dto.post.PostHashtagDto;
+import faang.school.postservice.entity.dto.post.PostHashtagDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +14,7 @@ import java.util.Set;
 @Service
 public class HashtagCacheServiceImpl implements HashtagCacheService {
 
-    @Value("${spring.data.redis.cache.hashtag.max_size}")
+    @Value("${spring.data.cache.hashtag.max_size}")
     private long maxCacheSize;
     private final RedisTemplate<String, PostHashtagDto> redisTemplate;
     private final ZSetOperations<String, PostHashtagDto> zSetOps;
@@ -41,7 +41,7 @@ public class HashtagCacheServiceImpl implements HashtagCacheService {
     @Override
     public void addPostToHashtag(String hashtag, PostHashtagDto post) {
 
-        double score = post.getLikeIds().size();
+        double score = post.getLikesIds().size();
         zSetOps.add(hashtag, post, score);
 
         log.info("Added post {} to hashtag's #{} cache", post, hashtag);
@@ -62,7 +62,7 @@ public class HashtagCacheServiceImpl implements HashtagCacheService {
 
     @Override
     public void updateScore(String hashtag, PostHashtagDto post) {
-        zSetOps.add(hashtag, post, post.getLikeIds().size());
-        log.info("Updated post's score to {}: post={}", post.getLikeIds().size(), post);
+        zSetOps.add(hashtag, post, post.getLikesIds().size());
+        log.info("Updated post's score to {}: post={}", post.getLikesIds().size(), post);
     }
 }
