@@ -2,12 +2,10 @@ package faang.school.postservice.consumer.kafka;
 
 import faang.school.postservice.cache.redis.FeedCache;
 import faang.school.postservice.dto.event.PostEvent;
-import faang.school.postservice.dto.feed.Feed;
 import faang.school.postservice.exception.NonRetryableException;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
@@ -25,9 +23,6 @@ public class PostConsumer {
     @Resource(name = "newsFeedExecutor")
     private final TaskExecutor newsFeedExecutor;
 
-    @Value("${spring.data.redis.max-feed-size}")
-    private int maxSize;
-
     @KafkaListener(topics = "${spring.kafka.topics-name.posts}", groupId = "${spring.kafka.consumer.group-id}",
     containerFactory = "containerFactory")
     public void listenPostEvent(PostEvent postEvent, Acknowledgment ack) {
@@ -36,7 +31,7 @@ public class PostConsumer {
                         CompletableFuture.runAsync(
                                 () -> addPostToFeed(postEvent, subscriberId), newsFeedExecutor))
                 .toList();
-        if (futures.size() == 0) {
+        if (futures.isEmpty()) {
             log.info(" there are no subscribers for event {}", postEvent);
             throw new NonRetryableException(String.format("подписчики для события %s отсутствуют", postEvent));
         }
@@ -47,9 +42,6 @@ public class PostConsumer {
 
     @Transactional
     public void addPostToFeed(PostEvent postEvent, Long userId) {
-        Feed feedOfUser = feedCache.findById(userId)
-                .orElseGet(() -> new Feed(userId));
-        feedOfUser.addNewPost(postEvent.getId(), maxSize);
-        feedCache.save(feedOfUser);
+        feedCache.save(userId, postEvent.getId());
     }
 }

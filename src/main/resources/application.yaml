@@ -32,14 +32,14 @@ spring:
       max-feed-size: 500
       key-spaces:
         feed:
-          name: Feed
+          prefix: feed
           ttl: 3
         post:
           name: Post
           ttl: 5
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:2902
     topics-name:
       posts: posts
       comments: comments
