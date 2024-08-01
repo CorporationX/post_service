@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 public interface LikeService {
     LikeDto addCommentLike(LikeDto likeDto);
 
-    void deleteCommentLike(Long userId, Long commentId);
+    void deleteCommentLike(LikeDto likeDto);
 
     LikeDto addPostLike(LikeDto likeDto);
 
-    void deletePostLike(Long userid, Long postId);
+    void deletePostLike(LikeDto likeDto);
 }

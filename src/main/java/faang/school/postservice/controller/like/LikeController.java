@@ -18,9 +18,8 @@ public class LikeController {
     }
 
     @DeleteMapping("user/{userId}/comment/{commentId}")
-    public void deleteCommentLike(@PathVariable Long userId,
-                                  @PathVariable Long commentId) {
-        likeService.deleteCommentLike(userId, commentId);
+    public void deleteCommentLike(@RequestBody @Valid LikeDto likeDto) {
+        likeService.deleteCommentLike(likeDto);
     }
 
     @PostMapping("/post")
@@ -29,8 +28,7 @@ public class LikeController {
     }
 
     @DeleteMapping("user/{userId}/post/{postId}")
-    public void deletePostLike(@PathVariable Long userId,
-                               @PathVariable Long postId) {
-        likeService.deletePostLike(userId, postId);
+    public void deletePostLike(@RequestBody @Valid LikeDto likeDto) {
+        likeService.deletePostLike(likeDto);
     }
 }
