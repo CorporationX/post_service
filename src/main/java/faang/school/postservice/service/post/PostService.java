@@ -35,6 +35,8 @@ public interface PostService {
 
     void verifyPost(List<Post> posts);
 
+    List<Long> findAllAuthorIdsWithNotVerifiedPosts();
+
     void correctPosts();
 
     List<PostDto> findUserFollowingsPosts(Long userId, LocalDateTime date, int limit);
