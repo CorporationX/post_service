@@ -69,7 +69,7 @@ public class AlbumService {
                 log.error("author album in not contain current user");
             }
         } else {
-           log.error("album is null");
+            log.error("album is null");
         }
     }
 

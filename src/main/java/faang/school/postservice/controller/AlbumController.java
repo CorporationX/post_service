@@ -1,13 +1,17 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.album.AlbumLightDto;
 import faang.school.postservice.service.AlbumService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -114,6 +118,18 @@ public class AlbumController {
             throw new IllegalArgumentException("albumId is null");
         } else {
             return albumService.getAlbum(albumId);
+        }
+    }
+
+    @Operation(summary = "Получить альбомы с фильтрами",
+            description = "Отфильтровать список альбомов по условиям")
+    @GetMapping("/getAlbumForFilter")
+    public List<AlbumDto> getAlbumForFilter(@Valid @RequestBody AlbumFilterDto albumFilterDto) {
+        if (albumFilterDto == null) {
+            log.error("albumFilterDto is null");
+            throw new IllegalArgumentException("albumFilterDto is null");
+        } else {
+            return albumService.getAlbumForFilter(albumFilterDto);
         }
     }
 }
