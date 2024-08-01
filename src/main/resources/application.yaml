@@ -26,12 +26,6 @@ spring:
           name: calculations_channel
         post_view_event_channel:
           name: post_view_event_channel
-    kafka:
-      bootstrap-servers: localhost:29092
-      topics:
-        posts:
-          name: posts
-
 
 server:
   port: 8081
@@ -49,7 +43,7 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   inspector:
     scheduler:
-      cron: "0 1 * * * *"
+      cron: "0 * * * * *"
     file:
       swearwords: files/list-of-swearwords-and-offensive-gestures.csv
 
