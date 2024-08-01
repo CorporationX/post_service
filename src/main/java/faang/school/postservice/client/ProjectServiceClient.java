@@ -14,7 +14,7 @@ import java.util.List;
 public interface ProjectServiceClient {
 
     @GetMapping("/project/{projectId}")
-    ProjectDto getProject(@PathVariable (name = "projectId") @Positive long projectId);
+    ProjectDto getProject(@PathVariable(name = "projectId") @Positive long projectId);
 
     @PostMapping("/projects")
     List<ProjectDto> getProjectsByIds(@RequestBody @Positive List<Long> ids);

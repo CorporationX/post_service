@@ -78,12 +78,12 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testgetDraftPostsForUser() {
+    public void testGetDraftPostsForUser() {
         Long id = 1L;
         PostDto dto = new PostDto();
         dto.setPublished(false);
         dto.setAuthorId(id);
         controller.getDraftPostsForUser(id);
-        verify(service, times(1)).getSortedPosts(dto);
+        verify(service, times(1)).getPostsSortedByDate(dto);
     }
 }
