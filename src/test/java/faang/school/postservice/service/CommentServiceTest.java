@@ -6,11 +6,14 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
+import feign.FeignException;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,7 +48,7 @@ class CommentServiceTest {
 
 
     @BeforeEach
-    void setup(){
+    void setup() {
         authorId = 1L;
         postId = 1L;
         commentId = 1L;
@@ -70,39 +73,46 @@ class CommentServiceTest {
     }
 
     @Test
-    void testCreateComment(){
+    void testCreateCommentNegative() {
+        doThrow(FeignException.FeignClientException.class).when(userServiceClient).getUser(authorId);
+        assertThrows(FeignException.FeignClientException.class, () -> commentService.createComment(commentDto));
+        verify(commentRepository, times(0)).save(comment);
+    }
+
+    @Test
+    void testCreateCommentPositive() {
         when(postService.getPostById(commentDto.getPostId())).thenReturn(post);
         when(commentMapper.toEntity(commentDto)).thenReturn(comment);
         when(commentRepository.save(comment)).thenReturn(comment);
         commentService.createComment(commentDto);
-        verify(userServiceClient,times(1)).getUser(authorId);
-        verify(postService,times(1)).getPostById(postId);
-        verify(commentMapper,times(1)).toEntity(commentDto);
-        verify(commentRepository,times(1)).save(comment);
+        verify(userServiceClient, times(1)).getUser(authorId);
+        verify(postService, times(1)).getPostById(postId);
+        verify(commentMapper, times(1)).toEntity(commentDto);
+        verify(commentRepository, times(1)).save(comment);
     }
 
     @Test
-    void testUpdateComment(){
+    void testUpdateComment() {
         when(commentRepository.findById(commentId)).thenReturn(Optional.ofNullable(comment));
         when(commentRepository.save(comment)).thenReturn(comment);
         commentService.updateComment(commentDto);
-        verify(commentRepository,times(1)).findById(commentId);
-        verify(commentRepository,times(1)).save(comment);
+        verify(commentRepository, times(1)).findById(commentId);
+        verify(commentRepository, times(1)).save(comment);
     }
 
     @Test
-    void testGetAllByPostId(){
+    void testGetAllByPostIdPositive() {
         when(postService.getPostById(postId)).thenReturn(post);
         when(commentMapper.toDtos(comments)).thenReturn(commentDtos);
         commentService.getAllByPostId(postId);
-        verify(postService,times(1)).getPostById(postId);
-        verify(commentMapper,times(1)).toDtos(comments);
+        verify(postService, times(1)).getPostById(postId);
+        verify(commentMapper, times(1)).toDtos(comments);
     }
 
     @Test
-    void testDeleteComment(){
+    void testDeleteComment() {
         commentService.deleteComment(commentId);
-        verify(commentRepository,times(1)).deleteById(commentId);
+        verify(commentRepository, times(1)).deleteById(commentId);
     }
 
 
