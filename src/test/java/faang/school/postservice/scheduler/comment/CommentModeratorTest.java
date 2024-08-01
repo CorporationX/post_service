@@ -2,7 +2,6 @@ package faang.school.postservice.scheduler.comment;
 
 import faang.school.postservice.entity.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.moderation.ModerationDictionaryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,19 +14,14 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentModeratorTest {
 
     @InjectMocks
     private CommentModerator commentModerator;
-
-    @Mock
-    private ModerationDictionaryService moderationDictionaryService;
 
     @Mock
     private ExecutorService commentModeratorExecutorService;
@@ -46,7 +40,6 @@ class CommentModeratorTest {
         comment2.setCreatedAt(LocalDateTime.now());
 
         List<Comment> batch = Arrays.asList(comment1, comment2);
-        when(moderationDictionaryService.containsBadWord(anyString())).thenReturn(false);
 
         commentModerator.moderateBatch(batch);
 

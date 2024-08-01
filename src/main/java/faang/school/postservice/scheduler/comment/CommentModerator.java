@@ -2,7 +2,6 @@ package faang.school.postservice.scheduler.comment;
 
 import faang.school.postservice.entity.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.moderation.ModerationDictionaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +19,6 @@ import java.util.concurrent.ExecutorService;
 @RequiredArgsConstructor
 public class CommentModerator {
 
-    private final ModerationDictionaryService moderationDictionaryService;
     private final ExecutorService commentModeratorExecutorService;
     private final CommentRepository commentRepository;
     @Value("${moderation.batch-size}")
@@ -38,7 +36,6 @@ public class CommentModerator {
     @Async("commentModeratorExecutorService")
     public void moderateBatch(List<Comment> batch) {
         batch.forEach(comment -> {
-            comment.setVerified(!moderationDictionaryService.containsBadWord(comment.getContent()));
             comment.setVerifiedDate(LocalDateTime.now());
             commentRepository.save(comment);
             log.info("Moderated comment {}", comment.getId());
