@@ -8,12 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaPostProducer extends AbstractEventProducer<PostEvent>{
     public KafkaPostProducer(KafkaTemplate<String, Object> kafkaTemplate,
-                             @Value("${spring.kafka.topics.posts.name}") String topicName) {
+                             @Value("${spring.data.kafka.topics.posts.name}") String topicName) {
         super(kafkaTemplate, topicName);
-    }
-
-    @Override
-    public void sendEvent(PostEvent event){
-        super.sendEvent(event);
     }
 }

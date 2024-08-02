@@ -5,6 +5,7 @@ import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaCommentsProducer;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -42,6 +43,8 @@ class CommentServiceTest {
     private UserValidator userValidator;
     @Mock
     private PostServiceImpl postService;
+    @Mock
+    private KafkaCommentsProducer kafkaCommentsProducer;
     @InjectMocks
     private CommentServiceImpl commentService;
 
@@ -110,6 +113,7 @@ class CommentServiceTest {
         when(commentMapper.toEntity(commentDto)).thenReturn(comment);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(commentMapper.toDto(comment)).thenReturn(commentDto);
+        when(commentMapper.toEvent(commentDto)).thenReturn(new CommentEvent());
 
         CommentDto actual = commentService.createComment(userId, postId, commentDto);
 
@@ -127,6 +131,8 @@ class CommentServiceTest {
         verify(commentRepository).save(any(Comment.class));
         verify(commentMapper).toDto(comment);
         verify(commentEventPublisher).publish(expectedEvent);
+        verify(commentMapper).toEvent(commentDto);
+        verify(kafkaCommentsProducer).sendEvent(any(CommentEvent.class));
     }
 
     @Test
