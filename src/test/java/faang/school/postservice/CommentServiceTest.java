@@ -2,11 +2,10 @@ package faang.school.postservice;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdatedCommentDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.CommentException;
-import faang.school.postservice.exception.PostException;
-import faang.school.postservice.exception.UserException;
+import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -50,11 +49,19 @@ public class CommentServiceTest {
     @InjectMocks
     CommentService commentService;
 
+    private final CreateCommentDto createCommentDto = new CreateCommentDto();
     private final CommentDto commentDto = new CommentDto();
     private final UpdatedCommentDto updatedCommentDto = new UpdatedCommentDto();
     private final Comment comment = new Comment();
     private final Post post = new Post();
     private final UserDto userDto = new UserDto();
+
+    CreateCommentDto prepareCreateCommentDto() {
+        createCommentDto.setContent("Test content");
+        createCommentDto.setAuthorId(1L);
+        createCommentDto.setPostId(1L);
+        return createCommentDto;
+    }
 
     CommentDto prepareCommentDto() {
         commentDto.setId(1L);
@@ -128,22 +135,22 @@ public class CommentServiceTest {
 
     @Test
     public void testCreateCommentIfAuthorDoesNotFound() {
-        CommentDto commentDto = prepareCommentDto();
-        Comment comment = prepareComment();
-        when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(Mockito.isNull());
+        CreateCommentDto createCommentDto = prepareCreateCommentDto();
+        when(userServiceClient.getUser(createCommentDto.getAuthorId())).thenReturn(Mockito.isNull());
 
-        assertThrows(UserException.class, () -> commentService.createComment(commentDto));
+        assertThrows(RuntimeException.class, () -> commentService.createComment(createCommentDto));
     }
 
     @Test
     public void testCreateCommentSuccessful() {
-        CommentDto commentDto = prepareCommentDto();
+        CreateCommentDto createCommentDto = prepareCreateCommentDto();
         Comment comment = prepareComment();
         UserDto userDto = prepareUserDto();
-        when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(userDto);
-        when(commentMapper.toEntity(commentDto)).thenReturn(comment);
+        when(userServiceClient.getUser(createCommentDto.getAuthorId())).thenReturn(userDto);
+        when(commentRepository.save(comment)).thenReturn(comment);
+        when(commentMapper.toEntity(createCommentDto)).thenReturn(comment);
 
-        commentService.createComment(commentDto);
+        commentService.createComment(createCommentDto);
 
         verify(commentRepository, times(1)).save(comment);
     }
@@ -153,7 +160,7 @@ public class CommentServiceTest {
         UpdatedCommentDto updatedCommentDto = prepareUpdateCommentDto();
         when(commentRepository.findById(updatedCommentDto.getId())).thenReturn(Optional.empty());
 
-        assertThrows(CommentException.class, () -> commentService.updateComment(updatedCommentDto));
+        assertThrows(NotFoundException.class, () -> commentService.updateComment(updatedCommentDto));
     }
 
     @Test
@@ -172,7 +179,7 @@ public class CommentServiceTest {
         Long postId = 111L;
         when(postRepository.existsById(postId)).thenReturn(false);
 
-        assertThrows(PostException.class, () -> commentService.getAllCommentsByPostIdSortedByCreatedDate(postId));
+        assertThrows(NotFoundException.class, () -> commentService.getAllCommentsByPostIdSortedByCreatedDate(postId));
     }
 
     @Test

@@ -2,11 +2,9 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdatedCommentDto;
-import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.CommentException;
-import faang.school.postservice.exception.PostException;
-import faang.school.postservice.exception.UserException;
+import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
@@ -28,25 +26,22 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
 
-    public CommentDto createComment(CommentDto commentDto) {
-        validatedCommentAuthorId(commentDto);
-        Comment savedComment = commentMapper.toEntity(commentDto);
+    public CommentDto createComment(CreateCommentDto createCommentDto) {
+        checkUserExistence(createCommentDto);
+        Comment savedComment = commentMapper.toEntity(createCommentDto);
         savedComment = commentRepository.save(savedComment);
-        log.info("Comment was created");
+        log.info("Comment with ID = {} was created", savedComment.getId());
         return commentMapper.toDto(savedComment);
     }
 
-    private void validatedCommentAuthorId(CommentDto commentDto) {
-        Long authorId = commentDto.getAuthorId();
-        UserDto commentAuthor = userServiceClient.getUser(authorId);
-        if (commentAuthor == null) {
-            throw new UserException("User with ID = " + authorId + " does not found");
-        }
+    private void checkUserExistence(CreateCommentDto createCommentDto) {
+        Long authorId = createCommentDto.getAuthorId();
+        userServiceClient.getUser(authorId);
     }
 
     public CommentDto updateComment(UpdatedCommentDto updatedCommentDto) {
         Comment comment = commentRepository.findById(updatedCommentDto.getId())
-                .orElseThrow(() -> new CommentException("Comment with ID = " + updatedCommentDto.getId() + " does not found"));
+                .orElseThrow(() -> new NotFoundException("Comment with ID = " + updatedCommentDto.getId() + " does not found"));
         comment.setContent(updatedCommentDto.getContent());
         Comment updatedComment = commentRepository.save(comment);
         log.info("Comment with ID = {} was updated", updatedCommentDto.getId());
@@ -54,8 +49,8 @@ public class CommentService {
     }
 
     public List<CommentDto> getAllCommentsByPostIdSortedByCreatedDate(Long postId) {
-        if(!postRepository.existsById(postId)) {
-            throw new PostException("Post with ID = " + postId + "does not exist");
+        if (!postRepository.existsById(postId)) {
+            throw new NotFoundException("Post with ID = " + postId + "does not exist");
         }
         List<Comment> postsComments = commentRepository
                 .findAllByPostId(postId)

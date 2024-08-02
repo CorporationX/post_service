@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdatedCommentDto;
 import faang.school.postservice.service.CommentService;
 import jakarta.validation.Valid;
@@ -30,24 +31,21 @@ public class CommentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentDto createComment(@Valid @RequestBody CommentDto commentDto) {
-        return commentService.createComment(commentDto);
+    public CommentDto createComment(@Valid @RequestBody CreateCommentDto createCommentDto) {
+        return commentService.createComment(createCommentDto);
     }
 
     @PutMapping
-    @ResponseStatus(HttpStatus.OK)
     public CommentDto updateComment(@Valid @RequestBody UpdatedCommentDto updatedCommentDto) {
         return commentService.updateComment(updatedCommentDto);
     }
 
     @GetMapping("/{postId}")
-    @ResponseStatus(HttpStatus.OK)
     public List<CommentDto> getAllCommentsByPostIdSortedByCreatedDate(@Positive @PathVariable Long postId) {
         return commentService.getAllCommentsByPostIdSortedByCreatedDate(postId);
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public void deleteComment(@Positive @PathVariable Long id) {
         commentService.deleteComment(id);
     }
