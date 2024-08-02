@@ -16,5 +16,3 @@ public class RedisMessagePublisher implements MessagePublisher {
         redisTemplate.convertAndSend(topic.getTopic(), message);
     }
 }
-
-
