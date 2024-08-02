@@ -27,6 +27,12 @@ public class KafkaConfig {
     @Value("${spring.data.kafka.topics.comments.name}")
     private String commentTopic;
 
+    @Value("${spring.data.kafka.topics.likes.name}")
+    private String likesTopic;
+
+    @Value("${spring.data.kafka.topics.post_views.name}")
+    private String postViewsTopic;
+
     @Bean
     public NewTopic posts(){
         return TopicBuilder.name(postTopic).build();
@@ -35,6 +41,16 @@ public class KafkaConfig {
     @Bean
     public NewTopic comments(){
         return TopicBuilder.name(commentTopic).build();
+    }
+
+    @Bean
+    public NewTopic likes(){
+        return TopicBuilder.name(likesTopic).build();
+    }
+
+    @Bean
+    public NewTopic postViews(){
+        return TopicBuilder.name(postViewsTopic).build();
     }
 
     @Bean

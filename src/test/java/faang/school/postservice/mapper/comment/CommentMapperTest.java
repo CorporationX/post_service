@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -98,5 +99,15 @@ public class CommentMapperTest {
         assertEquals(comments.get(1).getAuthorId(), dtos.get(1).getAuthorId());
         assertEquals(comments.get(1).getPost().getId(), dtos.get(1).getPostId());
         assertEquals(comments.get(1).getCreatedAt(), dtos.get(1).getCreatedAt());
+    }
+
+    @Test
+    void testToEvent() {
+        CommentEvent result = commentMapper.toEvent(dto);
+        assertNotNull(result);
+        assertEquals(dto.getId(), result.getCommentId());
+        assertEquals(dto.getAuthorId(), result.getCommentAuthorId());
+        assertEquals(dto.getPostId(), result.getPostId());
+        assertEquals(dto.getPostId(), result.getPostAuthorId());
     }
 }

@@ -1,11 +1,11 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.post.PostViewEvent;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,8 +36,13 @@ public class PostServiceTest {
     @Mock
     private PostValidator postValidator;
 
+    @Mock
+    private KafkaPostViewProducer kafkaPostViewProducer;
+
+    private PostDto postDto;
     private PostDto postDto1;
     private PostDto postDto2;
+    private Post post;
     private Post post1;
     private Post post2;
     private Post post3;
@@ -53,6 +58,10 @@ public class PostServiceTest {
         content = "text";
         publicationTime = LocalDateTime.now();
 
+        postDto = new PostDto();
+        postDto.setId(postId);
+        postDto.setContent("Test content");
+
         postDto1 = new PostDto();
         postDto1.setId(1L);
         postDto1.setAuthorId(1L);
@@ -66,6 +75,10 @@ public class PostServiceTest {
         postDto2.setProjectId(2L);
         postDto2.setContent("Content");
         postDto2.setCreatedAt(LocalDateTime.now());
+
+        post = new Post();
+        post.setId(10L);
+        post.setContent("Test content");
 
         post1 = new Post();
         post1.setId(1L);
@@ -221,5 +234,35 @@ public class PostServiceTest {
         assertEquals(2, publishedPosts.size());
         assertEquals(postDto2.getId(), publishedPosts.get(0).getId());
         assertEquals(postDto1.getId(), publishedPosts.get(1).getId());
+    }
+
+    @Test
+    void shouldGetPostExistingPostReturnsPostDto() {
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(postMapper.toDto(post)).thenReturn(postDto);
+        PostDto result = postService.getPost(postId);
+        assertNotNull(result);
+        assertEquals(postId, result.getId());
+        assertEquals("Test content", result.getContent());
+        verify(postRepository).findById(postId);
+        verify(postMapper).toDto(post);
+        verify(kafkaPostViewProducer).sendEvent(any(PostViewEvent.class));
+    }
+
+    @Test
+    void shouldGetPostNonExistingPostThrowsException() {
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+        assertThrows(DataValidationException.class, () -> postService.getPost(postId));
+        verify(postRepository).findById(postId);
+        verifyNoInteractions(postMapper);
+        verifyNoInteractions(kafkaPostViewProducer);
+    }
+
+    @Test
+    void shouldGetPostNullIdThrowsException() {
+        assertThrows(DataValidationException.class, () -> postService.getPost(null));
+        verify(postRepository).findById(null);
+        verifyNoInteractions(postMapper);
+        verifyNoInteractions(kafkaPostViewProducer);
     }
 }
