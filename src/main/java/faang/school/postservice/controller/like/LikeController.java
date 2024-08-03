@@ -1,8 +1,7 @@
 package faang.school.postservice.controller.like;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.service.like.LikeService;
-import jakarta.validation.Valid;
+import faang.school.postservice.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,25 +20,25 @@ public class LikeController {
 
     @PostMapping("/user/{userId}/post/{postId}")
     @ResponseStatus(HttpStatus.OK)
-    public LikeDto likePost(@Valid @PathVariable Long postId, @Valid @PathVariable Long userId) {
+    public LikeDto likePost(@PathVariable Long postId, @PathVariable Long userId) {
         return likeService.likePost(postId, userId);
     }
 
     @DeleteMapping("/user/{userId}/post/{postId}")
     @ResponseStatus(HttpStatus.OK)
-    public void unlikePost(@Valid @PathVariable Long postId, @Valid @PathVariable Long userId) {
+    public void unlikePost(@PathVariable Long postId, @PathVariable Long userId) {
         likeService.unlikePost(postId, userId);
     }
 
     @PostMapping("/user/{userId}/comment/{commentId}")
     @ResponseStatus(HttpStatus.OK)
-    public LikeDto likeComment(@Valid @PathVariable Long commentId, @Valid @PathVariable Long userId) {
+    public LikeDto likeComment(@PathVariable Long commentId, @PathVariable Long userId) {
         return likeService.likeComment(commentId, userId);
     }
 
     @DeleteMapping("/user/{userId}/comment/{commentId}")
     @ResponseStatus(HttpStatus.OK)
-    public void unlikeComment(@Valid @PathVariable Long commentId, @Valid @PathVariable Long userId) {
+    public void unlikeComment(@PathVariable Long commentId, @PathVariable Long userId) {
         likeService.unlikeComment(commentId, userId);
     }
 }
