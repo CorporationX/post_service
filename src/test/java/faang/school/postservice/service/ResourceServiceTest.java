@@ -55,7 +55,7 @@ class ResourceServiceTest {
 
     @Test
     @DisplayName("testAddImage - success")
-    void testAddImage_Success() throws IOException {
+    void testAddImageSuccess() throws IOException {
         Long postId = 1L;
         MultipartFile imageFile = mock(MultipartFile.class);
         MultipartFile resizedImageFile = mock(MultipartFile.class);
@@ -78,7 +78,7 @@ class ResourceServiceTest {
 
     @Test
     @DisplayName("testAddImages - success")
-    void testAddImages_Success() {
+    void testAddImagesSuccess() {
         Long postId = 1L;
         List<MultipartFile> imageFiles = Collections.singletonList(mock(MultipartFile.class));
 
@@ -99,10 +99,16 @@ class ResourceServiceTest {
 
     @Test
     @DisplayName("testDeleteResource - success")
-    void testDeleteResource_Success() {
+    void testDeleteResourceSuccess() {
+        List<Resource> resources = new ArrayList<>();
+        resources.add(new Resource());
         Long resourceId = 1L;
-        Resource resource = new Resource();
-        resource.setKey("resourceKey");
+        Resource resource = Resource.builder()
+                .id(resourceId)
+                .key("resourceKey")
+                .post(Post.builder().resources(resources).build())
+                .build();
+
 
         when(resourceRepository.findById(resourceId)).thenReturn(Optional.of(resource));
         doNothing().when(s3Service).deleteFile(resource.getKey());
@@ -116,7 +122,7 @@ class ResourceServiceTest {
 
     @Test
     @DisplayName("testDownloadResource - success")
-    void testDownloadResource_Success() {
+    void testDownloadResourceSuccess() {
         Long resourceId = 1L;
         Resource resource = new Resource();
         resource.setKey("resourceKey");
@@ -131,7 +137,7 @@ class ResourceServiceTest {
 
     @Test
     @DisplayName("testAddImages - post not found")
-    void testAddImages_PostNotFound() {
+    void testAddImagesPostNotFound() {
         Long postId = 1L;
         List<MultipartFile> imageFiles = Collections.singletonList(mock(MultipartFile.class));
 
@@ -146,7 +152,7 @@ class ResourceServiceTest {
 
     @Test
     @DisplayName("testAddImage - post not found")
-    void testAddImage_PostNotFound() {
+    void testAddImagePostNotFound() {
         Long postId = 1L;
         MultipartFile imageFile = mock(MultipartFile.class);
 
@@ -161,7 +167,7 @@ class ResourceServiceTest {
 
     @Test
     @DisplayName("testDeleteResource - resource not found")
-    void testDeleteResource_ResourceNotFound() {
+    void testDeleteResourceResourceNotFound() {
         Long resourceId = 1L;
 
         when(resourceRepository.findById(resourceId)).thenReturn(Optional.empty());
@@ -175,7 +181,7 @@ class ResourceServiceTest {
 
     @Test
     @DisplayName("testDownloadResource - resource not found")
-    void testDownloadResource_ResourceNotFound() {
+    void testDownloadResourceResourceNotFound() {
         Long resourceId = 1L;
 
         when(resourceRepository.findById(resourceId)).thenReturn(Optional.empty());
