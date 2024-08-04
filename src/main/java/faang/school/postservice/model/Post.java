@@ -6,15 +6,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"likes", "comments", "albums", "resources"})
 @Builder
 @Entity
 @Table(name = "post")
@@ -71,4 +74,13 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    private boolean isVerified;
+
+    private Instant verifiedDate;
+
+    public void setVerified(boolean verified) {
+        isVerified = verified;
+        verifiedDate = Instant.now();
+    }
 }

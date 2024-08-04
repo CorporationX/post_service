@@ -39,6 +39,16 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderation:
+    processor:
+      thread-pool-size: 2
+    batch-size: 3
+    scheduler:
+      cron: "0/5 * * * * *"
+    dictionary:
+      swearing:
+        swearing1,
+        swearing2
 
 user-service:
   host: localhost
@@ -56,3 +66,4 @@ executor:
   thread:
     pool:
       size: 10
+

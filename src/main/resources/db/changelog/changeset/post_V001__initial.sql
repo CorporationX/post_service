@@ -62,6 +62,5 @@ CREATE TABLE favorite_albums (
     user_id bigint NOT NULL,
     created_at timestamptz DEFAULT current_timestamp,
     updated_at timestamptz DEFAULT current_timestamp,
-
     CONSTRAINT fk_album_id FOREIGN KEY (album_id) REFERENCES album (id) ON DELETE CASCADE
 );
