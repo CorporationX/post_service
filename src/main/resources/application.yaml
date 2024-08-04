@@ -34,6 +34,9 @@ spring:
         feed:
           name: Feed
           ttl: 3
+        post:
+          name: Post
+          ttl: 5
 
   kafka:
     bootstrap-servers: localhost:9092

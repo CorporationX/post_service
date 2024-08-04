@@ -1,6 +1,7 @@
 package faang.school.postservice.config;
 
 import faang.school.postservice.dto.feed.Feed;
+import faang.school.postservice.dto.post.CachedPostDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +20,7 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -40,8 +42,14 @@ public class RedisConfig {
     @Value("${spring.data.redis.key-spaces.feed.name}")
     private String feedKeySpace;
 
+    @Value("${spring.data.redis.key-spaces.post.name}")
+    private String postKeySpace;
+
     @Value("${spring.data.redis.key-spaces.feed.ttl}")
     private long feedTTL;
+
+    @Value("${spring.data.redis.key-spaces.post.ttl}")
+    private long postTTL;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -73,10 +81,12 @@ public class RedisConfig {
 
     public class CustomSpaceConfiguration extends KeyspaceConfiguration {
         @Override
-        public KeyspaceSettings getKeyspaceSettings(Class<?> type) {
+        protected Iterable<KeyspaceSettings> initialConfiguration() {
             KeyspaceSettings feedSpaceSettings = new KeyspaceSettings(Feed.class, feedKeySpace);
+            KeyspaceSettings postSpaceSettings = new KeyspaceSettings(CachedPostDto.class, postKeySpace);
             feedSpaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(feedTTL));
-            return feedSpaceSettings;
+            postSpaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(postTTL));
+            return List.of(feedSpaceSettings, postSpaceSettings);
         }
     }
 }

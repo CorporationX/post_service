@@ -123,9 +123,20 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     public PostDto getPost(Long postId) {
+        return postMapper.toDto(findById(postId));
+    }
+
+    @Override
+    @Transactional
+    public Long incrementPostViews(Long postId) {
         Post post = findById(postId);
+        if (!post.isPublished()) {
+            return 0L;
+        }
+        post.setViews(post.getViews() + 1);
+        Post savedPost = postRepository.save(post);
         sendPostViewEventToKafka(postId);
-        return postMapper.toDto(post);
+        return savedPost.getViews();
     }
 
     private void sendPostViewEventToKafka(Long postId) {

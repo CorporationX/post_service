@@ -78,4 +78,7 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
+
+    @Column(name = "views")
+    private long views;
 }
