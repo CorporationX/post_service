@@ -70,6 +70,7 @@ public class AlbumServiceTest {
         when(userContext.getUserId()).thenReturn(userId);
         when(albumRepository.findByIdWithPosts(albumId)).thenReturn(Optional.of(album));
         when(albumMapper.toDto(album)).thenReturn(new AlbumDto());
+//        when(albumService.toDto(album)).thenReturn(new AlbumDto());
 
         AlbumDto result = albumService.getAlbum(albumId);
 
@@ -81,12 +82,16 @@ public class AlbumServiceTest {
 
     @Test
     void createAlbum() {
-        when(albumMapper.toEntityLight(any(AlbumLightDto.class))).thenReturn(album);
+        when(userContext.getUserId()).thenReturn(1L);
+        when(albumMapper.toEntityLight(albumLightDto)).thenReturn(new Album());
         when(albumMapper.toDtoLight(albumRepository.save(any(Album.class)))).thenReturn(albumLightDto);
 
         AlbumLightDto result = albumService.createAlbum(albumLightDto);
 
-        verify(albumMapper, times(1)).toEntityLight(any(AlbumLightDto.class));
+
+        verify(userContext, times(1)).getUserId();
+        verify(albumRepository, times(1)).findByIdWithPosts(1L);
+        verify(albumMapper, times(1)).toEntityLight(albumLightDto);
         verify(albumMapper, times(1)).toDtoLight(any(Album.class));
         assertEquals(1, result.getId());
     }
