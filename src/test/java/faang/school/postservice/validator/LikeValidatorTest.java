@@ -1,4 +1,4 @@
-package faang.school.postservice.validation;
+package faang.school.postservice.validator;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.DataValidationException;

@@ -27,21 +27,21 @@ public class CommentService {
     @Transactional
     public void createComment(CommentDto commentDto) {
         validateUserById(commentDto.getAuthorId());
-        Post post = postService.getPostById(commentDto.getPostId());
+        Post post = postService.findById(commentDto.getPostId());
         post.getComments().add(commentRepository
                 .save(commentMapper.toEntity(commentDto)));
     }
 
     @Transactional
     public void updateComment(CommentDto commentDto) {
-        Comment comment = getCommentById(commentDto.getId());
+        Comment comment = findById(commentDto.getId());
         comment.setContent(commentDto.getContent());
         commentRepository.save(comment);
     }
 
     @Transactional(readOnly = true)
     public List<CommentDto> getAllByPostId(Long postId) {
-        Post post = postService.getPostById(postId);
+        Post post = postService.findById(postId);
         return commentMapper.toDtos(post.getComments()
                 .stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
@@ -53,7 +53,7 @@ public class CommentService {
         commentRepository.deleteById(commentId);
     }
 
-    private Comment getCommentById(Long commentId) {
+    public Comment findById(Long commentId) {
         return commentRepository
                 .findById(commentId)
                 .orElseThrow(() -> {
