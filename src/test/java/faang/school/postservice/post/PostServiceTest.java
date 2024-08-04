@@ -46,10 +46,11 @@ public class PostServiceTest {
 
     @Test
     public void testCreateDraftPost() {
-        PostDto postDto = new PostDto();
-        postDto.setId(1L);
-        postDto.setContent("Test");
-        postDto.setAuthorId(1L);
+        PostDto postDto = PostDto.builder()
+                .id(1L)
+                .authorId(1L)
+                .content("Test")
+                .build();
         Post post = new Post();
         post.setId(1L);
         post.setContent("Test");
@@ -82,8 +83,9 @@ public class PostServiceTest {
 
     @Test
     public void testUserDoesNotExistCreatingPost() {
-        PostDto dto = new PostDto();
-        dto.setAuthorId(1L);
+        PostDto dto = PostDto.builder()
+                .authorId(1L)
+                .build();
         Post post = new Post();
         post.setAuthorId(1L);
         UserDto userDto = new UserDto(null, null, null);
@@ -94,8 +96,9 @@ public class PostServiceTest {
 
     @Test
     public void testProjectDoesNotExistCreatingPost() {
-        PostDto dto = new PostDto();
-        dto.setProjectId(1L);
+        PostDto dto = PostDto.builder()
+                .projectId(1L)
+                .build();
         Post post = new Post();
         post.setProjectId(1L);
         ProjectDto projectDto = new ProjectDto();
@@ -109,18 +112,20 @@ public class PostServiceTest {
         Optional<Post> post = Optional.of(new Post());
         post.get().setId(1L);
         when(postRepository.findById(1L)).thenReturn(post);
-        PostDto postDto = new PostDto();
-        postDto.setId(1L);
-        postDto.setContent("Test");
+        PostDto postDto = PostDto.builder()
+                .id(1L)
+                .content("Test")
+                .build();
         PostDto resultPostDto = service.updatePost(1L, postDto);
         verify(postRepository, times(1)).save(post.get());
         assertEquals(postDto.getContent(), resultPostDto.getContent());
-        assertTrue(resultPostDto.isPublished());
     }
 
     @Test
     public void testPostDoesNotExistUpdatingPost() {
-        checkPostForExistenceInDB(() -> service.updatePost(1L, new PostDto()));
+        PostDto dto = PostDto.builder()
+                .build();
+        checkPostForExistenceInDB(() -> service.updatePost(1L, dto));
     }
 
     @Test
@@ -154,9 +159,10 @@ public class PostServiceTest {
 
     @Test
     public void testGetAllDraftsByUser() {
-        PostDto postDto = new PostDto();
-        postDto.setAuthorId(1L);
-        postDto.setPublished(false);
+        PostDto postDto = PostDto.builder()
+                .authorId(1L)
+                .published(false)
+                .build();
         List<Post> posts = initPostsData();
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
         List<PostDto> filteredList = service.getPostsSortedByDate(postDto);
@@ -166,9 +172,10 @@ public class PostServiceTest {
 
     @Test
     public void testGetAllDraftsByProject() {
-        PostDto postDto = new PostDto();
-        postDto.setProjectId(1L);
-        postDto.setPublished(false);
+        PostDto postDto = PostDto.builder()
+                .projectId(1L)
+                .published(false)
+                .build();
         List<Post> posts = initPostsData();
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
         List<PostDto> filteredList = service.getPostsSortedByDate(postDto);
@@ -178,9 +185,10 @@ public class PostServiceTest {
 
     @Test
     public void testGetAllPostsByUser() {
-        PostDto postDto = new PostDto();
-        postDto.setAuthorId(1L);
-        postDto.setPublished(true);
+        PostDto postDto = PostDto.builder()
+                .authorId(1L)
+                .published(true)
+                .build();
         List<Post> posts = initPostsData();
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
         List<PostDto> filteredList = service.getPostsSortedByDate(postDto);
@@ -189,9 +197,10 @@ public class PostServiceTest {
 
     @Test
     public void testGetAllPostsByProject() {
-        PostDto postDto = new PostDto();
-        postDto.setProjectId(1L);
-        postDto.setPublished(true);
+        PostDto postDto = PostDto.builder()
+                .projectId(1L)
+                .published(true)
+                .build();
         List<Post> posts = initPostsData();
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
         List<PostDto> filteredList = service.getPostsSortedByDate(postDto);
@@ -200,8 +209,9 @@ public class PostServiceTest {
 
     @Test
     public void testNoPostFromUserOrProject() {
-        PostDto postDto = new PostDto();
-        postDto.setAuthorId(1L);
+        PostDto postDto = PostDto.builder()
+                .authorId(1L)
+                .build();
         when(postRepository.findByAuthorId(1L)).thenReturn(List.of());
         assertThrows(DataDoesNotExistException.class, () -> service.getPostsSortedByDate(postDto));
     }

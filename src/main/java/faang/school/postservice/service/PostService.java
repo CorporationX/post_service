@@ -6,7 +6,6 @@ import faang.school.postservice.dto.Post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataDoesNotExistException;
-import faang.school.postservice.logging.Logging;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -14,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -25,7 +25,6 @@ import static faang.school.postservice.exception.MessageError.DOES_NOT_EXIST_IN_
 @RequiredArgsConstructor
 @Slf4j
 public class PostService {
-    private Logging logging = new Logging();
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final ProjectServiceClient projectServiceClient;
@@ -34,7 +33,7 @@ public class PostService {
     public PostDto createDraftPost(PostDto dto) {
         Post post = postMapper.toEntity(dto);
         if (validateDraftPostPublisherExist(post)) {
-            logging.log("Draft Post was created successfully", null, "info");
+            log.info("Draft Post was created successfully");
             postRepository.save(post);
         }
         return postMapper.toDto(post);
@@ -43,12 +42,17 @@ public class PostService {
     public PostDto publishPost(Long draftId) {
         Optional<Post> post = postRepository.findById(draftId);
         if (post.isPresent()) {
-            post.get().setPublished(true);
-            logging.log("Post with id = {} has been published successfully", draftId, "info");
-            postRepository.save(post.get());
+            if (post.get().isPublished()){
+                log.info("The Post was already published at {}", post.get().getPublishedAt());
+            } else {
+                post.get().setPublished(true);
+                post.get().setPublishedAt(LocalDateTime.now());
+                log.info("Post with id = {} has been published successfully", draftId);
+                postRepository.save(post.get());
+            }
             return postMapper.toDto(post.get());
         } else {
-            logging.log("Post with id = {} doesn't exist in database", draftId, "error");
+            log.error("Post with id = {} doesn't exist in database", draftId);
             throw new DataDoesNotExistException(DOES_NOT_EXIST_IN_DB);
         }
     }
@@ -57,12 +61,12 @@ public class PostService {
         Optional<Post> post = postRepository.findById(postId);
         if (post.isPresent()) {
             post.get().setContent(postDto.getContent());
-            post.get().setPublished(true);
+            post.get().setUpdatedAt(LocalDateTime.now());
             postRepository.save(post.get());
-            logging.log("Post with id = {} has been updated successfully", postId, "info");
+            log.info("Post with id = {} has been updated successfully", postId);
             return postMapper.toDto(post.get());
         } else {
-            logging.log("Post with id = {} doesn't exist in database", postId, "error");
+            log.error("Post with id = {} doesn't exist in database", postId);
             throw new DataDoesNotExistException(DOES_NOT_EXIST_IN_DB);
         }
     }
@@ -72,10 +76,10 @@ public class PostService {
         if (post.isPresent()) {
             post.get().setDeleted(true);
             postRepository.save(post.get());
-            logging.log("Post with id = {} was deleted successfully", postId, "info");
+            log.info("Post with id = {} was deleted successfully", postId);
             return postMapper.toDto(post.get());
         } else {
-            logging.log("Post with id = {} doesn't exist in database", postId, "error");
+            log.error("Post with id = {} doesn't exist in database", postId);
             throw new DataDoesNotExistException(DOES_NOT_EXIST_IN_DB);
         }
     }
@@ -85,7 +89,7 @@ public class PostService {
         if (post.isPresent()) {
             return postMapper.toDto(post.get());
         } else {
-            logging.log("Post with id = {} doesn't exist in database", postId, "error");
+            log.error("Post with id = {} doesn't exist in database", postId);
             throw new DataDoesNotExistException(DOES_NOT_EXIST_IN_DB);
         }
     }
@@ -116,7 +120,7 @@ public class PostService {
             }
             return sortedList;
         } else {
-            logging.log("There's no one post in database written by your publisher", null, "info");
+            log.info("There's no one post in database written by your publisher");
             throw new DataDoesNotExistException(DOES_NOT_EXIST_IN_DB);
         }
     }
@@ -126,14 +130,14 @@ public class PostService {
         if (post.getAuthorId() != null) {
             UserDto userDto = userServiceClient.getUser(post.getId());
             if (userDto.getId() == null) {
-                logging.log("User doesn't exist in database", null, "error");
+                log.error("User id = {} doesn't exist in database", post.getAuthorId());
                 throw new DataDoesNotExistException(DOES_NOT_EXIST_IN_DB);
             } else result = true;
 
         } else if (post.getProjectId() != null) {
             ProjectDto projectDto = projectServiceClient.getProject(post.getProjectId());
             if (projectDto.getId() == null) {
-                logging.log("Project doesn't exist in database", null, "error");
+                log.error("Project with id = {} doesn't exist in database", post.getProjectId());
                 throw new DataDoesNotExistException(DOES_NOT_EXIST_IN_DB);
             } else result = true;
         }

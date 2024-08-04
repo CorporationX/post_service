@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static faang.school.postservice.exception.MessageError.NOT_ALLOWED_EMPTY_POST_MESSAGE;
-
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -29,8 +27,8 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping("/draftPost")
-    public PostDto createDraftPost(@RequestBody PostDto dto) {
-        if (validateCreatingPost(dto)) {
+    public PostDto createDraftPost(@RequestBody @Validated PostDto dto) {
+        if (isAuthorOrProjectNotNull(dto)) {
             return postService.createDraftPost(dto);
         }
         return null;
@@ -43,10 +41,6 @@ public class PostController {
 
     @PutMapping("/post/{postId}")
     public PostDto updatePost(@PathVariable @NonNull @Positive Long postId, @RequestBody PostDto postDto) {
-        if (postDto.getContent() == null || postDto.getContent().isEmpty() || postDto.getContent().isBlank()) {
-            log.info("Tried to update Post with null or empty message. Not allowed to have empty content in post");
-            throw new WrongInputException(NOT_ALLOWED_EMPTY_POST_MESSAGE);
-        }
         return postService.updatePost(postId, postDto);
     }
 
@@ -62,49 +56,50 @@ public class PostController {
 
     @GetMapping("/drafts/users/{publisherId}")
     public List<PostDto> getDraftPostsForUser(@PathVariable @NonNull @Positive Long publisherId) {
-        PostDto postDto = initPostDto(false, publisherId, "User");
+        PostDto postDto = PostDto.builder()
+                .content("notUsed")
+                .published(false)
+                .authorId(publisherId)
+                .build();
         return postService.getPostsSortedByDate(postDto);
     }
 
     @GetMapping("/drafts/projects/{publisherId}")
     public List<PostDto> getDraftPostsForProject(@PathVariable @NonNull @Positive Long publisherId) {
-        PostDto postDto = initPostDto(false, publisherId, "Project");
+        PostDto postDto = PostDto.builder()
+                .content("notUsed")
+                .published(false)
+                .projectId(publisherId)
+                .build();
         return postService.getPostsSortedByDate(postDto);
     }
 
     @GetMapping("/posts/users/{publisherId}")
     public List<PostDto> getPostsForUser(@PathVariable @NonNull @Positive Long publisherId) {
-        PostDto postDto = initPostDto(true, publisherId, "User");
+        PostDto postDto = PostDto.builder()
+                .content("notUsed")
+                .published(true)
+                .authorId(publisherId)
+                .build();
         return postService.getPostsSortedByDate(postDto);
     }
 
     @GetMapping("/posts/projects/{publisherId}")
     public List<PostDto> getPostsForProjects(@PathVariable @NonNull @Positive Long publisherId) {
-        PostDto postDto = initPostDto(true, publisherId, "Project");
+        PostDto postDto = PostDto.builder()
+                .content("notUsed")
+                .published(true)
+                .projectId(publisherId)
+                .build();
         return postService.getPostsSortedByDate(postDto);
     }
 
-    private boolean validateCreatingPost(PostDto dto) {
+    private boolean isAuthorOrProjectNotNull(PostDto dto) {
         if (dto.getAuthorId() != null && dto.getProjectId() != null) {
             log.error("Not allowed to assign one post to an user and a project simultaneously");
             throw new WrongInputException("Not allowed to assign one post to an user and a project simultaneously");
-        } else if (dto.getContent() == null || dto.getContent().isEmpty() || dto.getContent().isBlank()) {
-            log.error("Tried to create Post with null or empty message");
-            throw new WrongInputException("Message could not be empty");
         } else {
             return true;
         }
     }
-
-    private PostDto initPostDto(boolean published, Long id, String publisher) {
-        PostDto postDto = new PostDto();
-        postDto.setDeleted(false);
-        postDto.setPublished(published);
-        switch (publisher) {
-            case "User" -> postDto.setAuthorId(id);
-            case "Project" -> postDto.setProjectId(id);
-        }
-        return postDto;
-    }
-
 }

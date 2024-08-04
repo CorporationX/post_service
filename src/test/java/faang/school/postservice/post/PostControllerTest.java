@@ -22,27 +22,21 @@ public class PostControllerTest {
 
     @Test
     public void testCreateDraftPost() {
-        PostDto dto = new PostDto();
-        dto.setAuthorId(1L);
-        dto.setContent("Test");
+        PostDto dto = PostDto.builder()
+                .authorId(1L)
+                .content("Test")
+                .build();
         controller.createDraftPost(dto);
         verify(service, times(1)).createDraftPost(dto);
     }
 
     @Test
     public void testBothUserAndProject() {
-        PostDto dto = new PostDto();
-        dto.setAuthorId(1L);
-        dto.setProjectId(1L);
-        dto.setContent("Test");
-        assertThrows(WrongInputException.class, () -> controller.createDraftPost(dto));
-    }
-
-    @Test
-    public void testNullOrEmptyMessage() {
-        PostDto dto = new PostDto();
-        dto.setAuthorId(1L);
-        dto.setContent(null);
+        PostDto dto = PostDto.builder()
+                .authorId(1L)
+                .projectId(1L)
+                .content("Test")
+                .build();
         assertThrows(WrongInputException.class, () -> controller.createDraftPost(dto));
     }
 
@@ -56,9 +50,10 @@ public class PostControllerTest {
     @Test
     public void testUpdatePost() {
         Long id = 1L;
-        PostDto dto = new PostDto();
-        dto.setAuthorId(1L);
-        dto.setContent("Test");
+        PostDto dto = PostDto.builder()
+                .authorId(1L)
+                .content("Test")
+                .build();
         controller.updatePost(id, dto);
         verify(service, times(1)).updatePost(1L, dto);
     }
@@ -80,9 +75,11 @@ public class PostControllerTest {
     @Test
     public void testGetDraftPostsForUser() {
         Long id = 1L;
-        PostDto dto = new PostDto();
-        dto.setPublished(false);
-        dto.setAuthorId(id);
+        PostDto dto = PostDto.builder()
+                .content("notUsed")
+                .published(false)
+                .authorId(id)
+                .build();
         controller.getDraftPostsForUser(id);
         verify(service, times(1)).getPostsSortedByDate(dto);
     }
