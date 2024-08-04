@@ -39,7 +39,7 @@ spring:
           ttl: 5
 
   kafka:
-    bootstrap-servers: localhost:2902
+    bootstrap-servers: localhost:9092
     topics-name:
       posts: posts
       comments: comments

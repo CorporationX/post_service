@@ -1,6 +1,5 @@
 package faang.school.postservice.config;
 
-import faang.school.postservice.dto.feed.Feed;
 import faang.school.postservice.dto.post.CachedPostDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,14 +38,8 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.comment_channel.name}")
     private String commentEventName;
 
-    @Value("${spring.data.redis.key-spaces.feed.name}")
-    private String feedKeySpace;
-
     @Value("${spring.data.redis.key-spaces.post.name}")
     private String postKeySpace;
-
-    @Value("${spring.data.redis.key-spaces.feed.ttl}")
-    private long feedTTL;
 
     @Value("${spring.data.redis.key-spaces.post.ttl}")
     private long postTTL;
@@ -82,11 +75,9 @@ public class RedisConfig {
     public class CustomSpaceConfiguration extends KeyspaceConfiguration {
         @Override
         protected Iterable<KeyspaceSettings> initialConfiguration() {
-            KeyspaceSettings feedSpaceSettings = new KeyspaceSettings(Feed.class, feedKeySpace);
             KeyspaceSettings postSpaceSettings = new KeyspaceSettings(CachedPostDto.class, postKeySpace);
-            feedSpaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(feedTTL));
             postSpaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(postTTL));
-            return List.of(feedSpaceSettings, postSpaceSettings);
+            return List.of(postSpaceSettings);
         }
     }
 }

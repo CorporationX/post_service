@@ -1,10 +1,10 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.moderation.ModerationDictionary;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.dto.moderation.ModerationDictionary;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
@@ -38,8 +38,8 @@ public class PostServiceImpl implements PostService {
     private final PostValidator postValidator;
     private final @Qualifier("executorService")ExecutorService threadPool;
     private final PostProducer postProducer;
-    private final UserServiceClient userServiceClient;
     private final PostViewProducer postViewProducer;
+    private final UserServiceClient userServiceClient;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
