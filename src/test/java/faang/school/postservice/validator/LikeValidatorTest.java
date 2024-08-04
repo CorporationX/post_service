@@ -7,16 +7,18 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import feign.FeignException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class LikeValidatorTest {
 
     @Mock
@@ -49,7 +51,7 @@ class LikeValidatorTest {
 
     @Test
     void validateUserAndPostWithInvalidUserIdShouldThrowException() {
-        when(userServiceClient.getUser(firstUserId)).thenThrow(FeignException.class);
+        doThrow(FeignException.FeignClientException.class).when(userServiceClient).getUser(firstUserId);
         assertThrows(FeignException.class, () -> likeValidator.validateUserAndPost(post2, firstUserId));
     }
 
