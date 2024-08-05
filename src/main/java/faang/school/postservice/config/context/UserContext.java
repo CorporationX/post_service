@@ -1,7 +1,9 @@
 package faang.school.postservice.config.context;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class UserContext {
 
@@ -12,7 +14,11 @@ public class UserContext {
     }
 
     public long getUserId() {
-        return userIdHolder.get();
+        Long userId = userIdHolder.get();
+        if (userId == null) {
+            log.warn("userId is null");
+        }
+        return userId;
     }
 
     public void clear() {
