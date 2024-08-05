@@ -9,9 +9,9 @@ import java.util.Optional;
 @Component
 public class LikeServiceValidator {
 
-    public void validDuplicateLike(Optional<Like> optionalLike) {
+    public void checkDuplicateLike(Optional<Like> optionalLike) {
         optionalLike.ifPresent(like -> {
-            throw new IllegalArgumentException("This has already been like");
+            throw new IllegalArgumentException("Has already been liked");
         });
     }
 }

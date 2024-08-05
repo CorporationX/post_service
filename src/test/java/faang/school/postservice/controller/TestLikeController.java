@@ -2,7 +2,6 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
-import faang.school.postservice.validator.LikeControllerValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,8 +19,6 @@ public class TestLikeController {
     @InjectMocks
     private LikeController likeController;
 
-    @Mock
-    private LikeControllerValidator likeControllerValidator;
     @Mock
     private LikeService likeService;
 
@@ -46,7 +43,6 @@ public class TestLikeController {
                 .build();
 
         likeController.addLikeToPost(likeDto);
-        verify(likeControllerValidator, times(1)).validAddLikeToPost(likeDto.getPostId());
         verify(likeService, times(1)).addLikeToPost(likeDto);
     }
 
@@ -67,7 +63,6 @@ public class TestLikeController {
                 .build();
 
         likeController.addLikeToComment(likeDto);
-        verify(likeControllerValidator, times(1)).validAddLikeToComment(likeDto.getCommentId());
         verify(likeService, times(1)).addLikeToComment(likeDto);
     }
 

@@ -24,12 +24,12 @@ public class TestLikeServiceValidator {
     @Test
     public void testValidDuplicateLikeWhenLikeAlreadyDelivered() {
         Optional<Like> optionalLike = Optional.of(new Like());
-        assertThrows(IllegalArgumentException.class, () -> validator.validDuplicateLike(optionalLike));
+        assertThrows(IllegalArgumentException.class, () -> validator.checkDuplicateLike(optionalLike));
     }
 
     @Test
     public void testValidDuplicateLikeWhenValid() {
         Optional<Like> optionalLike = Optional.empty();
-        assertDoesNotThrow(() -> validator.validDuplicateLike(optionalLike));
+        assertDoesNotThrow(() -> validator.checkDuplicateLike(optionalLike));
     }
 }

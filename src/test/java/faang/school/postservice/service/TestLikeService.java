@@ -108,12 +108,12 @@ public class TestLikeService {
         when(postService.getPost(likeDtoPost.getPostId())).thenReturn(post);
         when(userServiceClient.getUser(likeDtoPost.getUserId())).thenReturn(userDto);
         when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.empty());
-        when(likeMapper.toLike(likeDtoPost)).thenReturn(like);
+        when(likeMapper.toEntity(likeDtoPost)).thenReturn(like);
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
 
         likeService.addLikeToPost(likeDtoPost);
 
-        verify(likeServiceValidator, times(1)).validDuplicateLike(Optional.empty());
+        verify(likeServiceValidator, times(1)).checkDuplicateLike(Optional.empty());
         verify(likeRepository, times(1)).save(like);
     }
 
@@ -163,12 +163,12 @@ public class TestLikeService {
         when(commentService.getComment(likeDtoComment.getCommentId())).thenReturn(comment);
         when(userServiceClient.getUser(likeDtoComment.getUserId())).thenReturn(userDto);
         when(likeRepository.findByCommentIdAndUserId(comment.getId(), userDto.getId())).thenReturn(Optional.empty());
-        when(likeMapper.toLike(likeDtoComment)).thenReturn(like);
+        when(likeMapper.toEntity(likeDtoComment)).thenReturn(like);
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
 
         likeService.addLikeToComment(likeDtoComment);
 
-        verify(likeServiceValidator, times(1)).validDuplicateLike(Optional.empty());
+        verify(likeServiceValidator, times(1)).checkDuplicateLike(Optional.empty());
         verify(likeRepository, times(1)).save(like);
     }
 

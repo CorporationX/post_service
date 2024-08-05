@@ -12,37 +12,36 @@ import faang.school.postservice.validator.LikeServiceValidator;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 
 @Service
 @RequiredArgsConstructor
 public class LikeService {
-
-    private final LikeServiceValidator validator;
+    private final LikeServiceValidator likeServiceValidator;
     private final LikeRepository likeRepository;
     private final PostService postService;
     private final UserServiceClient userServiceClient;
     private final CommentService commentService;
     private final LikeMapper likeMapper;
 
+    @Transactional
     public LikeDto addLikeToPost(LikeDto likeDto) {
         Post post = postService.getPost(likeDto.getPostId());
         UserDto userDto = getUser(likeDto.getUserId());
 
         Optional<Like> optionalLike = likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId());
-        validator.validDuplicateLike(optionalLike);
-        Like like = likeMapper.toLike(likeDto);
+        likeServiceValidator.checkDuplicateLike(optionalLike);
+        Like like = likeMapper.toEntity(likeDto);
 
         post.getLikes().add(like);
         likeRepository.save(like);
         return likeMapper.toLikeDto(like);
     }
 
+    @Transactional
     public void deleteLikeFromPost(long postId, long userId) {
         Like like = likeRepository.findByPostIdAndUserId(postId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Like was not found using the passed identifier"));
@@ -52,19 +51,21 @@ public class LikeService {
         likeRepository.deleteByPostIdAndUserId(postId, userId);
     }
 
+    @Transactional
     public LikeDto addLikeToComment(LikeDto likeDto) {
         Comment comment = commentService.getComment(likeDto.getCommentId());
         UserDto user = getUser(likeDto.getUserId());
 
         Optional<Like> optionalLike = likeRepository.findByCommentIdAndUserId(comment.getId(), user.getId());
-        validator.validDuplicateLike(optionalLike);
-        Like like = likeMapper.toLike(likeDto);
+        likeServiceValidator.checkDuplicateLike(optionalLike);
+        Like like = likeMapper.toEntity(likeDto);
 
         comment.getLikes().add(like);
         likeRepository.save(like);
         return likeMapper.toLikeDto(like);
     }
 
+    @Transactional
     public void deleteLikeFromComment(long commentId, long userId) {
         Like like = likeRepository.findByCommentIdAndUserId(commentId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Like was not found using the passed identifier"));
