@@ -20,7 +20,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,7 +37,10 @@ public class UpdatePostResourceCommand {
     private final ResourceMapper resourceMapper;
     private final MediaMapper mediaMapper;
 
-    public List<Resource> execute(Long postId, List<UpdatableResourceDto> updatableResource){
+    private final ExecutorService executor;
+    private final int taskTimeout;
+
+    public List<Resource> execute(Long postId, List<UpdatableResourceDto> updatableResource) {
 
         List<UpdatableResourceDto>
                 newResources = new LinkedList<>(),
@@ -65,7 +69,17 @@ public class UpdatePostResourceCommand {
                 :
                 CompletableFuture.completedFuture(Collections.emptyList());
 
-        CompletableFuture.allOf(createResFuture, updateResFuture, deleteResFuture).join();
+        try {
+            CompletableFuture.allOf(createResFuture, updateResFuture, deleteResFuture).get(
+                    taskTimeout,
+                    TimeUnit.SECONDS
+            );
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+            log.error("Task was interrupted by timeout", e);
+            throw new RuntimeException(e);
+        }
 
         List<Resource> updatedResources = Stream.concat(
                 createResFuture.join().stream(),
@@ -108,27 +122,34 @@ public class UpdatePostResourceCommand {
     }
 
     private CompletableFuture<List<Resource>> processCreatableResources(Long postId, List<UpdatableResourceDto> creatable) {
-        return CompletableFuture.supplyAsync(() -> {
+        return provideCompletableFuture(() -> {
+            log.info("Start creating resources for post {}.\nResources: {}", postId, creatable);
 
             List<MultipartFile> media = creatable.stream()
                     .map(UpdatableResourceDto::getResource)
                     .toList();
 
+            log.info("Start saving post media in media storage");
             List<MediaDto> savedMedia = mediaApi.saveAll(media);
+            log.info("Post media was saved. Saved: {}", savedMedia);
+
             List<Resource> resources = savedMedia.stream()
                     .map(m -> {
                         ResourceDto resDto = mediaMapper.toResourceDto(m);
                         return resourceMapper.toEntity(postId, resDto);
                     }).toList();
 
+            log.info("Start saving media info in resource storage");
             List<Resource> savedResources = resourceRepository.saveAll(resources);
+            log.info("Post media info was saved. Saved: {}", savedResources);
 
             return savedResources;
         });
     }
 
     private CompletableFuture<List<Resource>> processUpdatableResources(List<UpdatableResourceDto> updatable) {
-        return CompletableFuture.supplyAsync(() -> {
+        return provideCompletableFuture(() -> {
+            log.info("Start updating post resources.\nResources: {}", updatable);
 
             Map<Long, MultipartFile> mediaMap = updatable.stream()
                     .collect(Collectors.toMap(
@@ -147,7 +168,9 @@ public class UpdatePostResourceCommand {
                     })
                     .toList();
 
+            log.info("Start updating post media. Updatable media: {}", updatableMedia);
             List<MediaDto> savedMedia = mediaApi.updateAll(updatableMedia).orElseThrow();
+            log.info("Post media was updated. Updated: {}", savedMedia);
 
             List<Resource> updatableResource = savedMedia.stream()
                     .map(m -> {
@@ -161,27 +184,47 @@ public class UpdatePostResourceCommand {
                     })
                     .toList();
 
+            log.info("Start updating media info");
             List<Resource> savedResources = resourceRepository.saveAll(updatableResource);
+            log.info("Media info was updated.");
 
             return savedResources;
         });
     }
 
     private CompletableFuture<List<Resource>> processDeletableResources(List<UpdatableResourceDto> deletable) {
-        return CompletableFuture.supplyAsync(() -> {
+        return provideCompletableFuture(() -> {
             List<Long> resIds = deletable.stream()
                     .map(UpdatableResourceDto::getResourceId)
                     .toList();
 
+            log.info("Start deleting post resources.\nResources ids: {}", resIds);
             List<Resource> poppedResource = resourceRepository.popAllByIds(resIds);
 
             List<String> mediaKeys = poppedResource.stream()
                     .map(Resource::getKey)
                     .toList();
 
+            log.info("Start deleting post medias");
             mediaApi.deleteAll(mediaKeys);
+            log.info("Post medias was deleted.");
 
             return poppedResource;
         });
+    }
+
+    private <T> CompletableFuture<T> provideCompletableFuture(Supplier<T> supplier) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                var result = supplier.get();
+                return result;
+            } catch (Exception e) {
+                log.error(
+                        "Error occurred during CompletableFuture execution in thread {}: {}",
+                        Thread.currentThread(), e.getMessage(), e
+                );
+                throw e;
+            }
+        }, executor);
     }
 }
