@@ -10,10 +10,10 @@ import faang.school.postservice.mapper.post.ResourceMapperImpl;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.TestData;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,6 +23,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,8 +44,34 @@ public class UpdatePostResourceCommandTest {
     @Spy
     private MediaMapper mediaMapper = new MediaMapperImpl();
 
-    @InjectMocks
-    UpdatePostResourceCommand updatePostResourceCommand;
+    private UpdatePostResourceCommand updatePostResourceCommand;
+
+    private boolean mockWasInitialized = false;
+
+    @BeforeEach
+    void setUp() {
+        if (mockWasInitialized) {
+            return;
+        }
+
+        int poolSize = 5;
+        ExecutorService executor = Executors.newFixedThreadPool(
+                poolSize
+        );
+
+        int taskTimeout = 5;
+
+        updatePostResourceCommand = new UpdatePostResourceCommand(
+                resourceRepository,
+                mediaApi,
+                resourceMapper,
+                mediaMapper,
+                executor,
+                taskTimeout
+        );
+
+        mockWasInitialized = true;
+    }
 
     @Test
     @DisplayName("1. Test the creation of a new resource at the post")
