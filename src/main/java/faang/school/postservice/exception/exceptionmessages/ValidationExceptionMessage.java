@@ -30,9 +30,15 @@ public enum ValidationExceptionMessage {
             "The update status of the resource %s cannot be determined due to a collision." +
                     " The resource must either be updated, created, or deleted."
     ),
+    DRAFT_MEDIA_LIMIT_EXCEEDED(
+            "The maximum number of files in a draft has been exceeded."
+    ),
+    POST_MEDIA_LIMIT_EXCEEDED(
+            "The maximum number of files in a post %s has been exceeded."
+    )
     ;
 
-    private final String msg;
+    public final String msg;
 
     ValidationExceptionMessage(String message) {
         msg = message;
