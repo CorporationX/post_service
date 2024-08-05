@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ValidatorConfiguration {
-    @Value("${validation-param.obsolescence-period-date-publication}")
+    @Value("${post-service.validation-param.obsolescence-period-date-publication}")
     private long obsolescencePeriodDatePublication;
 
     @Bean
