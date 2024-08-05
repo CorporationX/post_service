@@ -12,6 +12,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeService;
+import faang.school.postservice.validator.LikeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +43,9 @@ class LikeServiceTest {
 
     @Mock
     private LikeMapper likeMapper;
+
+    @Mock
+    private LikeValidator likeValidator;
 
 
     LikeDto likeDto;
@@ -78,35 +82,21 @@ class LikeServiceTest {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
         when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
-        when(userServiceClient.getUser(1L)).thenReturn(new UserDto());
-
         likeService.likePost(likeDto);
 
         verify(likeRepository).save(like);
     }
 
     @Test
-    void testLikePost_AlreadyLiked() {
-        when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.of(like));
-        when(userServiceClient.getUser(1L)).thenReturn(new UserDto());
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> likeService.likePost(likeDto));
-
-        assertEquals("Пользователь уже поставил лайк данному посту", exception.getMessage());
-    }
-
-    @Test
     void testUnlikePost() {
         when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.of(like));
-        when(userServiceClient.getUser(1L)).thenReturn(new UserDto());
         likeService.unlikePost(likeDto);
         verify(likeRepository).delete(like);
     }
 
     @Test
-    void testUnlikePost_NotFound() {
+    void testUnlikePostNotFound() {
         when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
-        when(userServiceClient.getUser(1L)).thenReturn(new UserDto());
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> likeService.unlikePost(likeDto));
         assertEquals("Лайк не найден", exception.getMessage());
     }
@@ -114,33 +104,22 @@ class LikeServiceTest {
     @Test
     void testLikeComment() {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-        when(userServiceClient.getUser(1L)).thenReturn(new UserDto());
+
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
         likeService.likeComment(likeDto);
         verify(likeRepository, times(1)).save(like);
     }
 
     @Test
-    void testLikeComment_AlreadyLiked() {
-        when(likeRepository.findByCommentIdAndUserId(1L, 1L)).thenReturn(Optional.of(like));
-        when(userServiceClient.getUser(1L)).thenReturn(new UserDto());
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> likeService.likeComment(likeDto));
-        assertEquals("Пользователь уже поставил лайк этому комментарию", exception.getMessage());
-
-    }
-
-    @Test
     void testUnlikeComment() {
         when(likeRepository.findByCommentIdAndUserId(1L, 1L)).thenReturn(Optional.of(like));
-        when(userServiceClient.getUser(1L)).thenReturn(new UserDto());
         likeService.unlikeComment(likeDto);
         verify(likeRepository, times(1)).delete(like);
     }
 
     @Test
-    void testUnlikeComment_NotFound() {
+    void testUnlikeCommentNotFound() {
         when(likeRepository.findByCommentIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
-        when(userServiceClient.getUser(1L)).thenReturn(new UserDto());
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> likeService.unlikeComment(likeDto));
         assertEquals("Лайк не найден", exception.getMessage());
     }

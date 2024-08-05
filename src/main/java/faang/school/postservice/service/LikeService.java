@@ -9,6 +9,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.LikeValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,24 +19,24 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;
     private final PostRepository postRepository;
-    private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
+    private final LikeValidator likeValidator;
 
     @Autowired
-    public LikeService(LikeRepository likeRepository, LikeMapper likeMapper, PostRepository postRepository, UserServiceClient userServiceClient, CommentRepository commentRepository) {
+    public LikeService(LikeRepository likeRepository, LikeMapper likeMapper, PostRepository postRepository, CommentRepository commentRepository, LikeValidator likeValidator) {
         this.likeRepository = likeRepository;
         this.likeMapper = likeMapper;
         this.postRepository = postRepository;
-        this.userServiceClient = userServiceClient;
         this.commentRepository = commentRepository;
+        this.likeValidator = likeValidator;
     }
 
 
     public void likePost(LikeDto likeDto) {
-        validateUser(likeDto.getUserId());
+        likeValidator.validateUser(likeDto.getUserId());
 
         if (likeRepository.findByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId()).isPresent()) {
-            throw new IllegalArgumentException("Пользователь уже поставил лайк данному посту");
+            unlikePost(likeDto);
         }
 
         Post post = postRepository.findById(likeDto.getPostId())
@@ -47,7 +48,7 @@ public class LikeService {
     }
 
     public void unlikePost(LikeDto likeDto) {
-        validateUser(likeDto.getUserId());
+        likeValidator.validateUser(likeDto.getUserId());
 
         Like like = likeRepository.findByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("Лайк не найден"));
@@ -56,10 +57,10 @@ public class LikeService {
 
 
     public void likeComment(LikeDto likeDto) {
-        validateUser(likeDto.getUserId());
+        likeValidator.validateUser(likeDto.getUserId());
 
         if (likeRepository.findByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId()).isPresent()) {
-            throw new IllegalArgumentException("Пользователь уже поставил лайк этому комментарию");
+            unlikeComment(likeDto);
         }
 
         Comment comment = commentRepository.findById(likeDto.getCommentId())
@@ -71,17 +72,10 @@ public class LikeService {
     }
 
     public void unlikeComment(LikeDto likeDto) {
-        validateUser(likeDto.getUserId());
+        likeValidator.validateUser(likeDto.getUserId());
 
         Like like = likeRepository.findByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId())
                 .orElseThrow(()->new IllegalArgumentException("Лайк не найден"));
         likeRepository.delete(like);
     }
-
-    public void validateUser(Long id) {
-        if (userServiceClient.getUser(id) == null) {
-            throw new IllegalArgumentException("Пользователь не найден");
-        }
-    }
-
 }
