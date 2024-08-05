@@ -537,7 +537,7 @@ public class PostServiceTest {
         return testData.stream();
     }
 
-    @Tag("Test PostService.publishPost")
+    @Tag("postService.publishPost")
     @Test
     @DisplayName("Test publish post")
     void testPublishPost() {
@@ -563,7 +563,7 @@ public class PostServiceTest {
         assertEquals(expectedPublishedPost, actualPublishedPost);
     }
 
-    @Tag("Test PostService.publishPost")
+    @Tag("pstService.publishPost")
     @Test
     @DisplayName("Test attempt to publish non existent post")
     void testPublishPostNonExistentPost() {
@@ -573,7 +573,7 @@ public class PostServiceTest {
         );
     }
 
-    @Tag("Test PostService.deletePost")
+    @Tag("postService.deletePost")
     @Test
     @DisplayName("Test delete post")
     void testDeletePost() {
@@ -594,7 +594,7 @@ public class PostServiceTest {
         );
     }
 
-    @Tag("Test PostService.deletePost")
+    @Tag("postService.deletePost")
     @Test
     @DisplayName("Test attempt delete non existent post")
     void testDeleteNonExistentPost() {
@@ -604,7 +604,7 @@ public class PostServiceTest {
         );
     }
 
-    @Tag("Test PostService.findPost")
+    @Tag("postService.findPost")
     @Test
     @DisplayName("Test to get post")
     void testGetPost() {
@@ -620,7 +620,7 @@ public class PostServiceTest {
         assertEquals(expectedPost, actualPost);
     }
 
-    @Tag("Test PostService.findPost")
+    @Tag("postService.findPost")
     @Test
     @DisplayName("Test to get non-existent post")
     void testGetNonExistentPost() {
