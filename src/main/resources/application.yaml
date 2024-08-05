@@ -45,6 +45,14 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+post-service:
+  thread-pool:
+    size: 10
+    task-timeout: 5 # in second
+  validation-param:
+    obsolescence-period-date-publication: 5 # in minute
+
+
 user-service:
   host: localhost
   port: 8080
@@ -54,6 +62,3 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
-
-validation-param:
-  obsolescence-period-date-publication: 5 # in minute
