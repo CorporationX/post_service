@@ -3,7 +3,6 @@ package faang.school.postservice.exception;
 import faang.school.postservice.dto.error.ErrorDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -14,23 +13,23 @@ import java.util.UUID;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<String> handleMethodArgumentNotValidException(
-            MethodArgumentNotValidException exception){
+    public ResponseEntity<ErrorDto> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException exception) {
 
         ErrorDto errorDto = new ErrorDto();
         errorDto.setId(UUID.randomUUID());
         errorDto.setMessage(exception.getMessage());
 
-        return new ResponseEntity<>("RunTimeException occurred: " +
-                errorDto.getMessage(),HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRunTimeException(
+    public ResponseEntity<ErrorDto> handleRunTimeException(
             RuntimeException exception) {
-        System.out.println("RunTimeException occurred: " + exception.getMessage());
-        return new ResponseEntity<>(
-                "RunTime error occurred: " + exception.getMessage(),
-                HttpStatus.BAD_REQUEST);
+        ErrorDto errorDto = new ErrorDto();
+        errorDto.setId(UUID.randomUUID());
+        errorDto.setMessage(exception.getMessage());
+
+        return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
     }
 }
