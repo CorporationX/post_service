@@ -24,23 +24,23 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public PostDto publishPost(@PathVariable Long id) {
+    public PostDto publishPost(@PathVariable long id) {
         return postService.publishPost(id);
     }
 
     @PatchMapping
-    public PostDto updatePost(@ModelAttribute UpdatablePostDto updatablePost) {
+    public PostDto updatePost(@ModelAttribute @Valid UpdatablePostDto updatablePost) {
         return postService.updatePost(updatablePost);
     }
 
     @GetMapping("/{id}")
-    public PostDto getPost(@PathVariable Long id) {
+    public PostDto getPost(@PathVariable long id) {
         return postService.findPost(id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void deletePost(@PathVariable Long id) {
+    public void deletePost(@PathVariable long id) {
         postService.deletePost(id);
     }
 
