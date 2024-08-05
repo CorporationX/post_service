@@ -1,12 +1,11 @@
 package faang.school.postservice.dto.event;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
 public class LikeEvent {
     private Long id;
     private Long postId;

@@ -38,7 +38,7 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.comment_channel.name}")
     private String commentEventName;
 
-    @Value("${spring.data.redis.key-spaces.post.name}")
+    @Value("${spring.data.redis.key-spaces.post.prefix}")
     private String postKeySpace;
 
     @Value("${spring.data.redis.key-spaces.post.ttl}")
