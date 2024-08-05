@@ -4,6 +4,11 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 8MB
+      enabled: true
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -49,3 +54,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+validation-param:
+  obsolescence-period-date-publication: 5 # in minute
