@@ -103,20 +103,17 @@ public class UpdatePostResourceCommand {
             @NotNull List<UpdatableResourceDto> outUpdatableResources,
             @NotNull List<UpdatableResourceDto> outDeletableResources) {
 
-        resources.forEach(res -> {
-            boolean isCreatableState = res.getResourceId() == null && res.getResource() != null;
-            boolean isUpdatableState = res.getResourceId() != null && res.getResource() != null;
-            boolean isDeletableState = res.getResourceId() != null && res.getResource() == null;
+        resources.forEach(r -> {
 
-            if (isCreatableState) {
-                outCreatableResources.add(res);
-            } else if (isUpdatableState) {
-                outUpdatableResources.add(res);
-            } else if (isDeletableState) {
-                outDeletableResources.add(res);
+            if (r.isCreatableState()) {
+                outCreatableResources.add(r);
+            } else if (r.isUpdatableState()) {
+                outUpdatableResources.add(r);
+            } else if (r.isDeletableState()) {
+                outDeletableResources.add(r);
             } else {
-                log.warn("Unknown resource state: {}", res);
-                throw new IllegalArgumentException("Unknown resource state: " + res);
+                log.warn("Unknown resource state: {}", r);
+                throw new IllegalArgumentException("Unknown resource state: " + r);
             }
         });
     }
