@@ -77,6 +77,13 @@ public class CommentServiceImpl implements CommentService{
         return postRepository.existsById(id);
     }
 
+    @Override
+    public CommentDto findById(long id) {
+        return commentMapper.toDto(commentRepository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(String.format("Comment with id %d not found", id))));
+    }
+
     private Comment createCommentEntity(Long userId, Long postId, CommentDto commentDto) {
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setAuthorId(userId);

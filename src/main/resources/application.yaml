@@ -30,6 +30,7 @@ spring:
         comment_channel:
           name: comment_channel
       max-feed-size: 500
+      max-comments-size: 3
       key-spaces:
         feed:
           prefix: feed

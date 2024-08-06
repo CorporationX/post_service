@@ -10,4 +10,5 @@ public interface CommentService {
     List<CommentDto> getCommentsByPostId(Long postId);
     void deleteComment(Long commentId);
     boolean existsById(long id);
+    CommentDto findById(long id);
 }
