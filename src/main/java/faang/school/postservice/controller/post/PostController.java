@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public PostDto createDraft(@ModelAttribute @Valid DraftPostDto draft) {
+    public PostDto createDraft(@Valid @ModelAttribute DraftPostDto draft) {
         return postService.createPostDraft(draft);
     }
 
@@ -29,7 +30,7 @@ public class PostController {
     }
 
     @PatchMapping
-    public PostDto updatePost(@ModelAttribute @Valid UpdatablePostDto updatablePost) {
+    public PostDto updatePost(@Valid @ModelAttribute UpdatablePostDto updatablePost) {
         return postService.updatePost(updatablePost);
     }
 
