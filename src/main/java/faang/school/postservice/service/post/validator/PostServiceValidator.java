@@ -90,7 +90,9 @@ public class PostServiceValidator {
 
     public void validateCreatablePostDraft(DraftPostDto draftPostDto) {
         validatePostPublisher(draftPostDto.getAuthorId(), draftPostDto.getProjectId());
-        validateScheduledPublicationDate(draftPostDto.getScheduledAt());
+        if (draftPostDto.getScheduledAt() != null){
+            validateScheduledPublicationDate(draftPostDto.getScheduledAt());
+        }
     }
 
     public void validateUpdatablePost(UpdatablePostDto updatablePostDto) {
