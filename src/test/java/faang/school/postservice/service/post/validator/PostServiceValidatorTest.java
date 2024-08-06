@@ -3,11 +3,14 @@ package faang.school.postservice.service.post.validator;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.resource.UpdatableResourceDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.post.PostAlreadyPublished;
 import faang.school.postservice.exception.post.PostDeletedException;
 import faang.school.postservice.exception.post.UnexistentPostPublisher;
 import faang.school.postservice.exception.validation.DataValidationException;
+import faang.school.postservice.model.Resource;
+import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.TestData;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -17,8 +20,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.*;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceValidatorTest {
@@ -28,6 +34,9 @@ public class PostServiceValidatorTest {
     @Mock
     private ProjectServiceClient projectServiceClient;
 
+    @Mock
+    private ResourceRepository resourceRepository;
+
     private PostServiceValidator postServiceValidator;
 
     @BeforeEach
@@ -36,7 +45,9 @@ public class PostServiceValidatorTest {
         postServiceValidator = new PostServiceValidator(
                 userServiceClient,
                 projectServiceClient,
-                TestData.OBSOLESCENCE_PERIOD_DATE_PUBLICATION
+                resourceRepository,
+                TestData.OBSOLESCENCE_PERIOD_DATE_PUBLICATION,
+                TestData.MAX_POST_RESOURCE
         );
 
         lenient().when(
@@ -124,6 +135,9 @@ public class PostServiceValidatorTest {
     void testValidUpdatablePostWithInvalidResource() {
         var updatable = TestData.updatablePostWithInvalidUpdatableRes;
 
+        when(resourceRepository.findAllIdsByPostId(updatable.getPostId()))
+                .thenReturn(Collections.emptySet());
+
         assertThrows(
                 DataValidationException.class,
                 () -> postServiceValidator.validateUpdatablePost(updatable)
@@ -134,9 +148,55 @@ public class PostServiceValidatorTest {
     @Test
     @DisplayName("Test validate correct updatable post")
     void testValidUpdatablePost() {
+
+        Set<Long> ids = new HashSet<>();
+        for (long i = 0; i < TestData.MAX_POST_RESOURCE - 1; i++) {
+            ids.add(i);
+        }
+
+        when(resourceRepository.findAllIdsByPostId(1L)).thenReturn(ids);
+
         var updatable = TestData.correctUpdatablePost;
 
-         postServiceValidator.validateUpdatablePost(updatable);
+        postServiceValidator.validateUpdatablePost(updatable);
+    }
+
+    @Tag("PostServiceValidator.validateUpdatablePost")
+    @Test
+    @DisplayName("Test validate updatable post with exceeded limit of media")
+    void testValidUpdatablePostWithExceededLimitOfMedia() {
+
+        Set<Long> ids = new HashSet<>();
+        for (long i = 0; i < TestData.MAX_POST_RESOURCE + 1; i++) {
+            ids.add(i);
+        }
+
+        when(resourceRepository.findAllIdsByPostId(1L)).thenReturn(ids);
+
+        var updatable = TestData.correctUpdatablePost.toBuilder()
+                .postId(1L)
+                .resource(List.of(
+
+                        new UpdatableResourceDto(
+                                1L,
+                                TestData.newAudioFile
+                        ),
+                        new UpdatableResourceDto(
+                                2L,
+                                null
+                        ),
+                        new UpdatableResourceDto(
+                                null,
+                                TestData.newTextFile
+                        )
+
+                ))
+                .build();
+
+        assertThrows(
+                DataValidationException.class,
+                () -> postServiceValidator.validateUpdatablePost(updatable)
+        );
     }
 
     @Tag("PostServiceValidator.validateCreatablePostDraft")

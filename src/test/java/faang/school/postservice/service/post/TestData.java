@@ -22,6 +22,9 @@ public class TestData {
     public final static Long EXISTENT_PROJECT_ID = 2L;
     public final static Long EXISTENT_POST_ID = 1L;
 
+    public static final long OBSOLESCENCE_PERIOD_DATE_PUBLICATION = 5L;
+    public static final long MAX_POST_RESOURCE = 10L;
+
     public final static String correctContent = "content";
     public final static String newContent = "new content";
     public final static String emptyContent = "";
@@ -233,8 +236,6 @@ public class TestData {
             .post(Post.builder().id(EXISTENT_POST_ID).build())
             .build();
 
-    public static final long OBSOLESCENCE_PERIOD_DATE_PUBLICATION = 5L;
-
     public final static LocalDateTime invalidScheduledAt = LocalDateTime.now()
             .minusMinutes(OBSOLESCENCE_PERIOD_DATE_PUBLICATION + 1);
 
@@ -282,6 +283,7 @@ public class TestData {
 
     public final static UpdatablePostDto updatablePostWithInvalidUpdatableRes =
             UpdatablePostDto.builder()
+                    .postId(EXISTENT_POST_ID)
                     .resource(List.of(
                             new UpdatableResourceDto(
                                     null, null
@@ -291,11 +293,12 @@ public class TestData {
 
     public final static UpdatablePostDto correctUpdatablePost =
             UpdatablePostDto.builder()
+                    .postId(EXISTENT_POST_ID)
                     .content(correctContent)
                     .scheduledAt(LocalDateTime.now())
                     .resource(List.of(
                             new UpdatableResourceDto(
-                                    1L, newAudioFile
+                                    null, newAudioFile
                             )
                     ))
                     .build();
