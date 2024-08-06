@@ -24,10 +24,10 @@ public enum PostServiceExceptionMessage {
     ),
     ;
 
-    private final String msg;
+    private final String message;
 
     PostServiceExceptionMessage(String message) {
-        msg = message;
+        this.message = message;
     }
 
 }
