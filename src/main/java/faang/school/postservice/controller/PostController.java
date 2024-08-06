@@ -27,18 +27,20 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("/create")
+    @PostMapping("/new")
     @ResponseStatus(HttpStatus.CREATED)
     public PostDto create(@Valid @RequestBody PostCreateDto postDto) {
         return postService.create(postDto);
     }
 
     @PutMapping("/publish/{postId}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public PostDto publishPost(@PathVariable Long postId) {
         return postService.publish(postId);
     }
 
     @PutMapping("/update")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public PostDto publishPost(@Valid @RequestBody PostUpdateDto postDto) {
         return postService.update(postDto);
     }
@@ -50,16 +52,19 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
+    @ResponseStatus(HttpStatus.OK)
     public PostDto getById(@PathVariable Long postId) {
         return postService.getById(postId);
     }
 
     @PostMapping("/draft")
+    @ResponseStatus(HttpStatus.OK)
     public Page<PostDto> getDraftPosts(@Valid @RequestBody PostFilterDto postFilterDto) {
         return postService.getPostsByPublishedStatus(postFilterDto);
     }
 
     @PostMapping("/published")
+    @ResponseStatus(HttpStatus.OK)
     public Page<PostDto> getPublishedPosts(@Valid @RequestBody PostFilterDto postFilterDto) {
         return postService.getPostsByPublishedStatus(postFilterDto);
     }
