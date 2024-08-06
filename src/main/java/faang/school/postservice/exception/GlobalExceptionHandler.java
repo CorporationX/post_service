@@ -34,11 +34,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response(ex), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(FeignDataException.class)
-    public ResponseEntity<Object> handleFeignDataException(FeignDataException ex) {
-        return new ResponseEntity<>(response(ex), HttpStatus.BAD_REQUEST);
-    }
-
     private Map<String, String> response(Exception ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", ex.getMessage());
