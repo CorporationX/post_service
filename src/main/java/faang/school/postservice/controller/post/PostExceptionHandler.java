@@ -4,6 +4,7 @@ import faang.school.postservice.exception.post.PostAlreadyPublished;
 import faang.school.postservice.exception.post.PostDeletedException;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.exception.post.UnexistentPostPublisher;
+import faang.school.postservice.exception.resource.UnexistentResourceException;
 import faang.school.postservice.exception.validation.DataValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,9 +35,9 @@ public class PostExceptionHandler {
         );
     }
 
-    @ExceptionHandler(UnexistentPostException.class)
+    @ExceptionHandler({UnexistentPostException.class, UnexistentResourceException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponseException handleUnexistentPostException(UnexistentPostException e) {
+    public ErrorResponseException handleUnexistentPostException(Exception e) {
         log.error(e.getMessage(), e);
         return buildErrorResponseFromException(
                 HttpStatus.NOT_FOUND, e

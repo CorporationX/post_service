@@ -8,7 +8,7 @@ import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.post.DraftPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.UpdatableResourceDto;
-import faang.school.postservice.exception.exceptionmessages.ValidationExceptionMessage;
+import faang.school.postservice.exception.messages.ValidationExceptionMessage;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.exception.validation.DataValidationException;
 import faang.school.postservice.mapper.post.MediaMapper;
