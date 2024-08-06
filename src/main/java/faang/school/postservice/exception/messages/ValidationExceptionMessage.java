@@ -1,5 +1,8 @@
 package faang.school.postservice.exception.messages;
 
+import lombok.Getter;
+
+@Getter
 public enum ValidationExceptionMessage {
 
     PUBLISHER_COLLISION(
@@ -41,13 +44,9 @@ public enum ValidationExceptionMessage {
     )
     ;
 
-    public final String msg;
+    public final String message;
 
     ValidationExceptionMessage(String message) {
-        msg = message;
-    }
-
-    public String getMessage() {
-        return msg;
+        this.message = message;
     }
 }
