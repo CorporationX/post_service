@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -19,12 +20,12 @@ public class AdService {
     private final AdRepository adRepository;
     private final CustomThreadExecutor executor;
 
-    public Iterable<Ad> getAllAds(){
-        return adRepository.findAll();
+    public Stream<Ad> getAllAds(){
+        return StreamSupport.stream(adRepository.findAll().spliterator(),false);
     }
 
-    private List<Ad> findOverdueAds(Iterable<Ad> ads){
-        return StreamSupport.stream(ads.spliterator(),false)
+    private List<Ad> findOverdueAds(Stream<Ad> ads){
+        return ads
                 .filter(ad -> ad.getAppearancesLeft() <= 0
                         || ad.getEndDate().isBefore(LocalDateTime.now()))
                 .toList();
@@ -44,7 +45,5 @@ public class AdService {
                                     .map(Ad::getId)
                                     .toList()));
         }
-        executor.asyncExecutor().shutdown();
     }
-
 }
