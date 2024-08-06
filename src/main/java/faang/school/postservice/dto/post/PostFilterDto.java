@@ -1,6 +1,7 @@
 package faang.school.postservice.dto.post;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
@@ -11,18 +12,10 @@ public class PostFilterDto {
 
     private Long projectId;
     private Long authorId;
-
-    @NotBlank
     private Boolean deleted;
-
-    @NotBlank
     private Boolean published;
     private SortField sortField;
     private String direction;
-
-    @Size(min = 0, message = "Page can't be less than 0")
-    private int page;
-
-    @Size(min = 0, max = 100, message = "Size of elements is between 0 and 100")
-    private int size;
+    private Integer page;
+    private Integer size;
 }
