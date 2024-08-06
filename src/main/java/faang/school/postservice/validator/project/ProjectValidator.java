@@ -1,4 +1,4 @@
-package faang.school.postservice.validation.project;
+package faang.school.postservice.validator.project;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.exception.DataValidationException;
@@ -7,12 +7,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ProjectValidation {
+public class ProjectValidator {
 
     private final ProjectServiceClient projectServiceClient;
 
-    public void doesProjectExist(Long projectId) {
-        if (!projectServiceClient.doesProjectExist(projectId)) {
+    public void checkProjectExist(Long projectId) {
+        if (!projectServiceClient.projectExist(projectId)) {
             throw new DataValidationException(String.format("Project with %s doesn't exist", projectId));
         }
     }
