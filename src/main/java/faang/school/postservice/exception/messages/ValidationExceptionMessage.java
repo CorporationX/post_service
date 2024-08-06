@@ -11,9 +11,6 @@ public enum ValidationExceptionMessage {
     OUT_TO_DATE_SCHEDULED_TIME(
             "The planned publication time must be greater than the current time."
     ),
-    REPUBLICATION_POST(
-            "Post with ID %s has already been published in %d."
-    ),
     INVALID_POST_CONTENT(
             "Post content cannot be empty or consist entirely of white separators."
     ),
