@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface ResourceRepository extends JpaRepository<Resource, Long> {
@@ -21,4 +22,12 @@ public interface ResourceRepository extends JpaRepository<Resource, Long> {
     @Transactional
     @Query(value = "DELETE FROM resource WHERE id IN :ids RETURNING *", nativeQuery = true)
     List<Resource> popAllByIds(@Param("ids") List<Long> ids);
+
+    @Transactional
+    @Query(value = "SELECT * FROM resource WHERE post_id = :postId", nativeQuery = true)
+    List<Resource> findAllByPostId(long postId);
+
+    @Transactional
+    @Query(value = "SELECT id from resource WHERE post_id = :postId", nativeQuery = true)
+    Set<Long> findAllIdsByPostId(long postId);
 }
