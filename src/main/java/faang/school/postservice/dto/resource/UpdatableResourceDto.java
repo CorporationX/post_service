@@ -35,4 +35,16 @@ import org.springframework.web.multipart.MultipartFile;
 public class UpdatableResourceDto {
     private Long resourceId;
     private MultipartFile resource;
+
+    public boolean isCreatableState(){
+        return resourceId == null && resource != null;
+    }
+
+    public boolean isDeletableState(){
+        return resourceId != null && resource == null;
+    }
+
+    public boolean isUpdatableState(){
+        return resourceId != null && resource != null;
+    }
 }
