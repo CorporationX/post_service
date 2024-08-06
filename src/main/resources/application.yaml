@@ -38,6 +38,9 @@ spring:
         post:
           prefix: Post
           ttl: 5
+        user:
+          prefix: User
+          ttl: 1
 
   kafka:
     bootstrap-servers: localhost:9092

@@ -1,6 +1,7 @@
 package faang.school.postservice.config;
 
 import faang.school.postservice.dto.post.CachedPostDto;
+import faang.school.postservice.dto.user.UserDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -44,6 +45,12 @@ public class RedisConfig {
     @Value("${spring.data.redis.key-spaces.post.ttl}")
     private long postTTL;
 
+    @Value("${spring.data.redis.key-spaces.user.prefix}")
+    private String userKeySpace;
+
+    @Value("${spring.data.redis.key-spaces.user.ttl}")
+    private long userTTL;
+
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
         log.info("redis start work at port {}", port);
@@ -77,7 +84,9 @@ public class RedisConfig {
         protected Iterable<KeyspaceSettings> initialConfiguration() {
             KeyspaceSettings postSpaceSettings = new KeyspaceSettings(CachedPostDto.class, postKeySpace);
             postSpaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(postTTL));
-            return List.of(postSpaceSettings);
+            KeyspaceSettings userSpaceSettings = new KeyspaceSettings(UserDto.class, userKeySpace);
+            userSpaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(userTTL));
+            return List.of(postSpaceSettings, userSpaceSettings);
         }
     }
 }
