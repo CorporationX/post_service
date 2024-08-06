@@ -1,5 +1,8 @@
 package faang.school.postservice.exception.exceptionmessages;
 
+import lombok.Getter;
+
+@Getter
 public enum PostServiceExceptionMessage {
     POST_DOESNT_EXIST(
             "Post with ID %s doesnt exist"
@@ -27,7 +30,4 @@ public enum PostServiceExceptionMessage {
         msg = message;
     }
 
-    public String getMsg() {
-        return msg;
-    }
 }
