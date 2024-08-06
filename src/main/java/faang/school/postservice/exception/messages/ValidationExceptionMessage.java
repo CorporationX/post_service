@@ -28,10 +28,7 @@ public enum ValidationExceptionMessage {
     ),
     COLLISION_STATE_UPDATABLE_RESOURCE(
             "The update status of the resource %s cannot be determined due to a collision." +
-                    " The resource must either be updated, created, or deleted."
-    ),
-    DRAFT_MEDIA_LIMIT_EXCEEDED(
-            "The maximum number of files in a draft has been exceeded."
+                    " The resource must either be updated, created, or deleted." // res id
     ),
     POST_MEDIA_LIMIT_EXCEEDED(
             "The maximum %s number of files in a post %s has been exceeded." // limit and post id
