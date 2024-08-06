@@ -7,10 +7,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ValidatorConfiguration {
     @Value("${post-service.validation-param.obsolescence-period-date-publication}")
-    private long obsolescencePeriodDatePublication;
+    private long OBSOLESCENCE_PERIOD_DATE_PUBLICATION;
+
+    @Value("${post-service.validation-param.max-post-resource}")
+    private long MAX_POST_RESOURCE;
 
     @Bean
-    public long obsolescencePeriodDatePublication() {
-        return obsolescencePeriodDatePublication;
+    public long OBSOLESCENCE_PERIOD_DATE_PUBLICATION() {
+        return OBSOLESCENCE_PERIOD_DATE_PUBLICATION;
+    }
+
+    @Bean
+    public long MAX_POST_RESOURCE() {
+        return MAX_POST_RESOURCE;
     }
 }
