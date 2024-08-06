@@ -5,23 +5,24 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.DraftPostDto;
 import faang.school.postservice.dto.post.UpdatablePostDto;
 import faang.school.postservice.dto.resource.UpdatableResourceDto;
-import faang.school.postservice.exception.exceptionmessages.PostServiceExceptionMessage;
+import faang.school.postservice.exception.messages.PostServiceExceptionMessage;
 import faang.school.postservice.exception.post.PostDeletedException;
 import faang.school.postservice.exception.post.PostAlreadyPublished;
 import faang.school.postservice.exception.post.UnexistentPostPublisher;
+import faang.school.postservice.exception.resource.UnexistentResourceException;
 import faang.school.postservice.exception.validation.DataValidationException;
-import faang.school.postservice.exception.exceptionmessages.ValidationExceptionMessage;
+import faang.school.postservice.exception.messages.ValidationExceptionMessage;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.ResourceRepository;
 import jakarta.validation.constraints.NotNull;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -29,7 +30,9 @@ public class PostServiceValidator {
 
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
-    private final long obsolescencePeriodDatePublication;
+    private final ResourceRepository resourceRepository;
+    private final long OBSOLESCENCE_PERIOD_DATE_PUBLICATION;
+    private final long MAX_POST_RESOURCE;
 
     public void validatePostPublisher(Long authorId, Long projectId) {
 
@@ -83,14 +86,14 @@ public class PostServiceValidator {
         long minutesDifference = Duration.between(publicationDate, now).toMinutes();
 
 
-        if (minutesDifference > obsolescencePeriodDatePublication) {
+        if (minutesDifference > OBSOLESCENCE_PERIOD_DATE_PUBLICATION) {
             throw new DataValidationException(ValidationExceptionMessage.OUT_TO_DATE_SCHEDULED_TIME);
         }
     }
 
     public void validateCreatablePostDraft(DraftPostDto draftPostDto) {
         validatePostPublisher(draftPostDto.getAuthorId(), draftPostDto.getProjectId());
-        if (draftPostDto.getScheduledAt() != null){
+        if (draftPostDto.getScheduledAt() != null) {
             validateScheduledPublicationDate(draftPostDto.getScheduledAt());
         }
     }
@@ -118,7 +121,7 @@ public class PostServiceValidator {
         List<UpdatableResourceDto> resources = updatablePostDto.getResource();
 
         if (resources != null && !resources.isEmpty()) {
-            validateUpdatableResources(resources);
+            validateUpdatableResources(updatablePostDto.getPostId(), resources);
         }
     }
 
@@ -128,22 +131,51 @@ public class PostServiceValidator {
         }
     }
 
-    public void validateUpdatableResources(@NotNull List<UpdatableResourceDto> updatableResources) {
-        updatableResources.forEach(this::validateUpdatableResource);
-    }
+    public void validateUpdatableResources(long postId, @NotNull List<UpdatableResourceDto> updatableResources) {
+        Set<Long> idsExistingRes = resourceRepository.findAllIdsByPostId(postId);
 
-    public void validateUpdatableResource(UpdatableResourceDto updatableResource) {
-        if (updatableResource == null) {
-            throw new DataValidationException(ValidationExceptionMessage.UPDATABLE_RESOURCE_IS_NULL);
+        long totalCountPostResources = idsExistingRes.size();
+
+        for (var res : updatableResources) {
+
+            if (res == null) {
+                throw new DataValidationException(ValidationExceptionMessage.UPDATABLE_RESOURCE_IS_NULL);
+            }
+
+            Long idUpdatableRes = res.getResourceId();
+            MultipartFile mediaUpdatableRes = res.getResource();
+
+            boolean isStateUndefinedUpdatableRes = idUpdatableRes == null && mediaUpdatableRes == null;
+
+            if (isStateUndefinedUpdatableRes) {
+                throw new DataValidationException(ValidationExceptionMessage.STATE_OF_UPDATABLE_RESOURCE_IS_NOT_SET);
+            }
+
+            if (res.isCreatableState()) {
+                totalCountPostResources += 1;
+            } else if (res.isUpdatableState()) {
+                if (! idsExistingRes.contains(idUpdatableRes)){
+                    throw new UnexistentResourceException(
+                            res.getResourceId()
+                    );
+                }
+            } else if (res.isDeletableState()) {
+                if (! idsExistingRes.contains(idUpdatableRes)) {
+                    throw new UnexistentResourceException(
+                            res.getResourceId()
+                    );
+                } else {
+                    totalCountPostResources -= 1;
+                }
+            }
         }
 
-        Long idUpdatableRes = updatableResource.getResourceId();
-        MultipartFile mediaUpdatableRes = updatableResource.getResource();
-
-        boolean isStateUndefinedUpdatableRes = idUpdatableRes == null && mediaUpdatableRes == null;
-
-        if (isStateUndefinedUpdatableRes) {
-            throw new DataValidationException(ValidationExceptionMessage.STATE_OF_UPDATABLE_RESOURCE_IS_NOT_SET);
+        if (MAX_POST_RESOURCE < totalCountPostResources) {
+            throw new DataValidationException(
+                    ValidationExceptionMessage.POST_MEDIA_LIMIT_EXCEEDED,
+                    MAX_POST_RESOURCE,
+                    postId
+            );
         }
     }
 
@@ -158,7 +190,7 @@ public class PostServiceValidator {
         }
     }
 
-    public void verifyPostDeletion(Post post){
+    public void verifyPostDeletion(Post post) {
         if (post.isDeleted()) {
             throw new PostDeletedException(
                     PostServiceExceptionMessage.REQUESTED_POST_DELETED,
