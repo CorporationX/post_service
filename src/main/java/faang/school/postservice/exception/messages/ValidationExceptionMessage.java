@@ -31,7 +31,13 @@ public enum ValidationExceptionMessage {
             "The maximum number of files in a draft has been exceeded."
     ),
     POST_MEDIA_LIMIT_EXCEEDED(
-            "The maximum number of files in a post %s has been exceeded."
+            "The maximum %s number of files in a post %s has been exceeded." // limit and post id
+    ),
+    UPDATABLE_RESOURCE_DOESNT_EXIST(
+            "Updatable resource %s does not exist." // res id
+    ),
+    DELETABLE_RESOURCE_DOESNT_EXIST(
+            "Deletable resource %s does not exist." // res id
     )
     ;
 
