@@ -22,18 +22,15 @@ public class DraftPostDto {
     private Long authorId;
     private Long projectId;
     @NotBlank(
-            message = "The content of the post cannot consist of white separators.",
-            groups = DataValidationException.class
+            message = "The content of the post cannot be empty or consist of white separators."
     )
     @NotEmpty(
-            message = "The content of the post cannot be empty.",
-            groups = DataValidationException.class
+            message = "The content of the post cannot be empty or consist of white separators."
     )
     private String content;
     @Size(
             max = 10,
-            message = "The maximum number of files in a draft has been exceeded.",
-            groups = DataValidationException.class
+            message = "The maximum number of files in a draft has been exceeded."
     )
     private List<MultipartFile> media;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
