@@ -51,6 +51,7 @@ post-service:
     task-timeout: 5 # in second
   validation-param:
     obsolescence-period-date-publication: 5 # in minute
+    max-post-resource: 10
 
 
 user-service:
