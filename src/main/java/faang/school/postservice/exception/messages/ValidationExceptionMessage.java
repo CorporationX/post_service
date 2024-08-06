@@ -1,4 +1,4 @@
-package faang.school.postservice.exception.exceptionmessages;
+package faang.school.postservice.exception.messages;
 
 public enum ValidationExceptionMessage {
 
