@@ -1,29 +1,19 @@
 package faang.school.postservice.dto.post;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 
-import java.time.LocalDateTime;
-
-@Builder
-public record PostDto(
-        long id,
-
-        @NotBlank
-        String content,
-
-        Long authorId,
-
-        Long projectId,
-
-        boolean published,
-
-        LocalDateTime publishedAt,
-
-        LocalDateTime scheduledAt,
-
-        LocalDateTime createdAt,
-
-        LocalDateTime updatedAt
-) {
+@Data
+public class PostDto {
+    private long id;
+    @NotBlank(message = "Пост должен содержать текст.")
+    private String content;
+    @Min(value = 0, message = "АйДи автора должно быть положительным.")
+    @NotNull(message = "АйДи автора не может быть пустым.")
+    private Long authorId;
+    @Min(value = 0, message = "АйДи проекта должно быть положительным.")
+    @NotNull(message = "АйДи проекта не может быть пустым.")
+    private Long projectId;
 }
