@@ -10,8 +10,8 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
     
-    Post toPost(PostDto postDto);
+    Post toEntity(PostDto postDto);
 
     @Mapping(target = "countLike", expression = "java(context.getCountLike(post.getId()))")
-    PostDto toPostDto(Post post, @Context PostContextMapper context);
+    PostDto toDto(Post post, @Context PostContextMapper context);
 }

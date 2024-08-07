@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -9,7 +10,6 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +30,7 @@ public class LikeService {
     @Transactional
     public LikeDto addLikeToPost(LikeDto likeDto) {
         Post post = postService.getPost(likeDto.getPostId());
-        UserDto userDto = getUser(likeDto.getUserId());
+        UserDto userDto = userServiceClient.getUser(likeDto.getUserId());
 
         Optional<Like> optionalLike = likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId());
         likeServiceValidator.checkDuplicateLike(optionalLike);
@@ -54,7 +54,7 @@ public class LikeService {
     @Transactional
     public LikeDto addLikeToComment(LikeDto likeDto) {
         Comment comment = commentService.getComment(likeDto.getCommentId());
-        UserDto user = getUser(likeDto.getUserId());
+        UserDto user = userServiceClient.getUser(likeDto.getUserId());
 
         Optional<Like> optionalLike = likeRepository.findByCommentIdAndUserId(comment.getId(), user.getId());
         likeServiceValidator.checkDuplicateLike(optionalLike);
@@ -73,13 +73,5 @@ public class LikeService {
 
         comment.getLikes().remove(like.getId());
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
-    }
-
-    private UserDto getUser(long userId) {
-        try {
-            return userServiceClient.getUser(userId);
-        } catch (FeignException e) {
-            throw new IllegalArgumentException("User with id not found");
-        }
     }
 }
