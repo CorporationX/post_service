@@ -53,6 +53,3 @@ out/
 
 ### VS Code ###
 .vscode/
-
-# Markdown files
-task_description.md

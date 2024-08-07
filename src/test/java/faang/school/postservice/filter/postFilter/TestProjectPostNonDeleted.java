@@ -1,7 +1,7 @@
 package faang.school.postservice.filter.postFilter;
 
-import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.dto.filter.PostFilterDto;
+import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.filter.post.filterImpl.PostFilterProjectPostNonDeleted;
 import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,13 +39,16 @@ public class TestProjectPostNonDeleted {
 
     @Test
     void testByUser() {
+        // given
         Post expPost = posts.get(3);
         int expSize = 1;
 
+        // when
         List<Post> filteredPosts = posts.stream()
                 .filter(p -> filter.test(p, filters))
                 .toList();
 
+        // then
         assertEquals(expSize, filteredPosts.size());
         assertEquals(expPost, filteredPosts.get(0));
     }

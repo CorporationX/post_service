@@ -1,8 +1,8 @@
-package faang.school.postservice.controller.postController;
+package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.service.postController.PostService;
+import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,7 +27,7 @@ public class PostController {
         return postService.create(postDto);
     }
 
-    @PutMapping("/publish/{id}")
+    @PutMapping("/publish/{postId}")
     public PostDto publish(@PathVariable Long postId) {
         return postService.publish(postId);
     }

@@ -1,34 +1,20 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.post.PostWOAuthorException;
-import faang.school.postservice.exception.post.ImmutablePostDataException;
+import faang.school.postservice.exception.post.PostAlreadyDeletedException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
+import faang.school.postservice.exception.post.PostWOAuthorException;
 import faang.school.postservice.exception.post.PostWithTwoAuthorsException;
 import faang.school.postservice.filter.post.PostFilter;
-import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.filter.post.filterImpl.PostFilterProjectDraftNonDeleted;
 import faang.school.postservice.filter.post.filterImpl.PostFilterProjectPostNonDeleted;
 import faang.school.postservice.filter.post.filterImpl.PostFilterUserDraftNonDeleted;
 import faang.school.postservice.filter.post.filterImpl.PostFilterUserPostNonDeleted;
 import faang.school.postservice.mapper.post.PostMapperImpl;
-import faang.school.postservice.model.Album;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
-import faang.school.postservice.model.ad.Ad;
-import faang.school.postservice.repository.AlbumRepository;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.repository.ad.AdRepository;
-import faang.school.postservice.service.postController.PostService;
-import faang.school.postservice.validator.post.PostValidator;
+import faang.school.postservice.util.container.PostContainer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,12 +26,10 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -57,19 +41,7 @@ public class PostServiceTest {
     @Mock
     private PostRepository postRepository;
     @Mock
-    private LikeRepository likeRepository;
-    @Mock
-    private CommentRepository commentRepository;
-    @Mock
-    private AlbumRepository albumRepository;
-    @Mock
-    private AdRepository adRepository;
-    @Mock
-    private ResourceRepository resourceRepository;
-    @Mock
-    private UserServiceClient userServiceClient;
-    @Mock
-    private ProjectServiceClient projectServiceClient;
+    private PostDataPreparer preparer;
     @Mock
     private PostValidator validator;
     @Spy
@@ -84,220 +56,233 @@ public class PostServiceTest {
     private PostFilterProjectPostNonDeleted projectPostNonDeleted;
     @Captor
     private ArgumentCaptor<Post> captorPost;
+    private PostContainer container = new PostContainer();
     private Post entity;
     private PostDto dto;
 
     @BeforeEach
     void setUp() {
-        List<Optional> optionals = getOptionals();
-        entity = (Post) optionals.get(0).get();
-        dto = (PostDto) optionals.get(1).get();
-        /*
-          Нашёл такое решение для инжектирования списка компонентов.
-          Делаю моки компонентов, создаю список из них и присваиваю тестируемому объекту список.
-          Но у меня финальное поле и внедрение через конструктор.
-          List<PostFilter> postFilters = List.of(userDraftNonDeleted, userPostNonDeleted, projectDraftNonDeleted,
-                     projectPostNonDeleted);
-          postService.setPostFilters(postFilters);
-         */
-
+        entity = container.entity();
+        dto = container.dto();
         List<PostFilter> postFilters = List.of(userDraftNonDeleted, userPostNonDeleted, projectDraftNonDeleted,
                 projectPostNonDeleted);
-        postService = new PostService(postRepository, likeRepository, commentRepository, albumRepository, adRepository,
-                resourceRepository, userServiceClient, projectServiceClient, validator, mapper, postFilters);
+
+        postService = new PostService(postRepository, validator, mapper, preparer, postFilters);
     }
 
     @Test
     void testCreateWithInvalidAuthor() {
-        PostDto dtoWOAuthors = new PostDto();
-        dtoWOAuthors.setAuthorId(1L);
-        PostDto dtoWithTwoAuthors = new PostDto();
-        dtoWithTwoAuthors.setAuthorId(2L);
+        // given
+        PostDto dtoWOAuthors = PostDto.builder()
+                .id(container.postId())
+                .build();
 
-        doThrow(PostWOAuthorException.class).when(validator).validateAuthor(dtoWOAuthors);
-        doThrow(PostWithTwoAuthorsException.class).when(validator).validateAuthor(dtoWithTwoAuthors);
+        PostDto dtoWithTwoAuthors = PostDto.builder()
+                .id(container.postId() + 1)
+                .build();
 
+        // when
+        doThrow(PostWOAuthorException.class).when(validator).validateBeforeCreate(dtoWOAuthors);
+        doThrow(PostWithTwoAuthorsException.class).when(validator).validateBeforeCreate(dtoWithTwoAuthors);
+
+        // then
         Assertions.assertThrows(PostWOAuthorException.class, () -> postService.create(dtoWOAuthors));
         Assertions.assertThrows(PostWithTwoAuthorsException.class, () -> postService.create(dtoWithTwoAuthors));
     }
 
     @Test
     void testCreateSuccessfully() {
-        dto.setId(null);
-        dto.setProjectId(null);
-        entity.setId(null);
-        entity.setProjectId(null);
-        UserDto author = new UserDto(dto.getAuthorId(), "name", "email");
-        when(userServiceClient.getUser(dto.getAuthorId())).thenReturn(author);
-        List<Like> likes = new ArrayList<>(entity.getLikes());
-        when(likeRepository.findAllById(dto.getLikeIds())).thenReturn(likes);
-        List<Comment> comments = new ArrayList<>(entity.getComments());
-        when(commentRepository.findAllById(dto.getCommentIds())).thenReturn(comments);
-        List<Album> albums = new ArrayList<>(entity.getAlbums());
-        when(albumRepository.findAllById(dto.getAlbumIds())).thenReturn(albums);
-        Ad ad = entity.getAd();
-        when(adRepository.findById(dto.getAdId())).thenReturn(Optional.of(ad));
-        List<Resource> resources = new ArrayList<>(entity.getResources());
-        when(resourceRepository.findAllById(dto.getResourceIds())).thenReturn(resources);
+        // given
+        PostDto inputDto = PostDto.builder()
+                .authorId(container.authorId())
+                .content(container.content())
+                .resourceIds(container.resourceIds())
+                .build();
 
-        postService.create(dto);
+        Post postEntity = mapper.toEntity(inputDto);
 
-        verify(postRepository, times(1)).save(captorPost.capture());
-        Post actualEntity = captorPost.getValue();
-        entity.setCreatedAt(actualEntity.getCreatedAt());
-        entity.setUpdatedAt(actualEntity.getUpdatedAt());
-        assertEquals(entity, actualEntity);
+        Post preparedPost = Post.builder()
+                .authorId(container.authorId())
+                .content(container.content())
+                .resources(container.resources())
+                .build();
+
+        Post createdPost = Post.builder()
+                .id(container.postId())
+                .authorId(container.authorId())
+                .content(container.content())
+                .resources(container.resources())
+                .build();
+
+        when(preparer.prepareForCreate(inputDto, postEntity)).thenReturn(preparedPost);
+        when(postRepository.save(preparedPost)).thenReturn(createdPost);
+
+        // when
+        postService.create(inputDto);
+
+        // then
+        verify(postRepository, times(1)).save(preparedPost);
     }
 
     @Test
     void testPublishTwice() {
-        Long postPublished = entity.getId();
-        when(postRepository.findById(postPublished)).thenReturn(Optional.of(entity));
+        // given
+        Long postId = container.postId();
+        when(postRepository.findById(postId)).thenReturn(Optional.of(entity));
         doThrow(PostAlreadyPublishedException.class).when(validator).validatePublished(entity);
 
-        Assertions.assertThrows(PostAlreadyPublishedException.class, () -> postService.publish(postPublished));
+        // then
+        Assertions.assertThrows(PostAlreadyPublishedException.class, () -> postService.publish(postId));
     }
 
     @Test
     void testPublish() {
-        Long postPublished = dto.getId();
-        dto.setPublished(true);
-        when(postRepository.findById(postPublished)).thenReturn(Optional.of(entity));
+        // given
+        Long postId = entity.getId();
+        boolean isNotPublished = container.published();
 
-        postService.publish(dto.getId());
+        Post entity = Post.builder()
+                .id(postId)
+                .published(isNotPublished)
+                .build();
+        when(postRepository.findById(postId)).thenReturn(Optional.of(entity));
 
-        verify(postRepository, times(1)).save(captorPost.capture());
-        PostDto actualDto = mapper.toDto(captorPost.getValue());
-        dto.setPublishedAt(actualDto.getPublishedAt());
-        assertEquals(dto, actualDto);
+        Post publishedPost = Post.builder()
+                .id(postId)
+                .publishedAt(container.publishedAt())
+                .published(!isNotPublished)
+                .build();
+        when(preparer.prepareForPublish(entity)).thenReturn(publishedPost);
+
+        // when
+        postService.publish(postId);
+
+        // then
+        verify(postRepository, times(1)).save(publishedPost);
     }
 
     @Test
-    void testUpdateWithChangedAuthor() {
+    void testUpdateWithInvalidData() {
+        // given
         when(postRepository.findById(dto.getId())).thenReturn(Optional.of(entity));
-        doThrow(ImmutablePostDataException.class).when(validator).checkImmutableData(dto, entity);
+        doThrow(PostWithTwoAuthorsException.class).when(validator).validateBeforeUpdate(dto, entity);
 
-        Assertions.assertThrows(ImmutablePostDataException.class, () -> postService.update(dto));
+        // then
+        Assertions.assertThrows(PostWithTwoAuthorsException.class, () -> postService.update(dto));
     }
 
     @Test
     void testUpdateSuccessfully() {
-        when(postRepository.findById(dto.getId())).thenReturn(Optional.of(entity));
-        when(adRepository.findById(dto.getAdId())).thenReturn(Optional.of(entity.getAd()));
-        dto.setContent("newContent");
+        // given
+        Post updatedEntity = Post.builder()
+                .id(container.postId())
+                .build();
 
+        when(postRepository.findById(dto.getId())).thenReturn(Optional.of(entity));
+        when(preparer.prepareForUpdate(dto, entity)).thenReturn(updatedEntity);
+
+        // when
         postService.update(dto);
 
-        verify(postRepository, times(1)).save(captorPost.capture());
-        PostDto actualDto = mapper.toDto(captorPost.getValue());
-        assertEquals(dto, actualDto);
+        // then
+        verify(postRepository, times(1)).save(updatedEntity);
+    }
+
+    @Test
+    void testAlreadyDeleted() {
+        // given
+        Long postId = container.postId();
+        when(postRepository.findById(postId)).thenReturn(Optional.of(entity));
+        doThrow(PostAlreadyDeletedException.class).when(validator).validateDeleted(entity);
+
+        // then
+        Assertions.assertThrows(PostAlreadyDeletedException.class, () -> postService.delete(postId));
     }
 
     @Test
     void testDelete() {
-        when(postRepository.findById(dto.getId())).thenReturn(Optional.of(entity));
-        dto.setDeleted(true);
+        // given
+        Long postId = container.postId();
+        boolean isNotDeleted = container.deleted();
 
-        postService.delete(dto.getId());
+        Post entity = Post.builder()
+                .id(postId)
+                .deleted(isNotDeleted)
+                .build();
+        when(postRepository.findById(postId)).thenReturn(Optional.of(entity));
 
+        Post deletedEntityExp = Post.builder()
+                .id(postId)
+                .deleted(!isNotDeleted)
+                .build();
+
+        // when
+        postService.delete(postId);
+
+        // then
         verify(postRepository, times(1)).save(captorPost.capture());
-        Post actualEntity = captorPost.getValue();
-        assertTrue(actualEntity.isDeleted());
+        Post deletedEntity = captorPost.getValue();
+        deletedEntityExp.setUpdatedAt(deletedEntity.getUpdatedAt());
+        assertEquals(deletedEntityExp, deletedEntity);
     }
 
     @Test
     void testGetPost() {
+        // given
         Long postId = dto.getId();
         when(postRepository.findById(postId)).thenReturn(Optional.of(entity));
 
+        // when
         PostDto actualDto = postService.getPost(postId);
 
+        // then
         assertEquals(dto, actualDto);
     }
 
     @Test
     void testGetFilteredPosts() {
+        // given
         List<Post> posts = createPosts();
-        // Неудалённые черновики пользователя с id:2
-        PostFilterDto filters = new PostFilterDto(2L, null, false, false);
+        PostFilterDto filters = new PostFilterDto(3L, null, false, false);
         when(postRepository.findAll()).thenReturn(posts);
         int expSize = 1;
         PostDto expDto = mapper.toDto(posts.get(4));
 
+        // when
         List<PostDto> filteredPosts = postService.getFilteredPosts(filters);
 
+        // then
         assertEquals(expSize, filteredPosts.size());
         assertEquals(expDto, filteredPosts.get(0));
 
     }
 
     private List<Post> createPosts() {
-        Long userId = 1L;
-        Long projectId = 1L;
-        boolean isDeleted = false;
-        boolean isPublished = false;
-        Post postFirst = createPost(userId, null, isDeleted, isPublished);
-        Post postSecond = createPost(userId, null, isDeleted, !isPublished);
-        Post postThird = createPost(userId, null, !isDeleted, isPublished);
-        Post postForth = createPost(userId++, null, !isDeleted, !isPublished);
-        Post postFifth = createPost(userId, null, isDeleted, isPublished);
-        Post postSixth = createPost(null, projectId++, isDeleted, isPublished);
-        Post postSeventh = createPost(null, projectId, isDeleted, isPublished);
+        Long userId = container.authorId();
+        Long projectId = container.projectId();
+        boolean isNotDeleted = container.deleted();
+        boolean isNotPublished = container.published();
+        Long postId = container.postId();
+
+        Post postFirst = createPost(postId++, userId, null, isNotDeleted, isNotPublished, null);
+        Post postSecond = createPost(postId++, userId, null, isNotDeleted, !isNotPublished, LocalDateTime.now());
+        Post postThird = createPost(postId++, userId, null, !isNotDeleted, isNotPublished, null);
+        Post postForth = createPost(postId++, userId++, null, !isNotDeleted, !isNotPublished, LocalDateTime.now());
+        Post postFifth = createPost(postId++, userId, null, isNotDeleted, isNotPublished, null);
+        Post postSixth = createPost(postId++, null, projectId++, isNotDeleted, isNotPublished, null);
+        Post postSeventh = createPost(postId, null, projectId, isNotDeleted, isNotPublished, null);
         return List.of(postFirst, postSecond, postThird, postForth, postFifth, postSixth, postSeventh);
     }
 
-    private Post createPost(Long userId, Long projectId, boolean isDeleted, boolean isPublished) {
-        Post post = new Post();
-        post.setAuthorId(userId);
-        post.setProjectId(projectId);
-        post.setDeleted(isDeleted);
-        post.setPublished(isPublished);
-        return post;
+    private Post createPost(Long postId, Long authorId, Long projectId, boolean deleted, boolean published, LocalDateTime publishedAt) {
+        return Post.builder()
+                .id(postId)
+                .authorId(authorId)
+                .projectId(projectId)
+                .deleted(deleted)
+                .published(published)
+                .publishedAt(publishedAt)
+                .build();
     }
 
-    private List<Optional> getOptionals() {
-        Long postId = 1L;
-        String content = "content";
-        Long authorId = ++postId;
-        Long projectId = ++postId;
-        Like firstLike = new Like();
-        Like secondLike = new Like();
-        firstLike.setId(++postId);
-        secondLike.setId(++postId);
-        List<Long> likeIds = List.of(firstLike.getId(), secondLike.getId());
-        List<Like> likes = List.of(firstLike, secondLike);
-        Comment firstComment = new Comment();
-        Comment secondComment = new Comment();
-        firstComment.setId(++postId);
-        secondComment.setId(++postId);
-        List<Long> commentIds = List.of(firstComment.getId(), secondComment.getId());
-        List<Comment> comments = List.of(firstComment, secondComment);
-        Album firstAlbum = new Album();
-        Album secondAlbum = new Album();
-        firstAlbum.setId(++postId);
-        secondAlbum.setId(++postId);
-        List<Long> albumIds = List.of(firstAlbum.getId(), secondAlbum.getId());
-        List<Album> albums = List.of(firstAlbum, secondAlbum);
-        Ad ad = new Ad();
-        ad.setId(++postId);
-        Resource firstResource = new Resource();
-        Resource secondResource = new Resource();
-        firstResource.setId(++postId);
-        secondResource.setId(++postId);
-        List<Long> resourceIds = List.of(firstResource.getId(), secondResource.getId());
-        List<Resource> resources = List.of(firstResource, secondResource);
-        boolean published = false;
-        LocalDateTime publishedAt = LocalDateTime.now();
-        LocalDateTime scheduledAt = publishedAt.plusDays(1);
-        boolean deleted = false;
-        LocalDateTime createdAt = publishedAt.minusDays(1);
-        LocalDateTime updatedAt = publishedAt.plusMinutes(5);
-
-        Optional<Post> postOptional = Optional.of(new Post(postId, content, authorId, projectId, likes, comments,
-                albums, ad, resources, published, publishedAt, scheduledAt, deleted, createdAt, updatedAt));
-        Optional<PostDto> dtoOptional = Optional.of(new PostDto(postId, content, authorId, projectId, likeIds, commentIds,
-                albumIds, ad.getId(), resourceIds, published, publishedAt, scheduledAt, deleted));
-
-        return List.of(postOptional, dtoOptional);
-    }
 }

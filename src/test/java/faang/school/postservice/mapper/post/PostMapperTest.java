@@ -31,17 +31,20 @@ public class PostMapperTest {
 
     @Test
     void testToDto() {
+        // when
         PostDto actualDto = mapper.toDto(entity);
 
+        // then
         assertEquals(dto, actualDto);
     }
 
     @Test
     void testToEntity() {
+        // given
         Post expEntity = getEntity();
-
+        // when
         Post actualEntity = mapper.toEntity(dto);
-
+        // then
         assertEquals(expEntity, actualEntity);
     }
 

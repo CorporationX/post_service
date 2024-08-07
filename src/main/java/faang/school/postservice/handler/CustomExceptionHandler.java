@@ -1,10 +1,11 @@
 package faang.school.postservice.handler;
 
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.exception.post.ImmutablePostDataException;
-import faang.school.postservice.exception.post.PostWOAuthorException;
 import faang.school.postservice.exception.ErrorResponse;
+import faang.school.postservice.exception.post.ImmutablePostDataException;
+import faang.school.postservice.exception.post.PostAlreadyDeletedException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
+import faang.school.postservice.exception.post.PostWOAuthorException;
 import faang.school.postservice.exception.post.PostWithTwoAuthorsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -49,6 +50,13 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handlePostWithTwoAuthorsException(PostWithTwoAuthorsException e) {
         log.error("The post has two authors.", e);
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(PostAlreadyDeletedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handlePostAlreadyDeletedException(PostAlreadyDeletedException e) {
+        log.error("The post is already deleted.", e);
         return new ErrorResponse(e.getMessage());
     }
 
