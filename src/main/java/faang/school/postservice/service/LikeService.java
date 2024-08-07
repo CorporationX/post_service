@@ -5,27 +5,75 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.validator.LikeServiceValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import lombok.Setter;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-
 
 @Service
 @RequiredArgsConstructor
 public class LikeService {
-    private final LikeServiceValidator likeServiceValidator;
+
+    @Value("${batch-size}")
+    @Setter
+    private int BATCH_SIZE;
+
     private final LikeRepository likeRepository;
+    private final UserServiceClient userServiceClient;
+    private final LikeServiceValidator likeServiceValidator;
     private final PostService postService;
     private final UserServiceClient userServiceClient;
     private final CommentService commentService;
     private final LikeMapper likeMapper;
+
+    public List<UserDto> getLikesUsersByPostId(Long postId) {
+
+        List<Long> userIdsLikedPost = likeRepository.findByPostId(postId).stream()
+                .map(Like::getUserId)
+                .toList();
+
+        return getUsersDto(userIdsLikedPost);
+    }
+
+    public List<UserDto> getLikesUsersByCommentId(Long commentId) {
+
+        List<Long> userIdsLikedComment = likeRepository.findByCommentId(commentId).stream()
+                .map(Like::getUserId)
+                .toList();
+
+        return getUsersDto(userIdsLikedComment);
+    }
+
+    private List<UserDto> getUsersDto(List<Long> userIdsLiked) {
+
+        List<List<Long>> batchesList = new ArrayList<>();
+
+        for (int i = 0; i < userIdsLiked.size(); i += BATCH_SIZE) {
+            List<Long> batch = userIdsLiked.subList(i, Math.min(i + BATCH_SIZE, userIdsLiked.size()));
+            batchesList.add(batch);
+        }
+        return collectUsersDto(batchesList);
+    }
+
+    private List<UserDto> collectUsersDto(List<List<Long>> batchesList) {
+
+        List<UserDto> result = new ArrayList<>();
+
+        for (List<Long> batch : batchesList) {
+            result.addAll(userServiceClient.getUsersByIds(batch));
+        }
+        return result;
+    }
 
     @Transactional
     public LikeDto addLikeToPost(LikeDto likeDto) {
