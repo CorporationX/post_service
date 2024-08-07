@@ -65,9 +65,9 @@ public class PostServiceTest {
         // Assert
         verify(postRepository, times(1)).save(post);
         assertNotNull(actual);
-        assertEquals(expectedPostDto.content(), actual.content());
-        assertEquals(expectedPostDto.authorId(), actual.authorId());
-        assertEquals(expectedPostDto.projectId(), actual.projectId());
+        assertEquals(expectedPostDto.getContent(), actual.getContent());
+        assertEquals(expectedPostDto.getAuthorId(), actual.getAuthorId());
+        assertEquals(expectedPostDto.getProjectId(), actual.getProjectId());
     }
 
     @Test
@@ -85,9 +85,9 @@ public class PostServiceTest {
         // Assert
         verify(postRepository, times(1)).save(post);
         assertNotNull(actual);
-        assertEquals(expectedPostDto.content(), actual.content());
-        assertEquals(expectedPostDto.authorId(), actual.authorId());
-        assertEquals(expectedPostDto.projectId(), actual.projectId());
+        assertEquals(expectedPostDto.getContent(), actual.getContent());
+        assertEquals(expectedPostDto.getAuthorId(), actual.getAuthorId());
+        assertEquals(expectedPostDto.getProjectId(), actual.getProjectId());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class PostServiceTest {
         // Assert
         verify(postRepository, times(1)).save(post);
         assertNotNull(actual);
-        assertTrue(actual.published());
+        assertTrue(actual.isPublished());
     }
 
     @Test
@@ -149,7 +149,7 @@ public class PostServiceTest {
         // Assert
         verify(postRepository, times(1)).save(Mockito.any(Post.class));
         assertNotNull(actual);
-        assertEquals(expectedPostDto.content(), actual.content());
+        assertEquals(expectedPostDto.getContent(), actual.getContent());
     }
 
     @Test
@@ -170,7 +170,7 @@ public class PostServiceTest {
         PostDto actual = service.updatePost(postId, inputPostDto);
 
         // Assert
-        assertEquals(expectedPostDto.authorId(), actual.authorId());
+        assertEquals(expectedPostDto.getAuthorId(), actual.getAuthorId());
     }
 
     @Test
@@ -191,7 +191,7 @@ public class PostServiceTest {
         PostDto actual = service.updatePost(postId, inputPostDto);
 
         // Assert
-        assertEquals(expectedPostDto.projectId(), actual.projectId());
+        assertEquals(expectedPostDto.getProjectId(), actual.getProjectId());
     }
 
     @Test
@@ -246,7 +246,7 @@ public class PostServiceTest {
 
         // Assert
         assertNotNull(actual);
-        assertEquals(expectedPost.getContent(), actual.content());
+        assertEquals(expectedPost.getContent(), actual.getContent());
     }
 
     @Test
@@ -275,7 +275,7 @@ public class PostServiceTest {
                 .findByAuthorIdAndPublishedAndDeletedIsFalseOrderByPublished(authorId, isPublished);
         assertNotNull(actual);
         assertEquals(2, actual.size());
-        assertTrue(actual.get(0).createdAt().isAfter(actual.get(1).createdAt()));
+        assertTrue(actual.get(0).getCreatedAt().isAfter(actual.get(1).getCreatedAt()));
     }
 
     @Test
@@ -294,7 +294,7 @@ public class PostServiceTest {
                 .findByProjectIdAndPublishedAndDeletedIsFalseOrderByPublished(projectId, isPublished);
         assertNotNull(actual);
         assertEquals(2, actual.size());
-        assertTrue(actual.get(0).createdAt().isAfter(actual.get(1).createdAt()));
+        assertTrue(actual.get(0).getCreatedAt().isAfter(actual.get(1).getCreatedAt()));
     }
 
     @Test
