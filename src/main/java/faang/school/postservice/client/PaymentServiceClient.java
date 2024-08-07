@@ -2,7 +2,6 @@ package faang.school.postservice.client;
 
 import faang.school.postservice.dto.payment.PaymentRequest;
 import faang.school.postservice.dto.payment.PaymentResponse;
-import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +11,5 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface PaymentServiceClient {
 
     @PostMapping("/api/payment")
-    ResponseEntity<PaymentResponse> sendPayment(
-            @Valid @RequestBody PaymentRequest paymentRequest);
+    ResponseEntity<PaymentResponse> sendPayment(@RequestBody PaymentRequest paymentRequest);
 }
