@@ -17,6 +17,7 @@ public class PostDto {
     private String content;
     private Long authorId;
     private Long projectId;
+    private Long likes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean published;
