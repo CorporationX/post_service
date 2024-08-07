@@ -1,11 +1,10 @@
-package faang.school.postservice.dto.post;
+package faang.school.postservice.dto.event;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
