@@ -40,17 +40,17 @@ public class PostMock {
     }
 
     public static PostDto generatePostDto(Long authorId, Long projectId, Boolean published, String content) {
-        return new PostDto(
-                postId,
-                content,
-                authorId,
-                projectId,
-                published,
-                now,
-                null,
-                now,
-                now
-        );
+        return PostDto.builder()
+                .id(1L)
+                .content(content)
+                .authorId(authorId)
+                .projectId(projectId)
+                .published(published)
+                .publishedAt(now)
+                .scheduledAt(null)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
     }
 
     public static List<Post> generateFilteredPosts(Long authorId, Long projectId, Boolean published) {

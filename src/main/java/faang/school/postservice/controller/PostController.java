@@ -1,36 +1,53 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@Slf4j
+import java.util.List;
+
 @Validated
 @RestController
-@RequestMapping("/api/v1/posts")
+@RequestMapping("/posts")
+@RequiredArgsConstructor
 public class PostController {
 
-    @PostMapping("/")
-    public ResponseEntity<?> createPost(@Valid @RequestBody PostDto postDto) {
-        log.info("Был вызван запрос на создание поста {}", postDto);
-        return ResponseEntity.ok().build();
+    private final PostService service;
+
+    @PostMapping("/create")
+    public PostDto create(@Valid @RequestBody PostDto postDto) {
+        return service.createPost(postDto);
     }
 
-    @GetMapping("/{postId}")
-    public void getPost(@PathVariable("postId")
-                        @NotNull(message = "Необходимо указать АйДи поста")
-                        @Min(value = 1, message = "АйДи поста должен быть 1 или более.")
-                        Long id) {
-        log.info("Был вызван запрос на получение поста по его АйДи '{}'", id);
+    @PutMapping("/{id}")
+    public PostDto publish(@PathVariable long id) {
+        return service.publishPost(id);
+    }
+
+    @PatchMapping("/{id}")
+    public PostDto update(@PathVariable long id, @RequestBody @Validated PostDto postDto) {
+        return service.updatePost(id, postDto);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable long id) {
+        service.deletePost(id);
+    }
+
+    @GetMapping("/{id}")
+    public PostDto get(@PathVariable long id) {
+        return service.getPost(id);
+    }
+
+    @GetMapping
+    public List<PostDto> getFilteredPosts(
+            @RequestParam(required = false) Long authorId,
+            @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) Boolean published
+    ) {
+        return service.getFilteredPosts(authorId, projectId, published);
     }
 }

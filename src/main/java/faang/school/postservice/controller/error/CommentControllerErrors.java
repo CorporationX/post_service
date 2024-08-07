@@ -1,4 +1,4 @@
-package faang.school.postservice.controller.comment.error;
+package faang.school.postservice.controller.error;
 
 import lombok.Getter;
 

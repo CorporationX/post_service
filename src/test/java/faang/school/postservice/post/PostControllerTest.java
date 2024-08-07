@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.controller.PostController;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,12 +17,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
-import static faang.school.postservice.post.PostMock.authorId;
-import static faang.school.postservice.post.PostMock.content;
-import static faang.school.postservice.post.PostMock.generateFilteredPostsDto;
-import static faang.school.postservice.post.PostMock.generatePostDto;
-import static faang.school.postservice.post.PostMock.newContent;
-import static faang.school.postservice.post.PostMock.postId;
+import static faang.school.postservice.post.PostMock.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
@@ -55,7 +50,7 @@ class PostControllerTest {
     @Test
     public void testCreate() throws Exception {
         // Arrange
-        PostDto postDto = generatePostDto(authorId, null, false, content);
+        PostDto postDto = generatePostDto(authorId, projectId, false, content);
 
         when(service.createPost(postDto)).thenReturn(postDto);
 
@@ -84,7 +79,7 @@ class PostControllerTest {
     @Test
     public void testUpdate() throws Exception {
         // Arrange
-        PostDto postDto = generatePostDto(authorId, null, true, newContent);
+        PostDto postDto = generatePostDto(authorId, projectId, true, newContent);
 
         when(service.updatePost(postId, postDto)).thenReturn(postDto);
 
