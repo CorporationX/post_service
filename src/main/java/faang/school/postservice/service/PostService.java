@@ -12,14 +12,16 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
@@ -35,8 +37,10 @@ public class PostService {
         }
     }
 
+    @Transactional
     public PostDto publishDraft(Long postId) {
-        Optional<Post> postReadyToPublish = postRepository.findReadyToPublish()
+        List<Post> readyToPublish = postRepository.findReadyToPublish();
+        Optional<Post> postReadyToPublish = readyToPublish
                 .stream().filter(el -> el.getId() == postId).findFirst();
         if (postReadyToPublish.isEmpty()) {
             throw new EntityNotFoundException("Post not found");
@@ -48,14 +52,14 @@ public class PostService {
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        return postMapper.toDto(postRepository.save(post));
+        return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostDto updatePost(Long id, UpdatePostDto updatePostDto) {
         Post postToUpdate = getPost(id);
         postToUpdate.setContent(updatePostDto.getContent());
-        postRepository.save(postToUpdate);
-        return postMapper.toDto(postRepository.save(postToUpdate));
+        return postMapper.toDto(postToUpdate);
     }
 
     public void delete(Long id) {
@@ -72,15 +76,15 @@ public class PostService {
     public List<PostDto> getDraftsByUser(Long id) {
         UserDto user = getUser(id);
         List<Post> postsByAuthor = postRepository.findByAuthorId(user.getId())
-                .stream().filter(el-> !el.isPublished()).toList();
-        return postsByAuthor.stream().map(postMapper::toDto).toList();
+                .stream().filter(el -> !el.isPublished()).toList();
+        return postMapper.toDtoList(postsByAuthor);
     }
 
 
     public List<PostDto> getDraftsByProject(Long id) {
         ProjectDto projectDto = getProject(id);
         List<Post> postsByProject = postRepository.findByProjectId(projectDto.getId())
-                .stream().filter(el->!el.isPublished()).toList();
+                .stream().filter(el -> !el.isPublished()).toList();
         return postsByProject.stream().map(postMapper::toDto).toList();
     }
 
@@ -95,7 +99,7 @@ public class PostService {
     public List<PostDto> getPublishedByProject(Long id) {
         ProjectDto projectDto = getProject(id);
         List<Post> publishedPostsByProject = postRepository
-                .findByAuthorId(projectDto.getId()).stream().filter(Post::isPublished).toList();
+                .findByProjectId(projectDto.getId()).stream().filter(Post::isPublished).toList();
         return publishedPostsByProject.stream().map(postMapper::toDto).toList();
     }
 
