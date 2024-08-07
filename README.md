@@ -1,3 +1,5 @@
+# Ссылка на Swagger
+http://localhost:8081/swagger-ui/index.html
 # Service Template
 
 Стандартный шаблон проекта на SpringBoot
