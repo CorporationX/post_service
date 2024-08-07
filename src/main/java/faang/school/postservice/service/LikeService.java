@@ -6,6 +6,7 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +18,13 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private static final int USER_BATCH_SIZE = 100;
 
+    @Transactional(readOnly = true)
     public List<UserDto> getUsersThatLikedPost(Long postId) {
         List<Long> userIdsThatLikedPost = getLikesFromPost(postId);
         return getUsersFromUserService(userIdsThatLikedPost);
     }
 
+    @Transactional(readOnly = true)
     public List<UserDto> getUsersThatLikedComment(Long commentId) {
         List<Long> userIdsThatLikedComment = getLikesFromComment(commentId);
         return getUsersFromUserService(userIdsThatLikedComment);
