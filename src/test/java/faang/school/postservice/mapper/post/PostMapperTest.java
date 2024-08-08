@@ -1,15 +1,31 @@
 package faang.school.postservice.mapper.post;
 
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.comment.CommentMapperImpl;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(MockitoExtension.class)
 class PostMapperTest {
 
+    @InjectMocks
     private final PostMapperImpl postMapper = new PostMapperImpl();
+
+    @Spy
+    private CommentMapper commentMapper = new CommentMapperImpl();
 
     private Post post;
     private PostDto postDto;
@@ -23,6 +39,13 @@ class PostMapperTest {
                 .projectId(1L)
                 .published(false)
                 .deleted(false)
+                .comments(List.of(Comment.builder()
+                        .id(1L)
+                        .content("Content")
+                        .likes(List.of(Like.builder()
+                                .id(1L)
+                                .build()))
+                        .build()))
                 .build();
 
         postDto = PostDto.builder()
@@ -32,6 +55,11 @@ class PostMapperTest {
                 .projectId(1L)
                 .published(false)
                 .deleted(false)
+                .comments(List.of(CommentDto.builder()
+                        .id(1L)
+                        .content("Content")
+                        .likesId(List.of(1L))
+                        .build()))
                 .build();
     }
 
@@ -45,6 +73,7 @@ class PostMapperTest {
         assertEquals(post.getProjectId(), mappedPost.getProjectId());
         assertEquals(post.isPublished(), mappedPost.isPublished());
         assertEquals(post.isDeleted(), mappedPost.isDeleted());
+        assertEquals(post.getComments(), mappedPost.getComments());
     }
 
     @Test
@@ -57,5 +86,6 @@ class PostMapperTest {
         assertEquals(postDto.getProjectId(), mappedDto.getProjectId());
         assertEquals(postDto.isPublished(), mappedDto.isPublished());
         assertEquals(postDto.isDeleted(), mappedDto.isDeleted());
+        assertEquals(postDto.getComments(), mappedDto.getComments());
     }
 }

@@ -5,7 +5,7 @@ import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validate.post.PostValidator;
+import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

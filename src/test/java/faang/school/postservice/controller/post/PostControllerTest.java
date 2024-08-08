@@ -2,7 +2,7 @@ package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.validate.post.PostValidator;
+import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
