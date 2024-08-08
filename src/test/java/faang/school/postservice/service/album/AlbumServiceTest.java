@@ -91,7 +91,6 @@ public class AlbumServiceTest {
 
         AlbumLightDto result = albumService.createAlbum(albumLightDto);
 
-
         verify(userContext, times(1)).getUserId();
         verify(albumRepository, times(1)).findByIdWithPosts(1L);
         verify(albumMapper, times(1)).toEntityLight(albumLightDto);
@@ -107,23 +106,26 @@ public class AlbumServiceTest {
     }
 
     @Test
-    public void testDeleteAlbum_UnauthorizedUser() {
-        when(albumRepository.findById(1L)).thenReturn(Optional.of(album));
-        when(userContext.getUserId()).thenReturn(1L);
+    public void testDeleteAlbumUnauthorizedUser() {
+        when(albumRepository.findById(1L)).thenReturn(Optional.ofNullable(null));
 
-        AlbumDto result = albumService.deleteAlbum(1L);
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                albumService.deleteAlbum(1L));
 
-        assertNull(result);
-        verify(albumRepository, never()).delete(album);
+        assertEquals("album is not exist", exception.getMessage());
     }
 
     @Test
     void updateAlbum() {
+        when(userContext.getUserId()).thenReturn(1L);
         when(albumMapper.toEntityLight(any(AlbumLightDto.class))).thenReturn(album);
         when(albumRepository.findById(1L)).thenReturn(Optional.ofNullable(album));
         when(albumRepository.save(any(Album.class))).thenReturn(album);
 
         albumService.updateAlbum(albumLightDto);
+
+        verify(albumMapper, times(1)).toEntityLight(albumLightDto);
+        verify(albumRepository, times(1)).findById(anyLong());
     }
 
     @Test
