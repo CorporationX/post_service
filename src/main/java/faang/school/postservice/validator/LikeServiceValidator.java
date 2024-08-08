@@ -14,4 +14,10 @@ public class LikeServiceValidator {
             throw new IllegalArgumentException("Has already been liked");
         });
     }
+
+    public void checkAvailabilityLike(Optional<Like> likeOptional) {
+        if (likeOptional.isEmpty()) {
+            throw new IllegalArgumentException("Like was not found using the passed identifier");
+        }
+    }
 }

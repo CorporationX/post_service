@@ -117,28 +117,20 @@ public class TestLikeService {
         verify(likeRepository, times(1)).save(like);
     }
 
-    @DisplayName("Если попытка удалить лайк которого не существует")
-    @Test
-    public void testDeleteLikeFromPostLikeNotFound() {
-        when(likeRepository.findByPostIdAndUserId(postId, userId))
-                .thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class, () -> likeService.deleteLikeFromPost(postId, userId));
-        verify(likeRepository, times(0)).deleteByPostIdAndUserId(postId, userId);
-    }
-
     @DisplayName("Когда метод по удалению лайка с поста отработал")
     @Test
     public void testDeleteLikeFromPostWhenValid() {
         Like like = new Like();
         like.setId(1);
+        Optional<Like> optionalLike = Optional.of(like);
         post.setLikes(Arrays.asList(like, new Like()));
 
-        when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(Optional.of(like));
+        when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(optionalLike);
         when(postService.getPost(postId)).thenReturn(post);
 
         likeService.deleteLikeFromPost(postId, userId);
         verify(likeRepository, times(1)).deleteByPostIdAndUserId(postId, userId);
+        verify(likeServiceValidator, times(1)).checkAvailabilityLike(optionalLike);
     }
 
     @DisplayName("Если юзера с таким id не существует")
@@ -172,28 +164,20 @@ public class TestLikeService {
         verify(likeRepository, times(1)).save(like);
     }
 
-    @DisplayName("Если попытка удалить лайк которого не существует ")
-    @Test
-    public void testDeleteLikeFromCommentLikeNotFound() {
-        when(likeRepository.findByCommentIdAndUserId(commentId, userId))
-                .thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class, () -> likeService.deleteLikeFromComment(commentId, userId));
-        verify(likeRepository, never()).deleteByCommentIdAndUserId(commentId, userId);
-    }
-
     @DisplayName("Когда метод по удалению лайка с комментария отработал")
     @Test
     public void testDeleteLikeFromCommentWhenValid() {
         Like like = new Like();
         like.setId(1);
+        Optional<Like> optionalLike = Optional.of(like);
         List<Like> likes = Arrays.asList(like);
         comment.setLikes(likes);
 
-        when(likeRepository.findByCommentIdAndUserId(commentId, userId)).thenReturn(Optional.of(like));
+        when(likeRepository.findByCommentIdAndUserId(commentId, userId)).thenReturn(optionalLike);
         when(commentService.getComment(commentId)).thenReturn(comment);
 
         likeService.deleteLikeFromComment(commentId, userId);
         verify(likeRepository, times(1)).deleteByCommentIdAndUserId(commentId, userId);
+        verify(likeServiceValidator, times(1)).checkAvailabilityLike(optionalLike);
     }
 }

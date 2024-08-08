@@ -91,11 +91,11 @@ public class LikeService {
 
     @Transactional
     public void deleteLikeFromPost(long postId, long userId) {
-        Like like = likeRepository.findByPostIdAndUserId(postId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Like was not found using the passed identifier"));
+        Optional<Like> like = likeRepository.findByPostIdAndUserId(postId, userId);
+        likeServiceValidator.checkAvailabilityLike(like);
         Post post = postService.getPost(postId);
 
-        post.getLikes().remove(like.getId());
+        post.getLikes().remove(like.get().getId());
         likeRepository.deleteByPostIdAndUserId(postId, userId);
     }
 
@@ -115,11 +115,11 @@ public class LikeService {
 
     @Transactional
     public void deleteLikeFromComment(long commentId, long userId) {
-        Like like = likeRepository.findByCommentIdAndUserId(commentId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Like was not found using the passed identifier"));
+        Optional<Like> like = likeRepository.findByCommentIdAndUserId(commentId, userId);
+        likeServiceValidator.checkAvailabilityLike(like);
         Comment comment = commentService.getComment(commentId);
 
-        comment.getLikes().remove(like.getId());
+        comment.getLikes().remove(like.get().getId());
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
     }
 }

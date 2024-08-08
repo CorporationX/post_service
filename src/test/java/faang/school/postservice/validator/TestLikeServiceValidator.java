@@ -10,26 +10,34 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class TestLikeServiceValidator {
-    private LikeServiceValidator validator;
+    private LikeServiceValidator likeServiceValidator;
 
     @BeforeEach
     public void setUp() {
-        validator = new LikeServiceValidator();
+        likeServiceValidator = new LikeServiceValidator();
     }
 
     @DisplayName("Если лайк уже был поставлен")
     @Test
     public void testValidDuplicateLikeWhenLikeAlreadyDelivered() {
         Optional<Like> optionalLike = Optional.of(new Like());
-        assertThrows(IllegalArgumentException.class, () -> validator.checkDuplicateLike(optionalLike));
+        assertThrows(IllegalArgumentException.class, () -> likeServiceValidator.checkDuplicateLike(optionalLike));
     }
 
     @Test
     public void testValidDuplicateLikeWhenValid() {
         Optional<Like> optionalLike = Optional.empty();
-        assertDoesNotThrow(() -> validator.checkDuplicateLike(optionalLike));
+        assertDoesNotThrow(() -> likeServiceValidator.checkDuplicateLike(optionalLike));
+    }
+
+    @DisplayName("Если Optional будет пустой")
+    @Test
+    public void testCheckAvailabilityLike() {
+        Optional<Like> likeOptional = Optional.empty();
+        assertThrows(IllegalArgumentException.class, () -> likeServiceValidator.checkAvailabilityLike(likeOptional));
     }
 }
