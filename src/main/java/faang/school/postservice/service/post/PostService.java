@@ -1,4 +1,5 @@
 package faang.school.postservice.service.post;
+import faang.school.postservice.dto.post.CachedPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 
@@ -21,4 +22,6 @@ public interface PostService {
     void publishScheduledPosts();
     boolean existsById(long id);
     Long incrementPostViews(Long postId);
+    CachedPostDto getCachedPostById(Long postId);
+    List<CachedPostDto> getPostsByAuthorIds(List<Long> authorIds, long startPostId, long batchSize);
 }

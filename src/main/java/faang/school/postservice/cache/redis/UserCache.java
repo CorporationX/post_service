@@ -23,4 +23,9 @@ public class UserCache {
         String key = keyPrefix + userDto.getId();
         operations.add(key, userDto);
     }
+
+    public UserDto findById(long userId) {
+        String key = keyPrefix + userId;
+        return (UserDto) operations.randomMember(key);
+    }
 }

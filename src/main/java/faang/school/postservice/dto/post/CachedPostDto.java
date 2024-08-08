@@ -23,13 +23,13 @@ public class CachedPostDto implements Serializable {
     private Long authorId;
     private Long projectId;
     private String content;
-    private Long viewsQuantity;
+    private long viewsQuantity;
     private int likesQuantity;
     private Set<CommentDto> comments;
     @Version
     private Long version = 0L;
 
-    public void setViewsQuantity(Long viewsQuantity) {
+    public void setViewsQuantity(long viewsQuantity) {
         this.viewsQuantity = viewsQuantity;
         version++;
     }

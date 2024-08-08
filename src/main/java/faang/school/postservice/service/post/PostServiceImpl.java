@@ -6,6 +6,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.moderation.ModerationDictionary;
+import faang.school.postservice.dto.post.CachedPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -151,6 +152,17 @@ public class PostServiceImpl implements PostService {
         Post savedPost = postRepository.save(post);
         sendPostViewEventToKafka(postId);
         return savedPost.getViews();
+    }
+
+    @Override
+    public CachedPostDto getCachedPostById(Long postId) {
+        return postMapper.toCachedPostDto(getPostById(postId));
+    }
+
+    @Override
+    public List<CachedPostDto> getPostsByAuthorIds(List<Long> authorIds, long startPostId, long batchSize) {
+        List<Post> posts = postRepository.findPostsByAuthorIds(authorIds, startPostId, batchSize);
+        return postMapper.toCachedPostDtoList(posts);
     }
 
     private void sendPostViewEventToKafka(Long postId) {

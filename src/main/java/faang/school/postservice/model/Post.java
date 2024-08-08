@@ -80,5 +80,5 @@ public class Post {
     private LocalDateTime verifiedAt;
 
     @Column(name = "views")
-    private long views;
+    private Long views;
 }
