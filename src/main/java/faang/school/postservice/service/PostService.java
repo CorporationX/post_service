@@ -23,7 +23,7 @@ public class PostService {
 
         authorCommentWithoutVerification.forEach((authorId, comments) -> {
             if (comments.size() > 5) {
-                redisMessagePublisher.publish(authorId.toString());
+                redisMessagePublisher.createJson(authorId);
             }
         });
     }
