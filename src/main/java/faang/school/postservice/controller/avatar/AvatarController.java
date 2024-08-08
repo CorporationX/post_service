@@ -36,8 +36,8 @@ public class AvatarController {
         avatarService.deleteAvatar(userId, largeImageKey, smallImageKey);
     }
 
-    @GetMapping("/user/username")
-    public String getUserName(@RequestHeader("x-user-id") long userId) {
-        return userServiceClient.getUserById(userId).getUsername();
-    }
+//    @GetMapping("/user/username")
+//    public String getUserName(@RequestHeader("x-user-id") long userId) {
+//        return userServiceClient.getUserById(userId).getUsername();
+//    }
 }
