@@ -5,7 +5,7 @@ CREATE TABLE user_visibility (
                        created_at timestamptz DEFAULT current_timestamp,
                        updated_at timestamptz DEFAULT current_timestamp,
 
-                       CONSTRAINT fk_comment_id FOREIGN KEY (album_id) REFERENCES album (id) ON DELETE CASCADE
+                       CONSTRAINT fk_album_id FOREIGN KEY (album_id) REFERENCES album (id) ON DELETE CASCADE
 );
 
 ALTER TABLE album

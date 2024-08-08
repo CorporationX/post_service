@@ -3,6 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.album.AlbumLightDto;
+import faang.school.postservice.model.Album;
 import faang.school.postservice.service.AlbumService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,31 +37,31 @@ public class AlbumController {
     @Operation(summary = "Удалить альбом",
             description = "Пользователь удаляет свой альбом по id")
     @PutMapping("/delete")
-    public void deleteAlbum(Long albumId) {
+    public AlbumDto deleteAlbum(Long albumId) {
         if (albumId == null) {
             log.error("albumId is null");
             throw new IllegalArgumentException("albumId is null");
         } else {
-            albumService.deleteAlbum(albumId);
+            return albumService.deleteAlbum(albumId);
         }
     }
 
     @Operation(summary = "Обновить альбом",
             description = "Пользователь обновляет свой альбом по id")
     @PutMapping("/update")
-    public void updateAlbum(AlbumLightDto albumLightDto) {
+    public AlbumLightDto updateAlbum(AlbumLightDto albumLightDto) {
         if (albumLightDto == null) {
             log.error("albumId is null");
             throw new IllegalArgumentException("albumId is null");
         } else {
-            albumService.updateAlbum(albumLightDto);
+            return albumService.updateAlbum(albumLightDto);
         }
     }
 
     @Operation(summary = "Добавление поста к альбому",
             description = "Добавляет пост к альбому по id альбома и id поста")
     @PutMapping("/addPost/{albumId}/{postId}")
-    public void addPostForAlbum(Long albumId, Long postId) {
+    public AlbumLightDto addPostForAlbum(Long albumId, Long postId) {
         if (albumId == null) {
             log.error("albumId is null");
             throw new IllegalArgumentException("albumId is null");
@@ -68,14 +69,14 @@ public class AlbumController {
             log.error("postId is null");
             throw new IllegalArgumentException("postId is null");
         } else {
-            albumService.addPostForAlbum(albumId, postId);
+            return albumService.addPostForAlbum(albumId, postId);
         }
     }
 
     @Operation(summary = "Удаление поста",
             description = "Удаляет пост из альбома по id альбома и postId")
     @DeleteMapping("/deletePost/{albumId}/{postId}")
-    public void deletePostForAlbum(Long albumId, Long postId) {
+    public AlbumLightDto deletePostForAlbum(Long albumId, Long postId) {
         if (albumId == null) {
             log.error("albumId is null");
             throw new IllegalArgumentException("albumId is null");
@@ -83,7 +84,7 @@ public class AlbumController {
             log.error("postId is null");
             throw new IllegalArgumentException("postId is null");
         } else {
-            albumService.deletePostForAlbum(albumId, postId);
+            return albumService.deletePostForAlbum(albumId, postId);
         }
     }
 

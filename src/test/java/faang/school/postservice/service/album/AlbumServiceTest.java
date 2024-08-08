@@ -11,6 +11,7 @@ import faang.school.postservice.model.UserVisibility;
 import faang.school.postservice.model.VisibilityType;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.service.AlbumService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -31,8 +33,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class AlbumServiceTest {
     @InjectMocks
-    private AlbumController albumController;
-    @Mock
     private AlbumService albumService;
     @Mock
     private AlbumRepository albumRepository;
@@ -42,11 +42,14 @@ public class AlbumServiceTest {
     private AlbumMapper albumMapper;
 
     private AlbumLightDto albumLightDto;
+    private AlbumDto albumDto;
     private Album album;
 
     @BeforeEach
     void setUp() {
         albumLightDto = new AlbumLightDto(1L, "title", "desc");
+        albumDto = new AlbumDto(1L, "title", "desc", 1L, List.of(1L),
+                LocalDateTime.now(), LocalDateTime.now(), VisibilityType.All_USER, List.of(1L));
         Post post = new Post();
         post.setId(1L);
         List<Post> postList = new ArrayList<>();
@@ -100,8 +103,18 @@ public class AlbumServiceTest {
     void deleteAlbum() {
         when(albumRepository.findById(1L)).thenReturn(Optional.ofNullable(album));
 
-//        when(albumRepository.delete(any(Album.class))).thenReturn()
         albumService.deleteAlbum(1L);
+    }
+
+    @Test
+    public void testDeleteAlbum_UnauthorizedUser() {
+        when(albumRepository.findById(1L)).thenReturn(Optional.of(album));
+        when(userContext.getUserId()).thenReturn(1L);
+
+        AlbumDto result = albumService.deleteAlbum(1L);
+
+        assertNull(result);
+        verify(albumRepository, never()).delete(album);
     }
 
     @Test
@@ -115,6 +128,30 @@ public class AlbumServiceTest {
 
     @Test
     void addAlbumFavorite() {
-//        when(albumRepository.addAlbumToFavorites(1L, 1L));
+        when(userContext.getUserId()).thenReturn(1L);
+
+        albumService.addAlbumFavorite(1L);
+
+        verify(albumRepository, times(1)).addAlbumToFavorites(1L, 1L);
+    }
+
+    @Test
+    void deleteAlbumFavorite() {
+        when(userContext.getUserId()).thenReturn(1L);
+
+        albumService.deleteAlbumFavorite(1L);
+
+        verify(albumRepository, times(1)).deleteAlbumFromFavorites(1L, 1L);
+    }
+
+    @Test
+    void getAlbum() {
+        when(userContext.getUserId()).thenReturn(1L);
+        when(albumRepository.findByIdWithPosts(1L)).thenReturn(Optional.ofNullable(album));
+        when(albumMapper.toDto(album)).thenReturn(albumDto);
+
+        albumService.getAlbum(1L);
+
+        verify(albumMapper, times(1)).toDto(any(Album.class));
     }
 }

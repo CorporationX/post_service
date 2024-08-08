@@ -44,13 +44,13 @@ public class AlbumService {
         }
     }
 
-    public Album deleteAlbum(Long albumId) {
+    public AlbumDto deleteAlbum(Long albumId) {
         Optional<Album> album = albumRepository.findById(albumId);
         if (!album.isEmpty()) {
             Long authorId = album.get().getAuthorId();
             if (authorId.equals(userContext.getUserId())) {
                 albumRepository.delete(album.get());
-                return album.get();
+                return albumMapper.toDto(album.get());
             } else {
                 log.error("author album in not contain current user");
             }
@@ -58,10 +58,10 @@ public class AlbumService {
             log.error("album is not exist");
             throw new IllegalArgumentException("album is not exist");
         }
-        return album.get();
+        return albumMapper.toDto(album.get());
     }
 
-    public Album updateAlbum(AlbumLightDto albumLightDto) {
+    public AlbumLightDto updateAlbum(AlbumLightDto albumLightDto) {
         Album albumEntity = albumMapper.toEntityLight(albumLightDto);
 
         Optional<Album> album = albumRepository.findById(albumEntity.getId());
@@ -69,17 +69,17 @@ public class AlbumService {
             Long authorId = album.get().getAuthorId();
             if (authorId.equals(userContext.getUserId())) {
                 albumRepository.save(albumEntity);
-                return albumEntity;
+                return albumMapper.toDtoLight(albumEntity);
             } else {
                 log.error("author album in not contain current user");
             }
         } else {
             log.error("album is null");
         }
-        return album.get();
+        return albumMapper.toDtoLight(album.get());
     }
 
-    public void addPostForAlbum(Long albumId, Long postId) {
+    public AlbumLightDto addPostForAlbum(Long albumId, Long postId) {
         if (albumRepository.findByIdWithPosts(albumId).isPresent()) {
             Optional<Album> album = albumRepository.findById(albumId);
             Long authorId = album.get().getAuthorId();
@@ -89,6 +89,7 @@ public class AlbumService {
                 if (album.isPresent() && post.isPresent()) {
                     album.get().getPosts().add(post.get());
                     albumRepository.save(album.get());
+                    return albumMapper.toDtoLight(album.get());
                 }
             } else {
                 log.error("authorId not contains current user");
@@ -97,22 +98,23 @@ public class AlbumService {
             log.error("posts for album" + albumId + "not found");
             throw new IllegalArgumentException("posts not found");
         }
+        return albumMapper.toDtoLight(new Album());
     }
 
-    public Album deletePostForAlbum(Long albumId, Long postId) {
+    public AlbumLightDto deletePostForAlbum(Long albumId, Long postId) {
         Optional<Album> album = albumRepository.findById(albumId);
         if (album.isPresent()) {
             Long aothorId = album.get().getAuthorId();
             if (aothorId.equals(userContext.getUserId())) {
                 album.get().getPosts().remove(postRepository.findById(postId));
                 albumRepository.save(album.get());
-                return album.get();
+                return albumMapper.toDtoLight(album.get());
             }
         } else {
             log.error("album not found");
             throw new IllegalArgumentException("album is null");
         }
-        return album.get();
+        return albumMapper.toDtoLight(album.get());
     }
 
     public void addAlbumFavorite(Long albumId) {
