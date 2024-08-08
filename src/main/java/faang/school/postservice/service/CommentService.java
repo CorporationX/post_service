@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
-public class PostService {
+public class CommentService {
     private final RedisMessagePublisher redisMessagePublisher;
     private final CommentRepository commentRepository;
 

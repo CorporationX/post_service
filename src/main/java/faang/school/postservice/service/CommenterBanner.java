@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CommenterBanner {
-    private final PostService postService;
+    private final CommentService commentService;
 
     @Scheduled(cron = "${banned.scheduler.cron}")
     public void commenterBanner() {
-        postService.checkUserAndBannedForComment();
+        commentService.checkUserAndBannedForComment();
     }
 }
