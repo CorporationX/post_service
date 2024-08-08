@@ -2,6 +2,7 @@ package faang.school.postservice.controller.avatar;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.service.AvatarService;
+import faang.school.postservice.service.s3.MinioS3Client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,11 +13,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 public class AvatarController {
     private final AvatarService avatarService;
-    private final UserServiceClient userServiceClient;
+    private final MinioS3Client minioS3Client;
 
     @PostMapping("/avatars/save")
     public void uploadAvatar(@RequestParam(value = "file") MultipartFile file,
@@ -36,8 +39,8 @@ public class AvatarController {
         avatarService.deleteAvatar(userId, largeImageKey, smallImageKey);
     }
 
-//    @GetMapping("/user/username")
-//    public String getUserName(@RequestHeader("x-user-id") long userId) {
-//        return userServiceClient.getUserById(userId).getUsername();
-//    }
+    @GetMapping("/buckets/get")
+    public List<String> getAllBucketsList() {
+        return minioS3Client.listBuckets();
+    }
 }

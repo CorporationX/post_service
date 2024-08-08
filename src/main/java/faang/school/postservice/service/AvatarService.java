@@ -3,9 +3,13 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.service.resource.CustomMultipartFile;
 import faang.school.postservice.service.s3.MinioS3Client;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import net.coobird.thumbnailator.Thumbnails;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -89,7 +93,11 @@ public class AvatarService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        saveLargeAndSmallFileId(userId, largeFileId, smallFileId);
+    }
 
+    @Retryable(value = FeignException.FeignClientException.class, backoff = @Backoff(multiplier = 2))
+    private void saveLargeAndSmallFileId(long userId, String largeFileId, String smallFileId) {
         userServiceClient.uploadAvatar(userId, largeFileId, smallFileId);
     }
 
