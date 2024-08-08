@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class TestLikeServiceValidator {
+public class LikeServiceValidatorTest {
     private LikeServiceValidator likeServiceValidator;
 
     @BeforeEach

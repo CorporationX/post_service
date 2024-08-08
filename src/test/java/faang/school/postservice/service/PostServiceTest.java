@@ -1,7 +1,9 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
@@ -34,6 +36,9 @@ public class PostServiceTest {
 
     @Mock
     private PostServiceValidator postServiceValidator;
+
+    @Mock
+    private PostContextMapper postContextMapper;
 
     private PostDto postDto;
     private Post post;
@@ -205,5 +210,28 @@ public class PostServiceTest {
 
         assertEquals(2, result.size());
         assertEquals(publishedPostDtos, result);
+    }
+
+    @Test
+    public void testGetPostWhenNotDataBase() {
+        long postId = 1;
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> postService.getPost(postId));
+        verify(postContextMapper, never()).getCountLikeEveryonePost();
+    }
+
+    @Test
+    public void testGetPostWhenValid() {
+        long postId = 1;
+        Post post = new Post();
+        post.setId(postId);
+        post.setLikes(Arrays.asList(new Like(), new Like()));
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        Post result = postService.getPost(postId);
+
+        assertDoesNotThrow(() -> postService.getPost(postId));
+        assertEquals(post, result);
     }
 }

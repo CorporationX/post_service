@@ -14,6 +14,8 @@ import java.util.List;
 public interface PostMapper {
     Post toEntity(PostDto postDto);
 
+    PostDto toDto(Post post);
+
     @Mapping(target = "countLike", expression = "java(context.getCountLike(post.getId()))")
     PostDto toDto(Post post, @Context PostContextMapper context);
 

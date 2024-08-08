@@ -32,7 +32,7 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeServiceValidator likeServiceValidator;
     private final PostService postService;
-    private final UserServiceClient userServiceClient;
+//    private final UserServiceClient userServiceClient;
     private final CommentService commentService;
     private final LikeMapper likeMapper;
 
