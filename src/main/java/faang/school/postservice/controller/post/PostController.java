@@ -2,7 +2,6 @@ package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.validator.post.PostValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,11 +20,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
-    private final PostValidator postValidator;
 
     @PostMapping
     public PostDto create(@RequestBody @Valid PostDto postDto) {
-        postValidator.validateCreate(postDto);
         return postService.create(postDto);
     }
 

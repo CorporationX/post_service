@@ -37,8 +37,6 @@ class PostMapperTest {
                 .content("Some content")
                 .authorId(1L)
                 .projectId(1L)
-                .published(false)
-                .deleted(false)
                 .comments(List.of(Comment.builder()
                         .id(1L)
                         .content("Content")
@@ -53,8 +51,6 @@ class PostMapperTest {
                 .content("Some content")
                 .authorId(1L)
                 .projectId(1L)
-                .published(false)
-                .deleted(false)
                 .comments(List.of(CommentDto.builder()
                         .id(1L)
                         .content("Content")
@@ -71,8 +67,6 @@ class PostMapperTest {
         assertEquals(post.getContent(), mappedPost.getContent());
         assertEquals(post.getAuthorId(), mappedPost.getAuthorId());
         assertEquals(post.getProjectId(), mappedPost.getProjectId());
-        assertEquals(post.isPublished(), mappedPost.isPublished());
-        assertEquals(post.isDeleted(), mappedPost.isDeleted());
         assertEquals(post.getComments(), mappedPost.getComments());
     }
 
@@ -84,8 +78,6 @@ class PostMapperTest {
         assertEquals(postDto.getContent(), mappedDto.getContent());
         assertEquals(postDto.getAuthorId(), mappedDto.getAuthorId());
         assertEquals(postDto.getProjectId(), mappedDto.getProjectId());
-        assertEquals(postDto.isPublished(), mappedDto.isPublished());
-        assertEquals(postDto.isDeleted(), mappedDto.isDeleted());
         assertEquals(postDto.getComments(), mappedDto.getComments());
     }
 }

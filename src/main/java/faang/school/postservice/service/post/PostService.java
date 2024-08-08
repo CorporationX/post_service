@@ -23,6 +23,7 @@ public class PostService {
     private final PostValidator postValidator;
 
     public PostDto create(PostDto postDto) {
+        postValidator.validateCreate(postDto);
         boolean authorExists = postValidator.checkIfAuthorExists(postDto);
         if (!authorExists) {
             throw new PostValidationException("Author doesn't exists on system!");
@@ -49,6 +50,7 @@ public class PostService {
         postValidator.validateUpdate(postId, postDto);
 
         Post post = postMapper.toEntity(postDto);
+        post.setUpdatedAt(LocalDateTime.now());
 
         return postMapper.toDto(postRepository.save(post));
     }
@@ -57,7 +59,7 @@ public class PostService {
         Optional<Post> postOptional = postRepository.findById(postId);
 
         Post post = postOptional.orElseThrow(
-                () -> new PostValidationException("Post with such id doesn't exists"));
+                () -> new PostValidationException("Post with id " + postId + " doesn't exists"));
 
         post.setPublished(false);
         post.setDeleted(true);
@@ -68,7 +70,7 @@ public class PostService {
     public PostDto getById(Long postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
         Post post = postOptional.orElseThrow(
-                () -> new PostValidationException("Post with such id doesn't exists"));
+                () -> new PostValidationException("Post with id " + postId + " doesn't exists"));
 
         return postMapper.toDto(post);
     }

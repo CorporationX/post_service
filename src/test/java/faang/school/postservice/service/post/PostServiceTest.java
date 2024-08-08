@@ -22,6 +22,7 @@ import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -59,8 +60,6 @@ class PostServiceTest {
 
     @Test
     void testCreateWhenAuthorExists() {
-        postDto.setPublished(false);
-        postDto.setDeleted(false);
 
         when(postValidator.checkIfAuthorExists(postDto)).thenReturn(true);
         when(postRepository.save(post)).thenReturn(post);
@@ -72,7 +71,6 @@ class PostServiceTest {
 
     @Test
     void testPublish() {
-        postDto.setPublished(true);
         Optional<Post> postOptional = Optional.of(post);
 
         when(postRepository.findById(defaultIdForTests)).thenReturn(postOptional);
@@ -87,7 +85,7 @@ class PostServiceTest {
     @Test
     void testUpdate() {
         doNothing().when(postValidator).validateUpdate(defaultIdForTests, postDto);
-        when(postRepository.save(post)).thenReturn(post);
+        when(postRepository.save(any())).thenReturn(post);
 
         PostDto returnedPostDto = postService.update(defaultIdForTests, postDto);
 
@@ -105,8 +103,6 @@ class PostServiceTest {
 
     @Test
     void testSoftDeleteWhenPostExists() {
-        postDto.setPublished(false);
-        postDto.setDeleted(true);
         Optional<Post> postOptional = Optional.of(post);
 
         when(postRepository.findById(defaultIdForTests)).thenReturn(postOptional);

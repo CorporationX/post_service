@@ -25,7 +25,4 @@ public class PostDto {
     private String content;
 
     private List<CommentDto> comments;
-
-    private boolean published;
-    private boolean deleted;
 }

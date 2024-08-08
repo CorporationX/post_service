@@ -1,13 +1,11 @@
 package faang.school.postservice.validator.post;
 
-import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.project.ProjectValidator;
+import faang.school.postservice.validator.user.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,8 +15,8 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class PostValidator {
-    private final UserServiceClient userServiceClient;
-    private final ProjectServiceClient projectServiceClient;
+    private final ProjectValidator projectValidator;
+    private final UserValidator userValidator;
     private final PostRepository postRepository;
 
     public void validateCreate(PostDto postDto) {
@@ -34,16 +32,14 @@ public class PostValidator {
     public boolean checkIfAuthorExists(PostDto postDto) {
         Long projectId = postDto.getProjectId();
         if (projectId != null) {
-            ProjectDto project = projectServiceClient.getProject(projectId);
-            if (project != null) {
+            if (projectValidator.isProjectExists(projectId)) {
                 return true;
             }
         }
 
         Long authorId = postDto.getAuthorId();
         if (authorId != null) {
-            UserDto user = userServiceClient.getUser(authorId);
-            if (user != null) {
+            if (userValidator.isUserExists(authorId)) {
                 return true;
             }
         }

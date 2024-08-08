@@ -1,13 +1,11 @@
 package faang.school.postservice.validator.post;
 
-import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.project.ProjectValidator;
+import faang.school.postservice.validator.user.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,10 +27,10 @@ class PostValidatorTest {
     private PostValidator postValidator;
 
     @Mock
-    private UserServiceClient userServiceClient;
+    private ProjectValidator projectValidator;
 
     @Mock
-    private ProjectServiceClient projectServiceClient;
+    private UserValidator userValidator;
 
     @Mock
     private PostRepository postRepository;
@@ -62,7 +60,7 @@ class PostValidatorTest {
     void testCheckIfAuthorExistsWithProjectId() {
         postDto.setProjectId(1L);
 
-        when(projectServiceClient.getProject(postDto.getProjectId())).thenReturn(new ProjectDto());
+        when(projectValidator.isProjectExists(postDto.getProjectId())).thenReturn(true);
 
         boolean result = postValidator.checkIfAuthorExists(postDto);
 
@@ -74,7 +72,7 @@ class PostValidatorTest {
     void testCheckIfAuthorExistsWithAuthorId() {
         postDto.setAuthorId(1L);
 
-        when(userServiceClient.getUser(postDto.getAuthorId())).thenReturn(new UserDto());
+        when(userValidator.isUserExists(postDto.getAuthorId())).thenReturn(true);
 
         boolean result = postValidator.checkIfAuthorExists(postDto);
 
@@ -86,8 +84,8 @@ class PostValidatorTest {
         postDto.setAuthorId(1L);
         postDto.setProjectId(1L);
 
-        when(projectServiceClient.getProject(postDto.getProjectId())).thenReturn(null);
-        when(userServiceClient.getUser(postDto.getAuthorId())).thenReturn(null);
+        when(projectValidator.isProjectExists(postDto.getProjectId())).thenReturn(false);
+        when(userValidator.isUserExists(postDto.getAuthorId())).thenReturn(false);
 
         boolean result = postValidator.checkIfAuthorExists(postDto);
 

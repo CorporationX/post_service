@@ -2,7 +2,6 @@ package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +17,6 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -36,9 +34,6 @@ class PostControllerTest {
     @Mock
     private PostService postService;
 
-    @Mock
-    private PostValidator postValidator;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private MockMvc mockMvc;
@@ -55,8 +50,6 @@ class PostControllerTest {
                 .id(1L)
                 .content("Some content")
                 .authorId(1L)
-                .published(false)
-                .deleted(false)
                 .build();
 
         expectedPostsDto = List.of(postDto);
@@ -64,7 +57,6 @@ class PostControllerTest {
 
     @Test
     void testCreate() throws Exception {
-        doNothing().when(postValidator).validateCreate(postDto);
         when(postService.create(postDto)).thenReturn(postDto);
 
         mockMvc.perform(post("/posts")
@@ -73,24 +65,18 @@ class PostControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.content", is("Some content")))
-                .andExpect(jsonPath("$.authorId", is(1)))
-                .andExpect(jsonPath("$.published", is(false)))
-                .andExpect(jsonPath("$.deleted", is(false)));
+                .andExpect(jsonPath("$.authorId", is(1)));
     }
 
     @Test
     void testPublish() throws Exception {
-        postDto.setPublished(true);
-
         when(postService.publish(defaultId)).thenReturn(postDto);
 
         mockMvc.perform(post("/posts/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.content", is("Some content")))
-                .andExpect(jsonPath("$.authorId", is(1)))
-                .andExpect(jsonPath("$.published", is(true)))
-                .andExpect(jsonPath("$.deleted", is(false)));
+                .andExpect(jsonPath("$.authorId", is(1)));
     }
 
     @Test
@@ -104,24 +90,18 @@ class PostControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.content", is("Changed content")))
-                .andExpect(jsonPath("$.authorId", is(1)))
-                .andExpect(jsonPath("$.published", is(false)))
-                .andExpect(jsonPath("$.deleted", is(false)));
+                .andExpect(jsonPath("$.authorId", is(1)));
     }
 
     @Test
     void testSoftDelete() throws Exception {
-        postDto.setDeleted(true);
-
         when(postService.softDelete(defaultId)).thenReturn(postDto);
 
         mockMvc.perform(delete("/posts/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.content", is("Some content")))
-                .andExpect(jsonPath("$.authorId", is(1)))
-                .andExpect(jsonPath("$.published", is(false)))
-                .andExpect(jsonPath("$.deleted", is(true)));
+                .andExpect(jsonPath("$.authorId", is(1)));
     }
 
     @Test
@@ -132,9 +112,7 @@ class PostControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id", is(1)))
                 .andExpect(jsonPath("content", is("Some content")))
-                .andExpect(jsonPath("authorId", is(1)))
-                .andExpect(jsonPath("published", is(false)))
-                .andExpect(jsonPath("deleted", is(false)));
+                .andExpect(jsonPath("authorId", is(1)));
     }
 
     @Test
@@ -146,9 +124,7 @@ class PostControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].content", is("Some content")))
-                .andExpect(jsonPath("$[0].authorId", is(1)))
-                .andExpect(jsonPath("$[0].published", is(false)))
-                .andExpect(jsonPath("$[0].deleted", is(false)));
+                .andExpect(jsonPath("$[0].authorId", is(1)));
     }
 
     @Test
@@ -160,9 +136,7 @@ class PostControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].content", is("Some content")))
-                .andExpect(jsonPath("$[0].authorId", is(1)))
-                .andExpect(jsonPath("$[0].published", is(false)))
-                .andExpect(jsonPath("$[0].deleted", is(false)));
+                .andExpect(jsonPath("$[0].authorId", is(1)));
     }
 
     @Test
@@ -174,9 +148,7 @@ class PostControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].content", is("Some content")))
-                .andExpect(jsonPath("$[0].authorId", is(1)))
-                .andExpect(jsonPath("$[0].published", is(false)))
-                .andExpect(jsonPath("$[0].deleted", is(false)));
+                .andExpect(jsonPath("$[0].authorId", is(1)));
     }
 
     @Test
@@ -188,8 +160,6 @@ class PostControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].content", is("Some content")))
-                .andExpect(jsonPath("$[0].authorId", is(1)))
-                .andExpect(jsonPath("$[0].published", is(false)))
-                .andExpect(jsonPath("$[0].deleted", is(false)));
+                .andExpect(jsonPath("$[0].authorId", is(1)));
     }
 }
