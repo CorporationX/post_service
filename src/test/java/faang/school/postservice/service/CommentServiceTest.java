@@ -1,22 +1,19 @@
-package faang.school.postservice;
+package faang.school.postservice.service;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdatedCommentDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.CommentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -29,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -44,31 +40,21 @@ public class CommentServiceTest {
     CommentMapper commentMapper;
 
     @Mock
-    UserServiceClient userServiceClient;
+    CheckUserService checkUserService;
 
     @InjectMocks
     CommentService commentService;
 
     private final CreateCommentDto createCommentDto = new CreateCommentDto();
-    private final CommentDto commentDto = new CommentDto();
     private final UpdatedCommentDto updatedCommentDto = new UpdatedCommentDto();
     private final Comment comment = new Comment();
     private final Post post = new Post();
-    private final UserDto userDto = new UserDto();
 
     CreateCommentDto prepareCreateCommentDto() {
         createCommentDto.setContent("Test content");
         createCommentDto.setAuthorId(1L);
         createCommentDto.setPostId(1L);
         return createCommentDto;
-    }
-
-    CommentDto prepareCommentDto() {
-        commentDto.setId(1L);
-        commentDto.setContent("Test content");
-        commentDto.setAuthorId(1L);
-        commentDto.setPostId(1L);
-        return commentDto;
     }
 
     Comment prepareComment() {
@@ -81,6 +67,7 @@ public class CommentServiceTest {
 
     UpdatedCommentDto prepareUpdateCommentDto() {
         updatedCommentDto.setId(1L);
+        updatedCommentDto.setAuthorId(1L);
         updatedCommentDto.setContent("Test content updated");
         return updatedCommentDto;
     }
@@ -98,11 +85,6 @@ public class CommentServiceTest {
         post.setContent("Test post's content");
         post.setAuthorId(20L);
         return post;
-    }
-
-    UserDto prepareUserDto() {
-        userDto.setId(1L);
-        return userDto;
     }
 
     List<Comment> prepareCommentList() {
@@ -134,19 +116,9 @@ public class CommentServiceTest {
     }
 
     @Test
-    public void testCreateCommentIfAuthorDoesNotFound() {
-        CreateCommentDto createCommentDto = prepareCreateCommentDto();
-        when(userServiceClient.getUser(createCommentDto.getAuthorId())).thenReturn(Mockito.isNull());
-
-        assertThrows(RuntimeException.class, () -> commentService.createComment(createCommentDto));
-    }
-
-    @Test
     public void testCreateCommentSuccessful() {
         CreateCommentDto createCommentDto = prepareCreateCommentDto();
         Comment comment = prepareComment();
-        UserDto userDto = prepareUserDto();
-        when(userServiceClient.getUser(createCommentDto.getAuthorId())).thenReturn(userDto);
         when(commentRepository.save(comment)).thenReturn(comment);
         when(commentMapper.toEntity(createCommentDto)).thenReturn(comment);
 
@@ -164,10 +136,21 @@ public class CommentServiceTest {
     }
 
     @Test
+    public void testUpdateCommentIfAuthorIsNotConfirmed() {
+        UpdatedCommentDto updatedCommentDto = prepareUpdateCommentDto();
+        updatedCommentDto.setAuthorId(2L);
+        Comment comment = prepareComment();
+        when(commentRepository.findById(updatedCommentDto.getId())).thenReturn(Optional.of(comment));
+
+        assertThrows(DataValidationException.class, () -> commentService.updateComment(updatedCommentDto));
+    }
+
+    @Test
     public void testUpdateCommentSuccessful() {
         UpdatedCommentDto updatedCommentDto = prepareUpdateCommentDto();
+        Comment comment = prepareComment();
         Comment updatedComment = prepareUpdateComment();
-        when(commentRepository.findById(updatedCommentDto.getId())).thenReturn(Optional.of(updatedComment));
+        when(commentRepository.findById(updatedCommentDto.getId())).thenReturn(Optional.of(comment));
 
         commentService.updateComment(updatedCommentDto);
 

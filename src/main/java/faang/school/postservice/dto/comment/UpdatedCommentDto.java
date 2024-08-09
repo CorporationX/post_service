@@ -17,6 +17,10 @@ public class UpdatedCommentDto {
     @Positive
     private Long id;
 
+    @NotNull
+    @Positive
+    private Long authorId;
+
     @Size(max = 4096)
     @NotBlank
     private String content;

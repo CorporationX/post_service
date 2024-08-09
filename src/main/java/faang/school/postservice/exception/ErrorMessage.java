@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum ErrorMessage {
 
-    NULL_ID("Receiving ID is NULL. Enter correct ID.");
+    AUTHOR_ID_NOT_CONFIRMED("Only the author of the comment can make changes to the comment. " +
+            "Your ID and the comment author's ID do not match");
 
     private final String message;
 }

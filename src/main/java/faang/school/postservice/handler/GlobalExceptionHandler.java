@@ -1,5 +1,6 @@
 package faang.school.postservice.handler;
 
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ErrorResponse;
 import faang.school.postservice.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(NotFoundException e) {
         log.error("NotFoundException", e);
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(DataValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleDataValidationException(DataValidationException e) {
+        log.error("DataValidationException", e);
         return new ErrorResponse(e.getMessage());
     }
 

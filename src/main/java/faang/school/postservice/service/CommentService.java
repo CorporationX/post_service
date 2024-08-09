@@ -1,9 +1,10 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdatedCommentDto;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.ErrorMessage;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -21,27 +22,25 @@ import java.util.List;
 @Slf4j
 public class CommentService {
 
+    private final CheckUserService checkUserService;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
 
     public CommentDto createComment(CreateCommentDto createCommentDto) {
-        checkUserExistence(createCommentDto);
+        checkUserService.checkUserExistence(createCommentDto);
         Comment savedComment = commentMapper.toEntity(createCommentDto);
         savedComment = commentRepository.save(savedComment);
         log.info("Comment with ID = {} was created", savedComment.getId());
         return commentMapper.toDto(savedComment);
     }
 
-    private void checkUserExistence(CreateCommentDto createCommentDto) {
-        Long authorId = createCommentDto.getAuthorId();
-        userServiceClient.getUser(authorId);
-    }
-
     public CommentDto updateComment(UpdatedCommentDto updatedCommentDto) {
         Comment comment = commentRepository.findById(updatedCommentDto.getId())
                 .orElseThrow(() -> new NotFoundException("Comment with ID = " + updatedCommentDto.getId() + " does not found"));
+        if (comment.getAuthorId() != updatedCommentDto.getAuthorId()) {
+            throw new DataValidationException(ErrorMessage.AUTHOR_ID_NOT_CONFIRMED);
+        }
         comment.setContent(updatedCommentDto.getContent());
         Comment updatedComment = commentRepository.save(comment);
         log.info("Comment with ID = {} was updated", updatedCommentDto.getId());
