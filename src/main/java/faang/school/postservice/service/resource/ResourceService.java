@@ -39,7 +39,7 @@ public class ResourceService {
         List<MultipartFile> suitableImages = resizeFiles(imageFiles);
 
         List<Resource> resources = s3Service.uploadFiles(
-                suitableImages, createFolder(postId, imageFiles.get(0).getContentType()));
+                suitableImages, createFolder(postId, imageFiles.stream().findAny().get().getContentType()));
         resources.forEach(resource -> {
             resource.setPost(post);
             resourceRepository.save(resource);

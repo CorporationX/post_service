@@ -20,10 +20,13 @@ public class ResourceServiceValidator {
     private int maxFileSize;
 
     @Value("${spring.resources.image.supported-image-types}")
-    private Set<String> SUPPORTED_IMAGE_TYPES;
+    private Set<String> SupportedImageTypes;
 
     @Value("${spring.post.max-image-quantity}")
-    private int MaxQuantityImageInPost;
+    private int maxQuantityImageInPost;
+
+    @Value("${spring.resources.file.quality-files-when-adding-single-file}")
+    private int qualityFilesWhenAddingSingleFile;
 
     public void validAddImages(List<MultipartFile> imageFiles, List<Resource> postResources) {
         imageFiles.forEach(imageFile -> {
@@ -36,7 +39,7 @@ public class ResourceServiceValidator {
     public void validAddImage(MultipartFile imageFile, List<Resource> postResources) {
         validateResourceSize(imageFile.getSize());
         checkIfFileAreImages(imageFile);
-        checkingThereEnoughSpaceInPostToImage(postResources.size(), 1);
+        checkingThereEnoughSpaceInPostToImage(postResources.size(), qualityFilesWhenAddingSingleFile);
     }
 
     public void validateResourceSize(Long fileSize) {
@@ -46,18 +49,18 @@ public class ResourceServiceValidator {
     }
 
     public void checkIfFileAreImages(MultipartFile imageFile) {
-        if (!SUPPORTED_IMAGE_TYPES.contains(imageFile.getContentType())) {
+        if (!SupportedImageTypes.contains(imageFile.getContentType())) {
             throw new FileException("File type " + imageFile.getContentType() + " not supported");
         }
     }
 
     public void checkingThereEnoughSpaceInPostToImage(
             int quantityImageInPost, int quantityAddingImage) {
-        if (quantityImageInPost + quantityAddingImage > MaxQuantityImageInPost) {
+        if (quantityImageInPost + quantityAddingImage > maxQuantityImageInPost) {
             throw new ResourceLimitExceededException(
                     String.format("The post cannot contain more than %d resources." +
                                     "  Attempted to add: %d, Available space: %d",
-                            quantityImageInPost, quantityAddingImage, MaxQuantityImageInPost - quantityImageInPost));
+                            quantityImageInPost, quantityAddingImage, maxQuantityImageInPost - quantityImageInPost));
         }
     }
 }
