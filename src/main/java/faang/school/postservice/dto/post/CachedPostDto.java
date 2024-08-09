@@ -1,5 +1,4 @@
 package faang.school.postservice.dto.post;
-import faang.school.postservice.dto.like.LikeDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +8,6 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
-import java.util.List;
 
 @RedisHash("Post")
 @AllArgsConstructor
@@ -23,12 +21,17 @@ public class CachedPostDto implements Serializable {
     private Long projectId;
     private String content;
     private Long viewsQuantity;
-    private List<LikeDto> likes;
+    private int likesQuantity;
     @Version
-    private Long version;
+    private Long version = 0L;
 
     public void setViewsQuantity(Long viewsQuantity) {
         this.viewsQuantity = viewsQuantity;
+        version++;
+    }
+
+    public void incrementLikesQuantity() {
+        likesQuantity += 1;
         version++;
     }
 }

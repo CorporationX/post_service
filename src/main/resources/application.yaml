@@ -35,7 +35,7 @@ spring:
           prefix: feed
           ttl: 3
         post:
-          name: Post
+          prefix: Post
           ttl: 5
 
   kafka:
