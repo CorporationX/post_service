@@ -21,5 +21,4 @@ public class PostDto {
     @NotBlank
     @Size(min = 1, max = 4000)
     private String content;
-  }
 }
