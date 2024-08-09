@@ -39,9 +39,7 @@ public class PostValidator {
 
         Long authorId = postDto.getAuthorId();
         if (authorId != null) {
-            if (userValidator.isUserExists(authorId)) {
-                return true;
-            }
+            return userValidator.isUserExists(authorId);
         }
 
         return false;
