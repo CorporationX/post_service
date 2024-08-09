@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdatedCommentDto;
@@ -31,7 +32,7 @@ public class CommentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentDto createComment(@Valid @RequestBody CreateCommentDto createCommentDto) {
+    public CommentDto createComment(@Valid @RequestBody CreateCommentDto createCommentDto) throws JsonProcessingException {
         return commentService.createComment(createCommentDto);
     }
 

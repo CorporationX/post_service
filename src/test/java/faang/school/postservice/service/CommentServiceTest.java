@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdatedCommentDto;
@@ -41,6 +42,9 @@ public class CommentServiceTest {
 
     @Mock
     CheckUserService checkUserService;
+
+    @Mock
+    MessagePublisherService messagePublisherService;
 
     @InjectMocks
     CommentService commentService;
@@ -116,7 +120,7 @@ public class CommentServiceTest {
     }
 
     @Test
-    public void testCreateCommentSuccessful() {
+    public void testCreateCommentSuccessful() throws JsonProcessingException {
         CreateCommentDto createCommentDto = prepareCreateCommentDto();
         Comment comment = prepareComment();
         when(commentRepository.save(comment)).thenReturn(comment);
