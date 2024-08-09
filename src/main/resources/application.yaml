@@ -33,10 +33,13 @@ spring:
       bucketName: projectbucket
 
   resources:
+    file:
+      max-file-size: 5242880 # 5 mb
     image:
       max-width-horizontal: 1080
       max-height-horizontal: 566
       max-size-square: 1080
+      supported-image-types: "image/png,image/jpeg,image/jpg"
 
   post:
     max-image-quantity: 10

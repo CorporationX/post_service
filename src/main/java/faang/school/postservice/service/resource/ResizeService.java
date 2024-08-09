@@ -1,5 +1,6 @@
 package faang.school.postservice.service.resource;
 
+import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 @Service
+@Slf4j
 public class ResizeService {
 
     @Value("${spring.resources.image.max-width-horizontal}")
@@ -20,36 +22,69 @@ public class ResizeService {
     private int maxHeightHorizontal;
 
     @Value("${spring.resources.image.max-size-square}")
-    private int MaxSizeSquare;
+    private int maxSizeSquare;
 
     public MultipartFile resizeImage(MultipartFile file) throws IOException {
-        try (ByteArrayOutputStream resizedImageOutputStream  = new ByteArrayOutputStream()) {
-            BufferedImage originalImage = ImageIO.read(file.getInputStream());
-            int width = originalImage.getWidth();
-            int height = originalImage.getHeight();
+        BufferedImage originalImage = ImageIO.read(file.getInputStream());
+        if (originalImage == null) {
+            throw new IOException("Unsupported image format");
+        }
 
-            if ((width > maxWidthHorizontal && height <= maxHeightHorizontal) ||
-                    (width > maxWidthHorizontal && height > maxHeightHorizontal && width > height)) {
-                Thumbnails.of(originalImage)
-                        .size(maxWidthHorizontal, maxHeightHorizontal)
-                        .outputFormat("jpg")
-                        .toOutputStream(resizedImageOutputStream);
-            } else if (width > MaxSizeSquare || height > MaxSizeSquare) {
-                Thumbnails.of(originalImage)
-                        .size(MaxSizeSquare, MaxSizeSquare)
-                        .outputFormat("jpg")
-                        .toOutputStream(resizedImageOutputStream);
-            } else {
-                return file;
-            }
+        if (needsResizing(originalImage)) {
+            ByteArrayOutputStream resizedImageOutputStream = new ByteArrayOutputStream();
+            BufferedImage resizedImage = applyResize(originalImage);
+            ImageIO.write(resizedImage, "png", resizedImageOutputStream);
+            byte[] resizedImageBytes = resizedImageOutputStream.toByteArray();
 
-            byte[] resizedImage = resizedImageOutputStream.toByteArray();
-            return new CustomMultipartFile(
-                    file.getName(),
-                    file.getOriginalFilename(),
-                    file.getContentType(),
-                    resizedImage
-            );
+            return createMultipartFile(file, resizedImageBytes);
+        }
+        return file;
+    }
+
+    private boolean needsResizing(BufferedImage image) {
+        return image.getWidth() > maxWidthHorizontal || image.getHeight() > maxHeightHorizontal ||
+                image.getWidth() > maxSizeSquare || image.getHeight() > maxSizeSquare;
+    }
+
+    private BufferedImage applyResize(BufferedImage originalImage) throws IOException {
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
+        double aspectRatio = (double) width / height;
+
+        int newWidth = getNewWidth(aspectRatio);
+        int newHeight = getNewHeight(aspectRatio);
+
+        if (newWidth > maxSizeSquare || newHeight > maxSizeSquare) {
+            newWidth = newHeight = maxSizeSquare;
+        }
+
+        return Thumbnails.of(originalImage)
+                .size(newWidth, newHeight)
+                .asBufferedImage();
+    }
+
+    private MultipartFile createMultipartFile(MultipartFile originalFile, byte[] resizedImage) {
+        return new CustomMultipartFile(
+                originalFile.getName(),
+                originalFile.getOriginalFilename(),
+                originalFile.getContentType(),
+                resizedImage
+        );
+    }
+
+    private int getNewHeight(double aspectRatio) {
+        if (aspectRatio > 1) {
+            return (int) (maxHeightHorizontal / aspectRatio);
+        } else {
+            return maxHeightHorizontal;
+        }
+    }
+
+    private int getNewWidth(double aspectRatio) {
+        if (aspectRatio > 1) {
+            return maxWidthHorizontal;
+        } else {
+            return (int) (maxHeightHorizontal * aspectRatio);
         }
     }
 }

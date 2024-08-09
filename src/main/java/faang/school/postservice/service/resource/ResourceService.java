@@ -1,7 +1,9 @@
 package faang.school.postservice.service.resource;
 
 
+import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.exception.FileException;
+import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
@@ -11,16 +13,13 @@ import faang.school.postservice.validator.ResourceServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @Slf4j
@@ -31,86 +30,51 @@ public class ResourceService {
     private final PostRepository postRepository;
     private final ResizeService resizeService;
     private final ResourceServiceValidator resourceServiceValidator;
+    private final ResourceMapper resourceMapper;
 
     @Transactional
-    public ResponseEntity<String> addImages(Long postId, List<MultipartFile> imageFiles) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> {
-                    log.error("Post " + postId + " not found");
-                    return new EntityNotFoundException("Post " + postId + " not found");
-                });
+    public List<ResourceDto> addImages(Long postId, List<MultipartFile> imageFiles) {
+        Post post = getPostById(postId);
+        resourceServiceValidator.validAddImages(imageFiles, post.getResources());
+        List<MultipartFile> suitableImages = resizeFiles(imageFiles);
 
-        imageFiles.forEach(imageFile -> {
-            resourceServiceValidator.validateResourceSize(imageFile.getSize());
-            resourceServiceValidator.checkIfFileAreImages(imageFile);
-        });
-
-        resourceServiceValidator.checkingThereEnoughSpaceInPostToImage(
-                post.getResources().size(), imageFiles.size());
-
-        List<MultipartFile> suitableImages = new ArrayList<>();
-        imageFiles.forEach(image -> {
-            resourceServiceValidator.validateResourceSize(image.getSize());
-        });
-
-        String folder = "post" + postId + "image";
-        List<Resource> resources = s3Service.uploadFiles(suitableImages, folder);
+        List<Resource> resources = s3Service.uploadFiles(
+                suitableImages, createFolder(postId, imageFiles.get(0).getContentType()));
         resources.forEach(resource -> {
             resource.setPost(post);
             resourceRepository.save(resource);
         });
+
         post.getResources().addAll(resources);
         postRepository.save(post);
 
-        return ResponseEntity.ok("Resources added successfully");
+        return resourceMapper.resourceListToResourceDtoList(resources);
     }
 
     @Transactional
-    public ResponseEntity<String> addImage(Long postId, MultipartFile imageFile) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> {
-                    log.error("Post " + postId + " not found");
-                    return new EntityNotFoundException("Post " + postId + " not found");
-                });
-        resourceServiceValidator.validateResourceSize(imageFile.getSize());
-        resourceServiceValidator.checkIfFileAreImages(imageFile);
-        resourceServiceValidator.checkingThereEnoughSpaceInPostToImage(post.getResources().size(), 1);
+    public ResourceDto addImage(Long postId, MultipartFile imageFile) {
+        Post post = getPostById(postId);
+        resourceServiceValidator.validAddImage(imageFile, post.getResources());
 
         MultipartFile suitableImage = resizeFile(imageFile);
-
-        String folder = "post" + postId + "image";
-        Resource resource = s3Service.uploadFile(suitableImage, folder);
+        Resource resource = s3Service.uploadFile(
+                suitableImage, createFolder(postId, imageFile.getContentType()));
 
         resource.setPost(post);
-        resourceRepository.save(resource);
+        resource = resourceRepository.save(resource);
         post.getResources().add(resource);
         postRepository.save(post);
 
-        return ResponseEntity.ok("Resource added successfully");
+        return resourceMapper.resourceToResourceDto(resource);
     }
 
-    public ResponseEntity<String> deleteResource(Long resourceId) {
-        Resource resource = resourceRepository.findById(resourceId)
-                .orElseThrow(() -> {
-                    log.error("Resource id: " + resourceId + " not found");
-                    return new EntityNotFoundException("Resource id: " + resourceId + " not found");
-                });
+    public ResourceDto deleteResource(Long resourceId) {
+        Resource resource = getResourceById(resourceId);
 
-        Post post = resource.getPost();
-        post.getResources().remove(resource);
         s3Service.deleteFile(resource.getKey());
         resourceRepository.deleteById(resourceId);
 
-        return ResponseEntity.ok("Resource deleted successfully");
-    }
-
-    public InputStream downloadResource(Long resourceId) {
-        Resource resource = resourceRepository.findById(resourceId)
-                .orElseThrow(() -> {
-                    log.error("Resource id: " + resourceId + " not found");
-                    return new EntityNotFoundException("Resource id: " + resourceId + " not found");
-                });
-        return s3Service.downloadFile(resource.getKey());
+        return resourceMapper.resourceToResourceDto(resource);
     }
 
     private MultipartFile resizeFile(MultipartFile file) {
@@ -120,5 +84,39 @@ public class ResourceService {
             log.error(e.getMessage());
             throw new FileException("Failed to resize image: " + file.getOriginalFilename());
         }
+    }
+
+    private List<MultipartFile> resizeFiles(List<MultipartFile> files) {
+        List<MultipartFile> resizedFiles = new ArrayList<>();
+
+        files.forEach(file -> {
+            try {
+                resizedFiles.add(resizeService.resizeImage(file));
+            } catch (IOException e) {
+                log.error(e.getMessage());
+                throw new FileException("Failed to resize image: " + file.getOriginalFilename());
+            }
+        });
+        return resizedFiles;
+    }
+
+    private Post getPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> {
+                    log.error(String.format("Post %d not found", postId));
+                    return new EntityNotFoundException(String.format("Post %d not found", postId));
+                });
+    }
+
+    private Resource getResourceById(Long resourceId) {
+        return resourceRepository.findById(resourceId)
+                .orElseThrow(() -> {
+                    log.error(String.format("Resource id: %d not found", resourceId));
+                    return new EntityNotFoundException(String.format("Resource id: %d not found", resourceId));
+                });
+    }
+
+    private String createFolder(Long postId, String fileType) {
+        return String.format("Post%s%s", postId, fileType.replaceAll("/.*$", ""));
     }
 }

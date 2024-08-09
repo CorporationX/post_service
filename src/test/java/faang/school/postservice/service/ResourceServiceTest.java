@@ -1,5 +1,7 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.ResourceDto;
+import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
@@ -12,14 +14,14 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +29,6 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -52,6 +53,9 @@ class ResourceServiceTest {
     @Mock
     private ResourceServiceValidator resourceServiceValidator;
 
+    @Mock
+    private ResourceMapper resourceMapper;
+
 
     @Test
     @DisplayName("testAddImage - success")
@@ -67,12 +71,15 @@ class ResourceServiceTest {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(resizeService.resizeImage(imageFile)).thenReturn(resizedImageFile);
         when(s3Service.uploadFile(resizedImageFile, "post" + postId + "image")).thenReturn(new Resource());
-        doNothing().when(resourceServiceValidator).validateResourceSize(anyLong());
-        doNothing().when(resourceServiceValidator).checkIfFileAreImages(any(MultipartFile.class));
+        ArgumentCaptor<Resource> captor = ArgumentCaptor.forClass(Resource.class);
 
-        ResponseEntity<String> response = resourceService.addImage(postId, imageFile);
+        when(resourceMapper.resourceToResourceDto(captor.capture())).thenReturn(new ResourceDto());
+        doNothing().when(resourceServiceValidator).validAddImage(imageFile, post.getResources());
 
-        assertEquals("Resource added successfully", response.getBody());
+
+
+        resourceService.addImage(postId, imageFile);
+
         verify(postRepository).save(post);
     }
 
@@ -88,12 +95,12 @@ class ResourceServiceTest {
 
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(s3Service.uploadFiles(any(), anyString())).thenReturn(Collections.singletonList(new Resource()));
-        doNothing().when(resourceServiceValidator).validateResourceSize(anyLong());
-        doNothing().when(resourceServiceValidator).checkIfFileAreImages(any(MultipartFile.class));
+        doNothing().when(resourceServiceValidator).validAddImages(imageFiles, post.getResources());
+        ArgumentCaptor<List<Resource>> captor = ArgumentCaptor.forClass(List.class);
+        when(resourceMapper.resourceListToResourceDtoList(captor.capture())).thenReturn(new ArrayList<>());
 
-        ResponseEntity<String> response = resourceService.addImages(postId, imageFiles);
+        resourceService.addImages(postId, imageFiles);
 
-        assertEquals("Resources added successfully", response.getBody());
         verify(postRepository).save(post);
     }
 
@@ -111,28 +118,14 @@ class ResourceServiceTest {
 
 
         when(resourceRepository.findById(resourceId)).thenReturn(Optional.of(resource));
+        ArgumentCaptor<Resource> captor = ArgumentCaptor.forClass(Resource.class);
+        when(resourceMapper.resourceToResourceDto(captor.capture())).thenReturn(new ResourceDto());
         doNothing().when(s3Service).deleteFile(resource.getKey());
 
-        ResponseEntity<String> response = resourceService.deleteResource(resourceId);
+        resourceService.deleteResource(resourceId);
 
-        assertEquals("Resource deleted successfully", response.getBody());
         verify(s3Service).deleteFile(resource.getKey());
         verify(resourceRepository).deleteById(resourceId);
-    }
-
-    @Test
-    @DisplayName("testDownloadResource - success")
-    void testDownloadResourceSuccess() {
-        Long resourceId = 1L;
-        Resource resource = new Resource();
-        resource.setKey("resourceKey");
-
-        when(resourceRepository.findById(resourceId)).thenReturn(Optional.of(resource));
-        when(s3Service.downloadFile(resource.getKey())).thenReturn(mock(InputStream.class));
-
-        InputStream inputStream = resourceService.downloadResource(resourceId);
-
-        assertNotNull(inputStream);
     }
 
     @Test
@@ -174,20 +167,6 @@ class ResourceServiceTest {
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
                 resourceService.deleteResource(resourceId)
-        );
-
-        assertEquals("Resource id: " + resourceId + " not found", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("testDownloadResource - resource not found")
-    void testDownloadResourceResourceNotFound() {
-        Long resourceId = 1L;
-
-        when(resourceRepository.findById(resourceId)).thenReturn(Optional.empty());
-
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
-                resourceService.downloadResource(resourceId)
         );
 
         assertEquals("Resource id: " + resourceId + " not found", exception.getMessage());

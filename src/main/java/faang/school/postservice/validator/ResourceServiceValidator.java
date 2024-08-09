@@ -2,26 +2,45 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.exception.FileException;
 import faang.school.postservice.exception.ResourceLimitExceededException;
+import faang.school.postservice.model.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Set;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class ResourceServiceValidator {
-    private final static int MAX_FILE_SIZE = 5 * 1024 * 1024; //5mb
-    private final static Set<String> SUPPORTED_IMAGE_TYPES = Set.of("image/png", "image/jpeg", "image/jpg");
+    @Value("${spring.resources.file.max-file-size}")
+    private int maxFileSize;
+
+    @Value("${spring.resources.image.supported-image-types}")
+    private Set<String> SUPPORTED_IMAGE_TYPES;
 
     @Value("${spring.post.max-image-quantity}")
     private int MaxQuantityImageInPost;
 
+    public void validAddImages(List<MultipartFile> imageFiles, List<Resource> postResources) {
+        imageFiles.forEach(imageFile -> {
+            validateResourceSize(imageFile.getSize());
+            checkIfFileAreImages(imageFile);
+        });
+        checkingThereEnoughSpaceInPostToImage(postResources.size(), imageFiles.size());
+    }
+
+    public void validAddImage(MultipartFile imageFile, List<Resource> postResources) {
+        validateResourceSize(imageFile.getSize());
+        checkIfFileAreImages(imageFile);
+        checkingThereEnoughSpaceInPostToImage(postResources.size(), 1);
+    }
+
     public void validateResourceSize(Long fileSize) {
-        if (fileSize > MAX_FILE_SIZE) {
+        if (fileSize > maxFileSize) {
             throw new FileException("File size exceeds the 5MB limit");
         }
     }
