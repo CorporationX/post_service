@@ -23,5 +23,5 @@ public interface PostService {
     boolean existsById(long id);
     Long incrementPostViews(Long postId);
     CachedPostDto getCachedPostById(Long postId);
-    List<CachedPostDto> getPostsByAuthorIds(List<Long> authorIds, long startPostId, long batchSize);
+    List<CachedPostDto> getPostsByAuthorIds(List<Long> authorIds, long startPostId, int batchSize);
 }

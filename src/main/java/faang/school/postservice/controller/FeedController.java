@@ -5,6 +5,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CachedPostDto;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,5 +21,10 @@ public class FeedController {
     public List<CachedPostDto> getFeed(@RequestParam(required = false) Long fromPostId) {
         Long userId = userContext.getUserId();
         return feedCache.getFeed(userId, fromPostId);
+    }
+
+    @PostMapping("/heat")
+    public void heatFeed() {
+        feedCache.heat();
     }
 }

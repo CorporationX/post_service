@@ -15,6 +15,9 @@ public class AsyncConfig {
     @Value("${news-feed.pool.thread-count}")
     private Integer threadCount;
 
+    @Value("${news-feed.heater.threads}")
+    private Integer threads;
+
     @Bean(name = "threadPool")
     public Executor threadPoolTaskExecutor() {
         return new ThreadPoolTaskExecutor();
@@ -25,6 +28,15 @@ public class AsyncConfig {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(threadCount);
         executor.setMaxPoolSize(threadCount);
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean(name = "feedHeaterExecutor")
+    public TaskExecutor feedHeaterExecutor(){
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(threads);
+        executor.setMaxPoolSize(threads);
         executor.initialize();
         return executor;
     }
