@@ -4,9 +4,9 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.redis.RedisMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.ban.BanService;
 import faang.school.postservice.validator.CommentValidator;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class CommentService {
     private final UserContext userContext;
     private final CommentValidator commentValidator;
     private final PostRepository postRepository;
-    private final RedisMessagePublisher redisMessagePublisher;
+    private final BanService banService;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
@@ -73,17 +72,13 @@ public class CommentService {
                 .map(commentMapper::entityToDto)
                 .collect(Collectors.toList());
     }
-  
+
     @Transactional
     public void checkUserAndBannedForComment() {
         Map<Long, List<Comment>> authorCommentWithoutVerification = commentRepository.findAllByPostWithoutVerification()
                 .stream()
                 .collect(Collectors.groupingBy(Comment::getAuthorId));
 
-        authorCommentWithoutVerification.forEach((authorId, comments) -> {
-            if (comments.size() > 5) {
-                redisMessagePublisher.createJson(authorId);
-            }
-        });
+        banService.checkAndBannedUser(authorCommentWithoutVerification);
     }
 }

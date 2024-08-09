@@ -1,9 +1,14 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.redis.RedisMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.ban.BanService;
+import faang.school.postservice.validator.PostServiceValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -25,8 +29,7 @@ public class PostService {
     private final PostServiceValidator postServiceValidator;
     private final RedisMessagePublisher redisMessagePublisher;
     private final CommentRepository commentRepository;
-
-
+    private final BanService banService;
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -56,7 +59,7 @@ public class PostService {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> {
                     log.error("Post ID " + postDto.getId() + " not found");
-                    return new EntityNotFoundException("Post ID "+ postDto.getId() +" not found");
+                    return new EntityNotFoundException("Post ID " + postDto.getId() + " not found");
                 });
         postServiceValidator.validatePublishPost(post, postDto);
         post.setPublished(true);
@@ -70,8 +73,8 @@ public class PostService {
     public PostDto deletePost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.error("Post ID "+ postId +" not found");
-                    return new EntityNotFoundException("Post ID "+ postId +" not found");
+                    log.error("Post ID " + postId + " not found");
+                    return new EntityNotFoundException("Post ID " + postId + " not found");
                 });
         postServiceValidator.validateDeletePost(post);
         post.setDeleted(true);
@@ -86,8 +89,8 @@ public class PostService {
     public PostDto getPostByPostId(Long postId) {
         return postMapper.toDto(postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.error("Post ID "+ postId +" not found");
-                    return new EntityNotFoundException("Post ID "+ postId +" not found");
+                    log.error("Post ID " + postId + " not found");
+                    return new EntityNotFoundException("Post ID " + postId + " not found");
                 }));
     }
 
@@ -127,29 +130,13 @@ public class PostService {
         return postMapper.toDto(sortPostsByPublishAt(filteredPosts));
     }
 
-
-    public void checkUserAndBannedForComment() {
-        Map<Long, List<Comment>> authorCommentWithoutVerification = commentRepository.findAllByPostWithoutVerification()
-                .stream()
-                .collect(Collectors.groupingBy(Comment::getAuthorId));
-
-        authorCommentWithoutVerification.forEach((authorId, comments) -> {
-            if (comments.size() > 5) {
-                redisMessagePublisher.publish(authorId.toString());
-            }
-        });
-    }
-
+    @Transactional
     public void checkUserAndBannedForPost() {
-        Map<Long, List<Post>> authorCommentWithoutVerification = postRepository.findAllPostWithoutVerification()
+        Map<Long, List<Post>> authorPostWithoutVerification = postRepository.findAllPostWithoutVerification()
                 .stream()
                 .collect(Collectors.groupingBy(Post::getAuthorId));
 
-        authorCommentWithoutVerification.forEach((authorId, posts) -> {
-            if (posts.size() > 5) {
-                redisMessagePublisher.publish(authorId.toString());
-            }
-        });
+        banService.checkAndBannedUser(authorPostWithoutVerification);
     }
 
     private List<Post> sortPostsByCreateAt(List<Post> posts) {
