@@ -2,10 +2,12 @@ package faang.school.postservice.config.context;
 
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 @Component
 public class UserContext {
 
-    private final ThreadLocal<Long> userIdHolder = new ThreadLocal<>();
+    private final AtomicLong userIdHolder = new AtomicLong();
 
     public void setUserId(long userId) {
         userIdHolder.set(userId);
@@ -16,6 +18,6 @@ public class UserContext {
     }
 
     public void clear() {
-        userIdHolder.remove();
+        userIdHolder.set(Long.MIN_VALUE);
     }
 }
