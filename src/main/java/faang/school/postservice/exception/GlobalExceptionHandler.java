@@ -15,7 +15,7 @@ import java.util.Map;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DeletionFailedException.class)
-    public ResponseEntity<Object> handleDataValidationException(DeletionFailedException ex) {
+    public ResponseEntity<Object> handleDeletionFailedException(DeletionFailedException ex) {
         return new ResponseEntity<>(response(ex), HttpStatus.BAD_REQUEST);
     }
 
