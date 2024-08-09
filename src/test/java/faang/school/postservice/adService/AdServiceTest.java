@@ -12,6 +12,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AdServiceTest {
@@ -26,8 +27,9 @@ public class AdServiceTest {
     @Test
     public void deleteAdPost_ShouldDeleteGivenIds() {
         List<Long> ids = List.of(1L, 2L, 3L);
+        when(adRepository.deleteByIds(ids)).thenReturn(ids.size());
 
-        assertDoesNotThrow(() -> adService.deleteAdPost(ids));
+        assertDoesNotThrow(() -> adService.deleteAdPosts(ids));
 
         verify(adRepository, times(1)).deleteByIds(ids);
     }
