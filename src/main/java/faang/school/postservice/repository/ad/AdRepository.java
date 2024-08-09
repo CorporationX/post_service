@@ -26,5 +26,5 @@ public interface AdRepository extends CrudRepository<Ad, Long> {
     @Transactional
     @Modifying
     @Query("DELETE FROM Ad a WHERE a.id IN ?1")
-    void deleteByIds(List<Long> ids);
+    int deleteByIds(List<Long> ids);
 }
