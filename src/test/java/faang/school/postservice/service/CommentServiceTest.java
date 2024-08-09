@@ -19,8 +19,10 @@ import java.util.List;
 import java.util.Optional;
 
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -109,5 +111,24 @@ public class CommentServiceTest {
         verify(commentRepository).findById(commentId);
         assertNotNull(updatedCommentDto);
         assertEquals(result.getContent(), updatedCommentDto.getContent());
+    }
+
+    @Test
+    public void testGetCommentNotCommentDataBase() {
+        long commentId = 1;
+        when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> commentService.getComment(commentId));
+    }
+
+    @Test
+    public void testGetCommentWhenValid() {
+        long commentId = 1;
+        Comment comment = new Comment();
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+
+        Comment result = commentService.getComment(commentId);
+        assertDoesNotThrow(() -> commentService.getComment(commentId));
+        assertEquals(comment, result);
     }
 }

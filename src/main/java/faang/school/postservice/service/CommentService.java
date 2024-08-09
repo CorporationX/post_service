@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
@@ -69,5 +70,11 @@ public class CommentService {
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
                 .map(commentMapper::entityToDto)
                 .collect(Collectors.toList());
+    }
+  
+    @Transactional
+    public Comment getComment(long commentId) {
+        return commentRepository.findById(commentId)
+            .orElseThrow(() -> new IllegalArgumentException("Comment with the same id does not exist"));
     }
 }
