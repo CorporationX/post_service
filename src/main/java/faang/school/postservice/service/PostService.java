@@ -1,10 +1,12 @@
 package faang.school.postservice.service;
 
+
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
+import faang.school.postservice.mapper.PostContextMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
+    private final PostContextMapper context;
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -120,6 +123,16 @@ public class PostService {
                 .toList();
 
         return postMapper.toDto(sortPostsByPublishAt(filteredPosts));
+    }
+  
+    public Post getPost(long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post with the same id does not exist"));
+
+        long countLike = post.getLikes().size();
+        context.getCountLikeEveryonePost().put(postId, countLike);
+
+        return post;
     }
 
     private List<Post> sortPostsByCreateAt(List<Post> posts) {
