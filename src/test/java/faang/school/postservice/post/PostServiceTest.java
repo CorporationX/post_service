@@ -7,6 +7,7 @@ import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataDoesNotExistException;
 import faang.school.postservice.mapper.post.PostMapperImpl;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
@@ -145,11 +146,25 @@ public class PostServiceTest {
 
     @Test
     public void testGetPost() {
+        List<Like> likes = List.of(
+                Like.builder()
+                        .id(11L)
+                        .build(),
+                Like.builder()
+                        .id(12L)
+                        .build()
+        );
+
         Optional<Post> post = Optional.of(new Post());
         post.get().setId(1L);
+        post.get().setLikes(likes);
+
         when(postRepository.findById(1L)).thenReturn(post);
+
         PostDto resultPostDto = service.getPost(1L);
+
         assertEquals(post.get().getId(), resultPostDto.getId());
+        assertEquals(2, resultPostDto.getLikes());
     }
 
     @Test

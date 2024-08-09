@@ -6,12 +6,14 @@ import faang.school.postservice.dto.Post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataDoesNotExistException;
+import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,6 +31,12 @@ public class PostService {
     private final PostRepository postRepository;
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
+
+    @Transactional(readOnly = true)
+    public Post getById(long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Post id=%d not found", id)));
+    }
 
     public PostDto createDraftPost(PostDto dto) {
         Post post = postMapper.toEntity(dto);
