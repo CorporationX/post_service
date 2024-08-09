@@ -20,7 +20,7 @@ public class ResourceServiceValidator {
     private int maxFileSize;
 
     @Value("${spring.resources.image.supported-image-types}")
-    private Set<String> SupportedImageTypes;
+    private Set<String> supportedImageTypes;
 
     @Value("${spring.post.max-image-quantity}")
     private int maxQuantityImageInPost;
@@ -49,7 +49,7 @@ public class ResourceServiceValidator {
     }
 
     public void checkIfFileAreImages(MultipartFile imageFile) {
-        if (!SupportedImageTypes.contains(imageFile.getContentType())) {
+        if (!supportedImageTypes.contains(imageFile.getContentType())) {
             throw new FileException("File type " + imageFile.getContentType() + " not supported");
         }
     }

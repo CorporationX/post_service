@@ -11,11 +11,14 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
 class ResourceServiceValidatorTest {
+
 
     @InjectMocks
     private ResourceServiceValidator resourceServiceValidator;
@@ -23,6 +26,7 @@ class ResourceServiceValidatorTest {
     @Test
     @DisplayName("testValidateResourceSize with size exceeding limit")
     void testValidateResourceSize() {
+        ReflectionTestUtils.setField(resourceServiceValidator, "maxFileSize", 5242880);
         Long largeFileSize = 6 * 1024 * 1024L; // 6MB
         assertThrows(FileException.class, () -> {
             resourceServiceValidator.validateResourceSize(largeFileSize);
@@ -32,6 +36,7 @@ class ResourceServiceValidatorTest {
     @Test
     @DisplayName("testValidateResourceSize with size within limit")
     void testValidateResourceSizeWithinLimit() {
+        ReflectionTestUtils.setField(resourceServiceValidator, "maxFileSize", 5242880);
         Long smallFileSize = 4 * 1024 * 1024L; // 4MB
         resourceServiceValidator.validateResourceSize(smallFileSize);
     }
@@ -39,6 +44,8 @@ class ResourceServiceValidatorTest {
     @Test
     @DisplayName("testCheckIfFileAreImages with unsupported file type")
     void testCheckIfFileAreImagesUnsupportedType() {
+        ReflectionTestUtils.setField(resourceServiceValidator, "supportedImageTypes",
+                Set.of("image/png", "image/jpeg", "image/jpg"));
         MockMultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "some data".getBytes());
         assertThrows(FileException.class, () -> {
             resourceServiceValidator.checkIfFileAreImages(mockFile);
@@ -48,6 +55,8 @@ class ResourceServiceValidatorTest {
     @Test
     @DisplayName("testCheckIfFileAreImages with supported file type")
     void testCheckIfFileAreImagesSupportedType() {
+        ReflectionTestUtils.setField(resourceServiceValidator, "supportedImageTypes",
+                Set.of("image/png", "image/jpeg", "image/jpg"));
         MockMultipartFile mockFile = new MockMultipartFile("file", "test.png", "image/png", "some data".getBytes());
         resourceServiceValidator.checkIfFileAreImages(mockFile);
     }
@@ -58,7 +67,7 @@ class ResourceServiceValidatorTest {
         int currentImages = 8;
         int imagesToAdd = 3;
 
-        ReflectionTestUtils.setField(resourceServiceValidator, "MaxQuantityImageInPost", 10);
+        ReflectionTestUtils.setField(resourceServiceValidator, "maxQuantityImageInPost", 10);
         assertThrows(ResourceLimitExceededException.class, () -> {
             resourceServiceValidator.checkingThereEnoughSpaceInPostToImage(currentImages, imagesToAdd);
         });
@@ -70,7 +79,7 @@ class ResourceServiceValidatorTest {
         int currentImages = 5;
         int imagesToAdd = 2;
 
-        ReflectionTestUtils.setField(resourceServiceValidator, "MaxQuantityImageInPost", 10);
+        ReflectionTestUtils.setField(resourceServiceValidator, "maxQuantityImageInPost", 10);
         resourceServiceValidator.checkingThereEnoughSpaceInPostToImage(currentImages, imagesToAdd);
     }
 }
