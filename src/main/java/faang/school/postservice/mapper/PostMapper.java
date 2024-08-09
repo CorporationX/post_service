@@ -20,5 +20,4 @@ public interface PostMapper {
     PostDto toDto(Post post, @Context PostContextMapper context);
 
     List<PostDto> toDto(List<Post> posts);
-  }
 }

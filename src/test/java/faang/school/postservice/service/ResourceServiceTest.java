@@ -67,15 +67,14 @@ class ResourceServiceTest {
                 .resources(new ArrayList<>())
                 .build();
 
+        when(imageFile.getContentType()).thenReturn("image/jpeg");
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(resizeService.resizeImage(imageFile)).thenReturn(resizedImageFile);
-        when(s3Service.uploadFile(resizedImageFile, "post" + postId + "image")).thenReturn(new Resource());
+        when(s3Service.uploadFile(resizedImageFile, "Post" + postId + "image")).thenReturn(new Resource());
         ArgumentCaptor<Resource> captor = ArgumentCaptor.forClass(Resource.class);
 
         when(resourceMapper.resourceToResourceDto(captor.capture())).thenReturn(new ResourceDto());
         doNothing().when(resourceServiceValidator).validAddImage(imageFile, post.getResources());
-
-
 
         resourceService.addImage(postId, imageFile);
 
@@ -92,6 +91,7 @@ class ResourceServiceTest {
                 .resources(new ArrayList<>())
                 .build();
 
+        when(imageFiles.stream().findAny().get().getContentType()).thenReturn("image/jpeg");
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(s3Service.uploadFiles(any(), anyString())).thenReturn(Collections.singletonList(new Resource()));
         doNothing().when(resourceServiceValidator).validAddImages(imageFiles, post.getResources());
