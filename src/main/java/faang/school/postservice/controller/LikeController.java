@@ -2,6 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,22 +21,22 @@ public class LikeController {
     private final LikeService likeService;
 
     @PostMapping(POST)
-    public LikeDto createLikeToPost(@RequestBody LikeDto likeDto) {
+    public LikeDto createLikeToPost(@RequestBody @NotNull LikeDto likeDto) {
         return likeService.createLikeToPost(likeDto);
     }
 
     @DeleteMapping(POST)
-    public LikeDto removeLikeToPost(@RequestBody LikeDto likeDto) {
+    public LikeDto removeLikeToPost(@RequestBody @NotNull LikeDto likeDto) {
         return likeService.removeLikeToPost(likeDto);
     }
 
     @PostMapping(COMMENT)
-    public LikeDto createLikeToComment(@RequestBody LikeDto likeDto) {
+    public LikeDto createLikeToComment(@RequestBody @NotNull LikeDto likeDto) {
         return likeService.createLikeToComment(likeDto);
     }
 
     @DeleteMapping(COMMENT)
-    public LikeDto removeLikeToComment(@RequestBody LikeDto likeDto) {
+    public LikeDto removeLikeToComment(@RequestBody @NotNull LikeDto likeDto) {
         return likeService.removeLikeToComment(likeDto);
     }
 }
