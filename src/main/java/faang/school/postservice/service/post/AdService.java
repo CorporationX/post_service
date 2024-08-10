@@ -33,10 +33,11 @@ public class AdService {
             log.info("Реклам с истёкшим сроком не обнаружено. Удаление не выполнено.");
         } else {
             ExecutorService executorService
-                    = Executors.newFixedThreadPool(ads.size() / subListSize);
+                    = Executors.newFixedThreadPool(ads.size() / subListSize + 1);
 
             executorService.submit(
                     () -> filteredAds.forEach(ad -> adRepository.deleteById(ad.getId())));
+            executorService.shutdown();
         }
     }
 }

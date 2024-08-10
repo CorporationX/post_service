@@ -52,4 +52,4 @@ payment-service:
 
 sizeof-sublist: 100
 
-cron-expression: 00 06 17 ? * *
+cron-expression: 00 50 17 ? * *
