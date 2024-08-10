@@ -17,7 +17,7 @@ public class ScheduledExpiredAdRemover {
     @Value("${ad.ad-deleted.scheduler.batchSize.size}")
     private int batchSize;
 
-    @Scheduled(cron = "${ad.ad-remover.scheduler.cron}")
+    @Scheduled(cron = "${ad.ad-deleted.scheduler.cron}")
     public void removingExpiredAdvertisements(){
         adService.deleteInactiveAds(batchSize);
     }

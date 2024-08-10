@@ -24,13 +24,6 @@ public class AdService {
         return StreamSupport.stream(adRepository.findAll().spliterator(),false);
     }
 
-    private List<Ad> findOverdueAds(Stream<Ad> ads){
-        return ads
-                .filter(ad -> ad.getAppearancesLeft() <= 0
-                        || ad.getEndDate().isBefore(LocalDateTime.now()))
-                .toList();
-    }
-
     @Async("asyncExecutor")
     public void deleteInactiveAds(int batchSize){
         List<Ad> ads = findOverdueAds(getAllAds());
@@ -45,5 +38,12 @@ public class AdService {
                                     .map(Ad::getId)
                                     .toList()));
         }
+    }
+
+    private List<Ad> findOverdueAds(Stream<Ad> ads){
+        return ads
+                .filter(ad -> ad.getAppearancesLeft() <= 0
+                        || ad.getEndDate().isBefore(LocalDateTime.now()))
+                .toList();
     }
 }

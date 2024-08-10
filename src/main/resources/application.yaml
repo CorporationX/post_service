@@ -32,7 +32,7 @@ spring:
         max-size: 10
         queue-capacity: 10000
         keep-alive: 60
-        thread-name-prefix: "MyThreadPool"
+        thread-name-prefix: "AdRemoverExecutor"
 
 
 
