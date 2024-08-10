@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/post")
 @RequiredArgsConstructor
+@Slf4j
 public class PostController {
     private final PostService postService;
 
