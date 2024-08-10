@@ -44,4 +44,18 @@ public class GlobalExceptionHandler {
         log.warn("Wrong input data", e);
         return new ErrorResponse(e.getMessage());
     }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotFoundException(NotFoundException e) {
+        log.error("NotFoundException", e);
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleRuntimeException(RuntimeException e) {
+        log.error("RuntimeException", e);
+        return new ErrorResponse(e.getMessage());
+    }
 }
