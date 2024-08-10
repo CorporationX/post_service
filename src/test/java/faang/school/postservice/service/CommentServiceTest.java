@@ -194,4 +194,29 @@ public class CommentServiceTest {
 
         verify(commentRepository, times(1)).deleteById(commentId);
     }
+
+    @Test
+    void testGetById() {
+        long id = 1L;
+        Comment comment = Comment.builder()
+                .id(id)
+                .build();
+
+        when(commentRepository.findById(id)).thenReturn(Optional.of(comment));
+
+        Comment result = commentService.getById(id);
+
+        assertEquals(comment, result);
+        verify(commentRepository, times(1)).findById(id);
+    }
+
+    @Test
+    void testGetById_notExists_throws() {
+        long id = 1L;
+
+        when(commentRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> commentService.getById(id));
+        verify(commentRepository, times(1)).findById(id);
+    }
 }
