@@ -82,9 +82,7 @@ class PostValidatorTest {
     @Test
     void testCheckIfAuthorExistsWhenDontExists() {
         postDto.setAuthorId(1L);
-        postDto.setProjectId(1L);
 
-        when(projectValidator.isProjectExists(postDto.getProjectId())).thenReturn(false);
         when(userValidator.isUserExists(postDto.getAuthorId())).thenReturn(false);
 
         boolean result = postValidator.checkIfAuthorExists(postDto);

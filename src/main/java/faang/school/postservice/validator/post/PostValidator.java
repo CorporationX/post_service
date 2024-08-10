@@ -32,9 +32,7 @@ public class PostValidator {
     public boolean checkIfAuthorExists(PostDto postDto) {
         Long projectId = postDto.getProjectId();
         if (projectId != null) {
-            if (projectValidator.isProjectExists(projectId)) {
-                return true;
-            }
+            return projectValidator.isProjectExists(projectId);
         }
 
         Long authorId = postDto.getAuthorId();
