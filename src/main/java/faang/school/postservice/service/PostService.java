@@ -98,7 +98,7 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
-    public PostDto getPostByPostId(Long postId) {
+    public PostDto getPostDtoById(Long postId) {
         return postMapper.toDto(getPostById(postId));
     }
 
@@ -146,6 +146,10 @@ public class PostService {
             return elasticsearchService.searchPostsByHashtag(hashtagName);
         }
     }
+
+    public Post getPost(long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post with the same id does not exist"));
 
         long countLike = post.getLikes().size();
         context.getCountLikeEveryonePost().put(postId, countLike);

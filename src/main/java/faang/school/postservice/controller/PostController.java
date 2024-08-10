@@ -2,7 +2,6 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.annotation.ValidHashtag;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.model.post.PostResponse;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +39,7 @@ public class PostController {
 
     @GetMapping("/{postId}")
     public PostDto getPostByPostId(@PathVariable Long postId) {
-        return postService.getPostByPostId(postId);
+        return postService.getPostDtoById(postId);
     }
 
     @GetMapping("/drafts/user/{userId}")

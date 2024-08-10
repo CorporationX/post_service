@@ -11,9 +11,12 @@ import faang.school.postservice.model.post.Post;
 import faang.school.postservice.model.post.PostResponse;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -271,14 +274,14 @@ public class PostServiceTest {
     public void testGetPostByPostIdPostNotFound() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> postService.getPostByPostId(1L));
+        assertThrows(EntityNotFoundException.class, () -> postService.getPostDtoById(1L));
     }
 
     @Test
     @DisplayName("Test getting a post by its ID when the post is found")
     public void testGetPostByPostIdPostFound() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-        postService.getPostByPostId(1L);
+        postService.getPostDtoById(1L);
 
         verify(postMapper, times(1)).toDto(post);
     }
