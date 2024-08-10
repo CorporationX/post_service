@@ -57,13 +57,17 @@ public class AdService {
     @Transactional
     public void deleteAdPosts(List<Long> ids) {
         if (!ids.isEmpty()) {
-            log.info("deleting {} in thread {}", ids, Thread.currentThread().getName());
-            int countOfDeleted = adRepository.deleteByIds(ids);
+            try {
+                int countOfDeleted = adRepository.deleteByIds(ids);
 
-            log.info("amount of deleted expired post ads: {}", countOfDeleted);
+                log.info("amount of deleted expired post ads: {}", countOfDeleted);
 
-            if (countOfDeleted == 0) {
-                throw new DeletionFailedException("Posts deletion haven't been completed");
+                if (countOfDeleted == 0) {
+                    throw new DeletionFailedException("Posts deletion haven't been completed");
+                }
+            } catch (Exception e) {
+                log.error("Deletion failed for ids: {}", ids);
+                throw new DeletionFailedException(String.format("Error message: %s", e.getMessage()));
             }
         }
     }
