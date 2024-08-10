@@ -17,7 +17,6 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
-
   data:
     redis:
       port: 6379
@@ -56,3 +55,10 @@ hashtag-service:
 payment-service:
   host: localhost
   port: 9080
+
+batch-size: 100
+
+executor:
+  thread:
+    pool:
+      size: 10
