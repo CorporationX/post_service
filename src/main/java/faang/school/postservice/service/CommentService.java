@@ -14,6 +14,7 @@ import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -66,5 +67,11 @@ public class CommentService {
     public void deleteComment(Long id) {
         commentRepository.deleteById(id);
         log.info("Comment with ID = {} was deleted", id);
+    }
+
+    @Transactional(readOnly = true)
+    public Comment getById(long id) {
+        return commentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Comment id=%d not found", id)));
     }
 }
