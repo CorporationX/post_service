@@ -161,7 +161,7 @@ public class PostService {
 
     public List<PostDto> findPostsByHashtag(String hashtagName) {
         List<PostDto> postDtos = hashtagServiceClient.findPostsByHashtag(hashtagName).getPosts();
-        if (postDtos.isEmpty()) {
+        if (!postDtos.isEmpty()) {
             return postDtos;
         } else {
             return elasticsearchService.searchPostsByHashtag(hashtagName);

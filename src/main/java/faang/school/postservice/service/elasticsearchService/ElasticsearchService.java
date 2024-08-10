@@ -53,11 +53,6 @@ public class ElasticsearchService {
                                 .field("hashtagNames")
                                 .query(hashtag)
                         )
-                ).sort(s -> s
-                        .field(f -> f
-                                .field("_id")
-                                .order(SortOrder.Desc)
-                        )
                 )
                 .build();
 
