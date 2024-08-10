@@ -49,3 +49,7 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+sizeof-sublist: 100
+
+cron-expression: 00 06 17 ? * *
