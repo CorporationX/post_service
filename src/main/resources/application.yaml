@@ -64,8 +64,8 @@ payment-service:
   host: localhost
   port: 9080
 
-springdoc:
-  api-docs:
-    path: /docs
-  swagger-ui:
-    path: /swagger-ui.html
+#springdoc:
+#  api-docs:
+#    path: /docs
+#  swagger-ui:
+#    path: /swagger-ui.html
