@@ -229,22 +229,21 @@ public class PostServiceTest {
     }
 
     @Test
-    @DisplayName("Test finding posts by hashtag")
+    @DisplayName("Test finding posts by hashtag in cache")
     public void testFindPostsByHashtag() {
         String hashtagName = "#hashtag1";
         List<PostDto> postDtos = List.of(postDto);
         when(hashtagServiceClient.findPostsByHashtag(hashtagName)).thenReturn(new PostResponse(postDtos));
-        when(elasticsearchService.searchPostsByHashtag(hashtagName)).thenReturn(postDtos);
 
         List<PostDto> result = postService.findPostsByHashtag(hashtagName);
 
         assertEquals(postDtos, result);
         verify(hashtagServiceClient, times(1)).findPostsByHashtag(hashtagName);
-        verify(elasticsearchService, times(1)).searchPostsByHashtag(hashtagName);
+        verify(elasticsearchService, times(0)).searchPostsByHashtag(hashtagName);
     }
 
     @Test
-    @DisplayName("Test finding posts by hashtag when no posts found")
+    @DisplayName("Test finding posts by hashtag when no posts found in cache")
     public void testFindPostsByHashtagNoPostsFound() {
         String hashtagName = "#hashtag1";
         List<PostDto> emptyPostDtos = Collections.emptyList();
@@ -254,7 +253,7 @@ public class PostServiceTest {
 
         assertEquals(emptyPostDtos, result);
         verify(hashtagServiceClient, times(1)).findPostsByHashtag(hashtagName);
-        verify(elasticsearchService, times(0)).searchPostsByHashtag(hashtagName);
+        verify(elasticsearchService, times(1)).searchPostsByHashtag(hashtagName);
     }
 
     @Test
