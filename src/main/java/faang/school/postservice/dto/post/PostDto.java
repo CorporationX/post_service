@@ -19,6 +19,7 @@ public class PostDto {
     private Long id;
     private Long authorId;
     private Long projectId;
+    private long countLike;
 
     @NotBlank
     @Size(min = 1, max = 4000)

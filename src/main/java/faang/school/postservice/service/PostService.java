@@ -11,6 +11,7 @@ import faang.school.postservice.service.elasticsearchService.ElasticsearchServic
 import faang.school.postservice.validator.PostServiceValidator;
 import feign.FeignException;
 import jakarta.persistence.EntityManager;
+import faang.school.postservice.mapper.PostContextMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class PostService {
     private final HashtagServiceClient hashtagServiceClient;
     private final ElasticsearchService elasticsearchService;
     private final EntityManager entityManager;
+    private final PostContextMapper context;
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -145,6 +147,12 @@ public class PostService {
         }
     }
 
+        long countLike = post.getLikes().size();
+        context.getCountLikeEveryonePost().put(postId, countLike);
+
+        return post;
+    }
+
     private List<Post> sortPostsByCreateAt(List<Post> posts) {
         return posts.stream()
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
@@ -183,4 +191,3 @@ public class PostService {
         return hashtags;
     }
 }
-

@@ -1,0 +1,28 @@
+name: CI-TITAN
+
+on:
+  pull_request:
+    branches:
+      - titan-master-bc5
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.7
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4.2.1
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Gradle Build Action
+        uses: gradle/gradle-build-action@v3.5.0
+
+      - name: Build and Run Tests with Gradle
+        run: |
+          ./gradlew build --no-daemon &&
+          ./gradlew test --no-daemon

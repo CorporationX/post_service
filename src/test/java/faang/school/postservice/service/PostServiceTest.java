@@ -2,19 +2,18 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.hashtag.Hashtag;
 import faang.school.postservice.model.hashtag.HashtagRequest;
 import faang.school.postservice.model.hashtag.HashtagResponse;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.model.post.PostResponse;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -51,6 +50,9 @@ public class PostServiceTest {
     private EntityManager entityManager;
 
 
+
+    @Mock
+    private PostContextMapper postContextMapper;
 
     private PostDto postDto;
     private Post post;
@@ -327,5 +329,28 @@ public class PostServiceTest {
 
         assertEquals(2, result.size());
         assertEquals(publishedPostDtos, result);
+    }
+
+    @Test
+    public void testGetPostWhenNotDataBase() {
+        long postId = 1;
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> postService.getPost(postId));
+        verify(postContextMapper, never()).getCountLikeEveryonePost();
+    }
+
+    @Test
+    public void testGetPostWhenValid() {
+        long postId = 1;
+        Post post = new Post();
+        post.setId(postId);
+        post.setLikes(Arrays.asList(new Like(), new Like()));
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        Post result = postService.getPost(postId);
+
+        assertDoesNotThrow(() -> postService.getPost(postId));
+        assertEquals(post, result);
     }
 }

@@ -3,7 +3,9 @@ package faang.school.postservice.mapper;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.model.hashtag.Hashtag;
+
 import org.mapstruct.Mapper;
+import org.mapstruct.Context;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
@@ -16,6 +18,9 @@ public interface PostMapper {
     PostDto toDto(Post post);
 
     @Mapping(source = "hashtags", target = "hashtagNames", qualifiedByName = "hashtagToHashtagName")
+    @Mapping(target = "countLike", expression = "java(context.getCountLike(post.getId()))")
+    PostDto toDto(Post post, @Context PostContextMapper context);
+
     List<PostDto> toDto(List<Post> posts);
 
     @Named("hashtagToHashtagName")
