@@ -2,7 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationExceptions;
-import faang.school.postservice.exception.NotFoundElementException;
+import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +26,6 @@ public class CommentService {
             throw new DataValidationExceptions("arrived likeDto with postId and commentId equal to null");
         }
         return commentRepository.findById(likeDto.getCommentId()).orElseThrow(() ->
-                new NotFoundElementException("Not found comment by id: " + likeDto.getCommentId()));
+                new NotFoundEntityException("Not found comment by id: " + likeDto.getCommentId()));
     }
 }

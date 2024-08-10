@@ -2,7 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationExceptions;
-import faang.school.postservice.exception.NotFoundElementException;
+import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +26,6 @@ public class PostService {
             throw new DataValidationExceptions("arrived likeDto with postId equal to null");
         }
         return postRepository.findById(likeDto.getPostId()).orElseThrow(() ->
-                new NotFoundElementException("Not found post by id: " + likeDto.getPostId()));
+                new NotFoundEntityException("Not found post by id: " + likeDto.getPostId()));
     }
 }

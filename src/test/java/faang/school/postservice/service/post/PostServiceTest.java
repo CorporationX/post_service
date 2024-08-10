@@ -2,7 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationExceptions;
-import faang.school.postservice.exception.NotFoundElementException;
+import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.Test;
@@ -65,7 +65,7 @@ public class PostServiceTest {
         when(postRepository.existsById(postId)).thenReturn(true);
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundElementException.class, () ->
+        assertThrows(NotFoundEntityException.class, () ->
                 postService.validationAndPostReceived(likeDto));
     }
 }

@@ -2,7 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationExceptions;
-import faang.school.postservice.exception.NotFoundElementException;
+import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import org.junit.jupiter.api.Test;
@@ -69,7 +69,7 @@ public class CommentServiceTest {
         when(commentRepository.existsById(commentId)).thenReturn(true);
         when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundElementException.class, () ->
+        assertThrows(NotFoundEntityException.class, () ->
                 commentService.validationAndCommentsReceived(likeDto));
     }
 }
