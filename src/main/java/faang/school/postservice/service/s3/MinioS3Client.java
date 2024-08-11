@@ -44,7 +44,7 @@ public class MinioS3Client {
 
     private final String secretKey = "password";
 
-    private final String endpoint = "http://localhost:9001";
+    private final String endpoint = "http://localhost:9000";
 
     private final S3Client s3Client;
 

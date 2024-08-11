@@ -43,4 +43,9 @@ public class AvatarController {
     public List<String> getAllBucketsList() {
         return minioS3Client.listBuckets();
     }
+
+    @PostMapping("/bucket/create/{bucketName}")
+    public void createBucket(@PathVariable(value = "bucketName") String bucketName) {
+        minioS3Client.createBucket(bucketName);
+    }
 }

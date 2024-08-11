@@ -27,6 +27,6 @@ public interface UserServiceClient {
                              @PathVariable String fileId,
                              @PathVariable String smallFileId);
 
-    @DeleteMapping("/api/v1/user/avatar/delete/{largeFileKey}/{smallFilekey}")
+    @DeleteMapping("/api/v1/user/avatar/delete")
     void deleteAvatar(@RequestHeader(value = "x-user-id") long userId);
 }
