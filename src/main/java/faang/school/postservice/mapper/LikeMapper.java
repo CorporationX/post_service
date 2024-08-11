@@ -7,6 +7,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LikeMapper {
     @Mapping(source = "comment.id", target = "commentId")
@@ -18,4 +20,6 @@ public interface LikeMapper {
     Like toEntity(LikeDto like);
 
     LikeEvent toEvent(LikeDto likeDto);
+
+    List<LikeDto> toLikesDto(List<Like> likes);
 }

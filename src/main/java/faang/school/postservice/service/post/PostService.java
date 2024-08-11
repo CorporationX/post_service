@@ -20,4 +20,5 @@ public interface PostService {
     Post findById(Long postId);
     void publishScheduledPosts();
     boolean existsById(long id);
+    Long incrementPostViews(Long postId);
 }

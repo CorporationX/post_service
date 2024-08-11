@@ -1,5 +1,7 @@
 package faang.school.postservice.config;
 
+import faang.school.postservice.dto.post.CachedPostDto;
+import faang.school.postservice.dto.user.UserDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,15 +14,20 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisKeyValueAdapter;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.convert.KeyspaceConfiguration;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 @Configuration
 @Slf4j
 @EnableRedisRepositories(
-        enableKeyspaceEvents = RedisKeyValueAdapter.EnableKeyspaceEvents.ON_STARTUP)
+        enableKeyspaceEvents = RedisKeyValueAdapter.EnableKeyspaceEvents.ON_STARTUP,
+        keyspaceConfiguration = RedisConfig.CustomSpaceConfiguration.class)
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
@@ -31,6 +38,18 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.channels.comment_channel.name}")
     private String commentEventName;
+
+    @Value("${spring.data.redis.key-spaces.post.prefix}")
+    private String postKeySpace;
+
+    @Value("${spring.data.redis.key-spaces.post.ttl}")
+    private long postTTL;
+
+    @Value("${spring.data.redis.key-spaces.user.prefix}")
+    private String userKeySpace;
+
+    @Value("${spring.data.redis.key-spaces.user.ttl}")
+    private long userTTL;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -58,5 +77,16 @@ public class RedisConfig {
     @Bean
     public ChannelTopic commentTopic(){
         return new ChannelTopic(commentEventName);
+    }
+
+    public class CustomSpaceConfiguration extends KeyspaceConfiguration {
+        @Override
+        protected Iterable<KeyspaceSettings> initialConfiguration() {
+            KeyspaceSettings postSpaceSettings = new KeyspaceSettings(CachedPostDto.class, postKeySpace);
+            postSpaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(postTTL));
+            KeyspaceSettings userSpaceSettings = new KeyspaceSettings(UserDto.class, userKeySpace);
+            userSpaceSettings.setTimeToLive(TimeUnit.DAYS.toSeconds(userTTL));
+            return List.of(postSpaceSettings, userSpaceSettings);
+        }
     }
 }

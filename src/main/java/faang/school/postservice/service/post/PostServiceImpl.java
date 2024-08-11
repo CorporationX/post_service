@@ -1,10 +1,12 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.cache.redis.PostCache;
+import faang.school.postservice.cache.redis.UserCache;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.moderation.ModerationDictionary;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.dto.moderation.ModerationDictionary;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
@@ -38,8 +40,10 @@ public class PostServiceImpl implements PostService {
     private final PostValidator postValidator;
     private final @Qualifier("executorService")ExecutorService threadPool;
     private final PostProducer postProducer;
-    private final UserServiceClient userServiceClient;
     private final PostViewProducer postViewProducer;
+    private final UserServiceClient userServiceClient;
+    private final UserCache userCache;
+    private final PostCache postCache;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -96,6 +100,7 @@ public class PostServiceImpl implements PostService {
         Post post = findById(postId);
         postValidator.validatePublicationPost(post);
         post.setPublished(true);
+        savePostToCache(post);
         PostDto postDto = postMapper.toDto(post);
         sendPublishingPostEventToKafka(postDto);
         return postDto;
@@ -103,8 +108,17 @@ public class PostServiceImpl implements PostService {
 
     private void sendPublishingPostEventToKafka(PostDto postDto) {
         UserDto userDto = userServiceClient.getUser(postDto.getAuthorId());
+        saveUserToCache(userDto);
         PostEvent event = new PostEvent(postDto.getId(), postDto.getAuthorId(), userDto.getSubscriberIds());
         postProducer.sendEvent(event);
+    }
+
+    private void saveUserToCache(UserDto userDto) {
+        userCache.save(userDto);
+    }
+
+    private void savePostToCache(Post post) {
+        postCache.save(postMapper.toCachedPostDto(post));
     }
 
     @Transactional
@@ -123,9 +137,20 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     public PostDto getPost(Long postId) {
+        return postMapper.toDto(findById(postId));
+    }
+
+    @Override
+    @Transactional
+    public Long incrementPostViews(Long postId) {
         Post post = findById(postId);
+        if (!post.isPublished()) {
+            return 0L;
+        }
+        post.setViews(post.getViews() + 1);
+        Post savedPost = postRepository.save(post);
         sendPostViewEventToKafka(postId);
-        return postMapper.toDto(post);
+        return savedPost.getViews();
     }
 
     private void sendPostViewEventToKafka(Long postId) {

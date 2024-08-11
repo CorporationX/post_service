@@ -30,10 +30,17 @@ spring:
         comment_channel:
           name: comment_channel
       max-feed-size: 500
+      max-comments-size: 3
       key-spaces:
         feed:
           prefix: feed
           ttl: 3
+        post:
+          prefix: Post
+          ttl: 5
+        user:
+          prefix: User
+          ttl: 1
 
   kafka:
     bootstrap-servers: localhost:9092
