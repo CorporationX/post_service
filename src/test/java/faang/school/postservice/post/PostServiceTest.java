@@ -11,6 +11,7 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.PostViewEventService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -42,6 +43,8 @@ public class PostServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private ProjectServiceClient projectServiceClient;
+    @Mock
+    private PostViewEventService postViewEventService;
     @InjectMocks
     private PostService service;
 
@@ -161,7 +164,7 @@ public class PostServiceTest {
 
         when(postRepository.findById(1L)).thenReturn(post);
 
-        PostDto resultPostDto = service.getPost(1L);
+        PostDto resultPostDto = service.getPost(1L,1L);
 
         assertEquals(post.get().getId(), resultPostDto.getId());
         assertEquals(2, resultPostDto.getLikes());
@@ -169,7 +172,7 @@ public class PostServiceTest {
 
     @Test
     public void testGetPostNotFound() {
-        checkPostForExistenceInDB(() -> service.getPost(1L));
+        checkPostForExistenceInDB(() -> service.getPost(1L,1L));
     }
 
     @Test
@@ -180,7 +183,7 @@ public class PostServiceTest {
                 .build();
         List<Post> posts = initPostsData();
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
-        List<PostDto> filteredList = service.getPostsSortedByDate(postDto);
+        List<PostDto> filteredList = service.getPostsSortedByDate(postDto,1L);
         assertEquals(filteredList.size(), 2);
         assertTrue(filteredList.get(0).getCreatedAt().isBefore(filteredList.get(1).getCreatedAt()));
     }
@@ -193,7 +196,7 @@ public class PostServiceTest {
                 .build();
         List<Post> posts = initPostsData();
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
-        List<PostDto> filteredList = service.getPostsSortedByDate(postDto);
+        List<PostDto> filteredList = service.getPostsSortedByDate(postDto,1L);
         assertEquals(filteredList.size(), 2);
         assertTrue(filteredList.get(0).getCreatedAt().isBefore(filteredList.get(1).getCreatedAt()));
     }
@@ -206,7 +209,7 @@ public class PostServiceTest {
                 .build();
         List<Post> posts = initPostsData();
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
-        List<PostDto> filteredList = service.getPostsSortedByDate(postDto);
+        List<PostDto> filteredList = service.getPostsSortedByDate(postDto,1L);
         assertEquals(filteredList.size(), 1);
     }
 
@@ -218,7 +221,7 @@ public class PostServiceTest {
                 .build();
         List<Post> posts = initPostsData();
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
-        List<PostDto> filteredList = service.getPostsSortedByDate(postDto);
+        List<PostDto> filteredList = service.getPostsSortedByDate(postDto,1L);
         assertEquals(filteredList.size(), 1);
     }
 
@@ -228,7 +231,7 @@ public class PostServiceTest {
                 .authorId(1L)
                 .build();
         when(postRepository.findByAuthorId(1L)).thenReturn(List.of());
-        assertThrows(DataDoesNotExistException.class, () -> service.getPostsSortedByDate(postDto));
+        assertThrows(DataDoesNotExistException.class, () -> service.getPostsSortedByDate(postDto,1L));
     }
 
     private List<Post> initPostsData() {

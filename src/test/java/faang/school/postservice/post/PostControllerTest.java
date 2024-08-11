@@ -1,5 +1,6 @@
 package faang.school.postservice.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.controller.PostController;
 import faang.school.postservice.dto.Post.PostDto;
 import faang.school.postservice.exception.WrongInputException;
@@ -12,11 +13,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostControllerTest {
     @Mock
     private PostService service;
+    @Mock
+    private UserContext userContext;
     @InjectMocks
     private PostController controller;
 
@@ -68,8 +72,10 @@ public class PostControllerTest {
     @Test
     public void testGetPost() {
         Long id = 1L;
+        Long userId = 1L;
+        when(userContext.getUserId()).thenReturn(userId);
         controller.getPost(id);
-        verify(service, times(1)).getPost(id);
+        verify(service, times(1)).getPost(id,1L);
     }
 
     @Test
@@ -80,7 +86,9 @@ public class PostControllerTest {
                 .published(false)
                 .authorId(id)
                 .build();
+        Long userId = 1L;
+        when(userContext.getUserId()).thenReturn(userId);
         controller.getDraftPostsForUser(id);
-        verify(service, times(1)).getPostsSortedByDate(dto);
+        verify(service, times(1)).getPostsSortedByDate(dto,1L);
     }
 }
