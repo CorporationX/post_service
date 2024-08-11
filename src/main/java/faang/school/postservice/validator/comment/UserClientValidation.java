@@ -1,4 +1,4 @@
-package faang.school.postservice.validation.comment;
+package faang.school.postservice.validator.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
@@ -17,7 +17,7 @@ public class UserClientValidation {
     public void checkUser(long userId) {
         UserDto user = userServiceClient.getUser(userId);
         if (user == null) {
-            log.error(ExceptionMessages.COMMENT_NOT_FOUND + " " + userId);
+            log.error(ExceptionMessages.COMMENT_NOT_FOUND + " {}", userId);
             throw new CommentAuthorNotFoundException(ExceptionMessages.COMMENT_NOT_FOUND);
         }
     }
