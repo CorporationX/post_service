@@ -45,7 +45,12 @@ public class CommentControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
         postId = 1L;
         commentId = 2L;
-        commentDto = CommentDto.builder().id(commentId).content("Лайк").build();
+        commentDto = CommentDto.builder()
+                .id(commentId)
+                .content("Лайк")
+                .authorId(1L)
+                .postId(postId)
+                .build();
         json = new ObjectMapper().writeValueAsString(commentDto);
     }
     @Test
@@ -71,8 +76,9 @@ public class CommentControllerTest {
         // Arrange
         CommentDto expectedCommentDto = CommentDto.builder()
                 .id(commentId)
+                .content("Лайк")
+                .authorId(1L)
                 .postId(postId)
-                .content(commentDto.getContent())
                 .build();
         when(service.addComment(any(), any())).thenReturn(expectedCommentDto);
 
