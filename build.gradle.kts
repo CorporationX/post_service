@@ -45,6 +45,7 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
     implementation("net.coobird:thumbnailator:0.4.20")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
     /**
      * Test containers
