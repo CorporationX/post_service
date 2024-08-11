@@ -1,11 +1,13 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.SortField;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.post.PostFilterRepository;
@@ -13,7 +15,7 @@ import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,11 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-@Service
-@AllArgsConstructor
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class PostService {
-
     private final PostRepository postRepository;
     private final List<PostFilterRepository> postFilterRepository;
     private final PostValidator postValidator;
@@ -74,8 +75,20 @@ public class PostService {
     public PostDto getById(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException(String.format("Post %s doesn't exist", id)));
-
         return postMapper.toDto(post);
+    }
+
+    @Transactional(readOnly = true)
+    public Post validationAndPostReceived(LikeDto likeDto) {
+        if (likeDto.getPostId() != null) {
+            if (!postRepository.existsById(likeDto.getPostId())) {
+                throw new DataValidationException("no such postId exists postId: " + likeDto.getPostId());
+            }
+        } else {
+            throw new DataValidationException("arrived likeDto with postId equal to null");
+        }
+        return postRepository.findById(likeDto.getPostId()).orElseThrow(() ->
+                new NotFoundEntityException("Not found post by id: " + likeDto.getPostId()));
     }
 
     @Transactional

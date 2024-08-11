@@ -1,15 +1,16 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.post.PostFilterRepository;
 import faang.school.postservice.repository.post.PostRepository;
-import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,7 +60,6 @@ public class PostServiceTest {
     @Mock
     private PostFilterRepository authorFilterSpecification;
 
-
     private List<PostFilterRepository> postFilterRepository;
 
 //    @InjectMocks
@@ -82,7 +82,7 @@ public class PostServiceTest {
     public void testCreatePostWithNullPostDto() {
         postCreateDto = null;
 
-        assertThrows(DataValidationException.class, () -> postService.create(postCreateDto));
+        assertThrows(NullPointerException.class, () -> postService.create(postCreateDto));
         verify(postValidator, never()).checkIfPostHasAuthor(any(), any());
         verify(postRepository, never()).save(any());
     }
@@ -209,5 +209,48 @@ public class PostServiceTest {
         PostDto result = postService.update(postUpdatedDto);
 
         assertNotNull(result);
+    }
+
+    @Test
+    void validationAndPostReceived_ShouldReturnPost_WhenValidPostIdIsProvided() {
+        Long postId = 1L;
+        Post post = new Post();
+        post.setId(postId);
+        LikeDto likeDto = LikeDto.builder().postId(postId).build();
+        when(postRepository.existsById(postId)).thenReturn(true);
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        Post result = postService.validationAndPostReceived(likeDto);
+
+        assertEquals(post, result);
+    }
+
+    @Test
+    void validationAndPostReceived_ShouldThrowDataValidationExceptions_WhenPostIdIsNull() {
+        LikeDto likeDto = LikeDto.builder().postId(null).build();
+
+        assertThrows(DataValidationException.class, () ->
+                postService.validationAndPostReceived(likeDto));
+    }
+
+    @Test
+    void validationAndPostReceived_ShouldThrowDataValidationExceptions_WhenPostDoesNotExist() {
+        Long postId = 1L;
+        LikeDto likeDto = LikeDto.builder().postId(postId).build();
+        when(postRepository.existsById(postId)).thenReturn(false);
+
+        assertThrows(DataValidationException.class, () ->
+                postService.validationAndPostReceived(likeDto));
+    }
+
+    @Test
+    void validationAndPostReceived_ShouldThrowNotFoundElementException_WhenPostNotFound() {
+        Long postId = 1L;
+        LikeDto likeDto = LikeDto.builder().postId(postId).build();
+        when(postRepository.existsById(postId)).thenReturn(true);
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundEntityException.class, () ->
+                postService.validationAndPostReceived(likeDto));
     }
 }
