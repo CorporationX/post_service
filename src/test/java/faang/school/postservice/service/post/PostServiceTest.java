@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.cache.redis.UserCache;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -45,6 +46,9 @@ public class PostServiceTest {
 
     @Mock
     private PostViewProducer postViewProducer;
+
+    @Mock
+    private UserCache userCache;
 
     private PostDto postDto1;
     private PostDto postDto2;
