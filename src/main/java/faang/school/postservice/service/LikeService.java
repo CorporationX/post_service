@@ -1,10 +1,12 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.event.FollowerEvent;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeMessagePublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class LikeService {
     private final CommentService commentService;
     private final LikeValidator likeValidator;
     private final LikeMapper likeMapper;
+    private final LikeMessagePublisher likeMessagePublisher;
 
     @Transactional
     public LikeDto likePost(Long postId, Long userId) {
@@ -31,6 +34,7 @@ public class LikeService {
                 .post(post)
                 .userId(userId)
                 .build());
+        sentLikeNotification(like);
         return likeMapper.toDto(like);
     }
 
@@ -54,4 +58,14 @@ public class LikeService {
     public void unlikeComment(Long commentId, Long userId) {
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
     }
+
+    private void sentLikeNotification(Like like){
+        FollowerEvent followerEvent = FollowerEvent.builder()
+                .postId(like.getPost().getId())
+                .authorId(like.getPost().getAuthorId())
+                .likeAuthorId(like.getUserId())
+                .build();
+        likeMessagePublisher.publish(followerEvent);
+    }
+
 }

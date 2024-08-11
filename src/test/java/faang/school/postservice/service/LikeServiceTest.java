@@ -1,22 +1,27 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.event.FollowerEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeMessagePublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeValidator;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceTest {
@@ -29,6 +34,8 @@ class LikeServiceTest {
     CommentService commentService;
     @Mock
     LikeValidator likeValidator;
+    @Mock
+    LikeMessagePublisher likeMessagePublisher;
     @Spy
     LikeMapper likeMapper;
 
@@ -40,6 +47,15 @@ class LikeServiceTest {
     Long userId = 1L;
     Post post = new Post();
     Comment comment = new Comment();
+    Like like = new Like();
+
+    @BeforeEach
+    void setup(){
+        like = Like.builder()
+                .post(post)
+                .userId(userId)
+                .build();
+    }
 
     @Test
     void likePostWithInvalidPostIdShouldThrowException() {
@@ -57,14 +73,17 @@ class LikeServiceTest {
 
     @Test
     void likePostWithValidParametersShouldSaveLike() {
+        when(likeRepository.save(any(Like.class))).thenReturn(like);
         likeService.likePost(postId, commentId);
+        verify(likeMessagePublisher).publish(any(FollowerEvent.class));
         verify(likeRepository).save(any(Like.class));
     }
 
     @Test
     void likePostWithValidParametersShouldReturnLikeDto() {
-        when(likeRepository.save(any())).thenReturn(new Like());
+        when(likeRepository.save(any(Like.class))).thenReturn(like);
         likeService.likePost(postId, commentId);
+        verify(likeMessagePublisher).publish(any(FollowerEvent.class));
         verify(likeMapper).toDto(any(Like.class));
     }
 
