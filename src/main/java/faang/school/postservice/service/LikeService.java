@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,20 @@ public class LikeService {
         return getUsersFromUserService(userIdsThatLikedComment);
     }
 
+    @Transactional
+    public UserDto deleteLikeFromPost(Long postId, Long userId) {
+        Like like = likeRepository.findByPostIdAndUserId(postId, userId).orElseThrow(() -> new EntityNotFoundException("Like was not found"));
+        likeRepository.delete(like);
+        return userServiceClient.getUser(userId);
+    }
+
+    @Transactional
+    public UserDto deleteLikeFromComment(Long commentId, Long userId) {
+        Like like = likeRepository.findByCommentIdAndUserId(commentId, userId).orElseThrow(() -> new EntityNotFoundException("Like was not found"));
+        likeRepository.delete(like);
+        return userServiceClient.getUser(userId);
+    }
+
     private List<Long> getLikesFromPost(Long postId) {
         return likeRepository.findByPostId(postId).stream().map(Like::getUserId).toList();
     }
@@ -40,8 +55,8 @@ public class LikeService {
 
     private List<UserDto> getUsersFromUserService(List<Long> userIds) {
         List<UserDto> users = new ArrayList<>();
-        for(int i=0; i<userIds.size(); i+=USER_BATCH_SIZE) {
-            int bound = Math.min(i+USER_BATCH_SIZE, userIds.size());
+        for (int i = 0; i < userIds.size(); i += USER_BATCH_SIZE) {
+            int bound = Math.min(i + USER_BATCH_SIZE, userIds.size());
             List<UserDto> batchOfUsers = userServiceClient.getUsersByIds(userIds.subList(i, bound));
             users.addAll(batchOfUsers);
         }
