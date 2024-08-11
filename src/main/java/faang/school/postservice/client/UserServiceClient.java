@@ -20,5 +20,7 @@ public interface UserServiceClient {
 
     @GetMapping("/user/existsById/{userId}")
     Boolean existById(@PathVariable long userId);
-}
 
+    @GetMapping("user/allIds")
+    List<Long> getAllUserIds();
+}

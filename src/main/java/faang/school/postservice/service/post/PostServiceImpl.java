@@ -21,6 +21,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -160,8 +161,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<CachedPostDto> getPostsByAuthorIds(List<Long> authorIds, long startPostId, long batchSize) {
-        List<Post> posts = postRepository.findPostsByAuthorIds(authorIds, startPostId, batchSize);
+    public List<CachedPostDto> getPostsByAuthorIds(List<Long> authorIds, long startPostId, int batchSize) {
+        List<Post> posts = postRepository.findPostsByAuthorIds(authorIds, startPostId, PageRequest.of(0, batchSize));
         return postMapper.toCachedPostDtoList(posts);
     }
 

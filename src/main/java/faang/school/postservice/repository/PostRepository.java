@@ -1,13 +1,13 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Repository
@@ -30,12 +30,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllByVerifiedAtIsNull();
 
     @Transactional
-    @Query(value = "select * from post p " +
+    @Query(value = "select p from Post p " +
+            "left join fetch p.comments c " +
             "where p.published = true " +
             "and p.deleted = false " +
-            "and p.author_id in :authorIds " +
+            "and p.authorId in :authorIds " +
             "and p.id >= :startPostId " +
-            "order by p.id desc limit :batchSize ", nativeQuery = true)
+            "order by p.id desc")
     List<Post> findPostsByAuthorIds(@Param("authorIds") List<Long> authorIds, @Param("startPostId") long startPostId,
-                                      @Param("batchSize") long batchSize);
+                                    Pageable pageable);
 }

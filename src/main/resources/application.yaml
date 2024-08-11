@@ -36,6 +36,8 @@ spring:
           prefix: feed
           ttl: 3
           batch-size: 20
+          feed-heater:
+            batch-size: 20
         post:
           prefix: Post
           ttl: 5
@@ -50,6 +52,7 @@ spring:
       comments: comments
       likes: likes
       post-views: post_views
+      feed-heater: feed_heater
     producer:
       idempotence: true
     consumer:
@@ -85,6 +88,9 @@ moderation:
       cron: "0 0 * * * *" # every day at 00:00
 
 news-feed:
+  heater:
+    pool:
+    threads: 10
   pool:
     thread-count: 10
 

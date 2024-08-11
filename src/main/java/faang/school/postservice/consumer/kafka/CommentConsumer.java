@@ -8,7 +8,7 @@ import faang.school.postservice.exception.NonRetryableException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,20 +34,30 @@ public class CommentConsumer {
     public void listenCommentEvent(CommentEvent commentEvent, Acknowledgment ack) {
         long postId = commentEvent.getPostId();
         long commentId = commentEvent.getCommentId();
-        CommentDto commentDto = commentService.findById(commentId);
-        if (commentDto == null) {
-            log.info("comment with id = {} not exist", commentId);
-            throw new NonRetryableException(String.format("комментария с id = %d не сущетсвует ", commentId));
-        }
-        CachedPostDto cachedPostDto = postCache.findById(postId)
-                .orElse(postMapper.toCachedPostDto(postService.getPostById(postId)));
-        if (cachedPostDto == null) {
-            log.info("post with id = {} not exist", postId);
-            throw new NonRetryableException(String.format("поста с id = %d не сущетсвует ", postId));
-        }
+        CommentDto commentDto = findCommentById(commentId);
+        CachedPostDto cachedPostDto = findPostById(postId);
         cachedPostDto.addNewComment(commentDto, maxSize);
         postCache.save(cachedPostDto);
         log.info("added comment to post with id = {}", postId);
         ack.acknowledge();
+    }
+
+    private CommentDto findCommentById(long commentId) {
+        try {
+            return commentService.findById(commentId);
+        } catch (EntityNotFoundException e) {
+            log.info("comment with id = {} not exist", commentId, e);
+            throw new NonRetryableException(String.format("комментария с id = %d не сущетсвует ", commentId));
+        }
+    }
+
+    private CachedPostDto findPostById(long postId) {
+        try {
+            return postCache.findById(postId)
+                    .orElse(postMapper.toCachedPostDto(postService.getPostById(postId)));
+        } catch (EntityNotFoundException e) {
+            log.info("post with id = {} not exist", postId);
+            throw new NonRetryableException(String.format("поста с id = %d не сущетсвует ", postId));
+        }
     }
 }

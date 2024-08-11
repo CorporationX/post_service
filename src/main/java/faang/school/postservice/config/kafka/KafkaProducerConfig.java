@@ -32,6 +32,9 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.topics-name.post-views}")
     private String postViewTopicName;
 
+    @Value("${spring.kafka.topics-name.feed-heater}")
+    private String feedHeaterTopicName;
+
     @Value("${spring.kafka.producer.idempotence}")
     private boolean producerIdempotence;
 
@@ -68,6 +71,11 @@ public class KafkaProducerConfig {
     @Bean
     public NewTopic postViewsTopic() {
         return TopicBuilder.name(postViewTopicName).build();
+    }
+
+    @Bean
+    public NewTopic feedHeaterTopic() {
+        return TopicBuilder.name(feedHeaterTopicName).build();
     }
 
     @Bean

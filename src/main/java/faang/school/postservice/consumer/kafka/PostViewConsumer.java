@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.CachedPostDto;
 import faang.school.postservice.exception.NonRetryableException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.service.post.PostService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -26,16 +27,19 @@ public class PostViewConsumer {
     public void listenPostViewEvent(PostViewEvent postViewEvent, Acknowledgment ack) {
         Long postId = postViewEvent.getPostId();
         Long views = postService.incrementPostViews(postId);
-        CachedPostDto postDto = postCache.findById(postId)
-                .orElse(postMapper.toCachedPostDto(
-                        postService.getPostById(postId)
-                ));
-        if (postDto == null) {
-            log.info("post with id = {} not exist", postId);
-            throw new NonRetryableException(String.format("поста с id = %d не сущетсвует ", postId));
-        }
+        CachedPostDto postDto =  findPostById(postId);
         postDto.setViewsQuantity(views);
         log.info("current quantity of views for post with id = {}: {}", postId, views);
         ack.acknowledge();
+    }
+
+    private CachedPostDto findPostById(long postId) {
+        try {
+            return postCache.findById(postId)
+                    .orElse(postMapper.toCachedPostDto(postService.getPostById(postId)));
+        } catch (EntityNotFoundException e) {
+            log.info("post with id = {} not exist", postId);
+            throw new NonRetryableException(String.format("поста с id = %d не сущетсвует ", postId));
+        }
     }
 }
