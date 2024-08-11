@@ -15,10 +15,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.util.List.*;
+import static java.util.List.of;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-import static org.springframework.http.HttpStatus.*;
+import static org.mockito.Mockito.lenient;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
@@ -38,15 +38,12 @@ class GlobalExceptionHandlerTest {
                 .when(bindingResult.getAllErrors())
                 .thenReturn(of(fieldErrorContent));
 
-        MethodParameter methodParameter = new MethodParameter(
-                this.getClass().getDeclaredMethod("exampleMethod"), -1);
+        MethodParameter methodParameter = new MethodParameter(String.class.getConstructors()[0], -1);
 
         methodArgumentNotValidException = new MethodArgumentNotValidException(methodParameter, bindingResult);
 
         illegalArgumentException = new IllegalArgumentException("Not found");
     }
-
-    public void exampleMethod() {}
 
     @Test
     void whenMethodArgumentNotValidExceptionThenReturns400() throws Exception {
