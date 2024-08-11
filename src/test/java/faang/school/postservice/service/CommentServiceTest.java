@@ -81,12 +81,12 @@ class CommentServiceTest {
 
     @Test
     void testCreateCommentPositive() {
-        when(postService.getPostById(commentDto.getPostId())).thenReturn(post);
+        when(postService.findById(commentDto.getPostId())).thenReturn(post);
         when(commentMapper.toEntity(commentDto)).thenReturn(comment);
         when(commentRepository.save(comment)).thenReturn(comment);
         commentService.createComment(commentDto);
         verify(userServiceClient, times(1)).getUser(authorId);
-        verify(postService, times(1)).getPostById(postId);
+        verify(postService, times(1)).findById(postId);
         verify(commentMapper, times(1)).toEntity(commentDto);
         verify(commentRepository, times(1)).save(comment);
     }
@@ -102,10 +102,10 @@ class CommentServiceTest {
 
     @Test
     void testGetAllByPostIdPositive() {
-        when(postService.getPostById(postId)).thenReturn(post);
+        when(postService.findById(postId)).thenReturn(post);
         when(commentMapper.toDtos(comments)).thenReturn(commentDtos);
         commentService.getAllByPostId(postId);
-        verify(postService, times(1)).getPostById(postId);
+        verify(postService, times(1)).findById(postId);
         verify(commentMapper, times(1)).toDtos(comments);
     }
 
