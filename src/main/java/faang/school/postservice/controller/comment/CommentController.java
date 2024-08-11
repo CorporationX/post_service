@@ -1,17 +1,11 @@
 package faang.school.postservice.controller.comment;
 
-import faang.school.postservice.controller.comment.error.CommentControllerErrors;
+import faang.school.postservice.controller.error.CommentControllerErrors;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.comment.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -41,6 +35,10 @@ public class CommentController {
         System.out.println(postId);
         validatePostId(postId);
         return service.getComments(postId);
+    }
+    @GetMapping("/comment")
+    public CommentDto get(@RequestParam Long id) {
+        return service.getComment(id);
     }
 
     @DeleteMapping("/comment")

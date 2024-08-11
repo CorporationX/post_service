@@ -64,10 +64,19 @@ public class CommentService {
                 .toList();
     }
 
+    public CommentDto getComment(Long commentId) {
+        Comment comment = getCommentByIdOrFail(commentId);
+        return mapper.toDto(comment);
+    }
+
     public CommentDto deleteComment(Long postId, CommentDto commentDto) {
         getPost(postId);
         repository.deleteById(commentDto.getId());
         return commentDto;
+    }
+
+    private Comment getCommentByIdOrFail(Long commentId) {
+        return repository.findById(commentId).orElseThrow(() -> new IllegalArgumentException("Comment not found"));
     }
 
     private Post getPost(Long postId) {
@@ -80,10 +89,10 @@ public class CommentService {
 
     private void equalUpdateComment(CommentDto commentDto, CommentDto currentCommentDto) {
         if (!Objects.equals(commentDto.getAuthorId(), currentCommentDto.getAuthorId())
-            || !Objects.equals(commentDto.getLikeIds(), currentCommentDto.getLikeIds())
-            || !Objects.equals(commentDto.getPostId(), currentCommentDto.getPostId())
-            || !Objects.equals(commentDto.getCreatedAt(), currentCommentDto.getCreatedAt())
-            || !Objects.equals(commentDto.getUpdatedAt(), currentCommentDto.getUpdatedAt())
+                || !Objects.equals(commentDto.getLikes(), currentCommentDto.getLikes())
+                || !Objects.equals(commentDto.getPostId(), currentCommentDto.getPostId())
+                || !Objects.equals(commentDto.getCreatedAt(), currentCommentDto.getCreatedAt())
+                || !Objects.equals(commentDto.getUpdatedAt(), currentCommentDto.getUpdatedAt())
         ) {
             throw new IllegalArgumentException(CommentServiceErrors.CHANGE_NOT_COMMENT.getValue());
         }

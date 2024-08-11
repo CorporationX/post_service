@@ -1,8 +1,11 @@
 package faang.school.postservice.dto.comment;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import faang.school.postservice.dto.like.LikeDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,14 +20,23 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class CommentDto {
-
     private Long id;
-    @NotBlank(message = "Content should not be blank")
-    @Length(max = 4096, message = "The length of the comment cannot exceed 4096 characters")
+
+    @NotBlank(message = "Comment content cant be empty")
+    @Size(max = 4500, message = "Post content must contains less then 4500 symbols")
     private String content;
-    private Long authorId;
-    private List<Long> likeIds;
+
+    @NotNull(message = "Author cant be null")
+    private long authorId;
+
+    private List<LikeDto> likes;
+
+    @NotNull(message = "Post cant be null")
     private Long postId;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 }

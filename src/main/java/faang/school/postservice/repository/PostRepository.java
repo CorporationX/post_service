@@ -14,6 +14,10 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     List<Post> findByProjectId(long projectId);
 
+    List<Post> findByAuthorIdAndPublishedAndDeletedIsFalseOrderByPublished(long authorId, boolean published);
+
+    List<Post> findByProjectIdAndPublishedAndDeletedIsFalseOrderByPublished(long projectId, boolean published);
+
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
     List<Post> findByProjectIdWithLikes(long projectId);
 
