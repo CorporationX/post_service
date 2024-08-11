@@ -1,7 +1,8 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.controller.like.LikeController;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.service.LikeService;
+import faang.school.postservice.service.like.LikeService;
 import faang.school.postservice.util.TestDataFactory;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +46,7 @@ class LikeControllerTest {
         when(likeService.findUsersByPostId(ID))
                 .thenReturn(userDtoList);
         // when - action
-        var response = mockMvc.perform(get("/post/{postId}", ID));
+        var response = mockMvc.perform(get("/api/v1/likes/post/{postId}", ID));
 
         // then - verify the output
         response.andExpect(status().isOk())
@@ -64,7 +65,7 @@ class LikeControllerTest {
         when(likeService.findUsersByCommentId(ID))
                 .thenReturn(userDtoList);
         // when - action
-        var response = mockMvc.perform(get("/comment/{commentId}", ID));
+        var response = mockMvc.perform(get("/api/v1/likes/comment/{commentId}", ID));
 
         // then - verify the output
         response.andExpect(status().isOk())

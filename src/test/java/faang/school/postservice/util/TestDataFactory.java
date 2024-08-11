@@ -5,10 +5,14 @@ import lombok.experimental.UtilityClass;
 
 import java.util.List;
 
+import static java.lang.Long.MAX_VALUE;
 import static java.util.List.*;
 
 @UtilityClass
 public final class TestDataFactory {
+
+    public static final Long ID = 1L;
+    public static final Long INVALID_ID = MAX_VALUE;
 
     public static List<UserDto> getUserDtoList() {
         var userAlex = UserDto.builder()
