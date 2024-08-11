@@ -61,12 +61,27 @@ public class LikeController {
 
     @PostMapping("/post")
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Поставить лайк на пост",
+            description = "Введите данные поста, чтобы поставить ему лайк")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Лайк добавлен посту", content = {
+                    @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LikeDto.class)))}),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные"),
+            @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
+    })
     public LikeDto addLikeToPost(@Validated(LikeToPost.class) @RequestBody LikeDto likeDto) {
         return likeService.addLikeToPost(likeDto);
     }
 
     @DeleteMapping("/post/{postId}/{userId}")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удалить лайк с поста",
+            description = "Введите идентификатор поста и идентификатор пользователя, чтобы удалить лайк с поста")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Лайк у поста удален"),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные"),
+            @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
+    })
     public void deleteLikeFromPost(@Positive @PathVariable("postId") long postId,
                                    @Positive @PathVariable("userId") long userId) {
         likeService.deleteLikeFromPost(postId, userId);
@@ -74,12 +89,27 @@ public class LikeController {
 
     @PostMapping("/comment")
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Поставить лайк на комментарий",
+            description = "Введите данные комментария, чтобы поставить ему лайк")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Лайк добавлен комментарию", content = {
+                    @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LikeDto.class)))}),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные"),
+            @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
+    })
     public LikeDto addLikeToComment(@Validated(LikeToComment.class) @RequestBody LikeDto likeDto) {
         return likeService.addLikeToComment(likeDto);
     }
 
     @DeleteMapping("/comment/{commentId}/{userId}")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Удалить лайк с комментария",
+            description = "Введите идентификатор комментария и идентификатор пользователя, чтобы удалить лайк с комментария")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Лайк у комментария удален"),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные"),
+            @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
+    })
     public void deleteLikeFromComment(@Positive @PathVariable("commentId") long commentId,
                                       @Positive @PathVariable("userId") long userId) {
         likeService.deleteLikeFromComment(commentId, userId);

@@ -29,6 +29,7 @@ public class PostController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Пост создан", content = {
                     @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostDto.class)))}),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные поста"),
             @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
 
     })
@@ -41,6 +42,7 @@ public class PostController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Пост обновлен", content = {
                     @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostDto.class)))}),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные поста"),
             @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
 
     })
@@ -53,6 +55,7 @@ public class PostController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Пост отправлен на публикацию", content = {
                     @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostDto.class)))}),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные поста"),
             @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
 
     })
@@ -65,6 +68,7 @@ public class PostController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Пост удален", content = {
                     @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostDto.class)))}),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные поста"),
             @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
 
     })
@@ -77,6 +81,7 @@ public class PostController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Информация поста получена", content = {
                     @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PostDto.class)))}),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные поста"),
             @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
 
     })

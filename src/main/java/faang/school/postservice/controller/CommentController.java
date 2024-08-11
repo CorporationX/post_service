@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,10 +29,11 @@ public class CommentController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Комментарий создан", content = {
                     @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CommentDto.class)))}),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные"),
             @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
 
     })
-    public CommentDto createComment(@Valid @RequestBody CommentDto commentDto){
+    public CommentDto createComment(@Valid @RequestBody CommentDto commentDto) {
         return commentService.createComment(commentDto);
     }
 
@@ -46,7 +46,7 @@ public class CommentController {
             @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
 
     })
-    public CommentDto updateComment(@Valid @RequestBody CommentDto commentDto){
+    public CommentDto updateComment(@Valid @RequestBody CommentDto commentDto) {
         return commentService.updateComment(commentDto);
     }
 
@@ -58,7 +58,7 @@ public class CommentController {
             @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
 
     })
-    public void deleteComment(@Positive @PathVariable long id){
+    public void deleteComment(@Positive @PathVariable long id) {
         commentService.deleteComment(id);
     }
 
@@ -67,9 +67,10 @@ public class CommentController {
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Комментарии получены"),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные"),
             @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
     })
-    public void findAllByPostId(@Positive @PathVariable long id){
+    public void findAllByPostId(@Positive @PathVariable long id) {
         commentService.findAllByPostId(id);
     }
 }
