@@ -1,5 +1,7 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.cache.redis.PostCache;
+import faang.school.postservice.cache.redis.UserCache;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
@@ -40,6 +42,8 @@ public class PostServiceImpl implements PostService {
     private final PostProducer postProducer;
     private final PostViewProducer postViewProducer;
     private final UserServiceClient userServiceClient;
+    private final UserCache userCache;
+    private final PostCache postCache;
 
     @Value("${post.publisher.batch-size}")
     private Integer scheduledPostsBatchSize;
@@ -96,6 +100,7 @@ public class PostServiceImpl implements PostService {
         Post post = findById(postId);
         postValidator.validatePublicationPost(post);
         post.setPublished(true);
+        savePostToCache(post);
         PostDto postDto = postMapper.toDto(post);
         sendPublishingPostEventToKafka(postDto);
         return postDto;
@@ -103,8 +108,17 @@ public class PostServiceImpl implements PostService {
 
     private void sendPublishingPostEventToKafka(PostDto postDto) {
         UserDto userDto = userServiceClient.getUser(postDto.getAuthorId());
+        saveUserToCache(userDto);
         PostEvent event = new PostEvent(postDto.getId(), postDto.getAuthorId(), userDto.getSubscriberIds());
         postProducer.sendEvent(event);
+    }
+
+    private void saveUserToCache(UserDto userDto) {
+        userCache.save(userDto);
+    }
+
+    private void savePostToCache(Post post) {
+        postCache.save(postMapper.toCachedPostDto(post));
     }
 
     @Transactional

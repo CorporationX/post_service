@@ -1,7 +1,10 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.cache.redis.UserCache;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.producer.kafka.CommentProducer;
@@ -28,6 +31,8 @@ public class CommentServiceImpl implements CommentService{
     private final CommentEventPublisher commentEventPublisher;
     private final PostService postService;
     private final CommentProducer commentProducer;
+    private final UserServiceClient userServiceClient;
+    private final UserCache userCache;
 
     @Transactional
     public CommentDto createComment(Long userId, Long postId, CommentDto commentDto) {
@@ -47,8 +52,14 @@ public class CommentServiceImpl implements CommentService{
     }
 
     private void sendCreatingCommentEventToKafka(CommentDto commentDto) {
+        UserDto userDto = userServiceClient.getUser(commentDto.getAuthorId());
+        saveUserToCache(userDto);
         CommentEvent commentEvent = commentMapper.toEvent(commentDto);
         commentProducer.sendEvent(commentEvent);
+    }
+
+    private void saveUserToCache(UserDto userDto) {
+        userCache.save(userDto);
     }
 
     @Transactional
@@ -75,6 +86,13 @@ public class CommentServiceImpl implements CommentService{
     @Override
     public boolean existsById(long id) {
         return postRepository.existsById(id);
+    }
+
+    @Override
+    public CommentDto findById(long id) {
+        return commentMapper.toDto(commentRepository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(String.format("Comment with id %d not found", id))));
     }
 
     private Comment createCommentEntity(Long userId, Long postId, CommentDto commentDto) {
