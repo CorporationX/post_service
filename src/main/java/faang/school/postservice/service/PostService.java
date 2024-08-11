@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.hashtag.Hashtag;
 import faang.school.postservice.model.hashtag.HashtagRequest;
@@ -11,7 +12,6 @@ import faang.school.postservice.service.elasticsearchService.ElasticsearchServic
 import faang.school.postservice.validator.PostServiceValidator;
 import feign.FeignException;
 import jakarta.persistence.EntityManager;
-import faang.school.postservice.mapper.PostContextMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
