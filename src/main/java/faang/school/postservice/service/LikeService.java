@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.exception.DataValidationExceptions;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
@@ -25,7 +25,7 @@ public class LikeService {
     @Transactional
     public LikeDto createLikeToPost(LikeDto likeDto) {
         if (likeDto.getLikeId() != null) {
-            throw new DataValidationExceptions("When creating a like, the likeId field must be empty!");
+            throw new DataValidationException("When creating a like, the likeId field must be empty!");
         }
         var post = postService.validationAndPostReceived(likeDto);
         userServiceClient.getUser(likeDto.getUserId());
@@ -38,7 +38,7 @@ public class LikeService {
     @Transactional
     public LikeDto removeLikeToPost(LikeDto likeDto) {
         if (likeDto.getLikeId() == null || !likeRepository.existsById(likeDto.getLikeId())) {
-            throw new DataValidationExceptions("It is not possible to delete a like with a null likeId or a non-existent like in the database likeId: " + likeDto.getLikeId());
+            throw new DataValidationException("It is not possible to delete a like with a null likeId or a non-existent like in the database likeId: " + likeDto.getLikeId());
         }
         var post = postService.validationAndPostReceived(likeDto);
         userServiceClient.getUser(likeDto.getUserId());
@@ -50,7 +50,7 @@ public class LikeService {
     @Transactional
     public LikeDto createLikeToComment(LikeDto likeDto) {
         if (likeDto.getLikeId() != null) {
-            throw new DataValidationExceptions("When creating a like, the likeId field must be empty!");
+            throw new DataValidationException("When creating a like, the likeId field must be empty!");
         }
         var comment = commentService.validationAndCommentsReceived(likeDto);
         userServiceClient.getUser(likeDto.getUserId());
@@ -63,7 +63,7 @@ public class LikeService {
     @Transactional
     public LikeDto removeLikeToComment(LikeDto likeDto) {
         if (likeDto.getLikeId() == null || !likeRepository.existsById(likeDto.getLikeId())) {
-            throw new DataValidationExceptions("It is not possible to delete a like with a null likeId or a non-existent like in the database likeId: " + likeDto.getLikeId());
+            throw new DataValidationException("It is not possible to delete a like with a null likeId or a non-existent like in the database likeId: " + likeDto.getLikeId());
         }
         var comment = commentService.validationAndCommentsReceived(likeDto);
         userServiceClient.getUser(likeDto.getUserId());

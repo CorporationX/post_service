@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.exception.DataValidationExceptions;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -52,7 +52,7 @@ class LikeServiceTest {
     void createLikeToPost_ShouldThrowExceptionWhenLikeIdIsNotNull() {
         LikeDto likeDto = LikeDto.builder().likeId(1L).build();
 
-        Exception exception = assertThrows(DataValidationExceptions.class, () ->
+        Exception exception = assertThrows(DataValidationException.class, () ->
                 likeService.createLikeToPost(likeDto)
         );
 
@@ -80,7 +80,7 @@ class LikeServiceTest {
     void removeLikeToPost_ShouldThrowExceptionWhenLikeIdIsNull() {
         LikeDto likeDto = LikeDto.builder().userId(1L).postId(1L).build();
 
-        Exception exception = assertThrows(DataValidationExceptions.class, () ->
+        Exception exception = assertThrows(DataValidationException.class, () ->
                 likeService.removeLikeToPost(likeDto)
         );
 
@@ -93,7 +93,7 @@ class LikeServiceTest {
 
         when(likeRepository.existsById(likeDto.getLikeId())).thenReturn(false);
 
-        Exception exception = assertThrows(DataValidationExceptions.class, () ->
+        Exception exception = assertThrows(DataValidationException.class, () ->
                 likeService.removeLikeToPost(likeDto)
         );
 
@@ -123,7 +123,7 @@ class LikeServiceTest {
     void createLikeToComment_ShouldThrowExceptionWhenLikeIdIsNotNullOrExists() {
         LikeDto likeDto = LikeDto.builder().likeId(1L).build();
 
-        assertThrows(DataValidationExceptions.class, () ->
+        assertThrows(DataValidationException.class, () ->
                 likeService.createLikeToComment(likeDto));
     }
 
@@ -150,7 +150,7 @@ class LikeServiceTest {
     void removeLikeToComment_ShouldThrowExceptionWhenLikeIdIsNull() {
         LikeDto likeDto = LikeDto.builder().userId(1L).commentId(1L).build();
 
-        Exception exception = assertThrows(DataValidationExceptions.class, () ->
+        Exception exception = assertThrows(DataValidationException.class, () ->
                 likeService.removeLikeToComment(likeDto)
         );
 
@@ -163,7 +163,7 @@ class LikeServiceTest {
 
         when(likeRepository.existsById(likeDto.getLikeId())).thenReturn(false);
 
-        Exception exception = assertThrows(DataValidationExceptions.class, () ->
+        Exception exception = assertThrows(DataValidationException.class, () ->
                 likeService.removeLikeToComment(likeDto)
         );
 

@@ -1,7 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.exception.DataValidationExceptions;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
@@ -46,7 +46,7 @@ public class CommentServiceTest {
     void validationAndCommentsReceived_ShouldThrowDataValidationExceptions_WhenCommentIdIsNull() {
         LikeDto likeDto = LikeDto.builder().commentId(null).build();
 
-        assertThrows(DataValidationExceptions.class, () ->
+        assertThrows(DataValidationException.class, () ->
                 commentService.validationAndCommentsReceived(likeDto));
     }
 
@@ -57,7 +57,7 @@ public class CommentServiceTest {
 
         when(commentRepository.existsById(commentId)).thenReturn(false);
 
-        assertThrows(DataValidationExceptions.class, () ->
+        assertThrows(DataValidationException.class, () ->
                 commentService.validationAndCommentsReceived(likeDto));
     }
 
