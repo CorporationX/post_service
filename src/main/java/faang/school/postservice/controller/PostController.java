@@ -4,7 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
-import faang.school.postservice.validation.PostControllerValidator;
+import faang.school.postservice.validator.PostControllerValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

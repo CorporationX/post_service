@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
+    @Transactional
     public PostDto createDraft(PostDto postDto) {
         if (postDto.getAuthorId() != null) {
             return createPostToAuthor(postDto);
@@ -62,10 +64,10 @@ public class PostService {
         return postMapper.toDto(postToUpdate);
     }
 
+    @Transactional
     public void delete(Long id) {
         Post postToDelete = getPost(id);
         postToDelete.setDeleted(true);
-        postRepository.save(postToDelete);
     }
 
     public PostDto getPostById(Long id) {
@@ -75,32 +77,37 @@ public class PostService {
 
     public List<PostDto> getDraftsByUser(Long id) {
         UserDto user = getUser(id);
-        List<Post> postsByAuthor = postRepository.findByAuthorId(user.getId())
-                .stream().filter(el -> !el.isPublished()).toList();
+        List<Post> postsByAuthor = getFilteredPostsByUser(user.getId(), (post) -> !post.isPublished());
         return postMapper.toDtoList(postsByAuthor);
     }
 
-
     public List<PostDto> getDraftsByProject(Long id) {
         ProjectDto projectDto = getProject(id);
-        List<Post> postsByProject = postRepository.findByProjectId(projectDto.getId())
-                .stream().filter(el -> !el.isPublished()).toList();
+        List<Post> postsByProject = getFilteredPostsByProject(projectDto.getId(), (post) -> !post.isPublished());
         return postsByProject.stream().map(postMapper::toDto).toList();
     }
 
 
     public List<PostDto> getPublishedByUser(Long id) {
         UserDto user = getUser(id);
-        List<Post> publishedPostsByAuthor = postRepository
-                .findByAuthorId(user.getId()).stream().filter(Post::isPublished).toList();
+        List<Post> publishedPostsByAuthor = getFilteredPostsByUser(user.getId(), Post::isPublished);
         return publishedPostsByAuthor.stream().map(postMapper::toDto).toList();
     }
 
     public List<PostDto> getPublishedByProject(Long id) {
         ProjectDto projectDto = getProject(id);
-        List<Post> publishedPostsByProject = postRepository
-                .findByProjectId(projectDto.getId()).stream().filter(Post::isPublished).toList();
+        List<Post> publishedPostsByProject = getFilteredPostsByProject(projectDto.getId(), Post::isPublished);
         return publishedPostsByProject.stream().map(postMapper::toDto).toList();
+    }
+
+    private List<Post> getFilteredPostsByUser(Long userId, Predicate<Post> filter) {
+        return postRepository.findByAuthorId(userId)
+                .stream().filter(filter).toList();
+    }
+
+    private List<Post> getFilteredPostsByProject(Long projectId, Predicate<Post> filter) {
+        return postRepository.findByProjectId(projectId)
+                .stream().filter(filter).toList();
     }
 
     private Post getPost(Long id) {
@@ -118,27 +125,21 @@ public class PostService {
 
     private PostDto createPostToProject(PostDto postDto) {
         ProjectDto project = projectServiceClient.getProject(postDto.getProjectId());
-        if (project == null) {
-            throw new DataValidationException("Project not found");
-        }
-        Post createdDraft = postRepository.save(postMapper.toEntity(postDto));
-        return postMapper.toDto(createdDraft);
+        return getPostDto(postDto);
     }
+
 
     private PostDto createPostToAuthor(PostDto postDto) {
         UserDto user = userServiceClient.getUser(postDto.getAuthorId());
-        if (user == null) {
-            throw new DataValidationException("User not found");
-        }
+        return getPostDto(postDto);
+    }
+
+    private PostDto getPostDto(PostDto postDto) {
         Post createdDraft = postRepository.save(postMapper.toEntity(postDto));
         return postMapper.toDto(createdDraft);
     }
 
     private UserDto getUser(Long id) {
-        UserDto user = userServiceClient.getUser(id);
-        if (user == null) {
-            throw new EntityNotFoundException("User not found");
-        }
-        return user;
+        return userServiceClient.getUser(id);
     }
 }
