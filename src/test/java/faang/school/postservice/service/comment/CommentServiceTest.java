@@ -1,5 +1,7 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.cache.redis.UserCache;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.mapper.CommentMapperImpl;
@@ -45,6 +47,10 @@ class CommentServiceTest {
     private PostServiceImpl postService;
     @Mock
     private CommentProducer commentProducer;
+    @Mock
+    private UserServiceClient userServiceClient;
+    @Mock
+    private UserCache userCache;
 
     @InjectMocks
     private CommentServiceImpl commentService;

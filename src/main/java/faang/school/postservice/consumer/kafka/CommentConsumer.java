@@ -1,0 +1,53 @@
+package faang.school.postservice.consumer.kafka;
+
+import faang.school.postservice.cache.redis.PostCache;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.post.CachedPostDto;
+import faang.school.postservice.exception.NonRetryableException;
+import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.post.PostService;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class CommentConsumer {
+    private final PostCache postCache;
+    private final PostMapper postMapper;
+    private final PostService postService;
+    private final CommentService commentService;
+
+    @Value("${spring.data.redis.max-comments-size}")
+    private int maxSize;
+
+    @Transactional
+    @KafkaListener(topics = "${spring.kafka.topics-name.comments}", containerFactory = "containerFactory")
+    public void listenCommentEvent(CommentEvent commentEvent, Acknowledgment ack) {
+        long postId = commentEvent.getPostId();
+        long commentId = commentEvent.getCommentId();
+        CommentDto commentDto = commentService.findById(commentId);
+        if (commentDto == null) {
+            log.info("comment with id = {} not exist", commentId);
+            throw new NonRetryableException(String.format("комментария с id = %d не сущетсвует ", commentId));
+        }
+        CachedPostDto cachedPostDto = postCache.findById(postId)
+                .orElse(postMapper.toCachedPostDto(postService.getPostById(postId)));
+        if (cachedPostDto == null) {
+            log.info("post with id = {} not exist", postId);
+            throw new NonRetryableException(String.format("поста с id = %d не сущетсвует ", postId));
+        }
+        cachedPostDto.addNewComment(commentDto, maxSize);
+        postCache.save(cachedPostDto);
+        log.info("added comment to post with id = {}", postId);
+        ack.acknowledge();
+    }
+}
