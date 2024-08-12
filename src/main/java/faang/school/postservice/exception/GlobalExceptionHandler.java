@@ -1,5 +1,7 @@
 package faang.school.postservice.exception;
 
+
+import faang.school.postservice.exception.DeletionFailedException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -31,6 +33,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DataValidationException.class)
     public ResponseEntity<Object> handleDataValidationException(DataValidationException ex) {
+        return new ResponseEntity<>(response(ex), HttpStatus.BAD_REQUEST);
+    }
+  
+    @ExceptionHandler(DeletionFailedException.class)
+    public ResponseEntity<Object> handleDeletionFailedException(DeletionFailedException ex) {
         return new ResponseEntity<>(response(ex), HttpStatus.BAD_REQUEST);
     }
 
