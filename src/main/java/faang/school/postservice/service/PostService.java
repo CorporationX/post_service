@@ -139,7 +139,7 @@ public class PostService {
     private boolean validateDraftPostPublisherExist(Post post) {
         boolean result = false;
         if (post.getAuthorId() != null) {
-            UserDto userDto = userServiceClient.getUser(post.getId());
+            UserDto userDto = userServiceClient.getUser(post.getAuthorId());
             if (userDto.getId() == null) {
                 log.error("User id = {} doesn't exist in database", post.getAuthorId());
                 throw new DataDoesNotExistException(DOES_NOT_EXIST_IN_DB);

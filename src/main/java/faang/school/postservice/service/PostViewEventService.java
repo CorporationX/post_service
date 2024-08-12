@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @Slf4j
 public class PostViewEventService {
     private final RedisMessagePublisher messagePublisher;
+    private final ObjectMapper objectMapper;
 
     public void publishViewEvent(Post post, long id)  {
         try {
@@ -24,7 +25,6 @@ public class PostViewEventService {
             postViewEvent.setPostId(post.getId());
             postViewEvent.setAuthorId(post.getAuthorId());
             postViewEvent.setViewedAt(LocalDateTime.now());
-            ObjectMapper objectMapper = new ObjectMapper();
             String message = objectMapper.writeValueAsString(postViewEvent);
             messagePublisher.publish(message);
         } catch (JsonProcessingException e) {
