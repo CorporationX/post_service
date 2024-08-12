@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author Evgenii Malkov
@@ -22,7 +21,7 @@ import java.util.concurrent.ExecutorService;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final ExecutorService executorService;
+    private final PostPublishService postPublishService;
     @Value("${post.publisher.batch-size:1000}")
     private int postsBatchSize;
 
@@ -33,19 +32,12 @@ public class PostService {
         for (int i = 0; i < posts.size(); i += postsBatchSize) {
             int end = Math.min(i + postsBatchSize, posts.size());
             List<Post> batch = posts.subList(i, end);
-            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> publishBatch(batch), executorService);
+            CompletableFuture<Void> future = postPublishService.publishBatch(batch)
+                    .thenAccept(postRepository::saveAll);
             futures.add(future);
         }
         CompletableFuture<Void> allOfFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         allOfFutures.join();
         log.info("All posts successful published, at: {}", LocalDateTime.now());
-    }
-
-    private void publishBatch(List<Post> batch) {
-        for (Post post : batch) {
-            post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
-        }
-        postRepository.saveAll(batch);
     }
 }
