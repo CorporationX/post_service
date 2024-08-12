@@ -8,7 +8,6 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LikeService {
     private static final String MESSAGE_POST_NOT_IN_DB = "Post is not in the database";
-    private static final String AUTHOR_LIKE_NOT_IN_DB = "The author of the like is not in the database";
     private static final String MESSAGE_ALREADY_LIKED = "Already liked";
     private static final String MESSAGE_COMMENT_ABSENT = "Comment with this Id absent";
     private static final String MESSAGE_LIKE_NOT_PRESENT = "Like is not present";
@@ -67,11 +65,7 @@ public class LikeService {
     }
 
     private Post validateUserAndGetPost(Long postId, LikeDto dto) {
-        try {
-            userServiceClient.getUser(dto.getUserId());
-        } catch (FeignException e) {
-            throw new RuntimeException(AUTHOR_LIKE_NOT_IN_DB);
-        }
+        userServiceClient.getUser(dto.getUserId());
         return getPost(postId);
     }
 

@@ -12,6 +12,7 @@ import faang.school.postservice.filter.post.filterImpl.PostFilterProjectPostNonD
 import faang.school.postservice.filter.post.filterImpl.PostFilterUserDraftNonDeleted;
 import faang.school.postservice.filter.post.filterImpl.PostFilterUserPostNonDeleted;
 import faang.school.postservice.mapper.post.PostMapperImpl;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.container.PostContainer;
@@ -263,18 +264,19 @@ public class PostServiceTest {
         boolean isNotDeleted = container.deleted();
         boolean isNotPublished = container.published();
         Long postId = container.postId();
+        List<Like> likes = container.likes();
 
-        Post postFirst = createPost(postId++, userId, null, isNotDeleted, isNotPublished, null);
-        Post postSecond = createPost(postId++, userId, null, isNotDeleted, !isNotPublished, LocalDateTime.now());
-        Post postThird = createPost(postId++, userId, null, !isNotDeleted, isNotPublished, null);
-        Post postForth = createPost(postId++, userId++, null, !isNotDeleted, !isNotPublished, LocalDateTime.now());
-        Post postFifth = createPost(postId++, userId, null, isNotDeleted, isNotPublished, null);
-        Post postSixth = createPost(postId++, null, projectId++, isNotDeleted, isNotPublished, null);
-        Post postSeventh = createPost(postId, null, projectId, isNotDeleted, isNotPublished, null);
+        Post postFirst = createPost(postId++, userId, likes, null, isNotDeleted, isNotPublished, null);
+        Post postSecond = createPost(postId++, userId, likes, null, isNotDeleted, !isNotPublished, LocalDateTime.now());
+        Post postThird = createPost(postId++, userId, likes, null, !isNotDeleted, isNotPublished, null);
+        Post postForth = createPost(postId++, userId++, likes, null, !isNotDeleted, !isNotPublished, LocalDateTime.now());
+        Post postFifth = createPost(postId++, userId, likes, null, isNotDeleted, isNotPublished, null);
+        Post postSixth = createPost(postId++, null, likes, projectId++, isNotDeleted, isNotPublished, null);
+        Post postSeventh = createPost(postId, null, likes, projectId, isNotDeleted, isNotPublished, null);
         return List.of(postFirst, postSecond, postThird, postForth, postFifth, postSixth, postSeventh);
     }
 
-    private Post createPost(Long postId, Long authorId, Long projectId, boolean deleted, boolean published, LocalDateTime publishedAt) {
+    private Post createPost(Long postId, Long authorId, List<Like> likes, Long projectId, boolean deleted, boolean published, LocalDateTime publishedAt) {
         return Post.builder()
                 .id(postId)
                 .authorId(authorId)
@@ -282,6 +284,7 @@ public class PostServiceTest {
                 .deleted(deleted)
                 .published(published)
                 .publishedAt(publishedAt)
+                .likes(likes)
                 .build();
     }
 

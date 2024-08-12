@@ -8,7 +8,6 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -76,7 +75,7 @@ class LikeServiceTest {
     @Test
     public void testUserNotInDb() {
         //Act
-        when(userServiceClient.getUser(Mockito.anyLong())).thenThrow(FeignException.class);
+        when(userServiceClient.getUser(Mockito.anyLong())).thenThrow(new RuntimeException(AUTHOR_LIKE_NOT_IN_DB));
         //Assert
         assertEquals(AUTHOR_LIKE_NOT_IN_DB,
                 assertThrows(RuntimeException.class,
@@ -192,5 +191,4 @@ class LikeServiceTest {
         //Assert
         Mockito.verify(mapper).toDto(like);
     }
-
 }

@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/post/{postId}")
 @RequiredArgsConstructor
 public class LikeController {
     private static final String MESSAGE_INVALID_COMMENT_ID = "Invalid commentId";
@@ -19,21 +21,21 @@ public class LikeController {
     private final ControllerValidator validator;
     private final LikeService service;
 
-    @PutMapping("/post/{postId}/like")
+    @PutMapping("/like")
     public LikeDto addPostLike(@PathVariable Long postId, @RequestBody LikeDto dto) {
         validator.validateId(postId, MESSAGE_INVALID_POST_ID);
         validator.validateDto(dto);
         return service.addPostLike(postId, dto);
     }
 
-    @DeleteMapping("/post/{postId}/unlike")
+    @DeleteMapping("/unlike")
     public LikeDto deletePostLike(@PathVariable Long postId, @RequestBody LikeDto dto) {
         validator.validateId(postId, MESSAGE_INVALID_POST_ID);
         validator.validateDto(dto);
         return service.deletePostLike(postId, dto);
     }
 
-    @PutMapping("/post/{postId}/comment/{commentId}/like")
+    @PutMapping("/comment/{commentId}/like")
     public LikeDto addCommentLike(
             @PathVariable Long postId,
             @PathVariable Long commentId,
@@ -44,7 +46,7 @@ public class LikeController {
         return service.addCommentLike(postId, commentId, dto);
     }
 
-    @DeleteMapping("/post/{postId}/comment/{commentId}/unlike")
+    @DeleteMapping("/comment/{commentId}/unlike")
     public LikeDto deleteCommentLike(
             @PathVariable Long postId,
             @PathVariable Long commentId,

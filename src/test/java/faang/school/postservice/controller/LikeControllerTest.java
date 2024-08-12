@@ -51,7 +51,7 @@ class LikeControllerTest {
         //Act
         Mockito.when(service.addPostLike(VALID_ID, dto)).thenReturn(dto);
         //Assert
-        mockMvc.perform(put("/post/3/like")
+        mockMvc.perform(put("/api/post/3/like")
                         .contentType(MediaType.APPLICATION_JSON).content(objectWriter.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(VALID_ID))
@@ -63,7 +63,7 @@ class LikeControllerTest {
         //Act
         Mockito.when(service.deletePostLike(VALID_ID, dto)).thenReturn(dto);
         //Assert
-        mockMvc.perform(delete("/post/3/unlike")
+        mockMvc.perform(delete("/api/post/3/unlike")
                         .contentType(MediaType.APPLICATION_JSON).content(objectWriter.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(VALID_ID))
@@ -75,7 +75,7 @@ class LikeControllerTest {
         //Act
         Mockito.when(service.addCommentLike(VALID_ID, VALID_ID, dto)).thenReturn(dto);
         //Assert
-        mockMvc.perform(put("/post/3/comment/3/like")
+        mockMvc.perform(put("/api/post/3/comment/3/like")
                         .contentType(MediaType.APPLICATION_JSON).content(objectWriter.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(VALID_ID))
@@ -87,7 +87,7 @@ class LikeControllerTest {
         //Act
         Mockito.when(service.deleteCommentLike(VALID_ID, VALID_ID, dto)).thenReturn(dto);
         //Assert
-        mockMvc.perform(delete("/post/3/comment/3/unlike")
+        mockMvc.perform(delete("/api/post/3/comment/3/unlike")
                         .contentType(MediaType.APPLICATION_JSON).content(objectWriter.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(VALID_ID))
