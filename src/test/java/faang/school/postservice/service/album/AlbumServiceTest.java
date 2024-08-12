@@ -86,13 +86,14 @@ public class AlbumServiceTest {
     @Test
     void createAlbum() {
         when(userContext.getUserId()).thenReturn(1L);
-        when(albumMapper.toEntityLight(albumLightDto)).thenReturn(new Album());
+        when(albumMapper.toEntityLight(albumLightDto)).thenReturn(album);
         when(albumMapper.toDtoLight(albumRepository.save(any(Album.class)))).thenReturn(albumLightDto);
+        when(albumRepository.existsByTitleAndAuthorId("title", 1L)).thenReturn(false);
 
         AlbumLightDto result = albumService.createAlbum(albumLightDto);
 
         verify(userContext, times(1)).getUserId();
-        verify(albumRepository, times(1)).findByIdWithPosts(1L);
+        verify(albumRepository, times(1)).existsByTitleAndAuthorId(album.getTitle(), 1L);
         verify(albumMapper, times(1)).toEntityLight(albumLightDto);
         verify(albumMapper, times(1)).toDtoLight(any(Album.class));
         assertEquals(1, result.getId());

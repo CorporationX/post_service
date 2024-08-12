@@ -18,7 +18,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -72,15 +74,16 @@ public class AlbumService {
                 return albumMapper.toDtoLight(albumEntity);
             } else {
                 log.error("author album in not contain current user");
+                throw new SecurityException("author album in not contain current user");
             }
         } else {
             log.error("album is null");
+            throw new NoSuchElementException("album is null");
         }
-        return albumMapper.toDtoLight(album.get());
     }
 
     public AlbumLightDto addPostForAlbum(Long albumId, Long postId) {
-        if (albumRepository.findByIdWithPosts(albumId).isPresent()) {
+        if (albumRepository.findByAlbumIdAndPostId(postId, albumId).isEmpty()) {
             Optional<Album> album = albumRepository.findById(albumId);
             Long authorId = album.get().getAuthorId();
 
@@ -104,15 +107,15 @@ public class AlbumService {
     public AlbumLightDto deletePostForAlbum(Long albumId, Long postId) {
         Optional<Album> album = albumRepository.findById(albumId);
         if (album.isPresent()) {
-            Long aothorId = album.get().getAuthorId();
-            if (aothorId.equals(userContext.getUserId())) {
+            Long authorId = album.get().getAuthorId();
+            if (authorId.equals(userContext.getUserId())) {
                 album.get().getPosts().remove(postRepository.findById(postId));
                 albumRepository.save(album.get());
                 return albumMapper.toDtoLight(album.get());
             }
         } else {
             log.error("album not found");
-            throw new IllegalArgumentException("album is null");
+            throw new NoSuchElementException("album is null");
         }
         return albumMapper.toDtoLight(album.get());
     }
@@ -160,19 +163,20 @@ public class AlbumService {
     }
 
     public List<AlbumDto> getAlbumForFilter(AlbumFilterDto albumFilterDto) {
-        if (albumFilterDto == null) {
-            log.error("filter is null");
-            throw new IllegalArgumentException("filter is null");
-        }
+        Long userId = userContext.getUserId();
+            if (albumFilterDto == null) {
+                log.error("filter is null");
+                throw new IllegalArgumentException("filter is null");
+            }
+            Iterable<Album> albums = albumRepository.findAll();
+            Stream<Album> albumStream = StreamSupport.stream(albums.spliterator(), false);
 
-        Iterable<Album> albums = albumRepository.findAll();
-        Stream<Album> albumStream = StreamSupport.stream(albums.spliterator(), false);
-
-        return albumsFilter.stream()
-                .filter(albumFilter -> albumFilter.isApplicable(albumFilterDto))
-                .reduce(albumStream, (cumulativeStream, albumsFilter) ->
-                        albumsFilter.apply(cumulativeStream, albumFilterDto), Stream::concat)
-                .map(albumMapper::toDto)
-                .toList();
+            return albumsFilter.stream()
+                    .filter(albumFilter -> albumFilter.isApplicable(albumFilterDto))
+                    .filter(albumFilter -> albumFilter.equals(userId))
+                    .reduce(albumStream, (cumulativeStream, albumsFilter) ->
+                            albumsFilter.apply(cumulativeStream, albumFilterDto), Stream::concat)
+                    .map(albumMapper::toDto)
+                    .toList();
     }
 }
