@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdatedCommentDto;
@@ -30,7 +29,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentMapper commentMapper;
 
-    public CommentDto createComment(CreateCommentDto createCommentDto) throws JsonProcessingException {
+    public CommentDto createComment(CreateCommentDto createCommentDto) {
         checkUserService.checkUserExistence(createCommentDto);
         Comment savedComment = commentMapper.toEntity(createCommentDto);
         savedComment = commentRepository.save(savedComment);
