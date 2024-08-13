@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Builder
 @Data
 public class PostDto {
+
     private Long id;
     private String content;
     private Long projectId;

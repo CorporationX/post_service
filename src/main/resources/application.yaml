@@ -44,8 +44,14 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
+    batch-size: 500
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+    expired:
+      scheduler:
+        cron: "0 0 0 * * ?" # every midnight
+  pagination:
+    page-size: 1000
 
 user-service:
   host: localhost
