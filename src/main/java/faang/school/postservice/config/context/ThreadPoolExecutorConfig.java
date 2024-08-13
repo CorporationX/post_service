@@ -11,11 +11,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  */
 @Configuration
 public class ThreadPoolExecutorConfig {
-    @Value("${spring.task.execution.pool.max-size:8}")
+    @Value("${spring.task.execution.pool.max-size}")
     private int poolMaxSize;
-    @Value("${spring.task.execution.pool.core-size:2}")
+    @Value("${spring.task.execution.pool.core-size}")
     private int poolCoreSize;
-    @Value("${spring.task.execution.pool.queue-capacity:20}")
+    @Value("${spring.task.execution.pool.queue-capacity}")
     private int queueCapacity;
 
     @Bean()

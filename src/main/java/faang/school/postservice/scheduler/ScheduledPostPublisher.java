@@ -14,7 +14,7 @@ public class ScheduledPostPublisher {
 
     private final PostService postService;
 
-    @Scheduled(cron = "${post.publisher.scheduler.cron:0 0/1 * 1/1 * ?}")
+    @Scheduled(cron = "${post.publisher.scheduler.cron}")
     public void publishScheduledPosts() {
         postService.publishScheduledPosts();
     }

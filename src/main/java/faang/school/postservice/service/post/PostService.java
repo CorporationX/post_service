@@ -22,7 +22,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostPublishService postPublishService;
-    @Value("${post.publisher.batch-size:1000}")
+    @Value("${post.publisher.batch-size}")
     private int postsBatchSize;
 
     public void publishScheduledPosts() {
