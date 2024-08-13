@@ -26,27 +26,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
+
+    @Mock
+    private PostPublishService postPublishService;
 
     @Mock
     private PostRepository postRepository;
@@ -75,7 +73,43 @@ public class PostServiceTest {
         post = Post.builder().id(1L).content("content").authorId(null).projectId(1L).build();
         postFilterRepository = List.of(authorFilterSpecification);
 
-        postService = new PostService(postRepository, postFilterRepository, postValidator, postMapper);
+        postService = new PostService(postRepository, postFilterRepository, postValidator, postMapper, postPublishService);
+    }
+
+    @Test
+    void publishScheduledPosts_success() {
+        Post post1 = new Post();
+        post1.setPublished(false);
+        post1.setPublishedAt(LocalDateTime.now().minusMinutes(1));
+
+        Post post2 = new Post();
+        post2.setPublished(false);
+        post2.setPublishedAt(LocalDateTime.now().minusMinutes(2));
+
+        Post post3 = new Post();
+        post3.setPublished(false);
+        post3.setPublishedAt(LocalDateTime.now().minusMinutes(3));
+
+        List<Post> scheduledPosts = Arrays.asList(post1, post2, post3);
+
+        ReflectionTestUtils.setField(postService, "postsBatchSize", 1);
+
+        when(postRepository.findReadyToPublish()).thenReturn(scheduledPosts);
+
+        when(postPublishService.publishBatch(anyList()))
+                .thenAnswer(invocation -> CompletableFuture.runAsync(() -> {
+                    List<Post> posts = invocation.getArgument(0);
+                    posts.forEach(post -> post.setPublished(true));
+                }));
+
+        postService.publishScheduledPosts();
+
+        for (Post post : scheduledPosts) {
+            assertTrue(post.isPublished());
+        }
+
+        verify(postPublishService, times(3)).publishBatch(any());
+        verify(postRepository, times(3)).saveAll(any());
     }
 
     @Test

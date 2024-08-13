@@ -24,6 +24,12 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+  task:
+    execution:
+      pool:
+        max-size: 10
+        core-size: 6
+        queue-capacity: 20
 
 server:
   port: 8081
@@ -34,6 +40,7 @@ logging:
 
 post:
   publisher:
+    batch-size: 10
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
