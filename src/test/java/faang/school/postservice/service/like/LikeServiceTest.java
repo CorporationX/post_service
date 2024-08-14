@@ -2,17 +2,18 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.validation.comment.UserClientValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,9 +30,6 @@ public class LikeServiceTest {
 
     @Mock
     private UserServiceClient userServiceClient;
-
-    @Mock
-    private UserClientValidation userClientValidation;
 
     @InjectMocks
     private LikeService likeService;
@@ -52,6 +50,7 @@ public class LikeServiceTest {
                 new UserDto(1L, "John", "john@example.com"),
                 new UserDto(2L, "Jane", "jane@example.com")
         );
+        ReflectionTestUtils.setField(likeService, "batchSize", 100);
     }
 
     @Test
@@ -64,7 +63,6 @@ public class LikeServiceTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(userClientValidation, times(2)).checkUser(anyLong());
     }
 
     @Test
@@ -75,7 +73,7 @@ public class LikeServiceTest {
         NoSuchElementException exception = assertThrows(NoSuchElementException.class,
                 () -> likeService.getUsersByPostId(postId));
 
-        assertEquals("No likes found for postId: " + postId, exception.getMessage());
+        assertEquals(ExceptionMessages.LIKE_NOT_FOUND_FOR_POST + ": " + postId, exception.getMessage());
     }
 
     @Test
@@ -92,7 +90,6 @@ public class LikeServiceTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(userClientValidation, times(2)).checkUser(anyLong());
     }
 
     @Test
@@ -103,6 +100,6 @@ public class LikeServiceTest {
         NoSuchElementException exception = assertThrows(NoSuchElementException.class,
                 () -> likeService.getUsersByCommentId(commentId));
 
-        assertEquals("No likes found for commentId: " + commentId, exception.getMessage());
+        assertEquals(ExceptionMessages.LIKE_NOT_FOUND_FOR_COMMENT + ": " + commentId, exception.getMessage());
     }
 }

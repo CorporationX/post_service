@@ -24,6 +24,7 @@ public class LikeService {
     @Value("${user.batch.size:100}")
     private int batchSize;
 
+
     public List<UserDto> getUsersByPostId(Long postId) {
         List<Like> likes = likeRepository.findByPostId(postId);
         if (likes.isEmpty()) {
