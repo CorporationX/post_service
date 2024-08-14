@@ -24,8 +24,6 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-        post_view:
-          name: post_view_channel
 
 server:
   port: 8081
