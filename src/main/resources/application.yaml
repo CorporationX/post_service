@@ -24,7 +24,7 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-        post_view:
+        post_view_channel:
           name: post_view_channel
 
 server:
