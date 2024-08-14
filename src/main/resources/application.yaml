@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+      topic:
+        like: like_event
 
   services:
     s3:

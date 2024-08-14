@@ -1,5 +1,6 @@
 package faang.school.postservice.controller.like;
 
+import faang.school.postservice.config.redis.like.LikePostPublisher;
 import faang.school.postservice.controller.LikeToComment;
 import faang.school.postservice.controller.LikeToPost;
 import faang.school.postservice.dto.like.LikeDto;
@@ -35,6 +36,7 @@ import java.util.List;
 public class LikeController {
 
     private final LikeService likeService;
+    private final LikePostPublisher likePostPublisher;
 
     @GetMapping("/post/{postId}")
     @Operation(summary = "Получить лайки поста", description = "Введите идентификатор поста, чтобы получить лайки поста")
@@ -70,7 +72,9 @@ public class LikeController {
             @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
     })
     public LikeDto addLikeToPost(@Validated(LikeToPost.class) @RequestBody LikeDto likeDto) {
-        return likeService.addLikeToPost(likeDto);
+        LikeDto result = likeService.addLikeToPost(likeDto);
+        likePostPublisher.createBanEvent(likeDto);
+        return result;
     }
 
     @DeleteMapping("/post/{postId}/{userId}")
