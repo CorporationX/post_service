@@ -22,8 +22,7 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
+        like_topic: like_topic
 
 server:
   port: 8081
@@ -31,6 +30,7 @@ server:
 logging:
   level:
     root: info
+    faang.school.postservice: debug
 
 post:
   publisher:
