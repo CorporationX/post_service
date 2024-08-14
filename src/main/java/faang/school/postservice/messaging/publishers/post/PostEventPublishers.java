@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.event.post.PostEvent;
 import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.messaging.publishers.EventPublisher;
+import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -35,10 +36,10 @@ public class PostEventPublishers implements EventPublisher<PostEvent> {
         }
     }
 
-    public void toEventAndPublish(PostDto postDto){
+    public void toEventAndPublish(Post post){
         publish(PostEvent.builder()
-                .id(postDto.getId())
-                .authorId(postDto.getAuthorId())
+                .id(post.getId())
+                .authorId(post.getAuthorId())
                 .build());
     }
 }

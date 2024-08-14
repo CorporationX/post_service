@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.messaging.publishers.post.PostEventPublishers;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
@@ -21,6 +22,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final PostEventPublishers postEventPublishers;
 
     public PostDto create(PostDto postDto) {
         postValidator.validateCreate(postDto);
@@ -42,6 +44,7 @@ public class PostService {
         Post post = postOptional.get();
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        postEventPublishers.toEventAndPublish(post);
 
         return postMapper.toDto(postRepository.save(post));
     }
