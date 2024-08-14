@@ -1,17 +1,21 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.BanEvent;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.redis.RedisMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.ban.BanService;
 import faang.school.postservice.validator.CommentValidator;
 
 import jakarta.persistence.EntityNotFoundException;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,14 +26,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final UserContext userContext;
     private final CommentValidator commentValidator;
     private final PostRepository postRepository;
-    private final BanService banService;
+    private final RedisMessagePublisher redisMessagePublisher;
+    private final ObjectMapper objectMapper;
+
+    @Value("${banned.value.comment}")
+    private int valueBanned;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
@@ -79,6 +87,17 @@ public class CommentService {
                 .stream()
                 .collect(Collectors.groupingBy(Comment::getAuthorId));
 
-        banService.checkAndBannedUser(authorCommentWithoutVerification);
+        authorCommentWithoutVerification.forEach((authorId, items) -> {
+            if (items.size() > valueBanned) {
+                try {
+                    BanEvent banEvent = new BanEvent();
+                    banEvent.setAuthorId(authorId);
+                    redisMessagePublisher.publish(objectMapper.writeValueAsString(banEvent));
+                } catch (JsonProcessingException e) {
+                    log.error(e.getMessage(), e);
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 }

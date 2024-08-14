@@ -1,16 +1,18 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.BanEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.redis.RedisMessagePublisher;
-import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.ban.BanService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +30,10 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
     private final RedisMessagePublisher redisMessagePublisher;
-    private final CommentRepository commentRepository;
-    private final BanService banService;
+    private final ObjectMapper objectMapper;
+
+    @Value("${banned.value.post}")
+    private int valueBanned;
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -136,7 +140,18 @@ public class PostService {
                 .stream()
                 .collect(Collectors.groupingBy(Post::getAuthorId));
 
-        banService.checkAndBannedUser(authorPostWithoutVerification);
+        authorPostWithoutVerification.forEach((authorId, items) -> {
+            if (items.size() > valueBanned) {
+                try {
+                    BanEvent banEvent = new BanEvent();
+                    banEvent.setAuthorId(authorId);
+                    redisMessagePublisher.publish(objectMapper.writeValueAsString(banEvent));
+                } catch (JsonProcessingException e) {
+                    log.error(e.getMessage(), e);
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     private List<Post> sortPostsByCreateAt(List<Post> posts) {

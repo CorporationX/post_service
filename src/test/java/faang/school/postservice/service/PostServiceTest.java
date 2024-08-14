@@ -1,8 +1,13 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.BanEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.RedisMessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,9 +39,14 @@ public class PostServiceTest {
 
     @Mock
     private PostServiceValidator postServiceValidator;
+    @Mock
+    private RedisMessagePublisher redisMessagePublisher;
+    @Mock
+    private ObjectMapper objectMapper;
 
     private PostDto postDto;
     private Post post;
+    private Long authorId;
     private List<Post> draftPosts;
     private List<Post> publishedPosts;
     private List<PostDto> draftPostDtos;
@@ -44,6 +54,7 @@ public class PostServiceTest {
 
     @BeforeEach
     public void setUp() {
+        authorId = 1L;
         postDto = new PostDto();
         post = new Post();
         Post draftPost1 = Post.builder()
@@ -51,6 +62,7 @@ public class PostServiceTest {
                 .content("Draft 1")
                 .published(true)
                 .publishedAt(LocalDateTime.now())
+                .authorId(authorId)
                 .build();
 
         Post draftPost2 = Post.builder()
@@ -58,18 +70,21 @@ public class PostServiceTest {
                 .content("Draft 2")
                 .published(true)
                 .publishedAt(LocalDateTime.now())
+                .authorId(authorId)
                 .build();
 
         Post publishedPost1 = Post.builder().id(3L)
                 .content("Published 1")
                 .published(true)
                 .publishedAt(LocalDateTime.now())
+                .authorId(authorId)
                 .build();
 
         Post publishedPost2 = Post.builder().id(2L)
                 .content("Published 2")
                 .published(true)
                 .publishedAt(LocalDateTime.now())
+                .authorId(authorId)
                 .build();
 
         draftPosts = Arrays.asList(draftPost1, draftPost2);
@@ -205,5 +220,20 @@ public class PostServiceTest {
 
         assertEquals(2, result.size());
         assertEquals(publishedPostDtos, result);
+    }
+
+    @Test
+    void testCheckUserAndBannedForPost() throws JsonProcessingException {
+        int valueBanned = 5;
+        BanEvent banEvent = new BanEvent();
+        banEvent.setAuthorId(authorId);
+        String message = "message";
+
+        when(postRepository.findAllPostWithoutVerification()).thenReturn(draftPosts);
+        when(objectMapper.writeValueAsString(banEvent)).thenReturn(message);
+
+        postService.checkUserAndBannedForPost();
+
+        verify(redisMessagePublisher, times(1)).publish(message);
     }
 }

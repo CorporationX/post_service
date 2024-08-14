@@ -45,7 +45,9 @@ post:
 banned:
   scheduler:
     cron: "0 0 0 * * ?" # every day
-  value: 5
+  value:
+    post: 5
+    comment: 5
 
 user-service:
   host: localhost
