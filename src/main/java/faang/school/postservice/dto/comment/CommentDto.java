@@ -1,13 +1,19 @@
 package faang.school.postservice.dto.comment;
 
-import faang.school.postservice.validation.dto.DtoValidationConstraints;
+import faang.school.postservice.validator.dto.DtoValidationConstraints;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class CommentDto {
     private Long id;
     @NotBlank(message = DtoValidationConstraints.COMMENT_DTO_CONTENT_MISSING)

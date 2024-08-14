@@ -1,4 +1,4 @@
-package faang.school.postservice.validation.dto;
+package faang.school.postservice.validator.dto;
 
 public final class DtoValidationConstraints {
     public static final String COMMENT_DTO_CONTENT_MISSING = "missing content.";
