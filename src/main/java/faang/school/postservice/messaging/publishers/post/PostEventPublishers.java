@@ -36,7 +36,7 @@ public class PostEventPublishers implements EventPublisher<PostEvent> {
         }
     }
 
-    public void toEventAndPublish(Post post){
+    public void toEventAndPublish(Post post) {
         publish(PostEvent.builder()
                 .id(post.getId())
                 .authorId(post.getAuthorId())
