@@ -20,7 +20,7 @@ public class RedisConfig {
     private int port;
 
     @Bean
-    ChannelTopic topic() {
+    ChannelTopic postCommentChannel() {
         return new ChannelTopic(channelTopic);
     }
 
