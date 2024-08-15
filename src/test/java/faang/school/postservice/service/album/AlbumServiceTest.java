@@ -3,7 +3,6 @@ package faang.school.postservice.service.album;
 import faang.school.postservice.dto.album.AlbumLightDto;
 import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.controller.AlbumController;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
@@ -11,21 +10,17 @@ import faang.school.postservice.model.UserVisibility;
 import faang.school.postservice.model.VisibilityType;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.service.AlbumService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -62,6 +57,8 @@ public class AlbumServiceTest {
                 LocalDateTime.of(2014, Month.APRIL, 8, 12, 30),
                 LocalDateTime.of(2014, Month.MAY, 8, 12, 30),
                 VisibilityType.All_USER, userVisibilityList);
+
+        album.builder().id(2L).title("title").description("desc").build();
     }
 
     @Test
@@ -73,7 +70,6 @@ public class AlbumServiceTest {
         when(userContext.getUserId()).thenReturn(userId);
         when(albumRepository.findByIdWithPosts(albumId)).thenReturn(Optional.of(album));
         when(albumMapper.toDto(album)).thenReturn(new AlbumDto());
-//        when(albumService.toDto(album)).thenReturn(new AlbumDto());
 
         AlbumDto result = albumService.getAlbum(albumId);
 
@@ -84,10 +80,10 @@ public class AlbumServiceTest {
     }
 
     @Test
-    void createAlbum() {
+    void createAlbumTest() {
         when(userContext.getUserId()).thenReturn(1L);
         when(albumMapper.toEntityLight(albumLightDto)).thenReturn(album);
-        when(albumMapper.toDtoLight(albumRepository.save(any(Album.class)))).thenReturn(albumLightDto);
+        when(albumMapper.toDtoLight(albumRepository.save(album))).thenReturn(albumLightDto);
         when(albumRepository.existsByTitleAndAuthorId("title", 1L)).thenReturn(false);
 
         AlbumLightDto result = albumService.createAlbum(albumLightDto);
@@ -95,7 +91,6 @@ public class AlbumServiceTest {
         verify(userContext, times(1)).getUserId();
         verify(albumRepository, times(1)).existsByTitleAndAuthorId(album.getTitle(), 1L);
         verify(albumMapper, times(1)).toEntityLight(albumLightDto);
-        verify(albumMapper, times(1)).toDtoLight(any(Album.class));
         assertEquals(1, result.getId());
     }
 

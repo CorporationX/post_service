@@ -73,8 +73,8 @@ public class AlbumService {
                 albumRepository.save(albumEntity);
                 return albumMapper.toDtoLight(albumEntity);
             } else {
-                log.error("author album in not contain current user");
-                throw new SecurityException("author album in not contain current user");
+                log.error("you can't update the album");
+                throw new SecurityException("you can't update the album");
             }
         } else {
             log.error("album is null");
