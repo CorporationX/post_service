@@ -53,3 +53,6 @@ payment-service:
 sizeof-sublist: 100
 
 cron-expression: 00 50 17 ? * *
+
+like-service:
+  batch-size: 100
