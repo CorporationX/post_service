@@ -13,9 +13,29 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("likes")
+@RequestMapping("/likes")
 public class LikeController {
     private final LikeService likeService;
+  
+    @PostMapping("/post")
+    public void likePost(@RequestBody LikeDto likeDto) {
+        likeService.likePost(likeDto);
+    }
+
+    @DeleteMapping("/post")
+    public void unlikePost(@RequestBody LikeDto likeDto) {
+        likeService.unlikePost(likeDto);
+    }
+
+    @PostMapping("/comment")
+    public void likeComment(@RequestBody LikeDto likeDto) {
+        likeService.likeComment(likeDto);
+    }
+
+    @DeleteMapping("/comment")
+    public void unlikeComment(@RequestBody LikeDto likeDto) {
+        likeService.unlikeComment(likeDto);
+    }
 
     @GetMapping("/post/{postId}")
     public List<UserDto> getUsersThatLikedPost(@PathVariable Long postId) {
@@ -36,5 +56,4 @@ public class LikeController {
     public UserDto deleteLikeFromComment(@PathVariable Long commentId, @PathVariable Long userId) {
         return likeService.deleteLikeFromComment(commentId, userId);
     }
-
 }

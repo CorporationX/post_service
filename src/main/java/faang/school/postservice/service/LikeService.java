@@ -16,8 +16,69 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LikeService {
     private final LikeRepository likeRepository;
+    private final LikeMapper likeMapper;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final LikeValidator likeValidator;
+
+    @Autowired
+    public LikeService(LikeRepository likeRepository, LikeMapper likeMapper, PostRepository postRepository, CommentRepository commentRepository, LikeValidator likeValidator) {
+        this.likeRepository = likeRepository;
+        this.likeMapper = likeMapper;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+        this.likeValidator = likeValidator;
+    }
+  
     private final UserServiceClient userServiceClient;
     private static final int USER_BATCH_SIZE = 100;
+  
+    public void likePost(LikeDto likeDto) {
+        likeValidator.validateUser(likeDto.getUserId());
+
+        if (likeRepository.findByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId()).isPresent()) {
+            unlikePost(likeDto);
+        }
+
+        Post post = postRepository.findById(likeDto.getPostId())
+                .orElseThrow(() -> new IllegalArgumentException("Пост не найден"));
+
+        Like like = likeMapper.toEntity(likeDto);
+        like.setPost(post);
+        likeRepository.save(like);
+    }
+
+    public void unlikePost(LikeDto likeDto) {
+        likeValidator.validateUser(likeDto.getUserId());
+
+        Like like = likeRepository.findByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("Лайк не найден"));
+        likeRepository.delete(like);
+    }
+
+
+    public void likeComment(LikeDto likeDto) {
+        likeValidator.validateUser(likeDto.getUserId());
+
+        if (likeRepository.findByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId()).isPresent()) {
+            unlikeComment(likeDto);
+        }
+
+        Comment comment = commentRepository.findById(likeDto.getCommentId())
+                .orElseThrow(() -> new IllegalArgumentException("Комментарий не найден"));
+
+        Like like = likeMapper.toEntity(likeDto);
+        like.setComment(comment);
+        likeRepository.save(like);
+    }
+
+    public void unlikeComment(LikeDto likeDto) {
+        likeValidator.validateUser(likeDto.getUserId());
+
+        Like like = likeRepository.findByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId())
+                .orElseThrow(()->new IllegalArgumentException("Лайк не найден"));
+        likeRepository.delete(like);
+    }
 
     @Transactional(readOnly = true)
     public List<UserDto> getUsersThatLikedPost(Long postId) {
