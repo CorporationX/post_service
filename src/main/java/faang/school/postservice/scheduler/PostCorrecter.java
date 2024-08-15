@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostCorrecter {
 
-    @Value("${batch.size}")
+    @Value("${batch-size}")
     @Setter
     private int BATCH_SIZE;
 

@@ -1,29 +1,22 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
-import faang.school.postservice.mapper.PostContextMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -32,18 +25,19 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final SpellCheckerService spellCheckerService;
-    private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
     private final PostContextMapper context;
 
     @Async(value = "threadPool")
+    @Transactional
     public void correctPostsContent(List<Post> postList) {
         for (Post post : postList) {
             Optional<String> checkedPostContent = spellCheckerService.checkMessage(post.getContent());
             checkedPostContent.ifPresent(post::setContent);
         }
         postRepository.saveAll(postList);
+    }
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -73,7 +67,7 @@ public class PostService {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> {
                     log.error("Post ID " + postDto.getId() + " not found");
-                    return new EntityNotFoundException("Post ID "+ postDto.getId() +" not found");
+                    return new EntityNotFoundException("Post ID " + postDto.getId() + " not found");
                 });
         postServiceValidator.validatePublishPost(post, postDto);
         post.setPublished(true);
@@ -87,8 +81,8 @@ public class PostService {
     public PostDto deletePost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.error("Post ID "+ postId +" not found");
-                    return new EntityNotFoundException("Post ID "+ postId +" not found");
+                    log.error("Post ID " + postId + " not found");
+                    return new EntityNotFoundException("Post ID " + postId + " not found");
                 });
         postServiceValidator.validateDeletePost(post);
         post.setDeleted(true);
@@ -103,8 +97,8 @@ public class PostService {
     public PostDto getPostByPostId(Long postId) {
         return postMapper.toDto(postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.error("Post ID "+ postId +" not found");
-                    return new EntityNotFoundException("Post ID "+ postId +" not found");
+                    log.error("Post ID " + postId + " not found");
+                    return new EntityNotFoundException("Post ID " + postId + " not found");
                 }));
     }
 
@@ -143,7 +137,7 @@ public class PostService {
 
         return postMapper.toDto(sortPostsByPublishAt(filteredPosts));
     }
-  
+
     public Post getPost(long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post with the same id does not exist"));

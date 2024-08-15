@@ -1,9 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
@@ -13,24 +9,30 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -44,18 +46,16 @@ public class PostServiceTest {
     @Mock
     private SpellCheckerService spellCheckerService;
 
-    private List<Post> postList;
-
-    private PostMapper postMapper;
 
     @Mock
-    private PostRepository postRepository;
+    private PostMapper postMapper;
 
     @Mock
     private PostServiceValidator postServiceValidator;
 
     @Mock
     private PostContextMapper postContextMapper;
+    private List<Post> postList;
 
     private PostDto postDto;
     private Post post;
@@ -79,20 +79,7 @@ public class PostServiceTest {
                         .id(secondPostId)
                         .content(secondPostContent).build()
         );
-    }
 
-    @Test
-    @DisplayName("testing correctPostsContent method")
-    void testCorrectPostsContent() {
-        postService.correctPostsContent(postList);
-        verify(spellCheckerService, times(2)).checkMessage(anyString());
-        verify(postRepository, times(1)).saveAll(postList);
-    }
-}
-
-
-    @BeforeEach
-    public void setUp() {
         postDto = new PostDto();
         post = new Post();
         Post draftPost1 = Post.builder()
@@ -133,7 +120,7 @@ public class PostServiceTest {
                 .id(2L)
                 .content("Draft 2")
                 .build();
-        
+
         PostDto publishedPostDto1 = PostDto.builder()
                 .id(3L)
                 .content("Published 1")
@@ -146,6 +133,14 @@ public class PostServiceTest {
 
         draftPostDtos = Arrays.asList(draftPostDto1, draftPostDto2);
         publishedPostDtos = Arrays.asList(publishedPostDto1, publishedPostDto2);
+    }
+
+    @Test
+    @DisplayName("testing correctPostsContent method")
+    void testCorrectPostsContent() {
+        postService.correctPostsContent(postList);
+        verify(spellCheckerService, times(2)).checkMessage(anyString());
+        verify(postRepository, times(1)).saveAll(postList);
     }
 
     @Test
