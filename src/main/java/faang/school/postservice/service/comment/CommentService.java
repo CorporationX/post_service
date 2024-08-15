@@ -3,10 +3,12 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.validation.comment.UserClientValidation;
+import faang.school.postservice.validator.comment.UserClientValidation;
 import jakarta.persistence.PersistenceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +26,12 @@ public class CommentService {
     private final UserClientValidation userClientValidation;
     private final PostService postService;
     private final CommentMapper commentMapper;
+    private final PostMapper postMapper;
 
     public CommentDto addNewCommentInPost(CommentDto commentDto) {
         userClientValidation.checkUser(commentDto.getAuthorId());
         Comment comment = commentMapper.toEntity(commentDto);
-        comment.setPost(postService.getPost(commentDto.getPostId()));
+        comment.setPost(postMapper.toEntity(postService.getById((commentDto.getPostId()))));
         comment.setLikes(new ArrayList<>());
         try {
             commentRepository.save(comment);
@@ -51,9 +54,7 @@ public class CommentService {
     }
 
     public List<CommentDto> getCommentsForPost(Long postId) {
-        return postService.getPost(postId).getComments().stream()
-                .map(commentMapper::toDto)
-                .toList();
+        return postService.getById(postId).getComments();
     }
 
     public CommentDto deleteExistingCommentInPost(CommentDto commentDto) {

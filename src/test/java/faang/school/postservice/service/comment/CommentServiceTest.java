@@ -1,12 +1,13 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.validation.comment.UserClientValidation;
+import faang.school.postservice.validator.comment.UserClientValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,13 +16,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -35,9 +38,13 @@ class CommentServiceTest {
     private PostService postService;
     @Mock
     private UserClientValidation userClientValidation;
+
+    @Mock
+    private PostMapper postMapper;
+
     CommentDto commentDto;
     Comment existingComment;
-    Post post;
+    PostDto postDto;
     long postId = 1L;
 
     @BeforeEach
@@ -52,7 +59,7 @@ class CommentServiceTest {
         existingComment.setId(1L);
         existingComment.setContent("Original content");
 
-        post = new Post();
+        postDto = new PostDto();
     }
 
     @Test
@@ -61,8 +68,8 @@ class CommentServiceTest {
         doNothing().when(userClientValidation).checkUser(anyLong());
         when(commentMapper.toEntity(any(CommentDto.class)))
                 .thenReturn(existingComment);
-        when(postService.getPost(anyLong()))
-                .thenReturn(post);
+        when(postService.getById(anyLong()))
+                .thenReturn(postDto);
         when(commentRepository.save(any(Comment.class)))
                 .thenReturn(existingComment);
         when(commentMapper.toDto(any(Comment.class))).thenReturn(new CommentDto());
@@ -72,7 +79,7 @@ class CommentServiceTest {
         verify(commentMapper, times(1))
                 .toEntity(any(CommentDto.class));
         verify(postService, times(1))
-                .getPost(anyLong());
+                .getById(anyLong());
         verify(commentRepository, times(1))
                 .save(existingComment);
         verify(commentMapper, times(1))
@@ -86,8 +93,6 @@ class CommentServiceTest {
         updatedComment.setId(1L);
         updatedComment.setContent("Updated content");
 
-//        Mockito.when(userServiceClient.getUser(anyLong()))
-//                .thenReturn(new UserDto(1L, null, null));
         doNothing().when(userClientValidation).checkUser(anyLong());
         when(commentRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(existingComment));
@@ -112,14 +117,12 @@ class CommentServiceTest {
     @DisplayName("testGetCommentsService")
     void testGetCommentsService() {
         Comment commentOne = Comment.builder().id(1L).content("Updated content").build();
-        Post post1 = Post.builder().id(postId).comments(List.of(commentOne)).build();
-        when(postService.getPost(postId)).thenReturn(post1);
-        when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDto);
+        PostDto post1 = PostDto.builder().id(postId).build();
+        when(postService.getById(postId)).thenReturn(post1);
 
         commentService.getCommentsForPost(postId);
 
-        verify(postService, times(1)).getPost(postId);
-        verify(commentMapper, times(1)).toDto(commentOne);
+        verify(postService, times(1)).getById(postId);
     }
 
     @Test

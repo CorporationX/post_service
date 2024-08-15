@@ -15,10 +15,17 @@ public interface CommentMapper {
     @Mapping(source = "post.id", target = "postId")
     @Mapping(source = "likes", target = "likesId", qualifiedByName = "listLikesToLong")
     CommentDto toDto(Comment comment);
+
+    @Mapping(source = "likesId", target = "likes", qualifiedByName = "listLongToLikes")
     Comment toEntity(CommentDto commentDto);
 
     @Named("listLikesToLong")
     default List<Long> listLikesToLong(List<Like> likes){
         return likes.stream().map(Like::getId).toList();
+    }
+
+    @Named("listLongToLikes")
+    default List<Like> listLongToLikes(List<Long> likes) {
+        return likes.stream().map(likeId -> Like.builder().id(likeId).build()).toList();
     }
 }
