@@ -33,7 +33,7 @@ public class LikePostPublisher implements MessagePublisher {
     }
 
     @Async
-    public void createBanEvent(LikeDto likeDto) {
+    public void createLikeEvent(LikeDto likeDto) {
         try {
             LikeEvent likeEvent = likeEventMapper.mapLikeEvent(likeDto);
             publish(objectMapper.writeValueAsString(likeEvent));

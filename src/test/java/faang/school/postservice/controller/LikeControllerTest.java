@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.config.redis.like.LikePostPublisher;
 import faang.school.postservice.controller.like.LikeController;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
@@ -13,15 +14,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class TestLikeController {
+public class LikeControllerTest {
 
     @InjectMocks
     private LikeController likeController;
 
     @Mock
     private LikeService likeService;
+    @Mock
+    private LikePostPublisher likePostPublisher;
+
 
     private long postId;
     private long commentId;
@@ -36,15 +41,19 @@ public class TestLikeController {
 
     @DisplayName("Когда метод добавления лайка отработал")
     @Test
-    public void testAddLikeToPostThenPostIdNegative() {
+    public void testAddLikeToPostWhenValid() {
         LikeDto likeDto = LikeDto.builder()
                 .id(1L)
                 .userId(userId)
                 .postId(postId)
                 .build();
 
+        when(likeService.addLikeToPost(likeDto)).thenReturn(likeDto);
+
         likeController.addLikeToPost(likeDto);
+
         verify(likeService, times(1)).addLikeToPost(likeDto);
+        verify(likePostPublisher, times(1)).createLikeEvent(likeDto);
     }
 
     @DisplayName("Когда метод удалить лайк с поста отработал")

@@ -73,7 +73,7 @@ public class LikeController {
     })
     public LikeDto addLikeToPost(@Validated(LikeToPost.class) @RequestBody LikeDto likeDto) {
         LikeDto result = likeService.addLikeToPost(likeDto);
-        likePostPublisher.createBanEvent(likeDto);
+        likePostPublisher.createLikeEvent(likeDto);
         return result;
     }
 
