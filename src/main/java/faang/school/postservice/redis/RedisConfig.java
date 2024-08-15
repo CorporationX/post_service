@@ -1,6 +1,5 @@
 package faang.school.postservice.redis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,12 +28,12 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic userBanTopic() {
+    ChannelTopic userBanTopic() {
         return new ChannelTopic(userBan);
     }
 
     @Bean
-    public MessagePublisher redisPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic userBanTopic, ObjectMapper objectMapper) {
-        return new RedisMessagePublisher(redisTemplate, userBanTopic, objectMapper);
+    MessagePublisher redisPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic userBanTopic) {
+        return new RedisMessagePublisher(redisTemplate, userBanTopic);
     }
 }

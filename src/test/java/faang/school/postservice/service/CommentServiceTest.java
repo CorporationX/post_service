@@ -1,10 +1,14 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.BanEvent;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.RedisMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -21,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,11 +43,16 @@ public class CommentServiceTest {
     private UserContext userContext;
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private RedisMessagePublisher redisMessagePublisher;
+    @Mock
+    private ObjectMapper objectMapper;
 
 
     private long commentId;
     private long postId;
     private long userId;
+    private long authorId;
     private Comment comment;
     private CommentDto commentDto;
     private CommentDto updatedCommentDto;
@@ -52,22 +62,23 @@ public class CommentServiceTest {
     void init() {
         commentId = 1L;
         userId = 2L;
+        authorId = 2L;
         String content = "content";
         post = Post.builder().id(postId).build();
         comment = Comment.builder()
                 .id(commentId)
-                .authorId(2L)
+                .authorId(authorId)
                 .content(content)
                 .post(post)
                 .build();
         commentDto = CommentDto.builder()
                 .id(commentId)
-                .authorId(2L)
+                .authorId(authorId)
                 .postId(postId)
                 .build();
         updatedCommentDto = CommentDto.builder()
                 .id(commentId)
-                .authorId(2L)
+                .authorId(authorId)
                 .content("UpdatedContent")
                 .build();
 
@@ -109,5 +120,21 @@ public class CommentServiceTest {
         verify(commentRepository).findById(commentId);
         assertNotNull(updatedCommentDto);
         assertEquals(result.getContent(), updatedCommentDto.getContent());
+    }
+
+    @Test
+    void testCheckUserAndBannedForComment() throws JsonProcessingException {
+        int valueBanned = 5;
+        List<Comment> commentsWithoutVerification = List.of(comment);
+        BanEvent banEvent = new BanEvent();
+        banEvent.setAuthorId(authorId);
+        String message = "message";
+
+        when(commentRepository.findAllByPostWithoutVerification()).thenReturn(commentsWithoutVerification);
+        when(objectMapper.writeValueAsString(banEvent)).thenReturn(message);
+
+        commentService.checkUserAndBannedForComment();
+
+        verify(redisMessagePublisher, times(1)).publish(message);
     }
 }
