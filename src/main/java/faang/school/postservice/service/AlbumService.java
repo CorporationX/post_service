@@ -134,49 +134,55 @@ public class AlbumService {
         if (userId == null || !album.isPresent()) {
             return new AlbumDto();
         } else {
-            if (userId.equals(album.get().getAuthorId())) {
-                return albumMapper.toDto(album.get());
-            } else if (album.get().getVisibilityType().equals(VisibilityType.All_USER)) {
-                return albumMapper.toDto(album.get());
-            } else if (album.get().getVisibilityType().equals(VisibilityType.ONLY_SUBSCRIBERS)) {
-                UserDto authorDto = userServiceClient.getUser(album.get().getAuthorId());
-                if (!authorDto.getFollowersId().contains(userId)) {
-                    return albumMapper.toDto(album.get());
-                } else {
-                    log.info("user is not follower");
-                    return new AlbumDto();
-                }
-            } else if (album.get().getVisibilityType().equals(VisibilityType.ONLY_USERS_SELECTED)) {
-                UserVisibility userVisibilityResult = album.get().getVisibilityUsers()
-                        .stream()
-                        .filter(userVisibility -> userVisibility.getUserId().equals(userId))
-                        .findFirst()
-                        .orElse(null);
-                if (userVisibilityResult != null) {
-                    return albumMapper.toDto(album.get());
-                } else {
-                    log.info("user is not follower");
-                }
-            }
+            return isUserVisibilityType(userId, album);
         }
-        return new AlbumDto();
     }
 
     public List<AlbumDto> getAlbumForFilter(AlbumFilterDto albumFilterDto) {
         Long userId = userContext.getUserId();
-            if (albumFilterDto == null) {
-                log.error("filter is null");
-                throw new IllegalArgumentException("filter is null");
-            }
-            Iterable<Album> albums = albumRepository.findAll();
-            Stream<Album> albumStream = StreamSupport.stream(albums.spliterator(), false);
+        if (albumFilterDto == null) {
+            log.error("filter is null");
+            throw new IllegalArgumentException("filter is null");
+        }
+        Iterable<Album> albums = albumRepository.findAll();
+        Stream<Album> albumStream = StreamSupport.stream(albums.spliterator(), false);
+        albumStream.map(album -> isUserVisibilityType(userId, Optional.ofNullable(album)));
 
-            return albumsFilter.stream()
-                    .filter(albumFilter -> albumFilter.isApplicable(albumFilterDto))
-                    .filter(albumFilter -> albumFilter.equals(userId))
-                    .reduce(albumStream, (cumulativeStream, albumsFilter) ->
-                            albumsFilter.apply(cumulativeStream, albumFilterDto), Stream::concat)
-                    .map(albumMapper::toDto)
-                    .toList();
+        return albumsFilter.stream()
+                .filter(albumFilter -> albumFilter.isApplicable(albumFilterDto))
+                .filter(albumFilter -> albumFilter.equals(userId))
+                .reduce(albumStream, (cumulativeStream, albumsFilter) ->
+                        albumsFilter.apply(cumulativeStream, albumFilterDto), Stream::concat)
+                .map(albumMapper::toDto)
+                .toList();
+    }
+
+    private AlbumDto isUserVisibilityType(Long userId, Optional<Album> album) {
+        if (userId.equals(album.get().getAuthorId())) {
+            return albumMapper.toDto(album.get());
+        } else if (album.get().getVisibilityType().equals(VisibilityType.All_USER)) {
+            return albumMapper.toDto(album.get());
+        } else if (album.get().getVisibilityType().equals(VisibilityType.ONLY_SUBSCRIBERS)) {
+            UserDto authorDto = userServiceClient.getUser(album.get().getAuthorId());
+            if (!authorDto.getFollowersId().contains(userId)) {
+                return albumMapper.toDto(album.get());
+            } else {
+                log.info("user is not follower");
+                return new AlbumDto();
+            }
+        } else if (album.get().getVisibilityType().equals(VisibilityType.ONLY_USERS_SELECTED)) {
+            UserVisibility userVisibilityResult = album.get().getVisibilityUsers()
+                    .stream()
+                    .filter(userVisibility -> userVisibility.getUserId().equals(userId))
+                    .findFirst()
+                    .orElse(null);
+            if (userVisibilityResult != null) {
+                return albumMapper.toDto(album.get());
+            } else {
+                log.info("user is not follower");
+            }
+        }
+        log.error("album not found");
+        throw new NoSuchElementException("album is null");
     }
 }
