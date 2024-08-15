@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.event.PostViewEvent;
 import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.publisher.MessagePublisher;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -37,7 +38,7 @@ public class PostViewEventPublisher implements MessagePublisher<PostViewEvent> {
         }
     }
 
-    public void toEventAndPublish(PostViewDto postViewDto) {
+    public void toEventAndPublish(@NotNull PostViewDto postViewDto) {
         publish(PostViewEvent.builder()
                 .postId(postViewDto.getPostId())
                 .authorId(postViewDto.getAuthorId())
