@@ -14,7 +14,6 @@ public class LikeEventMapper {
     private final UserContext userContext;
 
     public LikeEvent mapLikeEvent(LikeDto likeDto) {
-        System.out.println("Map");
         return LikeEvent.builder()
                 .postId(likeDto.getPostId())
                 .authorLikeId(userContext.getUserId())
