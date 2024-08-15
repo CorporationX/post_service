@@ -1,8 +1,10 @@
 package faang.school.postservice.like;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
@@ -16,6 +18,7 @@ import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.like.LikeServiceImpl;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.LikeValidator;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,9 +29,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 
+import static faang.school.postservice.util.TestDataFactory.ID;
+import static faang.school.postservice.util.TestDataFactory.INVALID_ID;
+import static faang.school.postservice.util.TestDataFactory.getUserDtoList;
+import static java.util.Collections.emptyList;
+import static java.util.List.of;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceImplTest {
@@ -49,6 +62,8 @@ class LikeServiceImplTest {
     private PostMapper postMapper;
     @Mock
     private CommentMapper commentMapper;
+    @Mock
+    UserServiceClient userServiceClient;
 
     @InjectMocks
     private LikeServiceImpl likeService;
@@ -93,6 +108,7 @@ class LikeServiceImplTest {
         comment.setId(1L);
         comment.setAuthorId(1L);
         comment.setLikes(likes);
+        likeService.setBatchSize(100);
     }
 
     @Test
@@ -151,5 +167,72 @@ class LikeServiceImplTest {
         likeService.deleteCommentLike(likeDto);
 
         verify(likeRepository).deleteByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId());
+    }
+
+
+
+    @Test
+    void givenPostIdWhenFindUsersByPostIdThenReturnUsers() {
+        // given - precondition
+        List<Like> likeList = of(new Like(), new Like());
+        List<UserDto> userDtoList = getUserDtoList();
+
+        when(likeRepository.findByPostId(ID))
+                .thenReturn(likeList);
+        when(userServiceClient.getUsersByIds(anyList()))
+                .thenReturn(userDtoList);
+
+        // when - action
+        var actualResult = likeService.findUsersByPostId(ID);
+
+        // then - verify the output
+        assertThat(actualResult).isNotNull();
+        assertThat(actualResult).usingRecursiveFieldByFieldElementComparator()
+                .containsAnyElementsOf(userDtoList);
+    }
+
+    @Test
+    void givenInvalidPostIdWhenFindUsersByPostIdThenThrowException() {
+        // given - precondition
+        when(likeRepository.findByPostId(anyLong()))
+                .thenReturn(emptyList());
+
+        // when - action and
+        // then - verify the output
+        assertThatThrownBy(() -> likeService.findUsersByPostId(INVALID_ID))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("No users found for ID " + INVALID_ID);
+    }
+
+    @Test
+    void givenCommentIdWhenFindUsersByPostIdThenReturnUsers() {
+        // given - precondition
+        List<Like> likeList = of(new Like(), new Like());
+        List<UserDto> userDtoList = getUserDtoList();
+
+        when(likeRepository.findByCommentId(anyLong()))
+                .thenReturn(likeList);
+        when(userServiceClient.getUsersByIds(anyList()))
+                .thenReturn(userDtoList);
+
+        // when - action
+        var actualResult = likeService.findUsersByCommentId(ID);
+
+        // then - verify the output
+        assertThat(actualResult).isNotNull();
+        assertThat(actualResult).usingRecursiveFieldByFieldElementComparator()
+                .containsAnyElementsOf(userDtoList);
+    }
+    @Test
+    void givenInvalidCommentIdWhenFindUsersByPostIdThenThrowException() {
+        // given - precondition
+        when(likeRepository.findByCommentId(anyLong()))
+                .thenReturn(emptyList());
+
+        // when - action and
+        // then - verify the output
+        assertThatThrownBy(() -> likeService.findUsersByCommentId(INVALID_ID))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("No users found for ID " + INVALID_ID);
     }
 }
