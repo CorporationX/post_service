@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
+    private final ModerationDictionary moderationDictionary;
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
@@ -48,5 +50,16 @@ public class CommentService {
     public void deleteComment(Long commentId) {
         commentValidator.findCommentById(commentId);
         commentRepository.deleteById(commentId);
+    }
+
+    @Transactional
+    public void verifyComments() {
+        List<Comment> commentsToVerify = commentRepository.findAllByVerifiedDateIsNull();
+        for(Comment comment : commentsToVerify) {
+            boolean containsBadWords = moderationDictionary.containsForbiddenWords(comment.getContent());
+            comment.setVerified(!containsBadWords);
+            comment.setVerifiedDate(LocalDateTime.now());
+            commentRepository.save(comment);
+        }
     }
 }
