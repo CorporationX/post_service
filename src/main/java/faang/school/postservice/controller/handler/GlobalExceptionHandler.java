@@ -10,18 +10,18 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@ControllerAdvice
-public class GlobalExceptionHandler {
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException exception, WebRequest request) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
-        body.put("message", exception.getMessage());
-        body.put("path", request.getDescription(false).substring(4));
-
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-}
+//@ControllerAdvice
+//public class GlobalExceptionHandler {
+//
+//    @ExceptionHandler(IllegalArgumentException.class)
+//    public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException exception, WebRequest request) {
+//        Map<String, Object> body = new HashMap<>();
+//        body.put("timestamp", LocalDateTime.now());
+//        body.put("status", HttpStatus.BAD_REQUEST.value());
+//        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+//        body.put("message", exception.getMessage());
+//        body.put("path", request.getDescription(false).substring(4));
+//
+//        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+//    }
+//}
