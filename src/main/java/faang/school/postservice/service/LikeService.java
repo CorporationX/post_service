@@ -1,9 +1,16 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,16 +27,6 @@ public class LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final LikeValidator likeValidator;
-
-    @Autowired
-    public LikeService(LikeRepository likeRepository, LikeMapper likeMapper, PostRepository postRepository, CommentRepository commentRepository, LikeValidator likeValidator) {
-        this.likeRepository = likeRepository;
-        this.likeMapper = likeMapper;
-        this.postRepository = postRepository;
-        this.commentRepository = commentRepository;
-        this.likeValidator = likeValidator;
-    }
-  
     private final UserServiceClient userServiceClient;
     private static final int USER_BATCH_SIZE = 100;
   
