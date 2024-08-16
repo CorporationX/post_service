@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "post_ad")
 @AllArgsConstructor
 @NoArgsConstructor

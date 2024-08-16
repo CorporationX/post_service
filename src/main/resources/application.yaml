@@ -27,6 +27,17 @@ spring:
         follower_channel:
           name: follower_channel
 
+  task:
+    execution:
+      pool:
+        core-size: 5
+        max-size: 10
+        queue-capacity: 10000
+        keep-alive: 60
+        thread-name-prefix: "AdRemoverExecutor"
+
+
+
 server:
   port: 8081
 
@@ -38,9 +49,18 @@ post:
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+
+ad:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  ad-deleted:
+    scheduler:
+      cron: "0 0 0 * * *" # once a day
+      batchSize:
+        size: 100
+
+
 
 user-service:
   host: localhost
