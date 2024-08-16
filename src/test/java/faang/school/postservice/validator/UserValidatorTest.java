@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
@@ -25,17 +26,18 @@ class UserValidatorTest {
     private UserValidator userValidator;
 
     @Test
-    @DisplayName("testing userExistence")
-    public void testUserExistence() {
+    @DisplayName("testing userExistence with non appropriate value")
+    public void testUserExistenceWithNonAppropriateValue() {
         long userId = 1L;
-        when(userServiceClient.checkUserExistence(userId)).thenReturn(false);
+        when(userServiceClient.existsById(userId)).thenReturn(false);
         assertThrows(EntityNotFoundException.class, () -> userValidator.validateUserExistence(userId));
     }
 
     @Test
-    @DisplayName("testing ")
-    public void testFollowersExistence() {
-        when(userServiceClient.doesFollowersExist(anyList())).thenReturn(false);
-        assertThrows(EntityNotFoundException.class, () -> userValidator.validateFollowersExistence(List.of()));
+    @DisplayName("testing userExistence with appropriate value")
+    public void testUserExistenceWithAppropriateValue() {
+        long userId = 1L;
+        when(userServiceClient.existsById(userId)).thenReturn(true);
+        assertDoesNotThrow(() -> userValidator.validateUserExistence(userId));
     }
 }

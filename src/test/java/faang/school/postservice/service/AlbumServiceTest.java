@@ -3,6 +3,13 @@ package faang.school.postservice.service;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.AlbumDto;
 import faang.school.postservice.dto.AlbumFilterDto;
+import faang.school.postservice.filter.AlbumAuthorFilter;
+import faang.school.postservice.filter.AlbumDescriptionFilter;
+import faang.school.postservice.filter.AlbumFilter;
+import faang.school.postservice.filter.AlbumFromDateFilter;
+import faang.school.postservice.filter.AlbumTitleFilter;
+import faang.school.postservice.filter.AlbumToDateFilter;
+import faang.school.postservice.handler.EntityHandler;
 import faang.school.postservice.filter.album.AlbumAuthorFilter;
 import faang.school.postservice.filter.album.AlbumDescriptionFilter;
 import faang.school.postservice.filter.album.AlbumFilter;
@@ -11,6 +18,7 @@ import faang.school.postservice.filter.album.AlbumTitleFilter;
 import faang.school.postservice.filter.album.AlbumToDateFilter;
 import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.validator.AlbumValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -27,7 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.mockito.Mockito.lenient;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,6 +47,8 @@ class AlbumServiceTest {
     private UserContext userContext;
     @Mock
     private AlbumMapper albumMapper;
+    @Mock
+    private EntityHandler entityHandler;
     @Mock
     private UserValidator userValidator;
     @Mock
@@ -52,16 +63,20 @@ class AlbumServiceTest {
     @InjectMocks
     private AlbumService albumService;
 
+    private long userId;
     private long postId;
     private long albumId;
     private long authorId;
     private long requesterId;
     private Album album;
+    private Post post;
     private AlbumDto albumDto;
     private AlbumFilterDto albumFilterDto;
+    private List<AlbumFilter> albumFilterListImpl;
 
     @BeforeEach
     public void setUp() {
+        userId = 1L;
         postId = 2L;
         albumId = 3L;
         authorId = 4L;
@@ -73,13 +88,18 @@ class AlbumServiceTest {
                 .posts(new ArrayList<>())
                 .build();
         albumDto = AlbumDto.builder()
+                .authorId(authorId)
                 .title("title")
+                .build();
+        post = Post.builder()
+                .id(postId)
                 .allowedUserIds(allowedUserIds)
                 .build();
         albumFilterDto = AlbumFilterDto.builder()
                 .titlePattern("title")
                 .build();
-        List<AlbumFilter> albumFilterListImpl = List.of(
+        albumFilterDto = new AlbumFilterDto();
+        albumFilterListImpl = List.of(
                 new AlbumAuthorFilter(),
                 new AlbumDescriptionFilter(),
                 new AlbumFromDateFilter(),
@@ -97,18 +117,33 @@ class AlbumServiceTest {
     @DisplayName("testing createAlbum method")
     void testCreateAlbum() {
         when(albumMapper.toEntity(albumDto)).thenReturn(album);
+        when(albumRepository.save(album)).thenReturn(album);
+
         albumService.createAlbum(albumDto);
         verify(userContext, times(1)).getUserId();
         verify(userValidator, times(1)).validateUserExistence(requesterId);
         verify(userValidator, times(1)).validateFollowersExistence(albumDto.getAllowedUserIds());
+
+        verify(userValidator, times(1)).validateUserExistence(authorId);
         verify(albumValidator, times(1))
                 .validateAlbumTitleDoesNotDuplicatePerAuthor(requesterId, albumDto.getTitle());
+                .validateAlbumTitleDoesNotDuplicatePerAuthor(authorId, albumDto.getTitle());
+        verify(albumMapper, times(1)).toEntity(albumDto);
         verify(albumRepository, times(1)).save(album);
+        verify(albumMapper, times(1)).toDto(album);
     }
 
     @Test
     @DisplayName("testing addPostToAlbum method")
     void addPostToAlbum() {
+        when(entityHandler.getOrThrowException(eq(Album.class), eq(albumId), any())).thenReturn(album);
+        when(entityHandler.getOrThrowException(eq(Post.class), eq(postId), any())).thenReturn(post);
+
+        albumService.addPostToAlbum(authorId, postId, albumId);
+
+        verify(entityHandler, times(1)).getOrThrowException(eq(Album.class), eq(albumId), any());
+        verify(entityHandler, times(1)).getOrThrowException(eq(Post.class), eq(postId), any());
+        verify(albumValidator, times(1)).validateAlbumBelongsToAuthor(authorId, album);
         albumService.addPostToAlbum(postId, albumId);
         verify(userContext, times(1)).getUserId();
         verify(albumValidator, times(1)).validateAlbumExistence(albumId);
@@ -123,6 +158,11 @@ class AlbumServiceTest {
         albumService.removePostFromAlbum(postId, albumId);
         verify(userContext, times(1)).getUserId();
         verify(albumValidator, times(1)).validateAlbumExistence(albumId);
+        when(entityHandler.getOrThrowException(eq(Album.class), eq(albumId), any())).thenReturn(album);
+
+        albumService.removePostFromAlbum(authorId, postId, albumId);
+
+        verify(entityHandler, times(1)).getOrThrowException(eq(Album.class), eq(albumId), any());
         verify(postValidator, times(1)).validatePostExistence(postId);
         verify(albumValidator, times(1)).validateAlbumBelongsToRequester(requesterId, album);
         verify(albumRepository, times(1)).save(album);
@@ -152,7 +192,12 @@ class AlbumServiceTest {
     @Test
     @DisplayName("testing getAlbumById method")
     void testGetAlbumById() {
+        when(entityHandler.getOrThrowException(eq(Album.class), eq(albumId), any())).thenReturn(album);
+
         albumService.getAlbumById(albumId);
+
+        verify(entityHandler, times(1)).getOrThrowException(eq(Album.class), eq(albumId), any());
+        verify(albumMapper, times(1)).toDto(album);
         verify(userContext, times(1)).getUserId();
         verify(albumValidator, times(1)).validateAlbumExistence(albumId);
         verify(albumValidator, times(1)).validateVisibilityToRequester(requesterId, album);
@@ -162,6 +207,7 @@ class AlbumServiceTest {
     @DisplayName("testing getAuthorFilteredAlbums method")
     void testGetAuthorFilteredAlbums() {
         when(albumRepository.findByAuthorId(authorId)).thenReturn(Stream.of(album));
+        when(albumFilterList.iterator()).thenReturn(albumFilterListImpl.iterator());
         albumService.getAuthorFilteredAlbums(authorId, albumFilterDto);
         verify(userContext, times(1)).getUserId();
         verify(albumRepository, times(1)).findByAuthorId(authorId);
@@ -172,6 +218,8 @@ class AlbumServiceTest {
     @DisplayName("testing getAllFilteredAlbums method")
     void testGetAllFilteredAlbums() {
         when(albumRepository.findAll()).thenReturn(List.of(album));
+        when(albumRepository.findAll()).thenReturn(List.of(album));
+        when(albumFilterList.iterator()).thenReturn(albumFilterListImpl.iterator());
         albumService.getAllFilteredAlbums(albumFilterDto);
         verify(userContext, times(1)).getUserId();
         verify(albumRepository, times(1)).findAll();
@@ -191,19 +239,24 @@ class AlbumServiceTest {
     @Test
     @DisplayName("testing updateAlbum method")
     void testUpdateAlbum() {
+        when(entityHandler.getOrThrowException(eq(Album.class), eq(albumId), any())).thenReturn(album);
+
         albumService.updateAlbum(albumId, albumDto);
         verify(userContext, times(1)).getUserId();
-        verify(albumValidator, times(1)).validateAlbumExistence(albumId);
+        verify(entityHandler, times(1)).getOrThrowException(eq(Album.class), eq(albumId), any());
         verify(albumValidator, times(1)).validateAlbumBelongsToRequester(requesterId, album);
-        verify(albumRepository, times(1)).save(album);
+        verify(albumRepository, times(1)).save(album);verify(albumMapper, times(1)).toDto(album);
     }
 
     @Test
     @DisplayName("testing deleteAlbum method")
     void testDeleteAlbum() {
+        when(entityHandler.getOrThrowException(eq(Album.class), eq(albumId), any())).thenReturn(album);
+
         albumService.deleteAlbum(albumId);
         verify(userContext, times(1)).getUserId();
-        verify(albumValidator, times(1)).validateAlbumExistence(albumId);
+
+        verify(entityHandler, times(1)).getOrThrowException(eq(Album.class), eq(albumId), any());
         verify(albumValidator, times(1)).validateAlbumBelongsToRequester(requesterId, album);
         verify(albumRepository, times(1)).delete(album);
     }

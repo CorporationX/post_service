@@ -15,7 +15,7 @@ public class UserValidator {
     private final UserServiceClient userServiceClient;
 
     public void validateUserExistence(long userId) {
-        if (!userServiceClient.checkUserExistence(userId)) {
+        if (!userServiceClient.existsById(userId)) {
             String errMessage = String.format("User with ID: %d was not found in Database", userId);
             log.info(errMessage);
             throw new EntityNotFoundException(errMessage);

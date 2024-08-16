@@ -9,8 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
@@ -24,9 +23,17 @@ class PostValidatorTest {
 
     @Test
     @DisplayName("testing validatePostExistence method with non appropriate value")
-    void testValidatePostExistence() {
+    void testValidatePostExistenceWithNonAppropriateValue() {
         long postId = 1L;
-        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+        when(postRepository.existsById(postId)).thenReturn(false);
         assertThrows(EntityNotFoundException.class, () -> postValidator.validatePostExistence(postId));
+    }
+
+    @Test
+    @DisplayName("testing validatePostExistence method with appropriate value")
+    void testValidatePostExistenceWithAppropriateValue() {
+        long postId = 1L;
+        when(postRepository.existsById(postId)).thenReturn(true);
+        assertDoesNotThrow(() -> postValidator.validatePostExistence(postId));
     }
 }
