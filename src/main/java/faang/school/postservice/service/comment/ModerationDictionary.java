@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -11,6 +12,8 @@ import java.util.Set;
 
 @Component
 public class ModerationDictionary {
+    @Value("${comment.word-split-regex}")
+    private String wordSplitRegex;
     private Set<String> badWords = new HashSet<>();
 
     @PostConstruct
@@ -27,7 +30,7 @@ public class ModerationDictionary {
     }
 
     public boolean containsForbiddenWords(String text) {
-        for (String word : text.toLowerCase().split("\\W+")) {
+        for (String word : text.toLowerCase().split(wordSplitRegex)) {
             if (badWords.contains(word)) {
                 return true;
             }

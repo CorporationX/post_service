@@ -19,7 +19,7 @@ CREATE TABLE comment (
     created_at timestamptz DEFAULT current_timestamp,
     updated_at timestamptz DEFAULT current_timestamp,
     verified boolean,
-    verified_date timestamptz DEFAULT current_timestamp,
+    verified_date timestamptz DEFAULT NULL,
 
     CONSTRAINT fk_post_id FOREIGN KEY (post_id) REFERENCES post (id) ON DELETE CASCADE
 );

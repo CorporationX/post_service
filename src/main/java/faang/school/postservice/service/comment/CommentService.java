@@ -6,12 +6,16 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +24,10 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
     private final ModerationDictionary moderationDictionary;
+    private final ExecutorService moderationExecutor;
+
+    @Value("${comment.batchSize}")
+    private int batchSize;
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
@@ -55,11 +63,30 @@ public class CommentService {
     @Transactional
     public void verifyComments() {
         List<Comment> commentsToVerify = commentRepository.findAllByVerifiedDateIsNull();
-        for(Comment comment : commentsToVerify) {
-            boolean containsBadWords = moderationDictionary.containsForbiddenWords(comment.getContent());
-            comment.setVerified(!containsBadWords);
-            comment.setVerifiedDate(LocalDateTime.now());
-            commentRepository.save(comment);
-        }
+
+        List<List<Comment>> partitions = partitionList(commentsToVerify, batchSize);
+
+        List<CompletableFuture<Void>> futures = partitions.stream()
+                .map(this::moderatePartition)
+                .collect(Collectors.toList());
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    }
+
+    private CompletableFuture<Void> moderatePartition(List<Comment> partition) {
+        return CompletableFuture.runAsync(() -> {
+            for (Comment comment : partition) {
+                boolean containsBadWords = moderationDictionary.containsForbiddenWords(comment.getContent());
+                comment.setVerified(!containsBadWords);
+                comment.setVerifiedDate(LocalDateTime.now());
+            }
+            commentRepository.saveAll(partition);
+        }, moderationExecutor);
+    }
+
+    private List<List<Comment>> partitionList(List<Comment> list, int partitionSize) {
+        return IntStream.range(0, (list.size() + partitionSize - 1) / partitionSize)
+                .mapToObj(i -> list.subList(i * partitionSize, Math.min((i + 1) * partitionSize, list.size())))
+                .collect(Collectors.toList());
     }
 }
