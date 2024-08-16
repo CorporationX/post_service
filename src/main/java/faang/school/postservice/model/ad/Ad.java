@@ -15,8 +15,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "post_ad")
-@AllArgsConstructor
-@NoArgsConstructor
 public class Ad {
 
     @Id
