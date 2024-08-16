@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -85,8 +86,10 @@ public class CommentService {
     }
 
     private List<List<Comment>> partitionList(List<Comment> list, int partitionSize) {
-        return IntStream.range(0, (list.size() + partitionSize - 1) / partitionSize)
-                .mapToObj(i -> list.subList(i * partitionSize, Math.min((i + 1) * partitionSize, list.size())))
-                .collect(Collectors.toList());
+        List<List<Comment>> partitions = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += partitionSize) {
+            partitions.add(new ArrayList<>(list.subList(i, Math.min(list.size(), i + partitionSize))));
+        }
+        return partitions;
     }
 }
