@@ -11,8 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
@@ -42,24 +41,44 @@ class AlbumValidatorTest {
     }
 
     @Test
-    @DisplayName("testing validateAlbumTitleDoesNotDuplicatePerAuthor method with appropriate value")
-    public void testValidateAlbumTitleDoesNotDuplicatePerAuthor() {
+    @DisplayName("testing validateAlbumExistence method with non appropriate value")
+    public void testValidateAlbumExistenceWithNonAppropriateValue() {
+        when(albumRepository.existsById(albumId)).thenReturn(false);
+        assertThrows(EntityNotFoundException.class, () -> albumValidator.validateAlbumExistence(albumId));
+    }
+
+    @Test
+    @DisplayName("testing validateAlbumExistence method with appropriate value")
+    public void testValidateAlbumExistenceWithAppropriateValue() {
+        when(albumRepository.existsById(albumId)).thenReturn(true);
+        assertDoesNotThrow(() -> albumValidator.validateAlbumExistence(albumId));
+    }
+
+    @Test
+    @DisplayName("testing validateAlbumTitleDoesNotDuplicatePerAuthor method with non appropriate value")
+    public void testValidateAlbumTitleDoesNotDuplicatePerAuthorWithNonAppropriateValue() {
         when(albumRepository.existsByTitleAndAuthorId(album.getTitle(), authorId)).thenReturn(true);
         assertThrows(IllegalArgumentException.class,
                 () -> albumValidator.validateAlbumTitleDoesNotDuplicatePerAuthor(authorId, album.getTitle()));
     }
 
     @Test
-    @DisplayName("testing validateAlbumExistence method with non appropriate value")
-    public void testValidateAlbumExistence() {
-        when(albumRepository.findById(albumId)).thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> albumValidator.validateAlbumExistence(albumId));
+    @DisplayName("testing validateAlbumTitleDoesNotDuplicatePerAuthor method with appropriate value")
+    public void testValidateAlbumTitleDoesNotDuplicatePerAuthorWithAppropriateValue() {
+        when(albumRepository.existsByTitleAndAuthorId(album.getTitle(), authorId)).thenReturn(false);
+        assertDoesNotThrow(() -> albumValidator.validateAlbumTitleDoesNotDuplicatePerAuthor(authorId, album.getTitle()));
     }
 
     @Test
     @DisplayName("testing validateAlbumBelongsToAuthor method with non appropriate value")
-    public void testValidateAlbumBelongsToAuthor() {
+    public void testValidateAlbumBelongsToAuthorWithNonAppropriateValue() {
         assertThrows(IllegalArgumentException.class,
                 () -> albumValidator.validateAlbumBelongsToAuthor(notAuthorId, album));
+    }
+
+    @Test
+    @DisplayName("testing validateAlbumBelongsToAuthor method with appropriate value")
+    public void testValidateAlbumBelongsToAuthorWithAppropriateValue() {
+        assertDoesNotThrow(() -> albumValidator.validateAlbumBelongsToAuthor(authorId, album));
     }
 }
