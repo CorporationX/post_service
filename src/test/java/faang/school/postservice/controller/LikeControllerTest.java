@@ -2,7 +2,6 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
-import faang.school.postservice.validator.ControllerValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,8 +27,6 @@ class LikeControllerTest {
     private MockMvc mockMvc;
     private LikeDto dto;
     private ObjectWriter objectWriter;
-    @Mock
-    private ControllerValidator validator;
     @Mock
     private LikeService service;
     @InjectMocks
