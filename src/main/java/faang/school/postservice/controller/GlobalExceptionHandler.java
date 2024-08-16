@@ -34,9 +34,4 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleIllegalArgumentException(EntityNotFoundException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleAllOtherExceptions(Exception ex) {
-        return new ResponseEntity<>("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 }

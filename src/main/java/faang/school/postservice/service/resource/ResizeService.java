@@ -65,10 +65,10 @@ public class ResizeService {
 
     private MultipartFile createMultipartFile(MultipartFile originalFile, byte[] resizedImage) {
         return new CustomMultipartFile(
-                originalFile.getName(),
+                resizedImage,
                 originalFile.getOriginalFilename(),
                 originalFile.getContentType(),
-                resizedImage
+                originalFile.getName()
         );
     }
 

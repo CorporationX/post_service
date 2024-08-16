@@ -1,6 +1,7 @@
 package faang.school.postservice.client;
 
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserProfilePicDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,21 +13,20 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 
-@FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}")
+@FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}", path = "/api/v1/user")
 public interface UserServiceClient {
 
 
-    @GetMapping("/api/v1/user/{userId}")
+    @GetMapping("/{userId}")
     UserDto getUserById(@PathVariable long userId);
 
-    @PostMapping("/api/v1/user/byList")
+    @PostMapping("/byList")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 
-    @PutMapping("/api/v1/user/avatar/{fileId}/{smallFileId}")
+    @PutMapping("/avatar/put")
     void uploadAvatar(@RequestHeader(value = "x-user-id") long userId,
-                             @PathVariable String fileId,
-                             @PathVariable String smallFileId);
+                             @RequestBody UserProfilePicDto userProfilePicDto);
 
-    @DeleteMapping("/api/v1/user/avatar/delete")
+    @DeleteMapping("/avatar/delete")
     void deleteAvatar(@RequestHeader(value = "x-user-id") long userId);
 }

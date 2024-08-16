@@ -1,7 +1,6 @@
 package faang.school.postservice.service.s3;
 
 import faang.school.postservice.model.Resource;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -9,10 +8,10 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -38,7 +37,7 @@ public class MinioS3Client {
 //
 //    @Value("${services.s3.endpoint}")
 //    private String endpoint;
-    private final String bucketName = "projectbucket";
+    private final String bucketName = "corpbucket";
 
     private final String accessKey = "user";
 
@@ -54,6 +53,7 @@ public class MinioS3Client {
                 .region(Region.US_WEST_2)
                 .credentialsProvider(StaticCredentialsProvider.create(
                         AwsBasicCredentials.create(accessKey, secretKey)))
+                .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
                 .build();
     }
 
@@ -70,7 +70,7 @@ public class MinioS3Client {
                             .build(),
                     RequestBody.fromByteBuffer(byteBuffer));
         } catch (S3Exception | IOException e) {
-            System.err.println("Failed to upload file");
+            System.err.println("Failed to upload file: " + e.getMessage());
         }
 
         return Resource.builder()
@@ -89,11 +89,11 @@ public class MinioS3Client {
                 .build());
     }
 
-    public void deleteFIle(String largeFileKey, String smallFileKey) {
+    public void deleteFIle(String fileKey, String smallFileKey) {
         s3Client.deleteObject(DeleteObjectRequest
                 .builder()
                 .bucket(bucketName)
-                .key(largeFileKey)
+                .key(fileKey)
                 .build());
 
         s3Client.deleteObject(DeleteObjectRequest

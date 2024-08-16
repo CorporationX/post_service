@@ -4,15 +4,19 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.service.AvatarService;
 import faang.school.postservice.service.s3.MinioS3Client;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -27,16 +31,16 @@ public class AvatarController {
         avatarService.saveAvatar(userId, file);
     }
 
-    @GetMapping("/avatars/{key}")
-    public void getAvatar(@PathVariable String key) {
-        avatarService.getAvatar(key);
+    @GetMapping("/avatars/key")
+    public ResponseEntity<byte[]> getAvatar(@RequestBody String key) {
+        return avatarService.getAvatar(key);
     }
 
-    @DeleteMapping("/avatars/delete/{smallImageKey}/{largeImageKey}")
+    @DeleteMapping("/avatars/delete/{imageKey}/{smallImageKey}")
     public void deleteAvatar(@RequestHeader(value = "x-user-id") long userId,
-                             @PathVariable(value = "largeImageKey") String largeImageKey,
+                             @PathVariable(value = "imageKey") String imageKey,
                              @PathVariable(value = "smallImageKey") String smallImageKey) {
-        avatarService.deleteAvatar(userId, largeImageKey, smallImageKey);
+        avatarService.deleteAvatar(userId, imageKey, smallImageKey);
     }
 
     @GetMapping("/buckets/get")
