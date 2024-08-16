@@ -17,6 +17,7 @@ public interface AlbumMapper {
     @Mapping(source = "posts", target = "postIds", qualifiedByName = "postsToPostIdsMapper")
     AlbumDto toDto(Album album);
 
+    @Mapping(target = "posts", ignore = true)
     Album toEntity(AlbumDto albumDto);
 
     @Named("postsToPostIdsMapper")
