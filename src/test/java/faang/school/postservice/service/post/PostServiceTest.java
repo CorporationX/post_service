@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.post.PostMapperImpl;
+import faang.school.postservice.messaging.publishers.post.PostEventPublishers;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
@@ -40,6 +41,8 @@ class PostServiceTest {
 
     @Mock
     private PostValidator postValidator;
+    @Mock
+    private PostEventPublishers postEventPublishers;
 
     private PostDto postDto;
     private Post post;
@@ -75,6 +78,7 @@ class PostServiceTest {
 
         when(postRepository.findById(defaultIdForTests)).thenReturn(postOptional);
         doNothing().when(postValidator).validatePublish(postOptional);
+        doNothing().when(postEventPublishers).toEventAndPublish(any(Post.class));
         when(postRepository.save(post)).thenReturn(post);
 
         PostDto returnedPostDto = postService.publish(defaultIdForTests);
