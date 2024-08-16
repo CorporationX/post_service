@@ -23,8 +23,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    testImplementation("org.springframework:spring-test:5.3.8")
-    implementation("org.springframework.retry:spring-retry:1.3.1")
+    implementation("org.springframework:spring-aspects:6.1.11")
+    implementation("org.springframework.retry:spring-retry:2.0.6")
 
     /**
      * Database
@@ -43,6 +43,9 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+    implementation("net.coobird:thumbnailator:0.4.20")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
     /**
      * Test containers
@@ -62,14 +65,10 @@ dependencies {
     /**
      * S3 SDK
      */
-//    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
-//    implementation("io.minio:minio:8.5.4")
     implementation("software.amazon.awssdk:s3:2.20.0")
     implementation("software.amazon.awssdk:auth:2.20.0")
     implementation("software.amazon.awssdk:regions:2.20.0")
-//    implementation("software.amazon.awssdk:s3:2.20.1")
-//    implementation("software.amazon.awssdk:auth:2.20.1")
-//    implementation("software.amazon.awssdk:core:2.20.1")
+
     implementation("net.coobird:thumbnailator:0.4.8")
 
     implementation("org.imgscalr:imgscalr-lib:4.2")

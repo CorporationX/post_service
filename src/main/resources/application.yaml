@@ -25,6 +25,26 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  services:
+    s3:
+      endpoint: http://localhost:9000
+      accessKey: user
+      secretKey: password
+      bucketName: projectbucket
+
+  resources:
+    file:
+      max-file-size: 5242880 # 5 mb
+      quality-files-when-adding-single-file: 1
+    image:
+      max-width-horizontal: 1080
+      max-height-horizontal: 566
+      max-size-square: 1080
+      supported-image-types: "image/png,image/jpeg,image/jpg"
+
+  post:
+    max-image-quantity: 10
+
 server:
   port: 8081
 
