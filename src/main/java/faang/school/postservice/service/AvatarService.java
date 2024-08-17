@@ -43,52 +43,9 @@ public class AvatarService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        int originalWidth = originalImage.getWidth();
-        int originalHeight = originalImage.getHeight();
 
-        ByteArrayOutputStream largeOutputStream = new ByteArrayOutputStream();
-        if (originalWidth > 1080 || originalHeight > 1080) {
-            try {
-                Thumbnails.of(originalImage)
-                        .size(1080, 1080)
-                        .keepAspectRatio(true)
-                        .outputFormat("png")
-                        .toOutputStream(largeOutputStream);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            try {
-                Thumbnails.of(originalImage)
-                        .scale(1)
-                        .outputFormat("png")
-                        .toOutputStream(largeOutputStream);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        ByteArrayOutputStream smallOutputStream = new ByteArrayOutputStream();
-        if (originalWidth > 170 || originalHeight > 170) {
-            try {
-                Thumbnails.of(originalImage)
-                        .size(170, 170)
-                        .keepAspectRatio(true)
-                        .outputFormat("png")
-                        .toOutputStream(smallOutputStream);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            try {
-                Thumbnails.of(originalImage)
-                        .scale(1)
-                        .outputFormat("png")
-                        .toOutputStream(smallOutputStream);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        ByteArrayOutputStream largeOutputStream = squeezeImageOrLeave(originalImage, 1080);
+        ByteArrayOutputStream smallOutputStream = squeezeImageOrLeave(originalImage, 170);
 
         byte[] largeOutputStreamByteArray = largeOutputStream.toByteArray();
         byte[] smallOutputStreamByteArray = smallOutputStream.toByteArray();
@@ -105,7 +62,38 @@ public class AvatarService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
         saveLargeAndSmallFileId(userId, fileId, smallFileId);
+    }
+
+    private ByteArrayOutputStream squeezeImageOrLeave(BufferedImage originalImage, int maxSize) {
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+
+        ByteArrayOutputStream resizedImage = new ByteArrayOutputStream();
+
+        if (originalWidth > maxSize || originalHeight > maxSize) {
+            try {
+                Thumbnails.of(originalImage)
+                        .size(maxSize, maxSize)
+                        .keepAspectRatio(true)
+                        .outputFormat("png")
+                        .toOutputStream(resizedImage);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try {
+                Thumbnails.of(originalImage)
+                        .scale(1)
+                        .outputFormat("png")
+                        .toOutputStream(resizedImage);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return resizedImage;
     }
 
     @Retryable(value = FeignException.FeignClientException.class, backoff = @Backoff(multiplier = 2))
@@ -123,7 +111,6 @@ public class AvatarService {
         }
         String contentType = "";
         Path path = Paths.get(key);
-        String originalFileName = path.getFileName().toString();
         try {
             contentType = Files.probeContentType(path);
         } catch (IOException e) {
@@ -134,8 +121,10 @@ public class AvatarService {
         return new ResponseEntity<>(avatarByteArray, headers, HttpStatus.OK);
     }
 
-    public void deleteAvatar(long userId, String fileKey, String smallFileKey) {
+    public void deleteAvatar(long userId) {
+        UserProfilePicDto userProfilePicDto = userServiceClient.getAvatarKeys(userId);
+
         userServiceClient.deleteAvatar(userId);
-        minioS3Client.deleteFIle(fileKey, smallFileKey);
+        minioS3Client.deleteFIle(userProfilePicDto.getFileId(), userProfilePicDto.getSmallFileId());
     }
 }

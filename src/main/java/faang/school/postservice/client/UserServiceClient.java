@@ -29,4 +29,7 @@ public interface UserServiceClient {
 
     @DeleteMapping("/avatar/delete")
     void deleteAvatar(@RequestHeader(value = "x-user-id") long userId);
+
+    @GetMapping("avatar/keys")
+    UserProfilePicDto getAvatarKeys(@RequestHeader(value = "x-user-id") long userId);
 }
