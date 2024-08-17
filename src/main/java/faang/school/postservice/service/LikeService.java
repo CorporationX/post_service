@@ -1,17 +1,20 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.UserServiceClient;
+
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.LikeValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 @Component
 public class LikeService {
@@ -21,14 +24,16 @@ public class LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final LikeValidator likeValidator;
+    private final LikeEventPublisher likeEventPublisher;
 
     @Autowired
-    public LikeService(LikeRepository likeRepository, LikeMapper likeMapper, PostRepository postRepository, CommentRepository commentRepository, LikeValidator likeValidator) {
+    public LikeService(LikeRepository likeRepository, LikeMapper likeMapper, PostRepository postRepository, CommentRepository commentRepository, LikeValidator likeValidator, LikeEventPublisher likeEventPublisher) {
         this.likeRepository = likeRepository;
         this.likeMapper = likeMapper;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.likeValidator = likeValidator;
+        this.likeEventPublisher = likeEventPublisher;
     }
 
 
@@ -44,6 +49,10 @@ public class LikeService {
 
         Like like = likeMapper.toEntity(likeDto);
         like.setPost(post);
+
+        String message = likeDto.getPostId() + "," + post.getAuthorId() + "," + likeDto.getUserId() + "," + LocalDateTime.now();
+        likeEventPublisher.publish(message);
+
         likeRepository.save(like);
     }
 
@@ -75,7 +84,7 @@ public class LikeService {
         likeValidator.validateUser(likeDto.getUserId());
 
         Like like = likeRepository.findByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId())
-                .orElseThrow(()->new IllegalArgumentException("Лайк не найден"));
+                .orElseThrow(() -> new IllegalArgumentException("Лайк не найден"));
         likeRepository.delete(like);
     }
 }
