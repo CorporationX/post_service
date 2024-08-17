@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 public class LikeMessagePublisher extends GenericMessagePublisher<LikeEvent> {
 
     public LikeMessagePublisher(RedisTemplate<String, Object> redisTemplate,
-                                ChannelTopic topic,
+                                ChannelTopic likeTopic,
                                 ObjectMapper objectMapper) {
-        super(redisTemplate, topic, objectMapper);
+        super(redisTemplate, likeTopic, objectMapper);
     }
 }

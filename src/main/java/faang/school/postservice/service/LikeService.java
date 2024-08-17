@@ -60,12 +60,11 @@ public class LikeService {
     }
 
     private void sentLikeNotification(Like like){
-        LikeEvent followerEvent = LikeEvent.builder()
+        LikeEvent likeEvent = LikeEvent.builder()
                 .postId(like.getPost().getId())
                 .authorId(like.getPost().getAuthorId())
                 .likeAuthorId(like.getUserId())
                 .build();
-        likeMessagePublisher.publish(followerEvent);
+        likeMessagePublisher.publish(likeEvent);
     }
-
 }
