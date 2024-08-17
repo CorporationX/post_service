@@ -51,7 +51,7 @@ public class Album {
     private List<Post> posts;
 
     @Column(name = "visibility", nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private AlbumVisibility visibility;
 
     @ElementCollection

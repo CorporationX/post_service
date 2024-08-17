@@ -19,11 +19,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
@@ -112,6 +111,12 @@ class AlbumValidatorTest {
         assertEquals(expectedVisibility, visibility);
     }
 
+    @Test
+    @DisplayName("testing validateAlbumBelongsToAuthor method with appropriate value")
+    public void testValidateAlbumBelongsToAuthorWithAppropriateValue() {
+        assertDoesNotThrow(() -> albumValidator.validateAlbumBelongsToRequester(authorId, album));
+    }
+
     private static Stream<Arguments> provideTestData() {
         return Stream.of(
                 Arguments.of(1L, Album.builder().authorId(1L)
@@ -133,13 +138,7 @@ class AlbumValidatorTest {
                         .visibility(AlbumVisibility.ONLY_FOLLOWERS).allowedUserIds(List.of(2L)).build(), false),
 
                 Arguments.of(1L, Album.builder().authorId(1L)
-                        .visibility(AlbumVisibility.ALL).build(), true)
+                        .visibility(AlbumVisibility.PUBLIC).build(), true)
         );
-    }
-
-    @Test
-    @DisplayName("testing validateAlbumBelongsToAuthor method with appropriate value")
-    public void testValidateAlbumBelongsToAuthorWithAppropriateValue() {
-        assertDoesNotThrow(() -> albumValidator.validateAlbumBelongsToAuthor(authorId, album));
     }
 }

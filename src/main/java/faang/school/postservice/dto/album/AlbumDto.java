@@ -1,4 +1,4 @@
-package faang.school.postservice.dto;
+package faang.school.postservice.dto.album;
 
 import faang.school.postservice.model.AlbumVisibility;
 import jakarta.validation.constraints.NotBlank;
@@ -18,7 +18,7 @@ import java.util.List;
 @Builder
 public class AlbumDto {
 
-    private long id;
+    private Long id;
 
     @NotNull
     @NotBlank
@@ -30,10 +30,12 @@ public class AlbumDto {
     @Size(max = 4096)
     private String description;
 
+    private Long authorId;
     private List<Long> postIds;
 
     @NotNull
     private AlbumVisibility visibility;
+
     @NotNull
     private List<Long> allowedUserIds;
     private LocalDateTime createdAt;

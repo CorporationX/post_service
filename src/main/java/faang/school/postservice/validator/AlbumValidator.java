@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -30,14 +29,14 @@ public class AlbumValidator {
     }
 
     public void validateAlbumTitleDoesNotDuplicatePerAuthor(long authorId, String albumTitle) {
-        if (!albumRepository.existsByTitleAndAuthorId(albumTitle, authorId)) {
+        if (albumRepository.existsByTitleAndAuthorId(albumTitle, authorId)) {
             String errMessage = String.format("User with ID: %d already has album with title: %s", authorId, albumTitle);
             log.error(errMessage);
             throw new IllegalArgumentException(errMessage);
         }
     }
 
-    public void validateAlbumBelongsToRequester(long authorId, Album album) {
+    public void validateAlbumBelongsToRequester(long requesterId, Album album) {
         if (album.getAuthorId() != requesterId) {
             String errMessage = String.format("Album with ID: %d does not belong to author with ID: %d",
                     album.getId(), requesterId);
@@ -54,7 +53,7 @@ public class AlbumValidator {
 
     public boolean isVisibleToRequester(long requesterId, Album album) {
         AlbumVisibility albumVisibility = album.getVisibility();
-        if (requesterId == album.getAuthorId() || albumVisibility.equals(AlbumVisibility.ALL)) {
+        if (requesterId == album.getAuthorId() || albumVisibility.equals(AlbumVisibility.PUBLIC)) {
             return true;
         } else if (albumVisibility.equals(AlbumVisibility.ONLY_ALLOWED_USERS)) {
             List<Long> authorAllowedUsers = album.getAllowedUserIds();

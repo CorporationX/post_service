@@ -24,7 +24,7 @@ public class UserValidator {
 
     public void validateFollowersExistence(List<Long> followerIds) {
         if (!userServiceClient.doesFollowersExist(followerIds)) {
-            String errMessage = "Some of the given followers are not registered in database";
+            String errMessage = "Not all provided followers registered in database";
             log.error(errMessage);
             throw new EntityNotFoundException(errMessage);
         }

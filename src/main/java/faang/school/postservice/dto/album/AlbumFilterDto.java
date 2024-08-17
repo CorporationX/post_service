@@ -1,4 +1,4 @@
-package faang.school.postservice.dto;
+package faang.school.postservice.dto.album;
 
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;

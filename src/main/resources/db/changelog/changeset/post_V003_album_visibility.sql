@@ -1,7 +1,7 @@
 ALTER TABLE album
     ADD COLUMN visibility VARCHAR(255) NOT NULL DEFAULT 'ALL';
 
-CREATE TABLE album_allowed_users
+CREATE TABLE IF NOT EXISTS album_allowed_users
 (
     album_id bigint NOT NULL,
     user_id  bigint NOT NULL,

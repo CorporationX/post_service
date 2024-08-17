@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.AlbumDto;
-import faang.school.postservice.dto.AlbumFilterDto;
+import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.service.AlbumService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -27,23 +26,23 @@ public class AlbumController {
     private final AlbumService albumService;
 
     @ResponseBody
-    @PostMapping("/new")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public AlbumDto createAlbum(@RequestBody @Valid AlbumDto albumDto) { // validate
+    public AlbumDto createAlbum(@RequestBody @Valid AlbumDto albumDto) {
         return albumService.createAlbum(albumDto);
     }
 
-    @PutMapping("/post/{postId}")
+    @PutMapping("/{albumId}/post/{postId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void addPostToAlbum(@PathVariable Long postId,
-                               @RequestParam Long albumId) {
+    public void addPostToAlbum(@PathVariable Long albumId,
+                               @PathVariable Long postId) {
         albumService.addPostToAlbum(postId, albumId);
     }
 
-    @DeleteMapping("/post/{postId}")
+    @DeleteMapping("/{albumId}/post/{postId}")
     @ResponseStatus(HttpStatus.OK)
-    public void removePostFromAlbum(@PathVariable Long postId,
-                                    @RequestParam Long albumId) {
+    public void removePostFromAlbum(@PathVariable Long albumId,
+                                    @PathVariable Long postId) {
         albumService.removePostFromAlbum(postId, albumId);
     }
 

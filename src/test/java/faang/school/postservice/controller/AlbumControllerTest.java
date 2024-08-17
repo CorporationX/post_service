@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.AlbumDto;
-import faang.school.postservice.dto.AlbumFilterDto;
+import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.service.AlbumService;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,7 +57,7 @@ class AlbumControllerTest {
                 .id(albumId)
                 .title("albumTitle")
                 .description("albumDescription")
-                .visibility(AlbumVisibility.ALL)
+                .visibility(AlbumVisibility.PUBLIC)
                 .allowedUserIds(List.of(2L))
                 .build();
         albumFilterDto = new AlbumFilterDto();
@@ -69,7 +69,7 @@ class AlbumControllerTest {
     @Test
     @DisplayName("testing createAlbum method")
     public void testCreateAlbum() throws Exception {
-        mockMvc.perform(post("/album/new")
+        mockMvc.perform(post("/album")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(albumDtoJson))
                 .andExpect(status().isCreated());
@@ -79,8 +79,7 @@ class AlbumControllerTest {
     @Test
     @DisplayName("testing addPostToAlbum method")
     public void testAddPostToAlbum() throws Exception {
-        mockMvc.perform(put("/album/post/{postId}", postId)
-                        .param("albumId", String.valueOf(albumId)))
+        mockMvc.perform(put("/album/{albumId}/post/{postId}", albumId, postId))
                 .andExpect(status().isAccepted());
         verify(albumService, times(1)).addPostToAlbum(postId, albumId);
     }
@@ -88,8 +87,7 @@ class AlbumControllerTest {
     @Test
     @DisplayName("testing removePostFromAlbum method")
     public void testRemovePostFromAlbum() throws Exception {
-        mockMvc.perform(delete("/album/post/{postId}", postId)
-                        .param("albumId", String.valueOf(albumId)))
+        mockMvc.perform(delete("/album/{albumId}/post/{postId}", albumId, postId))
                 .andExpect(status().isOk());
         verify(albumService, times(1)).removePostFromAlbum(postId, albumId);
     }
