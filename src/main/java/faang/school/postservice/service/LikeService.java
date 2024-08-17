@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.event.FollowerEvent;
+import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -60,7 +60,7 @@ public class LikeService {
     }
 
     private void sentLikeNotification(Like like){
-        FollowerEvent followerEvent = FollowerEvent.builder()
+        LikeEvent followerEvent = LikeEvent.builder()
                 .postId(like.getPost().getId())
                 .authorId(like.getPost().getAuthorId())
                 .likeAuthorId(like.getUserId())

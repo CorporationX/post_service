@@ -16,7 +16,7 @@ public class RedisConfig {
     private String host;
     @Value("${spring.data.redis.port}")
     private int port;
-    @Value("${spring.data.redis.channels.follower_channel.name}")
+    @Value("${spring.data.redis.channels.like_channel.name}")
     private String likeTopic;
 
     @Bean

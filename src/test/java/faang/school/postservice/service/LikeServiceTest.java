@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.event.FollowerEvent;
+import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -75,7 +75,7 @@ class LikeServiceTest {
     void likePostWithValidParametersShouldSaveLike() {
         when(likeRepository.save(any(Like.class))).thenReturn(like);
         likeService.likePost(postId, commentId);
-        verify(likeMessagePublisher).publish(any(FollowerEvent.class));
+        verify(likeMessagePublisher).publish(any(LikeEvent.class));
         verify(likeRepository).save(any(Like.class));
     }
 
@@ -83,7 +83,7 @@ class LikeServiceTest {
     void likePostWithValidParametersShouldReturnLikeDto() {
         when(likeRepository.save(any(Like.class))).thenReturn(like);
         likeService.likePost(postId, commentId);
-        verify(likeMessagePublisher).publish(any(FollowerEvent.class));
+        verify(likeMessagePublisher).publish(any(LikeEvent.class));
         verify(likeMapper).toDto(any(Like.class));
     }
 
