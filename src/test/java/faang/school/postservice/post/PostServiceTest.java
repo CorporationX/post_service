@@ -12,6 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.RedisMessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.PostViewEventService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -44,7 +45,7 @@ public class PostServiceTest {
     @Mock
     private ProjectServiceClient projectServiceClient;
     @Mock
-    private RedisMessagePublisher publisher;
+    private PostViewEventService postViewEventService;
     @InjectMocks
     private PostService service;
 

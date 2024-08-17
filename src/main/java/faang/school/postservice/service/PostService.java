@@ -9,7 +9,6 @@ import faang.school.postservice.exception.DataDoesNotExistException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publishers.RedisMessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +31,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
-    private final RedisMessagePublisher publisher;
+    private final PostViewEventService postViewEventService;
 
     @Transactional(readOnly = true)
     public Post getById(long id) {
@@ -52,7 +51,7 @@ public class PostService {
     public PostDto publishPost(Long draftId) {
         Optional<Post> post = postRepository.findById(draftId);
         if (post.isPresent()) {
-            if (post.get().isPublished()) {
+            if (post.get().isPublished()){
                 log.info("The Post was already published at {}", post.get().getPublishedAt());
             } else {
                 post.get().setPublished(true);
@@ -97,7 +96,7 @@ public class PostService {
     public PostDto getPost(Long postId, long userId) {
         Optional<Post> post = postRepository.findById(postId);
         if (post.isPresent()) {
-            publisher.publishViewEvent(post.get(), userId);
+            postViewEventService.publishViewEvent(post.get(),userId);
             return postMapper.toDto(post.get());
         } else {
             log.error("Post with id = {} doesn't exist in database", postId);
@@ -129,7 +128,7 @@ public class PostService {
                         .map(postMapper::toDto)
                         .toList();
             }
-            sortedList.forEach(p -> publisher.publishViewEvent(postMapper.toEntity(p), userId));
+            sortedList.forEach(p -> postViewEventService.publishViewEvent(postMapper.toEntity(p),userId));
             return sortedList;
         } else {
             log.info("There's no one post in database written by your publisher");
