@@ -1,20 +1,20 @@
-package faang.school.postservice.filter;
+package faang.school.postservice.filter.album;
 
-import faang.school.postservice.dto.AlbumFilterDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.model.Album;
 
 import java.util.stream.Stream;
 
-public class AlbumFromDateFilter implements AlbumFilter {
+public class AlbumAuthorFilter implements AlbumFilter {
     @Override
     public boolean isApplicable(AlbumFilterDto albumFilterDto) {
-        return albumFilterDto.getFromDate() != null;
+        return albumFilterDto.getAuthorIdList() != null;
     }
 
     @Override
     public Stream<Album> filter(Stream<Album> albumStream, AlbumFilterDto albumFilterDto) {
         if (isApplicable(albumFilterDto)) {
-            return albumStream.filter(album -> album.getUpdatedAt().isAfter(albumFilterDto.getFromDate()));
+            return albumStream.filter(album -> albumFilterDto.getAuthorIdList().contains(album.getAuthorId()));
         }
         return albumStream;
     }

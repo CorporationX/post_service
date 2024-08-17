@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.AlbumDto;
-import faang.school.postservice.dto.AlbumFilterDto;
+import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.service.AlbumService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -27,51 +26,47 @@ public class AlbumController {
     private final AlbumService albumService;
 
     @ResponseBody
-    @PostMapping("/create")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public AlbumDto createAlbum(@RequestBody @Valid AlbumDto albumDto) {
         return albumService.createAlbum(albumDto);
     }
 
-    @PutMapping("/add/post")
+    @PutMapping("/{albumId}/post/{postId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void addPostToAlbum(@RequestParam Long authorId,
-                               @RequestParam Long postId,
-                               @RequestParam Long albumId) {
-        albumService.addPostToAlbum(authorId, postId, albumId);
+    public void addPostToAlbum(@PathVariable Long albumId,
+                               @PathVariable Long postId) {
+        albumService.addPostToAlbum(postId, albumId);
     }
 
-    @PutMapping("/remove/post")
+    @DeleteMapping("/{albumId}/post/{postId}")
     @ResponseStatus(HttpStatus.OK)
-    public void removePostFromAlbum(@RequestParam Long authorId,
-                                    @RequestParam Long postId,
-                                    @RequestParam Long albumId) {
-        albumService.removePostFromAlbum(authorId, postId, albumId);
+    public void removePostFromAlbum(@PathVariable Long albumId,
+                                    @PathVariable Long postId) {
+        albumService.removePostFromAlbum(postId, albumId);
     }
 
-    @PutMapping("/add/favourites/{albumId}")
+    @PostMapping("/favourites/{albumId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void addAlbumToFavourites(@PathVariable Long albumId,
-                                     @RequestParam Long userId) {
-        albumService.addAlbumToFavourites(albumId, userId);
+    public void addAlbumToFavourites(@PathVariable Long albumId) {
+        albumService.addAlbumToFavourites(albumId);
     }
 
-    @PutMapping("/remove/favourites/{albumId}")
+    @DeleteMapping("/favourites/{albumId}")
     @ResponseStatus(HttpStatus.OK)
-    public void removeAlbumFromFavourites(@PathVariable Long albumId,
-                                          @RequestParam Long userId) {
-        albumService.removeAlbumFromFavourites(albumId, userId);
+    public void removeAlbumFromFavourites(@PathVariable Long albumId) {
+        albumService.removeAlbumFromFavourites(albumId);
     }
 
     @ResponseBody
-    @GetMapping("/get/{albumId}")
+    @GetMapping("/{albumId}")
     @ResponseStatus(HttpStatus.OK)
     public AlbumDto getAlbumById(@PathVariable Long albumId) {
         return albumService.getAlbumById(albumId);
     }
 
     @ResponseBody
-    @PostMapping("/get/all/{authorId}")
+    @PostMapping("/author/{authorId}")
     @ResponseStatus(HttpStatus.OK)
     public List<AlbumDto> getAuthorFilteredAlbums(@PathVariable Long authorId,
                                                   @RequestBody AlbumFilterDto albumFilterDto) {
@@ -79,32 +74,30 @@ public class AlbumController {
     }
 
     @ResponseBody
-    @PostMapping("/get/all")
+    @PostMapping("/all")
     @ResponseStatus(HttpStatus.OK)
     public List<AlbumDto> getAllFilteredAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
         return albumService.getAllFilteredAlbums(albumFilterDto);
     }
 
     @ResponseBody
-    @PostMapping("/get/favorites/{userId}")
+    @PostMapping("/favorites")
     @ResponseStatus(HttpStatus.OK)
-    public List<AlbumDto> getUserFavoriteAlbums(@PathVariable Long userId,
-                                                @RequestBody AlbumFilterDto albumFilterDto) {
-        return albumService.getUserFavoriteAlbums(userId, albumFilterDto);
+    public List<AlbumDto> getUserFavoriteAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
+        return albumService.getUserFavoriteAlbums(albumFilterDto);
     }
 
     @ResponseBody
-    @PutMapping("/update/{albumId}")
+    @PutMapping("/{albumId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public AlbumDto updateAlbum(@PathVariable Long albumId,
                                 @RequestBody @Valid AlbumDto albumDto) {
         return albumService.updateAlbum(albumId, albumDto);
     }
 
-    @DeleteMapping("/delete/{albumId}")
+    @DeleteMapping("/{albumId}")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteAlbum(@PathVariable Long albumId,
-                            @RequestParam Long authorId) {
-        albumService.deleteAlbum(albumId, authorId);
+    public void deleteAlbum(@PathVariable Long albumId) {
+        albumService.deleteAlbum(albumId);
     }
 }

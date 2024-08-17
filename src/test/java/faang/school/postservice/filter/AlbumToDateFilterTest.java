@@ -1,6 +1,7 @@
 package faang.school.postservice.filter;
 
-import faang.school.postservice.dto.AlbumFilterDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
+import faang.school.postservice.filter.album.AlbumToDateFilter;
 import faang.school.postservice.model.Album;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

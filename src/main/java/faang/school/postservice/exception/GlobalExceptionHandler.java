@@ -52,7 +52,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(FeignException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleFeignException(FeignException exception){
+    public ErrorResponse handleFeignException(FeignException exception) {
         return new ErrorResponse("Feign Exception", exception.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleAllOtherExceptions(Exception exception) {
+        return new ErrorResponse("Internal Error", exception.getMessage());
     }
 }

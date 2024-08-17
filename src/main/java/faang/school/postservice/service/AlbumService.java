@@ -1,8 +1,9 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.AlbumDto;
-import faang.school.postservice.dto.AlbumFilterDto;
-import faang.school.postservice.filter.AlbumFilter;
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
+import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.handler.EntityHandler;
 import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;
@@ -26,6 +27,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class AlbumService {
 
+    private final UserContext userContext;
     private final AlbumMapper albumMapper;
     private final EntityHandler entityHandler;
     private final UserValidator userValidator;
@@ -37,89 +39,105 @@ public class AlbumService {
 
     @Transactional
     public AlbumDto createAlbum(AlbumDto albumDto) {
-        long authorId = albumDto.getAuthorId();
-        userValidator.validateUserExistence(authorId);
-        albumValidator.validateAlbumTitleDoesNotDuplicatePerAuthor(authorId, albumDto.getTitle());
+        long requesterId = userContext.getUserId();
+        userValidator.validateFollowersExistence(albumDto.getAllowedUserIds());
+        albumValidator.validateAlbumTitleDoesNotDuplicatePerAuthor(requesterId, albumDto.getTitle());
         Album album = albumMapper.toEntity(albumDto);
+        album.setAuthorId(requesterId);
         Album savedAlbum = albumRepository.save(album);
         return albumMapper.toDto(savedAlbum);
     }
 
     @Transactional
-    public void addPostToAlbum(long authorId, long postId, long albumId) {
+    public void addPostToAlbum(long postId, long albumId) {
+        long requesterId = userContext.getUserId();
         Album album = entityHandler.getOrThrowException(Album.class, albumId, () -> albumRepository.findById(albumId));
         Post postToAdd = entityHandler.getOrThrowException(Post.class, postId, () -> postRepository.findById(postId));
-        albumValidator.validateAlbumBelongsToAuthor(authorId, album);
+        albumValidator.validateAlbumBelongsToRequester(requesterId, album);
         album.addPost(postToAdd);
+        albumRepository.save(album);
     }
 
     @Transactional
-    public void removePostFromAlbum(long authorId, long postId, long albumId) {
+    public void removePostFromAlbum(long postId, long albumId) {
+        long requesterId = userContext.getUserId();
         Album album = entityHandler.getOrThrowException(Album.class, albumId, () -> albumRepository.findById(albumId));
         postValidator.validatePostExistence(postId);
-        albumValidator.validateAlbumBelongsToAuthor(authorId, album);
+        albumValidator.validateAlbumBelongsToRequester(requesterId, album);
         album.removePost(postId);
+        albumRepository.save(album);
     }
 
     @Transactional
-    public void addAlbumToFavourites(long albumId, long userId) {
-        userValidator.validateUserExistence(userId);
-        albumValidator.validateAlbumExistence(albumId);
-        albumRepository.addAlbumToFavorites(albumId, userId);
+    public void addAlbumToFavourites(long albumId) {
+        long requesterId = userContext.getUserId();
+        Album album = entityHandler.getOrThrowException(Album.class, albumId, () -> albumRepository.findById(albumId));
+        albumValidator.validateVisibilityToRequester(requesterId, album);
+        albumRepository.addAlbumToFavorites(albumId, requesterId);
     }
 
     @Transactional
-    public void removeAlbumFromFavourites(long albumId, long userId) {
-        userValidator.validateUserExistence(userId);
+    public void removeAlbumFromFavourites(long albumId) {
+        long requesterId = userContext.getUserId();
         albumValidator.validateAlbumExistence(albumId);
-        albumRepository.deleteAlbumFromFavorites(albumId, userId);
+        albumRepository.deleteAlbumFromFavorites(albumId, requesterId);
     }
 
     @Transactional(readOnly = true)
     public AlbumDto getAlbumById(long albumId) {
+        long requesterId = userContext.getUserId();
         Album album = entityHandler.getOrThrowException(Album.class, albumId, () -> albumRepository.findById(albumId));
+        albumValidator.validateVisibilityToRequester(requesterId, album);
         return albumMapper.toDto(album);
     }
 
     @Transactional(readOnly = true)
     public List<AlbumDto> getAuthorFilteredAlbums(long authorId, AlbumFilterDto albumFilterDto) {
-        Stream<Album> albumStream = getFilteredAlbums(albumRepository.findByAuthorId(authorId), albumFilterDto);
-        return albumStream.map(albumMapper::toDto).toList();
+        long requesterId = userContext.getUserId();
+        Stream<Album> allMatchedAlbums = albumRepository.findByAuthorId(authorId);
+        allMatchedAlbums = getFilteredAlbums(allMatchedAlbums, requesterId, albumFilterDto);
+        return allMatchedAlbums.map(albumMapper::toDto).toList();
     }
 
     @Transactional(readOnly = true)
     public List<AlbumDto> getAllFilteredAlbums(AlbumFilterDto albumFilterDto) {
-        Stream<Album> albumStream = getFilteredAlbums(albumRepository.findAll().stream(), albumFilterDto);
-        return albumStream.map(albumMapper::toDto).toList();
+        long requesterId = userContext.getUserId();
+        Stream<Album> allMatchedAlbums = albumRepository.findAll().stream();
+        allMatchedAlbums = getFilteredAlbums(allMatchedAlbums, requesterId, albumFilterDto);
+        return allMatchedAlbums.map(albumMapper::toDto).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<AlbumDto> getUserFavoriteAlbums(long userId, AlbumFilterDto albumFilterDto) {
-        Stream<Album> albumStream = getFilteredAlbums(albumRepository.findFavoriteAlbumsByUserId(userId), albumFilterDto);
-        return albumStream.map(albumMapper::toDto).toList();
+    public List<AlbumDto> getUserFavoriteAlbums(AlbumFilterDto albumFilterDto) {
+        long requesterId = userContext.getUserId();
+        Stream<Album> allMatchedAlbums = albumRepository.findFavoriteAlbumsByUserId(requesterId);
+        allMatchedAlbums = getFilteredAlbums(allMatchedAlbums, requesterId, albumFilterDto);
+        return allMatchedAlbums.map(albumMapper::toDto).toList();
     }
 
     @Transactional
     public AlbumDto updateAlbum(long albumId, AlbumDto albumDto) {
+        long requesterId = userContext.getUserId();
         Album album = entityHandler.getOrThrowException(Album.class, albumId, () -> albumRepository.findById(albumId));
-        albumValidator.validateAlbumBelongsToAuthor(albumDto.getAuthorId(), album);
-        album.setDescription(albumDto.getDescription());
-        album.setTitle(albumDto.getTitle());
+        albumValidator.validateAlbumBelongsToRequester(requesterId, album);
+        entityHandler.updateNonNullFields(albumDto, album);
         album.setUpdatedAt(LocalDateTime.now());
+        albumRepository.save(album);
         return albumMapper.toDto(album);
     }
 
     @Transactional
-    public void deleteAlbum(long albumId, long authorId) {
+    public void deleteAlbum(long albumId) {
+        long requesterId = userContext.getUserId();
         Album album = entityHandler.getOrThrowException(Album.class, albumId, () -> albumRepository.findById(albumId));
-        albumValidator.validateAlbumBelongsToAuthor(authorId, album);
+        albumValidator.validateAlbumBelongsToRequester(requesterId, album);
         albumRepository.delete(album);
     }
 
-    private Stream<Album> getFilteredAlbums(Stream<Album> albumStream, AlbumFilterDto albumFilterDto) {
+    private Stream<Album> getFilteredAlbums(Stream<Album> albumStream, long requesterId, AlbumFilterDto albumFilterDto) {
         for (AlbumFilter albumFilter : albumFilterList) {
             albumStream = albumFilter.filter(albumStream, albumFilterDto);
         }
-        return albumStream;
+        return albumStream.filter(album -> albumValidator.isVisibleToRequester(requesterId, album));
     }
 }
