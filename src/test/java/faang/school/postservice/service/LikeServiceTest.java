@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
@@ -63,5 +65,21 @@ public class LikeServiceTest {
         Mockito.verify(likeRepository, Mockito.times(1)).findByCommentId(likeId);
         Mockito.verify(userServiceClient, Mockito.times(1)).getUsersByIds(Mockito.anyList());
         Assert.assertEquals(actualUsers, users);
+    }
+
+    @Test
+    public void deleteLikeFromNonExistentPostTest() {
+        Mockito.when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
+        Assert.assertThrows(EntityNotFoundException.class, () -> {
+            likeService.deleteLikeFromPost(1L, 1L);
+        });
+    }
+
+    @Test
+    public void deleteLikeFromCommentTest() {
+        Mockito.when(likeRepository.findByCommentIdAndUserId(2L, 2L)).thenReturn(Optional.empty());
+        Assert.assertThrows(EntityNotFoundException.class, () -> {
+            likeService.deleteLikeFromComment(2L, 2L);
+        });
     }
 }
