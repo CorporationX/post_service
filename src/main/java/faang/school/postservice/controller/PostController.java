@@ -1,6 +1,5 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.Post.PostDto;
 import faang.school.postservice.exception.WrongInputException;
 import faang.school.postservice.service.PostService;
@@ -27,7 +26,6 @@ import java.util.List;
 @Validated
 public class PostController {
     private final PostService postService;
-    private final UserContext userContext;
 
     @PostMapping("/draftPost")
     public PostDto createDraftPost(@RequestBody @Validated PostDto dto) {
@@ -54,7 +52,7 @@ public class PostController {
 
     @GetMapping("/post/{postId}")
     public PostDto getPost(@PathVariable @NonNull @Positive Long postId) {
-        return postService.getPost(postId, getUserId());
+        return postService.getPost(postId);
     }
 
     @GetMapping("/drafts/users/{publisherId}")
@@ -64,7 +62,7 @@ public class PostController {
                 .published(false)
                 .authorId(publisherId)
                 .build();
-        return postService.getPostsSortedByDate(postDto, getUserId());
+        return postService.getPostsSortedByDate(postDto);
     }
 
     @GetMapping("/drafts/projects/{publisherId}")
@@ -74,7 +72,7 @@ public class PostController {
                 .published(false)
                 .projectId(publisherId)
                 .build();
-        return postService.getPostsSortedByDate(postDto, getUserId());
+        return postService.getPostsSortedByDate(postDto);
     }
 
     @GetMapping("/posts/users/{publisherId}")
@@ -84,7 +82,7 @@ public class PostController {
                 .published(true)
                 .authorId(publisherId)
                 .build();
-        return postService.getPostsSortedByDate(postDto, getUserId());
+        return postService.getPostsSortedByDate(postDto);
     }
 
     @GetMapping("/posts/projects/{publisherId}")
@@ -94,7 +92,7 @@ public class PostController {
                 .published(true)
                 .projectId(publisherId)
                 .build();
-        return postService.getPostsSortedByDate(postDto, getUserId());
+        return postService.getPostsSortedByDate(postDto);
     }
 
     private boolean isAuthorOrProjectNotNull(PostDto dto) {
@@ -104,9 +102,5 @@ public class PostController {
         } else {
             return true;
         }
-    }
-
-    private long getUserId(){
-        return userContext.getUserId();
     }
 }

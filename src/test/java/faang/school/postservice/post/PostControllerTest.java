@@ -73,9 +73,8 @@ public class PostControllerTest {
     public void testGetPost() {
         Long id = 1L;
         Long userId = 1L;
-        when(userContext.getUserId()).thenReturn(userId);
         controller.getPost(id);
-        verify(service, times(1)).getPost(id,1L);
+        verify(service, times(1)).getPost(id);
     }
 
     @Test
@@ -87,8 +86,7 @@ public class PostControllerTest {
                 .authorId(id)
                 .build();
         Long userId = 1L;
-        when(userContext.getUserId()).thenReturn(userId);
         controller.getDraftPostsForUser(id);
-        verify(service, times(1)).getPostsSortedByDate(dto,1L);
+        verify(service, times(1)).getPostsSortedByDate(dto);
     }
 }

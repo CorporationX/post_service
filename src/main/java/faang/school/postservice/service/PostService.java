@@ -93,10 +93,10 @@ public class PostService {
         }
     }
 
-    public PostDto getPost(Long postId, long userId) {
+    public PostDto getPost(Long postId) {
         Optional<Post> post = postRepository.findById(postId);
         if (post.isPresent()) {
-            postViewEventService.publishViewEvent(post.get(),userId);
+            postViewEventService.publishViewEvent(post.get());
             return postMapper.toDto(post.get());
         } else {
             log.error("Post with id = {} doesn't exist in database", postId);
@@ -104,7 +104,7 @@ public class PostService {
         }
     }
 
-    public List<PostDto> getPostsSortedByDate(PostDto postDto, long userId) {
+    public List<PostDto> getPostsSortedByDate(PostDto postDto) {
         List<Post> posts = new ArrayList<>();
         List<PostDto> sortedList;
         if (postDto.getAuthorId() != null) {
@@ -128,7 +128,7 @@ public class PostService {
                         .map(postMapper::toDto)
                         .toList();
             }
-            sortedList.forEach(p -> postViewEventService.publishViewEvent(postMapper.toEntity(p),userId));
+            sortedList.forEach(p -> postViewEventService.publishViewEvent(postMapper.toEntity(p)));
             return sortedList;
         } else {
             log.info("There's no one post in database written by your publisher");
