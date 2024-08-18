@@ -3,8 +3,10 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -29,6 +31,7 @@ public class CommentService {
     private final UserContext userContext;
     private final CommentValidator commentValidator;
     private final PostRepository postRepository;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
@@ -37,7 +40,16 @@ public class CommentService {
         commentValidator.existPost(commentDto.getPostId());
         Comment comment = commentMapper.dtoToEntity(commentDto);
         comment.setPost(postRepository.findById(commentDto.getPostId()).get());
-        return commentMapper.entityToDto(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+        CommentEvent commentEvent = CommentEvent.builder()
+                .commentAuthorId(savedComment.getAuthorId())
+                .commentId(savedComment.getId())
+                .createdAt(savedComment.getCreatedAt())
+                .postId(savedComment.getPost().getId())
+                .postAuthorId(savedComment.getPost().getAuthorId())
+                .build();
+        commentEventPublisher.publish(commentEvent);
+        return commentMapper.entityToDto(savedComment);
     }
 
     @Transactional
@@ -71,10 +83,10 @@ public class CommentService {
                 .map(commentMapper::entityToDto)
                 .collect(Collectors.toList());
     }
-  
+
     @Transactional
     public Comment getComment(long commentId) {
         return commentRepository.findById(commentId)
-            .orElseThrow(() -> new IllegalArgumentException("Comment with the same id does not exist"));
+                .orElseThrow(() -> new IllegalArgumentException("Comment with the same id does not exist"));
     }
 }
