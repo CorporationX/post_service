@@ -15,4 +15,10 @@ public class PoolConfiguration {
         return new ThreadPoolExecutor(10, 10, 0L,
                 TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1000));
     }
+
+    @Bean
+    public ExecutorService CommentServicePool() {
+        return new ThreadPoolExecutor(10, 10, 0L,
+                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1000));
+    }
 }

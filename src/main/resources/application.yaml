@@ -45,6 +45,13 @@ post:
       cron: "0 0 0 * * ?" # every day
       dictionary:
         file: "classpath:moderation-dictionary.txt"
+comment:
+  moderator:
+    count-comments-in-thread: "100"
+    scheduler:
+      cron: "0 0 0 * * ?" # every day
+      dictionary:
+        file: "classpath:moderation-dictionary.txt"
 
 user-service:
   host: localhost
