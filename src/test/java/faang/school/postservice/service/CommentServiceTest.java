@@ -1,18 +1,26 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import feign.FeignException;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,6 +44,10 @@ class CommentServiceTest {
     private CommentMapper commentMapper;
     @InjectMocks
     private CommentService commentService;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
+    @Mock
+    private ObjectMapper objectMapper;
 
     private Long authorId;
     private Long postId;
@@ -63,6 +75,7 @@ class CommentServiceTest {
                 .build();
         post = Post.builder()
                 .id(postId)
+                .authorId(authorId)
                 .comments(comments)
                 .build();
         comment = Comment.builder()
@@ -80,10 +93,12 @@ class CommentServiceTest {
     }
 
     @Test
-    void testCreateCommentPositive() {
+    void testCreateCommentPositive() throws JsonProcessingException {
         when(postService.findById(commentDto.getPostId())).thenReturn(post);
         when(commentMapper.toEntity(commentDto)).thenReturn(comment);
         when(commentRepository.save(comment)).thenReturn(comment);
+        doNothing().when(commentEventPublisher).publish(anyString());
+        when(objectMapper.writeValueAsString(any())).thenReturn(anyString());
         commentService.createComment(commentDto);
         verify(userServiceClient, times(1)).getUser(authorId);
         verify(postService, times(1)).findById(postId);
