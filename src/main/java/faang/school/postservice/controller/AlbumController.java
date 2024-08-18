@@ -24,8 +24,8 @@ public class AlbumController {
 
     @Operation(summary = "Создание альбома",
             description = "Создает новый пустой альбом")
-    @PutMapping("/create")
-    public AlbumLightDto createAlbum(AlbumLightDto albumLightDto) {
+    @PostMapping("/album")
+    public AlbumLightDto createAlbum(@Valid @RequestBody AlbumLightDto albumLightDto) {
         if (albumLightDto == null) {
             log.error("albumLightDto is null");
             throw new IllegalArgumentException("albumLightDto is null");
@@ -36,8 +36,8 @@ public class AlbumController {
 
     @Operation(summary = "Удалить альбом",
             description = "Пользователь удаляет свой альбом по id")
-    @PutMapping("/delete")
-    public AlbumDto deleteAlbum(Long albumId) {
+    @DeleteMapping("/album")
+    public AlbumDto deleteAlbum(@PathVariable Long albumId) {
         if (albumId == null) {
             log.error("albumId is null");
             throw new IllegalArgumentException("albumId is null");
@@ -48,8 +48,8 @@ public class AlbumController {
 
     @Operation(summary = "Обновить альбом",
             description = "Пользователь обновляет свой альбом по id")
-    @PutMapping("/update")
-    public AlbumLightDto updateAlbum(AlbumLightDto albumLightDto) {
+    @PutMapping("/album")
+    public AlbumLightDto updateAlbum(@Valid @RequestBody AlbumLightDto albumLightDto) {
         if (albumLightDto == null) {
             log.error("albumId is null");
             throw new IllegalArgumentException("albumId is null");
@@ -60,8 +60,8 @@ public class AlbumController {
 
     @Operation(summary = "Добавление поста к альбому",
             description = "Добавляет пост к альбому по id альбома и id поста")
-    @PutMapping("/addPost/{albumId}/{postId}")
-    public AlbumLightDto addPostForAlbum(Long albumId, Long postId) {
+    @PutMapping("/album/{albumId}/{postId}")
+    public AlbumLightDto addPostForAlbum(@PathVariable Long albumId, @PathVariable Long postId) {
         if (albumId == null) {
             log.error("albumId is null");
             throw new IllegalArgumentException("albumId is null");
@@ -75,8 +75,8 @@ public class AlbumController {
 
     @Operation(summary = "Удаление поста",
             description = "Удаляет пост из альбома по id альбома и postId")
-    @DeleteMapping("/deletePost/{albumId}/{postId}")
-    public AlbumLightDto deletePostForAlbum(Long albumId, Long postId) {
+    @DeleteMapping("/album/{albumId}/{postId}")
+    public AlbumLightDto deletePostForAlbum(@PathVariable Long albumId, @PathVariable Long postId) {
         if (albumId == null) {
             log.error("albumId is null");
             throw new IllegalArgumentException("albumId is null");
@@ -90,7 +90,8 @@ public class AlbumController {
 
     @Operation(summary = "Добавить альбом в избранные",
             description = "Добавляет альбом в избранные по id альбома")
-    public void addAlbumFavorite(Long albumId) {
+    @PutMapping("/album/favorite/{albumId}")
+    public void addAlbumFavorite(@PathVariable Long albumId) {
         if (albumId == null) {
             log.error("albumId is null");
             throw new IllegalArgumentException("albumId is null");
@@ -101,7 +102,8 @@ public class AlbumController {
 
     @Operation(summary = "Удалить альбом из избранных",
             description = "Добавить альбом в избранные по id альбома")
-    public void deleteAlbumFavorite(Long albumId) {
+    @DeleteMapping("/album/favorite/{albumId}")
+    public void deleteAlbumFavorite(@PathVariable  Long albumId) {
         if (albumId == null) {
             log.error("albumId is null");
             throw new IllegalArgumentException("albumId is null");
@@ -112,7 +114,7 @@ public class AlbumController {
 
     @Operation(summary = "Получить альбом",
             description = "Получить альбом по id")
-    @GetMapping("/getAlbum/{albumId}")
+    @GetMapping("/{albumId}")
     public AlbumDto getAlbum(@PathVariable Long albumId) {
         if (albumId == null) {
             log.error("albumId is null");
@@ -124,7 +126,7 @@ public class AlbumController {
 
     @Operation(summary = "Получить альбомы с фильтрами",
             description = "Отфильтровать список альбомов по условиям")
-    @GetMapping("/getAlbumForFilter")
+    @GetMapping("/filter")
     public List<AlbumDto> getAlbumForFilter(@Valid @RequestBody AlbumFilterDto albumFilterDto) {
         if (albumFilterDto == null) {
             log.error("albumFilterDto is null");

@@ -150,7 +150,6 @@ public class AlbumService {
 
         return albumsFilter.stream()
                 .filter(albumFilter -> albumFilter.isApplicable(albumFilterDto))
-                .filter(albumFilter -> albumFilter.equals(userId))
                 .reduce(albumStream, (cumulativeStream, albumsFilter) ->
                         albumsFilter.apply(cumulativeStream, albumFilterDto), Stream::concat)
                 .map(albumMapper::toDto)
@@ -180,6 +179,7 @@ public class AlbumService {
                 return albumMapper.toDto(album.get());
             } else {
                 log.info("user is not follower");
+                throw new NoSuchElementException("user is not follower");
             }
         }
         log.error("album not found");
