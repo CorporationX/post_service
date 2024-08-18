@@ -36,7 +36,6 @@ public class PostService {
                 TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1000));
     }
 
-    @Transactional
     public void moderatePosts() {
         List<Post> posts = postRepository.findNotVerified();
         if (posts.isEmpty()) {
@@ -44,7 +43,7 @@ public class PostService {
         }
         for (int i = 0; i < posts.size(); i += countPostsInThread) {
             if (i + countPostsInThread > posts.size()) {
-                verifyPosts(posts.subList(i, posts.size() - 1));
+                verifyPosts(posts.subList(i, posts.size()));
             } else
                 verifyPosts(posts.subList(i, i + countPostsInThread));
         }
@@ -65,6 +64,7 @@ public class PostService {
                 post.setVerified(true);
                 post.setVerifiedDate(LocalDateTime.now());
             }
+            postRepository.save(post);
         }
     }
 }
