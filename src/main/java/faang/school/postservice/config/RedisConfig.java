@@ -39,7 +39,4 @@ public class RedisConfig {
     public ChannelTopic commentEventTopic() {
         return new ChannelTopic(commentEventNameTopic);
     }
-
-
-
 }
