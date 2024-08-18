@@ -2,10 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -41,6 +43,8 @@ public class CommentServiceTest {
     private UserContext userContext;
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
 
     private long commentId;
@@ -55,8 +59,11 @@ public class CommentServiceTest {
     void init() {
         commentId = 1L;
         userId = 2L;
+        postId = 4L;
         String content = "content";
-        post = Post.builder().id(postId).build();
+        post = Post.builder()
+                .id(postId)
+                .authorId(2L).build();
         comment = Comment.builder()
                 .id(commentId)
                 .authorId(2L)
@@ -98,7 +105,14 @@ public class CommentServiceTest {
         when(postRepository.findById(commentDto.getPostId())).thenReturn(Optional.of(post));
         when(commentMapper.entityToDto(comment)).thenReturn(commentDto);
         CommentDto result = commentService.createComment(commentDto);
+        CommentEvent commentEvent = CommentEvent.builder()
+                .commentAuthorId(comment.getAuthorId())
+                .postAuthorId(post.getAuthorId())
+                .commentId(comment.getId())
+                .postId(post.getId())
+                .build();
         verify(commentRepository).save(comment);
+        verify(commentEventPublisher).publish(commentEvent);
         assertNotNull(result);
         assertEquals(commentDto, result);
     }

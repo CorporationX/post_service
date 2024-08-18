@@ -1,8 +1,5 @@
 package faang.school.postservice.config;
 
-import lombok.RequiredArgsConstructor;
-import faang.school.postservice.publisher.LikeEventPublisher;
-import faang.school.postservice.publisher.MessagePublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,41 +8,24 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@RequiredArgsConstructor
 public class RedisConfig {
     @Value("${spring.data.redis.host}")
     private String host;
     @Value("${spring.data.redis.port}")
     private int port;
-    @Value("${spring.data.redis.topic.likeChannel}")
-    private String likeChannel;
-
-    private final RedisCredentials credentials;
-
-    @Bean("postChannelTopic")
-    public ChannelTopic postChannelTopic() {
-        return new ChannelTopic(credentials.getChannels().getPost());
-    }
-
-    @Bean("postLikeChannelTopic")
-    public ChannelTopic postLikeTopic() {
-        return new ChannelTopic(credentials.getChannels().getPostLike());
-    }
-
-    @Bean("likePostChannelTopicAnalytics")
-    public ChannelTopic likePostTopic() {
-        return new ChannelTopic(credentials.getChannels().getLikePostAnalytics());
-    }
+    @Value("${spring.data.redis.channels.comment_channel.name}")
+    private String commentEventNameTopic;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
+        System.out.println(port);
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         return new JedisConnectionFactory(config);
     }
-
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
@@ -56,12 +36,10 @@ public class RedisConfig {
     }
 
     @Bean
-    public MessagePublisher redisPublisher() {
-        return new LikeEventPublisher();
+    public ChannelTopic commentEventTopic() {
+        return new ChannelTopic(commentEventNameTopic);
     }
 
-    @Bean
-    public ChannelTopic likeEventChannel() {
-        return new ChannelTopic(likeChannel);
-    }
+
+
 }
