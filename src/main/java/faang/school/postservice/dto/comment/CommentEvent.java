@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class CommentEventDto {
+public class CommentEvent {
     private long commentAuthorId;
     private long postAuthorId;
     private long commentId;

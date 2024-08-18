@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.comment.CommentEventDto;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -74,7 +74,7 @@ public class CommentService {
     }
 
     private String createCommentEventMessage(Comment comment, Post post) {
-        CommentEventDto commentEventDto = CommentEventDto.builder()
+        CommentEvent commentEvent = CommentEvent.builder()
                 .commentAuthorId(comment.getAuthorId())
                 .postAuthorId(post.getAuthorId())
                 .commentId(comment.getId())
@@ -82,7 +82,7 @@ public class CommentService {
                 .content(comment.getContent())
                 .build();
         try {
-            return objectMapper.writeValueAsString(commentEventDto);
+            return objectMapper.writeValueAsString(commentEvent);
         } catch (JsonProcessingException e) {
             log.error("Error while creating comment event message", e);
             throw new RuntimeException(e);
