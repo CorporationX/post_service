@@ -3,10 +3,12 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -19,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class LikeService {
@@ -29,7 +34,10 @@ public class LikeService {
     private final LikeValidator likeValidator;
     private final UserServiceClient userServiceClient;
     private static final int USER_BATCH_SIZE = 100;
-  
+
+    private final LikeEventPublisher likeEventPublisher;
+
+
     public void likePost(LikeDto likeDto) {
         likeValidator.validateUser(likeDto.getUserId());
 
@@ -42,6 +50,15 @@ public class LikeService {
 
         Like like = likeMapper.toEntity(likeDto);
         like.setPost(post);
+
+        LikeEvent likeEvent = new LikeEvent();
+        likeEvent.setAuthorId(post.getAuthorId());
+        likeEvent.setUserId(likeDto.getUserId());
+        likeEvent.setPostId(likeDto.getPostId());
+        likeEvent.setReceivedAt(LocalDateTime.now());
+
+        likeEventPublisher.sendEvent(likeEvent);
+
         likeRepository.save(like);
     }
 
@@ -73,7 +90,7 @@ public class LikeService {
         likeValidator.validateUser(likeDto.getUserId());
 
         Like like = likeRepository.findByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId())
-                .orElseThrow(()->new IllegalArgumentException("Лайк не найден"));
+                .orElseThrow(() -> new IllegalArgumentException("Лайк не найден"));
         likeRepository.delete(like);
     }
 
