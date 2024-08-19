@@ -1,9 +1,12 @@
 package faang.school.postservice.service;
 
 
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
 import faang.school.postservice.mapper.PostContextMapper;
@@ -25,13 +28,16 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
     private final PostContextMapper context;
+    private final PostEventPublisher postEventPublisher;
+    private final UserContext userContext;
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
         postServiceValidator.validateCreatePost(postDto);
         Post post = postMapper.toEntity(postDto);
 
-        postRepository.save(post);
+        Post savedPost = postRepository.save(post);
+        sendToRedisPublisher(userContext.getUserId(), savedPost.getId());
         return postMapper.toDto(post);
     }
 
@@ -54,7 +60,7 @@ public class PostService {
         Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(() -> {
                     log.error("Post ID " + postDto.getId() + " not found");
-                    return new EntityNotFoundException("Post ID "+ postDto.getId() +" not found");
+                    return new EntityNotFoundException("Post ID " + postDto.getId() + " not found");
                 });
         postServiceValidator.validatePublishPost(post, postDto);
         post.setPublished(true);
@@ -68,8 +74,8 @@ public class PostService {
     public PostDto deletePost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.error("Post ID "+ postId +" not found");
-                    return new EntityNotFoundException("Post ID "+ postId +" not found");
+                    log.error("Post ID " + postId + " not found");
+                    return new EntityNotFoundException("Post ID " + postId + " not found");
                 });
         postServiceValidator.validateDeletePost(post);
         post.setDeleted(true);
@@ -84,8 +90,8 @@ public class PostService {
     public PostDto getPostByPostId(Long postId) {
         return postMapper.toDto(postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.error("Post ID "+ postId +" not found");
-                    return new EntityNotFoundException("Post ID "+ postId +" not found");
+                    log.error("Post ID " + postId + " not found");
+                    return new EntityNotFoundException("Post ID " + postId + " not found");
                 }));
     }
 
@@ -124,7 +130,7 @@ public class PostService {
 
         return postMapper.toDto(sortPostsByPublishAt(filteredPosts));
     }
-  
+
     public Post getPost(long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post with the same id does not exist"));
@@ -145,5 +151,13 @@ public class PostService {
         return posts.stream()
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .toList();
+    }
+
+    private void sendToRedisPublisher(long userId, long postId) {
+        PostEvent event = PostEvent.builder()
+                .authorId(userId)
+                .postId(postId)
+                .build();
+        postEventPublisher.publish(event);
     }
 }
