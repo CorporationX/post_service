@@ -12,14 +12,14 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AchievementPublisher {
+public class CommentEventPublisher {
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic channelTopic;
+    private final ChannelTopic calculations_channelTopic;
     private final CommentEventMapper commentEventMapper;
 
     public void publish(Comment comment) {
         CommentEvent commentEvent =
                 commentEventMapper.toEvent(comment);
-        redisTemplate.convertAndSend(channelTopic.getTopic(), commentEvent);
+        redisTemplate.convertAndSend(calculations_channelTopic.getTopic(), commentEvent);
     }
 }

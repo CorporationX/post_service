@@ -27,7 +27,7 @@ public class RedisConfiguration {
     }
 
     @Bean
-    public ChannelTopic channelTopic() {
+    public ChannelTopic calculations_channelTopic() {
         return new ChannelTopic(topic);
     }
 

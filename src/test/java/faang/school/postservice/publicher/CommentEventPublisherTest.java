@@ -18,29 +18,29 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AchievementPublisherTest {
+class CommentEventPublisherTest {
 
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
 
     @Mock
-    private ChannelTopic channelTopic;
+    private ChannelTopic calculations_channelTopic;
 
     @Mock
     private CommentEventMapper commentEventMapper;
 
     @InjectMocks
-    private AchievementPublisher achievementPublisher;
+    private CommentEventPublisher commentEventPublisher;
 
     @Test
     @DisplayName("Проверка публикации события в Redis")
     void testPublish() {
         Comment comment = new Comment();
         CommentEvent commentEvent = new CommentEvent();
-        when(channelTopic.getTopic()).thenReturn("test-topic");
+        when(calculations_channelTopic.getTopic()).thenReturn("test-topic");
         when(commentEventMapper.toEvent(comment)).thenReturn(commentEvent);
 
-        achievementPublisher.publish(comment);
+        commentEventPublisher.publish(comment);
 
         verify(redisTemplate, times(1)).convertAndSend("test-topic", commentEvent);
         verify(commentEventMapper, times(1)).toEvent(comment);
