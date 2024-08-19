@@ -1,6 +1,8 @@
-package faang.school.postservice.config.redis.like;
+package faang.school.postservice.config.redis;
 
-import faang.school.postservice.config.redis.MessagePublisher;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.LikePostPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,10 +11,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 
-
 @Configuration
-public class LikePostRedisConfig {
-
+public class RedisConfiguration {
+    @Value("${spring.data.redis.topic.comment_achievement}")
+    private String commentTopic;
     @Value("${spring.data.redis.topic.like}")
     private String likePostTopic;
 
@@ -35,7 +37,17 @@ public class LikePostRedisConfig {
     }
 
     @Bean
-    MessagePublisher redisPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic likePostTopic) {
-        return new LikePostPublisher(redisTemplate, likePostTopic);
+    MessagePublisher LikePostPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic likePostTopic, ObjectMapper objectMapper) {
+        return new LikePostPublisher(redisTemplate, likePostTopic, objectMapper);
+    }
+
+    @Bean
+    ChannelTopic commentTopic() {
+        return new ChannelTopic(commentTopic);
+    }
+
+    @Bean
+    MessagePublisher CommentEventPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic commentTopic, ObjectMapper objectMapper) {
+        return new CommentEventPublisher(redisTemplate, commentTopic, objectMapper);
     }
 }

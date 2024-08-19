@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.config.redis.like.LikePostPublisher;
+import faang.school.postservice.publisher.LikePostPublisher;
 import faang.school.postservice.controller.like.LikeController;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;

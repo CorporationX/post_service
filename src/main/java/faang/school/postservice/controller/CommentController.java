@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Комментарии", description = "Контроллер для работы над комментариями")
 public class CommentController {
     private final CommentService commentService;
+    private final CommentEventPublisher commentEventPublisher;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -34,7 +36,9 @@ public class CommentController {
 
     })
     public CommentDto createComment(@Valid @RequestBody CommentDto commentDto) {
-        return commentService.createComment(commentDto);
+        CommentDto result =  commentService.createComment(commentDto);
+        commentEventPublisher.createCommentEvent(result);
+        return result;
     }
 
     @PutMapping

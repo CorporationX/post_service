@@ -26,6 +26,7 @@ spring:
           name: calculations_channel
       topic:
         like: like_event
+        comment_achievement: comment_channel
 
   services:
     s3:
