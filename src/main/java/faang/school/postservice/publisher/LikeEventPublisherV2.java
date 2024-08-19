@@ -1,27 +1,27 @@
 package faang.school.postservice.publisher;
 
+import faang.school.postservice.event.LikeEventV2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
 
 @Component
+//@RequiredArgsConstructor
 public class LikeEventPublisherV2 implements MessagePublisherV2 {
-
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, Object> template;
     @Autowired
     private ChannelTopic topic;
 
-    public RedisMessagePublisher() {
-    }
-
-    public RedisMessagePublisher(
-            RedisTemplate<String, Object> redisTemplate, ChannelTopic topic) {
-        this.redisTemplate = redisTemplate;
+//    @Autowired
+    public LikeEventPublisherV2(RedisTemplate<String, Object> template,
+                                ChannelTopic topic) {
+        this.template = template;
         this.topic = topic;
     }
 
-    public void publish(String message) {
-        redisTemplate.convertAndSend(topic.getTopic(), message);
+    public void publish(LikeEventV2 likeEvent) {
+        template.convertAndSend(topic.getTopic(), likeEvent);
     }
 }

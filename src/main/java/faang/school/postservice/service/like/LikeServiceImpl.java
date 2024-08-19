@@ -2,6 +2,7 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.event.LikeEventV2;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
@@ -9,7 +10,9 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.publisher.LikeEventPublisherV2;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.LikeValidator;
@@ -28,10 +31,12 @@ public class LikeServiceImpl implements LikeService {
     private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;
     private final LikeEventPublisher likePublisher;
+    private final LikeEventPublisherV2 likeEventPublisherV2;
     private final PostService postService;
     private final CommentService commentService;
     private final PostMapper postMapper;
     private final CommentMapper commentMapper;
+    private final PostRepository postRepository;
 
     @Override
     @Transactional
@@ -75,10 +80,13 @@ public class LikeServiceImpl implements LikeService {
         post.getLikes().add(like);
         like = likeRepository.save(like);
         publisher(userId, postId, null, post.getAuthorId());
-        log.info("Like with likeId = {} added on post with postId = {} by user with userId = {}",
+        log.info("Like with likeId = {} added on post with postId = {}" +
+                        " by user with userId = {}",
                 like.getId(),
                 postId,
                 userId);
+        publisherV2(postId, likeDto);
+        log.info("Опубликован лайк на пост {}", post.getContent());
         return likeMapper.toDto(like);
     }
 
@@ -103,5 +111,14 @@ public class LikeServiceImpl implements LikeService {
                 .completedAt(LocalDateTime.now())
                 .build();
         likePublisher.publish(event);
+    }
+
+    private void publisherV2(long postId, LikeDto likeDto) {
+        Post post = postRepository.findById(postId).orElseThrow(
+                () -> new IllegalArgumentException("Такой пост не найден."));
+        long postAuthorId = post.getAuthorId();
+        LikeEventV2 likeEventV2 = likeMapper.likeDtoToLikeEvent2(likeDto);
+        likeEventV2.setPostAuthorId(postAuthorId);
+        likeEventPublisherV2.publish(likeEventV2);
     }
 }

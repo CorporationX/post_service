@@ -18,9 +18,9 @@ import java.util.List;
 public interface UserServiceClient {
 
     @GetMapping("/users/{userId}")
-    UserDto getUser(@PathVariable @NotNull(message = "Поле не может отсутствовать!")
+    UserDto getUser(@PathVariable /*@NotNull(message = "Поле не может отсутствовать!")
                     @Min(value = 1,
-                            message = "Поле должно быть 1 или более.") long userId);
+                            message = "Поле должно быть 1 или более.")*/ long userId);
 
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody @NotEmpty(message = "Список не должен быть пустым.")

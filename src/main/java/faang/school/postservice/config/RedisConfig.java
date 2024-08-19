@@ -17,70 +17,35 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    //    @Value("${spring.data.redis.port}")
-//    private int port;
-//
-//    @Value("${spring.data.redis.host}")
-//    private String host;
-//
-//    @Value("${spring.data.redis.channels.like_post_channel.name.like_channel")
-//    private String likeTopicName;
-//
-//    @Bean
-//    public JedisConnectionFactory redisConnectionFactory() {
-//        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
-//        return new JedisConnectionFactory(config);
-//    }
-//
-//    @Bean
-//    public RedisTemplate<String, Object> redisTemplate() {
-//        RedisTemplate<String, Object> template = new RedisTemplate<>();
-//        template.setConnectionFactory(redisConnectionFactory());
-//        template.setKeySerializer(new StringRedisSerializer());
-//        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-//        return template;
-//    }
-//
-//    @Bean
-//    RedisMessageListenerContainer container(MessageListenerAdapter listenerAdapter) {
-//
-//        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-//        container.setConnectionFactory(redisConnectionFactory());
-//        container.addMessageListener(listenerAdapter, new ChannelTopic("postLikes"));
-//
-//        return container;
-//    }
-    @Bean
-    RedisMessageListenerContainer redisContainer() {
-        RedisMessageListenerContainer container
-                = new RedisMessageListenerContainer();
-        container.setConnectionFactory(jedisConnectionFactory());
-        container.addMessageListener(messageListener(), topic());
-        return container;
-    }
+        @Value("${spring.data.redis.port}")
+    private int port;
 
-    //
-//    @Bean
-//    MessageListenerAdapter listenerAdapter(LikeEventListener subscriber) {
-//        return new MessageListenerAdapter(subscriber);
-//    }
-    @Bean
-    MessageListenerAdapter messageListener() {
-        return new MessageListenerAdapter(new RedisMessageSubscriber());
-    }
+    @Value("${spring.data.redis.host}")
+    private String host;
 
-    //
-//    @Bean
-//    public ChannelTopic likeTopic() {
-//        return new ChannelTopic(likeTopicName);
-//    }
+    @Value("${spring.data.redis.channels.like_post_channel.name.like_channel")
+    private String likeTopicName;
+
     @Bean
-    ChannelTopic topic() {
-        return new ChannelTopic("messageQueue");
+    public JedisConnectionFactory redisConnectionFactory() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+        return new JedisConnectionFactory(config);
     }
 
     @Bean
-    MessagePublisher redisPublisher() {
-        return new RedisMessagePublisher(redisTemplate(), topic());
+    public RedisTemplate<String, Object> redisTemplate() {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory());
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
     }
+
+
+
+    @Bean
+    public ChannelTopic likeTopic() {
+        return new ChannelTopic(likeTopicName);
+    }
+
 }
