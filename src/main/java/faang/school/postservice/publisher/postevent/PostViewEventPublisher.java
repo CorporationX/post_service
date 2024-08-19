@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -20,14 +19,14 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class PostViewEventPublisher implements MessagePublisher<PostViewEvent> {
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic channelTopic;
+    private final ChannelTopic postViewChannelTopic;
     private final ObjectMapper objectMapper;
 
     @Override
     public void publish(PostViewEvent postViewEvent) {
         try {
             String message = objectMapper.writeValueAsString(postViewEvent);
-            redisTemplate.convertAndSend(channelTopic.getTopic(), message);
+            redisTemplate.convertAndSend(postViewChannelTopic.getTopic(), message);
             log.info("Published postViewEvent: {}", message);
         } catch (JsonProcessingException e) {
             log.error(ExceptionMessages.SERIALIZATION_ERROR + postViewEvent, e);

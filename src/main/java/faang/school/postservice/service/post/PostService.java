@@ -74,9 +74,10 @@ public class PostService {
 
     public PostDto getById(Long postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
+        postViewEventPublisher.toEventAndPublish(postViewMapper.toDto(postRepository.findById(postId).get()));
         Post post = postOptional.orElseThrow(
                 () -> new PostValidationException("Post with id " + postId + " doesn't exists"));
-        postViewEventPublisher.toEventAndPublish(postViewMapper.toDto(postRepository.findById(postId).get()));        return postMapper.toDto(post);
+        return postMapper.toDto(post);
     }
 
     public List<PostDto> getAllUnpublishedPostsForAuthor(Long authorId) {
