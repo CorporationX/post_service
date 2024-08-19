@@ -1,6 +1,8 @@
 package faang.school.postservice.config.redis.like;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.config.redis.MessagePublisher;
+import faang.school.postservice.mapper.LikeEventMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,7 +37,8 @@ public class LikePostRedisConfig {
     }
 
     @Bean
-    MessagePublisher redisPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic likePostTopic) {
-        return new LikePostPublisher(redisTemplate, likePostTopic);
+    MessagePublisher redisPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic likePostTopic,
+                                    ObjectMapper objectMapper, LikeEventMapper likeEventMapper) {
+        return new LikePostPublisher(redisTemplate, likePostTopic, objectMapper, likeEventMapper);
     }
 }
