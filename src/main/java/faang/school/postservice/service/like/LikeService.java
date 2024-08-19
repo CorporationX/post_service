@@ -1,8 +1,11 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.LikeEvent;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ExceptionMessages;
+import faang.school.postservice.messaging.publisher.LikeEventPublisher;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +23,14 @@ import java.util.NoSuchElementException;
 public class LikeService {
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
+    private final LikeEventPublisher likeEventPublisher;
 
     @Value("${user.batch.size:100}")
     private int batchSize;
+
+    public void likePost(LikeDto like) {
+        submitEvent(like);
+    }
 
 
     public List<UserDto> getUsersByPostId(Long postId) {
@@ -61,5 +69,15 @@ public class LikeService {
             result.addAll(userServiceClient.getUsersByIds(batch));
         }
         return result;
+    }
+
+    private void submitEvent(LikeDto like) {
+        LikeEvent likeEvent = LikeEvent.builder()
+                .authorId(like.getUserId())
+                .postId(like.getPostId())
+                .likeId(like.getId())
+                .build();
+
+        likeEventPublisher.publish(likeEvent);
     }
 }
