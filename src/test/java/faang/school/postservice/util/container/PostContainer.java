@@ -127,6 +127,7 @@ public class PostContainer {
                 .publishedAt(publishedAt)
                 .scheduledAt(scheduledAt)
                 .deleted(deleted)
+                .numLikes((long) likes().size())
                 .build();
     }
 

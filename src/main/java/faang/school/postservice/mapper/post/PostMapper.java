@@ -22,6 +22,7 @@ public interface PostMapper {
     @Mapping(source = "albums", target = "albumIds", qualifiedByName = "mapAlbums")
     @Mapping(source = "ad.id", target = "adId")
     @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "mapResources")
+    @Mapping(target = "numLikes", expression = "java(mapLikesToNumLikes(entity.getLikes()))")
     PostDto toDto(Post entity);
 
     Post toEntity(PostDto dto);
@@ -64,5 +65,10 @@ public interface PostMapper {
         return resources.stream()
                 .map(Resource::getId)
                 .toList();
+    }
+
+    default Long mapLikesToNumLikes(List<Like> likes) {
+        if (likes == null) return 0L;
+        return ((long) likes.size());
     }
 }

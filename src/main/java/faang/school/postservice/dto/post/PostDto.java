@@ -28,4 +28,5 @@ public class PostDto {
     private LocalDateTime publishedAt;
     private LocalDateTime scheduledAt;
     private boolean deleted;
+    private Long numLikes;
 }
