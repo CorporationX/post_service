@@ -28,7 +28,6 @@ class AdServiceTest {
     private final Ad ad3 = new Ad();
     private final Ad ad4 = new Ad();
     private List<Ad> ads;
-    private int subListSize;
 
     @InjectMocks
     private AdService adService;
@@ -45,7 +44,7 @@ class AdServiceTest {
         ad3.setAppearancesLeft(1L);
         ad3.setEndDate(LocalDateTime.now().minusDays(1L));
         ad4.setAppearancesLeft(0L);
-        ad4.setEndDate(LocalDateTime.now().minusDays(1));
+        ad4.setEndDate(LocalDateTime.now().minusDays(1L));
         ReflectionTestUtils.setField(adService, "subListSize", 100);
 
     }
