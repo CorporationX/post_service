@@ -44,7 +44,7 @@ public class PostService {
         Post post = postOptional.get();
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        postEventPublishers.toEventAndPublish(post);
+        postEventPublishers.publish(postMapper.toPostEvent(post));
 
         return postMapper.toDto(postRepository.save(post));
     }
