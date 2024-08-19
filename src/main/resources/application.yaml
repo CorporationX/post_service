@@ -49,3 +49,7 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+user:
+  batch:
+    size: 100
