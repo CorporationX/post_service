@@ -2,21 +2,24 @@ package faang.school.postservice.service;
 
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.redis.LikeEventPublisher;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.LikeValidator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 @Component
+@RequiredArgsConstructor
 public class LikeService {
 
     private final LikeRepository likeRepository;
@@ -25,16 +28,6 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final LikeValidator likeValidator;
     private final LikeEventPublisher likeEventPublisher;
-
-    @Autowired
-    public LikeService(LikeRepository likeRepository, LikeMapper likeMapper, PostRepository postRepository, CommentRepository commentRepository, LikeValidator likeValidator, LikeEventPublisher likeEventPublisher) {
-        this.likeRepository = likeRepository;
-        this.likeMapper = likeMapper;
-        this.postRepository = postRepository;
-        this.commentRepository = commentRepository;
-        this.likeValidator = likeValidator;
-        this.likeEventPublisher = likeEventPublisher;
-    }
 
 
     public void likePost(LikeDto likeDto) {
@@ -50,8 +43,13 @@ public class LikeService {
         Like like = likeMapper.toEntity(likeDto);
         like.setPost(post);
 
-        String message = likeDto.getPostId() + "," + post.getAuthorId() + "," + likeDto.getUserId() + "," + LocalDateTime.now();
-        likeEventPublisher.publish(message);
+        LikeEvent likeEvent = new LikeEvent();
+        likeEvent.setAuthorId(post.getAuthorId());
+        likeEvent.setUserId(likeDto.getUserId());
+        likeEvent.setPostId(likeDto.getPostId());
+        likeEvent.setReceivedAt(LocalDateTime.now());
+
+        likeEventPublisher.sendEvent(likeEvent);
 
         likeRepository.save(like);
     }

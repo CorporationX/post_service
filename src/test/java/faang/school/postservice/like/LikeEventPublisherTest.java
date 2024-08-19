@@ -1,6 +1,6 @@
 package faang.school.postservice.like;
 
-import faang.school.postservice.redis.LikeEventPublisher;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
