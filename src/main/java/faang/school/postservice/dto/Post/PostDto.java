@@ -3,13 +3,17 @@ package faang.school.postservice.dto.Post;
 import faang.school.postservice.controller.PostController;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class PostDto {
     private Long id;
     @NotNull (groups = PostController.class)

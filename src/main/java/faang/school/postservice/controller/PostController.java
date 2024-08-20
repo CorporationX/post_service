@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-
+@RequestMapping("/posts")
 @Validated
 public class PostController {
     private final PostService postService;
