@@ -29,14 +29,13 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommentMapper commentMapper;
-    private final ObjectMapper objectMapper;
 
     public CommentDto createComment(CreateCommentDto createCommentDto) {
         checkUserService.checkUserExistence(createCommentDto);
         Comment savedComment = commentMapper.toEntity(createCommentDto);
         savedComment = commentRepository.save(savedComment);
         log.info("Comment with ID = {} was created", savedComment.getId());
-        messagePublisherService.publishCommentEvent(savedComment, objectMapper);
+        messagePublisherService.publishCommentEvent(savedComment);
         return commentMapper.toDto(savedComment);
     }
 

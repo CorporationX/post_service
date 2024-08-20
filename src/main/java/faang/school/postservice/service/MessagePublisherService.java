@@ -17,8 +17,9 @@ import java.time.LocalDateTime;
 public class MessagePublisherService {
 
     private final CommentEventPublisher commentEventPublisher;
+    private final ObjectMapper objectMapper;
 
-    public void publishCommentEvent(Comment savedComment, ObjectMapper objectMapper) {
+    public void publishCommentEvent(Comment savedComment) {
         CommentEvent commentEvent = new CommentEvent();
         commentEvent.setPostId(savedComment.getPost().getId());
         commentEvent.setAuthorId(savedComment.getAuthorId());
