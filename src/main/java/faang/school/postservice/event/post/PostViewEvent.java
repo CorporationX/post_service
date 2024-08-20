@@ -1,4 +1,4 @@
-package faang.school.postservice.event;
+package faang.school.postservice.event.post;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

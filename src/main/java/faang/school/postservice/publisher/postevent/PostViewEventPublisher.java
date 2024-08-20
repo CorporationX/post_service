@@ -3,7 +3,7 @@ package faang.school.postservice.publisher.postevent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostViewDto;
-import faang.school.postservice.event.PostViewEvent;
+import faang.school.postservice.event.post.PostViewEvent;
 import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.publisher.MessagePublisher;
 import jakarta.validation.constraints.NotNull;

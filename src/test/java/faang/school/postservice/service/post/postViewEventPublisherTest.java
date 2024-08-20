@@ -1,7 +1,7 @@
 package faang.school.postservice.service.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.event.PostViewEvent;
+import faang.school.postservice.event.post.PostViewEvent;
 import faang.school.postservice.publisher.postevent.PostViewEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
