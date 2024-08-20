@@ -1,4 +1,4 @@
-package faang.school.postservice.config.publisher;
+package faang.school.postservice.config.redis.like;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

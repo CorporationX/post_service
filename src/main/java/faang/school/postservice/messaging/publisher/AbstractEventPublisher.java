@@ -1,4 +1,4 @@
-package faang.school.postservice.messaging;
+package faang.school.postservice.messaging.publisher;
 
 import static faang.school.postservice.exception.ExceptionMessages.INSERTION_STAPLES;
 import static faang.school.postservice.exception.ExceptionMessages.TOPIC_PUBLICATION_EXCEPTION;
@@ -6,7 +6,6 @@ import static faang.school.postservice.exception.ExceptionMessages.WRITING_TO_JS
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.exception.event.EventPublishingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
