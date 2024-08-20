@@ -11,9 +11,17 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class LikeMessagePublisher extends GenericMessagePublisher<LikeEvent> {
 
+    private final ChannelTopic likeTopic;
+
     public LikeMessagePublisher(RedisTemplate<String, Object> redisTemplate,
                                 ChannelTopic likeTopic,
                                 ObjectMapper objectMapper) {
-        super(redisTemplate, likeTopic, objectMapper);
+        super(redisTemplate, objectMapper);
+        this.likeTopic = likeTopic;
+    }
+
+    @Override
+    protected ChannelTopic getTopic() {
+        return likeTopic;
     }
 }

@@ -12,9 +12,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public abstract class GenericMessagePublisher<T> implements MessagePublisher<T>{
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic topic;
-    private final ObjectMapper objectMapper;
+    protected final RedisTemplate<String, Object> redisTemplate;
+    protected final ObjectMapper objectMapper;
 
     @Override
     public void publish(T t) {
@@ -25,7 +24,9 @@ public abstract class GenericMessagePublisher<T> implements MessagePublisher<T>{
             log.info("Method: publish {}", e.getMessage());
             throw new RuntimeException(e);
         }
-        redisTemplate.convertAndSend(topic.getTopic(), message);
-        log.info("Published message: {} to channel: {}", message, topic.getTopic());
+        redisTemplate.convertAndSend(getTopic().toString(), message);
+        log.info("Published message: {} to channel: {}", message, getTopic());
     }
+
+    protected abstract ChannelTopic getTopic();
 }
