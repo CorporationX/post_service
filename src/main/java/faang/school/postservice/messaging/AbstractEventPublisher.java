@@ -30,10 +30,8 @@ public abstract class AbstractEventPublisher<T> implements EventPublisher<T> {
             log.info(PUBLISHED_EVENT, event.getClass().getSimpleName(), message);
         } catch (JsonProcessingException e) {
             log.error(WRITING_TO_JSON_EXCEPTION + INSERTION_STAPLES, e.getMessage());
-            throw new EventPublishingException(WRITING_TO_JSON_EXCEPTION, e);
         } catch (Exception e) {
             log.error(TOPIC_PUBLICATION_EXCEPTION  + INSERTION_STAPLES, e.getMessage());
-            throw new EventPublishingException(TOPIC_PUBLICATION_EXCEPTION, e);
         }
     }
 
