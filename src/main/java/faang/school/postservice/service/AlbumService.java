@@ -179,7 +179,7 @@ public class AlbumService {
                 return albumMapper.toDto(album.get());
             } else {
                 log.info("user is not follower");
-                throw new NoSuchElementException("user is not follower");
+                return new AlbumDto();
             }
         }
         log.error("album not found");
