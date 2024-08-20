@@ -181,8 +181,11 @@ public class AlbumService {
                 log.info("user is not follower");
                 return new AlbumDto();
             }
+        } else if (album.get().getVisibilityType().equals(VisibilityType.ONLY_AUTHOR)) {
+            return new AlbumDto();
+        } else {
+            log.error("album not found");
+            throw new NoSuchElementException("album is null");
         }
-        log.error("album not found");
-        throw new NoSuchElementException("album is null");
     }
 }
