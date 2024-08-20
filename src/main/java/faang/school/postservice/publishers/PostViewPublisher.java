@@ -15,11 +15,11 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class PostViewPublisher implements MessagePublisher {
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic channelTopic;
+    private final ChannelTopic postViewChannel;
     private final ObjectMapper objectMapper;
 
     @Override
     public void publish(String message) {
-        redisTemplate.convertAndSend(channelTopic.getTopic(), message);
+        redisTemplate.convertAndSend(postViewChannel.getTopic(), message);
     }
 }
