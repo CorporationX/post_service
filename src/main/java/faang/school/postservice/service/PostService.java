@@ -8,14 +8,12 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import jakarta.persistence.EntityNotFoundException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -77,28 +75,33 @@ public class PostService {
     }
 
     public List<PostDto> getDraftsByUser(Long id) {
-        UserDto user = getUser(id);
+        UserDto user = userServiceClient.getUser(id);
         List<Post> postsByAuthor = getFilteredPostsByUser(user.getId(), (post) -> !post.isPublished());
         return postMapper.toDtoList(postsByAuthor);
     }
 
     public List<PostDto> getDraftsByProject(Long id) {
-        ProjectDto projectDto = getProject(id);
+        ProjectDto projectDto = projectServiceClient.getProject(id);
         List<Post> postsByProject = getFilteredPostsByProject(projectDto.getId(), (post) -> !post.isPublished());
         return postsByProject.stream().map(postMapper::toDto).toList();
     }
 
 
     public List<PostDto> getPublishedByUser(Long id) {
-        UserDto user = getUser(id);
+        UserDto user = userServiceClient.getUser(id);
         List<Post> publishedPostsByAuthor = getFilteredPostsByUser(user.getId(), Post::isPublished);
         return publishedPostsByAuthor.stream().map(postMapper::toDto).toList();
     }
 
     public List<PostDto> getPublishedByProject(Long id) {
-        ProjectDto projectDto = getProject(id);
+        ProjectDto projectDto = projectServiceClient.getProject(id);
         List<Post> publishedPostsByProject = getFilteredPostsByProject(projectDto.getId(), Post::isPublished);
         return publishedPostsByProject.stream().map(postMapper::toDto).toList();
+    }
+
+    public Post getPost(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
     }
 
     private List<Post> getFilteredPostsByUser(Long userId, Predicate<Post> filter) {
@@ -111,43 +114,18 @@ public class PostService {
                 .stream().filter(filter).toList();
     }
 
-    private Post getPost(Long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
-    }
-
-    private ProjectDto getProject(Long id) {
-        ProjectDto projectDto = projectServiceClient.getProject(id);
-        if (projectDto == null) {
-            throw new EntityNotFoundException("Project not found");
-        }
-        return projectDto;
-    }
-
     private PostDto createPostToProject(PostDto postDto) {
-        ProjectDto project = projectServiceClient.getProject(postDto.getProjectId());
+        projectServiceClient.getProject(postDto.getProjectId());
         return getPostDto(postDto);
     }
 
-
     private PostDto createPostToAuthor(PostDto postDto) {
-        UserDto user = userServiceClient.getUser(postDto.getAuthorId());
+        userServiceClient.getUser(postDto.getAuthorId());
         return getPostDto(postDto);
     }
 
     private PostDto getPostDto(PostDto postDto) {
         Post createdDraft = postRepository.save(postMapper.toEntity(postDto));
         return postMapper.toDto(createdDraft);
-    }
-
-    private UserDto getUser(Long id) {
-        return userServiceClient.getUser(id);
-    }
-
-    public Post findById(long id) {
-        return postRepository.findById(id).orElseThrow(() -> {
-            log.info("Post with id {} does not exist", id);
-            return new jakarta.persistence.EntityNotFoundException("Post with id " + id + " does not exist");
-        });
     }
 }

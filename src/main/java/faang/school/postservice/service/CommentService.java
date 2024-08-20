@@ -27,7 +27,7 @@ public class CommentService {
     @Transactional
     public void createComment(CommentDto commentDto) {
         validateUserById(commentDto.getAuthorId());
-        Post post = postService.findById(commentDto.getPostId());
+        Post post = postService.getPost(commentDto.getPostId());
         post.getComments().add(commentRepository
                 .save(commentMapper.toEntity(commentDto)));
     }
@@ -41,7 +41,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentDto> getAllByPostId(Long postId) {
-        Post post = postService.findById(postId);
+        Post post = postService.getPost(postId);
         return commentMapper.toDtos(post.getComments()
                 .stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())

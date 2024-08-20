@@ -13,7 +13,7 @@ import java.util.List;
 public interface ProjectServiceClient {
 
     @GetMapping("/api/project/{projectId}")
-    ProjectDto getProject(@PathVariable long projectId);
+    ProjectDto getProject(@PathVariable("projectId") long projectId);
 
     @PostMapping("/api/projects")
     List<ProjectDto> getProjectsByIds(@RequestBody List<Long> ids);
