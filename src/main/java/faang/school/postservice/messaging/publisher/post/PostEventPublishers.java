@@ -1,10 +1,10 @@
-package faang.school.postservice.messaging.publishers.post;
+package faang.school.postservice.messaging.publisher.post;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.post.PostEvent;
 import faang.school.postservice.exception.ExceptionMessages;
-import faang.school.postservice.messaging.publishers.EventPublisher;
+import faang.school.postservice.messaging.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;

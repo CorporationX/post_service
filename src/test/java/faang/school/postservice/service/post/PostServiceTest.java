@@ -4,7 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.event.post.PostEvent;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.post.PostMapperImpl;
-import faang.school.postservice.messaging.publishers.post.PostEventPublishers;
+import faang.school.postservice.messaging.publisher.post.PostEventPublishers;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
