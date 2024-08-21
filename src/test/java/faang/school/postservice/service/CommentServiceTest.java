@@ -1,18 +1,22 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.publisher.PublicationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -21,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -40,8 +45,10 @@ class CommentServiceTest {
     private CommentDto dto;
     private Comment comment;
 
+    @Spy
+    private CommentMapperImpl mapper;
     @Mock
-    private CommentMapper mapper;
+    private PublicationService publishService;
     @Mock
     private PostRepository postRepository;
     @Mock
@@ -70,7 +77,7 @@ class CommentServiceTest {
     @Test
     public void testGetPostWithInvalidId() {
         //Act
-        Mockito.when(postRepository.findById(INVALID_ID_IN_DB)).thenReturn(Optional.empty());
+        when(postRepository.findById(INVALID_ID_IN_DB)).thenReturn(Optional.empty());
         //Assert
         assertEquals(MESSAGE_POST_NOT_IN_DB,
                 assertThrows(RuntimeException.class,
@@ -82,7 +89,7 @@ class CommentServiceTest {
         //Arrange
         dto.setContent(EMPTY_CONTENT);
         //Act
-        Mockito.when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
+        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
         //Assert
         assertEquals(MESSAGE_INVALID_TEXT_OF_COMMENT,
                 assertThrows(RuntimeException.class,
@@ -94,7 +101,7 @@ class CommentServiceTest {
         //Arrange
         dto.setContent(BLANK_CONTENT);
         //Act
-        Mockito.when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
+        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
         //Assert
         assertEquals(MESSAGE_INVALID_TEXT_OF_COMMENT,
                 assertThrows(RuntimeException.class,
@@ -106,7 +113,7 @@ class CommentServiceTest {
         //Arrange
         dto.setContent(new String(new char[INVALID_LENGTH_OF_CONTENT]));
         //Act
-        Mockito.when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
+        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
         //Assert
         assertEquals(MESSAGE_INVALID_TEXT_OF_COMMENT,
                 assertThrows(RuntimeException.class,
@@ -114,13 +121,42 @@ class CommentServiceTest {
     }
 
     @Test
-    public void testVerifyServiceAddComment() {
+    public void testVerifyServiceAddComment() throws JsonProcessingException {
+        // Arrange
+        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
+        when(mapper.toEntity(dto)).thenReturn(comment);
+        when(commentRepository.save(Mockito.any())).thenReturn(comment);
         //Act
-        Mockito.when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
-        Mockito.when(mapper.toEntity(dto)).thenReturn(comment);
-        //Assert
         service.addComment(post.getId(), dto);
+        //Assert
         Mockito.verify(mapper).toDto(Mockito.any());
+    }
+
+    @Test
+    public void testVerifyPublishCommentEvent() throws JsonProcessingException {
+        long postId = 1L;
+        Post post = Post.builder()
+                .id(postId)
+                .build();
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        CommentDto commentDto = CommentDto.builder()
+                .authorId(2L)
+                .content("content")
+                .build();
+        Comment commentEntity = Comment.builder()
+                .id(3L)
+                .authorId(commentDto.getAuthorId())
+                .post(post)
+                .content(commentDto.getContent())
+                .build();
+        when(commentRepository.save(Mockito.any())).thenReturn(commentEntity);
+        CommentEvent commentEvent = mapper.toCommentEvent(commentEntity);
+        CommentDto expDto = mapper.toDto(commentEntity);
+        //Act
+        CommentDto actualDto = service.addComment(postId, commentDto);
+        //Assert
+        Mockito.verify(publishService).publishCommentEvent(commentEvent);
+        assertEquals(expDto, actualDto);
     }
 
     @Test
@@ -128,7 +164,7 @@ class CommentServiceTest {
         //Arrange
         dto.setId(INVALID_ID_IN_DB);
         //Act
-        Mockito.when(commentRepository.findById(INVALID_ID_IN_DB)).thenReturn(Optional.empty());
+        when(commentRepository.findById(INVALID_ID_IN_DB)).thenReturn(Optional.empty());
         //Assert
         assertEquals(MESSAGE_COMMENT_NOT_EXIST,
                 assertThrows(RuntimeException.class,
@@ -138,7 +174,7 @@ class CommentServiceTest {
     @Test
     public void testPostIdAndCommentPostIdNotEqual() {
         //Act
-        Mockito.when(commentRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(comment));
+        when(commentRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(comment));
         //Assert
         assertEquals(MESSAGE_POST_ID_AND_COMMENT_POST_ID_NOT_EQUAL,
                 assertThrows(RuntimeException.class,
@@ -148,7 +184,7 @@ class CommentServiceTest {
     @Test
     public void testVerifyServiceChangeComment() {
         //Act
-        Mockito.when(commentRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(comment));
+        when(commentRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(comment));
         //Assert
         service.changeComment(post.getId(), dto);
         Mockito.verify(mapper).toDto(Mockito.any());
@@ -159,7 +195,7 @@ class CommentServiceTest {
         //Arrange
         List<Comment> comments = List.of(comment);
         //Act
-        Mockito.when(commentRepository.findAllByPostId(VALID_ID_IN_DB)).thenReturn(comments);
+        when(commentRepository.findAllByPostId(VALID_ID_IN_DB)).thenReturn(comments);
         //Assert
         service.getAllCommentsOfPost(post.getId());
         Mockito.verify(mapper, Mockito.times(comments.size())).toDto(comment);
@@ -168,7 +204,7 @@ class CommentServiceTest {
     @Test
     public void testInvalidCommentForDelete() {
         //Act
-        Mockito.when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
+        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
         //Assert
         assertEquals(MESSAGE_COMMENT_NOT_EXIST,
                 assertThrows(RuntimeException.class,
@@ -178,7 +214,7 @@ class CommentServiceTest {
     @Test
     public void testVerifyDeleteComment() {
         //Act
-        Mockito.when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
+        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
         //Assert
         service.deleteComment(post.getId(), comment.getId());
         Mockito.verify(mapper).toDto(comment);
