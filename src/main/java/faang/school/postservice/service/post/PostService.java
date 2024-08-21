@@ -1,5 +1,8 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.publisher.PostViewPublisher;
+import faang.school.postservice.dto.event.PostViewEventDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
@@ -41,6 +44,8 @@ public class PostService {
     private final PostValidator postValidator;
     private final PostMapper postMapper;
     private final PostPublishService postPublishService;
+    private final PostViewPublisher postViewPublisher;
+    private final UserContext userContext;
     @Value("${post.publisher.batch-size}")
     private int postsBatchSize;
 
@@ -98,6 +103,14 @@ public class PostService {
     public PostDto getById(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException(String.format("Post %s doesn't exist", id)));
+
+        postViewPublisher.publish(PostViewEventDto.builder()
+                .id(post.getId())
+                .authorId(userContext.getUserId())
+                .userId(id)
+                .receivedAt(LocalDateTime.now())
+                .build());
+
         return postMapper.toDto(post);
     }
 
