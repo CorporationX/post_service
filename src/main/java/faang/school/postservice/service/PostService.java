@@ -178,7 +178,7 @@ public class PostService {
     }
 
     @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
-    private void saveHashtags(List<String> hashtagNames) {
+    public void saveHashtags(List<String> hashtagNames) {
         hashtagServiceClient.saveHashtags(HashtagRequest.builder()
                 .hashtagNames(hashtagNames)
                 .build());
@@ -186,7 +186,7 @@ public class PostService {
     }
 
     @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
-    private List<Hashtag> getHashtagsByNames(List<String> hashtagNames) {
+    public List<Hashtag> getHashtagsByNames(List<String> hashtagNames) {
         List<Hashtag> hashtags = hashtagServiceClient.getHashtagsByNames(HashtagRequest.builder()
                 .hashtagNames(hashtagNames)
                 .build()).getHashtags();
