@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class CommentController {
     private final CommentService service;
 
     @PostMapping("/post/{postId}")
-    public CommentDto addComment(@PathVariable Long postId, @RequestBody CommentDto dto) {
+    public CommentDto addComment(@PathVariable Long postId, @RequestBody CommentDto dto) throws JsonProcessingException {
         validateId(postId, MESSAGE_INVALID_POST_ID);
         validateDto(dto);
         return service.addComment(postId, dto);
