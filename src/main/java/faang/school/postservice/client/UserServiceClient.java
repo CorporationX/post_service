@@ -16,6 +16,8 @@ import java.util.List;
 @FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}", path = "/api/v1/user")
 public interface UserServiceClient {
 
+    @GetMapping("/users/{userId}")
+    UserDto getUser(@PathVariable long userId);
 
     @GetMapping("/{userId}")
     UserDto getUserById(@PathVariable long userId);
@@ -32,4 +34,13 @@ public interface UserServiceClient {
 
     @GetMapping("avatar/keys")
     UserProfilePicDto getAvatarKeys(@RequestHeader(value = "x-user-id") long userId);
+
+    @GetMapping("/users/exists/{userId}")
+    boolean existsById(@PathVariable Long userId);
+
+    @GetMapping("/users/{userId}/followers")
+    List<UserDto> getUserFollowers(@PathVariable long userId);
+
+    @PostMapping("/users/exists/followers")
+    boolean doesFollowersExist(@RequestBody List<Long> followerIds);
 }

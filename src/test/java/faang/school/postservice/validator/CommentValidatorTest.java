@@ -34,6 +34,7 @@ public class CommentValidatorTest {
     private long postId;
     private long commentId;
     private Comment comment;
+    private UserDto userDto;
 
     @BeforeEach
     void init() {
@@ -43,15 +44,18 @@ public class CommentValidatorTest {
         comment = Comment.builder()
                 .id(commentId)
                 .authorId(1L).build();
+        userDto = UserDto.builder().id(userId)
+                .username("user")
+                .email("some@mail.ru")
+                .build();
     }
 
     @Test
     void existUserTest() {
         long userId = 1l;
-        UserDto user = new UserDto(userId, "user", "some@mail.ru");
-        when(userServiceClient.getUserById(anyLong())).thenReturn(user);
+        when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
         commentValidator.existUser(userId);
-        verify(userServiceClient).getUserById(userId);
+        verify(userServiceClient).getUser(userId);
     }
 
     @Test
