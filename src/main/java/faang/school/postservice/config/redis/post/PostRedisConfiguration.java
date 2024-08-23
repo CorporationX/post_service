@@ -9,8 +9,9 @@ import org.springframework.data.redis.listener.ChannelTopic;
 public class PostRedisConfiguration {
     @Value("${spring.data.redis.channels.post_channel.name}")
     private String postChannelName;
+
     @Bean
-    public ChannelTopic postTopic(){
+    public ChannelTopic postTopic() {
         return new ChannelTopic(postChannelName);
     }
 }

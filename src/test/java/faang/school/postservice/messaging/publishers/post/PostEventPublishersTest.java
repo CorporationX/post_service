@@ -3,6 +3,7 @@ package faang.school.postservice.messaging.publishers.post;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.post.PostEvent;
+import faang.school.postservice.messaging.publisher.post.PostEventPublishers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

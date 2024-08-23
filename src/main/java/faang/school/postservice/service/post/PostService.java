@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.messaging.publisher.post.PostEventPublishers;
 import faang.school.postservice.messaging.publishers.post.PostEventPublishers;
 import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.mapper.comment.PostViewMapper;
