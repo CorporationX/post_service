@@ -2,12 +2,14 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeResponseDto;
+import faang.school.postservice.events.LikeEvent;
 import faang.school.postservice.exception.AlreadyExistsException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publishers_like.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,8 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
 
+    private final LikeEventPublisher likeEventPublisher;
+
     @Transactional
     public LikeResponseDto addLikeToPost(long userId, long postId) {
         Post post = postService.getById(postId);
@@ -40,6 +44,15 @@ public class LikeService {
                 .build();
 
         like = likeRepository.save(like);
+
+        likeEventPublisher.publish(
+                LikeEvent.builder()
+                        .postId(postId)
+                        .authorId(post.getAuthorId())
+                        .userId(userId)
+                .build()
+        );
+
         return likeMapper.toResponseDto(like);
     }
 
