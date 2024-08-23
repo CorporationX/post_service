@@ -157,7 +157,7 @@ public class AlbumService {
     }
 
     private AlbumDto isUserVisibilityType(Long userId, Optional<Album> album) {
-        if (userId.equals(album.get().getAuthorId())) {
+        if (album.get().getVisibilityType().equals(VisibilityType.ONLY_AUTHOR)) {
             return albumMapper.toDto(album.get());
         } else if (album.get().getVisibilityType().equals(VisibilityType.All_USER)) {
             return albumMapper.toDto(album.get());
@@ -181,11 +181,8 @@ public class AlbumService {
                 log.info("user is not follower");
                 return new AlbumDto();
             }
-        } else if (album.get().getVisibilityType().equals(VisibilityType.ONLY_AUTHOR)) {
-            return new AlbumDto();
         } else {
-            log.error("album not found");
-            throw new NoSuchElementException("album is null");
+            return new AlbumDto();
         }
     }
 }
