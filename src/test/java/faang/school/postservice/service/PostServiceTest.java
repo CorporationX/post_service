@@ -2,7 +2,8 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.post.PostRepository;
+import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

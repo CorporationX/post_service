@@ -1,11 +1,8 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.post.PostCreateDto;
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.PostFilterDto;
-import faang.school.postservice.dto.post.PostUpdateDto;
-import faang.school.postservice.dto.post.SortField;
+import faang.school.postservice.dto.post.*;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.mapper.PostMapper;
@@ -23,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -41,8 +40,12 @@ public class PostService {
     private final PostValidator postValidator;
     private final PostMapper postMapper;
     private final PostPublishService postPublishService;
+    private final ModerationDictionary moderationDictionary;
     @Value("${post.publisher.batch-size}")
     private int postsBatchSize;
+    @Value("${post.moderator.count-posts-in-thread}")
+    private int countPostsInThread;
+
 
     public void publishScheduledPosts() {
         log.info("Start publishing posts, at: {}", LocalDateTime.now());
@@ -134,5 +137,37 @@ public class PostService {
                 : PageRequest.of(postFilter.getPage(), postFilter.getSize(), Sort.by(SortField.CREATED_AT.getValue()).descending());
 
         return postRepository.findAll(postSpecification.get(), pageRequest).map(postMapper::toDto);
+    }
+
+    public void moderatePosts() {
+        List<Post> posts = postRepository.findNotVerified();
+        if (posts.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < posts.size(); i += countPostsInThread) {
+            if (i + countPostsInThread > posts.size()) {
+                verifyPosts(posts.subList(i, posts.size()));
+            } else
+                verifyPosts(posts.subList(i, i + countPostsInThread));
+        }
+    }
+
+    @Async
+    public void verifyPosts(List<Post> posts) {
+        Set<String> banWords = moderationDictionary.getBadWords();
+        for (Post post : posts) {
+            Optional<String> foundBanWord = banWords.stream()
+                    .filter(x -> post.getContent().toLowerCase().contains(x))
+                    .findFirst();
+
+            if (foundBanWord.isPresent()) {
+                log.info("Post with id {} contains banned word {}", post.getId(), foundBanWord.get());
+                post.setVerified(false);
+            } else {
+                post.setVerified(true);
+                post.setVerifiedDate(LocalDateTime.now());
+            }
+            postRepository.save(post);
+        }
     }
 }
