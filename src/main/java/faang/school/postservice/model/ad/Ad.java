@@ -2,14 +2,19 @@ package faang.school.postservice.model.ad;
 
 import faang.school.postservice.model.Post;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Data
 @Builder
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "post_ad")
 public class Ad {
 
@@ -19,6 +24,7 @@ public class Ad {
 
     @OneToOne
     @JoinColumn(name = "post_id")
+    @ToString.Exclude
     private Post post;
 
     @JoinColumn(name = "buyer_id", nullable = false)
