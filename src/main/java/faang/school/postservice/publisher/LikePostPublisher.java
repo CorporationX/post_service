@@ -8,7 +8,6 @@ import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.mapper.LikeEventMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.scheduling.annotation.Async;
@@ -23,8 +22,7 @@ public class LikePostPublisher implements MessagePublisher {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChannelTopic likePostTopic;
     private final ObjectMapper objectMapper;
-    @Autowired
-    private  LikeEventMapper likeEventMapper;
+    private final LikeEventMapper likeEventMapper;
 
     @Override
     public void publish(String message) {

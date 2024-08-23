@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.service.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +28,8 @@ public class CommentControllerTest {
     private CommentController commentController;
     @Mock
     private CommentService commentService;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
     private MockMvc mockMvc;
 
     List<CommentDto> comments;
@@ -64,6 +66,7 @@ public class CommentControllerTest {
         when(commentService.createComment(commentOne)).thenReturn(commentOne);
         commentController.createComment(commentOne);
         verify(commentService, times(1)).createComment(commentOne);
+        verify(commentEventPublisher, times(1)).createCommentEvent(commentOne);
     }
 
     @Test
