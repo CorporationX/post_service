@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdatedCommentDto;
@@ -24,6 +25,7 @@ import java.util.List;
 public class CommentService {
 
     private final CheckUserService checkUserService;
+    private final MessagePublisherService messagePublisherService;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommentMapper commentMapper;
@@ -33,6 +35,7 @@ public class CommentService {
         Comment savedComment = commentMapper.toEntity(createCommentDto);
         savedComment = commentRepository.save(savedComment);
         log.info("Comment with ID = {} was created", savedComment.getId());
+        messagePublisherService.publishCommentEvent(savedComment);
         return commentMapper.toDto(savedComment);
     }
 

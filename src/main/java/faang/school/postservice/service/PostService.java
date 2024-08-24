@@ -31,6 +31,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
+    private final PostViewEventService postViewEventService;
 
     @Transactional(readOnly = true)
     public Post getById(long id) {
@@ -95,6 +96,7 @@ public class PostService {
     public PostDto getPost(Long postId) {
         Optional<Post> post = postRepository.findById(postId);
         if (post.isPresent()) {
+            postViewEventService.publishViewEvent(post.get());
             return postMapper.toDto(post.get());
         } else {
             log.error("Post with id = {} doesn't exist in database", postId);
@@ -126,6 +128,7 @@ public class PostService {
                         .map(postMapper::toDto)
                         .toList();
             }
+            sortedList.forEach(p -> postViewEventService.publishViewEvent(postMapper.toEntity(p)));
             return sortedList;
         } else {
             log.info("There's no one post in database written by your publisher");
@@ -136,7 +139,7 @@ public class PostService {
     private boolean validateDraftPostPublisherExist(Post post) {
         boolean result = false;
         if (post.getAuthorId() != null) {
-            UserDto userDto = userServiceClient.getUser(post.getId());
+            UserDto userDto = userServiceClient.getUser(post.getAuthorId());
             if (userDto.getId() == null) {
                 log.error("User id = {} doesn't exist in database", post.getAuthorId());
                 throw new DataDoesNotExistException(DOES_NOT_EXIST_IN_DB);

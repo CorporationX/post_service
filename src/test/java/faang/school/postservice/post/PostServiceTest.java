@@ -11,6 +11,7 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.PostViewEventService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -42,6 +43,8 @@ public class PostServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private ProjectServiceClient projectServiceClient;
+    @Mock
+    private PostViewEventService postViewEventService;
     @InjectMocks
     private PostService service;
 
@@ -88,6 +91,7 @@ public class PostServiceTest {
                 .authorId(1L)
                 .build();
         Post post = new Post();
+        post.setId(1L);
         post.setAuthorId(1L);
         UserDto userDto = new UserDto(null, null, null);
         when(postMapper.toEntity(dto)).thenReturn(post);
