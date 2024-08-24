@@ -1,8 +1,10 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +20,14 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
+    private final CommentEventPublisher commentEventPublisher;
+    private final CommentEventMapper commentEventMapper;
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         commentValidator.findPostById(postId);
         Comment savedComment = commentRepository.save(commentMapper.toEntity(commentDto));
+        commentEventPublisher.publish(commentEventMapper.toCommentEvent(savedComment));
         return commentMapper.toDto(savedComment);
     }
 
