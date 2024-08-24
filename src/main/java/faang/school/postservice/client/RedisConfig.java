@@ -1,6 +1,5 @@
 package faang.school.postservice.client;
 
-import faang.school.postservice.listener.CommentEventListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -39,19 +38,6 @@ public class RedisConfig {
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
         return redisTemplate;
-    }
-
-    @Bean
-    MessageListenerAdapter commentListener(CommentEventListener commentEventListener) {
-        return new MessageListenerAdapter(commentEventListener);
-    }
-
-    @Bean
-    RedisMessageListenerContainer container(MessageListenerAdapter messageListener) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(redisConnectionFactory());
-        container.addMessageListener(messageListener, commentTopic());
-        return container;
     }
 
     @Bean
