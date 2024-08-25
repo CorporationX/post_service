@@ -1,4 +1,4 @@
-package faang.school.postservice.config.context;
+package faang.school.postservice.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        comment_channel:
+          name: comment_channel
 
   task:
     execution:
@@ -37,8 +39,6 @@ spring:
 
 
 server:
-  servlet:
-    context-path: /api
   port: 8081
 
 logging:
