@@ -1,7 +1,5 @@
-package faang.school.postservice.config.context;
+package faang.school.postservice.config.redis;
 
-import faang.school.postservice.publisher.CommentEventPublisher;
-import faang.school.postservice.publisher.MessagePublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,10 +39,5 @@ public class RedisConfig {
     @Bean
     public ChannelTopic commentTopic() {
         return new ChannelTopic(commentChannelName);
-    }
-
-    @Bean
-    public MessagePublisher commentPublisher(CommentEventPublisher commentEventPublisher) {
-        return commentEventPublisher;
     }
 }

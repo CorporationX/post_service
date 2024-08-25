@@ -1,19 +1,25 @@
 package faang.school.postservice.publisher;
 
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.comment.CommentEvent;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
-@RequiredArgsConstructor
-public class CommentEventPublisher implements MessagePublisher {
+@Component
+public class CommentEventPublisher extends AbstractEventPublisher<CommentEvent> {
 
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic channelTopic;
+    private final ChannelTopic commentTopic;
+
+    public CommentEventPublisher(ObjectMapper objectMapper,
+                                 RedisTemplate<String, Object> redisTemplate,
+                                 ChannelTopic commentTopic) {
+        super(objectMapper, redisTemplate);
+        this.commentTopic = commentTopic;
+    }
 
     @Override
-    public void publish(String message) {
-        redisTemplate.convertAndSend(channelTopic.getTopic(), message);
+    protected ChannelTopic getChannelTopic() {
+        return commentTopic;
     }
 }

@@ -12,9 +12,9 @@ import java.util.List;
 @FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}")
 public interface UserServiceClient {
 
-    @GetMapping("/api/users/{userId}")
+    @GetMapping("/users/{userId}")
     UserDto getUser(@PathVariable("userId") long userId);
 
-    @PostMapping("/api/users")
+    @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 }

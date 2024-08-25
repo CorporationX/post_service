@@ -1,9 +1,8 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -17,9 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -46,8 +42,6 @@ class CommentServiceTest {
     private CommentService commentService;
     @Mock
     private CommentEventPublisher commentEventPublisher;
-    @Mock
-    private ObjectMapper objectMapper;
 
     private Long authorId;
     private Long postId;
@@ -57,6 +51,7 @@ class CommentServiceTest {
     private Comment comment;
     private List<Comment> comments;
     private List<CommentDto> commentDtos;
+    private CommentEvent commentEvent;
 
 
     @BeforeEach
@@ -83,6 +78,12 @@ class CommentServiceTest {
                 .post(post)
                 .authorId(authorId)
                 .build();
+        commentEvent = CommentEvent.builder()
+                .commentId(commentId)
+                .postId(postId)
+                .commentAuthorId(authorId)
+                .postAuthorId(authorId)
+                .build();
     }
 
     @Test
@@ -93,15 +94,14 @@ class CommentServiceTest {
     }
 
     @Test
-    void testCreateCommentPositive() throws JsonProcessingException {
-        when(postService.findById(commentDto.getPostId())).thenReturn(post);
+    void testCreateCommentPositive() {
+        when(postService.getPost(commentDto.getPostId())).thenReturn(post);
         when(commentMapper.toEntity(commentDto)).thenReturn(comment);
         when(commentRepository.save(comment)).thenReturn(comment);
-        doNothing().when(commentEventPublisher).publish(anyString());
-        when(objectMapper.writeValueAsString(any())).thenReturn(anyString());
+        doNothing().when(commentEventPublisher).publish(commentEvent);
         commentService.createComment(commentDto);
         verify(userServiceClient, times(1)).getUser(authorId);
-        verify(postService, times(1)).findById(postId);
+        verify(postService, times(1)).getPost(postId);
         verify(commentMapper, times(1)).toEntity(commentDto);
         verify(commentRepository, times(1)).save(comment);
     }
@@ -117,10 +117,10 @@ class CommentServiceTest {
 
     @Test
     void testGetAllByPostIdPositive() {
-        when(postService.findById(postId)).thenReturn(post);
+        when(postService.getPost(postId)).thenReturn(post);
         when(commentMapper.toDtos(comments)).thenReturn(commentDtos);
         commentService.getAllByPostId(postId);
-        verify(postService, times(1)).findById(postId);
+        verify(postService, times(1)).getPost(postId);
         verify(commentMapper, times(1)).toDtos(comments);
     }
 
@@ -129,6 +129,4 @@ class CommentServiceTest {
         commentService.deleteComment(commentId);
         verify(commentRepository, times(1)).deleteById(commentId);
     }
-
-
 }
