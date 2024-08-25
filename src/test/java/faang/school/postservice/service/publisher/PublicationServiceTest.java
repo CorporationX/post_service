@@ -5,11 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.event.CommentEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -21,6 +24,8 @@ class PublicationServiceTest {
     private CommentEventPublisher commentEventPublisher;
     @Spy
     private ObjectMapper objectMapper;
+    @Captor
+    private ArgumentCaptor<String> jsonCaptor;
 
     @Test
     void testPublishCommentEvent() throws JsonProcessingException {
@@ -35,6 +40,7 @@ class PublicationServiceTest {
         // when
         publicationService.publishCommentEvent(event);
         //then
-        verify(commentEventPublisher, times(1)).publish(jsonEvent);
+        verify(commentEventPublisher, times(1)).publish(jsonCaptor.capture());
+        assertEquals(jsonEvent, jsonCaptor.getValue());
     }
 }

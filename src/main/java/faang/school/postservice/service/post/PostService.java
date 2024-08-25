@@ -63,6 +63,7 @@ public class PostService {
         Post entity = getPostEntity(postId);
         validator.validateDeleted(entity);
 
+        entity.setPublished(false);
         entity.setDeleted(true);
         entity.setUpdatedAt(LocalDateTime.now());
         Post deletedEntity = postRepository.save(entity);
