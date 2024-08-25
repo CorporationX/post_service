@@ -7,6 +7,8 @@ import faang.school.postservice.messaging.publisher.like.LikeEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class EventPublisherService {
@@ -15,6 +17,7 @@ public class EventPublisherService {
 
     public void submitEvent(LikeDto likeDto) {
         LikeEvent likeEvent = likeEventMapper.toLikeEvent(likeDto);
+        likeEvent.setEventId(UUID.randomUUID());
         likeEventPublisher.publish(likeEvent);
     }
 }
