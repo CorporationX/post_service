@@ -3,9 +3,11 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -24,6 +26,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LikeService {
 
+    private final LikeEventPublisher likeEventPublisher;
     @Value("${batch-size}")
     @Setter
     private int BATCH_SIZE;
@@ -32,7 +35,6 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeServiceValidator likeServiceValidator;
     private final PostService postService;
-//    private final UserServiceClient userServiceClient;
     private final CommentService commentService;
     private final LikeMapper likeMapper;
 
@@ -85,7 +87,8 @@ public class LikeService {
         Like like = likeMapper.toEntity(likeDto);
 
         post.getLikes().add(like);
-        likeRepository.save(like);
+        long likeId = likeRepository.save(like).getId();
+        likeEventPublisher.publish(new LikeEvent(post.getAuthorId(), post.getId(), likeId));
         return likeMapper.toLikeDto(like);
     }
 

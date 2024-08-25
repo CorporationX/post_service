@@ -11,7 +11,7 @@ import java.util.Map;
 @Data
 @Component
 public class PostContextMapper {
-    private Map<Long, Long> countLikeEveryonePost;
+    private Map<Long, Long> countLikeEveryonePost = new HashMap<>();
 
     public long getCountLike(Long postId) {
         return countLikeEveryonePost.getOrDefault(postId, 0L);
