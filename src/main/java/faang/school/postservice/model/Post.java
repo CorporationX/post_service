@@ -37,7 +37,6 @@ public class Post {
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Like> likes;
 
-    @ToString.Exclude
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments;
 
