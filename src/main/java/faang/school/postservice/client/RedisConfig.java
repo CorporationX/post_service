@@ -21,7 +21,7 @@ public class RedisConfig {
     private String host;
     @Value("${spring.data.redis.port}")
     private int port;
-    @Value("${spring.data.redis.channels.comment channel.name}")
+    @Value("${spring.data.redis.channels.comment_channel.name}")
     private String commentChannelName;
 
     @Bean
