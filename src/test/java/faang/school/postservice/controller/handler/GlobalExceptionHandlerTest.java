@@ -1,23 +1,29 @@
-package faang.school.postservice.controller.comment;
+package faang.school.postservice.controller.handler;
 
-import faang.school.postservice.exception.ErrorResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.context.request.WebRequest;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.List.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +33,8 @@ class GlobalExceptionHandlerTest {
     private GlobalExceptionHandler globalExceptionHandler;
     @Mock
     private BindingResult bindingResult;
+    @Mock
+    private WebRequest request;
 
     private MethodArgumentNotValidException methodArgumentNotValidException;
     private IllegalArgumentException illegalArgumentException;
@@ -61,20 +69,31 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void whenIllegalArgumentExceptionThenReturns400() {
         // given - precondition
-        var expectedErrors = ErrorResponse.builder()
-                .message("Not found")
-                .status(BAD_REQUEST.value())
-                .error("Illegal Argument")
-                .build();
+        Map<String, Object> expectedBody = new HashMap<>();
+        expectedBody.put("timestamp", LocalDateTime.now());
+        expectedBody.put("status", HttpStatus.BAD_REQUEST.value());
+        expectedBody.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+        expectedBody.put("message",  illegalArgumentException.getMessage());
+        expectedBody.put("path", "/example-path");
+
+        when(request.getDescription(false))
+                .thenReturn("uri=/example-path");
 
         // when - action
-        var actualErrorResponse = globalExceptionHandler.handleIllegalArgumentException(illegalArgumentException);
+        var actualErrorResponse = globalExceptionHandler.handleIllegalArgumentException(illegalArgumentException, request);
+        Map<String, Object> actualBody = (Map<String, Object>) actualErrorResponse.getBody();
 
         // then - verify the output
-        assertThat(actualErrorResponse.getMessage()).isEqualTo(expectedErrors.getMessage());
-        assertThat(actualErrorResponse.getStatus()).isEqualTo(expectedErrors.getStatus());
-        assertThat(actualErrorResponse.getError()).isEqualTo(expectedErrors.getError());
+        assertThat(actualErrorResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(actualBody).isNotNull();
+        assertThat(actualBody.get("status")).isEqualTo(expectedBody.get("status"));
+        assertThat(actualBody.get("error")).isEqualTo(expectedBody.get("error"));
+        assertThat(actualBody.get("message")).isEqualTo(expectedBody.get("message"));
+        assertThat(actualBody.get("path")).isEqualTo(expectedBody.get("path"));
+        assertThat((LocalDateTime) actualBody.get("timestamp"))
+                .isCloseTo((LocalDateTime) expectedBody.get("timestamp"), within(1, ChronoUnit.SECONDS));
     }
 }
