@@ -63,6 +63,17 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    /**
+     * AMAZON S3
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+
+    /**
+     * Scalr for Image comressor
+     */
+    implementation ("org.imgscalr:imgscalr-lib:4.2")
+
 }
 
 tasks.withType<Test> {
