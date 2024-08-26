@@ -15,9 +15,9 @@ import org.springframework.data.redis.serializer.GenericToStringSerializer;
 
 @Configuration
 public class RedisConfiguration {
-    @Value("${spring.data.redis.topic.comment_achievement}")
+    @Value("${spring.data.redis.channels.comment_achievement}")
     private String commentTopic;
-    @Value("${spring.data.redis.topic.like}")
+    @Value("${spring.data.redis.channels.like}")
     private String likePostTopic;
 
     @Bean
