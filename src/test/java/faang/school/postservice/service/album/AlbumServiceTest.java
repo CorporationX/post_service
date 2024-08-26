@@ -67,6 +67,7 @@ public class AlbumServiceTest {
         Long userId = 1L;
         Album album = new Album();
         album.setAuthorId(userId);
+        album.setVisibilityType(VisibilityType.ONLY_AUTHOR);
         when(userContext.getUserId()).thenReturn(userId);
         when(albumRepository.findByIdWithPosts(albumId)).thenReturn(Optional.of(album));
         when(albumMapper.toDto(album)).thenReturn(new AlbumDto());
