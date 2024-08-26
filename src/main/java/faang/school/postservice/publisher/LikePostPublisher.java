@@ -1,10 +1,9 @@
-package faang.school.postservice.config.redis.like;
+package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.config.redis.MessagePublisher;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.dto.like.LikePostEvent;
 import faang.school.postservice.mapper.LikeEventMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +29,10 @@ public class LikePostPublisher implements MessagePublisher {
     }
 
     @Async
-    public void createLikeEvent(LikeDto likeDto) {
+    public void createLikeEvent(LikeDto likeDto, long authorPostId) {
         try {
-            LikeEvent likeEvent = likeEventMapper.mapLikeEvent(likeDto);
-            publish(objectMapper.writeValueAsString(likeEvent));
+            LikePostEvent likePostEvent = likeEventMapper.mapLikePostEvent(likeDto, authorPostId);
+            publish(objectMapper.writeValueAsString(likePostEvent));
         } catch (JsonProcessingException e) {
             log.error(e.getMessage(), e);
         }

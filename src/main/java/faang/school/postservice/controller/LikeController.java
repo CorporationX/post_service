@@ -1,11 +1,10 @@
-package faang.school.postservice.controller.like;
+package faang.school.postservice.controller;
 
-import faang.school.postservice.config.redis.like.LikePostPublisher;
-import faang.school.postservice.controller.LikeToComment;
-import faang.school.postservice.controller.LikeToPost;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.LikeService;
+import faang.school.postservice.validator.validated.LikeToComment;
+import faang.school.postservice.validator.validated.LikeToPost;
 import jakarta.validation.constraints.Positive;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -36,7 +35,6 @@ import java.util.List;
 public class LikeController {
 
     private final LikeService likeService;
-    private final LikePostPublisher likePostPublisher;
 
     @GetMapping("/post/{postId}")
     @Operation(summary = "Получить лайки поста", description = "Введите идентификатор поста, чтобы получить лайки поста")
@@ -72,9 +70,7 @@ public class LikeController {
             @ApiResponse(responseCode = "500", description = "Произошла ошибка, не зависящая от вызывающей стороны")
     })
     public LikeDto addLikeToPost(@Validated(LikeToPost.class) @RequestBody LikeDto likeDto) {
-        LikeDto result = likeService.addLikeToPost(likeDto);
-        likePostPublisher.createLikeEvent(likeDto);
-        return result;
+        return likeService.addLikeToPost(likeDto);
     }
 
     @DeleteMapping("/post/{postId}/{userId}")

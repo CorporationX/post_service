@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class LikeEvent {
+public class LikePostEvent {
     private long postId;
-    private long authorLikeId;
+    private long authorPostId;
     private long userId;
     private LocalDateTime localDateTime;
 }

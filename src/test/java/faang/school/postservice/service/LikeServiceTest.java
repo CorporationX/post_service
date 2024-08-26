@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikePostPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
 import org.junit.jupiter.api.Assertions;
@@ -31,13 +32,10 @@ public class LikeServiceTest {
 
     public static int BATCH_SIZE = 100;
 
-
     @Mock
     private LikeRepository likeRepository;
-
     @Mock
     private UserServiceClient userServiceClient;
-
     @Mock
     private LikeServiceValidator likeServiceValidator;
     @Mock
@@ -46,6 +44,8 @@ public class LikeServiceTest {
     private CommentService commentService;
     @Mock
     private LikeMapper likeMapper;
+    @Mock
+    private LikePostPublisher likePostPublisher;
 
     @InjectMocks
     private LikeService likeService;
@@ -55,8 +55,8 @@ public class LikeServiceTest {
     private long postId;
     private long userId;
     private long commentId;
-    private LikeDto likeDtoPost;
-    private LikeDto likeDtoComment;
+    private LikeDto likePostDto;
+    private LikeDto likeCommentDto;
     private Post post;
     private Comment comment;
     private LikeDto likeDto;
@@ -74,13 +74,13 @@ public class LikeServiceTest {
                 .email("email@google.com")
                 .build();
 
-        likeDtoPost = LikeDto.builder()
+        likePostDto = LikeDto.builder()
                 .id(1L)
                 .userId(1L)
                 .postId(1L)
                 .build();
 
-        likeDtoComment = LikeDto.builder()
+        likeCommentDto = LikeDto.builder()
                 .id(1L)
                 .userId(1)
                 .commentId(1)
@@ -99,6 +99,7 @@ public class LikeServiceTest {
 
         post = Post.builder()
                 .id(1L)
+                .authorId(2L)
                 .likes(new ArrayList<>(Arrays.asList(new Like(), new Like())))
                 .build();
 
@@ -155,16 +156,17 @@ public class LikeServiceTest {
     public void testAddLikeToPostWhenValid() {
         Like like = new Like();
 
-        when(postService.getPost(likeDtoPost.getPostId())).thenReturn(post);
-        when(userServiceClient.getUser(likeDtoPost.getUserId())).thenReturn(userDto);
+        when(postService.getPost(likePostDto.getPostId())).thenReturn(post);
+        when(userServiceClient.getUser(likePostDto.getUserId())).thenReturn(userDto);
         when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.empty());
-        when(likeMapper.toEntity(likeDtoPost)).thenReturn(like);
+        when(likeMapper.toEntity(likePostDto)).thenReturn(like);
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
 
-        likeService.addLikeToPost(likeDtoPost);
+        likeService.addLikeToPost(likePostDto);
 
         verify(likeServiceValidator, times(1)).checkDuplicateLike(Optional.empty());
         verify(likeRepository, times(1)).save(like);
+        verify(likePostPublisher, times(1)).createLikeEvent(likePostDto, post.getAuthorId());
     }
 
     @DisplayName("Когда метод по удалению лайка с поста отработал")
@@ -188,13 +190,13 @@ public class LikeServiceTest {
     public void testAddLikeToCommentWhenValid() {
         Like like = new Like();
 
-        when(commentService.getComment(likeDtoComment.getCommentId())).thenReturn(comment);
-        when(userServiceClient.getUser(likeDtoComment.getUserId())).thenReturn(userDto);
+        when(commentService.getComment(likeCommentDto.getCommentId())).thenReturn(comment);
+        when(userServiceClient.getUser(likeCommentDto.getUserId())).thenReturn(userDto);
         when(likeRepository.findByCommentIdAndUserId(comment.getId(), userDto.getId())).thenReturn(Optional.empty());
-        when(likeMapper.toEntity(likeDtoComment)).thenReturn(like);
+        when(likeMapper.toEntity(likeCommentDto)).thenReturn(like);
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
 
-        likeService.addLikeToComment(likeDtoComment);
+        likeService.addLikeToComment(likeCommentDto);
 
         verify(likeServiceValidator, times(1)).checkDuplicateLike(Optional.empty());
         verify(likeRepository, times(1)).save(like);
