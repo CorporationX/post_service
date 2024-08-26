@@ -1,7 +1,6 @@
 package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.event.Event;
 import faang.school.postservice.event.PostLikeEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -17,7 +16,7 @@ public class LikeEventPublisher implements MessagePublisher<PostLikeEvent> {
 
     private final ObjectMapper objectMapper;
 
-    private final RedisTemplate<String, Event> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Value("${spring.data.redis.channels.like_topic}")
     private String topicName;
