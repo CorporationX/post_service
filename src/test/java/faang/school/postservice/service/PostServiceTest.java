@@ -1,10 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -39,6 +41,12 @@ public class PostServiceTest {
 
     @Mock
     private PostContextMapper postContextMapper;
+
+    @Mock
+    private PostEventPublisher postEventPublisher;
+
+    @Mock
+    private UserContext userContext;
 
     private PostDto postDto;
     private Post post;
@@ -89,7 +97,7 @@ public class PostServiceTest {
                 .id(2L)
                 .content("Draft 2")
                 .build();
-        
+
         PostDto publishedPostDto1 = PostDto.builder()
                 .id(3L)
                 .content("Published 1")
@@ -108,8 +116,12 @@ public class PostServiceTest {
     public void testCreatePost() {
         doNothing().when(postServiceValidator).validateCreatePost(postDto);
         when(postMapper.toEntity(postDto)).thenReturn(post);
+        when(userContext.getUserId()).thenReturn(1L);
+        when(postRepository.save(post)).thenReturn(post);
+
         postService.createPost(postDto);
 
+        verify(postEventPublisher, times(1)).publish(any());
         verify(postRepository, times(1)).save(post);
     }
 
