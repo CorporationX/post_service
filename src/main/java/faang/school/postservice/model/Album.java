@@ -1,10 +1,7 @@
 package faang.school.postservice.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -45,6 +42,12 @@ public class Album {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    private VisibilityType visibilityType;
+
+    @OneToMany(mappedBy = "album", orphanRemoval = true)
+    private List<UserVisibility> visibilityUsers;
 
     public void addPost(Post post) {
         posts.add(post);
