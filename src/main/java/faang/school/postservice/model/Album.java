@@ -1,5 +1,20 @@
 package faang.school.postservice.model;
 
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import faang.school.postservice.model.post.Post;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -36,6 +51,15 @@ public class Album {
     @ManyToMany
     @JoinTable(name = "post_album", joinColumns = @JoinColumn(name = "album_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
     private List<Post> posts;
+
+    @Column(name = "visibility", nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    private AlbumVisibility visibility;
+
+    @ElementCollection
+    @CollectionTable(name = "album_allowed_users", joinColumns = @JoinColumn(name = "album_id"))
+    @Column(name = "user_id")
+    private List<Long> allowedUserIds;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

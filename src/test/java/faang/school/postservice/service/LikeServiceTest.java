@@ -9,9 +9,6 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
-import feign.FeignException;
-import feign.Request;
-import feign.RequestTemplate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,11 +20,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,12 +59,19 @@ public class LikeServiceTest {
     private Post post;
     private Comment comment;
     private LikeDto likeDto;
+    private UserDto userDto;
 
     @BeforeEach
     public void setup() {
         postId = 1;
-        userId = 1;
-        commentId = 1;
+        userId = 2;
+        commentId = 3;
+
+        userDto = UserDto.builder()
+                .id(userId)
+                .username("name")
+                .email("email@google.com")
+                .build();
 
         likeDtoPost = LikeDto.builder()
                 .id(1L)
@@ -150,7 +152,6 @@ public class LikeServiceTest {
     @DisplayName("Когда метод по добавлению лайка к посту отработал")
     @Test
     public void testAddLikeToPostWhenValid() {
-        UserDto userDto = new UserDto(1L, "name", "email@google.com");
         Like like = new Like();
 
         when(postService.getPost(likeDtoPost.getPostId())).thenReturn(post);
@@ -185,7 +186,6 @@ public class LikeServiceTest {
     @Test
     public void testAddLikeToCommentWhenValid() {
         Like like = new Like();
-        UserDto userDto = new UserDto(userId, "name", "email@google.com");
 
         when(commentService.getComment(likeDtoComment.getCommentId())).thenReturn(comment);
         when(userServiceClient.getUser(likeDtoComment.getUserId())).thenReturn(userDto);

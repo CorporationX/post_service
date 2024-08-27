@@ -27,6 +27,8 @@ spring:
     elasticsearch:
       rest:
         uris: http://localhost:9200
+    calculation: calculations_channel
+    post: post_channel
 
   services:
     s3:

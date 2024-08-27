@@ -1,15 +1,12 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.HashtagServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.hashtag.Hashtag;
-import faang.school.postservice.model.hashtag.HashtagRequest;
-import faang.school.postservice.model.hashtag.HashtagResponse;
-import faang.school.postservice.model.post.Post;
-import faang.school.postservice.model.post.PostResponse;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
@@ -24,7 +21,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -57,6 +56,12 @@ public class PostServiceTest {
     @Mock
     private PostContextMapper postContextMapper;
 
+    @Mock
+    private PostEventPublisher postEventPublisher;
+
+    @Mock
+    private UserContext userContext;
+
     private PostDto postDto;
     private Post post;
     private List<Post> draftPosts;
@@ -69,6 +74,8 @@ public class PostServiceTest {
 
     @BeforeEach
     public void setUp() {
+        postDto = new PostDto();
+        post = new Post();
         Post draftPost1 = Post.builder()
                 .id(1L)
                 .content("Draft 1")
@@ -79,8 +86,8 @@ public class PostServiceTest {
         Post draftPost2 = Post.builder()
                 .id(2L)
                 .content("Draft 2")
-                .publishedAt(LocalDateTime.now())
                 .published(true)
+                .publishedAt(LocalDateTime.now())
                 .build();
 
         Post publishedPost1 = Post.builder().id(3L)
@@ -107,7 +114,7 @@ public class PostServiceTest {
                 .id(2L)
                 .content("Draft 2")
                 .build();
-
+        
         PostDto publishedPostDto1 = PostDto.builder()
                 .id(3L)
                 .content("Published 1")
@@ -175,6 +182,7 @@ public class PostServiceTest {
         verify(postRepository, times(1)).save(any(Post.class));
         verify(elasticsearchService, times(1)).indexPost(postDto);
         assertEquals(postDto, result);
+        verify(postEventPublisher, times(1)).publish(any());
     }
 
     @Test

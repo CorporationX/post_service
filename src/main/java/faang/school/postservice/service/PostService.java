@@ -36,6 +36,8 @@ public class PostService {
     private final ElasticsearchService elasticsearchService;
     private final EntityManager entityManager;
     private final PostContextMapper context;
+    private final PostEventPublisher postEventPublisher;
+    private final UserContext userContext;
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -43,6 +45,9 @@ public class PostService {
         saveHashtags(postDto.getHashtagNames());
         List<Hashtag> hashtags = getHashtagsByNames(postDto.getHashtagNames());
 
+        Post savedPost = postRepository.save(post);
+        sendToRedisPublisher(userContext.getUserId(), savedPost.getId());
+        return postMapper.toDto(post);
         Post post = Post.builder()
                 .authorId(postDto.getAuthorId())
                 .projectId(postDto.getProjectId())
@@ -167,6 +172,14 @@ public class PostService {
         return posts.stream()
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .toList();
+    }
+
+    private void sendToRedisPublisher(long userId, long postId) {
+        PostEvent event = PostEvent.builder()
+                .authorId(userId)
+                .postId(postId)
+                .build();
+        postEventPublisher.publish(event);
     }
 
     private Post getPostById(Long postId) {
