@@ -22,4 +22,5 @@ public class TopicConfig {
     ChannelTopic postViewChannel() {
         return new ChannelTopic(postViewChannelTopic);
     }
+
 }
