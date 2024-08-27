@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.publishable.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -10,6 +11,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.publisher.LikeEventPublisher;
 import faang.school.postservice.validator.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final LikeValidator likeValidator;
     private final UserServiceClient userServiceClient;
+    private final LikeEventPublisher eventPublisher;
     private static final int USER_BATCH_SIZE = 100;
   
     public void likePost(LikeDto likeDto) {
@@ -43,6 +46,9 @@ public class LikeService {
         Like like = likeMapper.toEntity(likeDto);
         like.setPost(post);
         likeRepository.save(like);
+
+        LikeEvent event = new LikeEvent(like.getUserId(), post.getAuthorId(), post.getId());
+        eventPublisher.publish(event);
     }
 
     public void unlikePost(LikeDto likeDto) {
