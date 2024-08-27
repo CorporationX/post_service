@@ -19,13 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping(ApiPath.LIKES_PATH)
 public class LikeController {
+    private final LikeService likeService;
 
-  private final LikeService likeService;
+    @PostMapping
+    public void likePost(@RequestBody @Valid LikeDto likeDto) {
+        likeService.likePost(likeDto);
+    }
 
-  @GetMapping(ApiPath.POST_LIKES_PATH)
-  public List<UserDto> getUsersByPostId(@PathVariable Long postId) {
-    return likeService.getUsersByPostId(postId);
-  }
+    @GetMapping(ApiPath.POST_LIKES_PATH)
+    public List<UserDto> getUsersByPostId(@PathVariable Long postId) {
+        return likeService.getUsersByPostId(postId);
+    }
 
   @GetMapping(ApiPath.COMMENT_LIKES_PATH)
   public List<UserDto> getUsersByCommentId(@PathVariable Long commentId) {
@@ -42,12 +46,12 @@ public class LikeController {
     return likeService.addLikeToComment(commentId, likeDto);
   }
 
-  @DeleteMapping("/{postId}")
+  @DeleteMapping(ApiPath.POST_LIKES_PATH)
   public LikeDto removeLikeFromPost(@PathVariable long postId, @RequestBody @Valid LikeDto likeDto) {
     return likeService.removeLikeFromPost(postId, likeDto);
   }
 
-  @DeleteMapping("/{commentId}")
+  @DeleteMapping(ApiPath.COMMENT_LIKES_PATH)
   public LikeDto removeLikeFromComment(@PathVariable long commentId, @RequestBody @Valid LikeDto likeDto) {
     return likeService.removeLikeFromComment(commentId,likeDto);
   }

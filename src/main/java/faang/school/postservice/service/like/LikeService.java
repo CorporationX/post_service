@@ -8,10 +8,13 @@ import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.mapper.comment.like.LikeMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.publisher.EventPublisherService;
 import faang.school.postservice.validator.comment.UserClientValidation;
 import faang.school.postservice.validator.like.CommentLikeValidation;
 import faang.school.postservice.validator.like.PostLikeValidation;
@@ -42,9 +45,21 @@ public class LikeService {
   private final LikeMapper likeMapper;
   private final CommentService commentService;
   private final PostService postService;
+  private final EventPublisherService eventPublisherService;
 
   @Value("${user.batch.size:100}")
   private int batchSize;
+
+  //TODO: Add return type, use mapper
+  public void likePost(LikeDto likeDto) {
+    Like like = new Like();
+    like.setPost(Post.builder().id(likeDto.getPostId()).build());
+    like.setComment(Comment.builder().id(likeDto.getCommentId()).build());
+    like.setUserId(likeDto.getUserId());
+    likeRepository.save(like);
+
+    eventPublisherService.submitEvent(likeDto);
+  }
 
   public List<UserDto> getUsersByPostId(Long postId) {
     List<Like> likes = likeRepository.findByPostId(postId);

@@ -80,7 +80,7 @@ class CommentLikeValidationTest {
 
   private static Like getLike() {
     return Like.builder()
-        .id(1)
+        .id(1L)
         .userId(1L)
         .comment(Comment.builder()
             .id(1L)

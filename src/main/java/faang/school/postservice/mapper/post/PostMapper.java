@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.event.post.PostEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Post;
+import java.util.Optional;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
@@ -24,6 +25,9 @@ public interface PostMapper {
 
     @AfterMapping
     default void updateFields(Post post, @MappingTarget PostDto target) {
-        target.setNumberLikes(post.getLikes().size());
+        long likesCount = Optional.ofNullable(post.getLikes())
+            .stream()
+            .count();
+        target.setNumberLikes(likesCount);
     }
 }
