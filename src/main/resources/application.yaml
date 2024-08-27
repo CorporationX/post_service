@@ -27,6 +27,7 @@ spring:
         post_comment_channel:
           name: post_comment_channel
         post_view_channel: post_view_channel
+        like_topic: like_topic
 
 server:
   port: 8081
@@ -34,6 +35,7 @@ server:
 logging:
   level:
     root: info
+    faang.school.postservice: debug
 
 post:
   publisher:

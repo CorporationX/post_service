@@ -2,12 +2,14 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeResponseDto;
+import faang.school.postservice.event.PostLikeEvent;
 import faang.school.postservice.exception.AlreadyExistsException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import feign.FeignException;
 import org.junit.jupiter.api.Test;
@@ -46,6 +48,8 @@ class LikeServiceTest {
     private PostService postService;
     @Mock
     private CommentService commentService;
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
 
     @Test
     void testAddLikeToPost() {
@@ -68,6 +72,7 @@ class LikeServiceTest {
         verify(postService, times(1)).getById(postId);
         verify(userServiceClient, times(1)).getUser(userId);
         verify(likeRepository, times(1)).existsByPostIdAndUserId(postId, userId);
+        verify(likeEventPublisher, times(1)).publish(any(PostLikeEvent.class));
         verify(likeRepository, times(1)).save(any(Like.class));
     }
 
