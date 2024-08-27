@@ -87,7 +87,7 @@ public class PostController {
 
     })
     public PostDto getPostByPostId(@PathVariable Long postId) {
-        return postService.getPostByPostId(postId);
+        return postService.getPostDtoById(postId);
     }
 
     @GetMapping("/drafts/user/{userId}")
@@ -143,7 +143,21 @@ public class PostController {
     }
 
     @GetMapping("/hashtag")
-    public List<PostDto> findPostsByHashtag(@RequestParam @ValidHashtag String hashtagName) {
-        return postService.findPostsByHashtag(hashtagName);
+    public List<PostDto> findPostsByHashtag(@RequestParam @ValidHashtag String hashtagName,
+                                            @RequestParam int page,
+                                            @RequestParam int size) {
+        return postService.findPostsByHashtag(hashtagName, page, size);
+    }
+
+    @GetMapping("/hashtag/cache")
+    public List<PostDto> findPostsByHashtagForCache(@RequestParam @ValidHashtag String hashtagName,
+                                                    @RequestParam int page,
+                                                    @RequestParam int size) {
+        return postService.findPostsByHashtagForCache(hashtagName, page, size);
+    }
+
+    @GetMapping("/list/ids")
+    public List<PostDto> findPostsByIds(@RequestParam List<Long> postIds) {
+        return postService.getPostsByIds(postIds);
     }
 }

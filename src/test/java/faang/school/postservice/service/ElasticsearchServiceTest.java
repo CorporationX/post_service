@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -40,6 +41,10 @@ public class ElasticsearchServiceTest {
         postDto.setId(1L);
         postDto.setHashtagNames(Arrays.asList("#1", "#2"));
         postId = 1L;
+
+        ReflectionTestUtils.setField(elasticsearchService, "indexPost", "test-index");
+        ReflectionTestUtils.setField(elasticsearchService, "fieldForMatchByHashtag", "hashtag");
+        ReflectionTestUtils.setField(elasticsearchService, "fieldForRangeById", "id");
     }
 
     @Test
@@ -97,7 +102,7 @@ public class ElasticsearchServiceTest {
 
         when(elasticsearchClient.search(any(SearchRequest.class), eq(PostDto.class))).thenReturn(searchResponse);
 
-        List<PostDto> result = elasticsearchService.searchPostsByHashtag("1#");
+        List<PostDto> result = elasticsearchService.searchPostsByHashtag("1#", 0, 100);
 
         assertEquals(1, result.size());
         assertEquals(postDto, result.get(0));

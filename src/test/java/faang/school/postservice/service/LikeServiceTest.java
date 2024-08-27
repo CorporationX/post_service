@@ -6,7 +6,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
 import org.junit.jupiter.api.Assertions;
@@ -152,6 +152,7 @@ public class LikeServiceTest {
     @DisplayName("Когда метод по добавлению лайка к посту отработал")
     @Test
     public void testAddLikeToPostWhenValid() {
+        UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
         Like like = new Like();
 
         when(postService.getPost(likeDtoPost.getPostId())).thenReturn(post);
@@ -186,6 +187,7 @@ public class LikeServiceTest {
     @Test
     public void testAddLikeToCommentWhenValid() {
         Like like = new Like();
+        UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
 
         when(commentService.getComment(likeDtoComment.getCommentId())).thenReturn(comment);
         when(userServiceClient.getUser(likeDtoComment.getUserId())).thenReturn(userDto);

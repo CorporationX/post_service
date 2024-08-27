@@ -24,12 +24,21 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        post: post_channel
     elasticsearch:
       rest:
         uris: http://localhost:9200
-    calculation: calculations_channel
-    post: post_channel
+      index-post:
+        index: post
+      field-for-match:
+      search-by-hashtag:
+        field: hashtagNames
+      field-for-range:
+        field: id
 
+    hashtag-cache:
+      size:
+        post-cache-size: 10
   services:
     s3:
       endpoint: http://localhost:9000

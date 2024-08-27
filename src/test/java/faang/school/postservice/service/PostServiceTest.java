@@ -1,11 +1,16 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.hashtag.HashtagRequest;
+import faang.school.postservice.dto.hashtag.HashtagResponse;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostResponse;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
@@ -21,9 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -50,8 +53,6 @@ public class PostServiceTest {
 
     @Mock
     private EntityManager entityManager;
-
-
 
     @Mock
     private PostContextMapper postContextMapper;
@@ -114,7 +115,7 @@ public class PostServiceTest {
                 .id(2L)
                 .content("Draft 2")
                 .build();
-        
+
         PostDto publishedPostDto1 = PostDto.builder()
                 .id(3L)
                 .content("Published 1")
@@ -248,11 +249,11 @@ public class PostServiceTest {
         List<PostDto> postDtos = List.of(postDto);
         when(hashtagServiceClient.findPostsByHashtag(hashtagName)).thenReturn(new PostResponse(postDtos));
 
-        List<PostDto> result = postService.findPostsByHashtag(hashtagName);
+        List<PostDto> result = postService.findPostsByHashtag(hashtagName, 0, 1000);
 
         assertEquals(postDtos, result);
         verify(hashtagServiceClient, times(1)).findPostsByHashtag(hashtagName);
-        verify(elasticsearchService, times(0)).searchPostsByHashtag(hashtagName);
+        verify(elasticsearchService, times(0)).searchPostsByHashtag(hashtagName, 0, 1000);
     }
 
     @Test
@@ -262,11 +263,11 @@ public class PostServiceTest {
         List<PostDto> emptyPostDtos = Collections.emptyList();
         when(hashtagServiceClient.findPostsByHashtag(hashtagName)).thenReturn(new PostResponse(emptyPostDtos));
 
-        List<PostDto> result = postService.findPostsByHashtag(hashtagName);
+        List<PostDto> result = postService.findPostsByHashtag(hashtagName, 0, 1000);
 
         assertEquals(emptyPostDtos, result);
         verify(hashtagServiceClient, times(1)).findPostsByHashtag(hashtagName);
-        verify(elasticsearchService, times(1)).searchPostsByHashtag(hashtagName);
+        verify(elasticsearchService, times(1)).searchPostsByHashtag(hashtagName, 0, 1000);
     }
 
     @Test
@@ -347,7 +348,7 @@ public class PostServiceTest {
         long postId = 1;
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> postService.getPost(postId));
+        assertThrows(EntityNotFoundException.class, () -> postService.getPost(postId));
         verify(postContextMapper, never()).getCountLikeEveryonePost();
     }
 

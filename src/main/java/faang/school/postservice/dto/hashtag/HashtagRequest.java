@@ -1,6 +1,6 @@
-package faang.school.postservice.model.post;
+package faang.school.postservice.dto.hashtag;
 
-import faang.school.postservice.dto.post.PostDto;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostResponse {
-    private List<PostDto> posts;
+public class HashtagRequest {
+    @NotEmpty
+    private List<String> hashtagNames;
 }
