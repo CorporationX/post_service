@@ -13,4 +13,10 @@ public class ExceptionMessages {
     public static final String UNEXPECTED_ERROR = "Unexpected error occurred: ";
     public static final String LIKE_NOT_FOUND_FOR_POST = "No likes found for postId";
     public static final String LIKE_NOT_FOUND_FOR_COMMENT = "No likes found for commentId";
+
+    public static final String RECORD_NOT_EXIST = "%s with id %d doesn't exists";
+    public static final String DOUBLE_LIKES_FOR_ONE_OBJECT = "A %s with an id: %d already has a likes by a user with an id: %d";
+    public static final String EXCEPTION_FOR_REPEAT_LIKES = "You are trying to put a like with an id: %d that has already been put by a user with an id: %d for a %s with an id: %s";
+
+    public static final String DELETION_ERROR_MESSAGE = "An error occurred while deleting a record. %s %s";
 }

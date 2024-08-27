@@ -3,12 +3,11 @@ package faang.school.postservice.dto.post;
 import faang.school.postservice.dto.comment.CommentDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -25,4 +24,6 @@ public class PostDto {
     private String content;
 
     private List<CommentDto> comments;
+
+    private long numberLikes;
 }

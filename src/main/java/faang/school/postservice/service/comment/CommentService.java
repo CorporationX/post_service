@@ -1,5 +1,7 @@
 package faang.school.postservice.service.comment;
 
+import static faang.school.postservice.exception.ExceptionMessages.COMMENT_NOT_FOUND;
+
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.mapper.comment.CommentMapper;
@@ -9,13 +11,13 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.comment.UserClientValidation;
 import jakarta.persistence.PersistenceException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -59,5 +61,14 @@ public class CommentService {
     public CommentDto deleteExistingCommentInPost(CommentDto commentDto) {
         commentRepository.deleteById(commentDto.getId());
         return commentDto;
+    }
+
+    @Transactional(readOnly = true)
+    public Comment getComment(long commentId) {
+        return commentRepository.findById(commentId)
+            .orElseThrow(() -> {
+                log.error(COMMENT_NOT_FOUND);
+                return new NoSuchElementException(COMMENT_NOT_FOUND);
+            });
     }
 }
