@@ -28,7 +28,7 @@ public class LikeService {
 
     @Transactional
     public LikeDto likePost(Long postId, Long userId) {
-        Post post = postService.findById(postId);
+        Post post = postService.getPost(postId);
         likeValidator.validateUserAndPost(post, userId);
         Like like = likeRepository.save(Like.builder()
                 .post(post)

@@ -2,9 +2,11 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.dto.comment.CommentEvent;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +25,15 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostService postService;
     private final CommentMapper commentMapper;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Transactional
     public void createComment(CommentDto commentDto) {
         validateUserById(commentDto.getAuthorId());
-        Post post = postService.findById(commentDto.getPostId());
-        post.getComments().add(commentRepository
-                .save(commentMapper.toEntity(commentDto)));
+        Post post = postService.getPost(commentDto.getPostId());
+        Comment comment = commentRepository.save(commentMapper.toEntity(commentDto));
+        post.getComments().add(comment);
+        commentEventPublisher.publish(createCommentEvent(comment, post));
     }
 
     @Transactional
@@ -41,7 +45,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentDto> getAllByPostId(Long postId) {
-        Post post = postService.findById(postId);
+        Post post = postService.getPost(postId);
         return commentMapper.toDtos(post.getComments()
                 .stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
@@ -64,5 +68,15 @@ public class CommentService {
 
     private void validateUserById(Long userId) {
         userServiceClient.getUser(userId);
+    }
+
+    private CommentEvent createCommentEvent(Comment comment, Post post) {
+        return CommentEvent.builder()
+                .commentAuthorId(comment.getAuthorId())
+                .postAuthorId(post.getAuthorId())
+                .commentId(comment.getId())
+                .postId(post.getId())
+                .content(comment.getContent())
+                .build();
     }
 }

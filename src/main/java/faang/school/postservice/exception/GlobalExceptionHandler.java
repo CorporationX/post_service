@@ -1,7 +1,5 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.exception;
 
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.ErrorResponse;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

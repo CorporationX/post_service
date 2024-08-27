@@ -23,6 +23,9 @@ import static org.mockito.Mockito.when;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class LikeServiceTest {
 
@@ -59,14 +62,14 @@ class LikeServiceTest {
 
     @Test
     void likePostWithInvalidPostIdShouldThrowException() {
-        when(postService.findById(postId)).thenThrow(DataValidationException.class);
+        when(postService.getPost(postId)).thenThrow(DataValidationException.class);
         assertThrows(DataValidationException.class, () -> likeService.likePost(postId, commentId));
         verify(likeRepository, never()).save(any(Like.class));
     }
 
     @Test
     void likePostWithInvalidUserIdOrInvalidPostConditionsShouldThrowException() {
-        when(postService.findById(postId)).thenReturn(post);
+        when(postService.getPost(postId)).thenReturn(post);
         doThrow(DataValidationException.class).when(likeValidator).validateUserAndPost(post, userId);
         assertThrows(DataValidationException.class, () -> likeService.likePost(postId, commentId));
     }
