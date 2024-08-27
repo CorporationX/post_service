@@ -1,8 +1,6 @@
-package faang.school.postservice.controller.like;
+package faang.school.postservice.controller;
 
 import faang.school.postservice.publisher.LikePostPublisher;
-import faang.school.postservice.controller.LikeToComment;
-import faang.school.postservice.controller.LikeToPost;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.LikeService;
