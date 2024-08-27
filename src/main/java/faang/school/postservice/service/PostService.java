@@ -8,15 +8,12 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.exception.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -130,9 +127,5 @@ public class PostService {
     private PostDto getPostDto(PostDto postDto) {
         Post createdDraft = postRepository.save(postMapper.toEntity(postDto));
         return postMapper.toDto(createdDraft);
-    }
-
-    public PostDto getPostById(Long postId){
-        return postMapper.toDto(findById(postId));
     }
 }

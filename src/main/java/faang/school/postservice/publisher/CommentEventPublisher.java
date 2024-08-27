@@ -19,7 +19,7 @@ public class CommentEventPublisher extends AbstractEventPublisher<CommentEvent> 
     }
 
     @Override
-    protected ChannelTopic getChannelTopic() {
-        return commentTopic;
+    protected String getChannelTopic() {
+        return commentTopic.getTopic();
     }
 }

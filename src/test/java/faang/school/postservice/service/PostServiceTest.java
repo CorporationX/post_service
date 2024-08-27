@@ -7,8 +7,8 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,7 +58,7 @@ public class PostServiceTest {
         projectDto = ProjectDto
                 .builder()
                 .id(1L)
-                .title("Proejct one")
+                .title("Project one")
                 .build();
         post = Post
                 .builder()
@@ -107,14 +107,6 @@ public class PostServiceTest {
 
         assertEquals(result, postDto);
     }
-
-/*    @Test
-    public void testCreateDraftForUserThrowsNotFoundException() {
-        when(userServiceClient.getUser(postDto.getAuthorId())).thenReturn(null);
-        DataValidationException ex = assertThrows(DataValidationException.class, () -> postService.createDraft(postDto));
-        assertEquals("User not found", ex.getMessage());
-        verify(postRepository, times(0)).save(post);
-    }*/
 
     @Test
     public void testCreateDraftForProject() {
@@ -167,13 +159,6 @@ public class PostServiceTest {
         postService.delete(1L);
         assertTrue(post.isDeleted());
     }
-
-/*    @Test
-    public void testGetOnePost() {
-        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-        PostDto result = postService.getPostById(1L);
-        assertEquals(result, postDto);
-    }*/
 
     @Test
     public void testGetDraftsByUser() {
