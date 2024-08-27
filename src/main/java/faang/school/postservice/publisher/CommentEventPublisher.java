@@ -12,7 +12,7 @@ public class CommentEventPublisher extends AbstractEventPublisher<CommentEvent> 
     public CommentEventPublisher(RedisTemplate<String, Object> redisTemplate,
                                  ObjectMapper objectMapper,
                                  @Value("${spring.data.redis.channels.comment_channel.name}") String channelName) {
-        super(redisTemplate, objectMapper);
+        super(redisTemplate, objectMapper, channelName);
     }
 
 }

@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 public abstract class AbstractEventPublisher<T> {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
-    private String channel;
+    private final String channel;
 
     public void publish(T t) {
         String jsonMessage;
