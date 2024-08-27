@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class LikeEvent {
-    private UUID eventId;
+    private final UUID eventId = UUID.randomUUID();
     private long authorId;
     private long postId;
     private long likeId;
