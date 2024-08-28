@@ -2,8 +2,9 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.mapper.ResourceMapper;
-import faang.school.postservice.model.Post;
+
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.resource.ResizeService;

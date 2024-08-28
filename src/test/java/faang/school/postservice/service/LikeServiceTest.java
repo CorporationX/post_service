@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
@@ -153,6 +152,7 @@ public class LikeServiceTest {
     @DisplayName("Когда метод по добавлению лайка к посту отработал")
     @Test
     public void testAddLikeToPostWhenValid() {
+        UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
         Like like = new Like();
 
         when(postService.getPost(likeDtoPost.getPostId())).thenReturn(post);
@@ -187,6 +187,7 @@ public class LikeServiceTest {
     @Test
     public void testAddLikeToCommentWhenValid() {
         Like like = new Like();
+        UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
 
         when(commentService.getComment(likeDtoComment.getCommentId())).thenReturn(comment);
         when(userServiceClient.getUser(likeDtoComment.getUserId())).thenReturn(userDto);

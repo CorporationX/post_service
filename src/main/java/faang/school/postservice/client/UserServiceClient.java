@@ -15,11 +15,11 @@ public interface UserServiceClient {
     @GetMapping("/api/v1/user/{userId}")
     UserDto getUser(@PathVariable long userId);
 
+    @PostMapping("/api/v1/user/byIds")
+    List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
     @GetMapping("/users/exists/{userId}")
     boolean existsById(@PathVariable Long userId);
-
-    @PostMapping("/users")
-    List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 
     @GetMapping("/users/{userId}/followers")
     List<UserDto> getUserFollowers(@PathVariable long userId);
