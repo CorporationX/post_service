@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -16,5 +17,6 @@ public class LikeEvent {
     private long authorId;
     private long postId;
     private long likeId;
+    private final LocalDateTime timeStamp = LocalDateTime.now();
 }
 
