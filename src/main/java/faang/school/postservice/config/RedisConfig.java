@@ -1,6 +1,5 @@
 package faang.school.postservice.config;
 
-import faang.school.postservice.event.PostViewEvent;
 import faang.school.postservice.listener.LikeEventListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +26,10 @@ public class RedisConfig {
     private String likeTopicName;
 
     @Value("${spring.data.redis.channels.post-view-event-channel.name}")
-    private String postViewTopic;
+    private  String postTopic;
+
+    @Value("${spring.data.redis.channels.like_post_channel.name.comment_channel")
+    private String commentTopicName;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -65,6 +67,9 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic postTopic() { return new ChannelTopic(postViewTopic);
+    public ChannelTopic postViewTopic() { return new ChannelTopic(postTopic); }
+    @Bean
+    public ChannelTopic commentTopic(){
+        return new ChannelTopic(commentTopicName);
     }
 }
