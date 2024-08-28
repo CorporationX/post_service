@@ -60,12 +60,19 @@ public class LikeServiceTest {
     private Post post;
     private Comment comment;
     private LikeDto likeDto;
+    private UserDto userDto;
 
     @BeforeEach
     public void setup() {
         postId = 1;
-        userId = 1;
-        commentId = 1;
+        userId = 2;
+        commentId = 3;
+
+        userDto = UserDto.builder()
+                .id(userId)
+                .username("name")
+                .email("email@google.com")
+                .build();
 
         likeDtoPost = LikeDto.builder()
                 .id(1L)
@@ -146,7 +153,7 @@ public class LikeServiceTest {
     @DisplayName("Когда метод по добавлению лайка к посту отработал")
     @Test
     public void testAddLikeToPostWhenValid() {
-        UserDto userDto = new UserDto(1L, "name", "email@google.com");
+        UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
         Like like = new Like();
         post.setAuthorId(1L);
 
@@ -182,7 +189,7 @@ public class LikeServiceTest {
     @Test
     public void testAddLikeToCommentWhenValid() {
         Like like = new Like();
-        UserDto userDto = new UserDto(userId, "name", "email@google.com");
+        UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
 
         when(commentService.getComment(likeDtoComment.getCommentId())).thenReturn(comment);
         when(userServiceClient.getUser(likeDtoComment.getUserId())).thenReturn(userDto);
