@@ -4,11 +4,9 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.messaging.publisher.post.PostEventPublishers;
-import faang.school.postservice.messaging.publishers.post.PostEventPublishers;
-import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.mapper.comment.PostViewMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.postevent.PostViewEventPublisher;
+import faang.school.postservice.messaging.publisher.postevent.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +77,9 @@ public class PostService {
     public PostDto getById(Long postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
         postViewEventPublisher.toEventAndPublish(postViewMapper.toDto(postOptional.get()));
-        return postMapper.toDto(postOptional.get());
+        Post post = postOptional.orElseThrow(
+                () -> new PostValidationException("Post with id " + postId + " doesn't exists"));
+        return postMapper.toDto(post);
     }
 
     public List<PostDto> getAllUnpublishedPostsForAuthor(Long authorId) {
