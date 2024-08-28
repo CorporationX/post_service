@@ -42,14 +42,18 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public PostDto get(@PathVariable long id, @RequestParam Long userId) {
-        PostDto postDto = service.getPost(id);
-        Long authorId = postDto.getAuthorId();
-        Long postId = postDto.getId();
-        PostViewEvent event = new PostViewEvent(postId, authorId, userId, LocalDateTime.now());
-        publisher.publish(event);
-        return postDto;
+    public PostDto get(@PathVariable long id) {
+        return service.getPost(id);
     }
+//    @GetMapping("/{id}")
+//    public PostDto get(@PathVariable long id, @RequestParam Long userId) {
+//        PostDto postDto = service.getPost(id);
+//        Long authorId = postDto.getAuthorId();
+//        Long postId = postDto.getId();
+//        PostViewEvent event = new PostViewEvent(postId, authorId, userId, LocalDateTime.now());
+//        publisher.publish(event);
+//        return postDto;
+//    }
 
     @GetMapping
     public List<PostDto> getFilteredPosts(
