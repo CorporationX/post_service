@@ -3,8 +3,8 @@ package faang.school.postservice.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.redis.event.CommentEvent;
-import faang.school.postservice.redis.publisher.CommentEventPublisher;
+import faang.school.postservice.events.CommentEvent;
+import faang.school.postservice.publishers.CommentEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +31,6 @@ public class MessagePublisherService {
         } catch (JsonProcessingException e) {
             log.warn("There was an exception during conversion CommentEvent with ID = {} to String", savedComment.getId());
         }
-        commentEventPublisher.publishMessage(message);
+        commentEventPublisher.publish(message);
     }
 }

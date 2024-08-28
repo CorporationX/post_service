@@ -1,4 +1,5 @@
-package faang.school.postservice.redis.publisher;
+package faang.school.postservice.publishers;
+
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -12,7 +13,8 @@ public class CommentEventPublisher implements MessagePublisher {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChannelTopic postCommentChannel;
 
-    public void publishMessage(String message) {
+    @Override
+    public void publish(String message) {
         redisTemplate.convertAndSend(postCommentChannel.getTopic(), message);
     }
 }

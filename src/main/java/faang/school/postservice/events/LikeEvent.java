@@ -1,11 +1,13 @@
 package faang.school.postservice.events;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class LikeEvent {
+public class LikeEvent extends Event {
     private Long postId;
     private Long authorId;
     private Long userId;

@@ -9,7 +9,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publishers_like.LikeEventPublisher;
+import faang.school.postservice.publishers.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -44,15 +44,7 @@ public class LikeService {
                 .build();
 
         like = likeRepository.save(like);
-
-        likeEventPublisher.publish(
-                LikeEvent.builder()
-                        .postId(postId)
-                        .authorId(post.getAuthorId())
-                        .userId(userId)
-                .build()
-        );
-
+        likeEventPublisher.publish(like);
         return likeMapper.toResponseDto(like);
     }
 
@@ -61,6 +53,7 @@ public class LikeService {
         Comment comment = commentService.getById(commentId);
         checkUserExistence(userId);
         checkIfCommentAlreadyLiked(userId, commentId);
+
 
         Like like = Like.builder()
                 .userId(userId)
