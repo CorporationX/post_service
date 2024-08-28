@@ -2,11 +2,13 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostLikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
 import org.junit.jupiter.api.Assertions;
@@ -30,13 +32,10 @@ public class LikeServiceTest {
 
     public static int BATCH_SIZE = 100;
 
-
     @Mock
     private LikeRepository likeRepository;
-
     @Mock
     private UserServiceClient userServiceClient;
-
     @Mock
     private LikeServiceValidator likeServiceValidator;
     @Mock
@@ -45,6 +44,8 @@ public class LikeServiceTest {
     private CommentService commentService;
     @Mock
     private LikeMapper likeMapper;
+    @Mock
+    private PostLikeEventPublisher postLikeEventPublisher;
 
     @InjectMocks
     private LikeService likeService;
@@ -154,6 +155,7 @@ public class LikeServiceTest {
     public void testAddLikeToPostWhenValid() {
         UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
         Like like = new Like();
+        post.setAuthorId(1L);
 
         when(postService.getPost(likeDtoPost.getPostId())).thenReturn(post);
         when(userServiceClient.getUser(likeDtoPost.getUserId())).thenReturn(userDto);

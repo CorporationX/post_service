@@ -24,7 +24,10 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        post_like_channel:
+          name: post_like_channel
         post: post_channel
+        
     elasticsearch:
       rest:
         uris: http://localhost:9200
