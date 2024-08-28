@@ -42,7 +42,6 @@ public class LikeService {
         likeRepository.save(like);
 
         eventPublisherService.submitEvent(likeDto);
-        likeEventPublisher.publish(likeEventMapper.toLikeEvent(likeDto));
     }
 
 
