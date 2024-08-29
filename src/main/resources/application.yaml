@@ -26,6 +26,7 @@ spring:
           name: calculations_channel
         postLike: post_like_channel
         post: post_channel
+        album: album_channel
         
     elasticsearch:
       rest:
