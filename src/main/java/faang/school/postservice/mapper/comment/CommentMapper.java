@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.event.comment.CommentEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import org.mapstruct.Mapper;
@@ -18,6 +19,11 @@ public interface CommentMapper {
 
     @Mapping(source = "likesId", target = "likes", qualifiedByName = "listLongToLikes")
     Comment toEntity(CommentDto commentDto);
+
+    @Mapping(source = "post.id", target = "postId")
+    @Mapping(source = "id", target = "commentId")
+    @Mapping(source = "post.authorId", target = "postAuthorId")
+    CommentEvent toEvent(Comment comment);
 
     @Named("listLikesToLong")
     default List<Long> listLikesToLong(List<Like> likes){
