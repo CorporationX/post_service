@@ -34,7 +34,7 @@ public class LikeService {
                 .post(post)
                 .userId(userId)
                 .build());
-        sentLikeNotification(like);
+        sendLikeNotification(like);
         return likeMapper.toDto(like);
     }
 
@@ -59,7 +59,7 @@ public class LikeService {
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
     }
 
-    private void sentLikeNotification(Like like){
+    private void sendLikeNotification(Like like) {
         LikeEvent likeEvent = LikeEvent.builder()
                 .postId(like.getPost().getId())
                 .authorId(like.getPost().getAuthorId())

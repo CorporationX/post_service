@@ -8,7 +8,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
-
 @Configuration
 @EnableAsync
 @RequiredArgsConstructor
@@ -26,6 +25,4 @@ public class CustomThreadExecutor {
         executor.initialize();
         return executor.getThreadPoolExecutor();
     }
-
-
 }
