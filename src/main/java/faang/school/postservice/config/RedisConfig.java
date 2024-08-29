@@ -20,6 +20,11 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.comment_channel.name}")
     private String commentEventNameTopic;
 
+    @Bean("albumChannelTopic")
+    public ChannelTopic albumTopic() {
+        return new ChannelTopic(credentials.getChannels().getAlbum());
+    }
+
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
