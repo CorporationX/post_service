@@ -26,7 +26,7 @@ spring:
           name: calculations_channel
         postLike: post_like_channel
         post: post_channel
-        like: like_event
+        like_post_analytics: like_event
 
     elasticsearch:
       rest:
