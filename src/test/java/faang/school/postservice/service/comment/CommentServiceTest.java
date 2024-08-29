@@ -1,23 +1,5 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.mapper.comment.CommentMapper;
-import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.validator.comment.UserClientValidation;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -25,6 +7,25 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.messaging.publisher.CommentEventPublisher;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.validator.comment.UserClientValidation;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -38,7 +39,8 @@ class CommentServiceTest {
     private PostService postService;
     @Mock
     private UserClientValidation userClientValidation;
-
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
     @Mock
     private PostMapper postMapper;
 
@@ -58,6 +60,9 @@ class CommentServiceTest {
         existingComment = new Comment();
         existingComment.setId(1L);
         existingComment.setContent("Original content");
+        existingComment.setPost(Post.builder()
+            .id(2L)
+            .build());
 
         postDto = new PostDto();
     }
@@ -84,6 +89,7 @@ class CommentServiceTest {
                 .save(existingComment);
         verify(commentMapper, times(1))
                 .toDto(any(Comment.class));
+        verify(commentEventPublisher).publish(commentMapper.toEvent(existingComment));
     }
 
     @Test
