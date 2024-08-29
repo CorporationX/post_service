@@ -1,6 +1,7 @@
 package faang.school.postservice.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -19,6 +20,11 @@ public class RedisConfig {
     @Bean("postChannelTopic")
     public ChannelTopic postChannelTopic() {
         return new ChannelTopic(credentials.getChannels().getPost());
+    }
+
+    @Bean("postLikeChannelTopic")
+    public ChannelTopic postLikeTopic() {
+        return new ChannelTopic(credentials.getChannels().getPostLike());
     }
 
     @Bean

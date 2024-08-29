@@ -24,8 +24,7 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-        post_like_channel:
-          name: post_like_channel
+        postLike: post_like_channel
         post: post_channel
         
     elasticsearch:
