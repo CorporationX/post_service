@@ -39,9 +39,9 @@ public class CommentService {
             log.error(ExceptionMessages.FAILED_PERSISTENCE, e);
             throw new PersistenceException(ExceptionMessages.FAILED_PERSISTENCE, e);
         }
-        var currentDto = commentMapper.toDto(comment);
-        commentEventPublisher.publish(commentMapper.toEvent(currentDto));
-        return currentDto;
+
+        commentEventPublisher.publish(commentMapper.toEvent(comment));
+        return commentMapper.toDto(comment);
     }
 
     public CommentDto updateExistingComment(CommentDto commentDto) {

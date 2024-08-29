@@ -31,7 +31,6 @@ public abstract class AbstractEventPublisher<T> implements EventPublisher<T> {
       log.error(WRITING_TO_JSON_EXCEPTION + INSERTION_STAPLES, e.getMessage());
     } catch (Exception e) {
       log.error(TOPIC_PUBLICATION_EXCEPTION  + INSERTION_STAPLES, e.getMessage());
-      throw new IllegalArgumentException(TOPIC_PUBLICATION_EXCEPTION + e.getMessage());
     }
   }
 

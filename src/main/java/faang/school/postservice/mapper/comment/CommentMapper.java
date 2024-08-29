@@ -30,5 +30,6 @@ public interface CommentMapper {
     }
 
     @Mapping(source = "id", target = "commentId")
-    CommentEvent toEvent(CommentDto currentDto);
+    @Mapping(source = "post.id", target = "postId")
+    CommentEvent toEvent(Comment comment);
 }

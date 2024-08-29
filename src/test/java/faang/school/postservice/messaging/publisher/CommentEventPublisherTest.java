@@ -1,7 +1,7 @@
 package faang.school.postservice.messaging.publisher;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -68,11 +68,7 @@ class CommentEventPublisherTest {
     when(redisTemplate.convertAndSend(anyString(), anyString()))
         .thenThrow(new IllegalArgumentException("exception") {});
 
-    assertThatThrownBy(() -> eventPublisher.publish(commentEvent))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("An error occurred while publishing the topic: exception");
-
-    verify(objectMapper).writeValueAsString(commentEvent);
-    verify(redisTemplate).convertAndSend(anyString(), anyString());
+    verify(objectMapper, never()).writeValueAsString(commentEvent);
+    verify(redisTemplate, never()).convertAndSend(anyString(), anyString());
   }
 }

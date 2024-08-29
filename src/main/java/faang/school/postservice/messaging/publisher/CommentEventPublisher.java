@@ -19,7 +19,6 @@ public class CommentEventPublisher extends AbstractEventPublisher<CommentEvent> 
     super(objectMapper, redisTemplate, channelTopic);
   }
 
-  @Override
   public void publish(CommentEvent event) {
     super.publish(event);
   }
