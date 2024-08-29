@@ -3,10 +3,8 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.messaging.publisher.post.PostEventPublishers;
-import faang.school.postservice.mapper.comment.PostViewMapper;
+import faang.school.postservice.messaging.publisher.post.PostEventPublisher;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.messaging.publisher.postevent.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +20,9 @@ import java.util.function.Predicate;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
-    private final PostViewEventPublisher postViewEventPublisher;
-    private final PostViewMapper postViewMapper;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
-    private final PostEventPublishers postEventPublishers;
+    private final PostEventPublisher postEventPublishers;
 
     public PostDto create(PostDto postDto) {
         postValidator.validateCreate(postDto);
@@ -76,7 +72,7 @@ public class PostService {
 
     public PostDto getById(Long postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
-        postViewEventPublisher.toEventAndPublish(postViewMapper.toDto(postOptional.get()));
+        postEventPublishers.publish(postMapper.toPostEvent(postOptional.get()));
         Post post = postOptional.orElseThrow(
                 () -> new PostValidationException("Post with id " + postId + " doesn't exists"));
         return postMapper.toDto(post);

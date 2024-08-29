@@ -1,8 +1,9 @@
 package faang.school.postservice.service.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.event.post.PostEvent;
 import faang.school.postservice.event.post.PostViewEvent;
-import faang.school.postservice.messaging.publisher.postevent.PostViewEventPublisher;
+import faang.school.postservice.messaging.publisher.post.PostEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class postViewEventPublisherTest {
+public class postEventPublisherTest {
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -32,14 +33,14 @@ public class postViewEventPublisherTest {
     private ObjectMapper objectMapper;
 
     @InjectMocks
-    private PostViewEventPublisher postViewEventPublisher;
-    private PostViewEvent postViewEvent;
+    private PostEventPublisher postEventPublisher;
+    private PostEvent postEvent;
     String message = "test message";
 
     @BeforeEach
     void init() {
         LocalDateTime localDateTime = LocalDateTime.now();
-        postViewEvent = PostViewEvent.builder()
+        postEvent = PostEvent.builder()
                 .postId(1L)
                 .authorId(2L)
                 .userId(1L)
@@ -50,12 +51,12 @@ public class postViewEventPublisherTest {
     @Test
     @DisplayName("writeValueAsString")
     public void testWriteValueAsString() throws Exception {
-        when(objectMapper.writeValueAsString(postViewEvent)).thenReturn(message);
+        when(objectMapper.writeValueAsString(postEvent)).thenReturn(message);
 
-        postViewEventPublisher.publish(postViewEvent);
+        postEventPublisher.publish(postEvent);
 
         verify(redisTemplate).convertAndSend(channelTopic.getTopic(), message);
-        verify(objectMapper).writeValueAsString(postViewEvent);
+        verify(objectMapper).writeValueAsString(postEvent);
     }
 
     @Test
@@ -66,7 +67,7 @@ public class postViewEventPublisherTest {
         when(channelTopic.getTopic())
                 .thenReturn("test-topic");
 
-        postViewEventPublisher.publish(postViewEvent);
+        postEventPublisher.publish(postEvent);
 
         verify(objectMapper, Mockito.times(1))
                 .writeValueAsString(Mockito.any(PostViewEvent.class));
@@ -84,7 +85,7 @@ public class postViewEventPublisherTest {
         when(redisTemplate.convertAndSend(anyString(), anyString()))
                 .thenReturn(anyLong());
 
-        postViewEventPublisher.publish(postViewEvent);
+        postEventPublisher.publish(postEvent);
 
         verify(objectMapper, Mockito.times(1))
                 .writeValueAsString(Mockito.any(PostViewEvent.class));

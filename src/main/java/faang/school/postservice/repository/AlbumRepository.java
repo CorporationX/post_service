@@ -16,8 +16,11 @@ public interface AlbumRepository extends CrudRepository<Album, Long> {
 
     Stream<Album> findByAuthorId(long authorId);
 
-    @Query("SELECT a FROM Album a LEFT JOIN FETCH a.posts WHERE a.id = :id")
+    @Query("SELECT a FROM Album a LEFT JOIN Post p on p.projectId = a.id WHERE a.id = :id")
     Optional<Album> findByIdWithPosts(long id);
+
+    @Query("SELECT a FROM Album a LEFT JOIN Post p on p.id = :postId WHERE a.id = :id")
+    Optional<Album> findByAlbumIdAndPostId(long postId, long id);
 
     @Query(nativeQuery = true, value = "INSERT INTO favorite_albums (album_id, user_id) VALUES (:albumId, :userId)")
     @Modifying
