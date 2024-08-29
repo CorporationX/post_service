@@ -19,31 +19,30 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/comment")
+@RequestMapping("v1/comment")
 @RequiredArgsConstructor
 
 public class CommentController {
     private final CommentService commentService;
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-
-    public void deleteComment(@PathVariable long id) {
-        commentService.delete(id);
+    public void deleteComment(@PathVariable long commentId) {
+        commentService.delete(commentId);
     }
 
-    @GetMapping("/get/{postId}")
+    @GetMapping("/post/{postId}")
     public List<CommentDto> getAllCommentsByPostId(@PathVariable long postId) {
         return commentService.getAllCommentsByPostId(postId);
     }
 
-    @PostMapping("/create")
+    @PostMapping
     @ResponseStatus(HttpStatus.OK)
     public CommentDto createComment(@RequestBody @Valid CommentDto commentDto) {
         return commentService.createComment(commentDto);
     }
 
-    @PutMapping("/update")
+    @PutMapping
     @ResponseStatus(HttpStatus.UPGRADE_REQUIRED)
     public CommentDto updateComment(@RequestBody @Valid UpdateCommentDto updateCommentDto) {
         return commentService.updateComment(updateCommentDto);

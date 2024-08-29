@@ -81,42 +81,21 @@ public class CommentServiceTest {
 
     }
 
-    @Test
-    @DisplayName("Test delete comment : Wrong ID")
-    public void testDeleteCommentWrongID() {
-        String errorMessage = "Comment doesn't exist in the system ID = " + COMMENT_ID;
-        doThrow(new DataValidationException(errorMessage)).when(commentValidator).checkCommentIsExist(COMMENT_ID);
 
-        Exception exception = assertThrows(DataValidationException.class, () -> commentService.delete(COMMENT_ID));
-
-        assertEquals(errorMessage, exception.getMessage());
-    }
 
     @Test
     @DisplayName("Test delete comment : Successfully")
     public void testDeleteOk() {
-        doNothing().when(commentValidator).checkCommentIsExist(COMMENT_ID);
 
         commentService.delete(COMMENT_ID);
         verify(commentRepository, times(1)).deleteById(COMMENT_ID);
     }
 
-    @Test
-    @DisplayName("Test get all comments by post id : Wrong post ID")
-    public void getAllCommentsByPostIdWrongId() {
-        String errorMessage = "Post doesn't exist in the system ID = " + POST_ID;
-        doThrow(new DataValidationException(errorMessage)).when(commentValidator).checkPostIsExist(POST_ID);
-
-        Exception exception = assertThrows(DataValidationException.class, () -> commentService.getAllCommentsByPostId(POST_ID));
-
-        assertEquals(errorMessage, exception.getMessage());
-        verifyNoMoreInteractions(commentRepository);
-    }
 
     @Test
     @DisplayName("Test get all comments by post id : Everything is ok")
     public void getAllCommentsByPostIValidId() {
-        doNothing().when(commentValidator).checkPostIsExist(POST_ID);
+
         when(commentRepository.findAllByPostId(POST_ID)).thenReturn(comments);
 
         List<CommentDto> result = commentService.getAllCommentsByPostId(POST_ID);
@@ -128,8 +107,8 @@ public class CommentServiceTest {
     @Test
     @DisplayName("Test create comment : Validation failed")
     public void testCreateValidationFailed() {
-        String errorMessage = "User doesn't exist in the system ID = " + USER_ID;
-        doThrow(new DataValidationException(errorMessage)).when(commentValidator).checkUserIsExist(USER_ID);
+        String errorMessage = "Post doesn't exist in the system ID = " + POST_ID;
+        doThrow(new DataValidationException(errorMessage)).when(commentValidator).checkPostIsExist(POST_ID);
         Exception exception = assertThrows(DataValidationException.class, () -> commentService.createComment(commentDto));
 
         assertEquals(errorMessage, exception.getMessage());
@@ -139,7 +118,7 @@ public class CommentServiceTest {
     @Test
     @DisplayName("Test create comment : Validation passed")
     public void testCreateOk() {
-        doNothing().when(commentValidator).checkUserIsExist(USER_ID);
+
         doNothing().when(commentValidator).checkPostIsExist(POST_ID);
 
         Comment comment = commentMapper.toEntity(commentDto);

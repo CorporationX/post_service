@@ -25,14 +25,11 @@ public class CommentService {
 
     @Transactional
     public void delete(long commentId) {
-        commentValidator.checkCommentIsExist(commentId);
         commentRepository.deleteById(commentId);
     }
 
     @Transactional(readOnly = true)
     public List<CommentDto> getAllCommentsByPostId(long postId) {
-        commentValidator.checkPostIsExist(postId);
-
         return commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
                 .map(commentMapper::toDto)
@@ -41,7 +38,6 @@ public class CommentService {
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
-        commentValidator.checkUserIsExist(commentDto.getAuthorId());
         commentValidator.checkPostIsExist(commentDto.getPostId());
 
         Comment savedComment = commentRepository.save(commentMapper.toEntity(commentDto));

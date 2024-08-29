@@ -5,8 +5,5 @@ public class DataValidationException extends RuntimeException {
         super(message);
     }
 
-    public DataValidationException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }
 

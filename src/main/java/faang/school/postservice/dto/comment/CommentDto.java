@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,6 +16,7 @@ public class CommentDto {
     @NotEmpty
     @Size(max = 4096)
     private String content;
+    @NotEmpty
     private long authorId;
     private List<Long> likeIds;
     private long postId;
