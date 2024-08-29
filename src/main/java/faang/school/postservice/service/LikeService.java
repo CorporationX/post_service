@@ -1,21 +1,24 @@
 package faang.school.postservice.service;
 
-
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.redisPublisher.PostLikeEventPublisher;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.publisher.LikePostPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,8 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
     private final LikeMapper likeMapper;
+    // не одно и тоже? просто разное имя
+    private final PostLikeEventPublisher postLikeEventPublisher;
     private final LikePostPublisher likePostPublisher;
 
     public List<UserDto> getLikesUsersByPostId(Long postId) {
@@ -87,6 +92,12 @@ public class LikeService {
 
         post.getLikes().add(like);
         likeRepository.save(like);
+
+        // та же суть сделанная по разному
+        postLikeEventPublisher.publish(LikeEvent.builder()
+                .authorLikeId(likeDto.getUserId())
+                .authorPostId(post.getAuthorId())
+                .postId(post.getId()).build());
 
         likePostPublisher.createLikeEvent(likeDto, post.getAuthorId());
 

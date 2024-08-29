@@ -29,6 +29,11 @@ public class RedisConfig {
         return new ChannelTopic(credentials.getChannels().getPost());
     }
 
+    @Bean("postLikeChannelTopic")
+    public ChannelTopic postLikeTopic() {
+        return new ChannelTopic(credentials.getChannels().getPostLike());
+    }
+
     @Bean
     ChannelTopic likePostTopic() {
         return new ChannelTopic(likePostTopic);
