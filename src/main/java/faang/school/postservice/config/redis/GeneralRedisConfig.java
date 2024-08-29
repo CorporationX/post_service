@@ -12,24 +12,25 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class GeneralRedisConfig {
 
-  @Value("${spring.data.redis.host}")
-  private String host;
-  @Value("${spring.data.redis.port}")
-  private int port;
+    @Value("${spring.data.redis.host}")
+    private String host;
 
-  @Bean
-  public JedisConnectionFactory jedisConnectionFactory() {
-    RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
-    return new JedisConnectionFactory(config);
-  }
+    @Value("${spring.data.redis.port}")
+    private int port;
 
-  @Bean
-  public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory jedisConnectionFactory) {
-    RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-    redisTemplate.setConnectionFactory(jedisConnectionFactory);
-    redisTemplate.setKeySerializer(new StringRedisSerializer());
-    redisTemplate.setValueSerializer(new StringRedisSerializer());
-    return redisTemplate;
-  }
+    @Bean
+    public JedisConnectionFactory jedisConnectionFactory() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+        return new JedisConnectionFactory(config);
+    }
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory jedisConnectionFactory) {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(jedisConnectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        return redisTemplate;
+    }
 
 }

@@ -26,7 +26,10 @@ spring:
           name: calculations_channel
         comment:
           name: comment_chanel
-
+        post_channel:
+          name: post_channel
+        like_channel:
+          name: like_channel
 server:
   port: 8081
 
