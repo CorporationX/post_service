@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentEvent {
+public class CommentEvent extends Event {
 
     private Long postId;
 

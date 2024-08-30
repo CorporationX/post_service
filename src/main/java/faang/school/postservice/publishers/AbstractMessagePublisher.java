@@ -1,7 +1,6 @@
 package faang.school.postservice.publishers;
 
 import faang.school.postservice.events.Event;
-import faang.school.postservice.publishers.pub.MessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;

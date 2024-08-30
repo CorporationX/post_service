@@ -9,6 +9,7 @@ import faang.school.postservice.exception.DataDoesNotExistException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publishers.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
-    private final PostViewEventService postViewEventService;
+    private final PostViewPublisher postViewPublisher;
 
     @Transactional(readOnly = true)
     public Post getById(long id) {
@@ -96,7 +97,7 @@ public class PostService {
     public PostDto getPost(Long postId) {
         Optional<Post> post = postRepository.findById(postId);
         if (post.isPresent()) {
-            postViewEventService.publishViewEvent(post.get());
+            postViewPublisher.publish(post.get());
             return postMapper.toDto(post.get());
         } else {
             log.error("Post with id = {} doesn't exist in database", postId);
@@ -128,7 +129,7 @@ public class PostService {
                         .map(postMapper::toDto)
                         .toList();
             }
-            sortedList.forEach(p -> postViewEventService.publishViewEvent(postMapper.toEntity(p)));
+            sortedList.forEach(p -> postViewPublisher.publish(postMapper.toEntity(p)));
             return sortedList;
         } else {
             log.info("There's no one post in database written by your publisher");

@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdatedCommentDto;
@@ -9,6 +8,7 @@ import faang.school.postservice.exception.ErrorMessage;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publishers.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,18 +25,17 @@ import java.util.List;
 public class CommentService {
 
     private final CheckUserService checkUserService;
-    private final MessagePublisherService messagePublisherService;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommentMapper commentMapper;
-    private final ObjectMapper objectMapper;
+    private final CommentEventPublisher commentEventPublisher;
 
     public CommentDto createComment(CreateCommentDto createCommentDto) {
         checkUserService.checkUserExistence(createCommentDto);
         Comment savedComment = commentMapper.toEntity(createCommentDto);
         savedComment = commentRepository.save(savedComment);
         log.info("Comment with ID = {} was created", savedComment.getId());
-        messagePublisherService.publishCommentEvent(savedComment, objectMapper);
+        commentEventPublisher.publish(savedComment);
         return commentMapper.toDto(savedComment);
     }
 

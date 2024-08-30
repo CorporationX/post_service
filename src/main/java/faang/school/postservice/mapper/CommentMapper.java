@@ -2,6 +2,7 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.events.CommentEvent;
 import faang.school.postservice.model.Comment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,4 +21,10 @@ public interface CommentMapper {
 
     @Mapping(source = "postId", target = "post.id")
     Comment toEntity(CreateCommentDto createCommentDto);
+
+    @Mapping(target = "postId", source = "comment.post.id")
+    @Mapping(target = "authorId", source = "comment.authorId")
+    @Mapping(target = "commentId", source = "comment.id")
+    @Mapping(target = "sendAt", expression = "java(java.time.LocalDateTime.now())")
+    CommentEvent toEvent(Comment comment);
 }

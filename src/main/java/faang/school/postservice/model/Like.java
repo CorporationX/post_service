@@ -9,7 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-@Component
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

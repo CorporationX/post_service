@@ -1,24 +1,38 @@
 package faang.school.postservice.mapper.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.Post.PostDto;
+import faang.school.postservice.events.PostViewEvent;
 import faang.school.postservice.model.Post;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface PostMapper {
+public abstract class PostMapper {
+    @Autowired
+    protected UserContext userContext;
     @Mapping(source = "likes", target = "likes", ignore = true)
-    Post toEntity(PostDto dto);
+    public abstract Post toEntity(PostDto dto);
 
     @Mapping(target = "likes", source = "likes", qualifiedByName = "sizeToLong")
-    PostDto toDto(Post post);
+    public abstract PostDto toDto(Post post);
+
+    @Mapping(target = "userId", expression = "java(userContext.getUserId())")
+    @Mapping(target = "postId", source = "post.id")
+    @Mapping(target = "authorId", source = "post.authorId")
+    @Mapping(target = "viewedAt", expression = "java(java.time.LocalDateTime.now())")
+    public abstract PostViewEvent toEvent(Post post);
 
     @Named("sizeToLong")
-    default Long sizeToLong(List<?> list) {
+    Long sizeToLong(List<?> list) {
         if (list == null) {
             return 0L;
         }
