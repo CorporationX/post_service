@@ -8,7 +8,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface LikeMapper {
 
-
     @Mapping(source = "post.id", target = "postId")
     @Mapping(source = "comment.id", target = "commentId")
     LikeResponseDto toResponseDto(Like like);
