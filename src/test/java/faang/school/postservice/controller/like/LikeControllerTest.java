@@ -40,8 +40,8 @@ public class LikeControllerTest {
     void testGetUsersByPostIdSuccess() throws Exception {
         Long postId = 1L;
         List<UserDto> users = List.of(
-                new UserDto(1L, "John", "john@example.com"),
-                new UserDto(2L, "Jane", "jane@example.com")
+                new UserDto(1L, "John", "john@example.com", List.of(1L)),
+                new UserDto(2L, "Jane", "jane@example.com",  List.of(2L))
         );
         when(likeService.getUsersByPostId(postId)).thenReturn(users);
 
@@ -66,8 +66,8 @@ public class LikeControllerTest {
     void testGetUsersByCommentIdSuccess() throws Exception {
         Long commentId = 1L;
         List<UserDto> users = List.of(
-                new UserDto(1L, "John", "john@example.com"),
-                new UserDto(2L, "Jane", "jane@example.com")
+                new UserDto(1L, "John", "john@example.com", List.of(1L)),
+                new UserDto(2L, "Jane", "jane@example.com", List.of(1L))
         );
         when(likeService.getUsersByCommentId(commentId)).thenReturn(users);
 
