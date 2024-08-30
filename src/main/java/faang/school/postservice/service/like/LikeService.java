@@ -27,11 +27,9 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
     private final EventPublisherService eventPublisherService;
-    private final LikeEventMapper likeEventMapper;
 
     @Value("${user.batch.size:100}")
     private int batchSize;
-    private final LikeEventPublisher likeEventPublisher;
 
     //TODO: Add return type, use mapper
     public void likePost(LikeDto likeDto) {
