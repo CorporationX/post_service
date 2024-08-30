@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class LikeEventMapperTest {
 
@@ -36,5 +37,6 @@ class LikeEventMapperTest {
         assertEquals(likeEvent.getLikeId(), result.getLikeId());
         assertEquals(likeEvent.getPostId(), result.getPostId());
         assertEquals(likeEvent.getAuthorId(), result.getAuthorId());
+        assertNotNull(result.getEventId());
     }
 }
