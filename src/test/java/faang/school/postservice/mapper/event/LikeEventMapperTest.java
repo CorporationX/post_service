@@ -38,5 +38,6 @@ class LikeEventMapperTest {
         assertEquals(likeEvent.getPostId(), result.getPostId());
         assertEquals(likeEvent.getAuthorId(), result.getAuthorId());
         assertNotNull(result.getEventId());
+        assertNotNull(result.getTimeStamp());
     }
 }
