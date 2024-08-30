@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
@@ -13,6 +14,10 @@ import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import feign.FeignException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,12 +34,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class PostService {
+
     private final PostRepository postRepository;
+    private final SpellCheckerService spellCheckerService;
     private final PostMapper postMapper;
     private final PostServiceValidator postServiceValidator;
     private final HashtagServiceClient hashtagServiceClient;
@@ -46,6 +54,16 @@ public class PostService {
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
+
+    @Async(value = "threadPool")
+    @Transactional
+    public void correctPostsContent(List<Post> postList) {
+        for (Post post : postList) {
+            Optional<String> checkedPostContent = spellCheckerService.checkMessage(post.getContent());
+            checkedPostContent.ifPresent(post::setContent);
+        }
+        postRepository.saveAll(postList);
+    }
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -108,7 +126,7 @@ public class PostService {
         elasticsearchService.removePost(postId);
         return postMapper.toDto(post);
     }
-
+  
     public PostDto getPostDtoById(Long postId) {
         return postMapper.toDto(getPostById(postId));
     }

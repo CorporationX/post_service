@@ -28,8 +28,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -37,10 +48,14 @@ public class PostServiceTest {
     private PostService postService;
 
     @Mock
-    private PostMapper postMapper;
+    private PostRepository postRepository;
 
     @Mock
-    private PostRepository postRepository;
+    private SpellCheckerService spellCheckerService;
+
+
+    @Mock
+    private PostMapper postMapper;
 
     @Mock
     private PostServiceValidator postServiceValidator;
@@ -56,6 +71,7 @@ public class PostServiceTest {
 
     @Mock
     private PostContextMapper postContextMapper;
+    private List<Post> postList;
 
     @Mock
     private PostEventPublisher postEventPublisher;
@@ -75,6 +91,20 @@ public class PostServiceTest {
 
     @BeforeEach
     public void setUp() {
+        long firstPostId = 1L;
+        long secondPostId = 2L;
+        String firstPostContent = "FirstPostContent";
+        String secondPostContent = "SecondPostContent";
+
+        postList = List.of(
+                Post.builder()
+                        .id(firstPostId)
+                        .content(firstPostContent).build(),
+                Post.builder()
+                        .id(secondPostId)
+                        .content(secondPostContent).build()
+        );
+
         postDto = new PostDto();
         post = new Post();
         Post draftPost1 = Post.builder()
@@ -164,6 +194,14 @@ public class PostServiceTest {
 
         draftPostDtos = Arrays.asList(draftPostDto1, draftPostDto2);
         publishedPostDtos = Arrays.asList(publishedPostDto1, publishedPostDto2);
+    }
+
+    @Test
+    @DisplayName("testing correctPostsContent method")
+    void testCorrectPostsContent() {
+        postService.correctPostsContent(postList);
+        verify(spellCheckerService, times(2)).checkMessage(anyString());
+        verify(postRepository, times(1)).saveAll(postList);
     }
 
     @Test
