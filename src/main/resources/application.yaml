@@ -26,7 +26,8 @@ spring:
           name: calculations_channel
         postLike: post_like_channel
         post: post_channel
-        
+        like_post_analytics: like_event
+
     elasticsearch:
       rest:
         uris: http://localhost:9200
