@@ -12,7 +12,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.messaging.publisher.CommentEventPublisher;
+import faang.school.postservice.messaging.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
