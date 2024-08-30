@@ -5,6 +5,7 @@ import faang.school.postservice.dto.like.LikeResponseDto;
 import faang.school.postservice.exception.AlreadyExistsException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -29,8 +31,8 @@ class LikeServiceTest {
     @InjectMocks
     private LikeService likeService;
 
-    @Mock
-    private LikeMapper likeMapper;
+    @Spy
+    private LikeMapperImpl likeMapper;
 
     @Mock
     private LikeRepository likeRepository;
