@@ -47,8 +47,8 @@ public class LikeServiceTest {
                 Like.builder().id(2L).userId(2L).post(post).createdAt(LocalDateTime.now()).build()
         );
         userDtos = List.of(
-                new UserDto(1L, "John", "john@example.com"),
-                new UserDto(2L, "Jane", "jane@example.com")
+                new UserDto(1L, "John", "john@example.com",List.of(1L)),
+                new UserDto(2L, "Jane", "jane@example.com", List.of(2L))
         );
         ReflectionTestUtils.setField(likeService, "batchSize", 100);
     }
