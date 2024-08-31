@@ -119,7 +119,7 @@ public class PostServerValidatorTest {
     void testPublishPostAlreadyPublished() {
         post = Post.builder().published(true).build();
 
-        assertThrows(DataValidationException.class, () -> postServiceValidator.validatePublishPost(post, postDto));
+        assertThrows(DataValidationException.class, () -> postServiceValidator.validatePublishPost(post));
     }
 
     @Test
