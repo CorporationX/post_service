@@ -13,7 +13,7 @@ public class TopicConfig {
     @Value("${spring.data.redis.channels.post_view_channel}")
     private String postViewChannelTopic;
 
-    @Value("${spring.data.redis.channels.like_post}")
+    @Value("${spring.data.redis.channels.like_topic}")
     private String likePostTopic;
 
     @Bean
