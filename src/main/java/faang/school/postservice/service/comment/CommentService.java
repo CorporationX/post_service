@@ -6,6 +6,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.messaging.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
@@ -28,6 +29,7 @@ public class CommentService {
     private final PostService postService;
     private final CommentMapper commentMapper;
     private final PostMapper postMapper;
+    private final CommentEventPublisher commentEventPublisher;
 
     public CommentDto addNewCommentInPost(CommentDto commentDto) {
         userClientValidation.checkUser(commentDto.getAuthorId());
@@ -40,6 +42,8 @@ public class CommentService {
             log.error(ExceptionMessages.FAILED_PERSISTENCE, e);
             throw new PersistenceException(ExceptionMessages.FAILED_PERSISTENCE, e);
         }
+
+        commentEventPublisher.publish(commentMapper.toEvent(comment));
         return commentMapper.toDto(comment);
     }
 
