@@ -1,10 +1,7 @@
 package faang.school.postservice.dto.post;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import faang.school.postservice.dto.resource.PostResourceDto;
+import faang.school.postservice.dto.resource.PreviewPostResourceDto;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,9 +19,8 @@ public class PostDto {
     private Long authorId;
     private Long projectId;
     @NotBlank
-    @NotEmpty
     private String content;
-    private List<PostResourceDto> resources;
+    private List<PreviewPostResourceDto> resources;
     @PositiveOrZero
     private long likesCount;
     @PositiveOrZero
