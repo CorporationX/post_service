@@ -61,8 +61,16 @@ dependencies {
      * Swagger
      */
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
-    implementation("org.springdoc:springdoc-openapi-ui:1.6.15")
-    implementation("io.springfox:springfox-boot-starter:3.0.0")
+
+    /**
+     * S3
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+
+    /**
+     * OpenCV for powerful image like object processing
+     */
+    implementation("org.bytedeco:javacv-platform:1.5.10")
 }
 
 tasks.withType<Test> {
