@@ -53,6 +53,12 @@ post:
         cron: "0 0 0 * * ?" # every midnight
   pagination:
     page-size: 1000
+  moderator:
+    count-posts-in-thread: "100"
+    scheduler:
+      cron: "0 0 0 * * ?" # every day
+      dictionary:
+        file: "classpath:moderation-dictionary.txt"
 
 user-service:
   host: localhost

@@ -27,6 +27,9 @@ public interface PostRepository extends CrudRepository<Post, Long>, JpaSpecifica
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    @Query("SELECT p FROM Post p WHERE p.verifiedDate = null AND p.deleted = false")
+    List<Post> findNotVerified();
+
     @Modifying
     @Query("UPDATE Post p SET p.published = :published, p.publishedAt = :publishedTime WHERE p.id = :postId")
     int updatePublishedStatus(@Param("postId") Long postId, @Param("publishedTime") LocalDateTime publishedTime, @Param("published") Boolean published);
