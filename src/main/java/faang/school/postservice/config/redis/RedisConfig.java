@@ -1,4 +1,4 @@
-package faang.school.postservice.redis;
+package faang.school.postservice.config.redis;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +11,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
-    @Value("${spring.data.redis.channels.like_event_channel.name}")
+    @Value("${spring.data.redis.channels.like_event_channel}")
     private String likeEventChannel;
 
     @Value("${spring.data.redis.host}")

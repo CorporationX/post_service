@@ -22,8 +22,7 @@ spring:
       port: 6379
       host: localhost
       channels:
-        like_event_channel:
-          name: like_event_channel
+        like_event_channel: like_event_channel
         calculations_channel:
           name: calculations_channel
 
