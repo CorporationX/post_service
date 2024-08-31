@@ -1,11 +1,13 @@
 package faang.school.postservice.mapper.post;
 
-import faang.school.postservice.dto.media.MediaDto;
 import faang.school.postservice.dto.resource.PostResourceDto;
+import faang.school.postservice.dto.resource.PreviewPostResourceDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import org.mapstruct.*;
+
+import java.io.InputStream;
 
 @Mapper(
         componentModel = "spring",
@@ -36,5 +38,8 @@ public interface ResourceMapper {
 
     @Mapping(target = "id", source = "resource.id")
     @Mapping(target = "name", source = "resource.name")
-    PostResourceDto toPostResourceDto(Resource resource);
+    PreviewPostResourceDto toPreviewPostResourceDto(ResourceDto resource);
+
+    @Mapping(target = "resource", source = "data")
+    PostResourceDto toPostResourceDto(Resource resource, InputStream data);
 }
