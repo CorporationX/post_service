@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
+import java.util.Optional;
 
 @FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}", path = "/api/v1/user")
 public interface UserServiceClient {

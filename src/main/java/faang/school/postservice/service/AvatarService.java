@@ -8,7 +8,6 @@ import faang.school.postservice.service.resource.ResizeService;
 import faang.school.postservice.service.s3.MinioS3Client;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +26,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -69,6 +69,8 @@ public class AvatarService {
             throw new RuntimeException(e);
         }
 
+        deleteAvatar(userId);
+
         saveLargeAndSmallFileId(userId, fileId, smallFileId);
     }
 
@@ -100,7 +102,9 @@ public class AvatarService {
     public void deleteAvatar(long userId) {
         UserProfilePicDto userProfilePicDto = userServiceClient.getAvatarKeys(userId);
 
-        userServiceClient.deleteAvatar(userId);
-        minioS3Client.deleteFIle(userProfilePicDto.getFileId(), userProfilePicDto.getSmallFileId());
+        if (!userProfilePicDto.getFileId().isEmpty()) {
+            userServiceClient.deleteAvatar(userId);
+            minioS3Client.deleteFIle(userProfilePicDto.getFileId(), userProfilePicDto.getSmallFileId());
+        }
     }
 }
