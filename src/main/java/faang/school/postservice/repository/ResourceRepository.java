@@ -21,7 +21,7 @@ public interface ResourceRepository extends JpaRepository<Resource, Long> {
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM resource WHERE id IN :ids RETURNING *", nativeQuery = true)
-    List<Resource> popAllByIds(@Param("ids") List<Long> ids);
+    List<Resource> popAllByIds(@Param("ids") Set<Long> ids);
 
     @Transactional
     @Query(value = "SELECT * FROM resource WHERE post_id = :postId", nativeQuery = true)
