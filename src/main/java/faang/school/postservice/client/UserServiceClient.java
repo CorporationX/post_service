@@ -17,9 +17,6 @@ import java.util.Optional;
 @FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}", path = "/api/v1/user")
 public interface UserServiceClient {
 
-//    @GetMapping("/users/{userId}")
-//    UserDto getUser(@PathVariable long userId);
-
     @GetMapping("/{userId}")
     UserDto getUserById(@PathVariable long userId);
 
