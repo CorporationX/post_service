@@ -111,9 +111,9 @@ post-correcter:
   language: en-US
   text-param: text
 
-  services:
-    s3:
-      endpoint: http://localhost:9000
-      accessKey: user
-      secretKey: password
-      bucketName: projectbucket
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: projectbucket

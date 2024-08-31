@@ -84,7 +84,7 @@ public class LikeService {
     @Transactional
     public LikeDto addLikeToPost(LikeDto likeDto) {
         Post post = postService.getPost(likeDto.getPostId());
-        UserDto userDto = userServiceClient.getUser(likeDto.getUserId());
+        UserDto userDto = userServiceClient.getUserById(likeDto.getUserId());
 
         Optional<Like> optionalLike = likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId());
         likeServiceValidator.checkDuplicateLike(optionalLike);
@@ -110,7 +110,7 @@ public class LikeService {
     @Transactional
     public LikeDto addLikeToComment(LikeDto likeDto) {
         Comment comment = commentService.getComment(likeDto.getCommentId());
-        UserDto userDto = userServiceClient.getUser(likeDto.getUserId());
+        UserDto userDto = userServiceClient.getUserById(likeDto.getUserId());
 
         Optional<Like> optionalLike = likeRepository.findByCommentIdAndUserId(comment.getId(), userDto.getId());
         likeServiceValidator.checkDuplicateLike(optionalLike);
