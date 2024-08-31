@@ -3,13 +3,16 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.dto.like.LikePostEvent;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.LikeEventMapper;
 import faang.school.postservice.mapper.LikeMapper;
-import faang.school.postservice.publisher.PostLikeEventPublisher;
+import faang.school.postservice.redisPublisher.PostLikeEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.redisPublisher.LikePostPublisher;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.validator.LikeServiceValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -34,8 +37,10 @@ public class LikeService {
     private final LikeServiceValidator likeServiceValidator;
     private final PostService postService;
     private final CommentService commentService;
-    private final PostLikeEventPublisher postLikeEventPublisher;
     private final LikeMapper likeMapper;
+    private final PostLikeEventPublisher postLikeEventPublisher;
+    private final LikePostPublisher likePostPublisher;
+    private final LikeEventMapper likeEventMapper;
 
     public List<UserDto> getLikesUsersByPostId(Long postId) {
 
@@ -79,7 +84,7 @@ public class LikeService {
     @Transactional
     public LikeDto addLikeToPost(LikeDto likeDto) {
         Post post = postService.getPost(likeDto.getPostId());
-        UserDto userDto = userServiceClient.getUserById(likeDto.getUserId());
+        UserDto userDto = userServiceClient.getUser(likeDto.getUserId());
 
         Optional<Like> optionalLike = likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId());
         likeServiceValidator.checkDuplicateLike(optionalLike);
@@ -87,10 +92,8 @@ public class LikeService {
 
         post.getLikes().add(like);
         likeRepository.save(like);
-        postLikeEventPublisher.publish(LikeEvent.builder()
-                .authorLikeId(likeDto.getUserId())
-                .authorPostId(post.getAuthorId())
-                .postId(post.getId()).build());
+        publishEventLikePost(likeDto, post);
+
         return likeMapper.toLikeDto(like);
     }
 
@@ -107,9 +110,9 @@ public class LikeService {
     @Transactional
     public LikeDto addLikeToComment(LikeDto likeDto) {
         Comment comment = commentService.getComment(likeDto.getCommentId());
-        UserDto user = userServiceClient.getUserById(likeDto.getUserId());
+        UserDto userDto = userServiceClient.getUser(likeDto.getUserId());
 
-        Optional<Like> optionalLike = likeRepository.findByCommentIdAndUserId(comment.getId(), user.getId());
+        Optional<Like> optionalLike = likeRepository.findByCommentIdAndUserId(comment.getId(), userDto.getId());
         likeServiceValidator.checkDuplicateLike(optionalLike);
         Like like = likeMapper.toEntity(likeDto);
 
@@ -126,5 +129,14 @@ public class LikeService {
 
         comment.getLikes().remove(like.get().getId());
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
+    }
+
+    private void publishEventLikePost(LikeDto likeDto, Post post) {
+        likePostPublisher.publish(likeEventMapper.mapLikePostEvent(likeDto, post.getAuthorId()));
+
+        postLikeEventPublisher.publish(LikeEvent.builder()
+                .authorLikeId(likeDto.getUserId())
+                .authorPostId(post.getAuthorId())
+                .postId(post.getId()).build());
     }
 }

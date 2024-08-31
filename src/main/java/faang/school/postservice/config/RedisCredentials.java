@@ -19,5 +19,7 @@ public class RedisCredentials {
         private String achievement;
         private String follower;
         private String post;
+        private String postLike;
+        private String likePostAnalytics;
     }
 }
