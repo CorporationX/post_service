@@ -72,7 +72,6 @@ public class CommentServiceTest {
                 .authorId(2L)
                 .content("UpdatedContent")
                 .build();
-
     }
 
     @Test

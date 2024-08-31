@@ -87,4 +87,34 @@ public class ResizeService {
             return (int) (maxHeightHorizontal * aspectRatio);
         }
     }
+
+    public ByteArrayOutputStream squeezeImageOrLeave(BufferedImage originalImage, int maxSize) {
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+
+        ByteArrayOutputStream resizedImage = new ByteArrayOutputStream();
+
+        if (originalWidth > maxSize || originalHeight > maxSize) {
+            try {
+                Thumbnails.of(originalImage)
+                        .size(maxSize, maxSize)
+                        .keepAspectRatio(true)
+                        .outputFormat("png")
+                        .toOutputStream(resizedImage);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try {
+                Thumbnails.of(originalImage)
+                        .scale(1)
+                        .outputFormat("png")
+                        .toOutputStream(resizedImage);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return resizedImage;
+    }
 }

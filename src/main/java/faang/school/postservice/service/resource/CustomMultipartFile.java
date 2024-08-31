@@ -1,5 +1,6 @@
 package faang.school.postservice.service.resource;
 
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.lang.Nullable;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Data
+@Builder
 @RequiredArgsConstructor
 public class CustomMultipartFile implements MultipartFile {
     private final byte[] fileContent;

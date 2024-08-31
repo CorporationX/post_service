@@ -2,7 +2,9 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserProfilePicDto;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.service.resource.CustomMultipartFile;
+import faang.school.postservice.service.resource.ResizeService;
 import faang.school.postservice.service.s3.MinioS3Client;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ import java.nio.file.Paths;
 public class AvatarService {
     private final UserServiceClient userServiceClient;
     private final MinioS3Client minioS3Client;
+    private final ResizeService resizeService;
 
     public void saveAvatar(long userId, MultipartFile file) {
         if (file.getSize() > 5 * 1024 * 1024) {
@@ -44,8 +47,8 @@ public class AvatarService {
             throw new RuntimeException(e);
         }
 
-        ByteArrayOutputStream largeOutputStream = squeezeImageOrLeave(originalImage, 1080);
-        ByteArrayOutputStream smallOutputStream = squeezeImageOrLeave(originalImage, 170);
+        ByteArrayOutputStream largeOutputStream = resizeService.squeezeImageOrLeave(originalImage, 1080);
+        ByteArrayOutputStream smallOutputStream = resizeService.squeezeImageOrLeave(originalImage, 170);
 
         byte[] largeOutputStreamByteArray = largeOutputStream.toByteArray();
         byte[] smallOutputStreamByteArray = smallOutputStream.toByteArray();
@@ -56,44 +59,17 @@ public class AvatarService {
         String fileId;
         String smallFileId;
 
+        Resource fileResource = minioS3Client.uploadFile(largeFile, String.valueOf(userId));
+        Resource smallfileResource = minioS3Client.uploadFile(smallFile, String.valueOf(userId));
+
         try {
-            fileId = minioS3Client.uploadFile(largeFile, String.valueOf(userId)).getKey();
-            smallFileId = minioS3Client.uploadFile(smallFile, String.valueOf(userId)).getKey();
+            fileId = fileResource.getKey();
+            smallFileId = smallfileResource.getKey();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         saveLargeAndSmallFileId(userId, fileId, smallFileId);
-    }
-
-    private ByteArrayOutputStream squeezeImageOrLeave(BufferedImage originalImage, int maxSize) {
-        int originalWidth = originalImage.getWidth();
-        int originalHeight = originalImage.getHeight();
-
-        ByteArrayOutputStream resizedImage = new ByteArrayOutputStream();
-
-        if (originalWidth > maxSize || originalHeight > maxSize) {
-            try {
-                Thumbnails.of(originalImage)
-                        .size(maxSize, maxSize)
-                        .keepAspectRatio(true)
-                        .outputFormat("png")
-                        .toOutputStream(resizedImage);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            try {
-                Thumbnails.of(originalImage)
-                        .scale(1)
-                        .outputFormat("png")
-                        .toOutputStream(resizedImage);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return resizedImage;
     }
 
     @Retryable(value = FeignException.FeignClientException.class, backoff = @Backoff(multiplier = 2))
