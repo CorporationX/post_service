@@ -1,5 +1,7 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
@@ -44,6 +46,12 @@ import static org.mockito.Mockito.*;
 public class PostServiceTest {
 
     @Mock
+    private UserContext userContext;
+
+    @Mock
+    private PostViewPublisher postViewPublisher;
+
+    @Mock
     private PostPublishService postPublishService;
 
     @Mock
@@ -73,7 +81,7 @@ public class PostServiceTest {
         post = Post.builder().id(1L).content("content").authorId(null).projectId(1L).build();
         postFilterRepository = List.of(authorFilterSpecification);
 
-        postService = new PostService(postRepository, postFilterRepository, postValidator, postMapper, postPublishService);
+        postService = new PostService(postRepository, postFilterRepository, postValidator, postMapper, postPublishService, postViewPublisher, userContext);
     }
 
     @Test
@@ -202,6 +210,7 @@ public class PostServiceTest {
     public void testGetByIdSuccessfully() {
         Long id = 1L;
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        doNothing().when(postViewPublisher).publish(any());
 
         PostDto actual = postService.getById(id);
 

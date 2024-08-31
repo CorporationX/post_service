@@ -22,6 +22,7 @@ spring:
       port: 6379
       host: localhost
       channels:
+        post-view: post_view_channel
         calculations_channel:
           name: calculations_channel
   task:
