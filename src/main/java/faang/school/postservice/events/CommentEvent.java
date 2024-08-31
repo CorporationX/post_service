@@ -1,4 +1,4 @@
-package faang.school.postservice.redis.event;
+package faang.school.postservice.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentEvent {
+public class CommentEvent extends Event {
 
     private Long postId;
 

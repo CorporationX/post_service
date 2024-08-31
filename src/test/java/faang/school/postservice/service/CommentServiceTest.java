@@ -9,6 +9,7 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publishers.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ public class CommentServiceTest {
     CheckUserService checkUserService;
 
     @Mock
-    MessagePublisherService messagePublisherService;
+    CommentEventPublisher commentEventPublisher;
 
     @InjectMocks
     CommentService commentService;
