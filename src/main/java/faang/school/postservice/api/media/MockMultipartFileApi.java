@@ -1,15 +1,14 @@
-package faang.school.postservice.api.impl;
+package faang.school.postservice.api.media;
 
-import faang.school.postservice.api.MultipartFileMediaApi;
 import faang.school.postservice.dto.media.MediaDto;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -19,10 +18,9 @@ import java.util.stream.StreamSupport;
  * Temporary stub to simulate media file storage
  */
 @Component
-public class MemoryMultipartFileApi implements MultipartFileMediaApi {
+public class MockMultipartFileApi implements MultipartFileMediaApi {
     private final ConcurrentMap<String, Pair<MultipartFile, MediaDto>> storage = new ConcurrentHashMap<>();
 
-    @Override
     public MediaDto save(MultipartFile media) {
         String id = generateRandomString();
         MediaDto mediaDto = createMediaDto(id, media);
@@ -31,49 +29,56 @@ public class MemoryMultipartFileApi implements MultipartFileMediaApi {
     }
 
     @Override
-    public List<MediaDto> saveAll(Iterable<MultipartFile> medias) {
-//        List<MediaDto> mediaDtos = new ArrayList<>();
-//        for (MultipartFile media : medias) {
-//            mediaDtos.add(save(media));
-//        }
+    public List<MediaDto> save(Iterable<MultipartFile> medias) {
         return StreamSupport.stream(medias.spliterator(), false)
                 .map(this::save)
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public Optional<MediaDto> update(String id, MultipartFile media) {
+    public MediaDto update(String id, MultipartFile media) {
         if (storage.containsKey(id)) {
             MediaDto mediaDto = createMediaDto(id, media);
             storage.put(id, Pair.of(media, mediaDto));
-            return Optional.of(mediaDto);
+            return mediaDto;
         }
-        return Optional.empty();
+        throw new RuntimeException("Not found record with id " + id);
     }
 
     @Override
-    public Optional<List<MediaDto>> updateAll(Iterable<Pair<String, MultipartFile>> medias) {
+    public List<MediaDto> update(Map<String, MultipartFile> medias) {
         List<MediaDto> mediaDtos = new ArrayList<>();
-        for (Pair<String, MultipartFile> pair : medias) {
-            Optional<MediaDto> updated = update(pair.getFirst(), pair.getSecond());
-            if (updated.isPresent()) {
-                mediaDtos.add(updated.get());
-            } else {
-                return Optional.empty();
-            }
+        for (Map.Entry<String, MultipartFile> pair : medias.entrySet()) {
+            MediaDto updated = update(pair.getKey(), pair.getValue());
+            mediaDtos.add(updated);
         }
-        return Optional.of(mediaDtos);
+        return mediaDtos;
     }
 
-    @Override
     public void delete(String key) {
         storage.remove(key);
     }
 
     @Override
-    public void deleteAll(Iterable<String> keys) {
+    public void delete(Set<String> keys) {
         keys.forEach(this::delete);
     }
+
+    @Override
+    public Map<String, InputStream> getInputStreams(Set<String> keys) {
+        return keys.stream()
+                .filter(storage::containsKey)
+                .collect(Collectors.toMap(
+                        key -> key,
+                        key -> {
+                            try {
+                                return storage.get(key).getFirst().getInputStream();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                ));
+    }
+
 
     private String generateRandomString() {
         return RandomStringUtils.randomAlphanumeric(10);
