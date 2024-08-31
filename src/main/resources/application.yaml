@@ -30,20 +30,21 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  aws:
+    s3:
+      endpoint: http://localhost:9000 # or 'default' , then will be use default s3 url
+      accessKey: user
+      secretKey: password
+      region: us-east-1
+
+
+
 server:
   port: 8081
 
 logging:
   level:
     root: info
-
-post:
-  publisher:
-    scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
-  ad-remover:
-    scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
 
 post-service:
   thread-pool:
@@ -52,6 +53,19 @@ post-service:
   validation-param:
     obsolescence-period-date-publication: 5 # in minute
     max-post-resource: 10
+  publisher:
+    scheduler:
+      cron: "0 0/1 * 1/1 * ?" # every minute
+  ad-remover:
+    scheduler:
+      cron: "0 0/1 * 1/1 * ?" # every minute
+
+resource-service:
+  post-resource-bucket: post-resource-bucket
+  max-width-landscape: 1080
+  max-height-landscape: 566
+  max-dimension-square: 1080
+
 
 
 user-service:
