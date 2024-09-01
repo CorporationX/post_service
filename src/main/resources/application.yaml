@@ -46,7 +46,7 @@ logging:
   level:
     root: info
 
-post-service:
+post:
   thread-pool:
     size: 10
     task-timeout: 5 # in second
@@ -60,7 +60,7 @@ post-service:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
-resource-service:
+resource:
   post-resource-bucket: post-resource-bucket
   max-width-landscape: 1080
   max-height-landscape: 566

@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ResourceServiceConfiguration {
-    @Value("${resource-service.post-resource-bucket}")
+    @Value("${resource.post-resource-bucket}")
     private String resourceBucketName;
 
     @Bean("post-resource-bucket")

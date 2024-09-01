@@ -11,10 +11,10 @@ import java.util.concurrent.Executors;
 
 @Configuration
 public class PostServiceConfiguration {
-    @Value("${post-service.thread-pool.size}")
+    @Value("${post.thread-pool.size}")
     private int threadPoolSize;
 
-    @Value("${post-service.thread-pool.task-timeout}")
+    @Value("${post.thread-pool.task-timeout}")
     private long taskTimeout;
 
     @Bean

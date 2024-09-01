@@ -6,11 +6,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ResourceProcessorConfig {
-    @Value("${resource-service.max-width-landscape}")
+    @Value("${resource.max-width-landscape}")
     private int MAX_WIDTH_LANDSCAPE;
-    @Value("${resource-service.max-height-landscape}")
+    @Value("${resource.max-height-landscape}")
     private int MAX_HEIGHT_LANDSCAPE;
-    @Value("${resource-service.max-dimension-square}")
+    @Value("${resource.max-dimension-square}")
     private int MAX_DIMENSION_SQUARE;
 
     @Bean

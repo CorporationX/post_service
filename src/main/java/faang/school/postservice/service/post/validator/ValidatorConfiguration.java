@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ValidatorConfiguration {
-    @Value("${post-service.validation-param.obsolescence-period-date-publication}")
+    @Value("${post.validation-param.obsolescence-period-date-publication}")
     private long OBSOLESCENCE_PERIOD_DATE_PUBLICATION;
 
-    @Value("${post-service.validation-param.max-post-resource}")
+    @Value("${post.validation-param.max-post-resource}")
     private long MAX_POST_RESOURCE;
 
     @Bean
