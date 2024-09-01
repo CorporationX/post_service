@@ -1,7 +1,8 @@
 package faang.school.postservice.service.post.command;
 
-import faang.school.postservice.api.MultipartFileMediaApi;
+import faang.school.postservice.api.media.MultipartFileMediaApi;
 import faang.school.postservice.dto.media.MediaDto;
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.resource.UpdatableResourceDto;
 import faang.school.postservice.mapper.post.MediaMapper;
 import faang.school.postservice.mapper.post.MediaMapperImpl;
@@ -9,7 +10,8 @@ import faang.school.postservice.mapper.post.ResourceMapper;
 import faang.school.postservice.mapper.post.ResourceMapperImpl;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.post.TestData;
+import faang.school.postservice.data.TestData;
+import faang.school.postservice.service.resource.ResourceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,12 +19,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.util.Pair;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
@@ -34,19 +32,11 @@ import static org.mockito.Mockito.*;
 public class UpdatePostResourceCommandTest {
 
     @Mock
-    private ResourceRepository resourceRepository;
-
-    @Mock
-    private MultipartFileMediaApi mediaApi;
-
-    @Spy
-    private ResourceMapper resourceMapper = new ResourceMapperImpl();
-    @Spy
-    private MediaMapper mediaMapper = new MediaMapperImpl();
-
-    private UpdatePostResourceCommand updatePostResourceCommand;
+    private ResourceService resourceService;
 
     private boolean mockWasInitialized = false;
+
+    private UpdatePostResourceCommand updatePostResourceCommand;
 
     @BeforeEach
     void setUp() {
@@ -62,10 +52,7 @@ public class UpdatePostResourceCommandTest {
         int taskTimeout = 5;
 
         updatePostResourceCommand = new UpdatePostResourceCommand(
-                resourceRepository,
-                mediaApi,
-                resourceMapper,
-                mediaMapper,
+                resourceService,
                 executor,
                 taskTimeout
         );
@@ -77,24 +64,14 @@ public class UpdatePostResourceCommandTest {
     @DisplayName("1. Test the creation of a new resource at the post")
     void testCreationNewResourceAtPost() {
 
-        when(mediaApi.saveAll(List.of(
-                        TestData.newAudioFile,
-                        TestData.newTextFile
-                )
-        )).thenReturn(List.of(
-                TestData.newAudioFileMediaDto,
-                TestData.newTextFileMediaDto
-        ));
+        when(resourceService.createResources(1L,
+                List.of(TestData.newAudioFile, TestData.newTextFile)
 
-        when(resourceRepository.saveAll(List.of(
-                        TestData.creatableNewAudioFileResource,
-                        TestData.creatableNewTextFileResource
-                )
-        )).thenReturn(List.of(
-                        TestData.savedNewAudioFileResource,
-                        TestData.savedNewTextFileResource
-                )
-        );
+        )).thenReturn(
+                List.of(
+                        TestData.savedNewAudioFileResourceDto,
+                        TestData.savedNewTextFileResourceDto
+                ));
 
         List<UpdatableResourceDto> creatable = List.of(
                 new UpdatableResourceDto(
@@ -107,11 +84,11 @@ public class UpdatePostResourceCommandTest {
                 )
         );
 
-        List<Resource> excepted = List.of(
-                TestData.savedNewAudioFileResource,
-                TestData.savedNewTextFileResource
+        List<ResourceDto> excepted = List.of(
+                TestData.savedNewAudioFileResourceDto,
+                TestData.savedNewTextFileResourceDto
         );
-        List<Resource> actual = updatePostResourceCommand.execute(
+        List<ResourceDto> actual = updatePostResourceCommand.execute(
                 TestData.EXISTENT_POST_ID, creatable
         );
 
@@ -124,78 +101,7 @@ public class UpdatePostResourceCommandTest {
     @Test
     @DisplayName("2. Test the post resource update")
     void testPostResourceUpdate() {
-        lenient().when(resourceRepository.findAllById(new HashSet<>(List.of(
-                TestData.savedAudioFileResource.getId(),
-                TestData.savedTextFileResource.getId()
-        )
-        ))).thenReturn(
-                List.of(
-                        TestData.savedAudioFileResource,
-                        TestData.savedTextFileResource
-                )
-        );
 
-        lenient().when(resourceRepository.findAllById(new HashSet<>(List.of(
-                        TestData.savedTextFileResource.getId(),
-                        TestData.savedAudioFileResource.getId()
-                ))
-        )).thenReturn(
-                List.of(
-                        TestData.savedTextFileResource,
-                        TestData.savedAudioFileResource
-                )
-        );
-
-        MediaDto updatedAudioMediaDto = new MediaDto(
-                TestData.savedAudioFileResource.getKey(),
-                TestData.newAudioFile.getName(),
-                TestData.newAudioFile.getSize(),
-                TestData.newAudioFile.getContentType()
-        );
-
-        MediaDto updatedTextMediaDto = new MediaDto(
-                TestData.savedTextFileResource.getKey(),
-                TestData.newTextFile.getName(),
-                TestData.newTextFile.getSize(),
-                TestData.newTextFile.getContentType()
-        );
-
-        when(mediaApi.updateAll(
-                List.of(
-                        Pair.of(
-                                TestData.savedAudioFileResource.getKey(),
-                                TestData.newAudioFile
-                        ),
-                        Pair.of(
-                                TestData.savedTextFileResource.getKey(),
-                                TestData.newTextFile
-                        )
-                )
-        )).thenReturn(Optional.of(List.of(
-                        updatedAudioMediaDto,
-                        updatedTextMediaDto
-                ))
-        );
-
-        Resource updatedAudioResource = TestData.savedAudioFileResource.toBuilder()
-                .size(updatedAudioMediaDto.getSize())
-                .name(updatedAudioMediaDto.getName())
-                .type(updatedAudioMediaDto.getType())
-                .build();
-
-        Resource updatedTextResource = TestData.savedTextFileResource.toBuilder()
-                .size(updatedTextMediaDto.getSize())
-                .name(updatedTextMediaDto.getName())
-                .type(updatedTextMediaDto.getType())
-                .build();
-
-        when(resourceRepository.saveAll(List.of(
-                updatedAudioResource,
-                updatedTextResource
-        ))).thenReturn(List.of(
-                updatedAudioResource,
-                updatedTextResource
-        ));
 
         List<UpdatableResourceDto> updatable = List.of(
                 new UpdatableResourceDto(
@@ -208,11 +114,21 @@ public class UpdatePostResourceCommandTest {
                 )
         );
 
-        List<Resource> excepted = List.of(
-                updatedAudioResource,
-                updatedTextResource
+        when(resourceService.updateResources(Map.of(
+                TestData.savedAudioFileResource.getId(), TestData.newAudioFile,
+                TestData.savedTextFileResource.getId(), TestData.newTextFile
+        ))).thenReturn(
+                List.of(
+                        TestData.savedAudioFileResourceDto,
+                        TestData.savedTextFileResourceDto
+                )
         );
-        List<Resource> actual = updatePostResourceCommand.execute(
+
+        List<ResourceDto> excepted = List.of(
+                TestData.savedAudioFileResourceDto,
+                TestData.savedTextFileResourceDto
+        );
+        List<ResourceDto> actual = updatePostResourceCommand.execute(
                 TestData.EXISTENT_POST_ID,
                 updatable
         );
@@ -226,15 +142,6 @@ public class UpdatePostResourceCommandTest {
     @Test
     @DisplayName("3. Test delete post resources")
     void testDeletePostResources() {
-        lenient().when(resourceRepository.popAllByIds(List.of(
-                TestData.savedAudioFileResource.getId(),
-                TestData.savedTextFileResource.getId()
-        ))).thenReturn(
-                List.of(
-                        TestData.savedAudioFileResource,
-                        TestData.savedTextFileResource
-                )
-        );
 
         List<UpdatableResourceDto> updatable = List.of(
                 new UpdatableResourceDto(
@@ -249,10 +156,10 @@ public class UpdatePostResourceCommandTest {
 
         updatePostResourceCommand.execute(1L, updatable);
 
-        verify(mediaApi, times(1)).deleteAll(
-                List.of(
-                        TestData.savedAudioFileResource.getKey(),
-                        TestData.savedTextFileResource.getKey()
+        verify(resourceService, times(1)).deleteResources(
+                Set.of(
+                        TestData.savedAudioFileResource.getId(),
+                        TestData.savedTextFileResource.getId()
                 )
         );
     }
@@ -260,100 +167,6 @@ public class UpdatePostResourceCommandTest {
     @Test
     @DisplayName("4. Test complex updating resources of different types")
     void testUpdatingResourcesOfDifferentTypes() {
-
-        when(mediaApi.saveAll(
-                List.of(TestData.newVideFile)
-        )).thenReturn(
-                List.of(TestData.newVideFileMediaDto)
-        );
-
-        when(resourceRepository.saveAll(
-                List.of(TestData.creatableNewVideResource)
-        )).thenReturn(
-                List.of(TestData.savedNewVideoResource)
-        );
-
-        lenient().when(resourceRepository.findAllById(new HashSet<>(List.of(
-                TestData.savedAudioFileResource.getId(),
-                TestData.savedTextFileResource.getId()
-        )
-        ))).thenReturn(
-                List.of(
-                        TestData.savedAudioFileResource,
-                        TestData.savedTextFileResource
-                )
-        );
-
-        lenient().when(resourceRepository.findAllById(new HashSet<>(List.of(
-                        TestData.savedTextFileResource.getId(),
-                        TestData.savedAudioFileResource.getId()
-                ))
-        )).thenReturn(
-                List.of(
-                        TestData.savedTextFileResource,
-                        TestData.savedAudioFileResource
-                )
-        );
-
-        MediaDto updatedAudioMediaDto = new MediaDto(
-                TestData.savedAudioFileResource.getKey(),
-                TestData.newAudioFile.getName(),
-                TestData.newAudioFile.getSize(),
-                TestData.newAudioFile.getContentType()
-        );
-
-        MediaDto updatedTextMediaDto = new MediaDto(
-                TestData.savedTextFileResource.getKey(),
-                TestData.newTextFile.getName(),
-                TestData.newTextFile.getSize(),
-                TestData.newTextFile.getContentType()
-        );
-
-        when(mediaApi.updateAll(
-                List.of(
-                        Pair.of(
-                                TestData.savedAudioFileResource.getKey(),
-                                TestData.newAudioFile
-                        ),
-                        Pair.of(
-                                TestData.savedTextFileResource.getKey(),
-                                TestData.newTextFile
-                        )
-                )
-        )).thenReturn(Optional.of(List.of(
-                        updatedAudioMediaDto,
-                        updatedTextMediaDto
-                ))
-        );
-
-        Resource updatedAudioResource = TestData.savedAudioFileResource.toBuilder()
-                .size(updatedAudioMediaDto.getSize())
-                .name(updatedAudioMediaDto.getName())
-                .type(updatedAudioMediaDto.getType())
-                .build();
-
-        Resource updatedTextResource = TestData.savedTextFileResource.toBuilder()
-                .size(updatedTextMediaDto.getSize())
-                .name(updatedTextMediaDto.getName())
-                .type(updatedTextMediaDto.getType())
-                .build();
-
-        when(resourceRepository.saveAll(List.of(
-                updatedAudioResource,
-                updatedTextResource
-        ))).thenReturn(List.of(
-                updatedAudioResource,
-                updatedTextResource
-        ));
-
-        lenient().when(resourceRepository.popAllByIds(List.of(
-                TestData.savedImageFileResource.getId()
-        ))).thenReturn(
-                List.of(
-                        TestData.savedImageFileResource
-                )
-        );
-
 
         List<UpdatableResourceDto> updatable = List.of(
                 new UpdatableResourceDto(
@@ -374,26 +187,47 @@ public class UpdatePostResourceCommandTest {
                 )
         );
 
-        List<Resource> excepted = Stream.of(
-                TestData.savedNewVideoResource,
-                TestData.savedNewAudioFileResource,
-                TestData.savedNewTextFileResource
-        ).sorted(Comparator.comparing(Resource::getId)).toList();
+        when(resourceService.createResources(
+                TestData.EXISTENT_POST_ID,
+                List.of(TestData.newVideFile)
+        )).thenReturn(
+                List.of(TestData.savedNewVideoResourceDto)
+        );
 
-        List<Resource> actual = updatePostResourceCommand.execute(1L, updatable).stream()
-                .sorted(Comparator.comparing(Resource::getId))
+        when(resourceService.updateResources(
+                Map.of(
+                        TestData.savedAudioFileResource.getId(), TestData.newAudioFile,
+                        TestData.savedNewTextFileResource.getId(), TestData.newTextFile
+                )
+        )).thenReturn(
+                List.of(
+                        TestData.savedNewAudioFileResourceDto,
+                        TestData.savedNewTextFileResourceDto
+                )
+        );
+
+        doNothing().when(resourceService).deleteResources(
+                Set.of(TestData.savedImageFileResource.getId())
+        );
+
+        List<ResourceDto> excepted = Stream.of(
+                TestData.savedNewVideoResourceDto,
+                TestData.savedNewAudioFileResourceDto,
+                TestData.savedNewTextFileResourceDto
+        ).sorted(Comparator.comparing(ResourceDto::getId)).toList();
+
+        List<ResourceDto> actual = updatePostResourceCommand.execute(TestData.EXISTENT_POST_ID, updatable).stream()
+                .sorted(Comparator.comparing(ResourceDto::getId))
                 .toList();
+
+        verify(resourceService, times(1)).deleteResources(
+                Set.of(TestData.savedImageFileResource.getId())
+        );
 
         assertEquals(
                 excepted,
                 actual
         );
 
-
-        verify(mediaApi, times(1)).deleteAll(
-                List.of(
-                        TestData.savedImageFileResource.getKey()
-                )
-        );
     }
 }
