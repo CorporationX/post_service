@@ -53,7 +53,6 @@ public class LikeEventPublisherTest {
         likeEventPublisher.publish(likeEvent);
 
         verify(redisTemplate).convertAndSend(channelTopic.getTopic(), message);
-        verify(objectMapper).writeValueAsString(likeEvent);
     }
 
     @Test

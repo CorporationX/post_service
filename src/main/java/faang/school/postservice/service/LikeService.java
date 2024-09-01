@@ -2,6 +2,8 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.redisEvent.LikeEvent;
+import faang.school.postservice.mapper.LikeEventMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -25,6 +27,7 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final LikeMapper mapper;
     private final LikeEventPublisher likeEventPublisher;
+    private final LikeEventMapper likeEventMapper;
 
     public LikeDto addPostLike(Long postId, LikeDto dto) {
         Post post = validateUserAndGetPost(postId, dto);
@@ -33,7 +36,8 @@ public class LikeService {
         }
         Like like = mapper.toEntity(dto);
         like.setPost(post);
-        likeEventPublisher.validator(dto , postId);
+        LikeEvent publisherEvent = conerterLikeEvent(dto , postId);
+        likeEventPublisher.publish(publisherEvent);
         return mapper.toDto(likeRepository.save(like));
     }
 
@@ -90,5 +94,12 @@ public class LikeService {
 
     private boolean isPostLikePresent(Post post, LikeDto dto) {
         return post.getLikes().stream().anyMatch(like -> like.getUserId().equals(dto.getUserId()));
+    }
+
+    private LikeEvent conerterLikeEvent(LikeDto likeDto, Long postId) {
+        Post post = getPost(postId);
+        LikeEvent likeEvent = likeEventMapper.toEntity(likeDto);
+        likeEvent.setAuthorId(post.getAuthorId());
+        return likeEvent;
     }
 }
