@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class LikeDto {
 
-    @NotNull(message = "Id must be provided", groups = {LikeToPost.class, LikeToComment.class})
+//    @NotNull(message = "Id must be provided", groups = {LikeToPost.class, LikeToComment.class})
     private Long id;
 
     @Min(value = 0, message = "User ID must be positive", groups = {LikeToPost.class, LikeToComment.class})
