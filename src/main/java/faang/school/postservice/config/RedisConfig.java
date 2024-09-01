@@ -1,5 +1,6 @@
 package faang.school.postservice.config;
 
+import lombok.RequiredArgsConstructor;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.publisher.MessagePublisher;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
+@RequiredArgsConstructor
 public class RedisConfig {
     @Value("${spring.data.redis.host}")
     private String host;
@@ -20,6 +22,23 @@ public class RedisConfig {
     private int port;
     @Value("${spring.data.redis.topic.likeChannel}")
     private String likeChannel;
+
+    private final RedisCredentials credentials;
+
+    @Bean("postChannelTopic")
+    public ChannelTopic postChannelTopic() {
+        return new ChannelTopic(credentials.getChannels().getPost());
+    }
+
+    @Bean("postLikeChannelTopic")
+    public ChannelTopic postLikeTopic() {
+        return new ChannelTopic(credentials.getChannels().getPostLike());
+    }
+
+    @Bean("likePostChannelTopicAnalytics")
+    public ChannelTopic likePostTopic() {
+        return new ChannelTopic(credentials.getChannels().getLikePostAnalytics());
+    }
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {

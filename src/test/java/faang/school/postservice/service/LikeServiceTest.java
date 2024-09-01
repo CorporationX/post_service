@@ -2,11 +2,16 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.dto.like.LikePostEvent;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.LikeEventMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redisPublisher.LikePostPublisher;
+import faang.school.postservice.redisPublisher.PostLikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
 import org.junit.jupiter.api.Assertions;
@@ -24,20 +29,16 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
 
     public static int BATCH_SIZE = 100;
 
-
     @Mock
     private LikeRepository likeRepository;
-
     @Mock
     private UserServiceClient userServiceClient;
-
     @Mock
     private LikeServiceValidator likeServiceValidator;
     @Mock
@@ -46,6 +47,12 @@ public class LikeServiceTest {
     private CommentService commentService;
     @Mock
     private LikeMapper likeMapper;
+    @Mock
+    private LikePostPublisher likePostPublisher;
+    @Mock
+    private PostLikeEventPublisher postLikeEventPublisher;
+    @Mock
+    private LikeEventMapper likeEventMapper;
 
     @InjectMocks
     private LikeService likeService;
@@ -99,6 +106,7 @@ public class LikeServiceTest {
 
         post = Post.builder()
                 .id(1L)
+                .authorId(2L)
                 .likes(new ArrayList<>(Arrays.asList(new Like(), new Like())))
                 .build();
 
@@ -153,7 +161,9 @@ public class LikeServiceTest {
     @DisplayName("Когда метод по добавлению лайка к посту отработал")
     @Test
     public void testAddLikeToPostWhenValid() {
+        UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
         Like like = new Like();
+        post.setAuthorId(1L);
 
         when(postService.getPost(likeDtoPost.getPostId())).thenReturn(post);
         when(userServiceClient.getUser(likeDtoPost.getUserId())).thenReturn(userDto);
@@ -187,6 +197,7 @@ public class LikeServiceTest {
     @Test
     public void testAddLikeToCommentWhenValid() {
         Like like = new Like();
+        UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
 
         when(commentService.getComment(likeDtoComment.getCommentId())).thenReturn(comment);
         when(userServiceClient.getUser(likeDtoComment.getUserId())).thenReturn(userDto);

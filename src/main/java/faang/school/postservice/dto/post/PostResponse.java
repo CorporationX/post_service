@@ -1,16 +1,16 @@
-package faang.school.postservice.dto.like;
+package faang.school.postservice.dto.post;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class LikeEvent {
-    private long postId;
-    private long authorPostId;
-    private long authorLikeId;
+public class PostResponse {
+    private List<PostDto> posts;
 }
