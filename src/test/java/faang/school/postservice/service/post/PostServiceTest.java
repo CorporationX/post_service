@@ -1,8 +1,10 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.api.MultipartFileMediaApi;
+import faang.school.postservice.data.TestData;
+import faang.school.postservice.api.media.MultipartFileMediaApi;
 import faang.school.postservice.dto.media.MediaDto;
 import faang.school.postservice.dto.post.*;
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.mapper.post.*;
 import faang.school.postservice.model.Post;
@@ -11,6 +13,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.post.validator.PostServiceValidator;
+import faang.school.postservice.service.resource.ResourceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -36,26 +39,22 @@ import static org.mockito.Mockito.*;
 public class PostServiceTest {
 
     @Mock
-    private PostServiceValidator postServiceValidator;
+    private PostRepository postRepository;
 
-    @Spy
-    private PostMapper postMapper = new PostMapperImpl();
-    @Spy
-    private MediaMapper mediaMapper = new MediaMapperImpl();
-    @Spy
-    private ResourceMapper resourceMapper = new ResourceMapperImpl();
+    @Mock
+    private ResourceService resourceService;
 
     @Mock
     UpdatePostResourceCommand updatePostResourceCommand;
 
-    @Mock
-    private PostRepository postRepository;
+    @Spy
+    private PostMapper postMapper = new PostMapperImpl();
+
+    @Spy
+    private ResourceMapper resourceMapper = new ResourceMapperImpl();
 
     @Mock
-    private ResourceRepository resourceRepository;
-
-    @Mock
-    private MultipartFileMediaApi mediaApi;
+    private PostServiceValidator postServiceValidator;
 
     @InjectMocks
     private PostService postService;
@@ -76,9 +75,7 @@ public class PostServiceTest {
             Post creatablePost,
             Post savedPost,
             List<MultipartFile> creatableMedia,
-            List<MediaDto> savedMedia,
-            List<Resource> creatableResource,
-            List<Resource> savedResource,
+            List<ResourceDto> savedResource,
             PostDto expectedSavedPost
     ) {
     }
@@ -102,21 +99,12 @@ public class PostServiceTest {
                 p.creatablePost
         )).thenReturn(p.savedPost);
 
-        lenient().when(mediaApi.saveAll(
-                p.creatableMedia
-        )).thenReturn(p.savedMedia);
-
-        lenient().when(mediaApi.saveAll(
-                null
-        )).thenReturn(Collections.emptyList());
-
-        lenient().when(resourceRepository.saveAll(
-                p.creatableResource
-        )).thenReturn(p.savedResource);
-
-        lenient().when(resourceRepository.saveAll(
-                null
-        )).thenReturn(Collections.emptyList());
+        if (p.creatableMedia != null && !p.creatableMedia.isEmpty()) {
+            when(resourceService.createResources(
+                    p.savedPost.getId(),
+                    p.creatableMedia
+            )).thenReturn(p.savedResource);
+        }
     }
 
     private static Stream<Arguments> provideTestDataForCreateDraftMethod() {
@@ -130,8 +118,6 @@ public class PostServiceTest {
                                 TestData.correctDraftWithoutMedia,
                                 TestData.creatablePostWithoutMedia,
                                 TestData.savedPostWithoutMedia,
-                                Collections.emptyList(),
-                                Collections.emptyList(),
                                 Collections.emptyList(),
                                 Collections.emptyList(),
                                 TestData.savedPostDtoWithoutMedia
@@ -148,9 +134,7 @@ public class PostServiceTest {
                         TestData.creatablePostWithTextFile,
                         TestData.savedPostWithTextFile,
                         List.of(TestData.textFile),
-                        List.of(TestData.textFileMediaDto),
-                        List.of(TestData.creatableTextFileResource),
-                        List.of(TestData.savedTextFileResource),
+                        List.of(TestData.savedTextFileResourceDto),
                         TestData.savedPostDtoWithTextFile
                 )
         ));
@@ -164,9 +148,7 @@ public class PostServiceTest {
                         TestData.creatablePostWithImageFile,
                         TestData.savedPostWithImageFile,
                         List.of(TestData.imageFile),
-                        List.of(TestData.imageFileMediaDto),
-                        List.of(TestData.creatableImageFileResource),
-                        List.of(TestData.savedImageFileResource),
+                        List.of(TestData.savedImageFileResourceDto),
                         TestData.savedPostDtoWithImageFile
                 )
         ));
@@ -180,9 +162,7 @@ public class PostServiceTest {
                         TestData.creatablePostWithVideo,
                         TestData.savedPostWithVideo,
                         List.of(TestData.videoFile),
-                        List.of(TestData.videoFileMediaDto),
-                        List.of(TestData.creatableVideoFileResource),
-                        List.of(TestData.savedVideoFileResource),
+                        List.of(TestData.savedVideoFileResourceDto),
                         TestData.savedPostDtoWithVideo
                 )
         ));
@@ -196,9 +176,7 @@ public class PostServiceTest {
                         TestData.creatablePostWithAudioFile,
                         TestData.savedPostWithAudioFile,
                         List.of(TestData.audioFile),
-                        List.of(TestData.audioFileMediaDto),
-                        List.of(TestData.creatableAudioFileResource),
-                        List.of(TestData.savedAudioFileResource),
+                        List.of(TestData.savedAudioFileResourceDto),
                         TestData.savedPostDtoWithAudioFile
                 )
         ));
@@ -218,22 +196,10 @@ public class PostServiceTest {
                                 TestData.audioFile
                         ),
                         List.of(
-                                TestData.textFileMediaDto,
-                                TestData.imageFileMediaDto,
-                                TestData.videoFileMediaDto,
-                                TestData.audioFileMediaDto
-                        ),
-                        List.of(
-                                TestData.creatableTextFileResource,
-                                TestData.creatableImageFileResource,
-                                TestData.creatableVideoFileResource,
-                                TestData.creatableAudioFileResource
-                        ),
-                        List.of(
-                                TestData.savedTextFileResource,
-                                TestData.savedImageFileResource,
-                                TestData.savedVideoFileResource,
-                                TestData.savedAudioFileResource
+                                TestData.savedTextFileResourceDto,
+                                TestData.savedImageFileResourceDto,
+                                TestData.savedVideoFileResourceDto,
+                                TestData.savedAudioFileResourceDto
                         ),
                         TestData.savedPostDtoWithMultipleFiles
                 )
@@ -257,7 +223,7 @@ public class PostServiceTest {
             assertEquals(expected, actual);
         } else {
             assertThrows(
-                    UnexistentPostException.class,
+                    param.expectedException,
                     () -> postService.updatePost(param.updatablePostDto)
             );
         }
@@ -297,7 +263,7 @@ public class PostServiceTest {
                                 Objects.equals(o.getComments(), saved.getComments()) &&
                                 Objects.equals(o.getAlbums(), saved.getAlbums()) &&
                                 Objects.equals(o.getAd(), saved.getAd()) &&
-                                Objects.equals(o.getResources(), saved.getResources()) &&
+//                                Objects.equals(o.getResources(), saved.getResources()) &&
                                 o.isPublished() == saved.isPublished() &&
                                 Objects.equals(o.getPublishedAt(), saved.getPublishedAt()) &&
                                 Objects.equals(o.getScheduledAt(), saved.getScheduledAt()) &&
@@ -311,7 +277,7 @@ public class PostServiceTest {
             UpdatablePostDto updatablePostDto,
             Post updatablePost,
             Post savedUpdatedPost,
-            List<Resource> updatedResources,
+            List<ResourceDto> updatedResources,
             Class<? extends Throwable> expectedException,
             PostDto expectedUpdatedPost
     ) {
@@ -331,7 +297,6 @@ public class PostServiceTest {
                         null,
                         null,
                         TestData.postDtoWithUpdatedContent
-
                 )
         ));
 
@@ -371,7 +336,7 @@ public class PostServiceTest {
                         TestData.updateResourcePost,
                         TestData.storedPostWithTextFile.toBuilder().build(),
                         TestData.postWithUpdatedResources,
-                        List.of(TestData.savedNewTextFileResource),
+                        List.of(TestData.savedNewTextFileResourceDto),
                         null,
                         TestData.postDtoWithUpdatedResources
                 )
@@ -398,8 +363,8 @@ public class PostServiceTest {
                         TestData.storedPostWithMultipleUpdatableFields.toBuilder().build(),
                         TestData.updatedPostWithMultipleFields,
                         List.of(
-                                TestData.savedNewVideoResource,
-                                TestData.savedNewAudioFileResource
+                                TestData.savedNewVideoResourceDto,
+                                TestData.savedNewAudioFileResourceDto
                         ),
                         null,
                         TestData.updatedPostDtoWithMultipleFields

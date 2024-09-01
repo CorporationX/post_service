@@ -1,9 +1,8 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.api.MultipartFileMediaApi;
-import faang.school.postservice.dto.media.MediaDto;
 import faang.school.postservice.dto.post.GetPostsDto;
 import faang.school.postservice.dto.post.UpdatablePostDto;
+import faang.school.postservice.dto.resource.PreviewPostResourceDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.post.DraftPostDto;
 import faang.school.postservice.dto.post.PostDto;
@@ -20,6 +19,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.post.validator.PostServiceValidator;
+import faang.school.postservice.service.resource.ResourceService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
@@ -35,15 +37,13 @@ import java.util.*;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final ResourceRepository resourceRepository;
 
-    private final MultipartFileMediaApi mediaApi;
+    private final ResourceService resourceService;
 
     private final UpdatePostResourceCommand updatePostResource;
 
     private final PostMapper postMapper;
     private final ResourceMapper resourceMapper;
-    private final MediaMapper mediaMapper;
 
     private final PostServiceValidator validator;
 
@@ -57,25 +57,19 @@ public class PostService {
 
         Post savedPost = postRepository.save(post);
 
-        List<MediaDto> savedMedia = mediaApi.saveAll(draft.getMedia());
+        List<ResourceDto> savedResources = resourceService.createResources(
+                savedPost.getId(), draft.getResource()
+        );
 
-        List<Resource> creatableResource = savedMedia.stream()
-                .map(m -> {
-                    ResourceDto dto = mediaMapper.toResourceDto(m);
-                    return resourceMapper.toEntity(savedPost.getId(), dto);
-                })
+        PostDto savedPostDto = postMapper.toDto(savedPost);
+
+        List<PreviewPostResourceDto> resourcePreviews = savedResources.stream()
+                .map(resourceMapper::toPreviewPostResourceDto)
                 .toList();
 
-        List<Resource> savedResources;
-        if (! creatableResource.isEmpty()) {
-            savedResources = resourceRepository.saveAll(creatableResource);
-        } else {
-            savedResources = Collections.emptyList();
-        }
+        savedPostDto.setResources(resourcePreviews);
 
-        savedPost.setResources(savedResources);
-
-        return postMapper.toDto(savedPost);
+        return savedPostDto;
     }
 
     @Transactional
@@ -128,11 +122,10 @@ public class PostService {
         boolean areResourceUpdated = resource != null && !resource.isEmpty();
 
         if (areResourceUpdated) {
-            List<Resource> updatedResource = updatePostResource.execute(
+            updatePostResource.execute(
                     updatablePost.getPostId(),
                     resource
             );
-            post.setResources(updatedResource);
         }
 
         post.setUpdatedAt(LocalDateTime.now());
@@ -199,60 +192,52 @@ public class PostService {
 
     private List<PostDto> findAllPublishedAuthorPosts(long authorId) {
 
-        List<Post> authorPosts = postRepository.findByAuthorId(authorId);
-
-        List<PostDto> postDtos = authorPosts.stream()
-                .filter(p -> !p.isDeleted() && p.isPublished())
-                .sorted(
-                        Comparator.comparing(Post::getCreatedAt).reversed()
-                )
-                .map(postMapper::toDto)
-                .toList();
-
-        return postDtos;
+        return sortAndFilterPosts(
+                () -> postRepository.findByAuthorId(authorId),
+                (var p) -> !p.isDeleted() && p.isPublished(),
+                Comparator.comparing(Post::getCreatedAt).reversed()
+        );
     }
 
     private List<PostDto> findAllPublishedProjectPosts(long projectId) {
 
-        List<Post> authorPosts = postRepository.findByProjectId(projectId);
-
-        List<PostDto> postDtos = authorPosts.stream()
-                .filter(p -> !p.isDeleted() && p.isPublished())
-                .sorted(
-                        Comparator.comparing(Post::getCreatedAt).reversed()
-                )
-                .map(postMapper::toDto)
-                .toList();
-
-        return postDtos;
+        return sortAndFilterPosts(
+                () -> postRepository.findByProjectId(projectId),
+                (var p) -> !p.isDeleted() && p.isPublished(),
+                Comparator.comparing(Post::getCreatedAt).reversed()
+        );
     }
 
     private List<PostDto> findAllAuthorDrafts(long authorId) {
-        List<Post> authorPosts = postRepository.findByAuthorId(authorId);
 
-        List<PostDto> postDtos = authorPosts.stream()
-                .filter(p -> !p.isDeleted() && !p.isPublished())
-                .sorted(
-                        Comparator.comparing(Post::getCreatedAt).reversed()
-                )
-                .map(postMapper::toDto)
-                .toList();
-
-        return postDtos;
+        return sortAndFilterPosts(
+                () -> postRepository.findByAuthorId(authorId),
+                (var p) -> !p.isDeleted() && !p.isPublished(),
+                Comparator.comparing(Post::getCreatedAt).reversed()
+        );
     }
 
     private List<PostDto> findAllProjectDrafts(long projectId) {
 
-        List<Post> authorPosts = postRepository.findByProjectId(projectId);
+        return sortAndFilterPosts(
+                () -> postRepository.findByProjectId(projectId),
+                (var p) -> !p.isDeleted() && !p.isPublished(),
+                Comparator.comparing(Post::getCreatedAt).reversed()
+        );
+    }
 
-        List<PostDto> postDtos = authorPosts.stream()
-                .filter(p -> !p.isDeleted() && !p.isPublished())
-                .sorted(
-                        Comparator.comparing(Post::getCreatedAt).reversed()
-                )
+    private List<PostDto> sortAndFilterPosts(
+            Supplier<List<Post>> postProvider,
+            Predicate<Post> filter,
+            Comparator<Post> comparator
+    ) {
+        var posts = postProvider.get();
+
+        return posts.stream()
+                .filter(filter)
+                .sorted(comparator)
                 .map(postMapper::toDto)
                 .toList();
 
-        return postDtos;
     }
 }
