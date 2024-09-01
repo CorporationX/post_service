@@ -2,14 +2,12 @@ package faang.school.postservice.mapper.post;
 
 import faang.school.postservice.dto.post.DraftPostDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.resource.PostResourceDto;
-import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.dto.resource.PreviewPostResourceDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import org.mapstruct.*;
-import org.mapstruct.factory.Mappers;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +40,7 @@ public interface PostMapper {
     PostDto toDto(Post post);
 
     @Named("mapResources")
-    default List<PostResourceDto> mapResources(List<Resource> resources) {
+    default List<PreviewPostResourceDto> mapResources(List<Resource> resources) {
 
         if (resources == null) {
             return Collections.emptyList();
@@ -50,7 +48,7 @@ public interface PostMapper {
 
         return resources.stream()
                 .map(
-                        r -> new PostResourceDto(
+                        r -> new PreviewPostResourceDto(
                                 r.getId(),
                                 r.getName()
                         )
@@ -83,11 +81,11 @@ public interface PostMapper {
     @Mapping(source = "postDto.publishedAt", target = "publishedAt")
     @Mapping(source = "postDto.createdAt", target = "createdAt")
     @Mapping(source = "postDto.updatedAt", target = "updatedAt")
-    @Mapping(source = "postDto.resources", target = "resources", qualifiedByName = "mapPostResourceDto")
+    @Mapping(source = "postDto.resources", target = "resources", qualifiedByName = "mapPreviewPostResourceDto")
     Post toEntity(PostDto postDto);
 
-    @Named("mapPostResourceDto")
-    default List<Resource> mapPostResourceDto(List<PostResourceDto> resourceDtos) {
+    @Named("mapPreviewPostResourceDto")
+    default List<Resource> mapPreviewPostResourceDto(List<PreviewPostResourceDto> resourceDtos) {
         if (resourceDtos == null) {
             return null;
         }
