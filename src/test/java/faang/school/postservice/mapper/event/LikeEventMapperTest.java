@@ -24,7 +24,7 @@ class LikeEventMapperTest {
                 .build();
 
         likeDto = LikeDto.builder()
-                .id(1)
+                .id(1L)
                 .postId(1L)
                 .userId(1L)
                 .build();

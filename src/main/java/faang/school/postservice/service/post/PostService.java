@@ -1,5 +1,7 @@
 package faang.school.postservice.service.post;
 
+import static faang.school.postservice.exception.ExceptionMessages.POST_NOT_FOUND;
+
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
@@ -7,15 +9,18 @@ import faang.school.postservice.messaging.publisher.post.PostEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Predicate;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -131,5 +136,14 @@ public class PostService {
                 .sorted(comparator)
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Post getPost(long postId) {
+        return postRepository.findById(postId)
+            .orElseThrow(() -> {
+                log.error(POST_NOT_FOUND);
+                return new NoSuchElementException(POST_NOT_FOUND);
+            });
     }
 }
