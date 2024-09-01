@@ -15,6 +15,7 @@ import faang.school.postservice.service.publisher.LikeEventPublisher;
 import faang.school.postservice.validator.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,8 @@ public class LikeService {
     private final LikeValidator likeValidator;
     private final UserServiceClient userServiceClient;
     private final LikeEventPublisher eventPublisher;
-    private static final int USER_BATCH_SIZE = 100;
+    @Value("${like.userBatchSize}")
+    private int userBatchSize;
   
     public void likePost(LikeDto likeDto) {
         likeValidator.validateUser(likeDto.getUserId());
@@ -119,8 +121,8 @@ public class LikeService {
 
     private List<UserDto> getUsersFromUserService(List<Long> userIds) {
         List<UserDto> users = new ArrayList<>();
-        for (int i = 0; i < userIds.size(); i += USER_BATCH_SIZE) {
-            int bound = Math.min(i + USER_BATCH_SIZE, userIds.size());
+        for (int i = 0; i < userIds.size(); i += userBatchSize) {
+            int bound = Math.min(i + userBatchSize, userIds.size());
             List<UserDto> batchOfUsers = userServiceClient.getUsersByIds(userIds.subList(i, bound));
             users.addAll(batchOfUsers);
         }
