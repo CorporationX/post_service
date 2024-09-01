@@ -96,10 +96,12 @@ tasks.jacocoTestReport {
     }
     classDirectories.setFrom(
         fileTree(project.buildDir) {
-            include("**/post_service/service/**",
+            include(
+                "**/post_service/service/**",
                 "**/post_service/validator/**",
                 "**/post_service/filter/**",
-                "**/post_service/controller/**")
+                "**/post_service/controller/**"
+            )
         }
     )
 }
