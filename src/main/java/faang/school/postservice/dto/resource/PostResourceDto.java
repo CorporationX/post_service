@@ -10,9 +10,9 @@ import java.io.InputStream;
 @RequiredArgsConstructor
 @Builder(toBuilder = true)
 public class PostResourceDto {
-    final Long id;
-    final String name;
-    final String type;
-    final long size;
-    final InputStream resource;
+    private final Long id;
+    private final String name;
+    private final String type;
+    private final long size;
+    private final InputStream resource;
 }

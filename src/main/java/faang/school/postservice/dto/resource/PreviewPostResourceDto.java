@@ -8,6 +8,6 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class PreviewPostResourceDto {
-    private Long id;
-    private String name;
+    private final Long id;
+    private final String name;
 }

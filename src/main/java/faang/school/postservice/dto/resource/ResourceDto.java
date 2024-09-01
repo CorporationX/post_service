@@ -6,9 +6,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class ResourceDto {
-    Long id;
-    String key;
-    String name;
-    long size;
-    String type;
+    private Long id;
+    private String key;
+    private String name;
+    private long size;
+    private String type;
 }
