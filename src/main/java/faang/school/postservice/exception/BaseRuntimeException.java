@@ -1,9 +1,15 @@
 package faang.school.postservice.exception;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class BaseRuntimeException extends RuntimeException {
 
-    public BaseRuntimeException(){
+    public Map<String, String> properties;
+
+    public BaseRuntimeException() {
         super();
+        properties = new ConcurrentHashMap<>();
     }
 
     public BaseRuntimeException(String foramtString, Object... arguments) {
@@ -12,5 +18,6 @@ public class BaseRuntimeException extends RuntimeException {
 
     public BaseRuntimeException(String message) {
         super(message);
+        properties = new ConcurrentHashMap<>();
     }
 }
