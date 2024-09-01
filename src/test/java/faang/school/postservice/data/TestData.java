@@ -1,10 +1,11 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.data;
 
 import faang.school.postservice.dto.media.MediaDto;
 import faang.school.postservice.dto.post.DraftPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatablePostDto;
-import faang.school.postservice.dto.resource.PostResourceDto;
+import faang.school.postservice.dto.resource.PreviewPostResourceDto;
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.resource.UpdatableResourceDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -51,7 +52,7 @@ public class TestData {
     );
 
     public final static MockMultipartFile newTextFile = new MockMultipartFile(
-            nameNewTextFile, nameNewTextFile, newContent, newContent.getBytes()
+            nameNewTextFile, nameNewTextFile, textContentType, newContent.getBytes()
     );
 
     public final static MediaDto newTextFileMediaDto = MediaDto.builder()
@@ -71,6 +72,14 @@ public class TestData {
 
     public final static Resource savedNewTextFileResource = creatableNewTextFileResource.toBuilder()
             .id(1L)
+            .build();
+
+    public final static ResourceDto savedNewTextFileResourceDto = ResourceDto.builder()
+            .id(savedNewTextFileResource.getId())
+            .key(savedNewTextFileResource.getKey())
+            .size(savedNewTextFileResource.getSize())
+            .name(savedNewTextFileResource.getName())
+            .type(savedNewTextFileResource.getType())
             .build();
 
     public final static MediaDto textFileMediaDto = new MediaDto(
@@ -95,6 +104,14 @@ public class TestData {
             .name(textFile.getName())
             .type(textFile.getContentType())
             .post(Post.builder().id(EXISTENT_POST_ID).build())
+            .build();
+
+    public final static ResourceDto savedTextFileResourceDto = ResourceDto.builder()
+            .id(savedTextFileResource.getId())
+            .key(savedTextFileResource.getKey())
+            .size(savedTextFileResource.getSize())
+            .name(savedTextFileResource.getName())
+            .type(savedTextFileResource.getType())
             .build();
 
     public final static MockMultipartFile imageFile = new MockMultipartFile(
@@ -125,6 +142,15 @@ public class TestData {
             .post(Post.builder().id(EXISTENT_POST_ID).build())
             .build();
 
+    public final static ResourceDto savedImageFileResourceDto = ResourceDto.builder()
+            .id(savedImageFileResource.getId())
+            .key(savedImageFileResource.getKey())
+            .size(savedImageFileResource.getSize())
+            .name(savedImageFileResource.getName())
+            .type(savedImageFileResource.getType())
+            .build();
+
+
 
     public final static MockMultipartFile videoFile = new MockMultipartFile(
             nameVideoFile, nameVideoFile, videoContentType, correctContent.getBytes()
@@ -154,6 +180,14 @@ public class TestData {
             .post(Post.builder().id(EXISTENT_POST_ID).build())
             .build();
 
+    public final static ResourceDto savedVideoFileResourceDto = ResourceDto.builder()
+            .id(savedVideoFileResource.getId())
+            .key(savedVideoFileResource.getKey())
+            .size(savedVideoFileResource.getSize())
+            .name(savedVideoFileResource.getName())
+            .type(savedVideoFileResource.getType())
+            .build();
+
     public final static MockMultipartFile newVideFile = new MockMultipartFile(
             "new_video.mp4",
             "new_video.mp4",
@@ -178,6 +212,14 @@ public class TestData {
 
     public final static Resource savedNewVideoResource = creatableNewVideResource.toBuilder()
             .id(7L)
+            .build();
+
+    public final static ResourceDto savedNewVideoResourceDto = ResourceDto.builder()
+            .id(savedNewVideoResource.getId())
+            .key(savedNewVideoResource.getKey())
+            .name(savedNewVideoResource.getName())
+            .size(savedNewVideoResource.getSize())
+            .type(savedNewVideoResource.getType())
             .build();
 
     public final static MockMultipartFile newAudioFile = new MockMultipartFile(
@@ -207,6 +249,13 @@ public class TestData {
             .id(4L)
             .build();
 
+    public final static ResourceDto savedNewAudioFileResourceDto = ResourceDto.builder()
+            .id(savedNewAudioFileResource.getId())
+            .key(savedNewAudioFileResource.getKey())
+            .size(savedNewAudioFileResource.getSize())
+            .name(savedNewAudioFileResource.getName())
+            .type(savedNewAudioFileResource.getType())
+            .build();
 
     public final static MockMultipartFile audioFile = new MockMultipartFile(
             nameAudioFile, nameAudioFile, audioContentType, correctContent.getBytes()
@@ -234,6 +283,14 @@ public class TestData {
             .name(audioFile.getName())
             .type(audioFile.getContentType())
             .post(Post.builder().id(EXISTENT_POST_ID).build())
+            .build();
+
+    public final static ResourceDto savedAudioFileResourceDto = ResourceDto.builder()
+            .id(savedAudioFileResource.getId())
+            .key(savedAudioFileResource.getKey())
+            .size(savedAudioFileResource.getSize())
+            .name(savedAudioFileResource.getName())
+            .type(savedAudioFileResource.getType())
             .build();
 
     public final static LocalDateTime invalidScheduledAt = LocalDateTime.now()
@@ -362,7 +419,7 @@ public class TestData {
                     .authorId(EXISTENT_AUTHOR_ID)
                     .content(correctContent)
                     .scheduledAt(defaultScheduledAt)
-                    .media(List.of(textFile))
+                    .resource(List.of(textFile))
                     .build();
 
     public final static Post creatablePostWithTextFile =
@@ -413,7 +470,7 @@ public class TestData {
                     .updatedAt(defaultCreateAt)
                     .resources(
                             List.of(
-                                    new PostResourceDto(
+                                    new PreviewPostResourceDto(
                                             savedTextFileResource.getId(),
                                             savedTextFileResource.getName()
                                     )
@@ -428,7 +485,7 @@ public class TestData {
                     .authorId(EXISTENT_AUTHOR_ID)
                     .content(correctContent)
                     .scheduledAt(defaultScheduledAt)
-                    .media(List.of(videoFile))
+                    .resource(List.of(videoFile))
                     .build();
 
     public final static Post creatablePostWithVideo =
@@ -482,7 +539,7 @@ public class TestData {
                     .updatedAt(defaultCreateAt)
                     .resources(
                             List.of(
-                                    new PostResourceDto(
+                                    new PreviewPostResourceDto(
                                             savedVideoFileResource.getId(),
                                             savedVideoFileResource.getName()
                                     )
@@ -495,7 +552,7 @@ public class TestData {
                     .authorId(EXISTENT_AUTHOR_ID)
                     .content(correctContent)
                     .scheduledAt(defaultScheduledAt)
-                    .media(List.of(imageFile))
+                    .resource(List.of(imageFile))
                     .build();
 
     public final static Post creatablePostWithImageFile =
@@ -545,7 +602,7 @@ public class TestData {
             .updatedAt(defaultCreateAt)
             .resources(
                     List.of(
-                            new PostResourceDto(
+                            new PreviewPostResourceDto(
                                     savedImageFileResource.getId(),
                                     savedImageFileResource.getName()
                             )
@@ -560,7 +617,7 @@ public class TestData {
                     .projectId(EXISTENT_PROJECT_ID)
                     .content(correctContent)
                     .scheduledAt(defaultScheduledAt)
-                    .media(List.of(audioFile))
+                    .resource(List.of(audioFile))
                     .build();
 
     public final static Post creatablePostWithAudioFile =
@@ -610,7 +667,7 @@ public class TestData {
             .updatedAt(defaultCreateAt)
             .resources(
                     List.of(
-                            new PostResourceDto(
+                            new PreviewPostResourceDto(
                                     savedAudioFileResource.getId(),
                                     savedAudioFileResource.getName()
                             )
@@ -625,7 +682,7 @@ public class TestData {
                     .authorId(EXISTENT_AUTHOR_ID)
                     .content(correctContent)
                     .scheduledAt(defaultScheduledAt)
-                    .media(List.of(textFile, imageFile, videoFile, audioFile))
+                    .resource(List.of(textFile, imageFile, videoFile, audioFile))
                     .build();
 
     public final static Post creatablePostWithMultipleFile =
@@ -678,19 +735,19 @@ public class TestData {
             .updatedAt(defaultCreateAt)
             .resources(
                     List.of(
-                            new PostResourceDto(
+                            new PreviewPostResourceDto(
                                     savedTextFileResource.getId(),
                                     savedTextFileResource.getName()
                             ),
-                            new PostResourceDto(
+                            new PreviewPostResourceDto(
                                     savedImageFileResource.getId(),
                                     savedImageFileResource.getName()
                             ),
-                            new PostResourceDto(
+                            new PreviewPostResourceDto(
                                     savedVideoFileResource.getId(),
                                     savedVideoFileResource.getName()
                             ),
-                            new PostResourceDto(
+                            new PreviewPostResourceDto(
                                     savedAudioFileResource.getId(),
                                     savedAudioFileResource.getName()
                             )
@@ -755,7 +812,7 @@ public class TestData {
 
     public final static PostDto postDtoWithUpdatedResources = savedPostDtoWithTextFile.toBuilder()
             .resources(List.of(
-                    new PostResourceDto(
+                    new PreviewPostResourceDto(
                             savedNewTextFileResource.getId(),
                             savedNewTextFileResource.getName()
                     )
@@ -818,11 +875,11 @@ public class TestData {
             .scheduledAt(updateMultipleFieldsPost.getScheduledAt())
             .createdAt(defaultCreateAt)
             .resources(List.of(
-                    new PostResourceDto(
+                    new PreviewPostResourceDto(
                             TestData.savedNewVideoResource.getId(),
                             TestData.savedNewVideoResource.getName()
                     ),
-                    new PostResourceDto(
+                    new PreviewPostResourceDto(
                             TestData.savedNewAudioFileResource.getId(),
                             TestData.savedNewAudioFileResource.getName()
                     )
