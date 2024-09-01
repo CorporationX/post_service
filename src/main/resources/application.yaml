@@ -37,8 +37,6 @@ spring:
       secretKey: password
       region: us-east-1
 
-
-
 server:
   port: 8081
 
@@ -65,8 +63,6 @@ resource:
   max-width-landscape: 1080
   max-height-landscape: 566
   max-dimension-square: 1080
-
-
 
 comment:
   verify:
