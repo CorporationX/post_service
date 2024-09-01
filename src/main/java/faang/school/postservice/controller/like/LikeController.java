@@ -1,8 +1,8 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.like;
 
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.service.LikeService;
+import faang.school.postservice.service.like.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

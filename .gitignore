@@ -2,6 +2,11 @@
 **/build/
 !src/**/build/
 
+# Ignore log dir
+log/
+
+gradle/
+
 # Ignore Gradle GUI config
 gradle-app.setting
 
