@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder(toBuilder = true)
@@ -29,7 +30,7 @@ public class DraftPostDto {
             max = 10,
             message = "The maximum number of files in a draft has been exceeded."
     )
-    private List<MultipartFile> media;
+    private List<MultipartFile> resource;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime scheduledAt;
 }
