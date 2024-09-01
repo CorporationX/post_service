@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.like.LikeService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
