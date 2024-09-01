@@ -1,13 +1,18 @@
 package faang.school.postservice.dto.resource;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
+
+import java.io.InputStream;
 
 @Data
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Builder(toBuilder = true)
 public class PostResourceDto {
-    private Long id;
-    private String name;
+    final Long id;
+    final String name;
+    final String type;
+    final long size;
+    final InputStream resource;
 }
