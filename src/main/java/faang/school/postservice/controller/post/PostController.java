@@ -44,7 +44,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete post", description = "Delete a post or draft if they have not been deleted before")
     public void deletePost(@PathVariable long id) {
         postService.deletePost(id);
