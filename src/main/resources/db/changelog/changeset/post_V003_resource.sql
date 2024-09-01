@@ -6,7 +6,6 @@ CREATE TABLE resource
     type       VARCHAR(255),
     size       BIGINT,
     created_at timestamptz DEFAULT current_timestamp,
-    updated_at timestamptz DEFAULT current_timestamp,
     post_id    BIGINT      NOT NULL,
     CONSTRAINT fk_post
         FOREIGN KEY (post_id) REFERENCES post (id)
