@@ -74,7 +74,7 @@ public class PostService {
         Optional<Post> postOptional = postRepository.findById(postId);
         Post post = postOptional.orElseThrow(
                 () -> new PostValidationException("Post with id " + postId + " doesn't exists"));
-        postEventPublishers.publish(postMapper.toPostEvent(postOptional.get()));
+        postEventPublishers.publish(postMapper.toPostEvent(post));
         return postMapper.toDto(post);
     }
 
