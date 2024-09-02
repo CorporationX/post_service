@@ -1,46 +1,40 @@
 package faang.school.postservice.mapper.comment;
 
-import faang.school.postservice.event.comment.CommentEvent;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.mapstruct.factory.Mappers;
 
 class CommentMapperTest {
 
-    private CommentMapperImpl commentMapper = new CommentMapperImpl();
+  private final CommentMapper mapper = Mappers.getMapper(CommentMapper.class);
 
-    private Comment comment;
-    private CommentEvent commentEvent;
+  public static Comment getComment() {
+    return Comment.builder()
+        .id(1L)
+        .post(Post.builder()
+            .id(2L)
+            .build())
+        .build();
+  }
 
-    @BeforeEach
-    void setUp() {
-        comment = Comment.builder()
-                .id(1)
-                .authorId(1)
-                .post(Post.builder().id(1L).authorId(1L).build())
-                .content("Test")
-                .build();
+  public static CommentEvent getCommentEvent() {
+    return CommentEvent.builder()
+        .commentId(1L)
+        .postId(2L)
+        .build();
+  }
 
-        commentEvent = CommentEvent.builder()
-                .commentId(1)
-                .authorId(1)
-                .postId(1)
-                .postAuthorId(1)
-                .content("Test")
-                .build();
-    }
+  @Test
+  @DisplayName("Проверка равенства CommentEvent и CommentDto после маппинга")
+  void testConverterMentorshipDtoFromUser() {
+    final var commentEvent = mapper.toEvent(getComment());
+    assertThat(commentEvent.postId()).isEqualTo(getCommentEvent().postId());
+    assertThat(commentEvent.commentId()).isEqualTo(getCommentEvent().commentId());
+  }
 
-    @Test
-    void testToEvent() {
-        CommentEvent result = commentMapper.toEvent(comment);
-
-        assertEquals(commentEvent.getCommentId(), result.getCommentId());
-        assertEquals(commentEvent.getAuthorId(), result.getAuthorId());
-        assertEquals(commentEvent.getPostId(), result.getPostId());
-        assertEquals(commentEvent.getPostAuthorId(), result.getPostAuthorId());
-        assertEquals(commentEvent.getContent(), result.getContent());
-    }
 }

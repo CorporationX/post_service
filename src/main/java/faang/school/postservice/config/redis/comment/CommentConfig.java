@@ -8,11 +8,12 @@ import org.springframework.data.redis.listener.ChannelTopic;
 @Configuration
 public class CommentConfig {
 
-    @Value("${spring.data.redis.channels.comment_channel.name}")
-    private String commentChannel;
+  @Value("${spring.data.redis.channels.comment.name}")
+  private String commentChannel;
 
-    @Bean
-    public ChannelTopic commentChannel() {
-        return new ChannelTopic(commentChannel);
-    }
+  @Bean
+  public ChannelTopic commentTopic() {
+    return new ChannelTopic(commentChannel);
+  }
+
 }
