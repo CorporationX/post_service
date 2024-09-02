@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,6 +47,9 @@ public class CommentServiceTest {
 
     @Mock
     CommentEventPublisher commentEventPublisher;
+
+    @Mock
+    PostService postService;
 
     @InjectMocks
     CommentService commentService;
@@ -124,8 +128,10 @@ public class CommentServiceTest {
     public void testCreateCommentSuccessful() throws JsonProcessingException {
         CreateCommentDto createCommentDto = prepareCreateCommentDto();
         Comment comment = prepareComment();
+
+        when(postService.getById(anyLong())).thenReturn(post);
         when(commentRepository.save(comment)).thenReturn(comment);
-        when(commentMapper.toEntity(createCommentDto)).thenReturn(comment);
+        when(commentMapper.toEntity(createCommentDto, post)).thenReturn(comment);
 
         commentService.createComment(createCommentDto);
 

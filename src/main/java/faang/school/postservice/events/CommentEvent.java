@@ -11,11 +11,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class CommentEvent extends Event {
 
-    private Long postId;
+    private long postId;
 
-    private Long authorId;
+    private long postAuthorId;
 
-    private Long commentId;
+    private long authorId;
+
+    private long commentId;
+
+    private String commentContent;
 
     private LocalDateTime sendAt;
 }
