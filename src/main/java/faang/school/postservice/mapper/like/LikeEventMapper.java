@@ -11,6 +11,5 @@ public interface LikeEventMapper {
 
     @Mapping(source = "userId", target = "authorId")
     @Mapping(source = "id", target = "likeId")
-    @Mapping(target = "timestamp", expression = "java(java.time.LocalDateTime.now())")
     LikeEvent toLikeEvent(LikeDto likeDto);
 }
