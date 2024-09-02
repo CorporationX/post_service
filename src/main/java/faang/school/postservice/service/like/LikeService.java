@@ -4,8 +4,6 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ExceptionMessages;
-import faang.school.postservice.mapper.like.LikeEventMapper;
-import faang.school.postservice.messaging.publisher.like.LikeEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
