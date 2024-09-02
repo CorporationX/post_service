@@ -8,6 +8,7 @@ import faang.school.postservice.exception.ErrorMessage;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -28,15 +29,18 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommentMapper commentMapper;
+    private final PostService postService;
     private final CommentEventPublisher commentEventPublisher;
 
     public CommentDto createComment(CreateCommentDto createCommentDto) {
         checkUserService.checkUserExistence(createCommentDto);
-        Comment savedComment = commentMapper.toEntity(createCommentDto);
-        savedComment = commentRepository.save(savedComment);
-        log.info("Comment with ID = {} was created", savedComment.getId());
-        commentEventPublisher.publish(savedComment);
-        return commentMapper.toDto(savedComment);
+        Post post = postService.getById(createCommentDto.getPostId());
+
+        Comment comment = commentMapper.toEntity(createCommentDto, post);
+        comment = commentRepository.save(comment);
+        log.info("Comment with ID = {} was created", comment.getId());
+        commentEventPublisher.publish(comment);
+        return commentMapper.toDto(comment);
     }
 
     public CommentDto updateComment(UpdatedCommentDto updatedCommentDto) {

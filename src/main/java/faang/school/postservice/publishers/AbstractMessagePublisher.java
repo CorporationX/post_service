@@ -17,6 +17,7 @@ public abstract class AbstractMessagePublisher<T, E extends Event> implements Me
         E event = mapper(source);
         redisTemplate.convertAndSend(channel.getTopic(), event);
         log.info("Published event: {}", event);
+        log.debug("Channel: {}", channel.getTopic());
     }
     abstract E mapper(T t);
 }
