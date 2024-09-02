@@ -1,20 +1,15 @@
-package faang.school.postservice.event.post;
+package faang.school.postservice.dto.post;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
-@Builder
 @AllArgsConstructor
-@NoArgsConstructor
-public class PostEvent {
-    private long id;
-    private long authorId;
+public class PostViewDto {
     private long postId;
+    private long authorId;
     private long userId;
     private LocalDateTime timestamp;
 }
