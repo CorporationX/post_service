@@ -1,13 +1,14 @@
-CREATE TABLE resource
+CREATE TABLE IF NOT EXISTS post_resource
 (
-    id         bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY UNIQUE,
-    "key"      VARCHAR(50) NOT NULL,
+    id         BIGSERIAL PRIMARY KEY,
+    name       VARCHAR(255) NOT NULL,
+    key        VARCHAR(255),
+    type       VARCHAR(255),
+    status     VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    post_id BIGINT,
     size       BIGINT,
-    created_at timestamptz DEFAULT current_timestamp,
-    name       VARCHAR(150),
-    type       VARCHAR(50),
-    post_id    BIGINT      NOT NULL,
     CONSTRAINT fk_post
-        FOREIGN KEY (post_id) REFERENCES post (id)
-            ON DELETE CASCADE
-);
+    FOREIGN KEY (post_id) REFERENCES post (id)
+    );

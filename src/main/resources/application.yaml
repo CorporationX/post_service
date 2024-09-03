@@ -66,7 +66,12 @@ resource:
   max-height-landscape: 566
   max-dimension-square: 1080
 
-
+comment:
+  verify:
+    cron: "*/10 * * * * *" # every 10 minutes
+  batchSize: 100
+  thread-pool-size: 4
+  word-split-regex: "(?<=\\p{L})(?=\\p{Punct})|(?<=\\p{Punct})(?=\\p{L})|(?<=\\p{L})(?=\\p{L}\\b)|\\s+"
 
 user-service:
   host: localhost
