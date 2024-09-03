@@ -2,6 +2,8 @@ package faang.school.postservice.mapper.event;
 
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.event.like.LikeEvent;
+import faang.school.postservice.mapper.like.LikeEventMapper;
+import faang.school.postservice.mapper.like.LikeEventMapperImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
