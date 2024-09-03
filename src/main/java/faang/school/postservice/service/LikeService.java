@@ -3,7 +3,6 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
-import faang.school.postservice.dto.like.LikePostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeEventMapper;
 import faang.school.postservice.mapper.LikeMapper;

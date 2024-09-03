@@ -3,8 +3,11 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -29,6 +32,8 @@ public class CommentService {
     private final UserContext userContext;
     private final CommentValidator commentValidator;
     private final PostRepository postRepository;
+    private final CommentEventPublisher commentEventPublisher;
+    private final CommentEventMapper commentEventMapper;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
@@ -37,6 +42,7 @@ public class CommentService {
         commentValidator.existPost(commentDto.getPostId());
         Comment comment = commentMapper.dtoToEntity(commentDto);
         comment.setPost(postRepository.findById(commentDto.getPostId()).get());
+        publishCommentsEvent(commentDto);
         return commentMapper.entityToDto(commentRepository.save(comment));
     }
 
@@ -76,5 +82,9 @@ public class CommentService {
     public Comment getComment(long commentId) {
         return commentRepository.findById(commentId)
             .orElseThrow(() -> new IllegalArgumentException("Comment with the same id does not exist"));
+    }
+
+    private void publishCommentsEvent(CommentDto commentDto) {
+        commentEventPublisher.publish(commentEventMapper.commentDtoToCommentEvent(commentDto));
     }
 }

@@ -2,10 +2,13 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -41,6 +44,10 @@ public class CommentServiceTest {
     private UserContext userContext;
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
+    @Mock
+    private CommentEventMapper commentEventMapper;
 
 
     private long commentId;
@@ -50,6 +57,7 @@ public class CommentServiceTest {
     private CommentDto commentDto;
     private CommentDto updatedCommentDto;
     private Post post;
+    private CommentEvent commentEvent;
 
     @BeforeEach
     void init() {
@@ -74,6 +82,11 @@ public class CommentServiceTest {
                 .content("UpdatedContent")
                 .build();
 
+        commentEvent = CommentEvent.builder()
+                .id(commentId)
+                .postId(postId)
+                .content(content)
+                .build();
     }
 
     @Test
@@ -97,8 +110,10 @@ public class CommentServiceTest {
         when(commentRepository.save(comment)).thenReturn(comment);
         when(postRepository.findById(commentDto.getPostId())).thenReturn(Optional.of(post));
         when(commentMapper.entityToDto(comment)).thenReturn(commentDto);
+        when(commentEventMapper.commentDtoToCommentEvent(commentDto)).thenReturn(commentEvent);
         CommentDto result = commentService.createComment(commentDto);
         verify(commentRepository).save(comment);
+        verify(commentEventPublisher).publish(commentEvent);
         assertNotNull(result);
         assertEquals(commentDto, result);
     }
