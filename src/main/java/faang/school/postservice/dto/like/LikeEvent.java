@@ -1,15 +1,16 @@
 package faang.school.postservice.dto.like;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class LikeEvent {
     private long postId;
+    private long authorPostId;
     private long authorLikeId;
-    private long userId;
-    private LocalDateTime localDateTime;
 }

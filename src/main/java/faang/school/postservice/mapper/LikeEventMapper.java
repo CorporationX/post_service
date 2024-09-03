@@ -1,24 +1,15 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.like.LikeEvent;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import faang.school.postservice.dto.like.LikePostEvent;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-import java.time.LocalDateTime;
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface LikeEventMapper {
 
-@Component
-@RequiredArgsConstructor
-public class LikeEventMapper {
-    private final UserContext userContext;
-
-    public LikeEvent mapLikeEvent(LikeDto likeDto) {
-        return LikeEvent.builder()
-                .postId(likeDto.getPostId())
-                .authorLikeId(userContext.getUserId())
-                .userId(likeDto.getUserId())
-                .localDateTime(LocalDateTime.now())
-                .build();
-    }
+    @Mapping(target = "localDateTime", expression = "java(java.time.LocalDateTime.now())")
+    @Mapping(target = "authorPostId", source = "authorPostId")
+    LikePostEvent mapLikePostEvent(LikeDto likeDto, long authorPostId);
 }

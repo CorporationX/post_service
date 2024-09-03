@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.annotation.ValidHashtag;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -86,7 +87,7 @@ public class PostController {
 
     })
     public PostDto getPostByPostId(@PathVariable Long postId) {
-        return postService.getPostByPostId(postId);
+        return postService.getPostDtoById(postId);
     }
 
     @GetMapping("/drafts/user/{userId}")
@@ -139,5 +140,24 @@ public class PostController {
     })
     public List<PostDto> getAllPublishPostsByProjectId(@PathVariable Long projectId) {
         return postService.getAllPublishPostsByProjectId(projectId);
+    }
+
+    @GetMapping("/hashtag")
+    public List<PostDto> findPostsByHashtag(@RequestParam @ValidHashtag String hashtagName,
+                                            @RequestParam int page,
+                                            @RequestParam int size) {
+        return postService.findPostsByHashtag(hashtagName, page, size);
+    }
+
+    @GetMapping("/hashtag/cache")
+    public List<PostDto> findPostsByHashtagForCache(@RequestParam @ValidHashtag String hashtagName,
+                                                    @RequestParam int page,
+                                                    @RequestParam int size) {
+        return postService.findPostsByHashtagForCache(hashtagName, page, size);
+    }
+
+    @GetMapping("/list/ids")
+    public List<PostDto> findPostsByIds(@RequestParam List<Long> postIds) {
+        return postService.getPostsByIds(postIds);
     }
 }

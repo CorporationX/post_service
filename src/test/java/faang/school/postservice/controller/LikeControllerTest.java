@@ -1,6 +1,5 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.publisher.LikePostPublisher;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,9 +22,6 @@ public class LikeControllerTest {
 
     @Mock
     private LikeService likeService;
-    @Mock
-    private LikePostPublisher likePostPublisher;
-
 
     private long postId;
     private long commentId;
@@ -52,7 +48,6 @@ public class LikeControllerTest {
         likeController.addLikeToPost(likeDto);
 
         verify(likeService, times(1)).addLikeToPost(likeDto);
-        verify(likePostPublisher, times(1)).createLikeEvent(likeDto);
     }
 
     @DisplayName("Когда метод удалить лайк с поста отработал")
