@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AdServiceTest {
+class ScheduledExpiredAdRemoverTest {
 
     private final Ad ad1 = new Ad();
     private final Ad ad2 = new Ad();
@@ -30,7 +30,7 @@ class AdServiceTest {
     private List<Ad> ads;
 
     @InjectMocks
-    private AdService adService;
+    private ScheduledExpiredAdRemover adService;
 
     @Mock
     private AdRepository adRepository;
