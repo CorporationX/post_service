@@ -17,7 +17,7 @@ public class PostServiceConfiguration {
     @Value("${post.thread-pool.task-timeout}")
     private long taskTimeout;
 
-    @Bean
+    @Bean("post-service-thread-pool")
     public ExecutorService threadPool() {
         return Executors.newFixedThreadPool(threadPoolSize);
     }

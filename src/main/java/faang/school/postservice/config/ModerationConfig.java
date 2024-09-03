@@ -13,7 +13,7 @@ public class ModerationConfig {
     @Value("${comment.thread-pool-size}")
     private int threadPoolSize;
 
-    @Bean
+    @Bean("moderation-thread-pool")
     public ExecutorService moderationExecutor() {
         return Executors.newFixedThreadPool(threadPoolSize);
     }
