@@ -1,6 +1,8 @@
 package faang.school.postservice.service.like;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.event.LikeEventV2;
 import faang.school.postservice.mapper.CommentMapper;
@@ -16,17 +18,25 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.LikeValidator;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.lang.Math.min;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Setter
 public class LikeServiceImpl implements LikeService {
     private final LikeValidator likeValidator;
     private final LikeRepository likeRepository;
@@ -38,6 +48,10 @@ public class LikeServiceImpl implements LikeService {
     private final PostMapper postMapper;
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
+    private final UserServiceClient userServiceClient;
+
+    @Value("$(like-service.batch-size)")
+    private int batchSize;
 
     @Override
     @Transactional
@@ -78,11 +92,10 @@ public class LikeServiceImpl implements LikeService {
         Post post = postMapper.toEntity(postService.getPost(postId));
         likeValidator.validateLikeToPost(post, userId);
         Like like = likeMapper.toEntity(likeDto);
-//        post.getLikes().add(like);
+        post.getLikes().add(like);
         like = likeRepository.save(like);
         publisher(userId, postId, null, post.getAuthorId());
-        log.info("Like with likeId = {} added on post with postId = {}" +
-                        " by user with userId = {}",
+        log.info("Like with likeId = {} added on post with postId = {} by user with userId = {}",
                 like.getId(),
                 postId,
                 userId);
@@ -121,5 +134,41 @@ public class LikeServiceImpl implements LikeService {
         likeEventV2.setPostAuthorId(postAuthorId);
         likeEventPublisherV2.publish(likeEventV2);
         log.info("Опубликован лайк на пост {}", post.getContent());
+    }
+
+    public List<UserDto> findUsersByPostId(Long postId) {
+        var userIds = likeRepository.findByPostId(postId).stream()
+                .map(Like::getUserId)
+                .toList();
+        checkUserIdListEmpty(userIds, postId);
+
+        return getUsersInBatches(userIds);
+    }
+
+    public List<UserDto> findUsersByCommentId(Long commentId) {
+        var userIds = likeRepository.findByCommentId(commentId).stream()
+                .map(Like::getUserId)
+                .toList();
+        checkUserIdListEmpty(userIds, commentId);
+
+        return getUsersInBatches(userIds);
+    }
+
+    private List<UserDto> getUsersInBatches(List<Long> userIds) {
+        List<UserDto> allUsers = new ArrayList<>();
+
+        for (int i = 0; i < userIds.size(); i += batchSize) {
+            int end = min(i + batchSize, userIds.size());
+            var batch = userIds.subList(i, end);
+            var batchUsers = userServiceClient.getUsersByIds(batch);
+            allUsers.addAll(batchUsers);
+        }
+        return allUsers;
+    }
+
+    private void checkUserIdListEmpty(List<Long> userIds, Long id) {
+        if (userIds.isEmpty()) {
+            throw new EntityNotFoundException("No users found for ID " + id);
+        }
     }
 }

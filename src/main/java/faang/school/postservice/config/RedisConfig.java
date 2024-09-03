@@ -17,7 +17,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-        @Value("${spring.data.redis.port}")
+    @Value("${spring.data.redis.port}")
     private int port;
 
     @Value("${spring.data.redis.host}")
@@ -25,6 +25,9 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.channels.like_post_channel.name.like_channel")
     private String likeTopicName;
+
+    @Value("${spring.data.redis.channels.like_post_channel.name.comment_channel")
+    private String commentTopicName;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -41,11 +44,27 @@ public class RedisConfig {
         return template;
     }
 
+    @Bean
+    RedisMessageListenerContainer container(MessageListenerAdapter listenerAdapter) {
 
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(redisConnectionFactory());
+        container.addMessageListener(listenerAdapter, new ChannelTopic("postLikes"));
+
+        return container;
+    }
+
+    @Bean
+    MessageListenerAdapter listenerAdapter(LikeEventListener subscriber) {
+        return new MessageListenerAdapter(subscriber);
+    }
 
     @Bean
     public ChannelTopic likeTopic() {
         return new ChannelTopic(likeTopicName);
     }
-
+    @Bean
+    public ChannelTopic commentTopic(){
+        return new ChannelTopic(commentTopicName);
+    }
 }

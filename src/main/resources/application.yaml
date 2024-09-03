@@ -23,6 +23,8 @@ spring:
       channels:
          like_post_channel:
           name: like_channel
+         comment_channel:
+           name: comment_channel
   main:
     allow-bean-definition-overriding: true
 
@@ -50,3 +52,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+like-service:
+  batch-size: 100
