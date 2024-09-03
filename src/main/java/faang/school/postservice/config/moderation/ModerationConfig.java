@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.moderation;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
