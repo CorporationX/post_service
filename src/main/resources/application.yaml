@@ -4,11 +4,10 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
-
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
@@ -24,6 +23,8 @@ spring:
       channels:
          like_post_channel:
           name: like_channel
+  main:
+    allow-bean-definition-overriding: true
 
 server:
   port: 8081

@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -77,7 +78,7 @@ public class LikeServiceImpl implements LikeService {
         Post post = postMapper.toEntity(postService.getPost(postId));
         likeValidator.validateLikeToPost(post, userId);
         Like like = likeMapper.toEntity(likeDto);
-        post.getLikes().add(like);
+//        post.getLikes().add(like);
         like = likeRepository.save(like);
         publisher(userId, postId, null, post.getAuthorId());
         log.info("Like with likeId = {} added on post with postId = {}" +
@@ -86,7 +87,6 @@ public class LikeServiceImpl implements LikeService {
                 postId,
                 userId);
         publisherV2(postId, likeDto);
-        log.info("Опубликован лайк на пост {}", post.getContent());
         return likeMapper.toDto(like);
     }
 
@@ -120,5 +120,6 @@ public class LikeServiceImpl implements LikeService {
         LikeEventV2 likeEventV2 = likeMapper.likeDtoToLikeEvent2(likeDto);
         likeEventV2.setPostAuthorId(postAuthorId);
         likeEventPublisherV2.publish(likeEventV2);
+        log.info("Опубликован лайк на пост {}", post.getContent());
     }
 }

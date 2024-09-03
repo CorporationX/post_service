@@ -2,24 +2,15 @@ package faang.school.postservice.config;
 
 //import faang.school.postservice.publisher.MessagePublisher;
 
-import faang.school.postservice.listener.LikeEventListenerV2;
-import faang.school.postservice.publisher.LikeEventPublisherV2;
-import faang.school.postservice.publisher.MessagePublisherV2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.PatternTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
-import org.springframework.data.redis.serializer.GenericToStringSerializer;
-import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfigV2 {
@@ -28,31 +19,26 @@ public class RedisConfigV2 {
     private String hostName;
     @Value("${spring.data.redis.port}")
     private int port;
-
-//    @Autowired
-//    private RedisConnectionFactory connectionFactory;
+    @Value("${spring.data.redis.channels.like_post_channel.name}")
+    private String likeTopicName;
 
     @Bean
     public JedisConnectionFactory connectionFactory() {
-        return new JedisConnectionFactory(new RedisStandaloneConfiguration(hostName, port));
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(hostName, port);
+        return new JedisConnectionFactory(config);
     }
 
     @Bean
-    public ChannelTopic topic() {
-        return new ChannelTopic("likeEventTopic");
+    public ChannelTopic likeTopic() {
+        return new ChannelTopic(likeTopicName);
     }
 
     @Bean
     public RedisTemplate<String, Object> template(JedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(connectionFactory);
-        redisTemplate.setValueSerializer(new GenericToStringSerializer<>(Object.class));
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return redisTemplate;
     }
-
-//    @Bean
-//    MessagePublisherV2 messagePublisherV2() {
-//        return new LikeEventPublisherV2(template(connectionFactory), topic());
-//    }
-
 }
