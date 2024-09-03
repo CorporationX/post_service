@@ -6,6 +6,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
-@RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
@@ -29,6 +29,20 @@ public class CommentService {
 
     @Value("${comment.batchSize}")
     private int batchSize;
+
+    public CommentService(
+            CommentRepository commentRepository,
+            CommentMapper commentMapper,
+            CommentValidator commentValidator,
+            ModerationDictionary moderationDictionary,
+            @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor
+    ) {
+        this.commentRepository = commentRepository;
+        this.commentMapper = commentMapper;
+        this.commentValidator = commentValidator;
+        this.moderationDictionary = moderationDictionary;
+        this.moderationExecutor = moderationExecutor;
+    }
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {

@@ -26,13 +26,20 @@ import java.util.stream.Stream;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class UpdatePostResourceCommand {
 
     private final ResourceService resourceService;
-
     private final ExecutorService executor;
     private final int taskTimeout;
+
+    public UpdatePostResourceCommand(
+            ResourceService resourceService,
+            @Qualifier("post-service-thread-pool") ExecutorService executor,
+            int taskTimeout) {
+        this.resourceService = resourceService;
+        this.executor = executor;
+        this.taskTimeout = taskTimeout;
+    }
 
     public List<ResourceDto> execute(Long postId, List<UpdatableResourceDto> updatableResource) {
 
