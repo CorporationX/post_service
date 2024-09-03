@@ -1,4 +1,4 @@
-package faang.school.postservice.validator;
+package faang.school.postservice.validator.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
