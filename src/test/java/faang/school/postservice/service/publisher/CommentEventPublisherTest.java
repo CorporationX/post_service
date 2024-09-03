@@ -1,31 +1,31 @@
 package faang.school.postservice.service.publisher;
 
+import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentEventPublisherTest {
     @Mock
     private RedisTemplate<String, Object> template;
-    @Mock
-    private ChannelTopic topic;
-    @InjectMocks
     private CommentEventPublisher publisher;
+    private final String topicName = "topic";
+
+    @BeforeEach
+    void setUp() {
+        publisher = new CommentEventPublisher(template, topicName);
+    }
 
     @Test
-    void publish() {
+    void testPublishEvent() {
         // given
-        String nameChannel = "topic";
-        when(topic.getTopic()).thenReturn(nameChannel);
         String jsonEvent = """ 
                 {
                 "id": 1,
@@ -36,6 +36,6 @@ class CommentEventPublisherTest {
         // when
         publisher.publish(jsonEvent);
         // then
-        verify(template, times(1)).convertAndSend(nameChannel, jsonEvent);
+        verify(template, times(1)).convertAndSend(topicName, jsonEvent);
     }
 }

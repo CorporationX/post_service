@@ -3,12 +3,14 @@ package faang.school.postservice.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.publisher.PublicationService;
+import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +35,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
-    private final PublicationService publishService;
+    private final PublicationService<CommentEventPublisher, CommentEvent> publishService;
 
     public CommentDto addComment(Long postId, CommentDto dto) throws JsonProcessingException {
         Post post = getPost(postId);
@@ -46,7 +49,7 @@ public class CommentService {
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
         log.info("comment with id:{} created.", savedComment.getId());
-        publishService.publishCommentEvent(mapper.toCommentEvent(savedComment));
+        publishService.publishEvent(mapper.toCommentEvent(savedComment));
         return mapper.toDto(savedComment);
     }
 
@@ -87,7 +90,7 @@ public class CommentService {
     }
 
     private void validatePostId(Long postId, Comment comment) {
-        if (comment.getPost().getId() != postId) {
+        if (!Objects.equals(comment.getPost().getId(), postId)) {
             throw new RuntimeException(MESSAGE_POST_ID_AND_COMMENT_POST_ID_NOT_EQUAL);
         }
     }

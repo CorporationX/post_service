@@ -10,6 +10,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.publisher.PublicationService;
+import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +26,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +50,7 @@ class CommentServiceTest {
     @Spy
     private CommentMapperImpl mapper;
     @Mock
-    private PublicationService publishService;
+    private PublicationService<CommentEventPublisher, CommentEvent> publishService;
     @Mock
     private PostRepository postRepository;
     @Mock
@@ -121,6 +123,14 @@ class CommentServiceTest {
     }
 
     @Test
+    public void testAddPostWithInvalidAuthor() {
+        // Arrange
+        doThrow(RuntimeException.class).when(userServiceClient).getUser(dto.getAuthorId());
+        //Assert
+        assertThrows(RuntimeException.class, () -> userServiceClient.getUser(dto.getAuthorId()));
+    }
+
+    @Test
     public void testVerifyServiceAddComment() throws JsonProcessingException {
         // Arrange
         when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
@@ -155,7 +165,7 @@ class CommentServiceTest {
         //Act
         CommentDto actualDto = service.addComment(postId, commentDto);
         //Assert
-        Mockito.verify(publishService).publishCommentEvent(commentEvent);
+        Mockito.verify(publishService).publishEvent(commentEvent);
         assertEquals(expDto, actualDto);
     }
 

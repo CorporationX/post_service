@@ -3,6 +3,7 @@ package faang.school.postservice.service.publisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,14 +19,14 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class PublicationServiceTest {
-    @InjectMocks
-    private PublicationService publicationService;
     @Mock
     private CommentEventPublisher commentEventPublisher;
     @Spy
     private ObjectMapper objectMapper;
     @Captor
     private ArgumentCaptor<String> jsonCaptor;
+    @InjectMocks
+    private PublicationService<CommentEventPublisher, CommentEvent> publicationService;
 
     @Test
     void testPublishCommentEvent() throws JsonProcessingException {
@@ -38,7 +39,7 @@ class PublicationServiceTest {
                 .build();
         String jsonEvent = objectMapper.writeValueAsString(event);
         // when
-        publicationService.publishCommentEvent(event);
+        publicationService.publishEvent(event);
         //then
         verify(commentEventPublisher, times(1)).publish(jsonCaptor.capture());
         assertEquals(jsonEvent, jsonCaptor.getValue());
