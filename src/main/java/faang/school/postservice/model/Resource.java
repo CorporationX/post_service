@@ -41,6 +41,14 @@ public class Resource {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "status")
+    private String status;
+
     @Column(name = "name", length = 150)
     private String name;
 
