@@ -1,11 +1,11 @@
-package faang.school.postservice.service.post.validator;
+package faang.school.postservice.config.validator;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ValidatorConfiguration {
+public class PostServiceValidatorConfiguration {
     @Value("${post.validation-param.obsolescence-period-date-publication}")
     private long OBSOLESCENCE_PERIOD_DATE_PUBLICATION;
 
