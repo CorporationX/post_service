@@ -13,6 +13,7 @@ import faang.school.postservice.filter.album.AlbumToDateFilter;
 import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redisPublisher.AlbumCreateEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.validator.AlbumValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -53,6 +54,8 @@ class AlbumServiceTest {
     private AlbumRepository albumRepository;
     @Mock
     private List<AlbumFilter> albumFilterList;
+    @Mock
+    private AlbumCreateEventPublisher albumCreateEventPublisher;
 
     @InjectMocks
     private AlbumService albumService;
