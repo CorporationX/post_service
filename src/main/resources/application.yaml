@@ -27,6 +27,7 @@ spring:
         postLike: post_like_channel
         post: post_channel
         like_post_analytics: like_event
+        album: album_channel
 
     elasticsearch:
       rest:
