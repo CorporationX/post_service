@@ -1,4 +1,4 @@
-package faang.school.postservice.mapper.event;
+package faang.school.postservice.mapper.like;
 
 import faang.school.postservice.event.like.LikeEvent;
 import faang.school.postservice.dto.like.LikeDto;
@@ -9,7 +9,7 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LikeEventMapper {
 
-    @Mapping(target = "authorId", source = "userId")
-    @Mapping(target = "likeId", source = "id")
+    @Mapping(source = "userId", target = "authorId")
+    @Mapping(source = "id", target = "likeId")
     LikeEvent toLikeEvent(LikeDto likeDto);
 }

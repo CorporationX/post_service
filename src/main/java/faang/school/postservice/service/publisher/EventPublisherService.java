@@ -1,8 +1,8 @@
 package faang.school.postservice.service.publisher;
 
-import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.event.like.LikeEvent;
-import faang.school.postservice.mapper.event.LikeEventMapper;
+import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.mapper.like.LikeEventMapper;
 import faang.school.postservice.messaging.publisher.like.LikeEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
