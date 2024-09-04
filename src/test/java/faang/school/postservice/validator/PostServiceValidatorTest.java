@@ -11,6 +11,7 @@ import faang.school.postservice.exception.post.UnexistentPostPublisher;
 import faang.school.postservice.exception.validation.DataValidationException;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.data.TestData;
+import faang.school.postservice.validator.post.PostServiceValidator;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;

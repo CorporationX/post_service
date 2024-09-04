@@ -1,18 +1,14 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.data.TestData;
-import faang.school.postservice.api.media.MultipartFileMediaApi;
-import faang.school.postservice.dto.media.MediaDto;
 import faang.school.postservice.dto.post.*;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.mapper.post.*;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
-import faang.school.postservice.service.post.validator.PostServiceValidator;
+import faang.school.postservice.validator.post.PostServiceValidator;
 import faang.school.postservice.service.resource.ResourceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
