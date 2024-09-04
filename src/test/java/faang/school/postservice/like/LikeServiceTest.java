@@ -6,6 +6,7 @@ import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.event.LikeEventV2;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
@@ -13,7 +14,9 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.publisher.LikeEventPublisherV2;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.like.LikeServiceImpl;
 import faang.school.postservice.service.post.PostService;
@@ -28,6 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static faang.school.postservice.util.TestDataFactory.ID;
 import static faang.school.postservice.util.TestDataFactory.INVALID_ID;
@@ -65,6 +69,11 @@ class LikeServiceImplTest {
     @Mock
     UserServiceClient userServiceClient;
 
+    @Mock
+    private PostRepository postRepository;
+    @Mock
+    private LikeEventPublisherV2 likeEventPublisherV2;
+
     @InjectMocks
     private LikeServiceImpl likeService;
 
@@ -74,6 +83,7 @@ class LikeServiceImplTest {
     private Comment comment;
     private PostDto postDto;
     private CommentDto commentDto;
+    private LikeEventV2 likeEventV2;
 
     @BeforeEach
     void setUp() {
@@ -109,15 +119,23 @@ class LikeServiceImplTest {
         comment.setAuthorId(1L);
         comment.setLikes(likes);
         likeService.setBatchSize(100);
+
+        likeEventV2 = new LikeEventV2();
+        likeEventV2.setLikedPostId(1L);
+        likeEventV2.setLikeAuthorId(1L);
+        likeEventV2.setPostAuthorId(1L);
+
     }
 
     @Test
-    void addPostLike() {
+    void addPostLikeTest() {
         when(postService.getPost(anyLong())).thenReturn(postDto);
         when(postMapper.toEntity(postDto)).thenReturn(post);
         when(likeMapper.toEntity(any(LikeDto.class))).thenReturn(like);
         when(likeRepository.save(like)).thenReturn(like);
         when(likeMapper.toDto(any(Like.class))).thenReturn(likeDto);
+        when(likeMapper.likeDtoToLikeEvent2(likeDto)).thenReturn(likeEventV2);
+        when(postRepository.findById(anyLong())).thenReturn(Optional.ofNullable(post));
 
         LikeDto result = likeService.addPostLike(likeDto);
 
@@ -127,6 +145,7 @@ class LikeServiceImplTest {
         verify(likePublisher).publish(any(LikeEvent.class));
 
         assertEquals(likeDto, result);
+        assertEquals(likeDto, likeService.addPostLike(likeDto));
     }
 
     @Test

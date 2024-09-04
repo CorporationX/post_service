@@ -50,7 +50,7 @@ public class LikeServiceImpl implements LikeService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
 
-    @Value("$(like-service.batch-size)")
+    @Value("${like-service.batch-size}")
     private int batchSize;
 
     @Override

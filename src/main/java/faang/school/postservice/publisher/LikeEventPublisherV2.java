@@ -11,10 +11,11 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class LikeEventPublisherV2 implements MessagePublisherV2<LikeEventV2> {
-    private final RedisTemplate<String, Object> template;
-    private final ChannelTopic topic;
+    private RedisTemplate<String, Object> template;
+    @Qualifier("likeTopic")
+    private ChannelTopic topic;
 
     @Override
     public void publish(LikeEventV2 likeEvent) {
