@@ -17,6 +17,9 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  profiles:
+    active: dev
+
   data:
     redis:
       port: 6379
@@ -66,10 +69,6 @@ spring:
 
 server:
   port: 8081
-
-logging:
-  level:
-    root: info
 
 post:
   publisher:
