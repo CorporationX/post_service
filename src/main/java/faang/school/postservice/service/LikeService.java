@@ -5,7 +5,6 @@ import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -3,7 +3,7 @@ package faang.school.postservice.validator;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exceptions.DataValidationException;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.post.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

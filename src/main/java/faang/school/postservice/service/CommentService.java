@@ -2,6 +2,9 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
+import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
@@ -55,5 +58,18 @@ public class CommentService {
         savedComment.setContent(updateCommentDto.getContent());
 
         return commentMapper.toDto(commentRepository.save(savedComment));
+    }
+
+    @Transactional(readOnly = true)
+    public Comment validationAndCommentsReceived(LikeDto likeDto) {
+        if (likeDto.getCommentId() != null) {
+            if (!commentRepository.existsById(likeDto.getCommentId())) {
+                throw new DataValidationException("no such postId exists commentId: " + likeDto.getCommentId());
+            }
+        } else {
+            throw new DataValidationException("arrived likeDto with postId and commentId equal to null");
+        }
+        return commentRepository.findById(likeDto.getCommentId()).orElseThrow(() ->
+                new NotFoundEntityException("Not found comment by id: " + likeDto.getCommentId()));
     }
 }
