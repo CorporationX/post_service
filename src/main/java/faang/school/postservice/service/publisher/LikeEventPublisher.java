@@ -14,8 +14,4 @@ public class LikeEventPublisher extends AbstractEventPublisher<LikeEvent>{
             @Value("${spring.data.redis.channels.like}") String topic) {
         super(redisTemplate, objectMapper, topic);
     }
-
-    public void publish(LikeEvent event) {
-        super.publish(event);
-    }
 }
