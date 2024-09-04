@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,7 +91,7 @@ public class LikeServiceImpl implements LikeService {
         Post post = postMapper.toEntity(postService.getPost(postId));
         likeValidator.validateLikeToPost(post, userId);
         Like like = likeMapper.toEntity(likeDto);
-        post.getLikes().add(like);
+//        post.getLikes().add(like);
         like = likeRepository.save(like);
         publisher(userId, postId, null, post.getAuthorId());
         log.info("Like with likeId = {} added on post with postId = {} by user with userId = {}",

@@ -1,7 +1,6 @@
 package faang.school.postservice.config;
 
 import faang.school.postservice.listener.LikeEventListener;
-import faang.school.postservice.publisher.MessagePublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,10 +22,10 @@ public class RedisConfig {
     @Value("${spring.data.redis.host}")
     private String host;
 
-    @Value("${spring.data.redis.channels.like_post_channel.name.like_channel}")
+    @Value("${spring.data.redis.channels.like_post_channel.name}")
     private String likeTopicName;
 
-    @Value("${spring.data.redis.channels.comment_channel.name.comment_channel}")
+    @Value("${spring.data.redis.channels.comment_channel.name}")
     private String commentTopicName;
 
     @Bean
@@ -63,8 +62,9 @@ public class RedisConfig {
     public ChannelTopic likeTopic() {
         return new ChannelTopic(likeTopicName);
     }
+
     @Bean
-    public ChannelTopic commentTopic(){
+    public ChannelTopic commentTopic() {
         return new ChannelTopic(commentTopicName);
     }
 }
