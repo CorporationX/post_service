@@ -1,6 +1,8 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dictionary.ModerationDictionary;
+import faang.school.postservice.publisher.PostCreatePublisher;
 import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.PostCreateDto;
@@ -55,6 +57,12 @@ public class PostServiceTest {
     private PostPublishService postPublishService;
 
     @Mock
+    private PostCreatePublisher postCreatePublisher;
+
+    @Mock
+    private ModerationDictionary moderationDictionary;
+
+    @Mock
     private PostRepository postRepository;
 
     @Mock
@@ -81,7 +89,7 @@ public class PostServiceTest {
         post = Post.builder().id(1L).content("content").authorId(null).projectId(1L).build();
         postFilterRepository = List.of(authorFilterSpecification);
 
-        postService = new PostService(postRepository, postFilterRepository, postValidator, postMapper, postPublishService, postViewPublisher, userContext);
+        postService = new PostService(postRepository, postFilterRepository, postValidator, postMapper, postPublishService, postViewPublisher, postCreatePublisher, userContext, moderationDictionary);
     }
 
     @Test
