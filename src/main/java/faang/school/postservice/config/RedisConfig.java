@@ -32,6 +32,11 @@ public class RedisConfig {
         return new ChannelTopic(credentials.getChannels().getAlbum());
     }
 
+    @Bean("likePostChannelTopicAnalytics")
+    public ChannelTopic likePostTopic() {
+        return new ChannelTopic(credentials.getChannels().getLikePostAnalytics());
+    }
+
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(credentials.getHost(), credentials.getPort());

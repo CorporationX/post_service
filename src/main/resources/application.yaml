@@ -26,8 +26,9 @@ spring:
           name: calculations_channel
         postLike: post_like_channel
         post: post_channel
+        like_post_analytics: like_event
         album: album_channel
-        
+
     elasticsearch:
       rest:
         uris: http://localhost:9200
@@ -92,7 +93,21 @@ payment-service:
 
 batch-size: 100
 
-executor:
-  thread:
-    pool:
-      size: 10
+thread-pool:
+  size:
+    min: 10
+    max: 20
+  keep-alive:
+    time: 60
+    time-unit: SECONDS
+  queue-size: 10000
+
+post-correcter:
+  scheduler:
+    cron: "0 0 0 * * ?" # every day
+  url: https://api.textgears.com/correct
+  key-param: key
+  key: dummy-key
+  language-param: language
+  language: en-US
+  text-param: text

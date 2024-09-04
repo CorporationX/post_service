@@ -1,7 +1,7 @@
 package faang.school.postservice.dto.like;
 
-import faang.school.postservice.controller.LikeToComment;
-import faang.school.postservice.controller.LikeToPost;
+import faang.school.postservice.validator.validated.LikeToComment;
+import faang.school.postservice.validator.validated.LikeToPost;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
