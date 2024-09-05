@@ -36,8 +36,7 @@ class PostControllerTest {
     private PostController controller;
     @Mock
     private PostService service;
-
-    private PostContainer container = new PostContainer();
+    private final PostContainer container = new PostContainer();
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
 
@@ -50,7 +49,7 @@ class PostControllerTest {
     }
 
     @Test
-    void create() throws Exception {
+    void testCreate() throws Exception {
         // given
         String uri = "/post/";
         PostDto requestDto = PostDto.builder()
@@ -74,10 +73,10 @@ class PostControllerTest {
     }
 
     @Test
-    void publish() throws Exception {
+    void testPublish() throws Exception {
         // given
         Long postId = container.postId();
-        String uri = "/post/publish/" + postId;
+        String uri = "/post/{postId}/publish/";
 
         PostDto responseDto = PostDto.builder()
                 .id(postId)
@@ -87,14 +86,14 @@ class PostControllerTest {
         when(service.publish(postId)).thenReturn(responseDto);
 
         // then
-        mockMvc.perform(put(uri))
+        mockMvc.perform(put(uri, postId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(responseDto.getId()))
                 .andExpect(jsonPath("$.published").value(responseDto.isPublished()));
     }
 
     @Test
-    void update() throws Exception {
+    void testUpdate() throws Exception {
         // given
         String uri = "/post/";
 
@@ -132,7 +131,7 @@ class PostControllerTest {
     }
 
     @Test
-    void getPost() throws Exception {
+    void testGetPost() throws Exception {
         // given
         Long postId = container.postId();
         String uri = "/post/" + postId;
@@ -152,7 +151,7 @@ class PostControllerTest {
     }
 
     @Test
-    void getFilteredPosts() throws Exception {
+    void testGetFilteredPosts() throws Exception {
         // given
         List<PostDto> responseList = prepareDtoList();
         PostFilterDto requestFilters = container.filters();

@@ -27,7 +27,7 @@ public class PostController {
         return postService.create(postDto);
     }
 
-    @PutMapping("/publish/{postId}")
+    @PutMapping("/{postId}/publish")
     public PostDto publish(@PathVariable Long postId) {
         return postService.publish(postId);
     }
