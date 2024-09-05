@@ -30,7 +30,7 @@ class ScheduledExpiredAdRemoverTest {
     private List<Ad> ads;
 
     @InjectMocks
-    private ScheduledExpiredAdRemover adService;
+    private ScheduledExpiredAdRemover scheduledExpiredAdRemover;
 
     @Mock
     private AdRepository adRepository;
@@ -45,7 +45,7 @@ class ScheduledExpiredAdRemoverTest {
         ad3.setEndDate(LocalDateTime.now().minusDays(1L));
         ad4.setAppearancesLeft(0L);
         ad4.setEndDate(LocalDateTime.now().minusDays(1L));
-        ReflectionTestUtils.setField(adService, "subListSize", 100);
+        ReflectionTestUtils.setField(scheduledExpiredAdRemover, "subListSize", 100);
 
     }
 
@@ -56,7 +56,7 @@ class ScheduledExpiredAdRemoverTest {
 
         //act
         when(adRepository.findAll()).thenReturn(ads);
-        adService.deleteExpiredAds();
+        scheduledExpiredAdRemover.scheduledDeleteExpiredAds();
 
         //assert
         verify(adRepository, times(3)).deleteById(anyLong());
@@ -69,7 +69,7 @@ class ScheduledExpiredAdRemoverTest {
 
         //act
         when(adRepository.findAll()).thenReturn(ads);
-        adService.deleteExpiredAds();
+        scheduledExpiredAdRemover.scheduledDeleteExpiredAds();
 
         //assert
         verify(adRepository, never()).deleteById(anyLong());

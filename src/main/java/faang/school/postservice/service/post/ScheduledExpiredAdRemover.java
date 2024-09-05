@@ -3,7 +3,6 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.ad.AdRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,7 +12,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +24,7 @@ public class ScheduledExpiredAdRemover {
     @Scheduled(cron = "${cron-expression}")
     public void scheduledDeleteExpiredAds() {
         log.info("Стартовала задача по удалению истёкших рекламных объявлений.");
-        deleteExpiredAds();
-    }
-
-    @SneakyThrows
-    public void deleteExpiredAds() {
+//        deleteExpiredAds();
         List<Ad> ads = (List<Ad>) adRepository.findAll();
         List<Ad> filteredAds = ads.stream()
                 .filter(ad -> ad.getEndDate().isBefore(LocalDateTime.now())
@@ -46,12 +40,17 @@ public class ScheduledExpiredAdRemover {
             executorService.submit(
                     () -> filteredAds.forEach(ad -> adRepository.deleteById(ad.getId())));
             executorService.shutdown();
-            try {
-                executorService.awaitTermination(1, TimeUnit.MINUTES);
-            } catch (InterruptedException e) {
-                log.error("Thread was interrupted while waiting for the executor service to terminate during the deletion of expired ads.", e);
-                throw e;
-            }
         }
+
+//    @SneakyThrows
+//    public void deleteExpiredAds() {
+
+//            try {
+//                executorService.awaitTermination(1, TimeUnit.MINUTES);
+//            } catch (InterruptedException e) {
+//                log.error("Thread was interrupted while waiting for the executor service to terminate during the deletion of expired ads.", e);
+//                throw e;
+//            }
     }
 }
+
