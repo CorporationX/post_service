@@ -44,7 +44,7 @@ public class LikeServiceImpl implements LikeService {
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
 
-    @Value("$(like-service.batch-size)")
+    @Value("${like-service.batch-size}")
     private int batchSize;
 
     @Override
