@@ -24,9 +24,16 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.post_view_event_channel.name}")
     private String postViewEventChanel;
 
+    @Value("${spring.data.redis.channels.comment_event_channel.name}")
+    private String commentEvent;
+
     @Bean
     public ChannelTopic postViewEventTopic() {
         return new ChannelTopic(postViewEventChanel);
+    }
+
+    @Bean ChannelTopic commentEventTopic() {
+        return new ChannelTopic(commentEvent);
     }
 
     @Bean

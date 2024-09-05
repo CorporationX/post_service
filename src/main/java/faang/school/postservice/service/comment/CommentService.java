@@ -1,9 +1,11 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
@@ -21,6 +23,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
+    private final CommentEventPublisher commentEventPublisher;
 
     public CommentDto createComment(long postId, CommentDto commentDto) {
         commentValidator.checkCommentAuthor(commentDto);
@@ -28,8 +31,16 @@ public class CommentService {
         Post post = optionalPost.orElseThrow(() -> new EntityNotFoundException("Post with Id " + postId + " not found."));
         Comment commentEntity = commentMapper.toEntity(commentDto);
         commentEntity.setPost(post);
-
-        return commentMapper.toDto(commentRepository.save(commentEntity));
+        Comment savedComment = commentRepository.save(commentEntity);
+        CommentEvent commentEvent = CommentEvent.builder()
+                .authorCommentId(savedComment.getAuthorId())
+                .authorPostId(post.getAuthorId())
+                .commentId(savedComment.getId())
+                .commentText(savedComment.getContent())
+                .postId(post.getId())
+                .build();
+        commentEventPublisher.publish(commentEvent);
+        return commentMapper.toDto(savedComment);
     }
 
     public CommentDto updateComment(CommentDto commentDto) {
