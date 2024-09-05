@@ -91,7 +91,6 @@ public class LikeServiceImpl implements LikeService {
         Post post = postMapper.toEntity(postService.getPost(postId));
         likeValidator.validateLikeToPost(post, userId);
         Like like = likeMapper.toEntity(likeDto);
-//        post.getLikes().add(like);
         like = likeRepository.save(like);
         publisher(userId, postId, null, post.getAuthorId());
         log.info("Like with likeId = {} added on post with postId = {} by user with userId = {}",
@@ -127,7 +126,7 @@ public class LikeServiceImpl implements LikeService {
 
     private void publisherV2(long postId, LikeDto likeDto) {
         Post post = postRepository.findById(postId).orElseThrow(
-                () -> new IllegalArgumentException("Такой пост не найден."));
+                () -> new EntityNotFoundException("Такой пост не найден."));
         long postAuthorId = post.getAuthorId();
         LikeEventV2 likeEventV2 = likeMapper.likeDtoToLikeEvent2(likeDto);
         likeEventV2.setPostAuthorId(postAuthorId);

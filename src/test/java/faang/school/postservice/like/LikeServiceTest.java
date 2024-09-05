@@ -41,6 +41,7 @@ import static java.util.List.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyLong;
@@ -146,6 +147,21 @@ class LikeServiceImplTest {
 
         assertEquals(likeDto, result);
         assertEquals(likeDto, likeService.addPostLike(likeDto));
+    }
+
+    @Test
+    void shouldReturnEntityNotFoundExceptionWhenAddPostLikeTest() {
+        // arrange
+
+        //act
+        when(postService.getPost(anyLong())).thenReturn(postDto);
+        when(postMapper.toEntity(postDto)).thenReturn(post);
+        when(likeMapper.toEntity(any(LikeDto.class))).thenReturn(like);
+        when(likeRepository.save(like)).thenReturn(like);
+        when(postRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        //assert
+        assertThrows(EntityNotFoundException.class, () -> likeService.addPostLike(likeDto));
     }
 
     @Test
