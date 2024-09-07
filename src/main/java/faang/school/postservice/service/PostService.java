@@ -3,22 +3,25 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.TreadPoolConfig;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.exception.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 @Service
@@ -28,6 +31,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final TreadPoolConfig treadPoolConfig;
 
     @Transactional
     public PostDto createDraft(PostDto postDto) {
@@ -98,6 +102,27 @@ public class PostService {
         List<Post> publishedPostsByProject = getFilteredPostsByProject(projectDto.getId(), Post::isPublished);
         return publishedPostsByProject.stream().map(postMapper::toDto).toList();
     }
+
+    public void publishScheduledPosts() {
+        List<Post> readyToPublish = postRepository.findReadyToPublish();
+        List<Post> publishedPosts = new ArrayList<>(1000);
+        for (Post toPublish : readyToPublish) {
+            publishedPosts.add(toPublish);
+            if (publishedPosts.size() == 1000) {
+                CompletableFuture.runAsync(() -> {
+                    publishedPosts.forEach(this::publishPost);
+                    postRepository.saveAll(publishedPosts);
+                    publishedPosts.clear();
+                }, treadPoolConfig.threadPoolTaskExecutor());
+            }
+        }
+    }
+
+    private void publishPost(Post post) {
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+    }
+
 
     public Post getPost(Long id) {
         return postRepository.findById(id)

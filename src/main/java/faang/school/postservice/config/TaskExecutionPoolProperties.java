@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "spring.task.execution.pool")
+@ConfigurationProperties(prefix = "spring.task.execution1.pool")
 public class TaskExecutionPoolProperties {
     private int coreSize;
     private int maxSize;
