@@ -1,5 +1,6 @@
 package faang.school.postservice.publisher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.redisEvent.LikeEvent;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,8 @@ public class LikeEventPublisher implements EventPublisher<LikeEvent>{
         try {
             String message =  objectMapper.writeValueAsString(event);
             redisTemplate.convertAndSend(likeEventTopic.getTopic(), message);
-        } catch (Exception e){
-            e.printStackTrace();
+        } catch (JsonProcessingException exception) {
+            throw new RuntimeException(exception);
         }
     }
 }
