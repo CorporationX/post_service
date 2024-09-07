@@ -17,7 +17,7 @@ public class RedisConfig {
 
     private final RedisCredentials credentials;
 
-    @Bean("postChannelTopic")
+     @Bean("postChannelTopic")
     public ChannelTopic postChannelTopic() {
         return new ChannelTopic(credentials.getChannels().getPost());
     }
@@ -35,6 +35,11 @@ public class RedisConfig {
     @Bean("likePostChannelTopicAnalytics")
     public ChannelTopic likePostTopic() {
         return new ChannelTopic(credentials.getChannels().getLikePostAnalytics());
+    }
+
+    @Bean
+    public ChannelTopic commentEventTopic() {
+        return new ChannelTopic(credentials.getChannels().getComment());
     }
 
     @Bean
