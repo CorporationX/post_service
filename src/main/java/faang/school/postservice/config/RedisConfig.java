@@ -1,5 +1,6 @@
 package faang.school.postservice.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,22 +9,41 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
+@RequiredArgsConstructor
 public class RedisConfig {
-    @Value("${spring.data.redis.host}")
-    private String host;
-    @Value("${spring.data.redis.port}")
-    private int port;
+
+    private final RedisCredentials credentials;
+
     @Value("${spring.data.redis.channels.comment_channel.name}")
     private String commentEventNameTopic;
 
+    @Bean("postChannelTopic")
+    public ChannelTopic postChannelTopic() {
+        return new ChannelTopic(credentials.getChannels().getPost());
+    }
+
+    @Bean("postLikeChannelTopic")
+    public ChannelTopic postLikeTopic() {
+        return new ChannelTopic(credentials.getChannels().getPostLike());
+    }
+
+    @Bean("albumChannelTopic")
+    public ChannelTopic albumTopic() {
+        return new ChannelTopic(credentials.getChannels().getAlbum());
+    }
+
+    @Bean("likePostChannelTopicAnalytics")
+    public ChannelTopic likePostTopic() {
+        return new ChannelTopic(credentials.getChannels().getLikePostAnalytics());
+    }
+
     @Bean
-    public JedisConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
-        return new JedisConnectionFactory(config);
+    public JedisConnectionFactory jedisConnectionFactory() {
+        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(credentials.getHost(), credentials.getPort());
+        return new JedisConnectionFactory(redisStandaloneConfiguration);
     }
 
     @Bean

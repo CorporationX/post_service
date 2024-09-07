@@ -10,7 +10,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -29,9 +28,9 @@ public class PostServiceValidator {
         }
 
         if (postDto.getAuthorId() != null) {
-            checkIfAuthorExists(postDto.getAuthorId());
+            validateAuthorId(postDto.getAuthorId());
         } else {
-            checkIfProjectExists(postDto.getProjectId());
+            validateProjectId(postDto.getProjectId());
         }
     }
 
@@ -47,7 +46,7 @@ public class PostServiceValidator {
         }
     }
 
-    public void validatePublishPost(Post post, PostDto postDto) {
+    public void validatePublishPost(Post post) {
         if (post.isPublished()) {
             throw new DataValidationException("Post has already been published");
         }
@@ -60,15 +59,15 @@ public class PostServiceValidator {
     }
 
     @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
-    public void checkIfProjectExists(Long projectId) {
+    private void validateProjectId(Long projectId) {
         projectServiceClient.getProject(projectId);
-        log.info("Project ID validated successfully: " + projectId);
+        log.info("Project ID " + projectId + " validated successfully: " + projectId);
     }
 
     @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
-    public void checkIfAuthorExists(Long authorId) {
+    private void validateAuthorId(Long authorId) {
         userServiceClient.getUser(authorId);
-        log.info("Author ID validated successfully: " + authorId);
+        log.info("Author ID " + authorId + " validated successfully: ");
     }
 
     @Recover

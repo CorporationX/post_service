@@ -7,12 +7,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableFeignClients(basePackages = "faang.school.postservice.client")
+@EnableAsync
 @EnableRetry
+@EnableFeignClients(basePackages = "faang.school.postservice.client")
 @OpenAPIDefinition(info = @Info(
     title = "Post Service",
     version = "1.0",
