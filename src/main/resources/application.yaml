@@ -32,13 +32,21 @@ spring:
           name: like_channel
 
   task:
-    execution:
+    execution1:
       pool:
         core-size: 5
         max-size: 10
         queue-capacity: 10000
         keep-alive: 60
         thread-name-prefix: "AdRemoverExecutor"
+    execution2:
+      pool:
+        core-size: 10
+        max-size: 15
+        queue-capacity: 10000
+        keep-alive: 60
+        thread-name-prefix: "SchedulingPostPublisher"
+
 
 
 
