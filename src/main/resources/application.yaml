@@ -28,8 +28,7 @@ spring:
         post: post_channel
         like_post_analytics: like_event
         album: album_channel
-        comment_channel:
-          name: comment_channel
+        comment: comment_channel
 
     elasticsearch:
       rest:

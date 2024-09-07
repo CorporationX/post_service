@@ -17,10 +17,7 @@ public class RedisConfig {
 
     private final RedisCredentials credentials;
 
-    @Value("${spring.data.redis.channels.comment_channel.name}")
-    private String commentEventNameTopic;
-
-    @Bean("postChannelTopic")
+     @Bean("postChannelTopic")
     public ChannelTopic postChannelTopic() {
         return new ChannelTopic(credentials.getChannels().getPost());
     }
@@ -41,6 +38,11 @@ public class RedisConfig {
     }
 
     @Bean
+    public ChannelTopic commentEventTopic() {
+        return new ChannelTopic(credentials.getChannels().getComment());
+    }
+
+    @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(credentials.getHost(), credentials.getPort());
         return new JedisConnectionFactory(redisStandaloneConfiguration);
@@ -53,10 +55,5 @@ public class RedisConfig {
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
         return redisTemplate;
-    }
-
-    @Bean
-    public ChannelTopic commentEventTopic() {
-        return new ChannelTopic(commentEventNameTopic);
     }
 }
