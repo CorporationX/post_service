@@ -19,7 +19,7 @@ public class PostValidator implements PostServiceValidator<PostDto> {
         Long authorId = postDto.getAuthorId();
         Long projectId = postDto.getProjectId();
 
-        if (authorId == null && projectId == null || authorId != null && projectId != null) {
+        if (authorId == null && projectId == null /*|| authorId != null && projectId != null*/) {
             throw new IllegalArgumentException("Post must have either author or project");
         }
 
