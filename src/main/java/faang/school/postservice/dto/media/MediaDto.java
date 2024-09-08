@@ -10,8 +10,8 @@ import lombok.Data;
 @Builder(toBuilder = true)
 public class MediaDto {
     @NotNull
-    String key;
-    String name;
-    long size;
-    String type;
+    private String key;
+    private String name;
+    private long size;
+    private String type;
 }
