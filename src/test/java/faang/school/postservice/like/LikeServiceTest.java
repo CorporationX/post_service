@@ -3,7 +3,6 @@ package faang.school.postservice.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -12,41 +11,39 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeService;
+import faang.school.postservice.service.publisher.LikeEventPublisher;
 import faang.school.postservice.validator.LikeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceTest {
     @Mock
     private LikeRepository likeRepository;
-
     @Mock
     private PostRepository postRepository;
-
     @Mock
     private CommentRepository commentRepository;
-
     @Mock
     private UserServiceClient userServiceClient;
-
     @Mock
     private LikeMapper likeMapper;
-
     @Mock
     private LikeValidator likeValidator;
-
+    @Mock
+    private LikeEventPublisher eventPublisher;
 
     LikeDto likeDto;
     private Post post;
@@ -79,6 +76,8 @@ class LikeServiceTest {
 
     @Test
     void testLikePost() {
+        post.setAuthorId(10L);
+        post.setId(100L);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
         when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
