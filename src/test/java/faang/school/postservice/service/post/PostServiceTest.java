@@ -14,16 +14,14 @@ import faang.school.postservice.filter.post.filterImpl.PostFilterUserPostNonDele
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.container.PostContainer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -31,10 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -45,6 +40,8 @@ public class PostServiceTest {
     private PostDataPreparer preparer;
     @Mock
     private PostValidator validator;
+    @Mock
+    private PostEventPublisher publisher;
     @Spy
     private PostMapperImpl mapper;
     @Spy
@@ -68,7 +65,7 @@ public class PostServiceTest {
         List<PostFilter> postFilters = List.of(userDraftNonDeleted, userPostNonDeleted, projectDraftNonDeleted,
                 projectPostNonDeleted);
 
-        postService = new PostService(postRepository, validator, mapper, preparer, postFilters);
+        postService = new PostService(postRepository, validator, mapper, preparer, postFilters, publisher);
     }
 
     @Test
@@ -154,6 +151,7 @@ public class PostServiceTest {
                 .published(!isNotPublished)
                 .build();
         when(preparer.prepareForPublish(entity)).thenReturn(publishedPost);
+        doNothing().when(publisher).publish(Mockito.any());
 
         // when
         postService.publish(postId);
