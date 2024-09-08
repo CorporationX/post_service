@@ -1,17 +1,18 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.publishable.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validator.LikeValidator;
+import faang.school.postservice.service.publisher.LikeEventPublisher;
+import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
