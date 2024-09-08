@@ -1,20 +1,18 @@
-package faang.school.postservice.service.like;
+package faang.school.postservice.like;
 
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.like.LikeMapper;
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.like.LikeService;
-import faang.school.postservice.validator.like.LikeValidator;
-import jakarta.persistence.EntityNotFoundException;
-import org.junit.Assert;
+import faang.school.postservice.service.LikeService;
+import faang.school.postservice.validator.LikeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,10 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,23 +46,13 @@ class LikeServiceTest {
 
     @Mock
     private LikeValidator likeValidator;
-
+    @Mock
+    private LikeEventPublisher eventPublisher;
 
     LikeDto likeDto;
     private Post post;
     private Comment comment;
     private Like like;
-
-    // merged with `@Vingerri`
-
-    private Long postId;
-    private Long likeId;
-    Like firstLike;
-    Like secondLike;
-    List<Like> likes;
-    UserDto userOne;
-    UserDto userTwo;
-    List<UserDto> users;
 
     @InjectMocks
     private LikeService likeService;
@@ -105,6 +91,8 @@ class LikeServiceTest {
 
     @Test
     void testLikePost() {
+        post.setAuthorId(10L);
+        post.setId(100L);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
         when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.empty());

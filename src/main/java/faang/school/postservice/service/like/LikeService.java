@@ -1,18 +1,20 @@
-package faang.school.postservice.service.like;
+package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.publishable.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.like.LikeMapper;
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validator.like.LikeValidator;
+import faang.school.postservice.validator.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +30,9 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final LikeValidator likeValidator;
     private final UserServiceClient userServiceClient;
-    private static final int USER_BATCH_SIZE = 100;
+    private final LikeEventPublisher eventPublisher;
+    @Value("${like.userBatchSize}")
+    private int userBatchSize;
   
     public void likePost(LikeDto likeDto) {
         likeValidator.validateUser(likeDto.getUserId());
@@ -43,6 +47,9 @@ public class LikeService {
         Like like = likeMapper.toEntity(likeDto);
         like.setPost(post);
         likeRepository.save(like);
+
+        LikeEvent event = new LikeEvent(like.getUserId(), post.getAuthorId(), post.getId());
+        eventPublisher.publish(event);
     }
 
     public void unlikePost(LikeDto likeDto) {
@@ -113,8 +120,8 @@ public class LikeService {
 
     private List<UserDto> getUsersFromUserService(List<Long> userIds) {
         List<UserDto> users = new ArrayList<>();
-        for (int i = 0; i < userIds.size(); i += USER_BATCH_SIZE) {
-            int bound = Math.min(i + USER_BATCH_SIZE, userIds.size());
+        for (int i = 0; i < userIds.size(); i += userBatchSize) {
+            int bound = Math.min(i + userBatchSize, userIds.size());
             List<UserDto> batchOfUsers = userServiceClient.getUsersByIds(userIds.subList(i, bound));
             users.addAll(batchOfUsers);
         }
