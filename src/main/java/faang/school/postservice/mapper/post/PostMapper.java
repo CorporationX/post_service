@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper.post;
 
+import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
@@ -25,7 +26,13 @@ public interface PostMapper {
     @Mapping(target = "numLikes", expression = "java(mapLikesToNumLikes(entity.getLikes()))")
     PostDto toDto(Post entity);
 
+    @Mapping(source = "authorId", target = "authorId")
+    @Mapping(source = "id", target = "postId")
+    PostEvent toPostEvent(Post entity);
+
     Post toEntity(PostDto dto);
+
+
 
     @Named("mapLikes")
     default List<Long> mapLikesToLikeIds(List<Like> likes) {

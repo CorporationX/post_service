@@ -1,11 +1,13 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ public class PostService {
     private final PostMapper mapper;
     private final PostDataPreparer preparer;
     private final List<PostFilter> postFilters;
+    private final PostEventPublisher publisher;
 
     public PostDto create(PostDto postDto) {
         validator.validateBeforeCreate(postDto);
@@ -44,6 +47,9 @@ public class PostService {
 
         publishedPost = postRepository.save(publishedPost);
         log.info("Published post: {}", publishedPost);
+
+        PostEvent event = mapper.toPostEvent(publishedPost);
+        publisher.publish(event);
 
         return mapper.toDto(publishedPost);
     }

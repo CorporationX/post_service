@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.post.PostMapperImpl;
@@ -38,6 +39,19 @@ public class PostMapperTest {
 
         // then
         assertEquals(dto, actualDto);
+    }
+
+    @Test
+    public void testToPostEvent(){
+        PostEvent event = new PostEvent();
+        event.setAuthorId(1L);
+        event.setPostId(2L);
+
+        Post newPost = new Post();
+        newPost.setId(2L);
+        newPost.setAuthorId(1L);
+
+        assertEquals(event, mapper.toPostEvent(newPost));
     }
 
     @Test
