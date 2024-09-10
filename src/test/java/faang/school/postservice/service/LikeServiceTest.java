@@ -1,12 +1,14 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.PostLikeEventDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostLikePublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,6 +46,9 @@ class LikeServiceTest {
 
     @Mock
     private PostService postService;
+
+    @Mock
+    private PostLikePublisher postLikePublisher;
 
     @Mock
     private CommentService commentService;
@@ -67,6 +73,7 @@ class LikeServiceTest {
         when(postService.validationAndPostReceived(likeDto)).thenReturn(post);
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
         when(likeRepository.save(like)).thenReturn(like);
+        doNothing().when(postLikePublisher).publish(any(PostLikeEventDto.class));
         when(likeMapper.toDto(like)).thenReturn(likeDto);
 
         LikeDto result = likeService.createLikeToPost(likeDto);
