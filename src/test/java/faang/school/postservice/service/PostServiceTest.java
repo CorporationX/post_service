@@ -383,7 +383,7 @@ public class PostServiceTest {
         long postId = 1;
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> postService.getPost(postId));
+        assertThrows(IllegalArgumentException.class, () -> postService.getPost(postId));
         verify(postContextMapper, never()).getCountLikeEveryonePost();
     }
 
