@@ -21,7 +21,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -70,7 +69,7 @@ public class AvatarServiceTest {
 
         avatarService.getAvatar("testKey");
 
-        verify(minioS3Client.downloadFile(anyString()));
+        verify(minioS3Client).downloadFile(anyString());
     }
 
     @Test
@@ -78,11 +77,13 @@ public class AvatarServiceTest {
     void testDeleteAvatar() {
         UserProfilePicDto mockUserProfilePicDto = new UserProfilePicDto("fileId", "smallFileId");
         when(userServiceClient.getAvatarKeys(anyLong())).thenReturn(mockUserProfilePicDto);
+        doNothing().when(userServiceClient).deleteAvatar(anyLong());
+        doNothing().when(minioS3Client).deleteFIle(anyString(), anyString());
 
         avatarService.deleteAvatar(1L);
 
-        verify(userServiceClient, times(1)).getAvatarKeys(1L);
-        verify(userServiceClient, times(1)).deleteAvatar(1L);
-        verify(minioS3Client, times(1)).deleteFIle("fileId", "smallFileId");
+        verify(userServiceClient).getAvatarKeys(1L);
+        verify(userServiceClient).deleteAvatar(1L);
+        verify(minioS3Client).deleteFIle("fileId", "smallFileId");
     }
 }
