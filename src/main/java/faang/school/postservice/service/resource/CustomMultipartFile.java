@@ -1,7 +1,9 @@
 package faang.school.postservice.service.resource;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,12 +14,13 @@ import java.io.InputStream;
 
 @Data
 @Builder
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class CustomMultipartFile implements MultipartFile {
-    private final byte[] fileContent;
-    private final String name;
-    private final String originalFileName;
-    private final String contentType;
+    private byte[] fileContent;
+    private String name;
+    private String originalFileName;
+    private String contentType;
 
     @Override
     public String getName() {

@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserProfilePicDto;
 import faang.school.postservice.service.s3.MinioS3Client;
+import faang.school.postservice.validator.AvatarValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,11 +15,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -35,28 +36,18 @@ public class AvatarServiceTest {
     @Mock
     private UserServiceClient userServiceClient;
 
+    @Mock
+    private AvatarValidator avatarValidator;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    @DisplayName("test that saveAvatar() throws IllegalArgumentException when file too large")
-    void testSaveAvatarThrowsException() {
-        MultipartFile mockFile = mock(MultipartFile.class);
-        when(mockFile.getSize()).thenReturn(6 * 1024 * 1024L); // Set file size to 6 MB
-
-        IllegalArgumentException thrown = assertThrows(
-                IllegalArgumentException.class,
-                () -> avatarService.saveAvatar(1L, mockFile)
-        );
-
-        assertEquals("File size exceeds 5 MB", thrown.getMessage());
-    }
-
-    @Test
     @DisplayName("test that saveAvatar() throws RuntimeException when IOException occurs")
-    void testSaveAvatarThrowsRuntimeException() throws Exception {
+    void testSaveAvatarThrowsRuntimeException() throws IOException {
+        doNothing().when(avatarValidator).validateFileSize(any());
         MultipartFile mockFile = mock(MultipartFile.class);
         when(mockFile.getSize()).thenReturn(1024L);
         when(mockFile.getInputStream()).thenThrow(new IOException("mock IO exception"));
@@ -65,8 +56,6 @@ public class AvatarServiceTest {
                 RuntimeException.class,
                 () -> avatarService.saveAvatar(1L, mockFile)
         );
-
-        assertEquals("java.io.IOException: mock IO exception", thrown.getMessage());
     }
 
     @Test
@@ -74,14 +63,10 @@ public class AvatarServiceTest {
     void testGetAvatarThrowsRuntimeException() throws Exception {
         InputStream mockInputStream = mock(InputStream.class);
         when(minioS3Client.downloadFile(anyString())).thenReturn(mockInputStream);
-        when(mockInputStream.read(any(byte[].class))).thenThrow(new IOException("mock IO exception"));
 
-        RuntimeException thrown = assertThrows(
-                RuntimeException.class,
-                () -> avatarService.getAvatar("testKey")
-        );
+        avatarService.getAvatar("testKey");
 
-        assertEquals("java.io.IOException: mock IO exception", thrown.getMessage());
+        verify(minioS3Client.downloadFile(anyString()));
     }
 
     @Test

@@ -2,6 +2,8 @@ package faang.school.postservice.controller.avatar;
 
 import faang.school.postservice.service.AvatarService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,8 +25,8 @@ public class AvatarController {
         avatarService.saveAvatar(userId, file);
     }
 
-    @GetMapping("/avatars/download")
-    public ResponseEntity<byte[]> downloadAvatar(@RequestBody String key) {
+    @GetMapping(value = "/avatars/download", produces = MediaType.IMAGE_PNG_VALUE)
+    public InputStreamResource downloadAvatar(@RequestBody String key) {
         return avatarService.getAvatar(key);
     }
 

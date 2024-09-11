@@ -94,25 +94,22 @@ public class ResizeService {
 
         ByteArrayOutputStream resizedImage = new ByteArrayOutputStream();
 
-        if (originalWidth > maxSize || originalHeight > maxSize) {
-            try {
-                Thumbnails.of(originalImage)
+        try {
+            Thumbnails.Builder<BufferedImage> thumbnailBuilder = Thumbnails.of(originalImage);
+
+            if (originalWidth > maxSize || originalHeight > maxSize) {
+                thumbnailBuilder
                         .size(maxSize, maxSize)
-                        .keepAspectRatio(true)
-                        .outputFormat("png")
-                        .toOutputStream(resizedImage);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                        .keepAspectRatio(true);
+            } else {
+                thumbnailBuilder.scale(1);
             }
-        } else {
-            try {
-                Thumbnails.of(originalImage)
-                        .scale(1)
-                        .outputFormat("png")
-                        .toOutputStream(resizedImage);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+
+            thumbnailBuilder
+                    .outputFormat("png")
+                    .toOutputStream(resizedImage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         return resizedImage;

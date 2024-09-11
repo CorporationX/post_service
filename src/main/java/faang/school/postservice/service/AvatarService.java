@@ -6,27 +6,22 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.service.resource.CustomMultipartFile;
 import faang.school.postservice.service.resource.ResizeService;
 import faang.school.postservice.service.s3.MinioS3Client;
+import faang.school.postservice.validator.AvatarValidator;
 import feign.FeignException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.utils.IoUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,27 +29,29 @@ public class AvatarService {
     private final UserServiceClient userServiceClient;
     private final MinioS3Client minioS3Client;
     private final ResizeService resizeService;
+    private final AvatarValidator avatarValidator;
 
+    @Value("${spring.resources.file.max-file-size}")
+    private long maxFIleSize;
+
+    @Value("${spring.resources.image.max-side}")
+    private int maxSide;
+
+    @Value("${spring.resources.image.min-side}")
+    private int minSide;
+
+    @Transactional
     public void saveAvatar(long userId, MultipartFile file) {
-        if (file.getSize() > 5 * 1024 * 1024) {
-            throw new IllegalArgumentException("File size exceeds 5 MB");
-        }
-
+        avatarValidator.validateFileSize(file);
         BufferedImage originalImage;
         try {
             originalImage = ImageIO.read(file.getInputStream());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("error when reading a file " + e);
         }
 
-        ByteArrayOutputStream largeOutputStream = resizeService.squeezeImageOrLeave(originalImage, 1080);
-        ByteArrayOutputStream smallOutputStream = resizeService.squeezeImageOrLeave(originalImage, 170);
-
-        byte[] largeOutputStreamByteArray = largeOutputStream.toByteArray();
-        byte[] smallOutputStreamByteArray = smallOutputStream.toByteArray();
-
-        MultipartFile largeFile = new CustomMultipartFile(largeOutputStreamByteArray, "large_" + file.getName(), "large_" + file.getOriginalFilename(), file.getContentType());
-        MultipartFile smallFile = new CustomMultipartFile(smallOutputStreamByteArray, "small_" + file.getName(), "small_" + file.getOriginalFilename(), file.getContentType());
+        MultipartFile largeFile = imageProcessing(file, originalImage, maxSide);
+        MultipartFile smallFile = imageProcessing(file, originalImage, minSide);
 
         String fileId;
         String smallFileId;
@@ -74,29 +71,22 @@ public class AvatarService {
         saveLargeAndSmallFileId(userId, fileId, smallFileId);
     }
 
+    private CustomMultipartFile imageProcessing(MultipartFile file, BufferedImage originalImage, int maxSide) {
+        ByteArrayOutputStream smallOutputStream = resizeService.squeezeImageOrLeave(originalImage, maxSide);
+        byte[] smallOutputStreamByteArray = smallOutputStream.toByteArray();
+        return new CustomMultipartFile(smallOutputStreamByteArray, file.getName(), file.getOriginalFilename(), file.getContentType());
+    }
+
     @Retryable(value = FeignException.FeignClientException.class, backoff = @Backoff(multiplier = 2))
     private void saveLargeAndSmallFileId(long userId, String fileId, String smallFileId) {
         userServiceClient.uploadAvatar(userId, new UserProfilePicDto(fileId, smallFileId));
     }
 
-    public ResponseEntity<byte[]> getAvatar(String key) {
+    public InputStreamResource getAvatar(String key) {
         InputStream avatarInputStream = minioS3Client.downloadFile(key);
-        byte[] avatarByteArray;
-        try {
-            avatarByteArray = IoUtils.toByteArray(avatarInputStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        String contentType = "";
-        Path path = Paths.get(key);
-        try {
-            contentType = Files.probeContentType(path);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf(contentType));
-        return new ResponseEntity<>(avatarByteArray, headers, HttpStatus.OK);
+        InputStreamResource avatarResource = new InputStreamResource(avatarInputStream);
+
+        return avatarResource;
     }
 
     public void deleteAvatar(long userId) {

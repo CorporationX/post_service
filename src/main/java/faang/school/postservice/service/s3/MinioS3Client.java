@@ -1,7 +1,9 @@
 package faang.school.postservice.service.s3;
 
+import faang.school.postservice.exception.FileUploadException;
 import faang.school.postservice.model.Resource;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +19,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MinioS3Client {
     private final S3Client s3Client;
@@ -26,18 +29,18 @@ public class MinioS3Client {
 
     public Resource uploadFile(MultipartFile file, String folder) {
         long fileSize = file.getSize();
-        String key = String.format("%s/%d%s", folder, System.currentTimeMillis(), file.getOriginalFilename());
+        String key = generateFileKey(folder, file.getOriginalFilename());
 
-        try {
-            ByteBuffer byteBuffer = ByteBuffer.wrap(file.getBytes());
+        try (InputStream inputStream = file.getInputStream()) {
             s3Client.putObject(PutObjectRequest.builder()
                             .bucket(bucketName)
                             .key(key)
                             .contentType(file.getContentType())
                             .build(),
-                    RequestBody.fromByteBuffer(byteBuffer));
+                    RequestBody.fromInputStream(inputStream, fileSize));
         } catch (S3Exception | IOException e) {
-            System.err.println("Failed to upload file: " + e.getMessage());
+            log.error("Failed to upload file: {}", e.getMessage());
+            throw new FileUploadException("Failed to upload file to S3", e);
         }
 
         return Resource.builder()
@@ -46,6 +49,10 @@ public class MinioS3Client {
                 .name(file.getOriginalFilename())
                 .size(fileSize)
                 .build();
+    }
+
+    private String generateFileKey(String folder, String originalFilename) {
+        return String.format("%s/%d%s", folder, System.currentTimeMillis(), originalFilename);
     }
 
     public InputStream downloadFile(String key) {
