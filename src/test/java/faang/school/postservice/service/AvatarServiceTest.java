@@ -46,11 +46,15 @@ public class AvatarServiceTest {
 
     @Test
     @DisplayName("test that saveAvatar() throws RuntimeException when IOException occurs")
-    void testSaveAvatarThrowsRuntimeException() throws IOException {
+    void testSaveAvatarThrowsRuntimeException() {
         doNothing().when(avatarValidator).validateFileSize(any());
         MultipartFile mockFile = mock(MultipartFile.class);
         when(mockFile.getSize()).thenReturn(1024L);
-        when(mockFile.getInputStream()).thenThrow(new IOException("mock IO exception"));
+        try {
+            when(mockFile.getInputStream()).thenThrow(new IOException("mock IO exception"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
@@ -60,7 +64,7 @@ public class AvatarServiceTest {
 
     @Test
     @DisplayName("test that getAvatar() throws RuntimeException when IOException occurs")
-    void testGetAvatarThrowsRuntimeException() throws Exception {
+    void testGetAvatarThrowsRuntimeException() {
         InputStream mockInputStream = mock(InputStream.class);
         when(minioS3Client.downloadFile(anyString())).thenReturn(mockInputStream);
 
