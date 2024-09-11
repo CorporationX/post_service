@@ -20,6 +20,7 @@ public class RedisCredentials {
         private String follower;
         private String post;
         private String postLike;
+        private String likePostAnalytics;
         private String album;
         private String comment;
     }
