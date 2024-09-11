@@ -14,11 +14,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
-    @Value("${spring.data.redis.host}")
-    private String host;
-    @Value("${spring.data.redis.port}")
-    private int port;
-
     @Value("${spring.data.redis.channels.postChannel}")
     private String postChannel;
 
@@ -28,20 +23,38 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.like_post_analytics}")
     private String likePostAnalyticsChannel;
 
+
+    private final RedisCredentials credentials;
+
     @Bean("postChannelTopic")
     public ChannelTopic postChannelTopic() {
-        return new ChannelTopic(postChannel);
+        return new ChannelTopic(credentials.getChannels().getPost());
+    }
+
+    @Bean("postLikeChannelTopic")
+    public ChannelTopic postLikeTopic() {
+        return new ChannelTopic(credentials.getChannels().getPostLike());
+    }
+
+    @Bean("albumChannelTopic")
+    public ChannelTopic albumTopic() {
+        return new ChannelTopic(credentials.getChannels().getAlbum());
     }
 
     @Bean("likePostChannelTopicAnalytics")
     public ChannelTopic likePostTopic() {
-        return new ChannelTopic(likePostAnalyticsChannel);
+        return new ChannelTopic(credentials.getChannels().getLikePostAnalytics());
     }
 
     @Bean
-    public JedisConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
-        return new JedisConnectionFactory(config);
+    public ChannelTopic commentEventTopic() {
+        return new ChannelTopic(credentials.getChannels().getComment());
+    }
+
+    @Bean
+    public JedisConnectionFactory jedisConnectionFactory() {
+        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(credentials.getHost(), credentials.getPort());
+        return new JedisConnectionFactory(redisStandaloneConfiguration);
     }
 
     @Bean
@@ -50,12 +63,6 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
-
         return redisTemplate;
-    }
-
-    @Bean("postLikeChannelTopic")
-    public ChannelTopic postLikeTopic() {
-        return new ChannelTopic(postLike);
     }
 }

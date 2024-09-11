@@ -17,6 +17,9 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  profiles:
+    active: dev
+
   data:
     redis:
       port: 6379
@@ -27,6 +30,8 @@ spring:
         postLike: post_like_channel
         postChannel: post_channel
         like_post_analytics: like_event
+        album: album_channel
+        comment: comment_channel
 
     elasticsearch:
       rest:
@@ -64,10 +69,6 @@ spring:
 
 server:
   port: 8081
-
-logging:
-  level:
-    root: info
 
 post:
   publisher:
