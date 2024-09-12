@@ -66,7 +66,7 @@ public class PostServiceValidator {
 
     @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
     private void validateAuthorId(Long authorId) {
-        userServiceClient.getUserById(authorId);
+        userServiceClient.getUser(authorId);
         log.info("Author ID " + authorId + " validated successfully: ");
     }
 

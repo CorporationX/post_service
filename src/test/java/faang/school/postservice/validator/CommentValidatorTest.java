@@ -53,9 +53,9 @@ public class CommentValidatorTest {
     @Test
     void existUserTest() {
         long userId = 1L;
-        when(userServiceClient.getUserById(anyLong())).thenReturn(userDto);
+        when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
         commentValidator.existUser(userId);
-        verify(userServiceClient).getUserById(userId);
+        verify(userServiceClient).getUser(userId);
     }
 
     @Test
