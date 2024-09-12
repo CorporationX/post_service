@@ -90,10 +90,10 @@ public class PostServerValidatorTest {
     @DisplayName("Create post with valid author ID")
     void testCreatePostValidAuthorId() {
         postDto = postDto.builder().authorId(1L).projectId(null).build();
-        when(userServiceClient.getUser(postDto.getAuthorId())).thenReturn(any(UserDto.class));
+        when(userServiceClient.getUserById(postDto.getAuthorId())).thenReturn(any(UserDto.class));
         postServiceValidator.validateCreatePost(postDto);
 
-        verify(userServiceClient).getUser(postDto.getAuthorId());
+        verify(userServiceClient).getUserById(postDto.getAuthorId());
     }
 
     @Test

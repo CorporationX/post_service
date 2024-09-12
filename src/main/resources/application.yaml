@@ -28,7 +28,7 @@ spring:
         calculations_channel:
           name: calculations_channel
         postLike: post_like_channel
-        post: post_channel
+        postChannel: post_channel
         like_post_analytics: like_event
         album: album_channel
         comment: comment_channel
@@ -62,6 +62,8 @@ spring:
       max-width-horizontal: 1080
       max-height-horizontal: 566
       max-size-square: 1080
+      max-side: 1080
+      min-side: 170
       supported-image-types: "image/png,image/jpeg,image/jpg"
 
   post:
@@ -111,3 +113,10 @@ post-correcter:
   language-param: language
   language: en-US
   text-param: text
+
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: projectbucket

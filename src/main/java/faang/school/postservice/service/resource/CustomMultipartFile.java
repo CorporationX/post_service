@@ -1,5 +1,10 @@
 package faang.school.postservice.service.resource;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -7,46 +12,51 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-@RequiredArgsConstructor
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CustomMultipartFile implements MultipartFile {
-    private final String name;
-    private final String originalFilename;
-    private final String contentType;
-    private final byte[] content;
+    private byte[] fileContent;
+    private String name;
+    private String originalFileName;
+    private String contentType;
 
     @Override
     public String getName() {
-        return name;
-    }
+        return this.name;
+    };
 
     @Override
+    @Nullable
     public String getOriginalFilename() {
-        return originalFilename;
+        return this.originalFileName;
     }
 
     @Override
+    @Nullable
     public String getContentType() {
-        return contentType;
+        return this.contentType;
     }
 
     @Override
     public boolean isEmpty() {
-        return content == null || content.length == 0;
+        return this.fileContent == null || this.fileContent.length == 0;
     }
 
     @Override
     public long getSize() {
-        return content.length;
+        return this.fileContent.length;
     }
 
     @Override
     public byte[] getBytes() throws IOException {
-        return content;
+        return this.fileContent;
     }
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return new ByteArrayInputStream(content);
+        return new ByteArrayInputStream(fileContent);
     }
 
     @Override

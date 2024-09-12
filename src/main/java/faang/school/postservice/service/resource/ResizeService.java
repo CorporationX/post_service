@@ -65,10 +65,10 @@ public class ResizeService {
 
     private MultipartFile createMultipartFile(MultipartFile originalFile, byte[] resizedImage) {
         return new CustomMultipartFile(
-                originalFile.getName(),
+                resizedImage,
                 originalFile.getOriginalFilename(),
                 originalFile.getContentType(),
-                resizedImage
+                originalFile.getName()
         );
     }
 
@@ -86,5 +86,32 @@ public class ResizeService {
         } else {
             return (int) (maxHeightHorizontal * aspectRatio);
         }
+    }
+
+    public ByteArrayOutputStream squeezeImageOrLeave(BufferedImage originalImage, int maxSize) {
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+
+        ByteArrayOutputStream resizedImage = new ByteArrayOutputStream();
+
+        try {
+            Thumbnails.Builder<BufferedImage> thumbnailBuilder = Thumbnails.of(originalImage);
+
+            if (originalWidth > maxSize || originalHeight > maxSize) {
+                thumbnailBuilder
+                        .size(maxSize, maxSize)
+                        .keepAspectRatio(true);
+            } else {
+                thumbnailBuilder.scale(1);
+            }
+
+            thumbnailBuilder
+                    .outputFormat("png")
+                    .toOutputStream(resizedImage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return resizedImage;
     }
 }

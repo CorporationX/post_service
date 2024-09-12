@@ -166,7 +166,7 @@ public class LikeServiceTest {
         post.setAuthorId(1L);
 
         when(postService.getPost(likeDtoPost.getPostId())).thenReturn(post);
-        when(userServiceClient.getUser(likeDtoPost.getUserId())).thenReturn(userDto);
+        when(userServiceClient.getUserById(likeDtoPost.getUserId())).thenReturn(userDto);
         when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.empty());
         when(likeMapper.toEntity(likeDtoPost)).thenReturn(like);
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
@@ -200,7 +200,7 @@ public class LikeServiceTest {
         UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
 
         when(commentService.getComment(likeDtoComment.getCommentId())).thenReturn(comment);
-        when(userServiceClient.getUser(likeDtoComment.getUserId())).thenReturn(userDto);
+        when(userServiceClient.getUserById(likeDtoComment.getUserId())).thenReturn(userDto);
         when(likeRepository.findByCommentIdAndUserId(comment.getId(), userDto.getId())).thenReturn(Optional.empty());
         when(likeMapper.toEntity(likeDtoComment)).thenReturn(like);
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
