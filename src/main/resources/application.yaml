@@ -63,6 +63,8 @@ spring:
       max-width-horizontal: 1080
       max-height-horizontal: 566
       max-size-square: 1080
+      max-side: 1080
+      min-side: 170
       supported-image-types: "image/png,image/jpeg,image/jpg"
 
   post:
@@ -112,3 +114,10 @@ post-correcter:
   language-param: language
   language: en-US
   text-param: text
+
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: projectbucket

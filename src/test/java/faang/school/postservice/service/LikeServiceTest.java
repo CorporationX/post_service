@@ -158,6 +158,25 @@ public class LikeServiceTest {
         verify(userServiceClient, times(1)).getUsersByIds(anyList());
     }
 
+    @DisplayName("Когда метод по добавлению лайка к посту отработал")
+    @Test
+    public void testAddLikeToPostWhenValid() {
+        UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
+        Like like = new Like();
+        post.setAuthorId(1L);
+
+        when(postService.getPost(likeDtoPost.getPostId())).thenReturn(post);
+        when(userServiceClient.getUserById(likeDtoPost.getUserId())).thenReturn(userDto);
+        when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.empty());
+        when(likeMapper.toEntity(likeDtoPost)).thenReturn(like);
+        when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
+
+        likeService.addLikeToPost(likeDtoPost);
+
+        verify(likeServiceValidator, times(1)).checkDuplicateLike(Optional.empty());
+        verify(likeRepository, times(1)).save(like);
+    }
+
     @DisplayName("Когда метод по удалению лайка с поста отработал")
     @Test
     public void testDeleteLikeFromPostWhenValid() {
@@ -181,7 +200,7 @@ public class LikeServiceTest {
         UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
 
         when(commentService.getComment(likeDtoComment.getCommentId())).thenReturn(comment);
-        when(userServiceClient.getUser(likeDtoComment.getUserId())).thenReturn(userDto);
+        when(userServiceClient.getUserById(likeDtoComment.getUserId())).thenReturn(userDto);
         when(likeRepository.findByCommentIdAndUserId(comment.getId(), userDto.getId())).thenReturn(Optional.empty());
         when(likeMapper.toEntity(likeDtoComment)).thenReturn(like);
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);

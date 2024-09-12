@@ -1,25 +1,40 @@
 package faang.school.postservice.client;
 
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserProfilePicDto;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
+import java.util.Optional;
 
 @FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}", path = "/api/v1/user")
 public interface UserServiceClient {
 
     @GetMapping("/{userId}")
-    UserDto getUser(@PathVariable long userId);
+    UserDto getUserById(@PathVariable long userId);
+
+    @PostMapping("/byList")
+    List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
+    @PutMapping("/avatar/put")
+    void uploadAvatar(@RequestHeader(value = "x-user-id") long userId,
+                             @RequestBody UserProfilePicDto userProfilePicDto);
+
+    @DeleteMapping("/avatar/delete")
+    void deleteAvatar(@RequestHeader(value = "x-user-id") long userId);
+
+    @GetMapping("avatar/keys")
+    UserProfilePicDto getAvatarKeys(@RequestHeader(value = "x-user-id") long userId);
 
     @GetMapping("/users/exists/{userId}")
     boolean existsById(@PathVariable Long userId);
-
-    @PostMapping("/users")
-    List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 
     @GetMapping("/users/{userId}/followers")
     List<UserDto> getUserFollowers(@PathVariable long userId);
