@@ -14,8 +14,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
-    @Value("${spring.data.redis.channels.postChannel}")
-    private String postChannel;
 
     @Value("${spring.data.redis.channels.postLike}")
     private String postLike;
@@ -23,11 +21,14 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.like_post_analytics}")
     private String likePostAnalyticsChannel;
 
+    @Value("${spring.data.redis.channels.likeChannel}")
+    private String likeChannel;
+
     private final RedisCredentials credentials;
 
     @Bean("postChannelTopic")
     public ChannelTopic postChannelTopic() {
-        return new ChannelTopic(postChannel);
+        return new ChannelTopic(credentials.getChannels().getPost());
     }
 
     @Bean("postLikeChannelTopic")
@@ -48,6 +49,11 @@ public class RedisConfig {
     @Bean
     public ChannelTopic commentEventTopic() {
         return new ChannelTopic(credentials.getChannels().getComment());
+    }
+
+    @Bean
+    public ChannelTopic likeEventTopic() {
+        return new ChannelTopic(likeChannel);
     }
 
     @Bean
