@@ -62,13 +62,8 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public Comment validationAndCommentsReceived(LikeDto likeDto) {
-        if (likeDto.getCommentId() != null) {
-            if (!commentRepository.existsById(likeDto.getCommentId())) {
-                throw new DataValidationException("no such postId exists commentId: " + likeDto.getCommentId());
-            }
-        } else {
-            throw new DataValidationException("arrived likeDto with postId and commentId equal to null");
-        }
+        commentValidator.checkComment(likeDto);
+
         return commentRepository.findById(likeDto.getCommentId()).orElseThrow(() ->
                 new NotFoundEntityException("Not found comment by id: " + likeDto.getCommentId()));
     }
