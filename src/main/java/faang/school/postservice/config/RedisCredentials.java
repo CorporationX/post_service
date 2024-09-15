@@ -23,5 +23,6 @@ public class RedisCredentials {
         private String likePostAnalytics;
         private String commentAchievement;
         private String album;
+        private String comment;
     }
 }

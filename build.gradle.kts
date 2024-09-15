@@ -62,6 +62,19 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    /**
+     * S3 SDK
+     */
+    implementation("software.amazon.awssdk:s3:2.20.0")
+    implementation("software.amazon.awssdk:auth:2.20.0")
+    implementation("software.amazon.awssdk:regions:2.20.0")
+
+    implementation("net.coobird:thumbnailator:0.4.8")
+
+    implementation("org.imgscalr:imgscalr-lib:4.2")
+
+
 }
 
 tasks.withType<Test> {

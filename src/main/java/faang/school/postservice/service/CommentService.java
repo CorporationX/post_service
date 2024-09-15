@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,8 +41,17 @@ public class CommentService {
         commentValidator.existPost(commentDto.getPostId());
         Comment comment = commentMapper.dtoToEntity(commentDto);
         comment.setPost(postRepository.findById(commentDto.getPostId()).get());
+        Comment savedComment = commentRepository.save(comment);
+        CommentEvent commentEvent = CommentEvent.builder()
+                .commentAuthorId(savedComment.getAuthorId())
+                .commentId(savedComment.getId())
+                .createdAt(savedComment.getCreatedAt())
+                .postId(savedComment.getPost().getId())
+                .postAuthorId(savedComment.getPost().getAuthorId())
+                .build();
+        commentEventPublisher.publish(commentEvent);
         publishCommentsEvent(commentDto);
-        return commentMapper.entityToDto(commentRepository.save(comment));
+        return commentMapper.entityToDto(savedComment);
     }
 
     @Transactional
@@ -77,11 +85,11 @@ public class CommentService {
                 .map(commentMapper::entityToDto)
                 .collect(Collectors.toList());
     }
-  
+
     @Transactional
     public Comment getComment(long commentId) {
         return commentRepository.findById(commentId)
-            .orElseThrow(() -> new IllegalArgumentException("Comment with the same id does not exist"));
+                .orElseThrow(() -> new IllegalArgumentException("Comment with the same id does not exist"));
     }
 
     private void publishCommentsEvent(CommentDto commentDto) {

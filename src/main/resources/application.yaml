@@ -17,6 +17,9 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  profiles:
+    active: dev
+
   data:
     redis:
       port: 6379
@@ -26,8 +29,10 @@ spring:
           name: calculations_channel
         postLike: post_like_channel
         post: post_channel
+        likeChannel: like_channel
         like_post_analytics: like_event
         album: album_channel
+        comment: comment_channel
         comment_achievement: comment_channel
 
     elasticsearch:
@@ -59,6 +64,8 @@ spring:
       max-width-horizontal: 1080
       max-height-horizontal: 566
       max-size-square: 1080
+      max-side: 1080
+      min-side: 170
       supported-image-types: "image/png,image/jpeg,image/jpg"
 
   post:
@@ -66,10 +73,6 @@ spring:
 
 server:
   port: 8081
-
-logging:
-  level:
-    root: info
 
 post:
   publisher:
@@ -112,3 +115,10 @@ post-correcter:
   language-param: language
   language: en-US
   text-param: text
+
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: projectbucket

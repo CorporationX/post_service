@@ -38,9 +38,9 @@ public class CommentValidatorTest {
 
     @BeforeEach
     void init() {
-        userId = 1l;
-        postId = 1l;
-        commentId = 2l;
+        userId = 1L;
+        postId = 1L;
+        commentId = 2L;
         comment = Comment.builder()
                 .id(commentId)
                 .authorId(1L).build();
@@ -52,7 +52,7 @@ public class CommentValidatorTest {
 
     @Test
     void existUserTest() {
-        long userId = 1l;
+        long userId = 1L;
         when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
         commentValidator.existUser(userId);
         verify(userServiceClient).getUser(userId);

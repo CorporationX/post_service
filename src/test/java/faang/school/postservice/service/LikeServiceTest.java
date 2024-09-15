@@ -8,6 +8,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.redisPublisher.LikePostPublisher;
 import faang.school.postservice.redisPublisher.PostLikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
@@ -46,11 +47,13 @@ public class LikeServiceTest {
     @Mock
     private LikeMapper likeMapper;
     @Mock
+    private LikeEventPublisher likeEventPublisher;
+    @Mock
     private LikePostPublisher likePostPublisher;
     @Mock
-    private PostLikeEventPublisher postLikeEventPublisher;
-    @Mock
     private LikeEventMapper likeEventMapper;
+    @Mock
+    private PostLikeEventPublisher postLikeEventPublisher;
 
     @InjectMocks
     private LikeService likeService;
@@ -66,6 +69,7 @@ public class LikeServiceTest {
     private Comment comment;
     private LikeDto likeDto;
     private UserDto userDto;
+    private Like like;
 
     @BeforeEach
     public void setup() {
@@ -77,6 +81,11 @@ public class LikeServiceTest {
                 .id(userId)
                 .username("name")
                 .email("email@google.com")
+                .build();
+
+        like = Like.builder()
+                .id(1L)
+                .userId(userId)
                 .build();
 
         likeDtoPost = LikeDto.builder()
@@ -160,7 +169,6 @@ public class LikeServiceTest {
     @Test
     public void testAddLikeToPostWhenValid() {
         UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
-        Like like = new Like();
         post.setAuthorId(1L);
 
         when(postService.getPost(likeDtoPost.getPostId())).thenReturn(post);
@@ -168,10 +176,22 @@ public class LikeServiceTest {
         when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.empty());
         when(likeMapper.toEntity(likeDtoPost)).thenReturn(like);
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
+        doNothing().when(likeEventPublisher).publish(any());
+        doNothing().when(likePostPublisher).publish(any());
+        doNothing().when(postLikeEventPublisher).publish(any());
+        when(likeRepository.save(any())).thenReturn(like);
 
         likeService.addLikeToPost(likeDtoPost);
 
         verify(likeServiceValidator, times(1)).checkDuplicateLike(Optional.empty());
+        verify(postService, times(1)).getPost(likeDtoPost.getPostId());
+        verify(userServiceClient, times(1)).getUser(likeDtoPost.getUserId());
+        verify(likeRepository, times(1)).findByPostIdAndUserId(post.getId(), userDto.getId());
+        verify(likeMapper, times(1)).toEntity(likeDtoPost);
+        verify(likeMapper, times(1)).toLikeDto(like);
+        verify(likeEventPublisher, times(1)).publish(any());
+        verify(likePostPublisher, times(1)).publish(any());
+        verify(postLikeEventPublisher, times(1)).publish(any());
         verify(likeRepository, times(1)).save(like);
     }
 

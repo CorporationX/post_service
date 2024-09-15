@@ -6,12 +6,13 @@ import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeEventMapper;
 import faang.school.postservice.mapper.LikeMapper;
-import faang.school.postservice.redisPublisher.PostLikeEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.redisPublisher.LikePostPublisher;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.redisPublisher.LikePostPublisher;
+import faang.school.postservice.redisPublisher.PostLikeEventPublisher;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -27,6 +28,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LikeService {
 
+    private final LikeEventPublisher likeEventPublisher;
     @Value("${batch-size}")
     @Setter
     private int BATCH_SIZE;
@@ -90,7 +92,9 @@ public class LikeService {
         Like like = likeMapper.toEntity(likeDto);
 
         post.getLikes().add(like);
-        likeRepository.save(like);
+
+        long likeId = likeRepository.save(like).getId();
+        likeEventPublisher.publish(new LikeEvent(post.getId(), post.getAuthorId(), likeId));
         publishEventLikePost(likeDto, post);
 
         return likeMapper.toLikeDto(like);

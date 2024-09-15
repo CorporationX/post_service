@@ -63,8 +63,11 @@ public class CommentServiceTest {
     void init() {
         commentId = 1L;
         userId = 2L;
+        postId = 4L;
         String content = "content";
-        post = Post.builder().id(postId).build();
+        post = Post.builder()
+                .id(postId)
+                .authorId(2L).build();
         comment = Comment.builder()
                 .id(commentId)
                 .authorId(2L)
@@ -112,6 +115,12 @@ public class CommentServiceTest {
         when(commentMapper.entityToDto(comment)).thenReturn(commentDto);
         when(commentEventMapper.commentDtoToCommentEvent(commentDto)).thenReturn(commentEvent);
         CommentDto result = commentService.createComment(commentDto);
+        CommentEvent commentEvent = CommentEvent.builder()
+                .commentAuthorId(comment.getAuthorId())
+                .postAuthorId(post.getAuthorId())
+                .commentId(comment.getId())
+                .postId(post.getId())
+                .build();
         verify(commentRepository).save(comment);
         verify(commentEventPublisher).publish(commentEvent);
         assertNotNull(result);

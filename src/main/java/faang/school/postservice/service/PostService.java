@@ -14,10 +14,6 @@ import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import feign.FeignException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -126,7 +123,7 @@ public class PostService {
         elasticsearchService.removePost(postId);
         return postMapper.toDto(post);
     }
-  
+
     public PostDto getPostDtoById(Long postId) {
         return postMapper.toDto(getPostById(postId));
     }
@@ -185,9 +182,13 @@ public class PostService {
     }
 
     public Post getPost(long postId) {
-        Post post = getPostById(postId);
-
-        long countLike = post.getLikes().size();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post with the same id does not exist"));
+        long countLike;
+        if (post.getLikes() == null) {
+            countLike = 0;
+        }
+        countLike = post.getLikes().size();
         context.getCountLikeEveryonePost().put(postId, countLike);
 
         return post;

@@ -28,6 +28,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -384,7 +391,7 @@ public class PostServiceTest {
         long postId = 1;
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> postService.getPost(postId));
+        assertThrows(IllegalArgumentException.class, () -> postService.getPost(postId));
         verify(postContextMapper, never()).getCountLikeEveryonePost();
     }
 
