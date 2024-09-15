@@ -1,6 +1,8 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.PostCreateEventDto;
+import faang.school.postservice.publisher.PostCreatePublisher;
 import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.dto.event.PostViewEventDto;
 import faang.school.postservice.dictionary.ModerationDictionary;
@@ -44,6 +46,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostPublishService postPublishService;
     private final PostViewPublisher postViewPublisher;
+    private final PostCreatePublisher postCreatePublisher;
     private final UserContext userContext;
     private final ModerationDictionary moderationDictionary;
 
@@ -74,6 +77,13 @@ public class PostService {
         postValidator.checkIfPostHasAuthor(postCreateDto.getAuthorId(), postCreateDto.getProjectId());
 
         Post createdPost = postRepository.save(postMapper.toPost(postCreateDto));
+
+        postCreatePublisher.publish(PostCreateEventDto.builder()
+                .id(createdPost.getId())
+                .userId(userContext.getUserId())
+                .receivedAt(LocalDateTime.now())
+                .build());
+
         return postMapper.toDto(createdPost);
     }
 

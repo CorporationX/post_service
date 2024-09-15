@@ -60,10 +60,10 @@ public class Post {
     private LocalDateTime scheduledAt;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "verified_date")
+    @Column(name = "verify_date")
     private LocalDateTime verifiedDate;
 
-    @Column(name = "verified", nullable = false)
+    @Column(name = "verify", nullable = false)
     private boolean verified;
 
     @Column(name = "deleted", nullable = false)

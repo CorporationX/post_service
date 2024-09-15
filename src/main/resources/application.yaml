@@ -23,6 +23,8 @@ spring:
       host: localhost
       channels:
         post-view: post_view_channel
+        post-create: post_channel
+        post-like: post_like_channel
         calculations_channel:
           name: calculations_channel
   task:

@@ -1,11 +1,12 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.PostLikeEventDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.publisher.PostLikePublisher;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final PostService postService;
     private final CommentService commentService;
+    private final PostLikePublisher postLikePublisher;
 
     @Transactional
     public LikeDto createLikeToPost(LikeDto likeDto) {
@@ -32,6 +34,13 @@ public class LikeService {
         var entityLike = likeMapper.toEntity(likeDto);
         entityLike.setPost(post);
         var createLike = likeRepository.save(entityLike);
+
+        postLikePublisher.publish(PostLikeEventDto.builder()
+                .postId(likeDto.getPostId())
+                .actionUserId(likeDto.getLikeId())
+                .authorId(post.getAuthorId())
+                .build());
+
         return likeMapper.toDto(createLike);
     }
 
