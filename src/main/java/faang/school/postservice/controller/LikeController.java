@@ -1,10 +1,12 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.dto.UrlDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.validator.validated.LikeToComment;
 import faang.school.postservice.validator.validated.LikeToPost;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
