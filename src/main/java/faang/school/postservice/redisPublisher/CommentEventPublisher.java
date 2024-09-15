@@ -17,10 +17,4 @@ public class CommentEventPublisher extends EventPublisher<CommentEvent> {
                                  @Qualifier("commentEventTopic") ChannelTopic channelTopic) {
         super(redisTemplate, objectMapper, channelTopic);
     }
-
-//    public CommentEventPublisher(RedisTemplate<String, Object> redisTemplate,
-//                                 ObjectMapper objectMapper,
-//                                 @Qualifier("commentAchievementTopic") ChannelTopic channelTopic) {
-//        super(redisTemplate, objectMapper, channelTopic);
-//    }
 }

@@ -2,12 +2,14 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentAchievementEvent;
 import faang.school.postservice.dto.event.CommentEvent;
-import faang.school.postservice.mapper.CommentEventMapper;
+import faang.school.postservice.mapper.CommentAchievementMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
 import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -47,8 +49,9 @@ public class CommentServiceTest {
     @Mock
     private CommentEventPublisher commentEventPublisher;
     @Mock
-    private CommentEventMapper commentEventMapper;
-
+    private CommentAchievementEventPublisher commentAchievementEventPublisher;
+    @Mock
+    private CommentAchievementMapper commentAchievementMapper;
 
     private long commentId;
     private long postId;
@@ -57,7 +60,7 @@ public class CommentServiceTest {
     private CommentDto commentDto;
     private CommentDto updatedCommentDto;
     private Post post;
-    private CommentEvent commentEvent;
+    private CommentAchievementEvent commentAchievementEvent;
 
     @BeforeEach
     void init() {
@@ -85,7 +88,7 @@ public class CommentServiceTest {
                 .content("UpdatedContent")
                 .build();
 
-        commentEvent = CommentEvent.builder()
+        commentAchievementEvent = CommentAchievementEvent.builder()
                 .id(commentId)
                 .postId(postId)
                 .content(content)
@@ -113,16 +116,15 @@ public class CommentServiceTest {
         when(commentRepository.save(comment)).thenReturn(comment);
         when(postRepository.findById(commentDto.getPostId())).thenReturn(Optional.of(post));
         when(commentMapper.entityToDto(comment)).thenReturn(commentDto);
-        when(commentEventMapper.commentDtoToCommentEvent(commentDto)).thenReturn(commentEvent);
+        when(commentAchievementMapper.commentDtoToCommentAchievementEvent(commentDto)).thenReturn(commentAchievementEvent);
         CommentDto result = commentService.createComment(commentDto);
         CommentEvent commentEvent = CommentEvent.builder()
                 .commentAuthorId(comment.getAuthorId())
                 .postAuthorId(post.getAuthorId())
                 .commentId(comment.getId())
-                .postId(post.getId())
                 .build();
         verify(commentRepository).save(comment);
-        verify(commentEventPublisher).publish(commentEvent);
+        verify(commentAchievementEventPublisher).publish(commentAchievementEvent);
         assertNotNull(result);
         assertEquals(commentDto, result);
     }

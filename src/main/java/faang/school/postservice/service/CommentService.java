@@ -3,10 +3,13 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentAchievementEvent;
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.mapper.CommentAchievementMapper;
 import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
 import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -32,7 +35,8 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final PostRepository postRepository;
     private final CommentEventPublisher commentEventPublisher;
-    private final CommentEventMapper commentEventMapper;
+    private final CommentAchievementEventPublisher commentAchievementEventPublisher;
+    private final CommentAchievementMapper commentAchievementMapper;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
@@ -46,11 +50,10 @@ public class CommentService {
                 .commentAuthorId(savedComment.getAuthorId())
                 .commentId(savedComment.getId())
                 .createdAt(savedComment.getCreatedAt())
-                .postId(savedComment.getPost().getId())
                 .postAuthorId(savedComment.getPost().getAuthorId())
                 .build();
         commentEventPublisher.publish(commentEvent);
-        publishCommentsEvent(commentDto);
+        publishCommentAchievementEvent(commentDto);
         return commentMapper.entityToDto(savedComment);
     }
 
@@ -92,7 +95,7 @@ public class CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("Comment with the same id does not exist"));
     }
 
-    private void publishCommentsEvent(CommentDto commentDto) {
-        commentEventPublisher.publish(commentEventMapper.commentDtoToCommentEvent(commentDto));
+    private void publishCommentAchievementEvent(CommentDto commentDto) {
+        commentAchievementEventPublisher.publish(commentAchievementMapper.commentDtoToCommentAchievementEvent(commentDto));
     }
 }
