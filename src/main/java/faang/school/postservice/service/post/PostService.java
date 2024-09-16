@@ -18,6 +18,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.post.PostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
+import faang.school.postservice.service.publisher.PostEventPublisher;
 import faang.school.postservice.validator.post.PostServiceValidator;
 import faang.school.postservice.service.resource.ResourceService;
 import jakarta.validation.constraints.NotNull;
@@ -48,6 +49,7 @@ public class PostService {
     private final ResourceMapper resourceMapper;
 
     private final PostServiceValidator validator;
+    private final PostEventPublisher postEventPublisher;
 
     private final PostProducer postProducer;
 
@@ -89,6 +91,9 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         Post savedPost = postRepository.save(post);
+
+        PostEvent postEvent = new PostEvent(post.getAuthorId(), postId);
+        postEventPublisher.publish(postEvent);
 
         sendPostEvent(savedPost.getId(), savedPost.getAuthorId());
 
