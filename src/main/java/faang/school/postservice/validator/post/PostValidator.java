@@ -52,12 +52,12 @@ public class PostValidator {
         }
     }
 
-    public void getAllDraftsByAuthorIdValidator(Long authorId) {
+    public void validateIfAuthorExists(Long authorId) {
         Optional.ofNullable(userServiceClient.getUser(authorId))
                 .orElseThrow(() -> new DataValidationException("Author " + authorId + " not found"));
     }
 
-    public void getAllDraftsByProjectIdValidator(Long projectId) {
+    public void validateIfProjectExists(Long projectId) {
         Optional.ofNullable(projectServiceClient.getProject(projectId))
                 .orElseThrow(() -> new DataValidationException("Project " + projectId + " not found"));
     }

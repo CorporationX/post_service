@@ -72,13 +72,13 @@ public class PostService {
 
     @Transactional
     public List<PostDto> getAllDraftsByAuthorId(Long authorId) {
-        postValidator.getAllDraftsByAuthorIdValidator(authorId);
+        postValidator.validateIfAuthorExists(authorId);
 
         List<PostDto> posts = StreamSupport.stream(postRepository.findAll().spliterator(), false)
                 .filter(post -> Objects.equals(post.getAuthorId(), authorId))
                 .filter(post -> !post.isPublished())
                 .filter(post -> !post.isDeleted())
-                .sorted(Comparator.comparing(Post::getCreatedAt))
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
 
@@ -87,13 +87,43 @@ public class PostService {
 
     @Transactional
     public List<PostDto> getAllDraftsByProjectId(Long projectId) {
-        postValidator.getAllDraftsByProjectIdValidator(projectId);
+        postValidator.validateIfProjectExists(projectId);
 
         List<PostDto> posts = StreamSupport.stream(postRepository.findAll().spliterator(), false)
                 .filter(post -> Objects.equals(post.getProjectId(), projectId))
                 .filter(post -> !post.isPublished())
                 .filter(post -> !post.isDeleted())
-                .sorted(Comparator.comparing(Post::getCreatedAt))
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .map(postMapper::toDto)
+                .toList();
+
+        return posts;
+    }
+
+    @Transactional
+        public List<PostDto> getAllPublishedPostsByAuthorId(Long authorId) {
+        postValidator.validateIfAuthorExists(authorId);
+
+        List<PostDto> posts = StreamSupport.stream(postRepository.findAll().spliterator(), false)
+                .filter(post -> Objects.equals(post.getAuthorId(), authorId))
+                .filter(Post::isPublished)
+                .filter(post -> !post.isDeleted())
+                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
+                .map(postMapper::toDto)
+                .toList();
+
+        return posts;
+    }
+
+    @Transactional
+    public List<PostDto> getAllPublishedPostsByProjectId(Long projectId) {
+        postValidator.validateIfProjectExists(projectId);
+
+        List<PostDto> posts = StreamSupport.stream(postRepository.findAll().spliterator(), false)
+                .filter(post -> Objects.equals(post.getProjectId(), projectId))
+                .filter(Post::isPublished)
+                .filter(post -> !post.isDeleted())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
 

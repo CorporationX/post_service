@@ -49,4 +49,14 @@ public class PostController {
     public List<PostDto> getAllDraftsByProjectId(@PathVariable Long projectId) {
         return postService.getAllDraftsByProjectId(projectId);
     }
+
+    @GetMapping("/published/author/{authorId}")
+    public List<PostDto> getAllPublishedPostsByAuthorId(@PathVariable Long authorId) {
+        return postService.getAllPublishedPostsByAuthorId(authorId);
+    }
+
+    @GetMapping({"/published/project/{projectId}"})
+    public List<PostDto> getAllPublishedPostsByProjectId(@PathVariable Long projectId) {
+        return postService.getAllPublishedPostsByProjectId(projectId);
+    }
 }
