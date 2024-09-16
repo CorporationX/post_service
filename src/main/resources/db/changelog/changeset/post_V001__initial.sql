@@ -1,5 +1,6 @@
 CREATE TABLE post (
     id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY UNIQUE,
+    title varchar(150) NOT NULL,
     content varchar(4096) NOT NULL,
     author_id bigint,
     project_id bigint,

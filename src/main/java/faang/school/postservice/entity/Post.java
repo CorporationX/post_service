@@ -1,6 +1,6 @@
-package faang.school.postservice.model;
+package faang.school.postservice.entity;
 
-import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.entity.ad.Ad;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +23,9 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Column(name = "title", nullable = false, length = 150)
+    private String title;
 
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
