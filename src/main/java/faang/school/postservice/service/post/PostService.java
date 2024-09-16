@@ -16,6 +16,7 @@ import faang.school.postservice.mapper.post.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
+import faang.school.postservice.service.publisher.PostEventPublisher;
 import faang.school.postservice.validator.post.PostServiceValidator;
 import faang.school.postservice.service.resource.ResourceService;
 import jakarta.validation.constraints.NotNull;
@@ -44,6 +45,7 @@ public class PostService {
     private final ResourceMapper resourceMapper;
 
     private final PostServiceValidator validator;
+    private final PostEventPublisher postEventPublisher;
 
     @Transactional
     public PostDto createPostDraft(DraftPostDto draft) {
@@ -82,7 +84,8 @@ public class PostService {
 
         Post savedPost = postRepository.save(post);
 
-        PostEvent postEvent = new PostEvent(authorId, postId);
+        PostEvent postEvent = new PostEvent(post.getAuthorId(), postId);
+        postEventPublisher.publish(postEvent);
 
         return postMapper.toDto(savedPost);
     }
