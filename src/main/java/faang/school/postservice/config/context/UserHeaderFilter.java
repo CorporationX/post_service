@@ -15,7 +15,7 @@ public class UserHeaderFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
+            throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         String userId = req.getHeader("x-user-id");
         if (userId != null) {

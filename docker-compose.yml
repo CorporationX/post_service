@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  project_service:
+    build:
+      context: ../project_service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    networks:
+      - shared-network
+
+  user_service:
+    build:
+      context: ../user_service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - shared-network
+
+  post_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - project_service
+      - user_service
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    external: true

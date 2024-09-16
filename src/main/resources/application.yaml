@@ -4,6 +4,11 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 8MB
+      enabled: true
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -26,6 +31,15 @@ spring:
         like: like_channel
         post: post_channel
 
+  aws:
+    s3:
+      endpoint: http://localhost:9000 # or 'default' , then will be use default s3 url
+      accessKey: user
+      secretKey: password
+      region: us-east-1
+
+
+
 server:
   port: 8081
 
@@ -34,6 +48,12 @@ logging:
     root: info
 
 post:
+  thread-pool:
+    size: 10
+    task-timeout: 5 # in second
+  validation-param:
+    obsolescence-period-date-publication: 5 # in minute
+    max-post-resource: 10
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
@@ -41,12 +61,21 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+resource:
+  post-resource-bucket: post-resource-bucket
+  max-width-landscape: 1080
+  max-height-landscape: 566
+  max-dimension-square: 1080
+
 comment:
   verify:
     cron: "*/10 * * * * *" # every 10 minutes
   batchSize: 100
   thread-pool-size: 4
   word-split-regex: "(?<=\\p{L})(?=\\p{Punct})|(?<=\\p{Punct})(?=\\p{L})|(?<=\\p{L})(?=\\p{L}\\b)|\\s+"
+
+like:
+  userBatchSize: 100
 
 user-service:
   host: localhost
@@ -57,3 +86,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+#springdoc:
+#  api-docs:
+#    path: /docs
+#  swagger-ui:
+#    path: /swagger-ui.html
