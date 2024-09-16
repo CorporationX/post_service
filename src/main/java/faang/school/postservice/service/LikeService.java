@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface LikeService {
     List<UserDto> getUsersLikedPost(long postId);
+
     List<UserDto> getUsersLikedComm(long postId);
 }

@@ -47,8 +47,8 @@ class LikeServiceImplTest {
     void getUsersLikedPost_whenOk() {
         long postId = 1L;
         List<Long> userIds = likes.stream()
-                        .map(Like::getUserId)
-                                .toList();
+                .map(Like::getUserId)
+                .toList();
         Mockito.when(likeRepository.findByPostId(postId))
                 .thenReturn(likes);
         Mockito.when(userServiceClient.getUsersByIds(userIds.subList(0, 100)))
