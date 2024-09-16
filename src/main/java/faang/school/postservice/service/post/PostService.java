@@ -24,8 +24,12 @@ public class PostService {
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
         postValidator.createDraftPostValidator(postDto);
+
         Post post = postMapper.toEntity(postDto);
+
         post.setPublished(false);
+        post.setCreatedAt(LocalDateTime.now());
+
         return postMapper.toDto(postRepository.save(post));
     }
 
@@ -47,6 +51,8 @@ public class PostService {
                 .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postDto.id()));
 
         postValidator.updatePostValidator(post, postDto);
+
+        post.setUpdatedAt(LocalDateTime.now());
 
         return postMapper.toDto(postRepository.save(post));
     }
@@ -71,11 +77,11 @@ public class PostService {
     }
 
     @Transactional
-    public List<PostDto> getAllDraftsByAuthorId(Long authorId) {
-        postValidator.validateIfAuthorExists(authorId);
+    public List<PostDto> getAllDraftsByAuthorId(Long userId) {
+        postValidator.validateIfAuthorExists(userId);
 
         List<PostDto> posts = StreamSupport.stream(postRepository.findAll().spliterator(), false)
-                .filter(post -> Objects.equals(post.getAuthorId(), authorId))
+                .filter(post -> Objects.equals(post.getAuthorId(), userId))
                 .filter(post -> !post.isPublished())
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
@@ -101,11 +107,11 @@ public class PostService {
     }
 
     @Transactional
-        public List<PostDto> getAllPublishedPostsByAuthorId(Long authorId) {
-        postValidator.validateIfAuthorExists(authorId);
+        public List<PostDto> getAllPublishedPostsByAuthorId(Long userId) {
+        postValidator.validateIfAuthorExists(userId);
 
         List<PostDto> posts = StreamSupport.stream(postRepository.findAll().spliterator(), false)
-                .filter(post -> Objects.equals(post.getAuthorId(), authorId))
+                .filter(post -> Objects.equals(post.getAuthorId(), userId))
                 .filter(Post::isPublished)
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
