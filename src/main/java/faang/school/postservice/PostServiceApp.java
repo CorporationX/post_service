@@ -23,5 +23,4 @@ public class PostServiceApp {
                 .bannerMode(Banner.Mode.OFF)
                 .run(args);
     }
-
 }
