@@ -1,8 +1,8 @@
-package faang.school.postservice.messaging.publisher.post;
+package faang.school.postservice.messaging.redis.publisher.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.post.PostEvent;
-import faang.school.postservice.messaging.publisher.comment.AbstractEventPublisher;
+import faang.school.postservice.messaging.redis.publisher.comment.AbstractEventPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;

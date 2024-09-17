@@ -5,15 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostEvent {
-    private long id;
+public class FollowersPostEvent {
     private long authorId;
-    private String content;
-    private LocalDateTime publishedAt;
+    private List<Long> followersIds;
 }

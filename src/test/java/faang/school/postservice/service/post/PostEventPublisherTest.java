@@ -2,7 +2,7 @@ package faang.school.postservice.service.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.post.PostEvent;
-import faang.school.postservice.messaging.publisher.post.PostEventPublisher;
+import faang.school.postservice.messaging.redis.publisher.post.PostEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

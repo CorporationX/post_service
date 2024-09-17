@@ -3,7 +3,7 @@ package faang.school.postservice.publishers.like;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.event.like.LikeEvent;
-import faang.school.postservice.messaging.publisher.like.LikeEventPublisher;
+import faang.school.postservice.messaging.redis.publisher.like.LikeEventPublisher;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.Test;
