@@ -25,6 +25,7 @@ public class CommentService {
         validator.validateCommentContent(commentDto.getContent());
 
         // TODO check author exists
+       // TODO create tests
 //        UserDto userDto = userServiceClient.getUser(commentDto.getAuthorId());
 
         Comment comment = mapper.mapToComment(commentDto);
@@ -40,11 +41,13 @@ public class CommentService {
     }
 
     public void delete(Long commentId) {
+        validator.validateCommentExist(commentId);
         commentRepository.deleteById(commentId);
     }
 
     public CommentDto update(Long commentId, CommentDto commentDto) {
         // TODO check author exists
+        // TODO create tests
         validator.validateCommentExist(commentId);
         validator.validateCommentContent(commentDto.getContent());
         Comment comment = commentRepository.findById(commentId).get();
