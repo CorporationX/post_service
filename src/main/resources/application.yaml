@@ -24,6 +24,9 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+  mvc:
+    servlet:
+      path: /api/v1
 
 server:
   port: 8081
@@ -43,9 +46,11 @@ post:
 user-service:
   host: localhost
   port: 8080
+
 project-service:
   host: localhost
   port: 8082
+
 payment-service:
   host: localhost
   port: 9080
