@@ -55,6 +55,24 @@ public class AlbumService {
         }
     }
 
+    @Transactional
+    public void addAlbumToFavorite(long albumId, long userId) {
+        validUserExist(userId);
+        albumRepository.addAlbumToFavorites(albumId, userId);
+    }
+
+    @Transactional
+    public void removeAlbumToFavorite(long albumId, long authorId) {
+        validUserExist(authorId);
+        albumRepository.deleteAlbumFromFavorites(albumId, authorId);
+    }
+
+    @Transactional(readOnly = true)
+    public Album getAlbum(long albumId) {
+        return albumRepository.findById(albumId)
+                .orElseThrow();
+    }
+
     private void validUserExist(Long authorId) {
         UserDto userDto = userServiceClient.getUser(authorId);
         if (Objects.isNull(userDto)) {
@@ -70,5 +88,4 @@ public class AlbumService {
             throw new IllegalArgumentException("The album name must be unique for this user.");
         }
     }
-
 }

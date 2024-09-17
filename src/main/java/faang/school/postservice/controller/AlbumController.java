@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,5 +44,19 @@ public class AlbumController {
         Album saveAlbum = service.removePostFromAlbum(postId, albumId, userId);
         return albumMapper.toDto(saveAlbum);
     }
+    @PutMapping("/{albumId}/favorite")
+    public void addAlbumToFavorite(@PathVariable long albumId, @RequestParam long userId) {
+        service.addAlbumToFavorite(albumId, userId);
+    }
 
+    @DeleteMapping("/{albumId}/favorite")
+    public void removeAlbumToFavorite(@PathVariable long albumId, @RequestParam long userId) {
+        service.removeAlbumToFavorite(albumId, userId);
+    }
+
+    @GetMapping("/{albumId}")
+    public AlbumDto getAlbum(@PathVariable long albumId) {
+        Album album = service.getAlbum(albumId);
+        return albumMapper.toDto(album);
+    }
 }
