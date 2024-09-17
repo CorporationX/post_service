@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.service.AlbumService;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/albums")
@@ -58,5 +61,17 @@ public class AlbumController {
     public AlbumDto getAlbum(@PathVariable long albumId) {
         Album album = service.getAlbum(albumId);
         return albumMapper.toDto(album);
+    }
+
+    @PostMapping("/user-album-by-filter")
+    public List<AlbumDto> getUserAlbumByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
+        List<Album> albums = service.getUserAlbumsByFilters(userId, filterDto);
+        return albumMapper.toDtoList(albums);
+    }
+
+    @PostMapping("/favorite-album-by-filter")
+    public List<AlbumDto> getFavoriteUserAlbumByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
+        List<Album> albums = service.getFavoriteUserAlbumsByFilters(userId, filterDto);
+        return albumMapper.toDtoList(albums);
     }
 }

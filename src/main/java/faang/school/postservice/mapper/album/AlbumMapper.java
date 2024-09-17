@@ -19,6 +19,8 @@ public interface AlbumMapper {
     @Mapping(source = "postIds", target = "posts", qualifiedByName = "mapToPostList")
     Album toEntity(AlbumDto albumDto);
 
+    List<AlbumDto> toDtoList(List<Album> albums);
+
     @Named("mapToPostList")
     default List<Post> mapToPostList(List<Long> postIds) {
         return postIds.stream()
