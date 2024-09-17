@@ -27,17 +27,21 @@ public class AlbumService {
     }
 
     @Transactional
-    public void addAlbumToFavorite(long albumId, long authorId) {
-        validUserExist(authorId);
-        validAlbumBelongsToUser(albumId, authorId);
-        albumRepository.addAlbumToFavorites(albumId, authorId);
+    public void addAlbumToFavorite(long albumId, long userId) {
+        validUserExist(userId);
+        albumRepository.addAlbumToFavorites(albumId, userId);
     }
 
     @Transactional
     public void removeAlbumToFavorite(long albumId, long authorId) {
         validUserExist(authorId);
-        validAlbumBelongsToUser(albumId, authorId);
         albumRepository.deleteAlbumFromFavorites(albumId, authorId);
+    }
+
+    @Transactional(readOnly = true)
+    public Album getAlbum(long albumId) {
+        return albumRepository.findById(albumId)
+                .orElseThrow();
     }
 
     private void validUserExist(Long authorId) {
@@ -47,18 +51,7 @@ public class AlbumService {
         }
     }
 
-    private void validAlbumBelongsToUser(long albumId, long authorId) {
-        List<Long> authorAlbumIds = albumRepository.findByAuthorId(authorId)
-                .map(Album::getId)
-                .toList();
-
-        if(!authorAlbumIds.contains(albumId)) {
-            throw new IllegalArgumentException("The album don`t belong the user.");
-        }
-    }
-
-
-        private void validUniqueAlbumTitleByAuthor(Album album) {
+    private void validUniqueAlbumTitleByAuthor(Album album) {
         boolean uniqueAlbumTitle = albumRepository
                 .findByAuthorId(album.getAuthorId())
                 .noneMatch(existingAlbum -> existingAlbum.getTitle().equals(album.getTitle()));
@@ -66,4 +59,6 @@ public class AlbumService {
             throw new IllegalArgumentException("The album name must be unique for this user.");
         }
     }
+
+
 }
