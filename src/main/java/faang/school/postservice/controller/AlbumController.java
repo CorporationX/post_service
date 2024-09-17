@@ -27,23 +27,24 @@ public class AlbumController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public AlbumDto createAlbum(@RequestBody @Valid AlbumDto albumDto){
+    public AlbumDto createAlbum(@RequestBody @Valid AlbumDto albumDto) {
         Album album = albumMapper.toEntity(albumDto);
         Album saveAlbum = service.createAlbum(album);
         return albumMapper.toDto(saveAlbum);
     }
 
-    @PutMapping("/{albumId}")
+    @PutMapping("/{albumId}/posts")
     public AlbumDto addPostToAlbum(@RequestParam long postId, @PathVariable long albumId, @RequestParam long userId) {
         Album saveAlbum = service.addPostToAlbum(postId, albumId, userId);
         return albumMapper.toDto(saveAlbum);
     }
 
-    @DeleteMapping("/{albumId}")
+    @DeleteMapping("/{albumId}/posts")
     public AlbumDto removePostFromAlbum(@RequestParam long postId, @PathVariable long albumId, @RequestParam long userId) {
         Album saveAlbum = service.removePostFromAlbum(postId, albumId, userId);
         return albumMapper.toDto(saveAlbum);
     }
+
     @PutMapping("/{albumId}/favorite")
     public void addAlbumToFavorite(@PathVariable long albumId, @RequestParam long userId) {
         service.addAlbumToFavorite(albumId, userId);
@@ -58,5 +59,24 @@ public class AlbumController {
     public AlbumDto getAlbum(@PathVariable long albumId) {
         Album album = service.getAlbum(albumId);
         return albumMapper.toDto(album);
+    }
+
+    @PutMapping("/{albumId}/album-title")
+    public AlbumDto updateTitleAlbum(@PathVariable long albumId, @RequestBody AlbumDto albumDto) {
+        Album modifiedAlbum = albumMapper.toEntity(albumDto);
+        Album saveModifiedAlbum = service.updateTitleAlbum(albumId, modifiedAlbum);
+        return albumMapper.toDto(saveModifiedAlbum);
+    }
+
+    @PutMapping("/{albumId}/album-description")
+    public AlbumDto updateDescriptionAlbum(@PathVariable long albumId, @RequestBody AlbumDto albumDto) {
+        Album modifiedAlbum = albumMapper.toEntity(albumDto);
+        Album saveModifiedAlbum = service.updateDescriptionAlbum(albumId, modifiedAlbum);
+        return albumMapper.toDto(saveModifiedAlbum);
+    }
+
+    @DeleteMapping("/{albumId}")
+    public void deleteAlbum(@PathVariable long albumId, @RequestParam long userId) {
+        service.deleteAlbum(albumId, userId);
     }
 }

@@ -15,10 +15,6 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     boolean existsByTitleAndAuthorId(String title, long authorId);
 
-    @Query("""
-            SELECT * FROM album
-            WHERE author_id = :authorId
-            """)
     Stream<Album> findByAuthorId(long authorId);
 
     @Query("SELECT a FROM Album a LEFT JOIN FETCH a.posts WHERE a.id = :id")
