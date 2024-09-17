@@ -1,4 +1,4 @@
-package faang.school.postservice.config.context.swagger;
+package faang.school.postservice.config.swagger;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
