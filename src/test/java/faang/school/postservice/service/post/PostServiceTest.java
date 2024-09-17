@@ -8,6 +8,7 @@ import faang.school.postservice.mapper.post.*;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
+import faang.school.postservice.service.publisher.PostEventPublisher;
 import faang.school.postservice.validator.post.PostServiceValidator;
 import faang.school.postservice.service.resource.ResourceService;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,20 +52,11 @@ public class PostServiceTest {
 
     @Mock
     private PostServiceValidator postServiceValidator;
+    @Mock
+    private PostEventPublisher postEventPublisher;
 
     @InjectMocks
     private PostService postService;
-
-    @BeforeEach()
-    void setUp() {
-        lenient().doNothing().when(postServiceValidator).validateCreatablePostDraft(any());
-        lenient().doNothing().when(postServiceValidator).validateUpdatablePost(any());
-        lenient().doNothing().when(postServiceValidator).verifyPostDeletion(any());
-        lenient().doNothing().when(postServiceValidator).validatePublishablePost(any());
-        lenient().doNothing().when(postServiceValidator).validatePublishablePost(any());
-        lenient().doNothing().when(postServiceValidator).validateDeletablePost(any());
-        lenient().doNothing().when(postServiceValidator).verifyPostDeletion(any());
-    }
 
     private record CreatePostDraftTestParam(
             DraftPostDto draft,
