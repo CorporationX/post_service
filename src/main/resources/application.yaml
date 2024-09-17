@@ -29,6 +29,16 @@ spring:
       batch-size: 16384
       linger-ms: 1
       buffer-memory: 33554432
+    consumer:
+      group-id: feed-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    topic:
+      post_views: post_views
+      posts: posts
+      likes: likes
+      comments: comments
 
   data:
     redis:

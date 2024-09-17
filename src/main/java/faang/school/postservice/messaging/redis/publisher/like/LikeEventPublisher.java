@@ -1,8 +1,8 @@
-package faang.school.postservice.messaging.publisher.like;
+package faang.school.postservice.messaging.redis.publisher.like;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.like.LikeEvent;
-import faang.school.postservice.messaging.publisher.comment.AbstractEventPublisher;
+import faang.school.postservice.messaging.redis.publisher.comment.AbstractEventPublisher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;

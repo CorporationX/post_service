@@ -1,4 +1,4 @@
-package faang.school.postservice.messaging.publisher.comment;
+package faang.school.postservice.messaging.redis.publisher.comment;
 
 import static faang.school.postservice.exception.ExceptionMessages.INSERTION_STAPLES;
 import static faang.school.postservice.exception.ExceptionMessages.TOPIC_PUBLICATION_EXCEPTION;
