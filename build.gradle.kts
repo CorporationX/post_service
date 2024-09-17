@@ -23,6 +23,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.3")
+    implementation("io.swagger:swagger-annotations:1.6.14")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
@@ -81,10 +83,12 @@ tasks.jacocoTestReport {
     }
     classDirectories.setFrom(
         fileTree(project.buildDir) {
-            include("**/post_service/service/**",
+            include(
+                "**/post_service/service/**",
                 "**/post_service/validator/**",
                 "**/post_service/filter/**",
-                "**/post_service/controller/**")
+                "**/post_service/controller/**"
+            )
         }
     )
 }
