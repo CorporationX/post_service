@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -25,6 +26,20 @@ public class AlbumService {
         return albumRepository.save(album);
     }
 
+    @Transactional
+    public void addAlbumToFavorite(long albumId, long authorId) {
+        validUserExist(authorId);
+        validAlbumBelongsToUser(albumId, authorId);
+        albumRepository.addAlbumToFavorites(albumId, authorId);
+    }
+
+    @Transactional
+    public void removeAlbumToFavorite(long albumId, long authorId) {
+        validUserExist(authorId);
+        validAlbumBelongsToUser(albumId, authorId);
+        albumRepository.deleteAlbumFromFavorites(albumId, authorId);
+    }
+
     private void validUserExist(Long authorId) {
         UserDto userDto = userServiceClient.getUser(authorId);
         if (Objects.isNull(userDto)) {
@@ -32,7 +47,18 @@ public class AlbumService {
         }
     }
 
-    private void validUniqueAlbumTitleByAuthor(Album album) {
+    private void validAlbumBelongsToUser(long albumId, long authorId) {
+        List<Long> authorAlbumIds = albumRepository.findByAuthorId(authorId)
+                .map(Album::getId)
+                .toList();
+
+        if(!authorAlbumIds.contains(albumId)) {
+            throw new IllegalArgumentException("The album don`t belong the user.");
+        }
+    }
+
+
+        private void validUniqueAlbumTitleByAuthor(Album album) {
         boolean uniqueAlbumTitle = albumRepository
                 .findByAuthorId(album.getAuthorId())
                 .noneMatch(existingAlbum -> existingAlbum.getTitle().equals(album.getTitle()));
@@ -40,5 +66,4 @@ public class AlbumService {
             throw new IllegalArgumentException("The album name must be unique for this user.");
         }
     }
-
 }
