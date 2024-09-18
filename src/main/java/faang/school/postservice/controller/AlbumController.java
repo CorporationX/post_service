@@ -9,8 +9,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -83,14 +83,20 @@ public class AlbumController {
         service.deleteAlbum(albumId, userId);
     }
 
-    @PostMapping("/user-album-by-filter")
-    public List<AlbumDto> getUserAlbumByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
+    @PostMapping("/filter")
+    public List<AlbumDto> getAlbumsByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
+        List<Album> albums = service.getAlbumByFilter(filterDto);
+        return albumMapper.toDtoList(albums);
+    }
+
+    @PostMapping("/user-albums-filter")
+    public List<AlbumDto> getUserAlbumsByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
         List<Album> albums = service.getUserAlbumsByFilters(userId, filterDto);
         return albumMapper.toDtoList(albums);
     }
 
-    @PostMapping("/favorite-album-by-filter")
-    public List<AlbumDto> getFavoriteUserAlbumByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
+    @PostMapping("/favorite-user-albums-filter")
+    public List<AlbumDto> getFavoriteUserAlbumsByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
         List<Album> albums = service.getFavoriteUserAlbumsByFilters(userId, filterDto);
         return albumMapper.toDtoList(albums);
     }

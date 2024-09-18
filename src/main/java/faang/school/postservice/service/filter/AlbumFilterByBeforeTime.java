@@ -13,7 +13,6 @@ import java.util.Objects;
 @Component
 @RequiredArgsConstructor
 public class AlbumFilterByBeforeTime implements AlbumFilter {
-    private final AlbumRepository albumRepository;
 
     @Override
     public boolean isApplicable(AlbumFilterDto albumFilterDto) {
@@ -21,8 +20,10 @@ public class AlbumFilterByBeforeTime implements AlbumFilter {
     }
 
     @Override
-    public List<Album> getAlbums(AlbumFilterDto albumFilterDto) {
-        LocalDateTime before = albumFilterDto.getAfterThisTime();
-        return albumRepository.findByCreatedAtBefore(before);
+    public List<Album> filterAlbums(List<Album> albums, AlbumFilterDto albumFilterDto) {
+        LocalDateTime before = albumFilterDto.getBeforeThisTime();
+        return albums.stream()
+                .filter(album -> album.getCreatedAt().isBefore(before))
+                .toList();
     }
 }

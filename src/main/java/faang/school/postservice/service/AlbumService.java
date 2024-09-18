@@ -6,17 +6,14 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
-
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.filter.AlbumFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -99,6 +96,24 @@ public class AlbumService {
         albumRepository.deleteById(albumId);
     }
 
+    @Transactional(readOnly = true)
+    public List<Album> getAlbumByFilter(AlbumFilterDto albumFilterDto) {
+        List<Album> albums = albumRepository.findAll();
+        return applyAllFilters(albums, albumFilterDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Album> getUserAlbumsByFilters(Long userId, AlbumFilterDto filterDto) {
+        List<Album> userAlbums = albumRepository.findByAuthorId(userId).toList();
+        return applyAllFilters(userAlbums, filterDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Album> getFavoriteUserAlbumsByFilters(Long userId, AlbumFilterDto filterDto) {
+        List<Album> favoriteAlbumsByUser = albumRepository.findFavoriteAlbumsByUserId(userId).toList();
+        return applyAllFilters(favoriteAlbumsByUser, filterDto);
+    }
+
     private void validAlbumBelongsToUser(long albumId, long userId) {
         List<Long> userAlbumIds = albumRepository.findByAuthorId(userId)
                 .map(album -> album.getId())
@@ -124,36 +139,9 @@ public class AlbumService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public List<Album> getAlbumsByFilters(AlbumFilterDto albumFilterDto) {
-        List<AlbumFilter> applicableAlbumFilters = albumFilters.stream()
-                .filter(filter -> filter.isApplicable(albumFilterDto))
-                .toList();
-
-        Set<Album> albums = applicableAlbumFilters.stream()
-                .map(filter -> new HashSet<>(filter.getAlbums(albumFilterDto)))
-                .reduce((result, set) -> {
-                    result.retainAll(set);
-                    return result;
-                })
-                .orElse(new HashSet<>());
-
-        return albums.stream().toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<Album> getUserAlbumsByFilters(Long userId, AlbumFilterDto filterDto) {
-        return getAlbumsByFilters(filterDto).stream()
-                .filter(album -> album.getAuthorId() == userId)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<Album> getFavoriteUserAlbumsByFilters(Long userId, AlbumFilterDto filterDto) {
-        List<Long> userAlbumsIds = getUserAlbumsByFilters(userId, filterDto).stream()
-                .map(Album::getId)
-                .toList();
-
-        return albumRepository.findFavoriteAlbumByAllIds(userAlbumsIds);
+    private List<Album> applyAllFilters(List<Album> albums, AlbumFilterDto albumFilterDto) {
+        return albumFilters.stream()
+                .filter(albumFilter -> albumFilter.isApplicable(albumFilterDto))
+                .reduce(albums, (list, filter) -> filter.filterAlbums(list, albumFilterDto), (list, filter) -> list);
     }
 }

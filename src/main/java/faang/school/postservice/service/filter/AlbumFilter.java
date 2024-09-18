@@ -8,5 +8,5 @@ import java.util.List;
 public interface AlbumFilter {
     boolean isApplicable(AlbumFilterDto albumFilterDto);
 
-    List<Album> getAlbums(AlbumFilterDto albumFilterDto);
+    List<Album> filterAlbums(List<Album> albums, AlbumFilterDto albumFilterDto);
 }
