@@ -1,7 +1,9 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.entity.Post;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
@@ -20,23 +22,23 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final UserContext userContext;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
-        postValidator.createDraftPostValidator(postDto);
+        Long userId = userContext.getUserId();
+        postValidator.createDraftPostValidator(userId, postDto);
 
         Post post = postMapper.toEntity(postDto);
 
         post.setPublished(false);
-        post.setCreatedAt(LocalDateTime.now());
 
         return postMapper.toDto(postRepository.save(post));
     }
 
     @Transactional
     public PostDto publishPost(PostDto postDto) {
-        Post post = postRepository.findById(postDto.id())
-                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postDto.id()));
+        Post post = getPostFromRepository(postDto.id());
 
         postValidator.publishPostValidator(post);
 
@@ -47,20 +49,19 @@ public class PostService {
 
     @Transactional
     public PostDto updatePost(PostDto postDto) {
-        Post post = postRepository.findById(postDto.id())
-                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postDto.id()));
+        Post post = getPostFromRepository(postDto.id());
 
         postValidator.updatePostValidator(post, postDto);
 
-        post.setUpdatedAt(LocalDateTime.now());
+        post.setTitle(postDto.title());
+        post.setContent(postDto.content());
 
         return postMapper.toDto(postRepository.save(post));
     }
 
     @Transactional
-    public PostDto softDeletePost(PostDto postDto) {
-        Post post = postRepository.findById(postDto.id())
-                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postDto.id()));
+    public PostDto softDeletePost(Long postId) {
+        Post post = getPostFromRepository(postId);
 
         post.setPublished(false);
         post.setDeleted(true);
@@ -70,8 +71,7 @@ public class PostService {
 
     @Transactional
     public PostDto getPost(Long id) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + id));
+        Post post = getPostFromRepository(id);
 
         return postMapper.toDto(post);
     }
@@ -107,7 +107,7 @@ public class PostService {
     }
 
     @Transactional
-        public List<PostDto> getAllPublishedPostsByAuthorId(Long userId) {
+    public List<PostDto> getAllPublishedPostsByAuthorId(Long userId) {
         postValidator.validateIfAuthorExists(userId);
 
         List<PostDto> posts = StreamSupport.stream(postRepository.findAll().spliterator(), false)
@@ -134,5 +134,10 @@ public class PostService {
                 .toList();
 
         return posts;
+    }
+
+    private Post getPostFromRepository(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
     }
 }

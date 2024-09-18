@@ -1,6 +1,6 @@
-package faang.school.postservice.entity;
+package faang.school.postservice.model;
 
-import faang.school.postservice.entity.ad.Ad;
+import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

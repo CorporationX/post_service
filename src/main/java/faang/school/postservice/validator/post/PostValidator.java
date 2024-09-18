@@ -3,7 +3,7 @@ package faang.school.postservice.validator.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.entity.Post;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.exception.DataValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,16 +18,14 @@ public class PostValidator {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
-
-    // Validates if post has only 1 author (ex. by user or by project but not both or no one)
-    public void createDraftPostValidator(PostDto postDto) {
-        boolean authorExists = postDto.authorId() != null;
+    public void createDraftPostValidator(Long userId, PostDto postDto) {
+        boolean userExists = postDto.authorId() != null;
         boolean projectExists = postDto.projectId() != null;
 
-        validateSingleCreator(authorExists, projectExists);
+        validateSingleCreator(userExists, projectExists);
 
-        if (authorExists) {
-            validateAuthorExists(postDto.authorId());
+        if (userExists) {
+            validateUserExists(postDto.authorId());
         } else {
             validateProjectExists(postDto.projectId());
         }
@@ -40,10 +38,10 @@ public class PostValidator {
     }
 
     public void updatePostValidator(Post post, PostDto postDto) {
-        boolean isAuthorChanged = !Objects.equals(post.getAuthorId(), postDto.authorId());
+        boolean isUserChanged = !Objects.equals(post.getAuthorId(), postDto.authorId());
         boolean isProjectChanged = !Objects.equals(post.getProjectId(), postDto.projectId());
 
-        if (post.getAuthorId() != null && isAuthorChanged) {
+        if (post.getAuthorId() != null && isUserChanged) {
             throw new DataValidationException("Post author cannot be changed");
         }
 
@@ -62,18 +60,18 @@ public class PostValidator {
                 .orElseThrow(() -> new DataValidationException("Project " + projectId + " not found"));
     }
 
-    private void validateSingleCreator(boolean authorExists, boolean projectExists) {
-        if (authorExists && projectExists) {
-            throw new DataValidationException("Post can be created by only one entity, not both");
+    private void validateSingleCreator(boolean userExists, boolean projectExists) {
+        if (userExists && projectExists) {
+            throw new DataValidationException("Post can not be created by user and project at the same time");
         }
-        if (!authorExists && !projectExists) {
-            throw new DataValidationException("Post cannot be created by no one");
+        if (!userExists && !projectExists) {
+            throw new DataValidationException("Post must have an author (user or project)");
         }
     }
 
-    private void validateAuthorExists(Long authorId) {
-        if (userServiceClient.getUser(authorId) == null) {
-            throw new DataValidationException("Author " + authorId + " not found");
+    private void validateUserExists(Long userId) {
+        if (userServiceClient.getUser(userId) == null) {
+            throw new DataValidationException("User " + userId + " not found");
         }
     }
 

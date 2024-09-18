@@ -1,6 +1,6 @@
 package faang.school.postservice.repository;
 
-import faang.school.postservice.entity.Album;
+import faang.school.postservice.model.Album;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
