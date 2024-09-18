@@ -1,7 +1,8 @@
 package faang.school.postservice.controller.comment;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentRequestDto;
+import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,13 +29,13 @@ public class CommentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentDto create(@Validated @RequestBody CommentDto dto) {
-        return commentService.create(userContext.getUserId(), dto);
+    public CommentResponseDto create(@Validated @RequestBody CommentRequestDto dto) {
+        long userId = userContext.getUserId();
+        return commentService.create(userId, dto);
     }
 
     @PutMapping
-    @ResponseStatus(HttpStatus.OK)
-    public CommentDto update(@Validated @RequestBody CommentDto dto) {
+    public CommentResponseDto update(@Validated @RequestBody CommentRequestDto dto) {
         return commentService.update(dto);
     }
 
@@ -45,8 +46,7 @@ public class CommentController {
     }
 
     @GetMapping("/postId/{postId}")
-    @ResponseStatus(HttpStatus.OK)
-    public List<CommentDto> findAll(@PathVariable("postId") Long postId) {
+    public List<CommentResponseDto> findAll(@PathVariable("postId") Long postId) {
         return commentService.findAll(postId);
     }
 }

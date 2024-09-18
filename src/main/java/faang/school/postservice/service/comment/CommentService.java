@@ -1,16 +1,17 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentRequestDto;
+import faang.school.postservice.dto.comment.CommentResponseDto;
 
 import java.util.List;
 
 public interface CommentService {
 
-    CommentDto create(long userId, CommentDto dto);
+    CommentResponseDto create(long userId, CommentRequestDto dto);
 
-    CommentDto update(CommentDto dto);
+    CommentResponseDto update(CommentRequestDto dto);
 
-    List<CommentDto> findAll(Long postId);
+    List<CommentResponseDto> findAll(Long postId);
 
     void delete(Long id);
 }

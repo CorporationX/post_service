@@ -1,7 +1,7 @@
 package faang.school.postservice.controller.comment;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.service.comment.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,12 +41,12 @@ class CommentControllerTest {
     @InjectMocks
     private CommentController commentController;
 
-    private CommentDto commentDto;
+    private CommentResponseDto commentResponseDto;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(commentController).build();
-        commentDto = CommentDto.builder()
+        commentResponseDto = CommentResponseDto.builder()
                 .id(1L)
                 .content("This is a comment")
                 .authorId(1L)
@@ -58,7 +58,7 @@ class CommentControllerTest {
     void create_shouldReturnCreatedComment() throws Exception {
         // given
         when(userContext.getUserId()).thenReturn(1L);
-        when(commentService.create(anyLong(), any())).thenReturn(commentDto);
+        when(commentService.create(anyLong(), any())).thenReturn(commentResponseDto);
         // when & then
         mockMvc.perform(post("/comments")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -79,7 +79,7 @@ class CommentControllerTest {
     @Test
     void update_shouldReturnUpdatedComment() throws Exception {
         // given
-        when(commentService.update(any())).thenReturn(commentDto);
+        when(commentService.update(any())).thenReturn(commentResponseDto);
         // when & then
         mockMvc.perform(put("/comments")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -108,7 +108,7 @@ class CommentControllerTest {
     @Test
     void findAll_shouldReturnListOfComments() throws Exception {
         // given
-        List<CommentDto> comments = List.of(commentDto);
+        List<CommentResponseDto> comments = List.of(commentResponseDto);
         when(commentService.findAll(anyLong())).thenReturn(comments);
         // when & then
         mockMvc.perform(get("/comments/postId/{postId}", 1L))

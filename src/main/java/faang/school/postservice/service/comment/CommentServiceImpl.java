@@ -1,13 +1,10 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentRequestDto;
+import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
-import jakarta.persistence.EntityNotFoundException;
+import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,49 +16,40 @@ import java.util.List;
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
-    private final PostRepository postRepository;
-    private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
+    private final CommentValidator commentValidator;
 
     @Override
     @Transactional
-    public CommentDto create(long userId, CommentDto dto) {
-        userServiceClient.getUser(userId);
-        Post post = findPostById(dto.postId());
-        Comment comment = commentMapper.toEntity(dto);
+    public CommentResponseDto create(long userId, CommentRequestDto dto) {
+        commentValidator.validateUser(userId);
+        var post = commentValidator.findPostById(dto.postId());
+        var comment = commentMapper.toEntity(dto);
+        comment.setAuthorId(userId);
         comment.setPost(post);
-        return commentMapper.toDto(commentRepository.save(comment));
+        return commentMapper.toResponseDto(commentRepository.save(comment));
     }
 
     @Override
     @Transactional
-    public CommentDto update(CommentDto dto) {
-        Comment comment = findCommentById(dto.id());
+    public CommentResponseDto update(CommentRequestDto dto) {
+        var comment = commentValidator.findCommentById(dto.id());
         comment.setContent(dto.content());
-        return commentMapper.toDto(commentRepository.save(comment));
+        return commentMapper.toResponseDto(commentRepository.save(comment));
     }
 
     @Override
-    public List<CommentDto> findAll(Long postId) {
-        List<Comment> comments = commentRepository.findAllByPostId(postId).stream()
+    @Transactional(readOnly = true)
+    public List<CommentResponseDto> findAll(Long postId) {
+        var comments = commentRepository.findAllByPostId(postId).stream()
                 .sorted((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()))
                 .toList();
-        return commentMapper.toDto(comments);
+        return commentMapper.toResponseDto(comments);
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
         commentRepository.deleteById(id);
-    }
-
-    private Post findPostById(Long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Post with ID: %d not found".formatted(id)));
-    }
-
-    private Comment findCommentById(Long id) {
-        return commentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Comment with ID: %d not found".formatted(id)));
     }
 }
