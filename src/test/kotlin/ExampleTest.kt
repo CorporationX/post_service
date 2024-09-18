@@ -7,4 +7,3 @@ class ExampleTest {
         fail("This test is designed to fail")
     }
 }
-//some test
