@@ -32,6 +32,10 @@ public class Album {
     @Column(name = "author_id", nullable = false)
     private long authorId;
 
+    @Column(name = "visibility", nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    private AlbumStatus status;
+
     @ManyToMany
     @JoinTable(name = "post_album", joinColumns = @JoinColumn(name = "album_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
     private List<Post> posts;

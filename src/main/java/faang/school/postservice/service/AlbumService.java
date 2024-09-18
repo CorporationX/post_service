@@ -127,10 +127,10 @@ public class AlbumService {
     }
 
     private void validUserExist(Long authorId) {
-        UserDto userDto = userServiceClient.getUser(authorId);
-        if (Objects.isNull(userDto)) {
-            throw new IllegalArgumentException("This user does not exist.");
-        }
+//        UserDto userDto = userServiceClient.getUser(authorId);
+//        if (Objects.isNull(userDto)) {
+//            throw new IllegalArgumentException("This user does not exist.");
+//        }
     }
 
     private void validUniqueAlbumTitleByAuthor(Album album) {
