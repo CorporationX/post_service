@@ -7,12 +7,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
-public class CommentKafkaTopicConfig {
-    @Value("${spring.kafka.topic.comments}")
-    private String commentTopicName;
+public class FollowersPostKafkaTopicConfig {
+    @Value("${spring.kafka.topic.posts}")
+    private String followersPostTopicName;
 
     @Bean
-    public NewTopic commentKafkaTopic(){
-        return TopicBuilder.name(commentTopicName).build();
+    public NewTopic followersPostKafkaTopic(){
+        return TopicBuilder.name(followersPostTopicName).build();
     }
 }

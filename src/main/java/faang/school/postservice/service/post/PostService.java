@@ -1,13 +1,17 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.messaging.redis.publisher.post.PostEventPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.publisher.EventPublisherService;
+import faang.school.postservice.service.user.UserService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,13 +20,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
+    private final UserService userService;
     private final PostEventPublisher postEventPublishers;
+    private final EventPublisherService eventPublisherService;
 
     public PostDto create(PostDto postDto) {
         postValidator.validateCreate(postDto);
@@ -34,7 +41,14 @@ public class PostService {
         Post post = postMapper.toEntity(postDto);
         post.setPublished(false);
         post.setDeleted(false);
-        return postMapper.toDto(postRepository.save(post));
+
+        Post savePost = postRepository.save(post);
+        log.info("Post: {} saved", savePost);
+
+        UserDto userDto = userService.getListFollowersId(savePost.getAuthorId());
+        eventPublisherService.sendFollowersEventToKafka(userDto.getId(), userDto.getFollowersId());
+
+        return postMapper.toDto(savePost);
     }
 
     public PostDto publish(Long postId) {
@@ -74,7 +88,10 @@ public class PostService {
         Optional<Post> postOptional = postRepository.findById(postId);
         Post post = postOptional.orElseThrow(
                 () -> new PostValidationException("Post with id " + postId + " doesn't exists"));
-        postEventPublishers.publish(postMapper.toPostEvent(post));
+//        postEventPublishers.publish(postMapper.toPostEvent(post));
+        eventPublisherService.sendPostEventToRedis(post);
+        eventPublisherService.sendPostViewEventToKafka(post);
+
         return postMapper.toDto(post);
     }
 

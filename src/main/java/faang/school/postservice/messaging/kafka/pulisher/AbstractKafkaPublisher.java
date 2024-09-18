@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 
 @Slf4j
-
 @RequiredArgsConstructor
 public class AbstractKafkaPublisher<T> implements EventPublisher<T> {
     protected final KafkaTemplate<String, String> kafkaTemplate;
