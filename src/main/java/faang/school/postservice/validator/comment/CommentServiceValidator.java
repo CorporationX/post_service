@@ -3,16 +3,17 @@ package faang.school.postservice.validator.comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.NoSuchElementException;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class CommentServiceValidator {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-
 
     public void validatePostExist(Long postId) {
         if (!postRepository.existsById(postId)) {

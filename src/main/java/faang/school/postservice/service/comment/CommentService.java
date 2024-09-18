@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -22,8 +23,7 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
 
-    public CommentDto create(CommentDto commentDto) {
-        // TODO create tests
+    public CommentDto createComment(CommentDto commentDto) {
         validator.validatePostExist(commentDto.getPostId());
         validator.validateCommentContent(commentDto.getContent());
         userContext.setUserId(commentDto.getAuthorId());
@@ -32,7 +32,7 @@ public class CommentService {
         return mapper.mapToCommentDto(commentRepository.save(comment));
     }
 
-    public List<CommentDto> get(Long postId) {
+    public List<CommentDto> getComment(Long postId) {
         List<Comment> comments = commentRepository.findAllByPostId(postId);
         List<Comment> commentsSorted = comments.stream()
                 .sorted(Comparator.comparing(Comment::getUpdatedAt).reversed())
@@ -40,18 +40,17 @@ public class CommentService {
         return mapper.mapToCommentDto(commentsSorted);
     }
 
-    public void delete(Long commentId) {
+    public void deleteComment(Long commentId) {
         validator.validateCommentExist(commentId);
         commentRepository.deleteById(commentId);
     }
 
-    public CommentDto update(Long commentId, CommentDto commentDto) {
-        // TODO create tests
+    public CommentDto updateComment(Long commentId, CommentDto commentDto) {
         validator.validateCommentExist(commentId);
         validator.validateCommentContent(commentDto.getContent());
         userContext.setUserId(commentDto.getAuthorId());
         userServiceClient.getUser(commentDto.getAuthorId());
-        Comment comment = commentRepository.findById(commentId).get();
+        Comment comment = commentRepository.findById(commentId).orElseThrow(NoSuchElementException::new);
         comment.setContent(commentDto.getContent());
         return mapper.mapToCommentDto(commentRepository.save(comment));
     }

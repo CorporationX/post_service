@@ -3,7 +3,6 @@ package faang.school.postservice.mapper.comment;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -12,12 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CommentMapperTest {
-    private CommentMapperImpl commentMapper = new CommentMapperImpl();
-
-    @BeforeEach
-    void setUp() {
-
-    }
+    private final CommentMapperImpl commentMapper = new CommentMapperImpl();
 
     @Test
     void mapToComment() {

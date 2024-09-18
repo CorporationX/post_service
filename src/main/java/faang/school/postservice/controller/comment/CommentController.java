@@ -26,32 +26,32 @@ public class CommentController {
     private final CommentControllerValidator validator;
 
     @Operation(description = "This method check dto and if all Ok create comment and return CommentDto")
-    @PostMapping("/create")
-    public CommentDto create(@RequestBody CommentDto commentDto) {
+    @PostMapping()
+    public CommentDto createComment(@RequestBody CommentDto commentDto) {
         validator.validateCommentDtoNotNull(commentDto);
         validator.validateCommentContentNotNull(commentDto);
         validator.validateCommentPostIdNotNull(commentDto);
         validator.validateCommentAuthorIdNotNull(commentDto);
-        return commentService.create(commentDto);
+        return commentService.createComment(commentDto);
     }
 
     @Operation(description = "This method return list of CommentDTOs by postId")
     @GetMapping("/{postId}")
-    public List<CommentDto> get(@PathVariable Long postId) {
-        return commentService.get(postId);
+    public List<CommentDto> getComment(@PathVariable Long postId) {
+        return commentService.getComment(postId);
     }
 
     @Operation(description = "This method delete comment by id")
     @DeleteMapping("/{commentId}")
-    public void delete(@PathVariable Long commentId) {
-        commentService.delete(commentId);
+    public void deleteComment(@PathVariable Long commentId) {
+        commentService.deleteComment(commentId);
     }
 
     @Operation(description = "This method update field \"content\" in comment")
     @PutMapping("/{commentId}")
-    public CommentDto update(@PathVariable Long commentId, @RequestBody CommentDto commentDto) {
+    public CommentDto updateComment(@PathVariable Long commentId, @RequestBody CommentDto commentDto) {
         validator.validateCommentDtoNotNull(commentDto);
         validator.validateCommentContentNotNull(commentDto);
-        return commentService.update(commentId, commentDto);
+        return commentService.updateComment(commentId, commentDto);
     }
 }

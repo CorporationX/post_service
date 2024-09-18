@@ -1,13 +1,19 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentServiceValidator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -16,40 +22,83 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
     @Spy
-    CommentMapperImpl commentMapper = new CommentMapperImpl();
+    private CommentMapperImpl commentMapper = new CommentMapperImpl();
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private UserContext userContext;
 
     @Mock
     private CommentRepository commentRepository;
 
     @Mock
-    CommentServiceValidator validator;
+    private CommentServiceValidator validator;
 
     @InjectMocks
     private CommentService commentService;
 
-    @Test
-    void create() {
+    @Captor
+    private ArgumentCaptor<Comment> commentCaptor;
+
+    private CommentDto commentDto;
+    private Comment comment;
+
+    @BeforeEach
+    void setUp() {
+        commentDto = new CommentDto();
+        commentDto.setPostId(10L);
+        commentDto.setAuthorId(5L);
+        commentDto.setContent("Some content");
+        long commentId = 10L;
+        comment = new Comment();
+        comment.setId(commentId);
+
     }
 
     @Test
-    void get() {
+    void createComment() {
+        doNothing().when(userContext).setUserId(commentDto.getAuthorId());
+        when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(new UserDto(commentDto.getAuthorId(),
+                "User1", "email@somedomain.com"));
+
+        commentService.createComment(commentDto);
+
+        verify(userServiceClient, times(1)).getUser(commentDto.getAuthorId());
+        verify(commentRepository, times(1)).save(commentCaptor.capture());
+        Comment savedComment = commentCaptor.getValue();
+        assertAll(
+                () -> assertEquals(commentDto.getContent(), savedComment.getContent()),
+                () -> assertEquals(commentDto.getAuthorId(), savedComment.getAuthorId()),
+                () -> assertEquals(commentDto.getPostId(), savedComment.getPost().getId())
+        );
+    }
+
+    @Test
+    void getComment() {
         Long postId = 10L;
         List<Comment> comments = createComments(postId);
         when(commentRepository.findAllByPostId(postId)).thenReturn(comments);
 
-        List<CommentDto> commentDtos = commentService.get(postId);
+        List<CommentDto> commentDtos = commentService.getComment(postId);
 
+        verify(commentRepository, times(1)).findAllByPostId(postId);
         assertAll(
                 () -> assertEquals(2, commentDtos.size()),
                 () -> assertEquals(commentDtos.get(0).getPostId(), postId),
@@ -59,16 +108,37 @@ class CommentServiceTest {
     }
 
     @Test
-    void deleteSuccessful() {
+    void deleteCommentSuccessful() {
         Long commentId = 10L;
-        Comment comment = new Comment();
-        comment.setId(commentId);
 
-        assertDoesNotThrow(() -> commentService.delete(commentId));
+        commentService.deleteComment(commentId);
+
+        verify(commentRepository, times(1)).deleteById(commentId);
+        assertDoesNotThrow(() -> commentService.deleteComment(commentId));
     }
 
     @Test
-    void update() {
+    void updateComment() {
+        Long commentId = 10L;
+        Post post = new Post();
+        post.setId(15L);
+        comment.setAuthorId(commentDto.getAuthorId());
+        comment.setPost(post);
+
+        doNothing().when(userContext).setUserId(commentDto.getAuthorId());
+        when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(new UserDto(commentDto.getAuthorId(),
+                "User1", "email@somedomain.com"));
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+
+        commentService.updateComment(commentId, commentDto);
+
+        verify(userServiceClient, times(1)).getUser(commentDto.getAuthorId());
+        verify(commentRepository, times(1)).save(commentCaptor.capture());
+        Comment savedComment = commentCaptor.getValue();
+        assertAll(
+                () -> assertEquals(commentDto.getContent(), savedComment.getContent()),
+                () -> assertEquals(commentDto.getAuthorId(), savedComment.getAuthorId())
+        );
     }
 
     private List<Comment> createComments(Long postId) {
@@ -84,5 +154,4 @@ class CommentServiceTest {
         comments.get(1).setUpdatedAt(LocalDateTime.now().plusMinutes(1));
         return comments;
     }
-
 }
