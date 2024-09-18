@@ -2,6 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
+    id("jacoco")
 }
 
 group = "faang.school"
@@ -56,6 +57,40 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    /**
+     * Jacoco
+     */
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.outputLocation.set(file("${buildDir}/jacocoHtml"))
+    }
+    classDirectories.setFrom(
+        fileTree(project.buildDir) {
+            include("**/post_service/service/**",
+                "**/post_service/validator/**",
+                "**/post_service/filter/**",
+                "**/post_service/controller/**")
+        }
+    )
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.withType<Test> {
