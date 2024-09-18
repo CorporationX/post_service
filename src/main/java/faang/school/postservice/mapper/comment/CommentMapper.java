@@ -2,6 +2,7 @@ package faang.school.postservice.mapper.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.event.comment.CommentsEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import java.util.List;
@@ -32,4 +33,8 @@ public interface CommentMapper {
     @Mapping(source = "id", target = "commentId")
     @Mapping(source = "post.id", target = "postId")
     CommentEvent toEvent(Comment comment);
+
+    @Mapping(source = "id", target = "commentId")
+    @Mapping(source = "post.id", target = "postId")
+    CommentsEvent toCommentsEvent(Comment comment);
 }

@@ -12,7 +12,7 @@ public class LikesKafkaTopicConfig {
     private String likesTopicName;
 
     @Bean
-    public NewTopic likesTopic(){
+    public NewTopic likesKafkaTopic(){
         return TopicBuilder.name(likesTopicName).build();
     }
 }

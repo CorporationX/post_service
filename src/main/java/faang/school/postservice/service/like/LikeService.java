@@ -38,6 +38,7 @@ public class LikeService {
         likeRepository.save(like);
 
         eventPublisherService.submitEvent(likeDto);
+        eventPublisherService.sendLikesEventToKafka(likeDto);
     }
 
 

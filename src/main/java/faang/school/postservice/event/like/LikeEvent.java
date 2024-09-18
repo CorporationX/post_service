@@ -17,6 +17,7 @@ public class LikeEvent {
     private long authorId;
     private long postId;
     private long likeId;
+    private long commentId;
     private final LocalDateTime timeStamp = LocalDateTime.now();
 }
 

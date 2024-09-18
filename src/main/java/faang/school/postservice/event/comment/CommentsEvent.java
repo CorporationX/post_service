@@ -11,11 +11,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @Data
 @Builder
-public class CommentEvent {
+public class CommentsEvent {
     private final UUID uuid = UUID.randomUUID();
     private long commentId;
     private long authorId;
     private long postId;
-    private long postAuthorId;
     private String content;
 }

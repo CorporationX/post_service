@@ -10,6 +10,5 @@ import java.time.LocalDateTime;
 public class PostViewDto {
     private long postId;
     private long authorId;
-    private long userId;
     private LocalDateTime timestamp;
 }

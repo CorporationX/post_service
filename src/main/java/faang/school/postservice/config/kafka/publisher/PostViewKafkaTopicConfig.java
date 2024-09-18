@@ -12,7 +12,7 @@ public class PostViewKafkaTopicConfig {
     private String postViewsTopicName;
 
     @Bean
-    public NewTopic postViewsTopic(){
+    public NewTopic postViewsKafkaTopic(){
         return TopicBuilder.name(postViewsTopicName).build();
     }
 }

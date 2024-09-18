@@ -8,6 +8,7 @@ import faang.school.postservice.messaging.redis.publisher.comment.CommentEventPu
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.publisher.EventPublisherService;
 import faang.school.postservice.validator.comment.UserClientValidation;
 import jakarta.persistence.PersistenceException;
 import java.util.ArrayList;
@@ -26,7 +27,8 @@ public class CommentService {
     private final PostService postService;
     private final CommentMapper commentMapper;
     private final PostMapper postMapper;
-    private final CommentEventPublisher commentEventPublisher;
+//    private final CommentEventPublisher commentEventPublisher;
+    private final EventPublisherService eventPublisherService;
 
     public CommentDto addNewCommentInPost(CommentDto commentDto) {
         userClientValidation.checkUser(commentDto.getAuthorId());
@@ -40,7 +42,9 @@ public class CommentService {
             throw new PersistenceException(ExceptionMessages.FAILED_PERSISTENCE, e);
         }
 
-        commentEventPublisher.publish(commentMapper.toEvent(comment));
+//        commentEventPublisher.publish(commentMapper.toEvent(comment));
+        eventPublisherService.sendCommentEventToKafka(comment);
+        eventPublisherService.sendCommentEventToRedis(comment);
         return commentMapper.toDto(comment);
     }
 
