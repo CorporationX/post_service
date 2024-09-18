@@ -30,11 +30,11 @@ public class PostValidator {
         Long projectId = post.getProjectId();
 
         if (authorId == null && projectId == null) {
-            throw new ValidationException("authorId or projectId must be filled in");
+            throw new ValidationException("AuthorId or projectId must be filled in");
         }
 
         if (authorId != null && projectId != null) {
-            throw new ValidationException("specify either authorId or projectId to create a post");
+            throw new ValidationException("Specify either authorId or projectId to create a post");
         }
     }
 
@@ -46,7 +46,7 @@ public class PostValidator {
         } catch (RuntimeException ignore) {
         }
 
-        throw new ValidationException("User id=%s not exist".formatted(userId));
+        throw new ValidationException("User id=%s not exist", userId);
     }
 
     private void checkProjectExists(Long projectId) {
@@ -57,6 +57,6 @@ public class PostValidator {
         } catch (RuntimeException ignore) {
         }
 
-        throw new ValidationException("Project id=%s not exist".formatted(projectId));
+        throw new ValidationException("Project id=%s not exist", projectId);
     }
 }

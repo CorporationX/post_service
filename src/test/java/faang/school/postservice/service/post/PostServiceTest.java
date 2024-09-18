@@ -31,12 +31,12 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
-    @InjectMocks
-    private PostService postService;
     @Mock
     private PostRepository postRepository;
     @Mock
     private PostValidator postValidator;
+    @InjectMocks
+    private PostService postService;
 
     private Post postForCreate;
     private Post postForUpdate;

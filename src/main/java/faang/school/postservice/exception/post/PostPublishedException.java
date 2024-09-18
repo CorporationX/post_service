@@ -4,9 +4,9 @@ import faang.school.postservice.exception.ApiException;
 import org.springframework.http.HttpStatus;
 
 public class PostPublishedException extends ApiException {
-    private static final String MESSAGE = "Post already published";
+    private static final String MESSAGE = "Post id=%d already published";
 
-    public PostPublishedException() {
-        super(MESSAGE, HttpStatus.CONFLICT);
+    public PostPublishedException(Long id) {
+        super(MESSAGE.formatted(id), HttpStatus.CONFLICT);
     }
 }

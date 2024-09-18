@@ -49,7 +49,7 @@ public class PostService {
         Post post = findPostById(id);
 
         if (post.isPublished()) {
-            throw new PostPublishedException();
+            throw new PostPublishedException(id);
         }
 
         post.setPublished(true);
@@ -72,7 +72,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Post findPostById(Long id) {
-        return postRepository.findByIdAndNotDeleted(id).orElseThrow(PostNotFoundException::new);
+        return postRepository.findByIdAndNotDeleted(id).orElseThrow(() -> new PostNotFoundException(id));
     }
 
     @Transactional(readOnly = true)

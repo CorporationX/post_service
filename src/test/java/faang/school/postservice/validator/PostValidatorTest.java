@@ -18,12 +18,12 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostValidatorTest {
-    @InjectMocks
-    private PostValidator postValidator;
     @Mock
     private UserServiceClientMock userServiceClient;
     @Mock
     private ProjectServiceClientMock projectServiceClient;
+    @InjectMocks
+    private PostValidator postValidator;
 
     @Test
     void testValidateCreateAuthorAndProject() {

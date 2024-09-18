@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostDto {
+public class PostResponseDto {
     private Long id;
     private String content;
-    private Integer authorId;
-    private Integer projectId;
+    private Long authorId;
+    private Long projectId;
     private Boolean published;
     private Boolean deleted;
     private LocalDateTime publishedAt;

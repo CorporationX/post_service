@@ -4,9 +4,9 @@ import faang.school.postservice.exception.ApiException;
 import org.springframework.http.HttpStatus;
 
 public class PostNotFoundException extends ApiException {
-    private static final String MESSAGE = "Post Not Found";
+    private static final String MESSAGE = "Post id=%d Not Found";
 
-    public PostNotFoundException() {
-        super(MESSAGE, HttpStatus.NOT_FOUND);
+    public PostNotFoundException(Long id) {
+        super(MESSAGE.formatted(id), HttpStatus.NOT_FOUND);
     }
 }

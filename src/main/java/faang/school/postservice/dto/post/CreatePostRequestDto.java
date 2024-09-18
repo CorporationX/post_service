@@ -12,9 +12,9 @@ import org.hibernate.validator.constraints.Length;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreatePostRequestDto {
-    @NotBlank(message = "Message can't be blank or empty")
-    @Length(max = 4096, message = "Maximum number of characters 4096 chairs")
+    @NotBlank(message = "Content can't be blank or empty")
+    @Length(max = 4096, message = "Maximum number of characters 4096 symbols")
     private String content;
-    private Integer authorId;
-    private Integer projectId;
+    private Long authorId;
+    private Long projectId;
 }
