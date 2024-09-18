@@ -26,6 +26,7 @@ dependencies {
     implementation("org.springframework:spring-aspects:6.1.11")
     implementation("org.springframework.retry:spring-retry:2.0.6")
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
+    implementation("org.springframework.kafka:spring-kafka:3.2.3")
 
     /**
      * Database
