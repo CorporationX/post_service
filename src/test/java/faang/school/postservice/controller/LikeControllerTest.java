@@ -18,7 +18,7 @@ class LikeControllerTest {
     @Test
     void getUsersLikedPost_whenOk() {
         long id = 10L;
-        likeController.getUsersLikedPost(id);
+        likeController.getUsersLikedPost(id, 1L);
 
         Mockito.verify(likeService, Mockito.times(1))
                 .getUsersLikedPost(id);
@@ -27,7 +27,7 @@ class LikeControllerTest {
     @Test
     void getUsersLikedComm_whenOk() {
         long id = 10L;
-        likeController.getUsersLikedComm(id);
+        likeController.getUsersLikedComm(id, 1L);
 
         Mockito.verify(likeService, Mockito.times(1))
                 .getUsersLikedComm(id);
