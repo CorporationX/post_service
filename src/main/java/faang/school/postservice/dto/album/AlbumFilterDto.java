@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 public class AlbumFilterDto {
     private String titlePattern;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime afterThisTime;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime beforeThisTime;
 }
