@@ -27,8 +27,14 @@ public class PostController {
     }
 
     //this is temp method
-    @PostMapping()
-    public PostDto activate(PostDto postDto){
+    @PostMapping
+    public PostDto publishPost(@RequestBody PostDto postDto){
         return postService.activate(postDto);
+    }
+
+    //this is temp method
+    @PutMapping
+    public PostDto updatePost(@RequestBody PostDto postDto){
+        return postService.updatePost(postDto);
     }
 }

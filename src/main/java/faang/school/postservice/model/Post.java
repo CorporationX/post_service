@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -73,10 +74,11 @@ public class Post {
     private LocalDateTime updatedAt;
 
     @ManyToMany
+    @Builder.Default
     @JoinTable(
             name = "posts_hashtags",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "hashtag_id")
     )
-    private List<Hashtag> hashtags;
+    private List<Hashtag> hashtags = new ArrayList<>();
 }

@@ -5,6 +5,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.hashtag.HashtagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,14 +19,18 @@ public class HashtagServiceImpl implements HashtagService {
     private final HashtagRepository hashtagRepository;
 
     @Override
+    @Transactional
     public void createHashtags(Post post) {
-        List<String> hashtags = findHashtags(post.getContent());
+        List<String> postHashtags = findHashtags(post.getContent());
 
-        List<Hashtag> entityHashtags = hashtags.stream()
-                .map(tag -> Hashtag.builder()
-                        .name(tag)
-                        .build())
-                .peek(hashtag -> hashtag.getPosts().add(post))
+        List<Hashtag> entityHashtags = postHashtags.stream()
+                .map(hashtag -> hashtagRepository.findByName(hashtag)
+                        .orElseGet(() -> Hashtag.builder().name(hashtag).build()))
+                .peek(hashtag -> {
+                    if (!post.getHashtags().contains(hashtag)) {
+                        post.getHashtags().add(hashtag);
+                    }
+                })
                 .toList();
 
         hashtagRepository.saveAll(entityHashtags);
@@ -33,8 +38,10 @@ public class HashtagServiceImpl implements HashtagService {
 
     @Override
     public List<Post> findPostsByHashtag(String hashtag) {
-        Hashtag hashtag1 = hashtagRepository.findByName(hashtag);
-        return hashtag1.getPosts();
+        return hashtagRepository
+                .findByName(hashtag)
+                .map(Hashtag::getPosts)
+                .orElseGet(ArrayList::new);
     }
 
     private List<String> findHashtags(String content) {
@@ -48,5 +55,26 @@ public class HashtagServiceImpl implements HashtagService {
         }
 
         return foundHashtags;
+    }
+
+    @Override
+    @Transactional
+    public void updateHashtags(Post post) {
+        List<String> postHashtags = findHashtags(post.getContent());
+
+        List<Hashtag> entityHashtags = postHashtags.stream()
+                .map(hashtag -> hashtagRepository.findByName(hashtag)
+                        .orElseGet(() -> Hashtag.builder().name(hashtag).build()))
+                .toList();
+
+        post.getHashtags().removeIf(hashtag -> !entityHashtags.contains(hashtag));
+
+        entityHashtags.forEach(hashtag -> {
+            if (!post.getHashtags().contains(hashtag)) {
+                post.getHashtags().add(hashtag);
+            }
+        });
+
+        hashtagRepository.saveAll(entityHashtags);
     }
 }

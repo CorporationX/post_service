@@ -10,4 +10,7 @@ public interface PostService {
 
     //temp method
     PostDto activate(PostDto postDto);
+
+    //temp method
+    PostDto updatePost(PostDto postDto);
 }

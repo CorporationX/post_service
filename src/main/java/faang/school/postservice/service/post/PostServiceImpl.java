@@ -8,7 +8,6 @@ import faang.school.postservice.service.hashtag.HashtagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -21,17 +20,33 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final HashtagService hashtagService;
 
-    //this is temp service
+    //this is temp method
+    @Override
     public PostDto activate(PostDto postDto) {
         Post post = postRepository.findById(postDto.id())
                 .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postDto.id()));
 
         post.setPublished(true);
-
-        hashtagService.createHashtags(post); //все ради этой строчки
-        //return postMapper.toDto(postRepository.save(post));
+        postRepository.save(post);
+        hashtagService.createHashtags(post); //just need to insert this row
 
         return PostDto.builder().build();
+    }
+
+    //this is temp method
+    @Override
+    public PostDto updatePost(PostDto postDto) {
+        Post post = postRepository.findById(postDto.id())
+                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postDto.id()));
+
+//        postValidator.updatePostValidator(post, postDto);
+
+//        post.setUpdatedAt(LocalDateTime.now());
+        post.setContent("Editted content left only hashtag #post and no hshtg");
+        postRepository.save(post);
+        hashtagService.updateHashtags(post); //just need to insert this row
+
+        return postMapper.toDto(postRepository.save(post));
     }
 
     @Override
