@@ -7,6 +7,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.event.kafka.NewPostEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
+import faang.school.postservice.dto.post.CachePost;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
@@ -15,6 +16,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
 import feign.FeignException;
@@ -53,9 +55,12 @@ public class PostService {
     private final UserContext userContext;
     private final KafkaPostProducer kafkaPostProducer;
     private final UserServiceClient userServiceClient;
+    private final RedisPostRepository redisPostRepository;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
+    @Value("${spring.post.cache.ttl}")
+    private int postTtl;
 
     @Async(value = "threadPool")
     @Transactional
@@ -116,6 +121,13 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
+        redisPostRepository.save(CachePost.builder()
+                .id(post.getId())
+                .content(post.getContent())
+                .countLike(post.getLikes().size())
+                .firstComment(post.getComments().isEmpty() ? null : post.getComments().get(0))
+                .ttl(postTtl)
+                .build());
         return postMapper.toDto(post);
     }
 

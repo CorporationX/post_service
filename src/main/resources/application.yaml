@@ -70,6 +70,8 @@ spring:
 
   post:
     max-image-quantity: 10
+    cache:
+      ttl: 86400
 
   kafka:
     bootstrap-servers: localhost:9092

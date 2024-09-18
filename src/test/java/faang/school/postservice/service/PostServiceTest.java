@@ -16,6 +16,7 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityManager;
@@ -54,42 +55,30 @@ import static org.mockito.Mockito.when;
 public class PostServiceTest {
     @InjectMocks
     private PostService postService;
-
     @Mock
     private PostRepository postRepository;
-
     @Mock
     private SpellCheckerService spellCheckerService;
-
-
     @Mock
     private PostMapper postMapper;
-
     @Mock
     private PostServiceValidator postServiceValidator;
-
     @Mock
     private HashtagServiceClient hashtagServiceClient;
-
     @Mock
     private ElasticsearchService elasticsearchService;
-
     @Mock
     private EntityManager entityManager;
-
     @Mock
     private PostContextMapper postContextMapper;
-    private List<Post> postList;
-
     @Mock
     private PostEventPublisher postEventPublisher;
-
     @Mock
     private UserServiceClient userServiceClient;
-
     @Mock
     private KafkaPostProducer kafkaPostProducer;
-
+    @Mock
+    private RedisPostRepository redisPostRepository;
     @Mock
     private UserContext userContext;
 
@@ -102,6 +91,7 @@ public class PostServiceTest {
     private List<String> hashtagNames;
     private HashtagRequest hashtagRequest;
     private List<Hashtag> hashtags;
+    private List<Post> postList;
 
     @BeforeEach
     public void setUp() {
@@ -119,8 +109,6 @@ public class PostServiceTest {
                         .content(secondPostContent).build()
         );
 
-        postDto = new PostDto();
-        post = new Post();
         Post draftPost1 = Post.builder()
                 .id(1L)
                 .content("Draft 1")
@@ -204,6 +192,8 @@ public class PostServiceTest {
                 .projectId(null)
                 .content("New post")
                 .hashtags(hashtags)
+                .likes(List.of(new Like()))
+                .comments(Collections.emptyList())
                 .build();
 
         draftPostDtos = Arrays.asList(draftPostDto1, draftPostDto2);
@@ -267,8 +257,8 @@ public class PostServiceTest {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
         doNothing().when(postServiceValidator).validatePublishPost(post);
         when(postRepository.save(any(Post.class))).thenReturn(post);
-
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
+
 
         PostDto result = postService.publishPost(postDto);
 
