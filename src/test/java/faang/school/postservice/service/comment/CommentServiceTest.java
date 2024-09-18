@@ -1,7 +1,6 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
@@ -28,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,9 +39,6 @@ class CommentServiceTest {
 
     @Mock
     private UserServiceClient userServiceClient;
-
-    @Mock
-    private UserContext userContext;
 
     @Mock
     private CommentRepository commentRepository;
@@ -59,6 +54,7 @@ class CommentServiceTest {
 
     private CommentDto commentDto;
     private Comment comment;
+    private Long userId;
 
     @BeforeEach
     void setUp() {
@@ -69,16 +65,15 @@ class CommentServiceTest {
         long commentId = 10L;
         comment = new Comment();
         comment.setId(commentId);
-
+        userId = 5L;
     }
 
     @Test
     void createComment() {
-        doNothing().when(userContext).setUserId(commentDto.getAuthorId());
-        when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(new UserDto(commentDto.getAuthorId(),
+        when(userServiceClient.getUser(userId)).thenReturn(new UserDto(commentDto.getAuthorId(),
                 "User1", "email@somedomain.com"));
 
-        commentService.createComment(commentDto);
+        commentService.createComment(commentDto,userId);
 
         verify(userServiceClient, times(1)).getUser(commentDto.getAuthorId());
         verify(commentRepository, times(1)).save(commentCaptor.capture());
@@ -125,12 +120,11 @@ class CommentServiceTest {
         comment.setAuthorId(commentDto.getAuthorId());
         comment.setPost(post);
 
-        doNothing().when(userContext).setUserId(commentDto.getAuthorId());
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(new UserDto(commentDto.getAuthorId(),
                 "User1", "email@somedomain.com"));
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
-        commentService.updateComment(commentId, commentDto);
+        commentService.updateComment(commentId, commentDto,userId);
 
         verify(userServiceClient, times(1)).getUser(commentDto.getAuthorId());
         verify(commentRepository, times(1)).save(commentCaptor.capture());

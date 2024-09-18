@@ -24,8 +24,8 @@ public class CommentControllerValidator {
         }
     }
 
-    public void validateCommentAuthorIdNotNull(CommentDto commentDto) {
-        if (commentDto.getAuthorId() == null) {
+    public void validateCommentAuthorIdNotNull(Long authorId) {
+        if (authorId == null) {
             throw new ValidationException("authorId cannot be null");
         }
     }

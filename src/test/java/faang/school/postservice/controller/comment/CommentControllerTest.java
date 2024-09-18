@@ -42,6 +42,7 @@ class CommentControllerTest {
     private ObjectMapper objectMapper;
     private MockMvc mockMvc;
     private CommentDto commentDto;
+    private Long userId;
 
     @BeforeEach
     void setUp() {
@@ -51,14 +52,16 @@ class CommentControllerTest {
         commentDto.setAuthorId(20L);
         commentDto.setContent("Some content");
         objectMapper = new ObjectMapper();
+        userId = 7L;
     }
 
 
     @Test
     void testCreateCommentSuccess() throws Exception {
         String commentDtoJson = objectMapper.writeValueAsString(commentDto);
-        when(commentService.createComment(commentDto)).thenReturn(commentDto);
+        when(commentService.createComment(commentDto, userId)).thenReturn(commentDto);
         mockMvc.perform(post("/comment")
+                        .header("x-user-id", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(commentDtoJson))
                 .andExpect(status().isOk())
@@ -66,7 +69,7 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.postId").value(commentDto.getPostId()))
                 .andExpect(jsonPath("$.content").value(commentDto.getContent()));
 
-        verify(commentService, times(1)).createComment(commentDto);
+        verify(commentService, times(1)).createComment(commentDto, userId);
     }
 
     @Test
@@ -112,8 +115,9 @@ class CommentControllerTest {
     void testUpdateComment() throws Exception {
         Long commentId = 1L;
         String commentDtoJson = objectMapper.writeValueAsString(commentDto);
-        when(commentService.updateComment(commentId, commentDto)).thenReturn(commentDto);
+        when(commentService.updateComment(commentId, commentDto, userId)).thenReturn(commentDto);
         mockMvc.perform(put("/comment/{commentId}", commentId)
+                        .header("x-user-id", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(commentDtoJson))
                 .andExpect(status().isOk())
@@ -121,6 +125,6 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.postId").value(commentDto.getPostId()))
                 .andExpect(jsonPath("$.content").value(commentDto.getContent()));
 
-        verify(commentService, times(1)).updateComment(commentId, commentDto);
+        verify(commentService, times(1)).updateComment(commentId, commentDto, userId);
     }
 }

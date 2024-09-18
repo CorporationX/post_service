@@ -10,12 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CommentControllerValidatorTest {
-    private CommentControllerValidator validator = new CommentControllerValidator();
+    private final CommentControllerValidator validator = new CommentControllerValidator();
     private CommentDto commentDto;
+    private Long authorId;
 
     @BeforeEach
     void setUp() {
         commentDto = new CommentDto();
+        authorId = 10L;
     }
 
     @Test
@@ -59,14 +61,14 @@ class CommentControllerValidatorTest {
 
     @Test
     void validateCommentAuthorIdNotNull() {
-        commentDto.setAuthorId(20L);
-        assertDoesNotThrow(() -> validator.validateCommentAuthorIdNotNull(commentDto));
+        assertDoesNotThrow(() -> validator.validateCommentAuthorIdNotNull(authorId));
     }
 
     @Test
     void validateCommentAuthorIdNull() {
+        authorId = null;
         ValidationException exception = assertThrows(ValidationException.class,
-                () -> validator.validateCommentAuthorIdNotNull(commentDto));
+                () -> validator.validateCommentAuthorIdNotNull(authorId));
         assertEquals("authorId cannot be null", exception.getMessage());
     }
 }

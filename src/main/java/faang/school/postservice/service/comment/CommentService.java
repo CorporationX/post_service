@@ -1,7 +1,6 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -21,13 +20,11 @@ public class CommentService {
     private final CommentServiceValidator validator;
     private final CommentMapper mapper;
     private final UserServiceClient userServiceClient;
-    private final UserContext userContext;
 
-    public CommentDto createComment(CommentDto commentDto) {
+    public CommentDto createComment(CommentDto commentDto, Long userId) {
         validator.validatePostExist(commentDto.getPostId());
         validator.validateCommentContent(commentDto.getContent());
-        userContext.setUserId(commentDto.getAuthorId());
-        userServiceClient.getUser(commentDto.getAuthorId());
+        userServiceClient.getUser(userId);
         Comment comment = mapper.mapToComment(commentDto);
         return mapper.mapToCommentDto(commentRepository.save(comment));
     }
@@ -45,11 +42,10 @@ public class CommentService {
         commentRepository.deleteById(commentId);
     }
 
-    public CommentDto updateComment(Long commentId, CommentDto commentDto) {
+    public CommentDto updateComment(Long commentId, CommentDto commentDto, Long userId) {
         validator.validateCommentExist(commentId);
         validator.validateCommentContent(commentDto.getContent());
-        userContext.setUserId(commentDto.getAuthorId());
-        userServiceClient.getUser(commentDto.getAuthorId());
+        userServiceClient.getUser(userId);
         Comment comment = commentRepository.findById(commentId).orElseThrow(NoSuchElementException::new);
         comment.setContent(commentDto.getContent());
         return mapper.mapToCommentDto(commentRepository.save(comment));
