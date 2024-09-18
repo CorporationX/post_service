@@ -71,6 +71,11 @@ spring:
   post:
     max-image-quantity: 10
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      new-post: posts
+
 server:
   port: 8081
 

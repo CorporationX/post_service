@@ -1,7 +1,9 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.HashtagServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.kafka.NewPostEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.hashtag.HashtagResponse;
 import faang.school.postservice.dto.post.PostDto;
@@ -11,6 +13,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
@@ -80,6 +83,12 @@ public class PostServiceTest {
 
     @Mock
     private PostEventPublisher postEventPublisher;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private KafkaPostProducer kafkaPostProducer;
 
     @Mock
     private UserContext userContext;
@@ -218,6 +227,9 @@ public class PostServiceTest {
         when(entityManager.merge(any(Hashtag.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
+        when(userServiceClient.getFollowerIds(postDto.getAuthorId())).thenReturn(List.of(1L, 2L));
+        doNothing().when(kafkaPostProducer).sendMessage(any(NewPostEvent.class));
+
         postDto.setHashtagNames(hashtagNames);
         PostDto result = postService.createPost(postDto);
 
