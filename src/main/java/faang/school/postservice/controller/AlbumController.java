@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,13 +37,13 @@ public class AlbumController {
         return albumMapper.toDto(saveAlbum);
     }
 
-    @PutMapping("/{albumId}/posts")
+    @PatchMapping("/{albumId}/post")
     public AlbumDto addPostToAlbum(@RequestParam long postId, @PathVariable long albumId, @RequestParam long userId) {
         Album saveAlbum = service.addPostToAlbum(postId, albumId, userId);
         return albumMapper.toDto(saveAlbum);
     }
 
-    @DeleteMapping("/{albumId}/posts")
+    @DeleteMapping("/{albumId}/post")
     public AlbumDto removePostFromAlbum(@RequestParam long postId, @PathVariable long albumId, @RequestParam long userId) {
         Album saveAlbum = service.removePostFromAlbum(postId, albumId, userId);
         return albumMapper.toDto(saveAlbum);
@@ -54,8 +55,8 @@ public class AlbumController {
     }
 
     @DeleteMapping("/{albumId}/favorite")
-    public void removeAlbumToFavorite(@PathVariable long albumId, @RequestParam long userId) {
-        service.removeAlbumToFavorite(albumId, userId);
+    public void removeAlbumFromFavorite(@PathVariable long albumId, @RequestParam long userId) {
+        service.removeAlbumFromFavorite(albumId, userId);
     }
 
     @GetMapping("/{albumId}")
@@ -64,17 +65,25 @@ public class AlbumController {
         return albumMapper.toDto(album);
     }
 
-    @PutMapping("/{albumId}/album-title")
-    public AlbumDto updateTitleAlbum(@PathVariable long albumId, @RequestBody AlbumDto albumDto) {
-        Album modifiedAlbum = albumMapper.toEntity(albumDto);
-        Album saveModifiedAlbum = service.updateTitleAlbum(albumId, modifiedAlbum);
-        return albumMapper.toDto(saveModifiedAlbum);
+    @PostMapping("/{albumId}/album-title")
+    public AlbumDto updateTitleAlbum(
+            @PathVariable long albumId,
+            @RequestParam long userId,
+            @RequestBody AlbumDto albumDto
+    ) {
+        Album album = albumMapper.toEntity(albumDto);
+        Album modifiedAlbum = service.updateTitleAlbum(albumId, userId, album);
+        return albumMapper.toDto(modifiedAlbum);
     }
 
-    @PutMapping("/{albumId}/album-description")
-    public AlbumDto updateDescriptionAlbum(@PathVariable long albumId, @RequestBody AlbumDto albumDto) {
-        Album modifiedAlbum = albumMapper.toEntity(albumDto);
-        Album saveModifiedAlbum = service.updateDescriptionAlbum(albumId, modifiedAlbum);
+    @PostMapping("/{albumId}/album-description")
+    public AlbumDto updateDescriptionAlbum(
+            @PathVariable long albumId,
+            @RequestParam long userId,
+            @RequestBody AlbumDto albumDto
+    ) {
+        Album album = albumMapper.toEntity(albumDto);
+        Album saveModifiedAlbum = service.updateDescriptionAlbum(albumId, userId, album);
         return albumMapper.toDto(saveModifiedAlbum);
     }
 
@@ -84,7 +93,7 @@ public class AlbumController {
     }
 
     @PostMapping("/filter")
-    public List<AlbumDto> getAlbumsByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
+    public List<AlbumDto> getAlbumsByFilter(@RequestBody AlbumFilterDto filterDto) {
         List<Album> albums = service.getAlbumByFilter(filterDto);
         return albumMapper.toDtoList(albums);
     }

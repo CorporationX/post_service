@@ -9,6 +9,7 @@ import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
+import java.util.Objects;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AlbumMapper {
@@ -23,6 +24,10 @@ public interface AlbumMapper {
 
     @Named("mapToPostList")
     default List<Post> mapToPostList(List<Long> postIds) {
+        if (Objects.isNull(postIds)) {
+            postIds = List.of();
+        }
+
         return postIds.stream()
                 .map(postId -> Post.builder()
                         .id(postId)

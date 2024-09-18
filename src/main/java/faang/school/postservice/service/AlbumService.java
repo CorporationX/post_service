@@ -9,14 +9,17 @@ import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.filter.AlbumFilter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
 
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AlbumService {
 
     private final AlbumRepository albumRepository;
@@ -28,7 +31,9 @@ public class AlbumService {
     public Album createAlbum(Album album) {
         validUserExist(album.getAuthorId());
         validUniqueAlbumTitleByAuthor(album);
-        return albumRepository.save(album);
+        Album newAlbum = albumRepository.save(album);
+        log.info("User '{}' create new album '{}'", album.getAuthorId(), album.getTitle());
+        return newAlbum;
     }
 
     @Transactional
@@ -38,6 +43,8 @@ public class AlbumService {
         Post post = postRepository.findById(postId).orElseThrow();
         Album album = albumRepository.findById(albumId).orElseThrow();
         album.addPost(post);
+        Album newAlbum = albumRepository.save(album);
+        log.info("User '{}' add post '{}' to album '{}'", newAlbum.getAuthorId(), postId, album.getTitle());
         return albumRepository.save(album);
     }
 
@@ -47,19 +54,24 @@ public class AlbumService {
         validAlbumBelongsToUser(albumId, userId);
         Album album = albumRepository.findById(albumId).orElseThrow();
         album.removePost(postId);
-        return albumRepository.save(album);
+        Album newAlbum = albumRepository.save(album);
+        log.info("User '{}' delete post '{}' from album '{}'", newAlbum.getAuthorId(), postId, album.getTitle());
+        return newAlbum;
     }
 
     @Transactional
     public void addAlbumToFavorite(long albumId, long userId) {
         validUserExist(userId);
         albumRepository.addAlbumToFavorites(albumId, userId);
+        log.info("User '{}' add album '{}' to favorite", userId, albumId);
     }
 
     @Transactional
-    public void removeAlbumToFavorite(long albumId, long userId) {
+    public void removeAlbumFromFavorite(long albumId, long userId) {
         validUserExist(userId);
+        validFavoriteContainsAlbum(albumId, userId);
         albumRepository.deleteAlbumFromFavorites(albumId, userId);
+        log.info("User '{}' remove album '{}' from favorite", userId, albumId);
     }
 
     @Transactional(readOnly = true)
@@ -69,25 +81,25 @@ public class AlbumService {
     }
 
     @Transactional
-    public Album updateTitleAlbum(long albumId, Album album) {
-        validAlbumBelongsToUser(albumId, album.getAuthorId());
-        Album modifiedAlbum = albumRepository.findById(album.getId()).orElseThrow();
+    public Album updateTitleAlbum(long albumId, long userId, Album album) {
+        validAlbumBelongsToUser(albumId, userId);
+        Album excitingAlbum = albumRepository.findById(albumId).orElseThrow();
 
         if (Objects.nonNull(album.getTitle())) {
-            modifiedAlbum.setTitle(album.getTitle());
+            excitingAlbum.setTitle(album.getTitle());
         }
-        return albumRepository.save(modifiedAlbum);
+        return albumRepository.save(excitingAlbum);
     }
 
     @Transactional
-    public Album updateDescriptionAlbum(long albumId, Album album) {
-        validAlbumBelongsToUser(albumId, album.getAuthorId());
-        Album modifiedAlbum = albumRepository.findById(album.getId()).orElseThrow();
+    public Album updateDescriptionAlbum(long albumId, long userId, Album album) {
+        validAlbumBelongsToUser(albumId, userId);
+        Album excitingAlbum = albumRepository.findById(albumId).orElseThrow();
 
         if (Objects.nonNull(album.getDescription())) {
-            modifiedAlbum.setDescription(album.getDescription());
+            excitingAlbum.setDescription(album.getDescription());
         }
-        return albumRepository.save(modifiedAlbum);
+        return albumRepository.save(excitingAlbum);
     }
 
     @Transactional
@@ -124,10 +136,10 @@ public class AlbumService {
     }
 
     private void validUserExist(Long authorId) {
-        UserDto userDto = userServiceClient.getUser(authorId);
-        if (Objects.isNull(userDto)) {
-            throw new IllegalArgumentException("This user does not exist.");
-        }
+//        UserDto userDto = userServiceClient.getUser(authorId);
+//        if (Objects.isNull(userDto)) {
+//            throw new IllegalArgumentException("This user does not exist.");
+//        }
     }
 
     private void validUniqueAlbumTitleByAuthor(Album album) {
@@ -143,5 +155,14 @@ public class AlbumService {
         return albumFilters.stream()
                 .filter(albumFilter -> albumFilter.isApplicable(albumFilterDto))
                 .reduce(albums, (list, filter) -> filter.filterAlbums(list, albumFilterDto), (list, filter) -> list);
+    }
+
+    private void validFavoriteContainsAlbum(long albumId, long userId) {
+        List<Long> userFavoriteAlbumIds = albumRepository.findFavoriteAlbumsByUserId(userId)
+                .map(Album::getId)
+                .toList();
+        if (!userFavoriteAlbumIds.contains(albumId)) {
+            throw new IllegalArgumentException("This album is not in the favorites list for this user");
+        }
     }
 }
