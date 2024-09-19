@@ -29,6 +29,7 @@ spring:
       channels:
         calculations_channel: calculations_channel
         like: like_channel
+        post: post_channel
 
   aws:
     s3:

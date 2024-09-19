@@ -11,6 +11,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.post.PostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
+import faang.school.postservice.service.publisher.PostEventPublisher;
 import faang.school.postservice.validator.post.PostServiceValidator;
 import faang.school.postservice.service.resource.ResourceService;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +54,8 @@ public class PostServiceTest {
 
     @Mock
     private PostServiceValidator postServiceValidator;
+    @Mock
+    private PostEventPublisher postEventPublisher;
 
     @Mock
     private PostProducer postProducer;
