@@ -10,6 +10,10 @@ import java.util.List;
 
 @Repository
 public interface ArticleRepository extends CrudRepository<Article, Long> {
+// https://www.forestadmin.com/blog/how-to-use-jsonb-to-manipulate-json-fields-in-postgresql/
+// https://habr.com/ru/articles/254425/
+// SELECT * FROM article WHERE hash_tags @> '["cooking","sport","travelling","java","gradle"]';
+
 
 //    List<Article> findByHashTags(List<String> hashTags);
 
