@@ -1,6 +1,5 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.post;
 
-import faang.school.postservice.controller.post.PostController;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;

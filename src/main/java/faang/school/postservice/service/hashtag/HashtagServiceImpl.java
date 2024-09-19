@@ -67,6 +67,10 @@ public class HashtagServiceImpl implements HashtagService {
     private List<String> findHashtags(String content) {
         List<String> foundHashtags = new ArrayList<>();
 
+        if (content == null || content.isBlank()){
+            return foundHashtags;
+        }
+
         Pattern pattern = Pattern.compile("#\\w+");
         Matcher matcher = pattern.matcher(content);
 
