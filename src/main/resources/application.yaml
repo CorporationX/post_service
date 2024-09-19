@@ -22,8 +22,17 @@ spring:
       port: 6379
       host: localhost
       channels:
+        post-view: post_view_channel
+        post-create: post_channel
+        post-like: post_like_channel
         calculations_channel:
           name: calculations_channel
+  task:
+    execution:
+      pool:
+        max-size: 10
+        core-size: 6
+        queue-capacity: 20
 
 server:
   port: 8081
@@ -34,11 +43,24 @@ logging:
 
 post:
   publisher:
+    batch-size: 10
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
+    batch-size: 500
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+    expired:
+      scheduler:
+        cron: "0 0 0 * * ?" # every midnight
+  pagination:
+    page-size: 1000
+  moderator:
+    count-posts-in-thread: "100"
+    scheduler:
+      cron: "0 0 0 * * ?" # every day
+      dictionary:
+        file: "classpath:moderation-dictionary.txt"
 
 user-service:
   host: localhost

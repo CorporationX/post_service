@@ -59,6 +59,13 @@ public class Post {
     @Column(name = "scheduled_at")
     private LocalDateTime scheduledAt;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verify_date")
+    private LocalDateTime verifiedDate;
+
+    @Column(name = "verify", nullable = false)
+    private boolean verified;
+
     @Column(name = "deleted", nullable = false)
     private boolean deleted;
 
