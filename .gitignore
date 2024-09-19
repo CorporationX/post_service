@@ -58,3 +58,5 @@ out/
 
 ### VS Code ###
 .vscode/
+/log/post_service_logs.log
+/log/post_service_logs.log
