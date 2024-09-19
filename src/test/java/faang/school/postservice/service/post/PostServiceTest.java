@@ -1,11 +1,14 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.data.TestData;
 import faang.school.postservice.dto.post.*;
 import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.event.post.PostEvent;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.mapper.post.*;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.post.PostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.validator.post.PostServiceValidator;
@@ -50,8 +53,12 @@ public class PostServiceTest {
 
     @Mock
     private PostServiceValidator postServiceValidator;
+
     @Mock
-    private PostEventPublisher postEventPublisher;
+    private PostProducer postProducer;
+
+    @Mock
+    private UserServiceClient userServiceClient;
 
     @InjectMocks
     private PostService postService;
@@ -492,6 +499,8 @@ public class PostServiceTest {
     @Test
     @DisplayName("Test publish post")
     void testPublishPost() {
+        when(userServiceClient.getFollowerIds(anyLong())).thenReturn(List.of());
+
         when(postRepository.findById(
                 TestData.storedPostWithTextFile.getId()
         )).thenReturn(Optional.of(TestData.storedPostWithTextFile.toBuilder().build()));
