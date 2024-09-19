@@ -3,9 +3,11 @@ package faang.school.postservice.redisdemo.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.redisdemo.dto.ArticleDto;
+import faang.school.postservice.redisdemo.entity.Article;
 import faang.school.postservice.redisdemo.mapper.ArticleMapper;
 import faang.school.postservice.redisdemo.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
@@ -13,21 +15,22 @@ import redis.clients.jedis.JedisPool;
 
 import java.util.Random;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ArticleService {
     private static final int TTL = 10;
 
-//    @Value("${spring.data.redis.host}")
-    private String redisHost = "localhost";
+    @Value("${spring.data.redis.host}")
+    private String redisHost;
 
-//    @Value("${spring.data.redis.port}")
-    private int redisPort = 6379;
+    @Value("${spring.data.redis.port}")
+    private int redisPort;
 
     private final ArticleRepository articleRepository;
     private final ArticleMapper articleMapper;
     private final ObjectMapper jacksonObjectMapper;
-    private final JedisPool jedisPool = new JedisPool(redisHost, redisPort);
+    private final JedisPool jedisPool = new JedisPool();
     private final Random random = new Random();
 
     public ArticleDto getArticle(Long id) {
@@ -35,11 +38,10 @@ public class ArticleService {
     }
 
     public ArticleDto getCachedArticle(Long id) {
-        System.out.println("HOST: " + redisHost + ", PORT: " + redisPort);
         try (Jedis jedis = jedisPool.getResource()) {
             String key = "article:%d".formatted(id);
             String raw = jedis.get(key);
-            System.out.println("RAW: " + raw);
+            log.info("RAW: {}", raw);
             if (raw != null) {
                 return jacksonObjectMapper.readValue(raw, ArticleDto.class);
             }
@@ -55,5 +57,10 @@ public class ArticleService {
         long count = articleRepository.count();
         long articleNum = random.nextLong(1, count);
         return getCachedArticle(articleNum);
+    }
+
+    public ArticleDto createArticle(ArticleDto articleDto){
+        var art = articleRepository.save(articleMapper.toEntity(articleDto));
+        return articleMapper.toArticleDto(art);
     }
 }

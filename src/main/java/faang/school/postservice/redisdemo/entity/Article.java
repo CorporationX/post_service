@@ -1,6 +1,8 @@
 package faang.school.postservice.redisdemo.entity;
 
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,6 +12,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -17,6 +24,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(name = "article")
+@Convert(attributeName = "jsonb", converter = JsonBinaryType.class)  // Добавляем определение типа jsonb
 public class Article {
 
     @Id
@@ -31,4 +39,10 @@ public class Article {
 
     @Column(name = "rating")
     private double rating;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "hash_tags", columnDefinition = "jsonb")  // Указываем тип колонки как jsonb
+    private List<String> hashTags;
+//    @Column(name = "hash_tag")  // Указываем тип колонки как jsonb
+//    private String hashTags;
 }

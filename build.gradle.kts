@@ -31,6 +31,8 @@ dependencies {
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
+//    implementation("com.vladmihalcea:hibernate-types-52:2.21.1")
+    implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
 
     /**
      * Utils & Logging

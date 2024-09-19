@@ -5,6 +5,8 @@ import faang.school.postservice.redisdemo.service.ArticleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -20,5 +22,10 @@ public class ArticleController {
     @GetMapping("/articles/{id}")
     public ArticleDto getArticle(@PathVariable long id) {
         return articleService.getCachedArticle(id);
+    }
+
+    @PostMapping("/articles")
+    public ArticleDto createArticle(@RequestBody ArticleDto articleDto) {
+        return articleService.createArticle(articleDto);
     }
 }
