@@ -90,7 +90,7 @@ public class LikeControllerTest {
     }
 
     @Test
-    @DisplayName("Проверка удаления лайка поста")
+    @DisplayName("Проверка удаления лайка коммента")
     public void testSuccessRemoveLikeOnComment() throws Exception {
         when(likeService.removeLikeOnComment(COMMENT_ID)).thenReturn(commentLikeDto);
 
