@@ -38,7 +38,7 @@ public class LikeServiceImpl implements LikeService {
 
         Like saveLike = saveLikeComment(comment, userId);
 
-        log.info("Created a like with an {} from a user with an {} to a comment with an {}",
+        log.info("Created a like with ID {} from a user with ID {} to a comment with ID {}",
                 saveLike.getId(),
                 userId,
                 commentId);
@@ -70,7 +70,7 @@ public class LikeServiceImpl implements LikeService {
 
         Like saveLike = saveLikePost(post, userId);
 
-        log.info("Created a like with an {} from a user with an {} to a post with an {}",
+        log.info("Created a like with ID {} from a user with ID {} to a post with ID {}",
                 saveLike.getId(),
                 userId,
                 postId);
