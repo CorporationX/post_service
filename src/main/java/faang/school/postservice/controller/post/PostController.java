@@ -18,7 +18,7 @@ public class PostController {
 
 
     @GetMapping("/hashtags/{hashtag}")
-    public List<PostDto> getPostsByHashtag(@PathVariable @Valid String hashtag) {
+    public List<PostDto> getPostsByHashtag(@PathVariable String hashtag) {
         if (hashtag == null || hashtag.isBlank()) {
             throw new DataValidationException("Hashtag is empty!");
         }
@@ -28,13 +28,13 @@ public class PostController {
 
     //this is temp method
     @PostMapping
-    public PostDto publishPost(@RequestBody PostDto postDto){
+    public PostDto publishPost(@RequestBody PostDto postDto) {
         return postService.activate(postDto);
     }
 
     //this is temp method
     @PutMapping
-    public PostDto updatePost(@RequestBody PostDto postDto){
+    public PostDto updatePost(@RequestBody PostDto postDto) {
         return postService.updatePost(postDto);
     }
 }
