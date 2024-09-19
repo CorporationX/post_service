@@ -38,7 +38,7 @@ public class PostController {
         return mapper.toDto(result);
     }
 
-    @PutMapping
+    @PatchMapping
     public PostResponseDto updatePost(@Valid @RequestBody UpdatePostRequestDto requestDto) {
         Post post = mapper.toEntity(requestDto);
         Post result = postService.update(post);
@@ -46,7 +46,7 @@ public class PostController {
         return mapper.toDto(result);
     }
 
-    @PatchMapping("/{postId}/publish")
+    @PutMapping("/{postId}/publish")
     public PostResponseDto publishPost(@PathVariable Long postId) {
         Post result = postService.publish(postId);
         return mapper.toDto(result);
