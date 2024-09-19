@@ -1,17 +1,14 @@
 package faang.school.postservice.mapper.post;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.Post.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.events.PostViewEvent;
 import faang.school.postservice.model.Post;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 

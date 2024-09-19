@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.Post.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataDoesNotExistException;
@@ -135,6 +135,14 @@ public class PostService {
             log.info("There's no one post in database written by your publisher");
             throw new DataDoesNotExistException(DOES_NOT_EXIST_IN_DB);
         }
+    }
+
+    public List<Post> getPostBatch(Long postId, Long userId) {
+        UserDto userDto = userServiceClient.getUser(userId);
+
+        if(postId == 0) {
+        }
+        return null;
     }
 
     private boolean validateDraftPostPublisherExist(Post post) {
