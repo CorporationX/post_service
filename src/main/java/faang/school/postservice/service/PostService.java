@@ -9,6 +9,7 @@ import faang.school.postservice.dto.event.kafka.NewPostEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.post.CachePost;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.CacheUser;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
@@ -17,6 +18,7 @@ import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.RedisPostRepository;
+import faang.school.postservice.repository.RedisUserRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
 import feign.FeignException;
@@ -32,11 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -56,6 +54,7 @@ public class PostService {
     private final KafkaPostProducer kafkaPostProducer;
     private final UserServiceClient userServiceClient;
     private final RedisPostRepository redisPostRepository;
+    private final RedisUserRepository redisUserRepository;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
@@ -94,7 +93,6 @@ public class PostService {
         kafkaPostProducer.sendMessage(NewPostEvent.builder()
                 .subscribersIds(userServiceClient.getFollowerIds(postDto.getAuthorId()))
                 .build());
-
         return postDtoForReturns;
     }
 
@@ -128,6 +126,7 @@ public class PostService {
                 .firstComment(post.getComments().isEmpty() ? null : post.getComments().get(0))
                 .ttl(postTtl)
                 .build());
+
         return postMapper.toDto(post);
     }
 
