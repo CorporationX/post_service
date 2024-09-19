@@ -1,12 +1,11 @@
 package faang.school.postservice.dto.user;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Builder;
 
-@Data
-@AllArgsConstructor
-public class UserDto {
-    private Long id;
-    private String username;
-    private String email;
+@Builder
+public record UserDto(
+        Long id,
+        String username,
+        String email
+) {
 }
