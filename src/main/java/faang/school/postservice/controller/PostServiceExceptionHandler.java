@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.exception.comment.CommentExceptionHandler;
+import faang.school.postservice.exception.comment.CommentException;
 import faang.school.postservice.exception.post.PostAlreadyPublished;
 import faang.school.postservice.exception.post.PostDeletedException;
 import faang.school.postservice.exception.post.UnexistentPostException;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class PostServiceExceptionHandler {
 
-    @ExceptionHandler({DataValidationException.class, UnexistentPostPublisher.class, CommentExceptionHandler.class})
+    @ExceptionHandler({DataValidationException.class, UnexistentPostPublisher.class, CommentException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponseException handleDataValidationException(DataValidationException e) {
         log.info(e.getMessage(), e);
