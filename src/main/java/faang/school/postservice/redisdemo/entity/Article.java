@@ -26,7 +26,7 @@ import java.util.List;
 @Table(name = "article")
 @Convert(attributeName = "jsonb", converter = JsonBinaryType.class)  // Добавляем определение типа jsonb
 public class Article {
-
+// https://stackoverflow.com/questions/70036475/what-should-i-replace-the-hibernate-deprecated-typedef-and-type-annotations-by
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
