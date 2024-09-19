@@ -10,7 +10,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FilterPostRequestDto {
-    private Integer authorId;
-    private Integer projectId;
     private boolean published;
 }

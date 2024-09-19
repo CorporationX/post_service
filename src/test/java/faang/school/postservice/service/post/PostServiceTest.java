@@ -206,7 +206,7 @@ public class PostServiceTest {
                         .toList()
                 );
 
-        List<Post> result = postService.search(filterPost);
+        List<Post> result = postService.searchByAuthor(filterPost);
 
         assertEquals(result.size(), 1);
         assertEquals(result.get(0), authorPosts.get(1));
@@ -229,7 +229,7 @@ public class PostServiceTest {
                         .toList()
                 );
 
-        List<Post> result = postService.search(filterPost);
+        List<Post> result = postService.searchByAuthor(filterPost);
 
         assertEquals(result.size(), 1);
         assertEquals(result.get(0), authorPosts.get(0));
@@ -253,7 +253,7 @@ public class PostServiceTest {
                         .toList()
                 );
 
-        List<Post> result = postService.search(filterPost);
+        List<Post> result = postService.searchByProject(filterPost);
 
         assertEquals(result.size(), 2);
         assertEquals(result.get(0), projectPosts.get(1));
@@ -277,7 +277,7 @@ public class PostServiceTest {
                         .toList()
                 );
 
-        List<Post> result = postService.search(filterPost);
+        List<Post> result = postService.searchByProject(filterPost);
 
         assertEquals(result.size(), 0);
 

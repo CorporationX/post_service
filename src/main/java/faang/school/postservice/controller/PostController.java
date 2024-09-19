@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -45,10 +46,9 @@ public class PostController {
         return mapper.toDto(result);
     }
 
-    @PutMapping("/{postId}/publish")
+    @PatchMapping("/{postId}/publish")
     public PostResponseDto publishPost(@PathVariable Long postId) {
         Post result = postService.publish(postId);
-
         return mapper.toDto(result);
     }
 
@@ -58,10 +58,20 @@ public class PostController {
         postService.delete(postId);
     }
 
-    @GetMapping("/search")
-    public List<PostResponseDto> searchPosts(FilterPostRequestDto requestDto) {
+    @GetMapping("/search/{authorId}/author")
+    public List<PostResponseDto> searchPostsByAuthor(@PathVariable Long authorId, FilterPostRequestDto requestDto) {
         Post post = mapper.toEntity(requestDto);
-        List<Post> posts = postService.search(post);
+        post.setAuthorId(authorId);
+        List<Post> posts = postService.searchByAuthor(post);
+
+        return mapper.listEntitiesToListDto(posts);
+    }
+
+    @GetMapping("/search/{projectId}/project")
+    public List<PostResponseDto> searchPostsByProject(@PathVariable Long projectId, FilterPostRequestDto requestDto) {
+        Post post = mapper.toEntity(requestDto);
+        post.setProjectId(projectId);
+        List<Post> posts = postService.searchByProject(post);
 
         return mapper.listEntitiesToListDto(posts);
     }

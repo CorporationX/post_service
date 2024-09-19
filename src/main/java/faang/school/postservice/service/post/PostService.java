@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -76,24 +77,29 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<Post> search(Post filterPost) {
-        List<Post> posts;
-        postValidator.checkInputAuthorOrProject(filterPost);
+    public List<Post> searchByAuthor(Post filterPost) {
+        List<Post> posts = postRepository.findByAuthorId(filterPost.getAuthorId());
+        posts = applyFiltersAndSorted(posts, filterPost)
+                .toList();
 
-        if (filterPost.getAuthorId() != null) {
-            posts = postRepository.findByAuthorId(filterPost.getAuthorId());
-        } else {
-            posts = postRepository.findByProjectId(filterPost.getProjectId());
-        }
+        return posts;
+    }
 
-        posts = posts.stream()
+    @Transactional(readOnly = true)
+    public List<Post> searchByProject(Post filterPost) {
+        List<Post> posts = postRepository.findByProjectId(filterPost.getProjectId());
+        posts = applyFiltersAndSorted(posts, filterPost)
+                .toList();
+
+        return posts;
+    }
+
+    private Stream<Post> applyFiltersAndSorted(List<Post> posts, Post filterPost) {
+        return posts.stream()
                 .filter((post -> !post.isDeleted()))
                 .filter((post -> post.isPublished() == filterPost.isPublished()))
                 .sorted(Comparator.comparing(
                         filterPost.isPublished() ? Post::getPublishedAt : Post::getCreatedAt
-                ).reversed())
-                .toList();
-
-        return posts;
+                ).reversed());
     }
 }
