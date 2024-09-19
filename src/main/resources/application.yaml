@@ -77,6 +77,8 @@ spring:
     bootstrap-servers: localhost:9092
     topic:
       new-post: posts
+    consumer:
+      group-id: post
 
 server:
   port: 8081
