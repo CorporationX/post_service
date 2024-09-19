@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.GetPostsDto;
 import faang.school.postservice.dto.post.UpdatablePostDto;
 import faang.school.postservice.dto.resource.PreviewPostResourceDto;
@@ -7,12 +8,14 @@ import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.post.DraftPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.UpdatableResourceDto;
+import faang.school.postservice.event.post.PostEvent;
 import faang.school.postservice.exception.messages.ValidationExceptionMessage;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.exception.validation.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.post.ResourceMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.post.PostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.validator.post.PostServiceValidator;
@@ -20,11 +23,13 @@ import faang.school.postservice.service.resource.ResourceService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -43,6 +48,10 @@ public class PostService {
     private final ResourceMapper resourceMapper;
 
     private final PostServiceValidator validator;
+
+    private final PostProducer postProducer;
+
+    private final UserServiceClient userServiceClient;
 
     @Transactional
     public PostDto createPostDraft(DraftPostDto draft) {
@@ -80,6 +89,8 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         Post savedPost = postRepository.save(post);
+
+        sendPostEvent(savedPost.getId(), savedPost.getAuthorId());
 
         return postMapper.toDto(savedPost);
     }
@@ -185,6 +196,15 @@ public class PostService {
                 }
             }
         };
+    }
+
+    @Async("taskExecutor")
+    public void sendPostEvent(long postId, long authorId) {
+        List<Long> followers = userServiceClient.getFollowerIds(authorId);
+
+        PostEvent postEvent = new PostEvent(postId, authorId, followers);
+
+        postProducer.sendPostEvent(postEvent);
     }
 
     private List<PostDto> findAllPublishedAuthorPosts(long authorId) {

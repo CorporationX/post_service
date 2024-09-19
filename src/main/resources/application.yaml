@@ -86,6 +86,19 @@ payment-service:
   host: localhost
   port: 9080
 
+kafka:
+  host-port: localhost:9092
+
+  posts-topic:
+    name: posts
+
+async:
+  core-pool-size: 5
+  max-pool-size: 10
+  queue-capacity: 100
+  thread-name-prefix: "AsyncThread-"
+
+
 #springdoc:
 #  api-docs:
 #    path: /docs
