@@ -3,7 +3,9 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserFilterDto;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.AlbumStatus;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -77,9 +79,36 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    public Album getAlbum(long albumId) {
-        return albumRepository.findById(albumId)
+    public Album getAlbum(long albumId, long userId) {
+        Album album = albumRepository.findById(albumId)
                 .orElseThrow();
+
+        if (album.getStatus().equals(AlbumStatus.ONLY_AUTHOR)) {
+            if (userId == album.getAuthorId()) {
+                return album;
+            } else {
+                throw new IllegalArgumentException("This album is available only author");
+            }
+
+        } else if (album.getStatus().equals(AlbumStatus.SOME_USERS)) {
+            List<Long> userIdsWithAccess = albumRepository.findUserIdsWithAlbumAccess(albumId);
+            if (userIdsWithAccess.contains(userId)) {
+                return album;
+            } else {
+                throw new IllegalArgumentException("This album don`t available this user");
+            }
+
+        } else if (album.getStatus().equals(AlbumStatus.SUBSCRIBERS)) {
+            List<Long> followerIds = userServiceClient.getFollowers(album.getAuthorId(), new UserFilterDto()).stream()
+                    .map(UserDto::getId)
+                    .toList();
+            if (followerIds.contains(userId)) {
+                return album;
+            } else {
+                throw new IllegalArgumentException("This album is available only followers");
+            }
+        }
+        return album;
     }
 
     @Transactional

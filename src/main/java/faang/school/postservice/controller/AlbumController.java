@@ -62,7 +62,7 @@ public class AlbumController {
         service.removeAlbumFromFavorite(albumId, userId);
     }
 
-    @GetMapping("/{album-id}")
+    @GetMapping("/{albumId}")
     public AlbumDto getAlbum(@PathVariable("album-id") long albumId) {
         Album album = service.getAlbum(albumId);
         return albumMapper.toDto(album);

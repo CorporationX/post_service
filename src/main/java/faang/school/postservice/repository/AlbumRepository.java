@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -35,4 +36,9 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
             """)
     Stream<Album> findFavoriteAlbumsByUserId(long userId);
 
+    @Query(nativeQuery = true, value = """
+            SELECT uwa.user_id FROM users_with_access usa
+            WHERE albumId = :albumId
+            """)
+    List<Long> findUserIdsWithAlbumAccess(long albumId);
 }

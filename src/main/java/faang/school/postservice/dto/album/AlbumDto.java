@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
 import java.util.List;
@@ -32,4 +31,6 @@ public class AlbumDto {
     private String description;
 
     private List<Long> postIds;
+
+    private List<Long> userWithAccess;
 }
