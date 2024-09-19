@@ -5,15 +5,19 @@ import faang.school.postservice.dto.response.ErrorResponse;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.validation.Violation;
 import feign.FeignException;
+import faang.school.postservice.dto.response.ValidationErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -66,10 +70,16 @@ public class GlobalExceptionHandler {
         return new ConstraintErrorResponse(violations);
     }
 
-    @ExceptionHandler(Throwable.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleOtherExceptions(Throwable ex) {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ErrorResponse handleMissingRequestHeaderException(MissingRequestHeaderException ex) {
         log.error(ex.getMessage(), ex);
         return new ErrorResponse(ex.getMessage());
     }
+@ExceptionHandler(Throwable.class)
+@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+public ErrorResponse handleOtherExceptions(Throwable ex) {
+    log.error(ex.getMessage(), ex);
+    return new ErrorResponse(ex.getMessage());
+}
 }
