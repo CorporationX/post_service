@@ -1,8 +1,6 @@
 package faang.school.postservice.publisher;
 
 import faang.school.postservice.dto.notification.CommentEvent;
-import faang.school.postservice.mapper.CommentEventMapper;
-import faang.school.postservice.model.Comment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,11 +13,8 @@ import org.springframework.stereotype.Component;
 public class CommentEventPublisher {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChannelTopic calculations_channelTopic;
-    private final CommentEventMapper commentEventMapper;
 
-    public void publish(Comment comment) {
-        CommentEvent commentEvent =
-                commentEventMapper.toEvent(comment);
+    public void publish(CommentEvent commentEvent) {
         redisTemplate.convertAndSend(calculations_channelTopic.getTopic(), commentEvent);
     }
 }
