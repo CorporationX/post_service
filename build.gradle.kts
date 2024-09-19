@@ -26,6 +26,13 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
+     * Swagger
+     */
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.3")
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.15")
+    implementation("io.springfox:springfox-boot-starter:3.0.0")
+
+    /**
      * Database
      */
     implementation("org.liquibase:liquibase-core")

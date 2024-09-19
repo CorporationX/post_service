@@ -43,6 +43,10 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+springdoc:
+  swagger-ui:
+    url: /api.yaml
+
 user-service:
   host: localhost
   port: 8080
