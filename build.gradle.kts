@@ -31,6 +31,12 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
+     * Kafka
+     */
+    implementation ("org.springframework.kafka:spring-kafka:3.2.4")
+    implementation ("org.apache.kafka:kafka-clients:3.8.0")
+
+    /**
      * Database
      */
     implementation("org.liquibase:liquibase-core")
