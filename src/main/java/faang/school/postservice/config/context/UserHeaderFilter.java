@@ -10,7 +10,6 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class UserHeaderFilter implements Filter {
-
     private final UserContext userContext;
 
     @Override
