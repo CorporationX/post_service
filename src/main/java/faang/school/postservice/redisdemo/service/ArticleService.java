@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.util.List;
 import java.util.Random;
 
 @Slf4j
@@ -62,5 +63,28 @@ public class ArticleService {
     public ArticleDto createArticle(ArticleDto articleDto){
         var art = articleRepository.save(articleMapper.toEntity(articleDto));
         return articleMapper.toArticleDto(art);
+    }
+
+//    public List<ArticleDto> findArticleByHashTag(ArticleDto articleDto) {
+//        List<Article> arts = articleRepository.findByHashTags(articleDto.hashTags());
+//        return arts.stream()
+//                .map(articleMapper::toArticleDto)
+//                .toList();
+//    }
+
+    public List<ArticleDto> findArticleByHashTag(ArticleDto articleDto) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonHashTags;
+        try {
+            jsonHashTags = objectMapper.writeValueAsString(articleDto.hashTags());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to convert hashTags to JSON", e);
+        }
+        System.out.println(articleDto);
+        System.out.println("JSON: " + jsonHashTags + " #### " + articleDto.hashTags());
+        List<Article> arts = articleRepository.findByHashTags(jsonHashTags);
+        return arts.stream()
+                .map(articleMapper::toArticleDto)
+                .toList();
     }
 }

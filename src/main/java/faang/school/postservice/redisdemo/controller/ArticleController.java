@@ -6,8 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,5 +30,12 @@ public class ArticleController {
     @PostMapping("/articles")
     public ArticleDto createArticle(@RequestBody ArticleDto articleDto) {
         return articleService.createArticle(articleDto);
+    }
+
+    @PutMapping("/articles")
+    public List<ArticleDto> findByHashTags(@RequestBody ArticleDto articleDto) {
+        return articleService.findArticleByHashTag(articleDto);
+
+//        return null;
     }
 }
