@@ -66,11 +66,11 @@ dependencies {
 }
 
 val jacocoInclude = listOf(
-    "***/controller/***",
-    "***/service/***",
-    "***/validator/***",
-    "***/mapper/***",
-    "***/filter/***",
+    "**/controller/**",
+    "**/service/**",
+    "**/validator/**",
+    "**/mapper/**",
+    "**/filter/**",
 )
 
 jacoco {
