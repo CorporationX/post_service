@@ -4,6 +4,7 @@ package faang.school.postservice.publicher;
 import faang.school.postservice.dto.notification.CommentEvent;
 import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,4 +1,4 @@
-package faang.school.postservice.publicher;
+package faang.school.postservice.publisher;
 
 import faang.school.postservice.dto.notification.CommentEvent;
 import faang.school.postservice.mapper.CommentEventMapper;
