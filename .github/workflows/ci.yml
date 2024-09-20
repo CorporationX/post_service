@@ -1,0 +1,45 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - 'cyclop-master-bc5'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: temurin
+
+      - name: Test Application
+        run: ./gradlew test --no-daemon
+
+  compileJava:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Compile Java Code
+        run: ./gradlew compileJava --no-daemon
+
+      - name: Upload Compiled Classes
+        uses: actions/upload-artifact@v3
+        with:
+          name: compiled-classes
+          path: build/classes/java/main
