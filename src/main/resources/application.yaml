@@ -99,6 +99,8 @@ async:
   queue-capacity: 100
   thread-name-prefix: "AsyncThread-"
 
+cache:
+  post-ttl-seconds: 86400
 
 #springdoc:
 #  api-docs:

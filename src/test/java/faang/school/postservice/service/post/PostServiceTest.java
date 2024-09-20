@@ -10,6 +10,7 @@ import faang.school.postservice.mapper.post.*;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.post.PostProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.cache.PostCacheRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
 import faang.school.postservice.validator.post.PostServiceValidator;
@@ -62,6 +63,9 @@ public class PostServiceTest {
 
     @Mock
     private UserServiceClient userServiceClient;
+
+    @Mock
+    private PostCacheRepository postCacheRepository;
 
     @InjectMocks
     private PostService postService;
