@@ -18,7 +18,7 @@ import java.util.LinkedHashSet;
 public class CacheUser {
     @Id
     private long id;
-    private LinkedHashSet<Long> postIdsForFeed;
+    private LinkedHashSet<Long> feed;
 
     @TimeToLive
     private long ttl;

@@ -26,7 +26,7 @@ public class FeedService {
                 .toList();
 
         users.forEach(user -> {
-            LinkedHashSet<Long> postIds = user.getPostIdsForFeed();
+            LinkedHashSet<Long> postIds = user.getFeed();
             postIds.add(newPostEvent.getId());
 
             if (postIds.size() > maxFeedSize) {
