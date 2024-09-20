@@ -95,6 +95,6 @@ public class LikeServiceImpl implements LikeService {
 
     private long getUserId() {
         long userId = userContext.getUserId();
-        return userServiceClient.getUser(userId).getId();
+        return userServiceClient.getUser(userId).id();
     }
 }
