@@ -12,6 +12,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
+import java.util.List;
+import java.util.TreeSet;
+
 @Configuration
 public class RedisConfig {
     @Value("${spring.data.redis.host}")
@@ -42,6 +45,16 @@ public class RedisConfig {
         redisEventTemplate.setValueSerializer(serializer);
 
         return redisEventTemplate;
+    }
+
+    @Bean
+    public RedisTemplate<Long, Long> feedRedisTemplate(JedisConnectionFactory jedisConnectionFactory, ObjectMapper objectMapper) {
+        RedisTemplate<Long, Long> redisFeedTemplate = new RedisTemplate<>();
+        redisFeedTemplate.setConnectionFactory(jedisConnectionFactory);
+        redisFeedTemplate.setKeySerializer(RedisSerializer.string());
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        redisFeedTemplate.setValueSerializer(serializer);
+        return redisFeedTemplate;
     }
 }
 

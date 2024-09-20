@@ -11,6 +11,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.redis.PostCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
     private final PostViewPublisher postViewPublisher;
+    private final PostCacheService postCacheService;
 
     @Transactional(readOnly = true)
     public Post getById(long id) {

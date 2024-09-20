@@ -54,3 +54,8 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+news-feed:
+  feed:
+    amount: 20
+    posts_size: 100
