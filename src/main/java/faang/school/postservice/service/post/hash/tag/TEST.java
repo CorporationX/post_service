@@ -4,74 +4,106 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.model.Post;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.resps.Tuple;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
+@Slf4j
 public class TEST {
-    private static final String HASH_TAG_PATTERN = "#(\\w++)";
+
+    public static void main(String[] args) {
+        var updPost = findPostById(9);
+        var updTags = updPost.get().getHashTags();
+        System.out.println("Primal tags: " + updTags);
+        updTags.remove(0);
+        updTags.add("newtag");
+
+        postCacheProcess(updPost.get());
+
+
+    }
+
+    private static final String POST_KEY_PREFIX = "post:";
 
     private static final JedisPool jedisPool = new JedisPool();
     private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    public static void main(String[] args) throws JsonProcessingException {
-//        var post = buildPost();
-//        System.out.println(post);
-//        updateHashTags(post);
-//        System.out.println(post);
 
-//        String json = objectMapper.writeValueAsString(LocalDateTime.now());
-//        System.out.println(json);
+    public static void postCacheProcess(Post updatedPost) {
+        List<String> primalHashTags = getPrimalHashTagsById(updatedPost.getId());
+        List<String> updatedHashTags = updatedPost.getHashTags();
+        List<String> deletedHashTags = getDeletedHashTags(primalHashTags, updatedHashTags);
+        List<String> newHashTags = getNewHashTags(primalHashTags, updatedHashTags);
 
-        try(Jedis jedis = jedisPool.getResource()) {
-            List<String> tuple = jedis.zrange("posts", 0, 0);
-            System.out.println(tuple.toString());
-            Post post = objectMapper.readValue(tuple.get(0), Post.class);
-            System.out.println(post);
-//            jedis.zrem("{\"id\":3,\"content\":\"Some post for test #java #jedis#redis #develop\",\"authorId\":null,\"projectId\":null,\"likes\":null,\"comments\":null,\"albums\":null,\"ad\":null,\"resources\":null,\"published\":false,\"publishedAt\":[2024,9,17,11,59,10,594139000],\"scheduledAt\":null,\"deleted\":false,\"createdAt\":null,\"updatedAt\":null,\"hashTags\":[\"java\",\"jedis\",\"redis\",\"develop\"]}");
+        System.out.println("DEL: " + deletedHashTags);
+        System.out.println("NEW: " + newHashTags);
+    }
+
+    private static List<String> getNewHashTags(List<String> primalHashTags, List<String> updatedHashTags) {
+        List<String> newHashTags = new ArrayList<>(updatedHashTags);
+        newHashTags.removeAll(primalHashTags);
+        return newHashTags;
+    }
+
+    private static List<String> getDeletedHashTags(List<String> primalHashTags, List<String> updatedHashTags) {
+        List<String> deletedHashTags = new ArrayList<>(primalHashTags);
+        deletedHashTags.removeAll(updatedHashTags);
+        return deletedHashTags;
+    }
+
+    public static Optional<Post> findPostById(long id) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            String primalPostJson = jedis.get(POST_KEY_PREFIX + id);
+            if (primalPostJson == null) {
+                return Optional.empty();
+            }
+            return Optional.of(toPost(primalPostJson));
         }
     }
 
-    private static Post buildPost() {
-        return Post
-                .builder()
-                .id(3L)
-                .content("Some post for test #java #jedis#redis #develop")
-                .publishedAt(LocalDateTime.now().minusDays(3L))
-                .build();
-    }
-
-    public static Post updateHashTags(Post post) throws JsonProcessingException {
-        List<String> hashTags = parsePostByHashTa(post);
-        post.setHashTags(hashTags);
-        if (!hashTags.isEmpty()) {
-            addPostIntoCashByHashTags(post);
-        }
-        return post;
-    }
-
-    private static List<String> parsePostByHashTa(Post post) {
-        Pattern pattern = Pattern.compile(HASH_TAG_PATTERN);
-        Matcher matcher = pattern.matcher(post.getContent());
-        return matcher.results()
-                .map(tag -> tag.group(1))
-                .toList();
-    }
-
-    private static void addPostIntoCashByHashTags(Post post) throws JsonProcessingException {
-        LocalDateTime publishedAt = post.getPublishedAt();
-        long timeStamp = publishedAt.toInstant(ZoneOffset.UTC).toEpochMilli();
-//        String json = "{\"id\":35,\"title\":\"Article TEST create\",\"text\":\"Text for article 29\",\"rating\":4.1,\"hashTags\":[\"cooking\",\"sport\",\"travelling\",\"java\",\"gradle\"]}";
-        String json = objectMapper.writeValueAsString(post);
-        try(Jedis jedis = jedisPool.getResource()) {
-            jedis.zadd("posts", timeStamp, json);
+    private static List<String> getPrimalHashTagsById(long id) {
+        Optional<Post> postOpt = findPostById(id);
+        if (postOpt.isPresent()) {
+            return postOpt.get().getHashTags();
+        } else {
+            return new ArrayList<>();
         }
     }
+
+//    public static void updatePostInCash(List<String> primeHashTags, Post post) {
+//        log.info("Update in cash post with id: {}", post.getId());
+//        String json = toJson(post);
+//        try (Jedis jedis = jedisPool.getResource()) {
+//            jedis.set(POST_KEY_PREFIX + post.getId(), json);
+//        }
+//    }
+//
+//    public static void deletePostInCash(Post post) {
+//
+//    }
+//
+//    private static String toJson(Post post) {
+//        log.info("Parse to json post with id: {}", post.getId());
+//        try {
+//            return objectMapper.writeValueAsString(post);
+//        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+    private static Post toPost(String json) {
+        log.info("Parse to Post json: {}", json);
+        try {
+            return objectMapper.readValue(json, Post.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

@@ -20,7 +20,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final PostHashTagService postHashTagService;
-    private final PostRedisService postRedisService;
+    private final PostCacheService postCacheService;
 
     @Transactional
     public Post create(Post post) {
@@ -31,9 +31,7 @@ public class PostService {
         post.setDeleted(false);
         post.setCreatedAt(LocalDateTime.now());
 
-        postRepository.save(post);
-
-        return post;
+        return postRepository.save(post);
     }
 
     @Transactional
@@ -43,9 +41,17 @@ public class PostService {
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
 
-        postRepository.save(post);
-
-        return post;
+//        List<String> primalHashTags = postHashTagService.toClone(post.getHashTags());
+        postHashTagService.updateHashTags(post);
+//        List<String> newHashTags = post.getHashTags();
+//
+//        if (!primalHashTags.isEmpty() && !newHashTags.isEmpty()) {
+//            postCacheService.updatePostInCash(primalHashTags, post);
+//        } else if (!primalHashTags.isEmpty() && newHashTags.isEmpty()) {
+//
+//        }
+        postCacheService.postCacheProcess(post);
+        return postRepository.save(post);
     }
 
     @Transactional
@@ -58,8 +64,8 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         postHashTagService.updateHashTags(post);
 
-        if(!post.getHashTags().isEmpty()) {
-            postRedisService.addPostToCash(post);
+        if (!post.getHashTags().isEmpty()) {
+            postCacheService.addPostToCash(post);
         }
         return postRepository.save(post);
     }

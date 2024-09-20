@@ -22,6 +22,12 @@ public class PostHashTagService {
         return post;
     }
 
+    public List<String> toClone(List<String> hashTags) {
+        return hashTags
+                .stream()
+                .toList();
+    }
+
     private List<String> parseByHashTag(String content) {
         log.info("Pars by hash tag, content: {}", content);
         Pattern pattern = Pattern.compile(HASH_TAG_PATTERN);
