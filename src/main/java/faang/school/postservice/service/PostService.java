@@ -95,7 +95,7 @@ public class PostService {
         elasticsearchService.indexPost(postDtoForReturns);
         kafkaPostProducer.sendMessage(NewPostEvent.builder()
                 .id(post.getId())
-                .subscribersIds(List.of(1L, 2L, 3L))
+                .subscribersIds(userServiceClient.getFollowerIds(post.getId()))
                 .build());
         return postDtoForReturns;
     }
