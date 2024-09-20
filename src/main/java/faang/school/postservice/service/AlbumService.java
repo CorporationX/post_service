@@ -117,6 +117,13 @@ public class AlbumService {
         Album existingAlbum = albumRepository.findById(albumId).orElseThrow();
         existingAlbum.setTitle(album.getTitle());
         existingAlbum.setDescription(album.getDescription());
+
+        if (existingAlbum.getStatus().equals(AlbumStatus.SOME_USERS)
+                || album.getStatus().equals(AlbumStatus.SOME_USERS)) {
+            existingAlbum.setUserWithAccessIds(album.getUserWithAccessIds());
+        }
+        existingAlbum.setStatus(album.getStatus());
+
         return albumRepository.save(existingAlbum);
     }
 

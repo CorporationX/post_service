@@ -45,7 +45,7 @@ public class Album {
     @ElementCollection
     @CollectionTable(name = "users_with_access", joinColumns = @JoinColumn(name = "album_id"))
     @Column(name = "user_id")
-    private List<Long> userIds = new ArrayList<>();
+    private List<Long> userWithAccessIds = new ArrayList<>();
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
