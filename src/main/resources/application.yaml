@@ -71,3 +71,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+  springfox:
+    documentation:
+      swagger:
+        v2:
+          path=/api-docs-post-service:
