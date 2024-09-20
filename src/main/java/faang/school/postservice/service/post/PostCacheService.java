@@ -35,7 +35,7 @@ public class PostCacheService {
 
     public void updatePostProcess(Post updatedPost) {
         log.info("Updated post with id: {} in cache process", updatedPost.getId());
-        Optional<Post> primalPost = findPostById(updatedPost.getId());
+        Optional<PostJsonDto> primalPost = findPostById(updatedPost.getId());
         List<String> primalHashTags;
         if (primalPost.isPresent()) {
             deletePostById(updatedPost.getId());
@@ -101,27 +101,27 @@ public class PostCacheService {
     }
 
     private List<String> getNewHashTags(List<String> primalHashTags, List<String> updatedHashTags) {
-        log.info("Get new hash-tags between {} AND {}", primalHashTags, updatedHashTags);
+        log.info("Get new hash-tags between primal: {} AND updated: {}", primalHashTags, updatedHashTags);
         List<String> newHashTags = new ArrayList<>(updatedHashTags);
         newHashTags.removeAll(primalHashTags);
         return newHashTags;
     }
 
     private List<String> getDeletedHashTags(List<String> primalHashTags, List<String> updatedHashTags) {
-        log.info("Get deleted hash-tags between {} AND {}", primalHashTags, updatedHashTags);
+        log.info("Get deleted hash-tags between primal: {} AND updated: {}", primalHashTags, updatedHashTags);
         List<String> deletedHashTags = new ArrayList<>(primalHashTags);
         deletedHashTags.removeAll(updatedHashTags);
         return deletedHashTags;
     }
 
-    public Optional<Post> findPostById(long id) {
-        log.info("Finding in cache post with id: {}", id);
+    public Optional<PostJsonDto> findPostById(long id) {
+        log.info("Find in cache post with id: {}", id);
         try (Jedis jedis = jedisPool.getResource()) {
             String primalPostJson = jedis.get(POST_KEY_PREFIX + id);
             if (primalPostJson == null) {
                 return Optional.empty();
             }
-            return Optional.of(toPost(primalPostJson));
+            return Optional.of(toPostJsonDto(primalPostJson));
         }
     }
 
@@ -135,10 +135,10 @@ public class PostCacheService {
         }
     }
 
-    private Post toPost(String json) {
-        log.info("Parse to Post json: {}", json);
+    private PostJsonDto toPostJsonDto(String json) {
+        log.info("Parse to PostJsonDto json: {}", json);
         try {
-            return objectMapper.readValue(json, Post.class);
+            return objectMapper.readValue(json, PostJsonDto.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
