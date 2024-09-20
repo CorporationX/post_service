@@ -100,8 +100,8 @@ class LikeServiceTest {
         firstLike = Like.builder().id(1L).userId(1L).build();
         secondLike = Like.builder().id(2L).userId(2L).build();
         likes = List.of(firstLike, secondLike);
-        userOne = new UserDto(1L, "first", "mail.one");
-        userTwo = new UserDto(2L, "second", "mail.two");
+        userOne = new UserDto(1L, "first", "mail.one", List.of());
+        userTwo = new UserDto(2L, "second", "mail.two", List.of());
         users = List.of(userOne, userTwo);
     }
 
