@@ -73,6 +73,9 @@ spring:
     cache:
       ttl: 86400
 
+  feed:
+    max-size: 500
+
   kafka:
     bootstrap-servers: localhost:9092
     topic:

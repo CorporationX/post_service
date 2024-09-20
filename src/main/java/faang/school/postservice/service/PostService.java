@@ -27,6 +27,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
@@ -60,6 +61,8 @@ public class PostService {
     private int postCacheSize;
     @Value("${spring.post.cache.ttl}")
     private int postTtl;
+    @Value("${spring.feed.max-size}")
+    private int maxSizeFeed;
 
     @Async(value = "threadPool")
     @Transactional
@@ -91,7 +94,8 @@ public class PostService {
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
         kafkaPostProducer.sendMessage(NewPostEvent.builder()
-                .subscribersIds(userServiceClient.getFollowerIds(postDto.getAuthorId()))
+                .id(post.getId())
+                .subscribersIds(List.of(1L, 2L, 3L))
                 .build());
         return postDtoForReturns;
     }
@@ -220,6 +224,17 @@ public class PostService {
 
     public List<PostDto> getPostsByIds(List<Long> postIds) {
         return postMapper.toDto(postRepository.findPostsByIds(postIds));
+    }
+
+    public List<CachePost> getPostsByAuthorsIds(List<Long> authorsIds) {
+        List<Post> posts = postRepository.findPostsByAuthorIds(authorsIds,
+                PageRequest.of(0, maxSizeFeed));
+        return posts.stream().map(post -> CachePost.builder()
+                .id(post.getId())
+                .countLike(post.getLikes().size())
+                .firstComment(post.getComments().isEmpty() ? null : post.getComments().get(0))
+                .ttl(postTtl)
+                .build()).toList();
     }
 
     private List<Post> sortPostsByCreateAt(List<Post> posts) {

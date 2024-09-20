@@ -12,6 +12,9 @@ public class UserContext {
     }
 
     public long getUserId() {
+        if (userIdHolder.get() == null) {
+            userIdHolder.set(0L);
+        }
         return userIdHolder.get();
     }
 
