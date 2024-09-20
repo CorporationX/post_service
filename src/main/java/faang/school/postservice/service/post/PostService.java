@@ -19,11 +19,14 @@ import java.util.stream.Stream;
 public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
+    private final PostHashTagService postHashTagService;
+    private final PostRedisService postRedisService;
 
     @Transactional
     public Post create(Post post) {
         postValidator.validateCreatePost(post);
 
+        postHashTagService.updateHashTags(post);
         post.setPublished(false);
         post.setDeleted(false);
         post.setCreatedAt(LocalDateTime.now());
@@ -48,17 +51,17 @@ public class PostService {
     @Transactional
     public Post publish(Long id) {
         Post post = findPostById(id);
-
         if (post.isPublished()) {
             throw new PostPublishedException(id);
         }
-
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        postHashTagService.updateHashTags(post);
 
-        postRepository.save(post);
-
-        return post;
+        if(!post.getHashTags().isEmpty()) {
+            postRedisService.addPostToCash(post);
+        }
+        return postRepository.save(post);
     }
 
     @Transactional

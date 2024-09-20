@@ -35,7 +35,7 @@ public class TEST {
             System.out.println(tuple.toString());
             Post post = objectMapper.readValue(tuple.get(0), Post.class);
             System.out.println(post);
-//            jedis.zrem("posts", "{\"id\":3,\"content\":\"Some post for test #java #jedis#redis #develop\",\"authorId\":null,\"projectId\":null,\"likes\":null,\"comments\":null,\"albums\":null,\"ad\":null,\"resources\":null,\"published\":false,\"publishedAt\":[2024,9,17,11,33,44,827186000],\"scheduledAt\":null,\"deleted\":false,\"createdAt\":null,\"updatedAt\":null,\"hashTags\":[\"java\",\"jedis\",\"redis\",\"develop\"]}");
+//            jedis.zrem("{\"id\":3,\"content\":\"Some post for test #java #jedis#redis #develop\",\"authorId\":null,\"projectId\":null,\"likes\":null,\"comments\":null,\"albums\":null,\"ad\":null,\"resources\":null,\"published\":false,\"publishedAt\":[2024,9,17,11,59,10,594139000],\"scheduledAt\":null,\"deleted\":false,\"createdAt\":null,\"updatedAt\":null,\"hashTags\":[\"java\",\"jedis\",\"redis\",\"develop\"]}");
         }
     }
 

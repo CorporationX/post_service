@@ -20,10 +20,10 @@ public class PostServiceApp {
                 .run(args);
     }
 
-    @Bean
-    public JedisPool getJedisPool() {
-        return new JedisPool();
-    }
+//    @Bean
+//    public JedisPool getJedisPool() {
+//        return new JedisPool();
+//    }
 
     @Bean
     public ObjectMapper getObjectMapper() {
