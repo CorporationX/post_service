@@ -47,8 +47,21 @@ class CommentServiceValidatorTest {
     }
 
     @Test
-    void validatePostExist() {
+    public void validatePostExist() {
+        Long commentId = 10L;
+        when(postRepository.existsById(commentId)).thenReturn(true);
+        assertDoesNotThrow(() -> commentServiceValidator.validatePostExist(commentId));
+    }
+    
+    @Test
+    void validatePostNotExist() {
+        Long postId = 10L;
+        when(postRepository.existsById(postId)).thenReturn(false);
 
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> commentServiceValidator.validatePostExist(postId));
+
+        assertEquals("Post with id " + postId + " does not exist", exception.getMessage());
     }
 
     @Test
