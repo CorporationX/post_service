@@ -1,5 +1,6 @@
 package faang.school.postservice.repository;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import faang.school.postservice.model.Post;
@@ -13,6 +14,8 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByAuthorId(long authorId);
+
+    List<Post> findByAuthorId(long authorId, PageRequest pageRequest);
 
     List<Post> findByProjectId(long projectId);
 

@@ -40,13 +40,14 @@ public class CacheInitializer {
 
             return CacheUser.builder()
                     .id(userDto.getId())
-                    .postIdsForFeed(new LinkedHashSet<>(userFeed.stream().map(CachePost::getId).toList()))
+                    .postIds(new LinkedHashSet<>(userFeed.stream().map(CachePost::getId).toList()))
                     .ttl(postTtl).build();
         }).toList();
     }
 
     private List<CachePost> getPostToFeed(long userId) {
-        List<CachePost> userFeed = postService.getPostsByAuthorsIds(userServiceClient.getFollowerIds(userId));
+        List<CachePost> userFeed = postService.getPostsByAuthorsIds(
+                userServiceClient.getFollowingIds(userId));
         redisPostRepository.saveAll(userFeed);
          return userFeed;
     }

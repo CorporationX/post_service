@@ -75,6 +75,7 @@ spring:
 
   feed:
     max-size: 500
+    max-size-batch: 20
 
   kafka:
     bootstrap-servers: localhost:9092
