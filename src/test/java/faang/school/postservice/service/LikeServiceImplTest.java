@@ -24,13 +24,14 @@ class LikeServiceImplTest {
     private UserServiceClient userServiceClient;
     @InjectMocks
     private LikeServiceImpl likeService;
-    private List<Like> likes;
     private List<UserDto> userDtos;
+    private final long POST_ID = 1L;
 
     @BeforeEach
     void init() {
-        likes = new ArrayList<>();
+        List<Like> likes = new ArrayList<>();
         userDtos = new ArrayList<>();
+
 
         for (int i = 1; i < 150; i++) {
             Like like = new Like();
@@ -41,37 +42,27 @@ class LikeServiceImplTest {
             userDto.setId((long) i);
             userDtos.add(userDto);
         }
+
+        List<Long> userIds = likes.stream()
+                .map(Like::getUserId)
+                .toList();
+        Mockito.lenient().when(likeRepository.findByPostId(POST_ID))
+                .thenReturn(likes);
+        Mockito.lenient().when(likeRepository.findByCommentId(POST_ID))
+                .thenReturn(likes);
+        Mockito.lenient().when(userServiceClient.getUsersByIds(userIds.subList(0, 100)))
+                .thenReturn(userDtos.subList(0, 100));
+        Mockito.lenient().when(userServiceClient.getUsersByIds(userIds.subList(100, 149)))
+                .thenReturn(userDtos.subList(100, 149));
     }
 
     @Test
     void getUsersLikedPost_whenOk() {
-        long postId = 1L;
-        List<Long> userIds = likes.stream()
-                .map(Like::getUserId)
-                .toList();
-        Mockito.when(likeRepository.findByPostId(postId))
-                .thenReturn(likes);
-        Mockito.when(userServiceClient.getUsersByIds(userIds.subList(0, 100)))
-                .thenReturn(userDtos.subList(0, 100));
-        Mockito.when(userServiceClient.getUsersByIds(userIds.subList(100, 149)))
-                .thenReturn(userDtos.subList(100, 149));
-
-        Assertions.assertEquals(likeService.getUsersLikedPost(postId), userDtos);
+        Assertions.assertEquals(likeService.getUsersLikedPost(POST_ID), userDtos);
     }
 
     @Test
     void getUsersLikedComm_whenOk() {
-        long postId = 1L;
-        List<Long> userIds = likes.stream()
-                .map(Like::getUserId)
-                .toList();
-        Mockito.when(likeRepository.findByCommentId(postId))
-                .thenReturn(likes);
-        Mockito.when(userServiceClient.getUsersByIds(userIds.subList(0, 100)))
-                .thenReturn(userDtos.subList(0, 100));
-        Mockito.when(userServiceClient.getUsersByIds(userIds.subList(100, 149)))
-                .thenReturn(userDtos.subList(100, 149));
-
-        Assertions.assertEquals(likeService.getUsersLikedComm(postId), userDtos);
+        Assertions.assertEquals(likeService.getUsersLikedComm(POST_ID), userDtos);
     }
 }
