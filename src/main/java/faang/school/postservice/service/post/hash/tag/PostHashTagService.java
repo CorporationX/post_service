@@ -1,49 +1,55 @@
 package faang.school.postservice.service.post.hash.tag;
 
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostHashTagService {
     private static final String HASH_TAG_PATTERN = "#(\\w++)";
+    private static final String JSON_PREFIX = "[\"";
+    private static final String JSON_POSTFIX = "\"]";
 
-//    private final PostRepository postRepository;
-    private final JedisPool jedisPool;
-
-    public Post updateHashTags(Post post) {
-        List<String> hashTags = parsePostByHashTa(post);
+    public void updateHashTags(Post post) {
+        log.info("Update hash-tags of post with id: {}", post.getId());
+        List<String> hashTags = parseByHashTag(post.getContent());
         post.setHashTags(hashTags);
-        if (!hashTags.isEmpty()) {
-
-        }
-        return post;
     }
 
-    private List<String> parsePostByHashTa(Post post) {
+    private List<String> parseByHashTag(String content) {
+        log.info("Pars by hash-tag, content: {}", content);
         Pattern pattern = Pattern.compile(HASH_TAG_PATTERN);
-        Matcher matcher = pattern.matcher(post.getContent());
+        Matcher matcher = pattern.matcher(content);
         return matcher.results()
-                .map(tag -> tag.group(1))
+                .map(tag -> tag.group(1).toLowerCase())
                 .toList();
     }
 
-    private void addPostIntoCashByHashTags(Post post) {
-        LocalDateTime publishedAt = post.getPublishedAt();
-        long timeStamp = publishedAt.toInstant(ZoneOffset.UTC).toEpochMilli();
-        String json = "{\"id\":35,\"title\":\"Article TEST create\",\"text\":\"Text for article 29\",\"rating\":4.1,\"hashTags\":[\"cooking\",\"sport\",\"travelling\",\"java\",\"gradle\"]}";
-        try(Jedis jedis = jedisPool.getResource()) {
-            jedis.zadd("posts", timeStamp, json);
-        }
+    public List<String> getNewHashTags(List<String> primalHashTags, List<String> updatedHashTags) {
+        log.info("Get new hash-tags between primal: {} AND updated: {}", primalHashTags, updatedHashTags);
+        List<String> newHashTags = new ArrayList<>(updatedHashTags);
+        newHashTags.removeAll(primalHashTags);
+        log.info("New hash-tags: {}", newHashTags);
+        return newHashTags;
+    }
+
+    public List<String> getDeletedHashTags(List<String> primalHashTags, List<String> updatedHashTags) {
+        log.info("Get deleted hash-tags between primal: {} AND updated: {}", primalHashTags, updatedHashTags);
+        List<String> deletedHashTags = new ArrayList<>(primalHashTags);
+        deletedHashTags.removeAll(updatedHashTags);
+        log.info("Deleted hash-tags: {}", deletedHashTags);
+        return deletedHashTags;
+    }
+
+    public String convertTagToJson(String hashTag) {
+        return JSON_PREFIX + hashTag + JSON_POSTFIX;
     }
 }
