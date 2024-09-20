@@ -62,6 +62,7 @@ public class AlbumService {
     @Transactional
     public void addAlbumToFavorite(long albumId, long userId) {
         validUserExist(userId);
+        validAlbumExist(albumId);
         albumRepository.addAlbumToFavorites(albumId, userId);
         log.info("User '{}' add album '{}' to favorite", userId, albumId);
     }
@@ -81,29 +82,18 @@ public class AlbumService {
     }
 
     @Transactional
-    public Album updateTitleAlbum(long albumId, long userId, Album album) {
-        validAlbumBelongsToUser(albumId, userId);
-        Album excitingAlbum = albumRepository.findById(albumId).orElseThrow();
-
-        if (Objects.nonNull(album.getTitle())) {
-            excitingAlbum.setTitle(album.getTitle());
-        }
-        return albumRepository.save(excitingAlbum);
-    }
-
-    @Transactional
-    public Album updateDescriptionAlbum(long albumId, long userId, Album album) {
-        validAlbumBelongsToUser(albumId, userId);
-        Album excitingAlbum = albumRepository.findById(albumId).orElseThrow();
-
-        if (Objects.nonNull(album.getDescription())) {
-            excitingAlbum.setDescription(album.getDescription());
-        }
-        return albumRepository.save(excitingAlbum);
+    public Album updateAlbum(long albumId, long authorId, Album album) {
+        validAlbumBelongsToUser(albumId, authorId);
+        Album existingAlbum = albumRepository.findById(albumId).orElseThrow();
+        existingAlbum.setTitle(album.getTitle());
+        existingAlbum.setDescription(album.getDescription());
+        return albumRepository.save(existingAlbum);
     }
 
     @Transactional
     public void deleteAlbum(long albumId, long userId) {
+        validUserExist(userId);
+        validAlbumExist(albumId);
         validAlbumBelongsToUser(albumId, userId);
         albumRepository.deleteById(albumId);
     }
@@ -128,10 +118,10 @@ public class AlbumService {
 
     private void validAlbumBelongsToUser(long albumId, long userId) {
         List<Long> userAlbumIds = albumRepository.findByAuthorId(userId)
-                .map(album -> album.getId())
+                .map(Album::getId)
                 .toList();
         if (!userAlbumIds.contains(albumId)) {
-            throw new IllegalArgumentException("error");
+            throw new IllegalArgumentException("This album does not belong to the user.");
         }
     }
 
@@ -154,7 +144,9 @@ public class AlbumService {
     private List<Album> applyAllFilters(List<Album> albums, AlbumFilterDto albumFilterDto) {
         return albumFilters.stream()
                 .filter(albumFilter -> albumFilter.isApplicable(albumFilterDto))
-                .reduce(albums, (list, filter) -> filter.filterAlbums(list, albumFilterDto), (list, filter) -> list);
+                .reduce(albums,
+                        (list, filter) -> filter.filterAlbums(list, albumFilterDto),
+                        (list, filter) -> list);
     }
 
     private void validFavoriteContainsAlbum(long albumId, long userId) {
@@ -163,6 +155,13 @@ public class AlbumService {
                 .toList();
         if (!userFavoriteAlbumIds.contains(albumId)) {
             throw new IllegalArgumentException("This album is not in the favorites list for this user");
+        }
+    }
+
+    private void validAlbumExist(long albumId) {
+        boolean existStatus = albumRepository.existsById(albumId);
+        if(!existStatus){
+            throw new IllegalArgumentException("Album doesn't exist.");
         }
     }
 }
