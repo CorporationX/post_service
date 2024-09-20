@@ -6,6 +6,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -26,31 +28,27 @@ public class PostService {
     public Post create(Post post) {
         postValidator.validateCreatePost(post);
 
-        postHashTagService.updateHashTags(post);
         post.setPublished(false);
         post.setDeleted(false);
         post.setCreatedAt(LocalDateTime.now());
+        postHashTagService.updateHashTags(post);
 
         return postRepository.save(post);
     }
 
     @Transactional
     public Post update(Post updatePost) {
+        log.info("Update post with id: {}", updatePost.getId());
         Post post = findPostById(updatePost.getId());
 
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
-
-//        List<String> primalHashTags = postHashTagService.toClone(post.getHashTags());
         postHashTagService.updateHashTags(post);
-//        List<String> newHashTags = post.getHashTags();
-//
-//        if (!primalHashTags.isEmpty() && !newHashTags.isEmpty()) {
-//            postCacheService.updatePostInCash(primalHashTags, post);
-//        } else if (!primalHashTags.isEmpty() && newHashTags.isEmpty()) {
-//
-//        }
-        postCacheService.postCacheProcess(post);
+
+        if (!post.isDeleted() && post.isPublished()) {
+            postCacheService.updatePostProcess(post);
+        }
+
         return postRepository.save(post);
     }
 
@@ -65,7 +63,7 @@ public class PostService {
         postHashTagService.updateHashTags(post);
 
         if (!post.getHashTags().isEmpty()) {
-            postCacheService.addPostToCash(post);
+            postCacheService.newPostProcess(post);
         }
         return postRepository.save(post);
     }
@@ -76,6 +74,7 @@ public class PostService {
 
         post.setDeleted(true);
         post.setUpdatedAt(LocalDateTime.now());
+        postCacheService.deletePostProcess(post);
 
         postRepository.save(post);
     }
