@@ -7,10 +7,12 @@ import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataDoesNotExistException;
 import faang.school.postservice.exception.NotFoundException;
-import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.redis.PostCacheService;
+import faang.school.postservice.service.redis.UserCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,8 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
     private final PostViewPublisher postViewPublisher;
+    private final PostCacheService postCacheService;
+    private final UserCacheService userCacheService;
 
     @Transactional(readOnly = true)
     public Post getById(long id) {
@@ -59,6 +63,8 @@ public class PostService {
                 post.get().setPublishedAt(LocalDateTime.now());
                 log.info("Post with id = {} has been published successfully", draftId);
                 postRepository.save(post.get());
+                postCacheService.save(post.get());
+                userCacheService.save(post.get().getAuthorId());
             }
             return postMapper.toDto(post.get());
         } else {

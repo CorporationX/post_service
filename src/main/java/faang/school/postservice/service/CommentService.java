@@ -12,6 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.redis.UserCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final PostService postService;
     private final CommentEventPublisher commentEventPublisher;
+    private final UserCacheService userCacheService;
 
     public CommentDto createComment(CreateCommentDto createCommentDto) {
         checkUserService.checkUserExistence(createCommentDto);
@@ -39,6 +41,7 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(createCommentDto, post);
         comment = commentRepository.save(comment);
         log.info("Comment with ID = {} was created", comment.getId());
+        userCacheService.save(comment.getAuthorId());
         commentEventPublisher.publish(comment);
         return commentMapper.toDto(comment);
     }
