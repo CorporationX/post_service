@@ -1,8 +1,10 @@
 package faang.school.postservice.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,4 +27,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.id IN :postIds")
     List<Post> findPostsByIds(List<Long> postIds);
+
+    @Query("SELECT p FROM Post p WHERE p.authorId IN :authorsIds order by p.createdAt DESC")
+    List<Post> findPostsByAuthorIds(@Param("authorsIds") List<Long> authorIds, Pageable pageable);
 }

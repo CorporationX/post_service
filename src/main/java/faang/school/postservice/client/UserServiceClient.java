@@ -43,4 +43,7 @@ public interface UserServiceClient {
 
     @GetMapping("/subscription/{userId}")
     List<Long> getFollowerIds(@RequestHeader(value = "x-user-id") @PathVariable long userId);
+
+    @GetMapping("/all")
+    List<UserDto> getAllUsers();
 }

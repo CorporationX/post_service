@@ -12,5 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class NewPostEvent {
+    private long id;
     List<Long> subscribersIds;
 }
