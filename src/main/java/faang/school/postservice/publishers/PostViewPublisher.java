@@ -2,7 +2,7 @@ package faang.school.postservice.publishers;
 
 import faang.school.postservice.events.Event;
 import faang.school.postservice.events.PostViewEvent;
-import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;

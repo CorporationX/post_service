@@ -1,7 +1,7 @@
-package faang.school.postservice.mapper.post;
+package faang.school.postservice.mapper;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.Post.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.events.PostViewEvent;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.PostForCache;

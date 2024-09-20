@@ -2,12 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.Post.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataDoesNotExistException;
 import faang.school.postservice.exception.NotFoundException;
-import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;
