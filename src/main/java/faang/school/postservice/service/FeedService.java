@@ -61,7 +61,7 @@ public class FeedService {
         if (lastPostId == null) {
             pageRequest = PageRequest.of(0, sizeBatchPostToFeed);
         } else {
-            pageRequest = PageRequest.of((int) (lastPostId / 20) + 1, sizeBatchPostToFeed);
+            pageRequest = PageRequest.of((int) (lastPostId / sizeBatchPostToFeed) + 1, sizeBatchPostToFeed);
         }
 
         CacheUser user = redisUserRepository.findById(userContext.getUserId())
