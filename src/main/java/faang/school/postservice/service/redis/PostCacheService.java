@@ -1,6 +1,6 @@
 package faang.school.postservice.service.redis;
 
-import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.PostForCache;
 import faang.school.postservice.repository.redis.PostCacheRepository;

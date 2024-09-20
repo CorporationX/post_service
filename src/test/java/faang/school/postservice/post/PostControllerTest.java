@@ -2,7 +2,7 @@ package faang.school.postservice.post;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.controller.PostController;
-import faang.school.postservice.dto.Post.PostDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.WrongInputException;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostControllerTest {
