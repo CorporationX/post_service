@@ -1,8 +1,10 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.publishable.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final ModerationDictionary moderationDictionary;
     private final ExecutorService moderationExecutor;
+    private final KafkaCommentProducer commentProducer;
 
     @Value("${comment.batchSize}")
     private int batchSize;
@@ -35,19 +38,28 @@ public class CommentService {
             CommentMapper commentMapper,
             CommentValidator commentValidator,
             ModerationDictionary moderationDictionary,
-            @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor
+            @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor,
+            KafkaCommentProducer commentProducer
     ) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
         this.commentValidator = commentValidator;
         this.moderationDictionary = moderationDictionary;
         this.moderationExecutor = moderationExecutor;
+        this.commentProducer = commentProducer;
     }
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         commentValidator.findPostById(postId);
         Comment savedComment = commentRepository.save(commentMapper.toEntity(commentDto));
+
+        CommentEvent commentEvent = CommentEvent.builder()
+                .authorId(commentDto.getAuthorId())
+                .postId(commentDto.getPostId())
+                .build();
+
+        commentProducer.sendEvent(commentEvent);
         return commentMapper.toDto(savedComment);
     }
 
