@@ -57,26 +57,26 @@ public class PostService {
     @Transactional
     public PostDto createPostDraft(DraftPostDto draft) {
 
-       // validator.validateCreatablePostDraft(draft);
+         validator.validateCreatablePostDraft(draft);
 
         PostDto postDto = postMapper.fromDraftPostDto(draft);
         Post post = postMapper.toEntity(postDto);
 
         Post savedPost = postRepository.save(post);
 
-//        List<ResourceDto> savedResources = resourceService.createResources(
-//                savedPost.getId(), draft.getResource()
-//        );
+        List<ResourceDto> savedResources = resourceService.createResources(
+                savedPost.getId(), draft.getResource()
+        );
 
         PostDto savedPostDto = postMapper.toDto(savedPost);
 
-//        List<PreviewPostResourceDto> resourcePreviews = savedResources.stream()
-//                .map(resourceMapper::toPreviewPostResourceDto)
-//                .toList();
+        List<PreviewPostResourceDto> resourcePreviews = savedResources.stream()
+                .map(resourceMapper::toPreviewPostResourceDto)
+                .toList();
 
-//        savedPostDto.setResources(resourcePreviews);
+        savedPostDto.setResources(resourcePreviews);
 
-        UserDto userDto = userServiceClient.getUser(savedPostDto.getAuthorId());
+        UserDto userDto = userServiceClient.getUser(savedPost.getAuthorId());
         PostEvent postEvent = PostEvent.builder()
                 .postId(savedPostDto.getId())
                 .authorId(savedPostDto.getAuthorId())
