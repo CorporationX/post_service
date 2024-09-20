@@ -59,4 +59,5 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             ORDER BY published_at DESC
             """)
     List<Post> findByProjectIdAndPublished(long projectId);
+
 }
