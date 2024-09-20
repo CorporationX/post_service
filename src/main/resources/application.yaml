@@ -29,6 +29,10 @@ spring:
         post_view_channel: post_view_channel
         like_topic: like_topic
 
+cache:
+  type: redis
+  ttl: 24
+
 server:
   port: 8081
 
