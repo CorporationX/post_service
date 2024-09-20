@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
@@ -10,6 +11,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.LikeValidator;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +25,7 @@ public class LikeServiceImpl implements LikeService {
     public final CommentRepository commentRepository;
     public final LikeMapper likeMapper;
     private final LikeRepository likeRepository;
+    private final UserServiceClient userServiceClient;
 
     @Override
     public void addLikeToPost(LikeDto likeDto, long postId) {
@@ -30,7 +33,11 @@ public class LikeServiceImpl implements LikeService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("There is no such post"));
         likeValidator.validateLike(like, post);
-        //нужно как-то свалидировать автора лайка(нету User Repo)
+        try {
+            userServiceClient.getUser(like.getUserId());
+        } catch (FeignException e) {
+            throw new DataValidationException("There is no such user");
+        }
         likeValidator.validatePostAndCommentLikes(post, like);
         like.setPost(post);
         likeRepository.save(like);
@@ -53,7 +60,11 @@ public class LikeServiceImpl implements LikeService {
         Like like = likeMapper.toLike(likeDto);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("There is no such comment"));
-        // как-то свалидировать автора
+        try {
+            userServiceClient.getUser(like.getUserId());
+        } catch (FeignException e) {
+            throw new DataValidationException("There is no such user");
+        }
         likeValidator.validatePostAndCommentLikes(comment.getPost(), like);
         like.setComment(comment);
         likeRepository.save(like);

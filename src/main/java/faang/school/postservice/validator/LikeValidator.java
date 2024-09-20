@@ -13,34 +13,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LikeValidator {
     public void validateLike(Like like, Post post) {
-        for (Like like1 : post.getLikes()) {
-            if (like.getUserId().equals(like1.getUserId())) {
-                throw new DataValidationException("Post is already liked.");
-            }
+        if (isLikedByUser(like.getUserId(), post.getLikes())) {
+            throw new DataValidationException("Post is already liked.");
         }
         for (Comment comment : post.getComments()) {
-            for (Like like1 : comment.getLikes()) {
-                if (like.getUserId().equals(like1.getUserId())) {
-                    throw new DataValidationException("Comment of post is already liked.");
-                }
+            if (isLikedByUser(like.getUserId(), comment.getLikes())) {
+                throw new DataValidationException("Comment of post is already liked.");
             }
         }
     }
 
     public void validatePostAndCommentLikes(Post post, Like like) {
-        List<Like> likesOfPost = post.getLikes();
-        for (Like like1 : likesOfPost) {
-            if (like1.getId() == (like.getId())) {
-                throw new DataValidationException("Post already liked");
+        if (isLikedById(like.getId(), post.getLikes())) {
+            throw new DataValidationException("Post already liked");
+        }
+        for (Comment comment : post.getComments()) {
+            if (isLikedById(like.getId(), comment.getLikes())) {
+                throw new DataValidationException("Post or comment already liked");
             }
         }
-        List<Comment> commentsOfPost = post.getComments();
-        for (Comment comment : commentsOfPost) {
-            for (Like like1 : comment.getLikes()) {
-                if (like1.getId() == like.getId()) {
-                    throw new DataValidationException("Post or comment already liked");
-                }
+    }
+
+    private boolean isLikedByUser(Long userId, List<Like> likes) {
+        return likes.stream().anyMatch(like -> like.getUserId().equals(userId));
+    }
+
+    private boolean isLikedById(Long likeId, List<Like> likes) {
+        for (Like like : likes) {
+            if (like.getId() == likeId) {
+                return true;
             }
         }
+        return false;
     }
 }
