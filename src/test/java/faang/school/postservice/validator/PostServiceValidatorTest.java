@@ -246,6 +246,7 @@ public class PostServiceValidatorTest {
     @DisplayName("Test validate correct draft")
     public void testValidCreatableDraftCorrect() {
         var draft = TestData.correctDraftWithAudioFile;
+        draft.setProjectId(null);
 
         postServiceValidator.validateCreatablePostDraft(draft);
     }
