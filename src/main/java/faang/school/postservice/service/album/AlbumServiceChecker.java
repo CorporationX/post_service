@@ -6,8 +6,14 @@ import faang.school.postservice.model.Album;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALBUM_NOT_EXISTS;
+import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.TITLE_NOT_UNIQUE;
+import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.USER_IS_NOT_CREATOR;
+
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AlbumServiceChecker {
@@ -25,19 +31,24 @@ public class AlbumServiceChecker {
 
     public Album findByIdWithPosts(long id) {
         return albumRepository.findByIdWithPosts(id)
-                .orElseThrow(() -> new BadRequestException("The album does not exist"));
+                .orElseThrow(() -> {
+                    log.error(ALBUM_NOT_EXISTS);
+                    return new BadRequestException(ALBUM_NOT_EXISTS);
+                });
     }
 
     public void checkAlbumExistsWithTitle(String title, long authorId) {
         boolean existsWithTitle = albumRepository.existsByTitleAndAuthorId(title, authorId);
         if (existsWithTitle) {
-            throw new BadRequestException("The album title must be unique");
+            log.error(TITLE_NOT_UNIQUE);
+            throw new BadRequestException(TITLE_NOT_UNIQUE);
         }
     }
 
     public void isCreatorOfAlbum(long userId, Album album) {
         if (userId != album.getAuthorId()) {
-            throw new BadRequestException("The user cannot change someone else's album");
+            log.error(USER_IS_NOT_CREATOR);
+            throw new BadRequestException(USER_IS_NOT_CREATOR);
         }
     }
 

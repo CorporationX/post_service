@@ -7,12 +7,14 @@ import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.album.filter.AlbumFilter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AlbumService {
@@ -26,6 +28,7 @@ public class AlbumService {
         checker.checkUserExists(album.getAuthorId());
         checker.checkAlbumExistsWithTitle(album.getTitle(), album.getAuthorId());
         album.setAuthorId(authorId);
+        log.info("Album created");
         return albumRepository.save(album);
     }
 
@@ -37,65 +40,59 @@ public class AlbumService {
 
     @Transactional
     public Album updateAlbum(long userId, long albumId, String title, String description) {
-        checker.checkUserExists(userId);
-        Album albumToUpdate = checker.findByIdWithPosts(albumId);
-        checker.isCreatorOfAlbum(userId, albumToUpdate);
+        Album album = checker.getAlbumAfterChecks(userId, albumId);
         if (title != null && title.isBlank()) {
             checker.checkAlbumExistsWithTitle(title, userId);
-            albumToUpdate.setTitle(title);
+            album.setTitle(title);
         }
         if (description != null && description.isBlank()) {
-            albumToUpdate.setDescription(description);
+            album.setDescription(description);
         }
-        return albumRepository.save(albumToUpdate);
+        log.info("Album with id {} updated", albumId);
+        return albumRepository.save(album);
     }
 
     @Transactional
     public Album deleteAlbum(long userId, long albumId) {
-        checker.checkUserExists(userId);
-        Album album = checker.findByIdWithPosts(albumId);
-        checker.isCreatorOfAlbum(userId, album);
+        Album album = checker.getAlbumAfterChecks(userId, albumId);
         albumRepository.delete(album);
+        log.info("Album with id {} deleted", albumId);
         return album;
     }
 
     @Transactional
     public Album addAlbumToFavorites(long userId, long albumId) {
-        checker.checkUserExists(userId);
-        Album album = checker.findByIdWithPosts(albumId);
-        checker.isCreatorOfAlbum(userId, album);
+        Album album = checker.getAlbumAfterChecks(userId, albumId);
         albumRepository.addAlbumToFavorites(albumId, userId);
+        log.info("Album with id {} added to favorites albums", albumId);
         return album;
     }
 
     @Transactional
     public Album deleteAlbumFromFavorites(long userId, long albumId) {
-        checker.checkUserExists(userId);
-        Album album = checker.findByIdWithPosts(albumId);
-        checker.isCreatorOfAlbum(userId, album);
+        Album album = checker.getAlbumAfterChecks(userId, albumId);
         albumRepository.deleteAlbumFromFavorites(albumId, userId);
+        log.info("Album with id {} deleted from favorites albums", albumId);
         return album;
     }
 
     @Transactional
     public Album addNewPosts(long userId, long albumId, List<Long> postIds) {
-        checker.checkUserExists(userId);
-        Album album = checker.findByIdWithPosts(albumId);
-        checker.isCreatorOfAlbum(userId, album);
+        Album album = checker.getAlbumAfterChecks(userId, albumId);
         List<Long> existingPosts = postIds.stream()
                 .filter(checker::isExistingPosts)
                 .toList();
         List<Post> posts = postRepository.findAllById(existingPosts);
         posts.forEach(album::addPost);
+        log.info("Posts added to album with id {}", albumId);
         return albumRepository.save(album);
     }
 
     @Transactional
     public Album deletePosts(long userId, long albumId, List<Long> postIds) {
-        checker.checkUserExists(userId);
-        Album album = checker.findByIdWithPosts(albumId);
-        checker.isCreatorOfAlbum(userId, album);
+        Album album = checker.getAlbumAfterChecks(userId, albumId);
         postIds.forEach(album::removePost);
+        log.info("Posts deleted from album with id {}", albumId);
         return albumRepository.save(album);
     }
 
@@ -125,6 +122,7 @@ public class AlbumService {
                 .filter(filter -> filter.isApplicable(filters))
                 .reduce(albumStream, (stream, filter) -> filter
                         .apply(stream, filters), (s1, s2) -> s1)
+                .peek(album -> log.info("Album find: {}", album.getId()))
                 .toList();
     }
 }
