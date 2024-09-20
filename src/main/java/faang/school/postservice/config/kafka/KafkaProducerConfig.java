@@ -24,6 +24,9 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.topic-name.posts}")
     private String postTopicName;
 
+    @Value("${spring.kafka.topic-name.likes}")
+    private String likeTopicName;
+
     @Value("${spring.kafka.producer.idempotence}")
     private boolean producerIdempotence;
 
@@ -45,6 +48,11 @@ public class KafkaProducerConfig {
     @Bean
     public NewTopic postTopic() {
         return TopicBuilder.name(postTopicName).build();
+    }
+
+    @Bean
+    public NewTopic likeTopic() {
+        return TopicBuilder.name(likeTopicName).build();
     }
 
     @Bean
