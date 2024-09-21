@@ -9,6 +9,7 @@ import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.mapper.post.*;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
@@ -53,6 +54,9 @@ public class PostServiceTest {
     @Mock
     private KafkaPostProducer postProducer;
 
+    @Mock
+    private KafkaPostViewProducer postViewProducer;
+
     @Spy
     private PostMapper postMapper = new PostMapperImpl();
 
@@ -65,9 +69,6 @@ public class PostServiceTest {
     private PostEventPublisher postEventPublisher;
 
     private UserDto userDto;
-
-
-    private PostDto savedPostDto;
 
     @InjectMocks
     private PostService postService;
@@ -88,10 +89,6 @@ public class PostServiceTest {
                 .id(1L)
                 .username("some name")
                 .email("some email")
-                .build();
-
-        savedPostDto = PostDto.builder()
-                .authorId(1L)
                 .build();
     }
 

@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.GetPostsDto;
 import faang.school.postservice.dto.post.UpdatablePostDto;
 import faang.school.postservice.dto.publishable.PostEvent;
+import faang.school.postservice.dto.publishable.PostViewEvent;
 import faang.school.postservice.dto.resource.PreviewPostResourceDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.post.DraftPostDto;
@@ -17,6 +18,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.post.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
@@ -53,6 +55,7 @@ public class PostService {
     private final PostEventPublisher postEventPublisher;
 
     private final KafkaPostProducer postProducer;
+    private final KafkaPostViewProducer postViewProducer;
 
     @Transactional
     public PostDto createPostDraft(DraftPostDto draft) {
@@ -172,6 +175,9 @@ public class PostService {
         Post post = getPost(postId);
 
         validator.verifyPostDeletion(post);
+
+        PostViewEvent postViewEvent = new PostViewEvent(postId);
+        postViewProducer.sendEvent(postViewEvent);
 
         return postMapper.toDto(post);
     }
