@@ -10,94 +10,123 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.Transaction;
 
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostCacheService {
-    private static final String POST_KEY_PREFIX = "post:";
+    private static final String POST_ID_PREFIX = "post:";
 
     private final JedisPool jedisPool = new JedisPool();
     private final ObjectMapper objectMapper;
     private final PostMapper postMapper;
 
     public void newPostProcess(Post post) {
-        log.info("Add to cash post with id: {}", post.getId());
-        savePost(post);
-        saveNewHashTags(post.getHashTags(), post.getId(), post.getPublishedAt());
-    }
-
-    public void updatePostProcess(Post updatedPost) {
-        log.info("Updated post with id: {} in cache process", updatedPost.getId());
-        Optional<PostJsonDto> primalPost = findPostById(updatedPost.getId());
-        List<String> primalHashTags;
-        if (primalPost.isPresent()) {
-            deletePostById(updatedPost.getId());
-            primalHashTags = primalPost.get().getHashTags();
-        } else {
-            primalHashTags = new ArrayList<>();
-        }
-        List<String> updatedHashTags = updatedPost.getHashTags();
-        List<String> deletedHashTags = getDeletedHashTags(primalHashTags, updatedHashTags);
-        List<String> newHashTags = getNewHashTags(primalHashTags, updatedHashTags);
-
-        if (!deletedHashTags.isEmpty()) {
-            deleteCachedHashTags(deletedHashTags, updatedPost.getId());
-        }
-        if (!newHashTags.isEmpty()) {
-            saveNewHashTags(newHashTags, updatedPost.getId(), updatedPost.getPublishedAt());
-        }
-
-        if (!updatedPost.getHashTags().isEmpty()) {
-            savePost(updatedPost);
+        log.info("New post process, post with id: {}", post.getId());
+        List<String> newTags = post.getHashTags();
+        if (!newTags.isEmpty()) {
+            String postId = POST_ID_PREFIX + post.getId();
+            String postJson = toJson(post);
+            long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
+            try (Jedis jedis = jedisPool.getResource()) {
+                addPostToCache(postId, newTags, jedis, postJson, timestamp);
+            }
         }
     }
 
-    public void deletePostProcess(Post deletedPost) {
-        findPostById(deletedPost.getId()).ifPresent(post -> {
-            deletePostById(post.getId());
-            deleteCachedHashTags(post.getHashTags(), post.getId());
-        });
+    public void deletePostProcess(Post post, List<String> primalTags) {
+        log.info("Delete post process, post with id: {}", post.getId());
+        if (!primalTags.isEmpty()) {
+            String postId = POST_ID_PREFIX + post.getId();
+            try (Jedis jedis = jedisPool.getResource()) {
+                deletePostOfCache(postId, primalTags, jedis);
+            }
+        }
     }
 
-    private void deletePostById(long postId) {
-        log.info("Delete from cache post with id: {}", postId);
+    public void updatePostProcess(Post post, List<String> primalTags) {
+        log.info("Updated post process, post with id: {}", post.getId());
+        List<String> updTags = post.getHashTags();
+        String postId = POST_ID_PREFIX + post.getId();
+        String postJson = toJson(post);
+        long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
+
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.del(POST_KEY_PREFIX + postId);
+            if (primalTags.isEmpty() && !updTags.isEmpty()) {
+                addPostToCache(postId, updTags, jedis, postJson, timestamp);
+            } else if (!primalTags.isEmpty() && updTags.isEmpty()) {
+                deletePostOfCache(postId, primalTags, jedis);
+            } else if (!primalTags.isEmpty()) {
+                updatePostOfCache(postId, primalTags, updTags, jedis, postJson, timestamp);
+            }
         }
     }
 
-    private void savePost(Post post) {
-        log.info("Save to cache post with id: {}", post.getId());
-        String json = toJson(post);
-        try (Jedis jedis = jedisPool.getResource()) {
-            jedis.set(POST_KEY_PREFIX + post.getId(), json);
+    private void addPostToCache(String postId, List<String> updTags, Jedis jedis, String postJson, long timestamp) {
+        log.info("Add post to cache, post with id: {}", postId);
+        boolean success = false;
+        while (!success) {
+            jedis.watch(postId);
+            updTags.forEach(jedis::watch);
+            Transaction transaction = jedis.multi();
+
+            transaction.set(postId, postJson);
+            updTags.forEach(tag -> transaction.zadd(tag, timestamp, postId));
+
+            List<Object> result = transaction.exec();
+            if (result != null) {
+                success = true;
+            }
+            jedis.unwatch();
         }
     }
 
-    private void deleteCachedHashTags(List<String> deletedHashTags, long postId) {
-        log.info("Delete hash-tags from cache: {}", deletedHashTags);
-        try (Jedis jedis = jedisPool.getResource()) {
-            deletedHashTags.forEach(tag -> jedis.zrem(tag, postId + ""));
+    private void deletePostOfCache(String postId, List<String> primalTags, Jedis jedis) {
+        log.info("Delete post of cache, post with id: {}", postId);
+        boolean success = false;
+        while (!success) {
+            jedis.watch(postId);
+            primalTags.forEach(jedis::watch);
+            Transaction transaction = jedis.multi();
+
+            transaction.del(postId);
+            primalTags.forEach(tag -> transaction.zrem(tag, postId));
+
+            List<Object> result = transaction.exec();
+            if (result != null) {
+                success = true;
+            }
+            jedis.unwatch();
         }
     }
 
-    private void saveNewHashTags(List<String> newHashTags, long postId, LocalDateTime publishedAt) {
-        log.info("Save new hash-tags to cache: {}", newHashTags);
-        long timestamp = getTimeStamp(publishedAt);
-        try (Jedis jedis = jedisPool.getResource()) {
-            newHashTags.forEach(tag -> jedis.zadd(tag, timestamp, postId + ""));
-        }
-    }
+    private void updatePostOfCache(String postId, List<String> primalTags, List<String> updTags, Jedis jedis,
+                                   String postJson, long timestamp) {
+        log.info("Update post of cache, post with id: {}", postId);
+        List<String> delTags = getDeletedHashTags(primalTags, updTags);
+        List<String> newTags = getNewHashTags(primalTags, updTags);
+        boolean success = false;
+        while (!success) {
+            jedis.watch(postId);
+            delTags.forEach(jedis::watch);
+            newTags.forEach(jedis::watch);
+            Transaction transaction = jedis.multi();
 
-    private long getTimeStamp(LocalDateTime localDateTime) {
-        return localDateTime.toInstant(ZoneOffset.UTC).toEpochMilli();
+            transaction.set(postId, postJson);
+            delTags.forEach(tag -> transaction.zrem(tag, postId));
+            newTags.forEach(tag -> transaction.zadd(tag, timestamp, postId));
+
+            List<Object> result = transaction.exec();
+            if (result != null) {
+                success = true;
+            }
+            jedis.unwatch();
+        }
     }
 
     private List<String> getNewHashTags(List<String> primalHashTags, List<String> updatedHashTags) {
@@ -112,17 +141,6 @@ public class PostCacheService {
         List<String> deletedHashTags = new ArrayList<>(primalHashTags);
         deletedHashTags.removeAll(updatedHashTags);
         return deletedHashTags;
-    }
-
-    public Optional<PostJsonDto> findPostById(long id) {
-        log.info("Find in cache post with id: {}", id);
-        try (Jedis jedis = jedisPool.getResource()) {
-            String primalPostJson = jedis.get(POST_KEY_PREFIX + id);
-            if (primalPostJson == null) {
-                return Optional.empty();
-            }
-            return Optional.of(toPostJsonDto(primalPostJson));
-        }
     }
 
     private String toJson(Post post) {

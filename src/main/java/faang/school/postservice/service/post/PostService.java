@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -26,6 +27,7 @@ public class PostService {
 
     @Transactional
     public Post create(Post post) {
+        log.info("Create post with id: {}", post.getId());
         postValidator.validateCreatePost(post);
 
         post.setPublished(false);
@@ -40,20 +42,21 @@ public class PostService {
     public Post update(Post updatePost) {
         log.info("Update post with id: {}", updatePost.getId());
         Post post = findPostById(updatePost.getId());
+        List<String> primaTags = new ArrayList<>(post.getHashTags());
 
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         postHashTagService.updateHashTags(post);
 
         if (!post.isDeleted() && post.isPublished()) {
-            postCacheService.updatePostProcess(post);
+            postCacheService.updatePostProcess(post, primaTags);
         }
-
         return postRepository.save(post);
     }
 
     @Transactional
     public Post publish(Long id) {
+        log.info("Publish post with id: {}", id);
         Post post = findPostById(id);
         if (post.isPublished()) {
             throw new PostPublishedException(id);
@@ -61,26 +64,26 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postHashTagService.updateHashTags(post);
+        postCacheService.newPostProcess(post);
 
-        if (!post.getHashTags().isEmpty()) {
-            postCacheService.newPostProcess(post);
-        }
         return postRepository.save(post);
     }
 
     @Transactional
     public void delete(Long id) {
+        log.info("Delete post with id: {}", id);
         Post post = findPostById(id);
 
         post.setDeleted(true);
         post.setUpdatedAt(LocalDateTime.now());
-        postCacheService.deletePostProcess(post);
+        postCacheService.deletePostProcess(post, post.getHashTags());
 
         postRepository.save(post);
     }
 
     @Transactional(readOnly = true)
     public Post findPostById(Long id) {
+        log.info("Find post with id: {}", id);
         return postRepository.findByIdAndNotDeleted(id).orElseThrow(() -> new PostNotFoundException(id));
     }
 

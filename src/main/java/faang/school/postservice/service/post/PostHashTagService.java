@@ -15,11 +15,10 @@ import java.util.regex.Pattern;
 public class PostHashTagService {
     private static final String HASH_TAG_PATTERN = "#(\\w++)";
 
-    public Post updateHashTags(Post post) {
+    public void updateHashTags(Post post) {
         log.info("Update hash-tags of post with id: {}", post.getId());
         List<String> hashTags = parseByHashTag(post.getContent());
         post.setHashTags(hashTags);
-        return post;
     }
 
     private List<String> parseByHashTag(String content) {

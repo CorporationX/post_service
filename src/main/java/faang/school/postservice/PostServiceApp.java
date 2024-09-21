@@ -20,11 +20,6 @@ public class PostServiceApp {
                 .run(args);
     }
 
-//    @Bean
-//    public JedisPool getJedisPool() {
-//        return new JedisPool();
-//    }
-
     @Bean
     public ObjectMapper getObjectMapper() {
         return new ObjectMapper().registerModule(new JavaTimeModule());
