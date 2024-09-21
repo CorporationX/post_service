@@ -152,7 +152,7 @@ public class PostServiceTest {
                 .build();
 
         Iterable<Post> iterablePostList = List.of(examplePost);
-        when(postRepository.findAll()).thenReturn(iterablePostList);
+        when(postRepository.findAll()).thenReturn((List<Post>) iterablePostList);
 
         // Act
         List<PostDto> result = postService.getAllDraftsByAuthorId(1L);
@@ -184,7 +184,7 @@ public class PostServiceTest {
                 .build();
 
         Iterable<Post> iterablePostList = List.of(examplePost);
-        when(postRepository.findAll()).thenReturn(iterablePostList);
+        when(postRepository.findAll()).thenReturn((List<Post>) iterablePostList);
 
         // Act
         List<PostDto> result = postService.getAllDraftsByProjectId(1L);
@@ -210,7 +210,7 @@ public class PostServiceTest {
                 .build();
 
         Iterable<Post> iterablePostList = List.of(examplePost);
-        when(postRepository.findAll()).thenReturn(iterablePostList);
+        when(postRepository.findAll()).thenReturn((List<Post>) iterablePostList);
 
         // Act
         List<PostDto> result = postService.getAllPublishedPostsByAuthorId(1L);
@@ -243,7 +243,7 @@ public class PostServiceTest {
                 .build();
 
         Iterable<Post> iterablePostList = List.of(examplePost);
-        when(postRepository.findAll()).thenReturn(iterablePostList);
+        when(postRepository.findAll()).thenReturn((List<Post>) iterablePostList);
 
         // Act
         List<PostDto> result = postService.getAllPublishedPostsByProjectId(1L);
