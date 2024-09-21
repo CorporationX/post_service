@@ -19,18 +19,12 @@ public class LikeService {
 
     public List<UserDto> getAllUsersByPostId(long id) {
         List<Long> userIds = getUsersIdsByPostId(id);
-        if (userIds.size() > 100) {
-            return getUserDtoListByIdsBatched(userIds);
-        }
-        return userServiceClient.getUsersByIds(userIds);
+        return getUserDtoListByIdsBatched(userIds);
     }
 
     public List<UserDto> getAllUsersByCommentId(long id) {
         List<Long> userIds = getUserIdsByCommentId(id);
-        if (userIds.size() > 100) {
-            return getUserDtoListByIdsBatched(userIds);
-        }
-        return userServiceClient.getUsersByIds(userIds);
+        return getUserDtoListByIdsBatched(userIds);
     }
 
     private List<Long> getUserIdsByCommentId(long id) {

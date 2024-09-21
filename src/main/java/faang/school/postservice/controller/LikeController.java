@@ -16,13 +16,13 @@ public class LikeController {
 
     private final LikeService likeService;
 
-    @GetMapping("/post/like/{id}")
+    @GetMapping("/posts/{id}/likes")
     @ResponseBody
     public List<UserDto> getAllUsersByPost(@PathVariable Long id) {
         return likeService.getAllUsersByPostId(id);
     }
 
-    @GetMapping("/comment/like/{id}")
+    @GetMapping("/comments/{id}}/likes")
     @ResponseBody
     public List<UserDto> getAllUsersByComment(@PathVariable Long id) {
         return likeService.getAllUsersByCommentId(id);

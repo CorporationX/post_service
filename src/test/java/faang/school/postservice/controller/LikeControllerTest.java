@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeControllerTest {
+
     @InjectMocks
     private LikeController likeController;
     @Mock

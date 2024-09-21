@@ -35,7 +35,6 @@ public class LikeServiceTest {
     private List<UserDto> usersLiked;
     private List<Like> likes;
 
-
     @Nested
     class SingleRequestTests {
         @BeforeEach
