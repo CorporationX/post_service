@@ -10,7 +10,6 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class UserHeaderFilter implements Filter {
 
     private final UserContext userContext;
