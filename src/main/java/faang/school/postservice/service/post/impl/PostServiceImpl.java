@@ -11,6 +11,9 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.post.impl.filter.PostFilter;
+import faang.school.postservice.service.post.impl.filter.PublishedPostFilter;
+import faang.school.postservice.service.post.impl.filter.UnPublishedPostFilter;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +23,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 @Service
 @Slf4j
@@ -94,7 +95,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostDto> getUnpublishedPostsByAuthorId(Long authorId) {
         List<Post> posts = postRepository.findByAuthorId(authorId);
-        posts = applyFilterToPosts(posts, post -> !post.isPublished(), Post::getCreatedAt);
+        posts = applyFilterToPosts(posts, new UnPublishedPostFilter());
         log.debug("Found {} unpublished posts by authorId - {}", posts.size(), authorId);
         return postMapper.toPostDtoList(posts);
     }
@@ -102,7 +103,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostDto> getUnpublishedPostsByProjectId(Long projectId) {
         List<Post> posts = postRepository.findByProjectId(projectId);
-        posts = applyFilterToPosts(posts, post -> !post.isPublished(), Post::getCreatedAt);
+        posts = applyFilterToPosts(posts, new UnPublishedPostFilter());
         log.debug("Found {} unpublished posts by projectId - {}", posts.size(), projectId);
         return postMapper.toPostDtoList(posts);
     }
@@ -110,7 +111,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostDto> getPublishedPostsByAuthorId(Long authorId) {
         List<Post> posts = postRepository.findByAuthorId(authorId);
-        posts = applyFilterToPosts(posts, Post::isPublished, Post::getPublishedAt);
+        posts = applyFilterToPosts(posts, new PublishedPostFilter());
         log.debug("Found {} published posts by authorId - {}", posts.size(), authorId);
         return postMapper.toPostDtoList(posts);
     }
@@ -118,7 +119,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostDto> getPublishedPostsByProjectId(Long projectId) {
         List<Post> posts = postRepository.findByProjectId(projectId);
-        posts = applyFilterToPosts(posts, Post::isPublished, Post::getPublishedAt);
+        posts = applyFilterToPosts(posts, new PublishedPostFilter());
         log.debug("Found {} published posts by projectId - {}", posts.size(), projectId);
         return postMapper.toPostDtoList(posts);
     }
@@ -133,12 +134,11 @@ public class PostServiceImpl implements PostService {
         postRepository.saveAll(posts);
     }
 
-    private List<Post> applyFilterToPosts(List<Post> posts, Predicate<Post> predicate,
-                                          Function<Post, LocalDateTime> function) {
+    private List<Post> applyFilterToPosts(List<Post> posts, PostFilter filter) {
         return posts.stream()
                 .filter(post -> !post.isDeleted())
-                .filter(predicate)
-                .sorted(Comparator.comparing(function).reversed())
+                .filter(filter.getFilter())
+                .sorted(Comparator.comparing(filter.getCompareStrategy()).reversed())
                 .toList();
     }
 
