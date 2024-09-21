@@ -9,6 +9,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -23,11 +24,13 @@ public class CommentService {
     private static final String MESSAGE_COMMENT_NOT_EXIST = "This comment does not exist";
     private static final String MESSAGE_POST_ID_AND_COMMENT_POST_ID_NOT_EQUAL = "postId and commentPostId not equal";
     private static final String MESSAGE_USER_LEFT_COMMENT_NOT_EXIST = "The user who left the comment does not exist";
+    private static final int MAX_COMMENTS_IN_CACHE = 3;
 
     private final CommentMapper mapper;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public CommentDto addComment(Long postId, CommentDto dto) {
         Post post = getPost(postId);
@@ -37,9 +40,14 @@ public class CommentService {
             throw new RuntimeException(MESSAGE_USER_LEFT_COMMENT_NOT_EXIST);
         }
         validateCommentContent(dto);
+
         Comment comment = mapper.toEntity(dto);
         comment.setPost(post);
-        return mapper.toDto(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+
+        addCommentToRedis(postId, savedComment);
+
+        return mapper.toDto(savedComment);
     }
 
     public CommentDto changeComment(Long postId, CommentDto dto) {
@@ -59,7 +67,21 @@ public class CommentService {
         Post post = getPost(postId);
         Comment commentForDelete = getCommentForDelete(commentId, post.getComments());
         commentRepository.delete(commentForDelete);
+
+        removeCommentFromRedis(postId, commentForDelete);
+
         return mapper.toDto(commentForDelete);
+    }
+
+    private void addCommentToRedis(Long postId, Comment comment) {
+        String redisKey = "post_comments:" + postId;
+        redisTemplate.opsForList().leftPush(redisKey, comment);
+        redisTemplate.opsForList().trim(redisKey, 0, MAX_COMMENTS_IN_CACHE - 1);
+    }
+
+    private void removeCommentFromRedis(Long postId, Comment comment) {
+        String redisKey = "post_comments:" + postId;
+        redisTemplate.opsForList().remove(redisKey, 1, comment);
     }
 
     private List<CommentDto> getListCommentDto(List<Comment> comments) {
