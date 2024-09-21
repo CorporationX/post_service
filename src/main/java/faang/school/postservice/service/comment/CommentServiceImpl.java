@@ -30,8 +30,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto addComment(CommentDto commentDto) {
-        // Завязан на реализации Владислава, его задача на ревью
+
         try {
+            // Завязан на реализации Владислава, его задача на ревью
+            // userServiceClient сейчас может возвращать не совсем верные значения
             userServiceClient.getUser(commentDto.getAuthorId());
         } catch (FeignException e) {
             throw new EntityNotFoundException("User not found");
