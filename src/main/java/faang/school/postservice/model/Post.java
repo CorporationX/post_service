@@ -18,7 +18,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "post")
-public class Post {
+public class Post implements Likeable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
