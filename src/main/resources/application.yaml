@@ -22,8 +22,10 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
+         like_post_channel:
+          name: like_channel
+         comment_channel:
+           name: comment_channel
 
 server:
   port: 8081
@@ -49,3 +51,10 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+sizeof-sublist: 100
+
+cron-expression: 00 50 17 ? * *
+
+like-service:
+  batch-size: 100
