@@ -40,7 +40,7 @@ public class CacheInitializer {
 
             return CacheUser.builder()
                     .id(userDto.getId())
-                    .postIds(new LinkedHashSet<>(userFeed.stream().map(CachePost::getId).toList()))
+                    .feed(new LinkedHashSet<>(userFeed.stream().map(CachePost::getId).toList()))
                     .ttl(postTtl).build();
         }).toList();
     }
