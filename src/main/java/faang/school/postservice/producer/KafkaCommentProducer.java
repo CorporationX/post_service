@@ -1,25 +1,23 @@
 package faang.school.postservice.producer;
 
-import faang.school.postservice.dto.event.kafka.PostLikeEvent;
-import lombok.extern.slf4j.Slf4j;
+import faang.school.postservice.dto.event.kafka.PostCommentEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
-public class KafkaLikeProducer
-        extends AbstractProducer<PostLikeEvent> implements KafkaProducer<PostLikeEvent> {
+public class KafkaCommentProducer extends AbstractProducer<PostCommentEvent>
+        implements KafkaProducer<PostCommentEvent> {
 
     @Value("${spring.kafka.topic.like-post}")
     private String topic;
 
-    public KafkaLikeProducer(KafkaTemplate<String, Object> kafkaTemplate) {
+    public KafkaCommentProducer(KafkaTemplate kafkaTemplate) {
         super(kafkaTemplate);
     }
 
     @Override
-    public void send(PostLikeEvent event) {
+    public void send(PostCommentEvent event) {
         super.sendMessage(topic, event);
     }
 }

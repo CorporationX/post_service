@@ -1,20 +1,18 @@
 package faang.school.postservice.service;
 
-
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentAchievementEvent;
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.event.kafka.PostCommentEvent;
 import faang.school.postservice.mapper.CommentAchievementMapper;
-import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
 import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
-
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +35,7 @@ public class CommentService {
     private final CommentEventPublisher commentEventPublisher;
     private final CommentAchievementEventPublisher commentAchievementEventPublisher;
     private final CommentAchievementMapper commentAchievementMapper;
+    private final KafkaCommentProducer kafkaCommentProducer;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
@@ -52,8 +51,13 @@ public class CommentService {
                 .createdAt(savedComment.getCreatedAt())
                 .postAuthorId(savedComment.getPost().getAuthorId())
                 .build();
+
         commentEventPublisher.publish(commentEvent);
         publishCommentAchievementEvent(commentDto);
+        kafkaCommentProducer.send(PostCommentEvent.builder()
+                .postId(comment.getPost().getId())
+                .authorId(comment.getAuthorId())
+                .build());
         return commentMapper.entityToDto(savedComment);
     }
 

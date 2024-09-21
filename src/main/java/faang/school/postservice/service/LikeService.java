@@ -2,7 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.event.LikePostEvent;
 import faang.school.postservice.dto.event.kafka.PostLikeEvent;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
@@ -105,7 +104,7 @@ public class LikeService {
         likeEventPublisher.publish(new LikeEvent(post.getId(), post.getAuthorId(), likeId));
         publishEventLikePost(likeDto, post);
 
-        kafkaLikeProducer.sendMessage(PostLikeEvent.builder()
+        kafkaLikeProducer.send(PostLikeEvent.builder()
                 .postId(post.getId())
                 .authorId(userContext.getUserId())
                 .build());

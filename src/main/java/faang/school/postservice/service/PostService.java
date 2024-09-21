@@ -92,7 +92,7 @@ public class PostService {
         sendToRedisPublisher(userContext.getUserId(), post.getId());
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
-        kafkaPostProducer.sendMessage(NewPostEvent.builder()
+        kafkaPostProducer.send(NewPostEvent.builder()
                 .id(post.getId())
                 .subscribersIds(userServiceClient.getFollowerIds(post.getId()))
                 .build());
