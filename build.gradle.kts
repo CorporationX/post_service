@@ -85,6 +85,11 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.fasterxml.jackson.core:jackson-databind")
 
+    /**
+     * jackson-datatype-jsr310(for a date in redis)
+     */
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    
 }
 
 jacoco {
