@@ -12,9 +12,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static faang.school.postservice.model.AlbumVisibility.ALL_USERS;
+import static faang.school.postservice.model.AlbumVisibility.CHOSEN_USERS;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALBUM_NOT_EXISTS;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.TITLE_NOT_UNIQUE;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.USER_IS_NOT_CREATOR;
@@ -93,7 +96,7 @@ class AlbumServiceCheckerTest {
         when(albumRepository.existsByTitleAndAuthorId(title, authorId)).thenReturn(true);
 
         RuntimeException exception = assertThrows(BadRequestException.class,
-                () -> checker.checkAlbumExistsWithTitle(title, authorId));
+            () -> checker.checkAlbumExistsWithTitle(title, authorId));
         assertEquals(TITLE_NOT_UNIQUE, exception.getMessage());
     }
 
@@ -105,7 +108,7 @@ class AlbumServiceCheckerTest {
         album.setAuthorId(authorId);
 
         RuntimeException exception = assertThrows(BadRequestException.class,
-                () -> checker.isCreatorOfAlbum(userId, album));
+            () -> checker.isCreatorOfAlbum(userId, album));
         assertEquals(USER_IS_NOT_CREATOR, exception.getMessage());
     }
 
@@ -120,7 +123,7 @@ class AlbumServiceCheckerTest {
         when(albumRepository.findFavoriteAlbumsByUserId(userId)).thenReturn(favoritesAlbums.stream());
 
         RuntimeException exception = assertThrows(BadRequestException.class,
-                () -> checker.checkFavoritesAlbumsContainsAlbum(userId, album, exceptionMessage, isContains));
+            () -> checker.checkFavoritesAlbumsContainsAlbum(userId, album, exceptionMessage, isContains));
         assertEquals(exceptionMessage, exception.getMessage());
     }
 
@@ -136,7 +139,23 @@ class AlbumServiceCheckerTest {
         when(albumRepository.findFavoriteAlbumsByUserId(userId)).thenReturn(favoritesAlbums.stream());
 
         RuntimeException exception = assertThrows(BadRequestException.class,
-                () -> checker.checkFavoritesAlbumsContainsAlbum(userId, album, exceptionMessage, isContains));
+            () -> checker.checkFavoritesAlbumsContainsAlbum(userId, album, exceptionMessage, isContains));
         assertEquals(exceptionMessage, exception.getMessage());
+    }
+
+    @Test
+    void testValidateAlbumVisibility_CHOSEN_USERS() {
+        List<Long> chosenUserIds = null;
+        assertThrows(BadRequestException.class, () ->
+            checker.validateAlbumVisibility(CHOSEN_USERS, chosenUserIds)
+        );
+    }
+
+    @Test
+    void testValidateAlbumVisibility_NOT_CHOSEN_USERS() {
+        List<Long> chosenUserIds = new ArrayList<>();
+        assertThrows(BadRequestException.class, () ->
+            checker.validateAlbumVisibility(ALL_USERS, chosenUserIds)
+        );
     }
 }

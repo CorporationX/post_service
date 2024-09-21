@@ -30,29 +30,29 @@ class AlbumMapperTest {
         post1.setId(1);
         List<Long> postIds = new ArrayList<>();
         List<Post> posts = LongStream.rangeClosed(1, 5)
-                .peek(postIds::add)
-                .mapToObj(id -> {
-                    Post post = new Post();
-                    post.setId(id);
-                    return post;
-                })
-                .toList();
+            .peek(postIds::add)
+            .mapToObj(id -> {
+                Post post = new Post();
+                post.setId(id);
+                return post;
+            })
+            .toList();
         Album album = Album.builder()
-                .id(1)
-                .title("Some title")
-                .description("descripton")
-                .authorId(2)
-                .posts(posts)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+            .id(1)
+            .title("Some title")
+            .description("descripton")
+            .authorId(2)
+            .posts(posts)
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
 
         AlbumResponseDto albumResponseDto = mapper.toAlbumResponseDto(album);
 
         assertThat(album)
-                .usingRecursiveComparison()
-                .ignoringFields("posts")
-                .isEqualTo(albumResponseDto);
+            .usingRecursiveComparison()
+            .ignoringFields("posts", "chosenUsers")
+            .isEqualTo(albumResponseDto);
         assertEquals(postIds, albumResponseDto.getPostIds());
     }
 
@@ -65,7 +65,8 @@ class AlbumMapperTest {
         Album album = mapper.toEntity(createAlbumDto);
 
         assertThat(createAlbumDto)
-                .usingRecursiveComparison()
-                .isEqualTo(album);
+            .usingRecursiveComparison()
+            .ignoringFields("chosenUserIds")
+            .isEqualTo(album);
     }
 }

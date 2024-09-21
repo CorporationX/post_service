@@ -1,0 +1,5 @@
+ALTER TABLE album
+    ADD COLUMN visibility VARCHAR(32) NOT NULL DEFAULT 'ALL_USERS';
+
+ALTER TABLE album
+    ADD COLUMN chosen_users JSONB;

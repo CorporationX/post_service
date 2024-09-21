@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.album;
 
+import faang.school.postservice.model.AlbumVisibility;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,4 +15,6 @@ public class AlbumResponseDto {
     private List<Long> postIds;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private AlbumVisibility visibility;
+    private List<Long> chosenUserIds;
 }
