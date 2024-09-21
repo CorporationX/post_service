@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.LikePostEvent;
+import faang.school.postservice.dto.event.kafka.PostLikeEvent;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
@@ -10,7 +11,7 @@ import faang.school.postservice.mapper.LikeEventMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
 import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.redisPublisher.LikePostPublisher;
@@ -96,15 +97,17 @@ public class LikeService {
         likeServiceValidator.checkDuplicateLike(optionalLike);
         Like like = likeMapper.toEntity(likeDto);
 
+
+
         post.getLikes().add(like);
 
         long likeId = likeRepository.save(like).getId();
         likeEventPublisher.publish(new LikeEvent(post.getId(), post.getAuthorId(), likeId));
         publishEventLikePost(likeDto, post);
 
-        kafkaLikeProducer.sendMessage(LikePostEvent.builder()
+        kafkaLikeProducer.sendMessage(PostLikeEvent.builder()
                 .postId(post.getId())
-                .authorPostId(userContext.getUserId())
+                .authorId(userContext.getUserId())
                 .build());
         return likeMapper.toLikeDto(like);
     }

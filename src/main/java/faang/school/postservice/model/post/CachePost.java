@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.post;
+package faang.school.postservice.model.post;
 
 import faang.school.postservice.model.Comment;
 import lombok.AllArgsConstructor;
@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
@@ -25,4 +26,15 @@ public class CachePost implements Serializable {
 
     @TimeToLive
     private long ttl;
+
+    @Version
+    private int version;
+
+    public void incrementLike() {
+        countLike++;
+    }
+
+    public void incrementVersion() {
+        version++;
+    }
 }

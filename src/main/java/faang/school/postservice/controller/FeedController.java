@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.post.CachePost;
+import faang.school.postservice.model.post.CachePost;
 import faang.school.postservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
