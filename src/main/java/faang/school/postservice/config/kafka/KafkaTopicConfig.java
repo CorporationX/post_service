@@ -16,6 +16,8 @@ public class KafkaTopicConfig {
     private String bootstrapAddress;
     @Value("${spring.kafka.topic.new-post}")
     private String newPostTopicName;
+    @Value("${spring.kafka.topic.like-post}")
+    private String likePostTopicName;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -27,5 +29,10 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic newPostTopic() {
         return new NewTopic(newPostTopicName, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic likePostTopic() {
+        return new NewTopic(likePostTopicName, 1, (short) 1);
     }
 }
