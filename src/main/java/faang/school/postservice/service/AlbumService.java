@@ -43,9 +43,10 @@ public class AlbumService {
         Post post = postRepository.findById(postId).orElseThrow();
         Album album = albumRepository.findById(albumId).orElseThrow();
         album.addPost(post);
+
         Album newAlbum = albumRepository.save(album);
         log.info("User '{}' add post '{}' to album '{}'", newAlbum.getAuthorId(), postId, album.getTitle());
-        return albumRepository.save(album);
+        return newAlbum;
     }
 
     @Transactional
