@@ -7,10 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}")
-@RequestMapping("api/v1")
 public interface UserServiceClient {
 
-    @GetMapping("/users/{userId}")
+    @GetMapping("api/v1/users/{userId}")
     UserDto getUser(@PathVariable long userId);
 
     @PostMapping("/users")

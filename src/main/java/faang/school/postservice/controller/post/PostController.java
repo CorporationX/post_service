@@ -1,7 +1,5 @@
 package faang.school.postservice.controller.post;
 
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
@@ -16,15 +14,13 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
-    private final UserContext userContext;
-    private final UserServiceClient userServiceClient;
 
-    @PostMapping()
+    @PostMapping
     public PostDto createDraftPost(@RequestBody @Valid PostDto postDto) {
         return postService.createDraftPost(postDto);
     }
 
-    @PutMapping("/publish")
+    @PutMapping("/publication")
     public PostDto publishPost(@RequestBody @Valid PostDto postDto) {
         return postService.publishPost(postDto);
     }

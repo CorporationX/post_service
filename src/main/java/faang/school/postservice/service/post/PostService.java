@@ -1,7 +1,5 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.mapper.post.PostMapper;
@@ -22,12 +20,10 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
-    private final UserContext userContext;
 
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
-        Long userId = userContext.getUserId();
-        postValidator.createDraftPostValidator(userId, postDto);
+        postValidator.createDraftPostValidator(postDto);
 
         Post post = postMapper.toEntity(postDto);
 
@@ -38,7 +34,7 @@ public class PostService {
 
     @Transactional
     public PostDto publishPost(PostDto postDto) {
-        Post post = getPostFromRepository(postDto.id());
+        Post post = getPostFromRepository(postDto.getId());
 
         postValidator.publishPostValidator(post);
 
@@ -49,12 +45,12 @@ public class PostService {
 
     @Transactional
     public PostDto updatePost(PostDto postDto) {
-        Post post = getPostFromRepository(postDto.id());
+        Post post = getPostFromRepository(postDto.getId());
 
         postValidator.updatePostValidator(post, postDto);
 
-        post.setTitle(postDto.title());
-        post.setContent(postDto.content());
+        post.setTitle(postDto.getTitle());
+        post.setContent(postDto.getContent());
 
         return postMapper.toDto(postRepository.save(post));
     }

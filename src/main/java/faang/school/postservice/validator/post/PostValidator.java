@@ -2,6 +2,7 @@ package faang.school.postservice.validator.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.exception.DataValidationException;
@@ -17,17 +18,18 @@ public class PostValidator {
 
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final UserContext userContext;
 
-    public void createDraftPostValidator(Long userId, PostDto postDto) {
-        boolean userExists = postDto.authorId() != null;
-        boolean projectExists = postDto.projectId() != null;
+    public void createDraftPostValidator(PostDto postDto) {
+        boolean userExists = postDto.getAuthorId() != null;
+        boolean projectExists = postDto.getProjectId() != null;
 
         validateSingleCreator(userExists, projectExists);
 
         if (userExists) {
-            validateUserExists(postDto.authorId());
+            validateUserExists(postDto.getAuthorId());
         } else {
-            validateProjectExists(postDto.projectId());
+            validateProjectExists(postDto.getProjectId());
         }
     }
 
@@ -38,8 +40,8 @@ public class PostValidator {
     }
 
     public void updatePostValidator(Post post, PostDto postDto) {
-        boolean isUserChanged = !Objects.equals(post.getAuthorId(), postDto.authorId());
-        boolean isProjectChanged = !Objects.equals(post.getProjectId(), postDto.projectId());
+        boolean isUserChanged = !Objects.equals(post.getAuthorId(), postDto.getAuthorId());
+        boolean isProjectChanged = !Objects.equals(post.getProjectId(), postDto.getProjectId());
 
         if (post.getAuthorId() != null && isUserChanged) {
             throw new DataValidationException("Post author cannot be changed");
@@ -61,7 +63,7 @@ public class PostValidator {
     }
 
     private void validateSingleCreator(boolean userExists, boolean projectExists) {
-        if (userExists && projectExists) {
+         if (userExists && projectExists) {
             throw new DataValidationException("Post can not be created by user and project at the same time");
         }
         if (!userExists && !projectExists) {
@@ -70,14 +72,12 @@ public class PostValidator {
     }
 
     private void validateUserExists(Long userId) {
-        if (userServiceClient.getUser(userId) == null) {
-            throw new DataValidationException("User " + userId + " not found");
-        }
+        Optional.ofNullable(userServiceClient.getUser(userId))
+                .orElseThrow(() -> new DataValidationException("User " + userId + " not found"));
     }
 
     private void validateProjectExists(Long projectId) {
-        if (projectServiceClient.getProject(projectId) == null) {
-            throw new DataValidationException("Project " + projectId + " not found");
-        }
+        Optional.ofNullable(projectServiceClient.getProject(projectId))
+                .orElseThrow(() -> new DataValidationException("Project " + projectId + " not found"));
     }
 }
