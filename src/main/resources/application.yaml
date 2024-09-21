@@ -85,6 +85,7 @@ spring:
     consumer:
       group-id: post
 
+
 server:
   port: 8081
 

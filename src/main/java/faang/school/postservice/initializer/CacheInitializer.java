@@ -1,8 +1,8 @@
 package faang.school.postservice.initializer;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.post.CachePost;
-import faang.school.postservice.dto.user.CacheUser;
+import faang.school.postservice.model.post.CachePost;
+import faang.school.postservice.model.CacheUser;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.repository.RedisUserRepository;

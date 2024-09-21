@@ -8,7 +8,7 @@ import faang.school.postservice.filter.album.AlbumFilter;
 import faang.school.postservice.handler.EntityHandler;
 import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
 import faang.school.postservice.redisPublisher.AlbumCreateEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
