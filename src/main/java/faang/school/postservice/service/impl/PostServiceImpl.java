@@ -3,18 +3,18 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,12 +26,12 @@ public class PostServiceImpl implements PostService {
     private final PostValidator validator;
     private final PostMapper postMapper;
 
-
     @Override
-    @Transactional
     public void createDraftPost(PostDto postDto) {
         validator.validatePost(postDto);
-        validator.validateCreator(existsCreator(postDto));
+        if (existsCreator(postDto)) {
+            throw new DataValidationException("There is no project/user");
+        }
 
         postDto.setDeleted(false);
         postDto.setPublished(false);
@@ -49,10 +49,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional
     public void publishPost(long id) {
-        Optional<Post> optionalPost = postRepository.findById(id);
-        Post post = validator.validatePost(optionalPost, id);
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("There is no post with ID " + id));
 
         if (!post.isPublished()) {
             post.setPublishedAt(LocalDateTime.now());
@@ -62,21 +61,19 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional
     public void updateContentPost(String newContent, long id) {
         postRepository.updateContentByPostId(id, newContent);
     }
 
     @Override
-    @Transactional
     public void softDeletePost(long id) {
         postRepository.softDeletePostById(id);
     }
 
     @Override
     public PostDto getPost(long id) {
-        Optional<Post> optionalPost = postRepository.findById(id);
-        Post post = validator.validatePost(optionalPost, id);
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("There is no post with ID " + id));
         return postMapper.toDto(post);
     }
 

@@ -111,7 +111,6 @@ class PostServiceImplTest {
 
         postService.publishPost(postId);
 
-        verify(validator).validatePost(optionalPost, postId);
         verify(postRepository, never()).save(post);
     }
 
@@ -123,7 +122,6 @@ class PostServiceImplTest {
 
         postService.publishPost(postId);
 
-        verify(validator).validatePost(optionalPost, postId);
         verify(postRepository).save(postCaptor.capture());
 
         Post post = postCaptor.getValue();
@@ -155,13 +153,11 @@ class PostServiceImplTest {
         PostDto postDto = postService.getPost(postId);
 
         verify(postRepository).findById(postId);
-        verify(validator).validatePost(optionalPost, postId);
         assertEquals(this.postDto, postDto);
     }
 
     private void configureSearchPost(Optional<Post> optionalPost) {
         when(postRepository.findById(postId)).thenReturn(optionalPost);
-        when(validator.validatePost(optionalPost, postId)).thenReturn(post);
     }
 
     @Test
