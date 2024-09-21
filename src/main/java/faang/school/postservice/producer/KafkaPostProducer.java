@@ -10,15 +10,16 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class KafkaPostProducer {
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+public class KafkaPostProducer extends AbstractProducer<NewPostEvent> {
 
     @Value("${spring.kafka.topic.new-post}")
     private String topicName;
 
+    public KafkaPostProducer(KafkaTemplate<String, Object> kafkaTemplate) {
+        super(kafkaTemplate);
+    }
+
     public void sendMessage(NewPostEvent event) {
-        log.info("Sending event to topic: {}", topicName);
-        kafkaTemplate.send(topicName, event);
+        sendMessage(topicName, event);
     }
 }
