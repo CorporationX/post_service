@@ -65,8 +65,17 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
 }
 
+val jacocoInclude = listOf(
+    "**/controller/**",
+    "**/service/**",
+    "**/validator/**",
+    "**/mapper/**",
+    "**/filter/**",
+)
+
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.12"
+    reportsDirectory.set(layout.buildDirectory.dir("${buildDir}/reports"))
 }
 
 tasks.test {
@@ -77,16 +86,36 @@ tasks.jacocoTestReport {
     reports {
         xml.required.set(true)
         csv.required.set(false)
-        html.outputLocation.set(file("${buildDir}/jacocoHtml"))
+        html.outputLocation.set(file("${buildDir}/reports/jacoco/html"))
     }
     classDirectories.setFrom(
-        fileTree(project.buildDir) {
-            include("**/post_service/service/**",
-                "**/post_service/validator/**",
-                "**/post_service/filter/**",
-                "**/post_service/controller/**")
-        }
+        files(
+            classDirectories.files.map {
+                fileTree(it) {
+                    include(jacocoInclude)
+                }
+            }
+        )
     )
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "CLASS"
+            classDirectories.setFrom(
+                sourceSets.main.get().output.asFileTree.matching {
+                    include(jacocoInclude)
+                }
+            )
+            enabled = true
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = 0.70.toBigDecimal()
+            }
+        }
+    }
 }
 
 tasks.test {
