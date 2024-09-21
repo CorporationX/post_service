@@ -15,8 +15,4 @@ public class UserServiceClientMock implements UserServiceClient {
     public List<UserDto> getUsersByIds(List<Long> ids) {
         return new ArrayList<>();
     }
-
-    public List<Long> getFollowers(long userId) {
-        return new ArrayList<>();
-    }
 }
