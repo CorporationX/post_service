@@ -8,9 +8,9 @@ public interface CommentService {
 
     CommentDto addComment(CommentDto comment);
 
-    CommentDto updateComment(Long id, String content);
+    void updateComment(long id, String content);
 
-    List<CommentDto> getCommentsByPostId(Long postId);
+    List<CommentDto> getCommentsByPostId(long postId);
 
-    void deleteComment(Long id);
+    boolean deleteComment(long id);
 }
