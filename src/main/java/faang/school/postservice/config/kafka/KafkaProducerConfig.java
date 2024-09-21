@@ -30,6 +30,9 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.topic-name.comments}")
     private String commentTopicName;
 
+    @Value("${spring.kafka.topic-name.post_views}")
+    private String postViewTopicName;
+
     @Value("${spring.kafka.producer.idempotence}")
     private boolean producerIdempotence;
 
@@ -61,6 +64,11 @@ public class KafkaProducerConfig {
     @Bean
     public NewTopic commentTopic() {
         return TopicBuilder.name(commentTopicName).build();
+    }
+
+    @Bean
+    public NewTopic postViewTopic() {
+        return TopicBuilder.name(postTopicName).build();
     }
 
     @Bean
