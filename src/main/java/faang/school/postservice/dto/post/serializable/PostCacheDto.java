@@ -13,16 +13,16 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostJsonDto {
+public class PostCacheDto {
     private long id;
     private String content;
     private Long authorId;
     private Long projectId;
-    private List<Long> likesIds; // TODO: +
-    private List<Long> commentIds; // TODO: +
-    private List<Long> albumIds; // TODO: +
+    private List<Long> likesIds;
+    private List<Long> commentIds;
+    private List<Long> albumIds;
     private Ad ad;
-    private List<Long> resourceIds; // TODO: +
+    private List<Long> resourceIds;
     private boolean published;
     private LocalDateTime publishedAt;
     private LocalDateTime scheduledAt;

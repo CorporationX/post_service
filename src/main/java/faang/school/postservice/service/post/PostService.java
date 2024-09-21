@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
@@ -24,6 +25,7 @@ public class PostService {
     private final PostValidator postValidator;
     private final PostHashTagService postHashTagService;
     private final PostCacheService postCacheService;
+    private final PostMapper postMapper;
 
     @Transactional
     public Post create(Post post) {
@@ -49,7 +51,7 @@ public class PostService {
         postHashTagService.updateHashTags(post);
 
         if (!post.isDeleted() && post.isPublished()) {
-            postCacheService.updatePostProcess(post, primaTags);
+            postCacheService.updatePostProcess(postMapper.toPostCacheDto(post), primaTags);
         }
         return postRepository.save(post);
     }
@@ -64,7 +66,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postHashTagService.updateHashTags(post);
-        postCacheService.newPostProcess(post);
+        postCacheService.newPostProcess(postMapper.toPostCacheDto(post));
 
         return postRepository.save(post);
     }
@@ -76,7 +78,7 @@ public class PostService {
 
         post.setDeleted(true);
         post.setUpdatedAt(LocalDateTime.now());
-        postCacheService.deletePostProcess(post, post.getHashTags());
+        postCacheService.deletePostProcess(postMapper.toPostCacheDto(post), post.getHashTags());
 
         postRepository.save(post);
     }

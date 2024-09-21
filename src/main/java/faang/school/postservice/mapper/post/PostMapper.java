@@ -4,7 +4,7 @@ import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.FilterPostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
-import faang.school.postservice.dto.post.serializable.PostJsonDto;
+import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -31,7 +31,7 @@ public interface PostMapper {
     @Mapping(source = "comments", target = "commentIds", qualifiedByName = "mapComments")
     @Mapping(source = "albums", target = "albumIds", qualifiedByName = "mapAlbums")
     @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "mapResources")
-    PostJsonDto toPostJsonDto(Post post);
+    PostCacheDto toPostCacheDto(Post post);
 
     @Named("mapLikes")
     default List<Long> mapLikes(List<Like> likes) {
