@@ -83,8 +83,8 @@ public class AlbumController {
     }
 
     @PostMapping("/filter")
-    public List<AlbumDto> getAlbumsByFilter(@RequestBody AlbumFilterDto filterDto) {
-        List<Album> albums = service.getAlbumsByFilter(filterDto);
+    public List<AlbumDto> getAlbumsByFilter(@RequestParam long userId, @RequestBody AlbumFilterDto filterDto) {
+        List<Album> albums = service.getAlbumByFilter(userId, filterDto);
         return albumMapper.toDtoList(albums);
     }
 

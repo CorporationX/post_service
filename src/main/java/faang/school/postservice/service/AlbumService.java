@@ -2,8 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumFilterDto;
-import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.dto.user.UserFilterDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.AlbumStatus;
 import faang.school.postservice.model.Post;
@@ -16,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
 
 @Service
@@ -82,33 +79,10 @@ public class AlbumService {
     public Album getAlbum(long albumId, long userId) {
         Album album = albumRepository.findById(albumId)
                 .orElseThrow();
-
-        if (album.getStatus().equals(AlbumStatus.ONLY_AUTHOR)) {
-            if (userId == album.getAuthorId()) {
-                return album;
-            } else {
-                throw new IllegalArgumentException("This album is available only author");
-            }
-
-        } else if (album.getStatus().equals(AlbumStatus.SOME_USERS)) {
-            List<Long> userIdsWithAccess = albumRepository.findUserIdsWithAlbumAccess(albumId);
-            if (userIdsWithAccess.contains(userId)) {
-                return album;
-            } else {
-                throw new IllegalArgumentException("This album don`t available this user");
-            }
-
-        } else if (album.getStatus().equals(AlbumStatus.SUBSCRIBERS)) {
-            List<Long> followerIds = userServiceClient.getFollowers(album.getAuthorId(), new UserFilterDto()).stream()
-                    .map(UserDto::getId)
-                    .toList();
-            if (followerIds.contains(userId)) {
-                return album;
-            } else {
-                throw new IllegalArgumentException("This album is available only followers");
-            }
-        }
-        return album;
+        Map<AlbumStatus, AlbumStatusExecutor> executorsByStatus = createExecutorsMap();
+        AlbumStatus status = album.getStatus();
+        AlbumStatusExecutor statusExecutor = executorsByStatus.get(status);
+        return statusExecutor.compute(album, userId);
     }
 
     @Transactional
