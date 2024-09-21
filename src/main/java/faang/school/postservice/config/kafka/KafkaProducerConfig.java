@@ -30,7 +30,7 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.topic-name.comments}")
     private String commentTopicName;
 
-    @Value("${spring.kafka.topic-name.post_views}")
+    @Value("${spring.kafka.topic-name.post-views}")
     private String postViewTopicName;
 
     @Value("${spring.kafka.producer.idempotence}")
