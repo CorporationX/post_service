@@ -46,7 +46,8 @@ public class CacheInitializer {
     }
 
     private List<CachePost> getPostToFeed(long userId) {
-        List<CachePost> userFeed = postService.getPostsByAuthorsIds(userServiceClient.getFollowerIds(userId));
+        List<CachePost> userFeed = postService.getPostsByAuthorsIds(
+                userServiceClient.getFollowingIds(userId));
         redisPostRepository.saveAll(userFeed);
          return userFeed;
     }
