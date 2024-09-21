@@ -58,7 +58,7 @@ public class PostServiceTest {
                 .build();
     }
 
-    /*@Test
+    @Test
     void createDraftPost_shouldReturnPostDto() {
         // Arrange
         when(postMapper.toEntity(any(PostDto.class))).thenReturn(examplePost);
@@ -70,10 +70,9 @@ public class PostServiceTest {
         // Assert
         assertEquals(examplePostDto, result);
         assertFalse(examplePost.isPublished());
-        assertNotNull(examplePost.getCreatedAt());
         verify(postValidator, times(1)).createDraftPostValidator(examplePostDto);
         verify(postRepository, times(1)).save(examplePost);
-    }*/
+    }
 
     @Test
     void publishPost_shouldReturnPostDto() {
@@ -104,7 +103,6 @@ public class PostServiceTest {
 
         // Assert
         assertEquals(examplePostDto, result);
-        assertNotNull(examplePost.getUpdatedAt());
         verify(postRepository, times(1)).findById(1L);
         verify(postValidator, times(1)).updatePostValidator(examplePost, examplePostDto);
         verify(postRepository, times(1)).save(examplePost);

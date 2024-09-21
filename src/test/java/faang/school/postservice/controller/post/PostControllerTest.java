@@ -36,7 +36,7 @@ public class PostControllerTest {
 
 
     // Those are testing if Controller works properly with Service
-    /*@Test
+    @Test
     void testCreateDraftPost() {
         // Arrange
         when(postService.createDraftPost(postDto)).thenReturn(postDto);
@@ -47,7 +47,7 @@ public class PostControllerTest {
         // Assert
         assertEquals(postDto, result);
         verify(postService, times(1)).createDraftPost(postDto);
-    }*/
+    }
 
     @Test
     void testPublishPost() {

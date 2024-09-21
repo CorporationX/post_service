@@ -1,4 +1,3 @@
-/*
 package faang.school.postservice.validator.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
@@ -170,4 +169,3 @@ public class PostValidatorTest {
                 postValidator.validateIfProjectExists(1L));
     }
 }
-*/
