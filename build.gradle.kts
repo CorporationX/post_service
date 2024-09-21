@@ -70,6 +70,11 @@ dependencies {
      * Swagger
      */
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.3")
+
+    /**
+     * Kafka
+     */
+    implementation("org.springframework.kafka:spring-kafka:3.1.2")
 }
 
 jacoco {

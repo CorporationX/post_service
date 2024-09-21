@@ -26,6 +26,12 @@ spring:
           name: like_channel
          comment_channel:
            name: comment_channel
+    kafka:
+      bootstrap-servers: host.docker.internal:29092,host.docker.internal:29093
+      topics:
+        post_topic: posts
+        like_topic: likes
+        comment_topic: comments
 
 server:
   port: 8081
