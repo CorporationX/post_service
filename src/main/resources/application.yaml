@@ -21,6 +21,13 @@ spring:
     redis:
       port: 6379
       host: localhost
+      properties:
+        ttl: 86400
+        feed-size: 20
+      keys:
+        post: Posts
+        feed: Feed
+        user: Users
       channels:
         post-view: post_view_channel
         post-create: post_channel

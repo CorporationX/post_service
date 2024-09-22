@@ -13,6 +13,7 @@ public class PostDto {
     private String content;
     private Long projectId;
     private Long authorId;
+    private Long likesAmount;
     private boolean published;
     private LocalDateTime publishedAt;
     private LocalDateTime scheduledAt;

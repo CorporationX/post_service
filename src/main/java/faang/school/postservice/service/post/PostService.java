@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
@@ -55,6 +56,8 @@ public class PostService {
     @Value("${post.moderator.count-posts-in-thread}")
     private int countPostsInThread;
 
+    @Value("${spring.data.redis.properties.feed-size}")
+    private int feedSize;
 
     public void publishScheduledPosts() {
         log.info("Start publishing posts, at: {}", LocalDateTime.now());
@@ -193,5 +196,19 @@ public class PostService {
             }
             postRepository.save(post);
         }
+    }
+
+
+    public List<PostDto> getByPostsIds(List<Long> postsIds) {
+        return StreamSupport.stream(postRepository.findAllById(postsIds).spliterator(), false)
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    public List<PostDto> getByAuthorIds(List<Long> authorIds, Long afterPostId) {
+        Pageable pageable = PageRequest.of(0, feedSize);
+        return postRepository.findPreviousFeedPostsByAuthorIdAndPostId(afterPostId, authorIds, pageable).stream()
+                .map(postMapper::toDto)
+                .toList();
     }
 }
