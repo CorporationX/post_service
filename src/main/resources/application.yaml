@@ -27,6 +27,15 @@ spring:
          comment_channel:
            name: comment_channel
 
+  kafka:
+    bootstrap_servers: "localhost:9092"
+    topic-name:
+      likes: "likes"
+      post-views: "post_views"
+      comments: "comments"
+      posts: "posts"
+
+
 server:
   port: 8081
 

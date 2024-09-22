@@ -2,6 +2,7 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.mapper.CommentMapper;
@@ -20,20 +21,30 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static java.lang.Math.min;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Setter
 public class LikeServiceImpl implements LikeService {
+    @Value("${like-service.batch-size}")
+    private int batchSize;
+    @Value("${spring.kafka.topic-name.posts:likes}")
+    private String likeTopic;
+
     private final LikeValidator likeValidator;
     private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;
@@ -43,9 +54,24 @@ public class LikeServiceImpl implements LikeService {
     private final PostMapper postMapper;
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
+    @Qualifier("likeKafkaTemplate")
+    private final KafkaTemplate<Long, Map<String, Long>> likeKafkaTemplate;
 
-    @Value("${like-service.batch-size}")
-    private int batchSize;
+    public LikeServiceImpl(LikeValidator likeValidator, LikeRepository likeRepository, LikeMapper likeMapper,
+                           LikeEventPublisher likePublisher, PostService postService, CommentService commentService,
+                           PostMapper postMapper, CommentMapper commentMapper, UserServiceClient userServiceClient,
+                           KafkaTemplate<Long, Map<String, Long>> likeKafkaTemplate) {
+        this.likeValidator = likeValidator;
+        this.likeRepository = likeRepository;
+        this.likeMapper = likeMapper;
+        this.likePublisher = likePublisher;
+        this.postService = postService;
+        this.commentService = commentService;
+        this.postMapper = postMapper;
+        this.commentMapper = commentMapper;
+        this.userServiceClient = userServiceClient;
+        this.likeKafkaTemplate = likeKafkaTemplate;
+    }
 
     @Override
     @Transactional
@@ -93,7 +119,18 @@ public class LikeServiceImpl implements LikeService {
                 like.getId(),
                 postId,
                 userId);
+
+        sendLikeEventToKafka(post);
+
         return likeMapper.toDto(like);
+    }
+
+    private void sendLikeEventToKafka(Post post){
+        Map<String, Long> event = new HashMap<>();
+        var postId = post.getId();
+        event.put("postId", postId);
+        event.put("authorId", post.getAuthorId());
+        likeKafkaTemplate.send(likeTopic, postId, event);
     }
 
     @Override

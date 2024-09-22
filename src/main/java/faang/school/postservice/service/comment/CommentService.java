@@ -8,18 +8,35 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.error.CommentServiceErrors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
-@RequiredArgsConstructor
 public class CommentService {
+    @Value("${spring.kafka.topic-name.comments:comments}")
+    private String commentTopic;
+
     private final CommentRepository repository;
     private final PostRepository postRepository;
     private final CommentMapper mapper;
+    @Qualifier("commentKafkaTemplate")
+    private final KafkaTemplate<Long, Map<String, Long>> commentKafkaTemplate;
+
+    public CommentService(CommentRepository repository, PostRepository postRepository, CommentMapper mapper,
+                          KafkaTemplate<Long, Map<String, Long>> commentKafkaTemplate) {
+        this.repository = repository;
+        this.postRepository = postRepository;
+        this.mapper = mapper;
+        this.commentKafkaTemplate = commentKafkaTemplate;
+    }
 
     public CommentDto addComment(Long postId, CommentDto commentDto) {
         if (commentDto.getContent() == null || commentDto.getContent().isBlank()) {
@@ -37,7 +54,16 @@ public class CommentService {
         post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
 
+        sendCommentEventToKafka(post, saveComment);
         return mapper.toDto(saveComment);
+    }
+
+    private void sendCommentEventToKafka(Post post, Comment comment){
+        Map<String, Long> event = new HashMap<>();
+        var postId = post.getId();
+        event.put("postId", postId);
+        event.put("authorId", comment.getAuthorId());
+        commentKafkaTemplate.send(commentTopic, post.getId(), event);
     }
 
 
