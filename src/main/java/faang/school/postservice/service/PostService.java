@@ -2,10 +2,14 @@ package faang.school.postservice.service;
 
 
 import faang.school.postservice.client.HashtagServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
+import faang.school.postservice.dto.kafkaEvents.PostCreatedEvent;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.kafkaProducer.KafkaPostProducer;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
@@ -48,6 +52,8 @@ public class PostService {
     private final PostContextMapper context;
     private final PostEventPublisher postEventPublisher;
     private final UserContext userContext;
+    private final UserServiceClient userServiceClient;
+    private final KafkaPostProducer kafkaPostProducer;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
@@ -81,6 +87,13 @@ public class PostService {
         sendToRedisPublisher(userContext.getUserId(), post.getId());
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
+
+        List<Long> followersIds = userServiceClient.getUserFollowers(post.getAuthorId())
+                .stream()
+                .map(UserDto::getId)
+                .toList();
+        PostCreatedEvent event = new PostCreatedEvent(post.getId(), post.getAuthorId(), followersIds);
+        kafkaPostProducer.sendPostCreatedEvent(event);
         return postDtoForReturns;
     }
 
