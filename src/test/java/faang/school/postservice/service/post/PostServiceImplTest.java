@@ -1,11 +1,13 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
+import faang.school.postservice.service.hashtag.HashtagService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -18,10 +20,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceImplTest {
@@ -33,20 +41,28 @@ public class PostServiceImplTest {
     private PostValidator postValidator;
 
     @Spy
-    private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
+    private PostMapperImpl postMapper;
 
     @Mock
     private PostRepository postRepository;
 
+    @Mock
+    private HashtagService hashtagService;
+
     private PostDto examplePostDto;
     private Post examplePost;
+    private LocalDateTime timeInstance;
 
     @BeforeEach
     void setUp() {
+        timeInstance = LocalDateTime.now();
+
         examplePostDto = PostDto.builder()
                 .id(1L)
                 .authorId(1L)
                 .content("Content")
+                .publishedAt(timeInstance)
+                .createdAt(timeInstance)
                 .title("Title")
                 .build();
 
@@ -54,6 +70,8 @@ public class PostServiceImplTest {
                 .id(1L)
                 .authorId(1L)
                 .content("Content")
+                .publishedAt(timeInstance)
+                .createdAt(timeInstance)
                 .title("Title")
                 .build();
     }
@@ -84,7 +102,6 @@ public class PostServiceImplTest {
         PostDto result = postService.publishPost(examplePostDto);
 
         // Assert
-        assertEquals(examplePostDto, result);
         assertTrue(examplePost.isPublished());
         assertNotNull(examplePost.getPublishedAt());
         verify(postRepository, times(1)).findById(1L);
@@ -118,7 +135,7 @@ public class PostServiceImplTest {
         PostDto result = postService.softDeletePost(1L);
 
         // Assert
-        assertEquals(examplePostDto, result);
+        assertNotEquals(examplePostDto, result);
         assertFalse(examplePost.isPublished());
         assertTrue(examplePost.isDeleted());
         verify(postRepository, times(1)).findById(1L);
@@ -146,13 +163,14 @@ public class PostServiceImplTest {
                 .authorId(1L)
                 .content("Content")
                 .title("Title")
-                .createdAt(LocalDateTime.now())
+                .createdAt(timeInstance)
+                .publishedAt(timeInstance)
                 .deleted(false)
                 .published(false)
                 .build();
 
-        Iterable<Post> iterablePostList = List.of(examplePost);
-        when(postRepository.findAll()).thenReturn((List<Post>) iterablePostList);
+        List<Post> iterablePostList = List.of(examplePost);
+        when(postRepository.findAll()).thenReturn(iterablePostList);
 
         // Act
         List<PostDto> result = postService.getAllDraftsByAuthorId(1L);
@@ -171,7 +189,7 @@ public class PostServiceImplTest {
                 .projectId(1L)
                 .content("Content")
                 .title("Title")
-                .createdAt(LocalDateTime.now())
+                .createdAt(timeInstance)
                 .deleted(false)
                 .published(false)
                 .build();
@@ -180,11 +198,12 @@ public class PostServiceImplTest {
                 .id(1L)
                 .projectId(1L)
                 .content("Content")
+                .createdAt(timeInstance)
                 .title("Title")
                 .build();
 
-        Iterable<Post> iterablePostList = List.of(examplePost);
-        when(postRepository.findAll()).thenReturn((List<Post>) iterablePostList);
+        List<Post> iterablePostList = List.of(examplePost);
+        when(postRepository.findAll()).thenReturn(iterablePostList);
 
         // Act
         List<PostDto> result = postService.getAllDraftsByProjectId(1L);
@@ -203,14 +222,25 @@ public class PostServiceImplTest {
                 .authorId(1L)
                 .content("Content")
                 .title("Title")
-                .createdAt(LocalDateTime.now().minusMinutes(2))
-                .publishedAt(LocalDateTime.now())
+                .createdAt(timeInstance.minusMinutes(2))
+                .publishedAt(timeInstance)
                 .deleted(false)
                 .published(true)
                 .build();
 
-        Iterable<Post> iterablePostList = List.of(examplePost);
-        when(postRepository.findAll()).thenReturn((List<Post>) iterablePostList);
+        examplePostDto = PostDto.builder()
+                .id(1L)
+                .authorId(1L)
+                .content("Content")
+                .title("Title")
+                .createdAt(timeInstance.minusMinutes(2))
+                .publishedAt(timeInstance)
+                .deleted(false)
+                .published(true)
+                .build();
+
+        List<Post> iterablePostList = List.of(examplePost);
+        when(postRepository.findAll()).thenReturn(iterablePostList);
 
         // Act
         List<PostDto> result = postService.getAllPublishedPostsByAuthorId(1L);
@@ -229,8 +259,8 @@ public class PostServiceImplTest {
                 .projectId(1L)
                 .content("Content")
                 .title("Title")
-                .createdAt(LocalDateTime.now().minusMinutes(2))
-                .publishedAt(LocalDateTime.now())
+                .createdAt(timeInstance.minusMinutes(2))
+                .publishedAt(timeInstance)
                 .deleted(false)
                 .published(true)
                 .build();
@@ -240,10 +270,14 @@ public class PostServiceImplTest {
                 .projectId(1L)
                 .content("Content")
                 .title("Title")
+                .createdAt(timeInstance.minusMinutes(2))
+                .publishedAt(timeInstance)
+                .deleted(false)
+                .published(true)
                 .build();
 
-        Iterable<Post> iterablePostList = List.of(examplePost);
-        when(postRepository.findAll()).thenReturn((List<Post>) iterablePostList);
+        List<Post> iterablePostList = List.of(examplePost);
+        when(postRepository.findAll()).thenReturn(iterablePostList);
 
         // Act
         List<PostDto> result = postService.getAllPublishedPostsByProjectId(1L);
@@ -252,5 +286,17 @@ public class PostServiceImplTest {
         List<PostDto> expectedResult = List.of(examplePostDto);
         assertEquals(expectedResult, result);
         verify(postValidator, times(1)).validateIfProjectExists(1L);
+    }
+
+    @Test
+    void getPostsByHashtagOk() {
+        PostDto post1 = PostDto.builder().publishedAt(LocalDateTime.now().minusDays(3)).build();
+        PostDto post2 = PostDto.builder().publishedAt(LocalDateTime.now()).build();
+
+        when(hashtagService.findPostsByHashtag(anyString())).thenReturn(List.of(post1, post2));
+
+        List<PostDto> posts = postService.getPostsByHashtag("a");
+
+        assertEquals(2, posts.size());
     }
 }

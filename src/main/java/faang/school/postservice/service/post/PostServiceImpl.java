@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.StreamSupport;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -19,8 +21,10 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final HashtagService hashtagService;
     private final PostValidator postValidator;
 
+    @Override
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
         postValidator.createDraftPostValidator(postDto);
@@ -34,25 +38,33 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     public PostDto publishPost(PostDto postDto) {
-        Post post = getPostFromRepository(postDto.getId());
+        Post post = getPostFromRepository(postDto.id());
 
         postValidator.publishPostValidator(post);
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        return postMapper.toDto(postRepository.save(post));
+
+        postRepository.save(post);
+        hashtagService.createHashtags(post);
+
+        return postMapper.toDto(post);
     }
 
+    @Override
     @Transactional
     public PostDto updatePost(PostDto postDto) {
-        Post post = getPostFromRepository(postDto.getId());
+        Post post = getPostFromRepository(postDto.id());
 
         postValidator.updatePostValidator(post, postDto);
 
-        post.setTitle(postDto.getTitle());
-        post.setContent(postDto.getContent());
+        post.setTitle(postDto.title());
+        post.setContent(postDto.content());
 
-        return postMapper.toDto(postRepository.save(post));
+        postRepository.save(post);
+        hashtagService.updateHashtags(post);
+
+        return postMapper.toDto(post);
     }
 
     @Transactional
@@ -77,7 +89,7 @@ public class PostServiceImpl implements PostService {
         postValidator.validateIfAuthorExists(userId);
 
         List<PostDto> posts = postRepository.findAll().stream()
-                .filter(post -> Objects.equals(post. getAuthorId(), userId))
+                .filter(post -> Objects.equals(post.getAuthorId(), userId))
                 .filter(post -> !post.isPublished())
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
@@ -135,5 +147,10 @@ public class PostServiceImpl implements PostService {
     private Post getPostFromRepository(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
+    }
+
+    @Override
+    public List<PostDto> getPostsByHashtag(String hashtag) {
+        return hashtagService.findPostsByHashtag(hashtag);
     }
 }

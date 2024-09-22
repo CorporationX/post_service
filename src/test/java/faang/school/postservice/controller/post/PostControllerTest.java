@@ -1,7 +1,8 @@
 package faang.school.postservice.controller.post;
 
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.service.post.PostServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,8 +12,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.anyString;
 
 @ExtendWith(MockitoExtension.class)
 public class PostControllerTest {
@@ -20,7 +26,7 @@ public class PostControllerTest {
     private PostController postController;
 
     @Mock
-    private PostServiceImpl postService;
+    private PostService postService;
 
     private PostDto postDto;
 
@@ -141,5 +147,28 @@ public class PostControllerTest {
         assertEquals(1, result.size());
         assertEquals(postDto, result.get(0));
         verify(postService, times(1)).getAllPublishedPostsByProjectId(1L);
+    }
+
+    @Test
+    void testGetNullHashtagThrows() throws Exception {
+        assertThrows(DataValidationException.class,
+                () -> postController.getPostsByHashtag(null));
+
+        verify(postService, never()).getPostsByHashtag(anyString());
+    }
+
+    @Test
+    void testGetEmptyHashtagThrows() {
+        assertThrows(DataValidationException.class,
+                () -> postController.getPostsByHashtag(""));
+
+        verify(postService, never()).getPostsByHashtag(anyString());
+    }
+
+    @Test
+    void testGetHashtagOk() {
+        postController.getPostsByHashtag("hashtag");
+
+        verify(postService).getPostsByHashtag(anyString());
     }
 }

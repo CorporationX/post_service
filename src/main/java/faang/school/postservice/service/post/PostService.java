@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface PostService {
 
+    List<PostDto> getPostsByHashtag(String hashtag);
+
     PostDto createDraftPost(PostDto postDto);
 
     PostDto publishPost(PostDto postDto);
