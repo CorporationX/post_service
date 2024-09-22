@@ -31,9 +31,12 @@ spring:
         postLike: post_like_channel
         postChannel: post_channel
         postSavedChannel: post_saved_channel
+        post: post_channel
+        likeChannel: like_channel
         like_post_analytics: like_event
         album: album_channel
         comment: comment_channel
+        comment_achievement: comment_channel
 
     elasticsearch:
       rest:

@@ -42,6 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -407,7 +408,7 @@ public class PostServiceTest {
         long postId = 1;
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> postService.getPost(postId));
+        assertThrows(IllegalArgumentException.class, () -> postService.getPost(postId));
         verify(postContextMapper, never()).getCountLikeEveryonePost();
     }
 

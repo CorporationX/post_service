@@ -23,6 +23,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.like_post_analytics}")
     private String likePostAnalyticsChannel;
 
+    @Value("${spring.data.redis.channels.likeChannel}")
+    private String likeChannel;
+
     @Value("${spring.data.redis.channels.postSavedChannel}")
     private String postSavedChannel;
 
@@ -30,7 +33,7 @@ public class RedisConfig {
 
     @Bean("postChannelTopic")
     public ChannelTopic postChannelTopic() {
-        return new ChannelTopic(postChannel);
+        return new ChannelTopic(credentials.getChannels().getPost());
     }
 
     @Bean("postLikeChannelTopic")
@@ -56,6 +59,16 @@ public class RedisConfig {
     @Bean
     public ChannelTopic commentEventTopic() {
         return new ChannelTopic(credentials.getChannels().getComment());
+    }
+
+    @Bean
+    public ChannelTopic likeEventTopic() {
+        return new ChannelTopic(likeChannel);
+    }
+
+    @Bean("commentAchievementTopic")
+    public ChannelTopic commentAchievementTopic() {
+        return new ChannelTopic(credentials.getChannels().getCommentAchievement());
     }
 
     @Bean

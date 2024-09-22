@@ -1,6 +1,5 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.redisPublisher.LikePostPublisher;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,9 +22,6 @@ public class LikeControllerTest {
 
     @Mock
     private LikeService likeService;
-    @Mock
-    private LikePostPublisher likePostPublisher;
-
 
     private long postId;
     private long commentId;

@@ -26,7 +26,7 @@ public class CommentValidator {
 
     public void existUser(long userId) {
         try {
-            userServiceClient.getUserById(userId);
+            userServiceClient.getUser(userId);
         } catch (FeignException e) {
             log.error(e.getMessage());
         }
