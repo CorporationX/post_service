@@ -22,7 +22,7 @@ public interface AlbumMapper {
     @Named("mapPostsToIds")
     default List<Long> mapPostsToIds(List<Post> posts) {
         return posts.stream()
-                .map(Post::getId)  // Преобразуем Post в его ID
+                .map(Post::getId)
                 .collect(Collectors.toList());
     }
 }

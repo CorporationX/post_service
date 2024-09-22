@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -14,5 +15,5 @@ public class AlbumDto {
     @NotBlank
     private String description;
     private Long authorId;
-    private List<Long> postIds;
+    private List<Long> postIds = new ArrayList<>();
 }

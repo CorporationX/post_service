@@ -43,7 +43,7 @@ public class AlbumController {
 
     @PostMapping("/{albumId}/posts/{postId}")
     @Operation(summary = "Add a post", description = "Add a post to the album")
-    public ResponseEntity<AlbumDto> addPostToAlbum(
+    public ResponseEntity<String> addPostToAlbum(
             @Parameter(description = "ID of the user", required = true)
             @RequestHeader("x-user-id") String userId,
             @Parameter(description = "ID of the album", required = true)
@@ -95,7 +95,7 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.getAlbumById(id));
     }
 
-    @GetMapping("/user/filter")
+    @PostMapping("/user/filter")
     @Operation(summary = "Get user's albums by filter", description = "Retrieve user's albums by filter")
     public ResponseEntity<List<AlbumDto>> getUserAlbums(
             @Parameter(description = "ID of the user", required = true)
@@ -105,17 +105,17 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.getUserAlbums(albumFilterDto));
     }
 
-    @GetMapping("/filter")
-    @Operation(summary = "Get all user's albums by filter", description = "Retrieve all user's albums by filter")
+    @PostMapping("/filter")
+    @Operation(summary = "Get all users albums by filter", description = "Retrieve all user's albums by filter")
     public ResponseEntity<List<AlbumDto>> getAllUsersAlbums(
             @Parameter(description = "ID of the user", required = true)
             @RequestHeader("x-user-id") String userId,
-            @Parameter(description = "Filter for all user's albums", required = true)
+            @Parameter(description = "Filter for all users albums", required = true)
             @RequestBody AlbumFilterDto albumFilterDto) {
         return ResponseEntity.ok(albumService.getAllUsersAlbums(albumFilterDto));
     }
 
-    @GetMapping("/user/favorite/filter")
+    @PostMapping("/user/favorite/filter")
     @Operation(summary = "Get user's favorite albums by filter", description = "Retrieve user's favorite albums by filter")
     public ResponseEntity<List<AlbumDto>> getUserFavoriteAlbums(
             @Parameter(description = "ID of the user", required = true)

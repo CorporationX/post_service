@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.filter.AlbumFilterDto;
@@ -28,7 +27,6 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class AlbumService {
 
-    private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final AlbumRepository albumRepository;
     private final PostRepository postRepository;
@@ -51,13 +49,17 @@ public class AlbumService {
     }
 
     @Transactional
-    public AlbumDto addPostToAlbum(Long albumId, Long postId) {
+    public String   addPostToAlbum(Long albumId, Long postId) {
         long userId = userContext.getUserId();
         validator.validateUser(userId);
+        if (postRepository.existsInAlbum(albumId, postId)) {
+            return String.format("Post id = %d already exists in album id = %d", postId, albumId);
+        }
         Album album = findAlbumById(albumId);
         Post post = findPostById(postId);
         album.addPost(post);
-        return albumMapper.albumToAlbumDto(albumRepository.save(album));
+        albumRepository.save(album);
+        return String.format("Post id = %d added in album id = %d, title = %s", postId, albumId, album.getTitle());
     }
 
     @Transactional
@@ -74,6 +76,9 @@ public class AlbumService {
     public String addAlbumToFavorites(Long albumId) {
         long userId = userContext.getUserId();
         validator.validateUser(userId);
+        if (albumRepository.existsInFavorites(albumId, userId)) {
+            return String.format("Album with id = %d for user id = %d already exists in favorites", albumId, userId);
+        }
         Album album = findAlbumById(albumId);
         albumRepository.addAlbumToFavorites(albumId, userId);
         return String.format("Album with id = %d, title = %s added to favorites", albumId, album.getTitle());

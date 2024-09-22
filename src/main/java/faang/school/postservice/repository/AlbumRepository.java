@@ -35,4 +35,7 @@ public interface AlbumRepository extends CrudRepository<Album, Long>, JpaSpecifi
             )
             """)
     Stream<Album> findFavoriteAlbumsByUserId(long userId);
+
+    @Query(nativeQuery = true, value = "SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM favorite_albums WHERE album_id = :albumId AND user_id = :userId")
+    boolean existsInFavorites(long albumId, long userId);
 }
