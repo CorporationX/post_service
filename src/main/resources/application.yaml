@@ -24,10 +24,13 @@ spring:
     redis:
       port: 6379
       host: localhost
+      postSavedTTL: 86400 # TTL в секундах (24 часа)
       channels:
         calculations_channel:
           name: calculations_channel
         postLike: post_like_channel
+        postChannel: post_channel
+        postSavedChannel: post_saved_channel
         post: post_channel
         likeChannel: like_channel
         like_post_analytics: like_event

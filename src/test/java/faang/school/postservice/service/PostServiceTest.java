@@ -12,6 +12,7 @@ import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
+import faang.school.postservice.redisPublisher.PostSavedEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
@@ -24,7 +25,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -83,6 +87,16 @@ public class PostServiceTest {
 
     @Mock
     private UserContext userContext;
+
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Mock
+    private PostSavedEventPublisher postSavedEventPublisher;
+
+    @Mock
+    private ValueOperations<String, Object> valueOperations;
+
 
     private PostDto postDto;
     private Post post;
@@ -255,6 +269,8 @@ public class PostServiceTest {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
         doNothing().when(postServiceValidator).validatePublishPost(post);
         when(postRepository.save(any(Post.class))).thenReturn(post);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        doNothing().when(valueOperations).set(anyString(), any(), any(Duration.class));
 
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
 
@@ -264,6 +280,7 @@ public class PostServiceTest {
         verify(postServiceValidator, times(1)).validatePublishPost(post);
         verify(postRepository, times(1)).save(post);
         verify(postMapper, times(1)).toDto(post);
+        verify(valueOperations, times(1)).set(anyString(), any(), any(Duration.class));
 
         assertTrue(post.isPublished());
         assertNotNull(post.getPublishedAt());
