@@ -39,7 +39,7 @@ public class KafkaTopicConfig {
     }
 
     @Bean
-    public NewTopic commonPostTopic() {
+    public NewTopic commentPostTopic() {
         return new NewTopic(commentPostTopicName, 1, (short) 1);
     }
 }

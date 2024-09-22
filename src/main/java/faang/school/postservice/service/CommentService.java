@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.comment.CommentCache;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.dto.event.kafka.PostCommentEvent;
@@ -56,7 +57,11 @@ public class CommentService {
         publishCommentAchievementEvent(commentDto);
         kafkaCommentProducer.send(PostCommentEvent.builder()
                 .postId(comment.getPost().getId())
-                .authorId(comment.getAuthorId())
+                .comment(CommentCache.builder()
+                        .id(comment.getId())
+                        .content(comment.getContent())
+                        .authorId(comment.getAuthorId())
+                        .build())
                 .build());
         return commentMapper.entityToDto(savedComment);
     }

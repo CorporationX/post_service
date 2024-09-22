@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class KafkaCommentProducer extends AbstractProducer<PostCommentEvent>
         implements KafkaProducer<PostCommentEvent> {
 
-    @Value("${spring.kafka.topic.like-post}")
+    @Value("${spring.kafka.topic.comment-post}")
     private String topic;
 
     public KafkaCommentProducer(KafkaTemplate kafkaTemplate) {

@@ -72,6 +72,7 @@ spring:
     max-image-quantity: 10
     cache:
       ttl: 86400
+      max-comment: 3
 
   feed:
     max-size: 500
