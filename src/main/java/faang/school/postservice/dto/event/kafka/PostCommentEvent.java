@@ -1,5 +1,7 @@
 package faang.school.postservice.dto.event.kafka;
 
+import faang.school.postservice.dto.comment.CommentCache;
+import faang.school.postservice.dto.comment.CommentDto;
 import lombok.*;
 
 @Data
@@ -8,5 +10,5 @@ import lombok.*;
 @Builder
 public class PostCommentEvent {
     private long postId;
-    private long authorId;
+    private CommentCache comment;
 }

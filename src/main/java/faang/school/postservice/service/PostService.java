@@ -4,9 +4,11 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.comment.CommentCache;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.event.kafka.NewPostEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.post.CachePost;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostContextMapper;
@@ -15,6 +17,7 @@ import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.repository.RedisUserRepository;
@@ -55,6 +58,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final RedisPostRepository redisPostRepository;
     private final RedisUserRepository redisUserRepository;
+    private final CommentRepository commentRepository;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
@@ -62,6 +66,8 @@ public class PostService {
     private int postTtl;
     @Value("${spring.feed.max-size}")
     private int maxSizeFeed;
+    @Value("${spring.post.cache.max-comment}")
+    private int maxCommentToCachePost;
 
     @Async(value = "threadPool")
     @Transactional
@@ -122,11 +128,22 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
+        List<CommentCache> commentCaches = commentRepository.findByPostIdToCache(
+                        post.getId(), PageRequest.of(0, maxCommentToCachePost)).stream()
+                .map(comment ->
+                        CommentCache.builder()
+                                .id(comment.getId())
+                                .content(comment.getContent())
+                                .authorId(comment.getAuthorId())
+                                .build())
+                .toList();
+
         redisPostRepository.save(CachePost.builder()
                 .id(post.getId())
                 .content(post.getContent())
                 .countLike(post.getLikes().size())
-                .firstComment(post.getComments().isEmpty() ? null : post.getComments().get(0))
+                .comments(post.getComments().isEmpty() ?
+                        null : new LinkedHashSet<>(commentCaches))
                 .ttl(postTtl)
                 .build());
 
@@ -228,10 +245,19 @@ public class PostService {
     public List<CachePost> getPostsByAuthorsIds(List<Long> authorsIds) {
         List<Post> posts = postRepository.findPostsByAuthorIds(authorsIds,
                 PageRequest.of(0, maxSizeFeed));
+
         return posts.stream().map(post -> CachePost.builder()
                 .id(post.getId())
                 .countLike(post.getLikes().size())
-                .firstComment(post.getComments().isEmpty() ? null : post.getComments().get(0))
+                .comments(post.getComments().isEmpty() ?
+                        null : new LinkedHashSet<>(post.getComments().stream()
+                        .limit(maxCommentToCachePost)
+                        .toList().stream()
+                        .map(comment -> CommentCache.builder()
+                                .id(comment.getId())
+                                .authorId(comment.getAuthorId())
+                                .content(comment.getContent())
+                                .build()).toList()))
                 .ttl(postTtl)
                 .build()).toList();
     }

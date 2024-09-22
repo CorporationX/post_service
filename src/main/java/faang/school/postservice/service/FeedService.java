@@ -2,6 +2,8 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.comment.CommentCache;
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.kafka.NewPostEvent;
 import faang.school.postservice.model.CacheUser;
 import faang.school.postservice.model.Comment;
@@ -21,10 +23,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 @Slf4j
@@ -44,6 +43,8 @@ public class FeedService {
     private int sizeBatchPostToFeed;
     @Value("${spring.post.cache.ttl}")
     private int postTtl;
+    @Value("${spring.post.cache.max-comment}")
+    private int maxCommentToCachePost;
 
     public void addPostToFollowers(NewPostEvent newPostEvent) {
         List<CacheUser> users = StreamSupport.stream(
@@ -55,11 +56,7 @@ public class FeedService {
             postIds.add(newPostEvent.getId());
 
             if (postIds.size() > maxFeedSize) {
-                Iterator<Long> it = postIds.iterator();
-                if (it.hasNext()) {
-                    it.next();
-                    it.remove();
-                }
+                removeLastItem(postIds);
             }
         });
         redisUserRepository.saveAll(users);
@@ -98,28 +95,62 @@ public class FeedService {
 
     @Retryable(retryFor = OptimisticLockException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
     public void addLikeToPost(long postId) {
-        CachePost cachePost = redisPostRepository.findById(postId).orElseGet(() -> {
+        CachePost cachePost = getCachePost(postId);
+
+        cachePost.incrementLike();
+        cachePost.incrementVersion();
+        redisPostRepository.save(cachePost);
+    }
+
+    @Retryable(retryFor = OptimisticLockException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    public void addCommentToPost(long postId, CommentCache commentCache) {
+        CachePost cachePost = getCachePost(postId);
+        LinkedHashSet<CommentCache> comments = cachePost.getComments();
+
+        comments.add(commentCache);
+        if (cachePost.getComments().size() > maxCommentToCachePost) {
+            removeLastItem(comments);
+        }
+
+        cachePost.incrementVersion();
+        redisPostRepository.save(cachePost);
+    }
+
+    private CachePost getCachePost(long postId) {
+        return redisPostRepository.findById(postId).orElseGet(() -> {
             Post post = postRepository.findByIdWithLikes(postId).orElseThrow(() -> {
                 String errorMsg = String.format("Post id: %d not found", postId);
                 log.error(errorMsg);
                 return new EntityNotFoundException(errorMsg);
             });
-            List<Comment> comments = commentRepository.findByPostId(postId);
+            List<Comment> comments = commentRepository.findByPostIdToCache(
+                    postId, PageRequest.of(0, maxCommentToCachePost));
+            List<CommentCache> commentCaches = comments.stream().map(comment ->
+               CommentCache.builder()
+                        .id(comment.getId())
+                        .content(comment.getContent())
+                        .authorId(comment.getAuthorId())
+                        .build()
+            ).toList();
 
             CachePost newCachePost = CachePost.builder()
                     .id(post.getId())
                     .content(post.getContent())
                     .countLike(post.getLikes().size())
-                    .firstComment(comments.isEmpty() ? null : post.getComments().get(0))
+                    .comments(comments.isEmpty() ? null : new LinkedHashSet<>(commentCaches))
                     .ttl(postTtl)
                     .build();
 
             redisPostRepository.save(newCachePost);
             return newCachePost;
         });
+    }
 
-        cachePost.incrementLike();
-        cachePost.incrementVersion();
-        redisPostRepository.save(cachePost);
+    private void removeLastItem(LinkedHashSet<?> items) {
+        Iterator<?> it = items.iterator();
+        if (it.hasNext()) {
+            it.next();
+            it.remove();
+        }
     }
 }

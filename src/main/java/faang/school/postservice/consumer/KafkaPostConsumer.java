@@ -4,6 +4,7 @@ import faang.school.postservice.dto.event.kafka.NewPostEvent;
 import faang.school.postservice.service.FeedService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -17,8 +18,9 @@ public class KafkaPostConsumer extends AbstractConsumer<NewPostEvent> {
     @Override
     @KafkaListener(topics = "${spring.kafka.topic.new-post}",
             groupId = "${spring.kafka.consumer.group-id}")
-    public void listen(NewPostEvent event) {
+    public void listen(NewPostEvent event, Acknowledgment ack) {
         log.info("New post event received: {}", event);
         feedService.addPostToFollowers(event);
+        ack.acknowledge();
     }
 }
