@@ -74,6 +74,9 @@ spring:
       ttl: 86400
       max-comment: 3
 
+  author-comment:
+    ttl: 86400
+
   feed:
     max-size: 500
     max-size-batch: 20

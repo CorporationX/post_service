@@ -5,14 +5,14 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentCache;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.kafka.NewPostEvent;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.model.CacheCommentAuthor;
 import faang.school.postservice.model.CacheUser;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.post.CachePost;
 import faang.school.postservice.model.post.Post;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.RedisPostRepository;
-import faang.school.postservice.repository.RedisUserRepository;
+import faang.school.postservice.repository.*;
+import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +36,7 @@ public class FeedService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
+    private final RedisAuthorCommentRepository redisAuthorCommentRepository;
 
     @Value("${spring.feed.max-size}")
     private int maxFeedSize;
@@ -43,6 +44,8 @@ public class FeedService {
     private int sizeBatchPostToFeed;
     @Value("${spring.post.cache.ttl}")
     private int postTtl;
+    @Value("${spring.author-comment.ttl}")
+    private int authorCommentTtl;
     @Value("${spring.post.cache.max-comment}")
     private int maxCommentToCachePost;
 
@@ -80,6 +83,7 @@ public class FeedService {
         return fillBatch(user.getId(), new ArrayList<>(user.getFeed()), pageRequest);
     }
 
+    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
     public List<CachePost> fillBatch(long userId, List<Long> postIds, PageRequest pageRequest) {
         List<CachePost> posts = StreamSupport.stream(
                         redisPostRepository.findAllById(postIds, pageRequest).spliterator(), false)
@@ -114,6 +118,7 @@ public class FeedService {
 
         cachePost.incrementVersion();
         redisPostRepository.save(cachePost);
+        saveAuthorComment(commentCache.getAuthorId());
     }
 
     private CachePost getCachePost(long postId) {
@@ -126,11 +131,11 @@ public class FeedService {
             List<Comment> comments = commentRepository.findByPostIdToCache(
                     postId, PageRequest.of(0, maxCommentToCachePost));
             List<CommentCache> commentCaches = comments.stream().map(comment ->
-               CommentCache.builder()
-                        .id(comment.getId())
-                        .content(comment.getContent())
-                        .authorId(comment.getAuthorId())
-                        .build()
+                    CommentCache.builder()
+                            .id(comment.getId())
+                            .content(comment.getContent())
+                            .authorId(comment.getAuthorId())
+                            .build()
             ).toList();
 
             CachePost newCachePost = CachePost.builder()
@@ -144,6 +149,16 @@ public class FeedService {
             redisPostRepository.save(newCachePost);
             return newCachePost;
         });
+    }
+
+    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    public void saveAuthorComment(long authorId) {
+        UserDto user = userServiceClient.getUser(authorId);
+        redisAuthorCommentRepository.save(CacheCommentAuthor.builder()
+                .id(authorId)
+                .userName(user.getUsername())
+                .ttl(authorCommentTtl)
+                .build());
     }
 
     private void removeLastItem(LinkedHashSet<?> items) {

@@ -60,7 +60,7 @@ public class CommentService {
                 .comment(CommentCache.builder()
                         .id(comment.getId())
                         .content(comment.getContent())
-                        .authorId(comment.getAuthorId())
+                        .authorId(commentDto.getAuthorId())
                         .build())
                 .build());
         return commentMapper.entityToDto(savedComment);
