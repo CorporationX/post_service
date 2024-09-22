@@ -60,7 +60,7 @@ class CommentControllerTest {
         when(userContext.getUserId()).thenReturn(1L);
         when(commentService.create(anyLong(), any())).thenReturn(commentResponseDto);
         // when & then
-        mockMvc.perform(post("/comments")
+        mockMvc.perform(post("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -81,7 +81,7 @@ class CommentControllerTest {
         // given
         when(commentService.update(any())).thenReturn(commentResponseDto);
         // when & then
-        mockMvc.perform(put("/comments")
+        mockMvc.perform(put("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -101,7 +101,7 @@ class CommentControllerTest {
     @Test
     void delete_shouldReturnNoContent() throws Exception {
         // when & then
-        mockMvc.perform(delete("/comments/{id}", 1L))
+        mockMvc.perform(delete("/api/v1/comments/{id}", 1L))
                 .andExpect(status().isNoContent());
     }
 
@@ -111,7 +111,7 @@ class CommentControllerTest {
         List<CommentResponseDto> comments = List.of(commentResponseDto);
         when(commentService.findAll(anyLong())).thenReturn(comments);
         // when & then
-        mockMvc.perform(get("/comments/postId/{postId}", 1L))
+        mockMvc.perform(get("/api/v1/comments/postId/{postId}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
