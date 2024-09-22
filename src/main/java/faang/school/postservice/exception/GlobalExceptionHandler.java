@@ -1,5 +1,6 @@
 package faang.school.postservice.exception;
 
+import faang.school.postservice.exception.comment.CommentNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -24,5 +25,35 @@ public class GlobalExceptionHandler {
         body.put("message", exception.getMessage());
 
         return new ResponseEntity<>(body, exception.getHttpStatus());
+    }
+
+    @ExceptionHandler(InputValidationException.class)
+    public ResponseEntity<?> handleInputValidationErrors(InputValidationException ex) {
+        return new ResponseEntity<>(
+                ErrorResponse.builder()
+                        .errorFields(ex.getMap())
+                        .build(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<?> handleValidationException(RuntimeException ex) {
+        return new ResponseEntity<>(
+                ErrorResponse.builder()
+                        .message(ex.getMessage())
+                        .build(),
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<?> handleExternalException(ExternalServiceException ex) {
+        return new ResponseEntity<>(
+                ErrorResponse.builder()
+                        .message(ex.getMessage())
+                        .build(),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 }

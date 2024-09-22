@@ -1,8 +1,10 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.comment;
 
+import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,16 +21,18 @@ public class CommentService {
 
     @Transactional
     public void createComment(Long postId, Comment comment) {
-        commentValidator.validate(comment);
-        Post post = postService.getById(postId);
+        commentValidator.validateCreate(postId, comment);
+        Post post = postService.findPostById(postId);
         comment.setPost(post);
         commentRepository.save(comment);
     }
 
     @Transactional
-    public void updateComment(Long commentId, Comment entity) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow();
-        comment.setContent(entity.getContent());
+    public void updateComment(Long commentId, Comment comment) {
+        Comment found = getById(commentId);
+        commentValidator.validateUpdate(comment.getAuthorId(), found);
+        found.setContent(comment.getContent());
+        commentRepository.save(found);
     }
 
     public Collection<Comment> getAllCommentsByPostId(Long postId) {
@@ -37,7 +41,17 @@ public class CommentService {
                 .toList();
     }
 
+    @Transactional
     public void delete(Long commentId) {
+        getById(commentId);
         commentRepository.deleteById(commentId);
+    }
+
+    public Comment getById(Long id) {
+        return commentRepository
+                .findById(id)
+                .orElseThrow(
+                        () -> new CommentNotFoundException("Comment not found")
+                );
     }
 }

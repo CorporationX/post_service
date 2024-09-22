@@ -6,8 +6,7 @@ import java.util.Map;
 
 @Getter
 public class InputValidationException extends RuntimeException{
-
-    private Map<String, String> map;
+    private final Map<String, String> map;
     public InputValidationException(Map<String, String> map) {
         this.map = map;
     }
