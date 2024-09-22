@@ -16,36 +16,35 @@ public class LikeService {
 
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
+    private static final int BATCH_SIZE = 100;
 
     public List<UserDto> getAllUsersByPostId(long id) {
-        List<Long> userIds = getUsersIdsByPostId(id);
-        return getUserDtoListByIdsBatched(userIds);
+        return getUsersBatched(getUsersIdsByLikes(getUsersIdsByPostId(id)));
     }
 
     public List<UserDto> getAllUsersByCommentId(long id) {
-        List<Long> userIds = getUserIdsByCommentId(id);
-        return getUserDtoListByIdsBatched(userIds);
+        return getUsersBatched(getUsersIdsByLikes(getUserIdsByCommentId(id)));
     }
 
-    private List<Long> getUserIdsByCommentId(long id) {
-        List<Like> likes = likeRepository.findByCommentId(id);
+    private List<Like> getUserIdsByCommentId(long id) {
+        return likeRepository.findByCommentId(id);
+    }
+
+    private List<Like> getUsersIdsByPostId(long id) {
+        return likeRepository.findByPostId(id);
+    }
+
+    private List<Long> getUsersIdsByLikes(List<Like> likes) {
         return likes.stream()
                 .map(Like::getUserId)
                 .toList();
     }
 
-    private List<Long> getUsersIdsByPostId(long id) {
-        List<Like> likes = likeRepository.findByPostId(id);
-        return likes.stream()
-                .map(Like::getUserId)
-                .toList();
-    }
-
-    private List<UserDto> getUserDtoListByIdsBatched(List<Long> userIds) {
-        long batchSize = userIds.size() / 100 + 1;
+    private List<UserDto> getUsersBatched(List<Long> userIds) {
+        long batchSize = userIds.size() / BATCH_SIZE + 1;
         List<UserDto> usersLiked = new ArrayList<>();
-        for (int i = 0; i < batchSize; i += 100) {
-            int batchEnd = Math.min(i + 100, userIds.size());
+        for (int i = 0; i < batchSize; i += BATCH_SIZE) {
+            int batchEnd = Math.min(i + BATCH_SIZE, userIds.size());
             usersLiked.addAll(userServiceClient.getUsersByIds(userIds.subList(i, batchEnd)));
         }
         return usersLiked;

@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,16 +41,19 @@ public class LikeControllerTest {
         @DisplayName("Verifies controller calls service.getAllUsersByPostId then return UserDto list")
         public void whenServiceCalledGetAllUsersByPostIdThenReturnList() {
             when(likeService.getAllUsersByPostId(POST_ID_ONE)).thenReturn(usersLiked);
-            likeController.getAllUsersByPost(POST_ID_ONE);
+            List<UserDto> usersResultList = likeController.getAllUsersByPost(POST_ID_ONE);
             verify(likeService).getAllUsersByPostId(POST_ID_ONE);
+            assertEquals(usersLiked, usersResultList);
+
         }
 
         @Test
         @DisplayName("Verifies controller calls service.getAllUsersByCommentId then return UserDto list")
         public void whenServiceCalledGetAllUsersByCommentIdThenReturnList() {
             when(likeService.getAllUsersByCommentId(COMMENT_ID_ONE)).thenReturn(usersLiked);
-            likeController.getAllUsersByComment(COMMENT_ID_ONE);
+            List<UserDto> usersResultList = likeController.getAllUsersByComment(COMMENT_ID_ONE);
             verify(likeService).getAllUsersByCommentId(COMMENT_ID_ONE);
+            assertEquals(usersLiked, usersResultList);
         }
     }
 }

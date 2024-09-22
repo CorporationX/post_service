@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.control.MappingControl;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -47,16 +48,18 @@ public class LikeServiceTest {
         @DisplayName("When post id passed then return all users from user service who like this post")
         public void whenPostIdPassedThenReturnUserDtoWhoLikedPostList() {
             when(likeService.getAllUsersByPostId(POST_ID_ONE)).thenReturn(usersLiked);
-            likeService.getAllUsersByPostId(POST_ID_ONE);
+            List<UserDto> userDtos = likeService.getAllUsersByPostId(POST_ID_ONE);
             assertEquals(usersLiked.size(), userIds.size());
+            assertEquals(usersLiked, userDtos);
         }
 
         @Test
         @DisplayName("When comment id passed then return all users from user service who like this comment")
         public void whenCommentIdPassedThenReturnUserDtoWhoLikedCommentList() {
             when(likeService.getAllUsersByCommentId(COMMENT_ID_ONE)).thenReturn(usersLiked);
-            likeService.getAllUsersByCommentId(COMMENT_ID_ONE);
+            List<UserDto> userDtos = likeService.getAllUsersByCommentId(COMMENT_ID_ONE);
             assertEquals(usersLiked.size(), userIds.size());
+            assertEquals(usersLiked, userDtos);
         }
     }
 
@@ -68,7 +71,7 @@ public class LikeServiceTest {
             userIds = new ArrayList<>();
             likes = new ArrayList<>();
             for (int i = 0; i < TEST_LIKES_VALUE; i++) {
-                usersLiked.add(UserDto.builder().build());
+                usersLiked.add(UserDto.builder().id(i + 1L).build());
             }
             for (int i = 0; i < TEST_LIKES_VALUE; i++) {
                 userIds.add(i + 1L);
@@ -86,8 +89,9 @@ public class LikeServiceTest {
 
             when(likeService.getAllUsersByCommentId(COMMENT_ID_ONE)).thenReturn(usersLiked);
 
-            likeService.getAllUsersByCommentId(COMMENT_ID_ONE);
+            List<UserDto> userDtos = likeService.getAllUsersByCommentId(COMMENT_ID_ONE);
             assertEquals(likes.size(), usersLiked.size());
+            assertEquals(usersLiked, userDtos);
         }
 
         @Test
@@ -98,8 +102,9 @@ public class LikeServiceTest {
 
             when(likeService.getAllUsersByPostId(POST_ID_ONE)).thenReturn(usersLiked);
 
-            likeService.getAllUsersByPostId(POST_ID_ONE);
+            List<UserDto> userDtos = likeService.getAllUsersByPostId(POST_ID_ONE);
             assertEquals(likes.size(), usersLiked.size());
+            assertEquals(usersLiked, userDtos);
         }
     }
 }
