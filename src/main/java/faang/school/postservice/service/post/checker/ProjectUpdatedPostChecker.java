@@ -11,7 +11,7 @@ public class ProjectUpdatedPostChecker implements UpdatedPostChecker{
 
     @Override
     public void check(Post post, Post prevPost) {
-        if (Objects.equals(post.getProjectId(), prevPost.getProjectId())) {
+        if (!Objects.equals(post.getProjectId(), prevPost.getProjectId())) {
             throw new DataValidationException("Нельзя изменить автора(проект) поста");
         }
     }
