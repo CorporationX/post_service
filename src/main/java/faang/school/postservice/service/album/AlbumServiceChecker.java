@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALBUM_NOT_EXISTS;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.TITLE_NOT_UNIQUE;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.USER_IS_NOT_CREATOR;
@@ -52,10 +54,11 @@ public class AlbumServiceChecker {
         }
     }
 
-    public Album getAlbumAfterChecks(long userId, long albumId) {
-        checkUserExists(userId);
-        Album album = findByIdWithPosts(albumId);
-        isCreatorOfAlbum(userId, album);
-        return album;
+    public void checkFavoritesAlbumsContainsAlbum(long userId, Album album, String exceptionMassage, boolean isContains) {
+        List<Album> favoritesAlbums = albumRepository.findFavoriteAlbumsByUserId(userId).toList();
+        if (favoritesAlbums.contains(album) == isContains) {
+            log.error(exceptionMassage);
+            throw new BadRequestException(exceptionMassage);
+        }
     }
 }

@@ -1,6 +1,6 @@
 package faang.school.postservice.mapper.album;
 
-import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumResponseDto;
 import faang.school.postservice.dto.album.CreateAlbumDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
@@ -16,7 +16,7 @@ import static org.mapstruct.ReportingPolicy.IGNORE;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = IGNORE)
 public interface AlbumMapper {
     @Mapping(source = "posts", target = "postIds", qualifiedByName = "map")
-    AlbumDto toDto(Album album);
+    AlbumResponseDto toAlbumResponseDto(Album album);
 
     @Mapping(target = "posts", ignore = true)
     Album toEntity(CreateAlbumDto albumDto);

@@ -6,13 +6,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateAlbumDto {
+    @NotNull(message = "Title can`t be null")
     private String title;
     private String description;
 }

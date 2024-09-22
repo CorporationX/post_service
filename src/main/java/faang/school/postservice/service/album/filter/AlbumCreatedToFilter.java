@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 public class AlbumCreatedToFilter implements AlbumFilter {
     @Override
     public boolean isApplicable(AlbumFilterDto filter) {
-        return filter.getCreatedFrom() != null;
+        return filter.getCreatedTo() != null;
     }
 
     @Override

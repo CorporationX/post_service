@@ -10,8 +10,8 @@ import java.util.stream.Stream;
 public class AlbumTitleFilter implements AlbumFilter {
     @Override
     public boolean isApplicable(AlbumFilterDto filter) {
-        String title = filter.getDescription();
-        return title != null && title.isBlank();
+        String title = filter.getTitle();
+        return title != null && !title.isBlank();
     }
 
     @Override

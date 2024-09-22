@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALREADY_FAVORITE;
+import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.NOT_FAVORITE;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -25,8 +28,8 @@ public class AlbumService {
 
     @Transactional
     public Album createNewAlbum(long authorId, Album album) {
-        checker.checkUserExists(album.getAuthorId());
-        checker.checkAlbumExistsWithTitle(album.getTitle(), album.getAuthorId());
+        checker.checkUserExists(authorId);
+        checker.checkAlbumExistsWithTitle(album.getTitle(), authorId);
         album.setAuthorId(authorId);
         log.info("Album created");
         return albumRepository.save(album);
@@ -40,12 +43,12 @@ public class AlbumService {
 
     @Transactional
     public Album updateAlbum(long userId, long albumId, String title, String description) {
-        Album album = checker.getAlbumAfterChecks(userId, albumId);
-        if (title != null && title.isBlank()) {
+        Album album = getAlbumAfterChecks(userId, albumId);
+        if (title != null && !title.isBlank()) {
             checker.checkAlbumExistsWithTitle(title, userId);
             album.setTitle(title);
         }
-        if (description != null && description.isBlank()) {
+        if (description != null && !description.isBlank()) {
             album.setDescription(description);
         }
         log.info("Album with id {} updated", albumId);
@@ -54,7 +57,7 @@ public class AlbumService {
 
     @Transactional
     public Album deleteAlbum(long userId, long albumId) {
-        Album album = checker.getAlbumAfterChecks(userId, albumId);
+        Album album = getAlbumAfterChecks(userId, albumId);
         albumRepository.delete(album);
         log.info("Album with id {} deleted", albumId);
         return album;
@@ -62,7 +65,9 @@ public class AlbumService {
 
     @Transactional
     public Album addAlbumToFavorites(long userId, long albumId) {
-        Album album = checker.getAlbumAfterChecks(userId, albumId);
+        checker.checkUserExists(userId);
+        Album album = checker.findByIdWithPosts(albumId);
+        checker.checkFavoritesAlbumsContainsAlbum(userId, album, ALREADY_FAVORITE, true);
         albumRepository.addAlbumToFavorites(albumId, userId);
         log.info("Album with id {} added to favorites albums", albumId);
         return album;
@@ -70,7 +75,9 @@ public class AlbumService {
 
     @Transactional
     public Album deleteAlbumFromFavorites(long userId, long albumId) {
-        Album album = checker.getAlbumAfterChecks(userId, albumId);
+        checker.checkUserExists(userId);
+        Album album = checker.findByIdWithPosts(albumId);
+        checker.checkFavoritesAlbumsContainsAlbum(userId, album, NOT_FAVORITE, false);
         albumRepository.deleteAlbumFromFavorites(albumId, userId);
         log.info("Album with id {} deleted from favorites albums", albumId);
         return album;
@@ -78,7 +85,7 @@ public class AlbumService {
 
     @Transactional
     public Album addNewPosts(long userId, long albumId, List<Long> postIds) {
-        Album album = checker.getAlbumAfterChecks(userId, albumId);
+        Album album = getAlbumAfterChecks(userId, albumId);
         List<Long> existingPosts = postIds.stream()
                 .filter(checker::isExistingPosts)
                 .toList();
@@ -90,7 +97,7 @@ public class AlbumService {
 
     @Transactional
     public Album deletePosts(long userId, long albumId, List<Long> postIds) {
-        Album album = checker.getAlbumAfterChecks(userId, albumId);
+        Album album = getAlbumAfterChecks(userId, albumId);
         postIds.forEach(album::removePost);
         log.info("Posts deleted from album with id {}", albumId);
         return albumRepository.save(album);
@@ -115,6 +122,13 @@ public class AlbumService {
         checker.checkUserExists(userId);
         Stream<Album> allAlbums = albumRepository.findAll().stream();
         return findAlbumsByStreamAndFilters(allAlbums, filters);
+    }
+
+    public Album getAlbumAfterChecks(long userId, long albumId) {
+        checker.checkUserExists(userId);
+        Album album = checker.findByIdWithPosts(albumId);
+        checker.isCreatorOfAlbum(userId, album);
+        return album;
     }
 
     private List<Album> findAlbumsByStreamAndFilters(Stream<Album> albumStream, AlbumFilterDto filters) {

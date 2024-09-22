@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class AlbumDto {
+public class AlbumResponseDto {
     private Long id;
     private String title;
     private String description;

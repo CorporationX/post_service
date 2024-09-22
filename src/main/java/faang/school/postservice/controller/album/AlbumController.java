@@ -1,6 +1,6 @@
 package faang.school.postservice.controller.album;
 
-import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumResponseDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.album.CreateAlbumDto;
 import faang.school.postservice.dto.album.UpdateAlbumDto;
@@ -27,83 +27,92 @@ public class AlbumController {
     private final AlbumService albumService;
     private final AlbumMapper albumMapper;
 
-    @PostMapping("/create")
-    public AlbumDto createNewAlbum(@RequestHeader(value = "x-user-id") long authorId,
-                                   @RequestBody CreateAlbumDto albumDto) {
+    @PostMapping
+    public AlbumResponseDto createAlbum(@RequestHeader(value = "x-user-id") long authorId,
+                                        @RequestBody CreateAlbumDto albumDto) {
         Album album = albumMapper.toEntity(albumDto);
         Album createdAlbum = albumService.createNewAlbum(authorId, album);
-        return albumMapper.toDto(createdAlbum);
+        return albumMapper.toAlbumResponseDto(createdAlbum);
     }
 
     @GetMapping("/{albumId}")
-    public AlbumDto getAlbum(@RequestHeader(value = "x-user-id") long userId,
-                             @PathVariable long albumId) {
+    public AlbumResponseDto getAlbum(@RequestHeader(value = "x-user-id") long userId,
+                                     @PathVariable long albumId) {
         Album album = albumService.getAlbum(userId, albumId);
-        return albumMapper.toDto(album);
+        return albumMapper.toAlbumResponseDto(album);
     }
 
     @PutMapping("/update")
-    public AlbumDto updateAlbum(@RequestHeader(value = "x-user-id") long userId,
-                                @RequestBody UpdateAlbumDto albumDto) {
+    public AlbumResponseDto updateAlbum(@RequestHeader(value = "x-user-id") long userId,
+                                        @RequestBody UpdateAlbumDto albumDto) {
         Album updatedAlbum = albumService.updateAlbum(userId,
                 albumDto.getId(),
                 albumDto.getTitle(),
                 albumDto.getDescription());
-        return albumMapper.toDto(updatedAlbum);
+        return albumMapper.toAlbumResponseDto(updatedAlbum);
     }
 
     @DeleteMapping("/{albumId}")
-    public AlbumDto deleteAlbum(@RequestHeader(value = "x-user-id") long userId,
-                                @PathVariable long albumId) {
+    public AlbumResponseDto deleteAlbum(@RequestHeader(value = "x-user-id") long userId,
+                                        @PathVariable long albumId) {
         Album album = albumService.deleteAlbum(userId, albumId);
-        return albumMapper.toDto(album);
+        return albumMapper.toAlbumResponseDto(album);
     }
 
     @PutMapping("/add-to-favorites/{albumId}")
-    public AlbumDto addAlbumToFavorites(@RequestHeader(value = "x-user-id") long userId,
-                                        @PathVariable long albumId) {
+    public AlbumResponseDto addAlbumToFavorites(@RequestHeader(value = "x-user-id") long userId,
+                                                @PathVariable long albumId) {
         Album album = albumService.addAlbumToFavorites(userId, albumId);
-        return albumMapper.toDto(album);
+        return albumMapper.toAlbumResponseDto(album);
     }
 
     @DeleteMapping("/delete-from-favorites/{albumId}")
-    public AlbumDto deleteAlbumFromFavorites(@RequestHeader(value = "x-user-id") long userId,
-                                             @PathVariable long albumId) {
+    public AlbumResponseDto deleteAlbumFromFavorites(@RequestHeader(value = "x-user-id") long userId,
+                                                     @PathVariable long albumId) {
         Album album = albumService.deleteAlbumFromFavorites(userId, albumId);
-        return albumMapper.toDto(album);
+        return albumMapper.toAlbumResponseDto(album);
     }
 
     @PutMapping("/add-new-posts/{albumId}")
-    public AlbumDto addNewPosts(@RequestHeader(value = "x-user-id") long userId,
-                                @PathVariable long albumId,
-                                @RequestBody List<Long> postIds) {
+    public AlbumResponseDto addNewPosts(@RequestHeader(value = "x-user-id") long userId,
+                                        @PathVariable long albumId,
+                                        @RequestBody List<Long> postIds) {
         Album album = albumService.addNewPosts(userId, albumId, postIds);
-        return albumMapper.toDto(album);
+        return albumMapper.toAlbumResponseDto(album);
     }
 
     @PutMapping("/delete-posts/{albumId}")
-    public AlbumDto deletePosts(@RequestHeader(value = "x-user-id") long userId,
-                                @PathVariable long albumId,
-                                @RequestBody List<Long> postIds) {
+    public AlbumResponseDto deletePosts(@RequestHeader(value = "x-user-id") long userId,
+                                        @PathVariable long albumId,
+                                        @RequestBody List<Long> postIds) {
         Album album = albumService.deletePosts(userId, albumId, postIds);
-        return albumMapper.toDto(album);
+        return albumMapper.toAlbumResponseDto(album);
     }
 
     @PostMapping("/get-user-albums")
-    public List<Album> getUserAlbums(@RequestHeader(value = "x-user-id") long userId,
-                                     @RequestBody AlbumFilterDto filters) {
-        return albumService.getUserAlbums(userId, filters);
+    public List<AlbumResponseDto> getUserAlbums(@RequestHeader(value = "x-user-id") long userId,
+                                                @RequestBody AlbumFilterDto filters) {
+        List<Album> albums = albumService.getUserAlbums(userId, filters);
+        return albums.stream()
+                .map(albumMapper::toAlbumResponseDto)
+                .toList();
     }
 
     @PostMapping("/get-all-albums")
-    public List<Album> getAllAlbums(@RequestHeader(value = "x-user-id") long userId,
-                                    @RequestBody AlbumFilterDto filters) {
-        return albumService.getAllAlbums(userId, filters);
+    public List<AlbumResponseDto> getAllAlbums(@RequestHeader(value = "x-user-id") long userId,
+                                               @RequestBody AlbumFilterDto filters) {
+        List<Album> albums = albumService.getAllAlbums(userId, filters);
+        return albums.stream()
+                .map(albumMapper::toAlbumResponseDto)
+                .toList();
     }
 
     @PostMapping("/get-favorite-albums")
-    public List<Album> getFavoriteAlbums(@RequestHeader(value = "x-user-id") long userId,
-                                         @RequestBody AlbumFilterDto filters) {
-        return albumService.getFavoriteAlbums(userId, filters);
+    public List<AlbumResponseDto> getFavoriteAlbums(@RequestHeader(value = "x-user-id") long userId,
+                                                    @RequestBody AlbumFilterDto filters) {
+        List<Album> albums = albumService.getFavoriteAlbums(userId, filters);
+        return albums.stream()
+                .map(albumMapper::toAlbumResponseDto)
+                .toList();
     }
 }
