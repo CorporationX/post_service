@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -50,6 +51,31 @@ public class PostService {
         Post post = postRepository.findById(id).orElseThrow(() -> new PostRequirementsException("Post not found"));
         post.delete();
         return postRepository.save(post);
+    }
+
+    @Transactional(readOnly = true)
+    public Post getPostById(Long id) {
+        return postRepository.findById(id).orElseThrow(() -> new PostRequirementsException("Post not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Post> getUserDrafts(long userId) {
+        return postRepository.findDraftsByAuthorId(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Post> getProjectDrafts(long projectId) {
+        return postRepository.findDraftsByProjectId(projectId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Post> getUserPublishedPosts(long userId) {
+        return postRepository.findPublishedByAuthorId(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Post> getProjectPublishedPosts(long projectId) {
+        return postRepository.findPublishedByProjectId(projectId);
     }
 
     private void validateAuthorOrProject(Post post) {

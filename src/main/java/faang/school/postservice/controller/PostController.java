@@ -5,12 +5,15 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
@@ -45,5 +48,34 @@ public class PostController {
     @PutMapping("/delete/{id}")
     public PostDto deletePost(@PathVariable Long id) {
         return postMapper.toDto(postService.deletePost(id));
+    }
+
+    @GetMapping("/{id}")
+    public PostDto getPostById(@PathVariable Long id) {
+        return postMapper.toDto(postService.getPostById(id));
+    }
+
+    @GetMapping("/user/{userId}/drafts")
+    public List<PostDto> getUserDrafts(@PathVariable long userId) {
+        List<Post> drafts = postService.getUserDrafts(userId);
+        return postMapper.toDto(drafts);
+    }
+
+    @GetMapping("/project/{projectId}/drafts")
+    public List<PostDto> getProjectDrafts(@PathVariable long projectId) {
+        List<Post> drafts = postService.getProjectDrafts(projectId);
+        return postMapper.toDto(drafts);
+    }
+
+    @GetMapping("/user/{userId}/published")
+    public List<PostDto> getUserPublishedPosts(@PathVariable long userId) {
+        List<Post> publishedPosts = postService.getUserPublishedPosts(userId);
+        return postMapper.toDto(publishedPosts);
+    }
+
+    @GetMapping("/project/{projectId}/published")
+    public List<PostDto> getProjectPublishedPosts(@PathVariable long projectId) {
+        List<Post> publishedPosts = postService.getProjectPublishedPosts(projectId);
+        return postMapper.toDto(publishedPosts);
     }
 }
