@@ -100,7 +100,7 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    public List<Album> getAlbumByFilter(AlbumFilterDto albumFilterDto) {
+    public List<Album> getAlbumsByFilter(AlbumFilterDto albumFilterDto) {
         List<Album> albums = albumRepository.findAll();
         return applyAllFilters(albums, albumFilterDto);
     }

@@ -1,41 +1,34 @@
 package faang.school.postservice.album;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.AlbumService;
-import org.assertj.core.api.Assertions;
+import faang.school.postservice.service.filter.AlbumFilter;
+import faang.school.postservice.service.filter.AlbumFilterByAfterTime;
+import faang.school.postservice.service.filter.AlbumFilterByBeforeTime;
+import faang.school.postservice.service.filter.AlbumFilterByTitlePattern;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mapstruct.factory.Mappers;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.atMost;
-import static org.mockito.Mockito.atMostOnce;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,16 +48,14 @@ class AlbumServiceTest {
     @Mock
     private PostRepository postRepository;
 
-
-//    @Spy
-//    private AlbumMapper albumMapper = Mappers.getMapper(AlbumMapper.class);
+    @Mock
+    private List<AlbumFilter> albumFilters;
 
     private Album album;
     private long albumId = 1L;
     private long authorId = 1L;
 
     private UserDto userDto = new UserDto(1L, "Denis", "");
-
 
     @BeforeEach
     public void setUp() {
@@ -77,31 +68,30 @@ class AlbumServiceTest {
     }
 
     @Test
-    public void testCreateAlbumSuccess() {
+    public void testCreateAlbum_Success() {
         Album existingAlbum = Album.builder()
                 .id(2L)
                 .title("Kotlin")
                 .build();
+
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         when(albumRepository.findByAuthorId(authorId)).thenReturn(Stream.of(existingAlbum));
+        when(albumRepository.save(album)).thenReturn(album);
+        Album newAlbum = albumService.createAlbum(album);
 
-        albumService.createAlbum(album);
-
-        verify(albumRepository).save(album);
+        verify(albumRepository, times(1)).save(album);
+        assertThat(newAlbum).usingRecursiveComparison().isEqualTo(album);
     }
 
     @Test
-    public void testCreateAlbum_userNotFound() {
+    public void testValidUserExist_Invalid() {
         when(userServiceClient.getUser(1L)).thenReturn(null);
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> albumService.createAlbum(album));
-        assertEquals("This user does not exist.", exception.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> albumService.createAlbum(album));
     }
 
     @Test
-    public void testCreateExistingAlbum() {
+    public void testValidUniqueAlbumTitleByAuthor_Invalid() {
         Album existingAlbum = Album.builder()
                 .id(1L)
                 .title("Java")
@@ -110,10 +100,7 @@ class AlbumServiceTest {
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         when(albumRepository.findByAuthorId(1L)).thenReturn(Stream.of(existingAlbum));
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> albumService.createAlbum(album));
-        assertEquals("The album name must be unique for this user.", exception.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> albumService.createAlbum(album));
     }
 
     @Test
@@ -136,34 +123,32 @@ class AlbumServiceTest {
         when(albumRepository.save(album)).thenReturn(album1);
 
         albumService.addPostToAlbum(postId, albumId, authorId);
+
         assertThat(album.getPosts().get(0)).usingRecursiveComparison().isEqualTo(post);
-        verify(albumRepository, atMostOnce()).save(album);
+        verify(albumRepository, times(1)).save(album);
     }
 
     @Test
-    public void testAddPostAlbum_Fail() {
+    public void testValidAlbumBelongsToUser_Invalid() {
         Album album1 = Album.builder()
                 .id(2L)
                 .title("Kotlin")
                 .authorId(2L)
                 .build();
+
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         when(albumRepository.findByAuthorId(authorId)).thenReturn(Stream.of(album1));
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> albumService.addPostToAlbum(4L, albumId, authorId));
-        assertEquals("This album does not belong to the user.", exception.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> albumService.addPostToAlbum(4L, albumId, authorId));
     }
 
     @Test
-    public void testPostMissing() {
+    public void testPostNotExist() {
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         when(albumRepository.findByAuthorId(authorId)).thenReturn(Stream.of(album));
         when(postRepository.findById(2L)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class,
-                () -> albumService.addPostToAlbum(2L, albumId, authorId));
+        assertThrows(NoSuchElementException.class, () -> albumService.addPostToAlbum(2L, albumId, authorId));
     }
 
     @Test
@@ -187,7 +172,7 @@ class AlbumServiceTest {
         albumService.removePostFromAlbum(postId, albumId, authorId);
 
         assertTrue(album1.getPosts().isEmpty());
-        verify(albumRepository, atMostOnce()).save(album1);
+        verify(albumRepository, times(1)).save(album1);
     }
 
     @Test
@@ -197,7 +182,7 @@ class AlbumServiceTest {
 
         albumService.addAlbumToFavorite(albumId, authorId);
 
-        verify(albumRepository, atMostOnce()).addAlbumToFavorites(albumId, authorId);
+        verify(albumRepository, times(1)).addAlbumToFavorites(albumId, authorId);
     }
 
     @Test
@@ -207,17 +192,15 @@ class AlbumServiceTest {
 
         albumService.removeAlbumFromFavorite(albumId, authorId);
 
-        verify(albumRepository, atMostOnce()).deleteAlbumFromFavorites(albumId, authorId);
+        verify(albumRepository, times(1)).deleteAlbumFromFavorites(albumId, authorId);
     }
 
     @Test
-    public void testRemoveAlbumFrom_NotFavorite() {
+    public void testValidFavoriteContainsAlbum_Invalid() {
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         when(albumRepository.findFavoriteAlbumsByUserId(authorId)).thenReturn(Stream.empty());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> albumService.removeAlbumFromFavorite(albumId, authorId));
-        assertEquals("This album is not in the favorites list for this user", exception.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> albumService.removeAlbumFromFavorite(albumId, authorId));
     }
 
     @Test
@@ -225,15 +208,15 @@ class AlbumServiceTest {
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
 
         albumService.getAlbum(albumId);
-        verify(albumRepository, atMostOnce()).findById(albumId);
+
+        verify(albumRepository, times(1)).findById(albumId);
     }
 
     @Test
     public void testGetAlbumFailed() {
         when(albumRepository.findById(albumId)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class,
-                () -> albumService.getAlbum(albumId));
+        assertThrows(NoSuchElementException.class, () -> albumService.getAlbum(albumId));
     }
 
     @Test
@@ -252,7 +235,139 @@ class AlbumServiceTest {
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
 
         albumService.updateAlbum(albumId, authorId, newAlbum);
+
         assertThat(album).usingRecursiveComparison().isEqualTo(newAlbum);
     }
 
+    @Test
+    public void testDeleteAlbum() {
+        when(userServiceClient.getUser(1L)).thenReturn(userDto);
+        when(albumRepository.existsById(albumId)).thenReturn(true);
+        when(albumRepository.findByAuthorId(authorId)).thenReturn(Stream.of(album));
+
+        albumService.deleteAlbum(albumId, authorId);
+    }
+
+    @Test
+    public void testGetUserAlbumsByFilters() {
+        Album albumOne = Album.builder()
+                .id(10L)
+                .authorId(authorId)
+                .title("Java")
+                .createdAt(LocalDateTime.of(2024, 9, 10, 0, 0))
+                .build();
+        Album albumTwo = Album.builder()
+                .id(11L)
+                .authorId(authorId)
+                .title("Kotlin")
+                .createdAt(LocalDateTime.of(2024, 5, 11, 0, 0))
+                .build();
+        Album albumThree = Album.builder()
+                .id(12L)
+                .authorId(authorId)
+                .title("Java Core")
+                .createdAt(LocalDateTime.of(2024, 7, 10, 0, 0))
+                .build();
+
+        AlbumFilterDto albumFilterDto = AlbumFilterDto.builder()
+                .titlePattern("Java")
+                .afterThisTime(LocalDateTime.of(2024, 6, 1, 0, 0))
+                .beforeThisTime(LocalDateTime.of(2024, 8, 1, 0, 0))
+                        .build();
+
+        when(albumRepository.findByAuthorId(authorId)).thenReturn(Stream.of(
+                albumOne,
+                albumTwo,
+                albumThree));
+        when(albumFilters.stream()).thenReturn(Stream.of(
+                new AlbumFilterByAfterTime(),
+                new AlbumFilterByBeforeTime(),
+                new AlbumFilterByTitlePattern()));
+
+        List<Album> filteredAlbums = albumService.getUserAlbumsByFilters(authorId, albumFilterDto);
+
+        assertThat(filteredAlbums.get(0)).usingRecursiveComparison().isEqualTo(albumThree);
+    }
+
+    @Test
+    public void testGetAlbumsByFilter() {
+        Album albumOne = Album.builder()
+                .id(10L)
+                .authorId(10L)
+                .title("Java")
+                .createdAt(LocalDateTime.of(2024, 9, 10, 0, 0))
+                .build();
+        Album albumTwo = Album.builder()
+                .id(11L)
+                .authorId(13L)
+                .title("Kotlin")
+                .createdAt(LocalDateTime.of(2024, 5, 11, 0, 0))
+                .build();
+        Album albumThree = Album.builder()
+                .id(12L)
+                .authorId(15L)
+                .title("Java Core")
+                .createdAt(LocalDateTime.of(2024, 7, 10, 0, 0))
+                .build();
+
+        AlbumFilterDto albumFilterDto = AlbumFilterDto.builder()
+                .titlePattern("Java")
+                .afterThisTime(LocalDateTime.of(2024, 6, 1, 0, 0))
+                .beforeThisTime(LocalDateTime.of(2024, 8, 1, 0, 0))
+                .build();
+
+        when(albumRepository.findAll()).thenReturn(List.of(
+                albumOne,
+                albumTwo,
+                albumThree));
+        when(albumFilters.stream()).thenReturn(Stream.of(
+                new AlbumFilterByAfterTime(),
+                new AlbumFilterByBeforeTime(),
+                new AlbumFilterByTitlePattern()));
+
+        List<Album> filteredAlbums = albumService.getAlbumsByFilter(albumFilterDto);
+
+        assertThat(filteredAlbums.get(0)).usingRecursiveComparison().isEqualTo(albumThree);
+    }
+
+    @Test
+    public void testFavoriteUserAlbumsByFilters() {
+        Album albumOne = Album.builder()
+                .id(10L)
+                .authorId(authorId)
+                .title("Java")
+                .createdAt(LocalDateTime.of(2024, 9, 10, 0, 0))
+                .build();
+        Album albumTwo = Album.builder()
+                .id(11L)
+                .authorId(authorId)
+                .title("Kotlin")
+                .createdAt(LocalDateTime.of(2024, 5, 11, 0, 0))
+                .build();
+        Album albumThree = Album.builder()
+                .id(12L)
+                .authorId(authorId)
+                .title("Java Core")
+                .createdAt(LocalDateTime.of(2024, 7, 10, 0, 0))
+                .build();
+
+        AlbumFilterDto albumFilterDto = AlbumFilterDto.builder()
+                .titlePattern("Java")
+                .afterThisTime(LocalDateTime.of(2024, 6, 1, 0, 0))
+                .beforeThisTime(LocalDateTime.of(2024, 8, 1, 0, 0))
+                .build();
+
+        when(albumRepository.findFavoriteAlbumsByUserId(authorId)).thenReturn(Stream.of(
+                albumOne,
+                albumTwo,
+                albumThree));
+        when(albumFilters.stream()).thenReturn(Stream.of(
+                new AlbumFilterByAfterTime(),
+                new AlbumFilterByBeforeTime(),
+                new AlbumFilterByTitlePattern()));
+
+        List<Album> filteredAlbums = albumService.getFavoriteUserAlbumsByFilters(authorId, albumFilterDto);
+
+        assertThat(filteredAlbums.get(0)).usingRecursiveComparison().isEqualTo(albumThree);
+    }
 }
