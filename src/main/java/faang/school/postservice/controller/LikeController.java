@@ -5,7 +5,6 @@ import faang.school.postservice.service.like.LikeService;
 import faang.school.postservice.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,54 +25,54 @@ public class LikeController {
     private final LikeValidator likeValidator;
 
     @GetMapping("/post/{postId}")
-    public ResponseEntity<List<Long>> getLikesForPost(@PathVariable Long postId) {
+    public List<Long> getLikesForPost(@PathVariable Long postId) {
         log.info("Запрос на получение лайков для поста с ID: {}", postId);
         List<Long> userIds = likeService.getLikesFromPost(postId);
         log.info("Найдено {} лайков для поста с ID: {}", userIds.size(), postId);
-        return ResponseEntity.ok(userIds);
+        return userIds;
     }
 
     @GetMapping("/comment/{commentId}")
-    public ResponseEntity<List<Long>> getLikesForComment(@PathVariable Long commentId) {
+    public List<Long> getLikesForComment(@PathVariable Long commentId) {
         log.info("Запрос на получение лайков для комментария с ID: {}", commentId);
         List<Long> userIds = likeService.getLikesFromComment(commentId);
         log.info("Найдено {} лайков для комментария с ID: {}", userIds.size(), commentId);
-        return ResponseEntity.ok(userIds);
+        return userIds;
     }
 
     @PostMapping("/post/{postId}")
-    public ResponseEntity<Void> addLikeToPost(@PathVariable Long postId, @RequestBody LikeDto likeDto) {
+    public LikeDto addLikeToPost(@PathVariable Long postId, @RequestBody LikeDto likeDto) {
         likeValidator.likeValidation(likeDto);
         log.info("Попытка добавить лайк к посту с ID: {} от пользователя с ID: {}", postId, likeDto.getUserId());
-        likeService.addLikeToPost(postId, likeDto);
+        LikeDto result = likeService.addLikeToPost(postId, likeDto);
         log.info("Лайк успешно добавлен к посту с ID: {} от пользователя с ID: {}", postId, likeDto.getUserId());
-        return ResponseEntity.ok().build();
+        return result;
     }
 
     @DeleteMapping("/post/{postId}")
-    public ResponseEntity<Void> removeLikeFromPost(@PathVariable Long postId, @RequestBody LikeDto likeDto) {
+    public LikeDto removeLikeFromPost(@PathVariable Long postId, @RequestBody LikeDto likeDto) {
         likeValidator.likeValidation(likeDto); // Валидация
         log.info("Попытка удалить лайк с поста с ID: {} от пользователя с ID: {}", postId, likeDto.getUserId());
-        likeService.removeLikeFromPost(postId, likeDto);
+        LikeDto result = likeService.removeLikeFromPost(postId, likeDto);
         log.info("Лайк успешно удалён с поста с ID: {} от пользователя с ID: {}", postId, likeDto.getUserId());
-        return ResponseEntity.ok().build();
+        return  result;
     }
 
     @PostMapping("/comment/{commentId}")
-    public ResponseEntity<Void> addLikeToComment(@PathVariable Long commentId, @RequestBody LikeDto likeDto) {
+    public LikeDto addLikeToComment(@PathVariable Long commentId, @RequestBody LikeDto likeDto) {
         likeValidator.likeValidation(likeDto); // Валидация
         log.info("Попытка добавить лайк к комментарию с ID: {} от пользователя с ID: {}", commentId, likeDto.getUserId());
-        likeService.addLikeToComment(commentId, likeDto);
+        LikeDto result = likeService.addLikeToComment(commentId, likeDto);
         log.info("Лайк успешно добавлен к комментарию с ID: {} от пользователя с ID: {}", commentId, likeDto.getUserId());
-        return ResponseEntity.ok().build();
+        return  result;
     }
 
     @DeleteMapping("/comment/{commentId}")
-    public ResponseEntity<Void> removeLikeFromComment(@PathVariable Long commentId, @RequestBody LikeDto likeDto) {
+    public LikeDto removeLikeFromComment(@PathVariable Long commentId, @RequestBody LikeDto likeDto) {
         likeValidator.likeValidation(likeDto); // Валидация
         log.info("Попытка удалить лайк с комментария с ID: {} от пользователя с ID: {}", commentId, likeDto.getUserId());
-        likeService.removeLikeFromComment(commentId, likeDto);
+        LikeDto result = likeService.removeLikeFromComment(commentId, likeDto);
         log.info("Лайк успешно удалён с комментария с ID: {} от пользователя с ID: {}", commentId, likeDto.getUserId());
-        return ResponseEntity.ok().build();
+        return result;
     }
 }

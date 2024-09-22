@@ -21,7 +21,7 @@ public class LikeService {
     private final LikeValidator likeValidator;
     private final LikeMapper likeMapper;
 
-    public void addLikeToPost(Long postId, LikeDto likeDto) {
+    public LikeDto addLikeToPost(Long postId, LikeDto likeDto) {
         log.info("Попытка поставить лайк на пост с ID: {}", postId);
 
         likeValidator.userValidation(likeDto.getUserId());
@@ -36,9 +36,10 @@ public class LikeService {
         like.setCreatedAt(LocalDateTime.now());
         likeRepository.save(like);
         log.info("Лайк успешно поставлен пользователем с ID: {} на пост с ID: {}", likeDto.getUserId(), postId);
+        return likeMapper.toDto(like);
     }
 
-    public void removeLikeFromPost(Long postId, LikeDto likeDto) {
+    public LikeDto removeLikeFromPost(Long postId, LikeDto likeDto) {
         log.info("Попытка удалить лайк на пост с ID: {}", postId);
 
         likeValidator.userValidation(likeDto.getUserId());
@@ -46,9 +47,10 @@ public class LikeService {
 
         likeRepository.deleteByPostIdAndUserId(postId, likeDto.getUserId());
         log.info("Лайк успешно удалён пользователем с ID: {} на пост с ID: {}", likeDto.getUserId(), postId);
+        return likeMapper.toDto(null);
     }
 
-    public void addLikeToComment(Long commentId, LikeDto likeDto) {
+    public LikeDto addLikeToComment(Long commentId, LikeDto likeDto) {
         log.info("Попытка поставить лайк на комментарий с ID: {}", commentId);
 
         likeValidator.userValidation(likeDto.getUserId());
@@ -63,9 +65,10 @@ public class LikeService {
         like.setCreatedAt(LocalDateTime.now());
         likeRepository.save(like);
         log.info("Лайк успешно поставлен пользователем с ID: {} на комментарий с ID: {}", likeDto.getUserId(), commentId);
+        return likeMapper.toDto(like);
     }
 
-    public void removeLikeFromComment(Long commentId, LikeDto likeDto) {
+    public LikeDto removeLikeFromComment(Long commentId, LikeDto likeDto) {
         log.info("Попытка удалить лайк на комментарий с ID: {}", commentId);
 
         likeValidator.userValidation(likeDto.getUserId());
@@ -73,6 +76,7 @@ public class LikeService {
 
         likeRepository.deleteByCommentIdAndUserId(commentId, likeDto.getUserId());
         log.info("Лайк успешно удалён пользователем с ID: {} на комментарий с ID: {}", likeDto.getUserId(), commentId);
+        return likeMapper.toDto(null);
     }
 
     public List<Long> getLikesFromPost(Long postId) {

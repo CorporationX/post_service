@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -33,6 +32,7 @@ public class LikeControllerTest {
     Long commentId;
     LikeDto likeDto;
     List<Long> userIds;
+    LikeDto expectedResult;
 
     @BeforeEach
     public void setUp() {
@@ -41,53 +41,58 @@ public class LikeControllerTest {
         userIds = List.of(1L, 2L, 3L);
         likeDto = new LikeDto();
         likeDto.setUserId(1L);
-        likeDto.setPostId(postId);
+        expectedResult = new LikeDto();
+        expectedResult.setUserId(1L);
     }
 
     @Test
     public void testGetLikesForPost() {
         when(likeService.getLikesFromPost(postId)).thenReturn(userIds);
-        ResponseEntity<List<Long>> response = likeController.getLikesForPost(postId);
-        assertEquals(ResponseEntity.ok(userIds), response);
+        List<Long> result = likeController.getLikesForPost(postId);
+        assertEquals(userIds, result);
         verify(likeService, times(1)).getLikesFromPost(postId);
     }
 
     @Test
     public void testGetLikesForComment() {
         when(likeService.getLikesFromComment(commentId)).thenReturn(userIds);
-        ResponseEntity<List<Long>> response = likeController.getLikesForComment(commentId);
-        assertEquals(ResponseEntity.ok(userIds), response);
+        List<Long> result = likeController.getLikesForComment(commentId);
+        assertEquals(userIds, result);
         verify(likeService, times(1)).getLikesFromComment(commentId);
     }
 
     @Test
     public void addLikeToPostTest() {
-        ResponseEntity<Void> response = likeController.addLikeToPost(postId, likeDto);
-        assertEquals(ResponseEntity.ok().build(), response);
+        when(likeService.addLikeToPost(postId, likeDto)).thenReturn(expectedResult);
+        LikeDto result = likeController.addLikeToPost(postId, likeDto);
+        assertEquals(expectedResult, result);
         verify(likeValidator, times(1)).likeValidation(likeDto);
         verify(likeService, times(1)).addLikeToPost(postId, likeDto);
     }
 
     @Test
     public void removeLikeFromPostTest() {
-        ResponseEntity<Void> response = likeController.removeLikeFromPost(postId, likeDto);
-        assertEquals(ResponseEntity.ok().build(), response);
+        when(likeService.removeLikeFromPost(postId, likeDto)).thenReturn(expectedResult);
+        LikeDto result = likeController.removeLikeFromPost(postId, likeDto);
+        assertEquals(expectedResult, result);
         verify(likeValidator, times(1)).likeValidation(likeDto);
         verify(likeService, times(1)).removeLikeFromPost(postId, likeDto);
     }
 
     @Test
     public void addLikeToCommentTest() {
-        ResponseEntity<Void> response = likeController.addLikeToComment(commentId, likeDto);
-        assertEquals(ResponseEntity.ok().build(), response);
+        when(likeService.addLikeToComment(commentId, likeDto)).thenReturn(expectedResult);
+        LikeDto result = likeController.addLikeToComment(commentId, likeDto);
+        assertEquals(expectedResult, result);
         verify(likeValidator, times(1)).likeValidation(likeDto);
         verify(likeService, times(1)).addLikeToComment(commentId, likeDto);
     }
 
     @Test
     public void removeLikeFromCommentTest() {
-        ResponseEntity<Void> response = likeController.removeLikeFromComment(commentId, likeDto);
-        assertEquals(ResponseEntity.ok().build(), response);
+        when(likeService.removeLikeFromComment(commentId, likeDto)).thenReturn(expectedResult);
+        LikeDto result = likeController.removeLikeFromComment(commentId, likeDto);
+        assertEquals(expectedResult, result);
         verify(likeValidator, times(1)).likeValidation(likeDto);
         verify(likeService, times(1)).removeLikeFromComment(commentId, likeDto);
     }
