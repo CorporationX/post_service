@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/post")
+@RequestMapping("/posts")
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
     private final PostMapper postMapper;
 
-    @PostMapping("/create")
+    @PostMapping("/draft")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
         Post post = postMapper.toEntity(postDto);
         Post createdPost = postService.createDraftPost(post);
@@ -28,14 +28,14 @@ public class PostController {
         return postMapper.toDto(createdPost);
     }
 
-    @PutMapping("/publish/{id}")
+    @PutMapping("/{id}/publish")
     public PostDto publishPost(@PathVariable Long id) {
         Post publishedPost = postService.publishPost(id);
 
         return postMapper.toDto(publishedPost);
     }
 
-    @PutMapping("/update")
+    @PutMapping("/edit")
     public PostDto updatePost(@RequestBody PostDto postDto) {
         Post post = postMapper.toEntity(postDto);
         Post updatedPost = postService.updatePost(post);
@@ -43,7 +43,7 @@ public class PostController {
         return postMapper.toDto(updatedPost);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @PutMapping("/delete/{id}")
     public PostDto deletePost(@PathVariable Long id) {
         return postMapper.toDto(postService.deletePost(id));
     }

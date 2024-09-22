@@ -21,6 +21,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
 
+    @Transactional
     public Post createDraftPost(Post post) {
         validateAuthorOrProject(post);
         post.markAsDraft();
