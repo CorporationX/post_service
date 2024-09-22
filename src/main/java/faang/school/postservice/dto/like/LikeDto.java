@@ -15,4 +15,3 @@ public class LikeDto {
     private Long commentId;
     private Long postId;
     private LocalDateTime createdAt;
-}
