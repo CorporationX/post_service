@@ -9,7 +9,7 @@ public interface PostService {
     List<PostDto> getPostsByHashtag(String hashtag);
 
     //temp method
-    PostDto activate(PostDto postDto);
+    PostDto publishPost(PostDto postDto);
 
     //temp method
     PostDto updatePost(PostDto postDto);

@@ -2,7 +2,6 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapperImpl;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.HashtagService;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.when;
 
@@ -36,14 +34,14 @@ public class PostServiceImplTest {
     private PostServiceImpl postService;
 
     @Test
-    void getPostsByHashtagOkSorted(){
-        Post post1 = Post.builder().publishedAt(LocalDateTime.now().minusDays(3)).build();
-        Post post2 = Post.builder().publishedAt(LocalDateTime.now()).build();
+    void getPostsByHashtagOk() {
+        PostDto post1 = PostDto.builder().publishedAt(LocalDateTime.now().minusDays(3)).build();
+        PostDto post2 = PostDto.builder().publishedAt(LocalDateTime.now()).build();
+
         when(hashtagService.findPostsByHashtag(anyString())).thenReturn(List.of(post1, post2));
 
         List<PostDto> posts = postService.getPostsByHashtag("a");
 
         assertEquals(2, posts.size());
-        assertTrue(posts.get(0).publishedAt().isAfter(posts.get(1).publishedAt()));
     }
 }

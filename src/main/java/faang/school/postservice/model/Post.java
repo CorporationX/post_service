@@ -73,7 +73,7 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @Builder.Default
     @JoinTable(
             name = "posts_hashtags",

@@ -7,8 +7,8 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.HashtagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -22,7 +22,7 @@ public class PostServiceImpl implements PostService {
 
     //this is temp method
     @Override
-    public PostDto activate(PostDto postDto) {
+    public PostDto publishPost(PostDto postDto) {
         Post post = postRepository.findById(postDto.id())
                 .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postDto.id()));
 
@@ -35,6 +35,7 @@ public class PostServiceImpl implements PostService {
 
     //this is temp method
     @Override
+    @Transactional
     public PostDto updatePost(PostDto postDto) {
         Post post = postRepository.findById(postDto.id())
                 .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postDto.id()));
@@ -42,20 +43,15 @@ public class PostServiceImpl implements PostService {
 //        postValidator.updatePostValidator(post, postDto);
 
 //        post.setUpdatedAt(LocalDateTime.now());
-        post.setContent("Editted content left only hashtag #post and no hshtg");
+        post.setContent(postDto.content());
         postRepository.save(post);
         hashtagService.updateHashtags(post); //just need to insert this row
 
-        return postMapper.toDto(postRepository.save(post));
+        return postMapper.toDto(post);
     }
 
     @Override
     public List<PostDto> getPostsByHashtag(String hashtag) {
-        List<Post> posts = hashtagService.findPostsByHashtag(hashtag);
-        List<PostDto> postsDto = postMapper.toDtoList(posts);
-
-        postsDto.sort(Comparator.comparing(PostDto::publishedAt).reversed());
-
-        return postsDto;
+        return hashtagService.findPostsByHashtag(hashtag);
     }
 }
