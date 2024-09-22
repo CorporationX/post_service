@@ -23,6 +23,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.like_post_analytics}")
     private String likePostAnalyticsChannel;
 
+    @Value("${spring.data.redis.channels.postSavedChannel}")
+    private String postSavedChannel;
+
     private final RedisCredentials credentials;
 
     @Bean("postChannelTopic")
@@ -33,6 +36,11 @@ public class RedisConfig {
     @Bean("postLikeChannelTopic")
     public ChannelTopic postLikeTopic() {
         return new ChannelTopic(postLike);
+    }
+
+    @Bean("postSavedChannelTopic")
+    public ChannelTopic postSavedChannelTopic() {
+        return new ChannelTopic(postSavedChannel);
     }
 
     @Bean("albumChannelTopic")

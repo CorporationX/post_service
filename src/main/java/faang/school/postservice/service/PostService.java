@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-
+import java.time.Duration;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
@@ -11,6 +11,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
+import faang.school.postservice.redisPublisher.PostSavedEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
@@ -20,6 +21,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
@@ -48,9 +50,14 @@ public class PostService {
     private final PostContextMapper context;
     private final PostEventPublisher postEventPublisher;
     private final UserContext userContext;
+    private final PostSavedEventPublisher postSavedEventPublisher;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
+
+    @Value("${spring.data.redis.postSavedTTL}")
+    private long ttlInSeconds;
 
     @Async(value = "threadPool")
     @Transactional
@@ -107,6 +114,9 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
+
+        redisTemplate.opsForValue().set("post:" + post.getId(), post, Duration.ofSeconds(ttlInSeconds));
+        postSavedEventPublisher.publish(post);
         return postMapper.toDto(post);
     }
 
