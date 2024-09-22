@@ -18,33 +18,32 @@ import java.time.LocalDateTime;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record PostDto(
         Long id,
+        Long authorId,
+        Long projectId,
+        boolean deleted,
 
         @NotBlank(message = "Content can not be null or empty")
         @Size(min = 1, max = 4096)
         String content,
         boolean published,
 
-        @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
         LocalDateTime publishedAt,
-        boolean deleted,
 
         @NotBlank(message = "Title can not be null or empty")
         @Size(min = 1, max = 150)
         String title,
 
-        @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
         LocalDateTime createdAt,
 
-        @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
-        LocalDateTime updatedAt,
-
-        Long authorId,
-        Long projectId
+        LocalDateTime updatedAt
 ) {
 }

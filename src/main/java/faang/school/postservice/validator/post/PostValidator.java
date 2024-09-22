@@ -21,15 +21,15 @@ public class PostValidator {
     private final UserContext userContext;
 
     public void createDraftPostValidator(PostDto postDto) {
-        boolean userExists = postDto.getAuthorId() != null;
-        boolean projectExists = postDto.getProjectId() != null;
+        boolean userExists = postDto.authorId() != null;
+        boolean projectExists = postDto.projectId() != null;
 
         validateSingleCreator(userExists, projectExists);
 
         if (userExists) {
-            validateUserExists(postDto.getAuthorId());
+            validateUserExists(postDto.authorId());
         } else {
-            validateProjectExists(postDto.getProjectId());
+            validateProjectExists(postDto.projectId());
         }
     }
 
@@ -40,8 +40,8 @@ public class PostValidator {
     }
 
     public void updatePostValidator(Post post, PostDto postDto) {
-        boolean isUserChanged = !Objects.equals(post.getAuthorId(), postDto.getAuthorId());
-        boolean isProjectChanged = !Objects.equals(post.getProjectId(), postDto.getProjectId());
+        boolean isUserChanged = !Objects.equals(post.getAuthorId(), postDto.authorId());
+        boolean isProjectChanged = !Objects.equals(post.getProjectId(), postDto.projectId());
 
         if (post.getAuthorId() != null && isUserChanged) {
             throw new DataValidationException("Post author cannot be changed");

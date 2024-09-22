@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.StreamSupport;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -39,7 +38,7 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     public PostDto publishPost(PostDto postDto) {
-        Post post = getPostFromRepository(postDto.getId());
+        Post post = getPostFromRepository(postDto.id());
 
         postValidator.publishPostValidator(post);
 
@@ -55,12 +54,12 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto updatePost(PostDto postDto) {
-        Post post = getPostFromRepository(postDto.getId());
+        Post post = getPostFromRepository(postDto.id());
 
         postValidator.updatePostValidator(post, postDto);
 
-        post.setTitle(postDto.getTitle());
-        post.setContent(postDto.getContent());
+        post.setTitle(postDto.title());
+        post.setContent(postDto.content());
 
         postRepository.save(post);
         hashtagService.updateHashtags(post);
@@ -90,7 +89,7 @@ public class PostServiceImpl implements PostService {
         postValidator.validateIfAuthorExists(userId);
 
         List<PostDto> posts = postRepository.findAll().stream()
-                .filter(post -> Objects.equals(post. getAuthorId(), userId))
+                .filter(post -> Objects.equals(post.getAuthorId(), userId))
                 .filter(post -> !post.isPublished())
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())

@@ -1,7 +1,7 @@
 package faang.school.postservice.service.hashtag;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.hashtag.HashtagRepository;
@@ -96,7 +96,7 @@ public class HashtagServiceImpl implements HashtagService {
                 .map(Hashtag::getPosts)
                 .orElseGet(ArrayList::new);
 
-        List<PostDto> postsDto = postMapper.toDtoList(posts);
+        List<PostDto> postsDto = postMapper.toDto(posts);
         postsDto.sort(Comparator.comparing(PostDto::publishedAt).reversed());
 
         redisTemplate.opsForValue().set(hashtag, postsDto);
