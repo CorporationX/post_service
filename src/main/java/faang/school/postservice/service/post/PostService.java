@@ -1,10 +1,14 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.cache.PostCacheOperations;
+import faang.school.postservice.service.post.cache.PostCacheService;
+import faang.school.postservice.service.post.hash.tag.PostHashTagService;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,11 +25,14 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+    private static final int NUMBER_OF_TOP_INT_CACHE = 100;
+
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final PostHashTagService postHashTagService;
     private final PostCacheService postCacheService;
     private final PostMapper postMapper;
+    private final PostCacheOperations postCacheOperations;
 
     @Transactional
     public Post create(Post post) {
@@ -44,14 +51,14 @@ public class PostService {
     public Post update(Post updatePost) {
         log.info("Update post with id: {}", updatePost.getId());
         Post post = findPostById(updatePost.getId());
-        List<String> primaTags = new ArrayList<>(post.getHashTags());
+        List<String> primalTags = new ArrayList<>(post.getHashTags());
 
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
         postHashTagService.updateHashTags(post);
 
         if (!post.isDeleted() && post.isPublished()) {
-            postCacheService.updatePostProcess(postMapper.toPostCacheDto(post), primaTags);
+            postCacheService.updatePostProcess(postMapper.toPostCacheDto(post), primalTags);
         }
         return postRepository.save(post);
     }
@@ -81,6 +88,24 @@ public class PostService {
         postCacheService.deletePostProcess(postMapper.toPostCacheDto(post), post.getHashTags());
 
         postRepository.save(post);
+    }
+
+//    public PostCacheDto findByIdCache(long id) {
+//        return postCacheOperations.findPostById(id);
+//    }
+
+    public List<PostCacheDto> findInRangeByHashTag(String hashTag, int start, int end) {
+        List<PostCacheDto> postDtos =  postCacheService.findInRangeByHashTag(hashTag, start, end);
+        if (postDtos.isEmpty()) {
+            String jsonTag = "[\"" + hashTag +"\"]";
+            List<Post> posts = postRepository.findTopByHashTagByDate(jsonTag, NUMBER_OF_TOP_INT_CACHE);
+            List<PostCacheDto> postCacheDtos = posts.stream()
+                    .map(postMapper::toPostCacheDto)
+                    .toList();
+            postCacheOperations.addListOfPostsToCache(postCacheDtos);
+            postDtos = postCacheService.findInRangeByHashTag(hashTag, start, end);
+        }
+        return postDtos;
     }
 
     @Transactional(readOnly = true)

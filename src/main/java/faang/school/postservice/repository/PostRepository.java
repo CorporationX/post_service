@@ -1,5 +1,6 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.model.Post;
 import feign.Param;
 import org.springframework.data.jpa.repository.Query;
@@ -26,4 +27,18 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post 
+            WHERE hash_tags @> CAST(:hashTag AS jsonb)
+            """)
+    List<Post> findAllByHashTag(@Param("hashTag") String hashTag);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post
+            WHERE hash_tags @> CAST(:hashTag AS jsonb)
+            AND published = true
+            ORDER BY published_at DESC LIMIT :number
+            """)
+    List<Post> findTopByHashTagByDate(@Param("hashTag") String hashTag, @Param("number") int number);
 }

@@ -1,10 +1,11 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.service.post.hash.tag;
 
 import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,7 +27,21 @@ public class PostHashTagService {
         Pattern pattern = Pattern.compile(HASH_TAG_PATTERN);
         Matcher matcher = pattern.matcher(content);
         return matcher.results()
-                .map(tag -> tag.group(1))
+                .map(tag -> tag.group(1).toLowerCase())
                 .toList();
+    }
+
+    public List<String> getNewHashTags(List<String> primalHashTags, List<String> updatedHashTags) {
+        log.info("Get new hash-tags between primal: {} AND updated: {}", primalHashTags, updatedHashTags);
+        List<String> newHashTags = new ArrayList<>(updatedHashTags);
+        newHashTags.removeAll(primalHashTags);
+        return newHashTags;
+    }
+
+    public List<String> getDeletedHashTags(List<String> primalHashTags, List<String> updatedHashTags) {
+        log.info("Get deleted hash-tags between primal: {} AND updated: {}", primalHashTags, updatedHashTags);
+        List<String> deletedHashTags = new ArrayList<>(primalHashTags);
+        deletedHashTags.removeAll(updatedHashTags);
+        return deletedHashTags;
     }
 }

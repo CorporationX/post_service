@@ -2,8 +2,10 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.FilterPostRequestDto;
+import faang.school.postservice.dto.post.HashTagRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
+import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.PostService;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -74,5 +77,12 @@ public class PostController {
         List<Post> posts = postService.searchByProject(post);
 
         return mapper.listEntitiesToListDto(posts);
+    }
+
+    @GetMapping
+    public List<PostCacheDto> findAllByHashTags(@RequestParam(name ="hash_tag") String hashTag,
+                                                @RequestParam(name = "start") int start,
+                                                @RequestParam(name = "end") int end) {
+        return postService.findInRangeByHashTag(hashTag, start, end);
     }
 }
