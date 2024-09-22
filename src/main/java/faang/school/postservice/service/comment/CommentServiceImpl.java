@@ -20,6 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
@@ -28,12 +29,9 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     @Override
-    @Transactional
     public CommentDto addComment(CommentDto commentDto) {
 
         try {
-            // Завязан на реализации Владислава, его задача на ревью
-            // userServiceClient сейчас может возвращать не совсем верные значения
             userServiceClient.getUser(commentDto.getAuthorId());
         } catch (FeignException e) {
             throw new EntityNotFoundException("User not found");
@@ -50,21 +48,18 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    @Transactional
     public void updateComment(long commentId, String content) {
         commentRepository.updateContentById(commentId, content);
         commentRepository.updateDateById(commentId, LocalDateTime.now());
     }
 
     @Override
-    @Transactional
     public List<CommentDto> getCommentsByPostId(long postId) {
         List<Comment> comments = commentRepository.getByPostIdOrderByCreatedAtDesc(postId);
         return commentMapper.toDto(comments);
     }
 
     @Override
-    @Transactional
     public boolean deleteComment(long commentId) {
         if (commentRepository.existsById(commentId)) {
             commentRepository.deleteById(commentId);
