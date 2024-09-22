@@ -69,7 +69,7 @@ class LikeServiceImplTest {
 
 
     @Test
-    void likeToPost() {
+    void testLikeToPost() {
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
         when(postRepository.findById(likeDto.getPostId())).thenReturn(Optional.of(post));
         LikeDto result = likeService.likeToPost(likeDto);
@@ -78,13 +78,13 @@ class LikeServiceImplTest {
     }
 
     @Test
-    void unlikeFromPost() {
+    void testUnlikeFromPost() {
         likeRepository.deleteByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId());
         verify(likeRepository).deleteByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId());
     }
 
     @Test
-    void likeToComment() {
+    void testLikeToComment() {
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
         when(commentRepository.findById(likeDto.getCommentId())).thenReturn(Optional.of(comment));
         LikeDto result = likeService.likeToComment(likeDto);
@@ -93,7 +93,7 @@ class LikeServiceImplTest {
     }
 
     @Test
-    void unlikeFromComment() {
+    void testUnlikeFromComment() {
         likeRepository.deleteByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId());
         verify(likeRepository).deleteByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId());
     }
