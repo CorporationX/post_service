@@ -29,7 +29,7 @@ public class LikeValidator {
         }
         for (Comment comment : post.getComments()) {
             if (isLikedById(like.getId(), comment.getLikes())) {
-                throw new DataValidationException("Post or comment already liked");
+                throw new DataValidationException("Comment already liked");
             }
         }
     }

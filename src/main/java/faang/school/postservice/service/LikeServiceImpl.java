@@ -65,7 +65,7 @@ public class LikeServiceImpl implements LikeService {
         } catch (FeignException e) {
             throw new DataValidationException("There is no such user");
         }
-        likeValidator.validatePostAndCommentLikes(comment.getPost(), like);
+        likeValidator.validateLike(like,comment.getPost());
         like.setComment(comment);
         likeRepository.save(like);
     }
@@ -78,7 +78,7 @@ public class LikeServiceImpl implements LikeService {
         if (comment.getLikes().contains(like)) {
             comment.getLikes().remove(like);
         } else {
-            throw new DataValidationException("Post is not liked");
+            throw new DataValidationException("Comment is not liked");
         }
     }
 
