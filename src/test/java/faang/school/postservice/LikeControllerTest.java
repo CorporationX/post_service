@@ -32,7 +32,6 @@ public class LikeControllerTest {
 
     @BeforeEach
     void setUp() {
-       // mockMvc = MockMvcBuilders.standaloneSetup(likeController).build();
         postId = 3L;
         commentId = 3L;
         likeDto = new LikeDto(1L, 2L);
