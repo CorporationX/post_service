@@ -8,7 +8,5 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface PostMapper {
-
-    PostDto toDto(Post post);
-    List<PostDto> toDtoList(List<Post> posts);
+    PostDto toPostDto(Post post);
 }
