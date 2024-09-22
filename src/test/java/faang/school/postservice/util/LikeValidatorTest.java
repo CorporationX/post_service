@@ -54,31 +54,31 @@ class LikeValidatorTest {
 
     @Test
     void likeValidationTest_nullUserId() {
-        likeDto = new LikeDto(null, 1L, null);
+        likeDto = new LikeDto(null,null, 1L, null);
         assertThrows(IllegalArgumentException.class, () -> likeValidator.likeValidation(likeDto));
     }
 
     @Test
     void likeValidationTest_noPostIdOrCommentId() {
-        likeDto = new LikeDto(1L, null, null);
+        likeDto = new LikeDto(null,1L, null, null);
         assertThrows(IllegalArgumentException.class, () -> likeValidator.likeValidation(likeDto));
     }
 
     @Test
     void likeValidationTest_bothPostIdAndCommentId() {
-        likeDto = new LikeDto(1L, 1L, 1L);
+        likeDto = new LikeDto(null,1L, 1L, 1L);
         assertThrows(IllegalArgumentException.class, () -> likeValidator.likeValidation(likeDto));
     }
 
     @Test
     void likeValidationTest_validPost() {
-        likeDto = new LikeDto(1L, 1L, null);
+        likeDto = new LikeDto(null,1L, 1L, null);
         assertDoesNotThrow(() -> likeValidator.likeValidation(likeDto));
     }
 
     @Test
     void likeValidationTest_validComment() {
-        likeDto = new LikeDto(1L, null, 1L);
+        likeDto = new LikeDto(null,1L, null, 1L);
         assertDoesNotThrow(() -> likeValidator.likeValidation(likeDto));
     }
 
