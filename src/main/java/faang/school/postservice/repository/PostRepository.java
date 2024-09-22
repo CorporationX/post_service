@@ -25,4 +25,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.id IN :postIds")
     List<Post> findPostsByIds(List<Long> postIds);
+
+    @Query(value = "SELECT * FROM Post p " +
+            "WHERE p.published = true " +
+            "AND p.deleted = false " +
+            "AND p.author_id in :authorIds " +
+            "ORDER BY p.published_at DESC " +
+            "OFFSET :startPostId ROWS " +
+            "LIMIT :batchSize ", nativeQuery = true)
+    List<Post> findPostsByAuthorIds(List<Long> authorIds, long startPostId, long batchSize);
 }

@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.cache.dto.CachedPost;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Hashtag;
@@ -22,6 +23,9 @@ public interface PostMapper {
     PostDto toDto(Post post, @Context PostContextMapper context);
 
     List<PostDto> toDto(List<Post> posts);
+
+    List<CachedPost> toCachedPost(List<Post> posts);
+    CachedPost toCachedPost(Post post);
 
     @Named("hashtagToHashtagName")
     default String hashtagToHashtagName(Hashtag hashtag) {

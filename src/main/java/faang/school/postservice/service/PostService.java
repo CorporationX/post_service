@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 
+import faang.school.postservice.cache.dto.CachedPost;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
@@ -246,5 +247,10 @@ public class PostService {
         log.info("Hashtags request was completed successfully");
 
         return hashtags;
+    }
+
+    public List<CachedPost> getPostsByAuthorIds(List<Long> authorIds, long startPostId, long batchSize) {
+        List<Post> posts = postRepository.findPostsByAuthorIds(authorIds, startPostId, batchSize);
+        return postMapper.toCachedPost(posts);
     }
 }
