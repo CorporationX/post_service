@@ -4,7 +4,10 @@ import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.service.post.hash.tag.PostHashTagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -23,47 +27,126 @@ public class PostCacheOperations {
     private static final String POST_ID_PREFIX = "post:";
 
     private final PostHashTagService postHashTagService;
+//    private final RedisTemplate<String, Object> redisTemplatePost;
+//    private final ZSetOperations<String, Object> zSetOperations;
     private final RedisTemplate<String, PostCacheDto> redisTemplatePost;
     private final ZSetOperations<String, String> zSetOperations;
+
+    public void addListOfPostsToCache(List<PostCacheDto> posts) {
+        log.info("Add to cache list of posts");
+        posts.forEach(post -> System.out.println(post.getId() + " : " + post.getHashTags()));
+        posts.forEach(post -> {
+//            addPostToCache(post, post.getHashTags());
+            transactionalMethod(post, post.getHashTags());
+        });
+    }
+
+//    public void addListOfPostsToCache(List<PostCacheDto> posts) {
+//        log.info("Add to cache list of posts");
+//        posts.forEach(post -> System.out.println(post.getId() + " : " + post.getHashTags()));
+//        posts.forEach(post -> {
+//
+//            redisTemplatePost.execute(new SessionCallback<Object>() {
+//                @Override
+//                public Object execute(RedisOperations operations) throws DataAccessException {
+//                    addPostToCache(post, post.getHashTags());
+//                    return operations.exec();
+//                }
+//            });
+//
+////            addPostToCache(post, post.getHashTags());
+////            transactionalMethod(post, post.getHashTags());
+//        });
+//    }
+    // Код Влада:
+//    public void transactionalMethod(Object obj) {
+//        redisTemplate.execute(new SessionCallback<Object>() {
+//            @Override
+//            public Object execute(RedisOperations operations) throws DataAccessException {
+//                operations.watch(key);
+//                operations.multi();
+//                // Perform operations using 'operations'
+//                operations.opsForValue().set("key", "value");
+//                // ...
+//                return operations.exec();
+//            }
+//        });
+//    }
+//    catch (Exception e) {
+//        redisTemplate.discard();
+//        throw e;
+
+
+    public void transactionalMethod(PostCacheDto post, List<String> newTags) {
+        log.info("Add post to cache (callback, post with id: {}", post.getId());
+        String postId = POST_ID_PREFIX + post.getId();
+        long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
+
+        redisTemplatePost.execute(new SessionCallback<Object>() {
+            @Override
+            public Object execute(RedisOperations operations) throws DataAccessException {
+                try {
+                    redisTemplatePost.watch(postId);
+                    newTags.forEach(redisTemplatePost::watch);
+                    redisTemplatePost.setEnableTransactionSupport(true);
+                    boolean success = false;
+                    while (!success) {
+                        redisTemplatePost.multi();
+                        log.info("Transaction started");
+
+                        redisTemplatePost.opsForValue().set(postId, post);
+                        newTags.forEach(tag -> zSetOperations.add(tag, postId, timestamp));
+
+                        List<Object> result = redisTemplatePost.exec();
+                        if (!result.isEmpty()) {
+                            success = true;
+                            log.info("Transaction executed successfully");
+                        } else {
+                            redisTemplatePost.discard();
+                            log.info("Transaction discarded");
+                        }
+                    }
+                } finally {
+                    redisTemplatePost.setEnableTransactionSupport(false);
+                    redisTemplatePost.unwatch();
+                }
+                return null;
+            }
+        });
+    }
 
     public void addPostToCache(PostCacheDto post, List<String> newTags) {
         log.info("Add post to cache, post with id: {}", post.getId());
         String postId = POST_ID_PREFIX + post.getId();
         long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
 
-        redisTemplatePost.watch(postId);
-        newTags.forEach(redisTemplatePost::watch);
-        redisTemplatePost.setEnableTransactionSupport(true);
-        boolean success = false;
-        while (!success) {
-            redisTemplatePost.multi();
-            log.info("Transaction started");
+        try {
+            redisTemplatePost.watch(postId);
+            newTags.forEach(redisTemplatePost::watch);
+            redisTemplatePost.setEnableTransactionSupport(true);
+            boolean success = false;
+            while (!success) {
+                redisTemplatePost.multi();
+                log.info("Transaction started");
 
-            redisTemplatePost.opsForValue().set(postId, post);
-            newTags.forEach(tag -> zSetOperations.add(tag, postId, timestamp));
+                redisTemplatePost.opsForValue().set(postId, post);
+                newTags.forEach(tag -> zSetOperations.add(tag, postId, timestamp));
 
-            List<Object> result = redisTemplatePost.exec();
-            if (!result.isEmpty()) {
-                success = true;
-                redisTemplatePost.setEnableTransactionSupport(false);
-                log.info("Transaction executed successfully");
-            } else {
-                redisTemplatePost.discard();
-                log.info("Transaction discarded");
+                List<Object> result = redisTemplatePost.exec();
+                if (!result.isEmpty()) {
+                    success = true;
+                    log.info("Transaction executed successfully");
+                } else {
+                    redisTemplatePost.discard();
+                    log.info("Transaction discarded");
+                }
             }
+        }catch (Exception exc) {
+            log.error("{} | Error: {}", exc.getClass() ,exc.getMessage());
+        } finally {
+            redisTemplatePost.setEnableTransactionSupport(false);
+            redisTemplatePost.unwatch();
         }
-        redisTemplatePost.unwatch();
-    }
-
-    public void addListOfPostsToCache(List<PostCacheDto> posts) {
-        posts.forEach(post -> {
-            addPostToCache(post, post.getHashTags());
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
     }
 
 //    public void addListOfPostsToCache(List<PostCacheDto> posts) {
@@ -206,10 +289,15 @@ public class PostCacheOperations {
 ////                    post.getHashTags().forEach(tag -> zSetOperations.add(tag, postId, timestamp));
 //                }
 //                // Map<String, Map<String, Long>> hashTagIds
-//                for (Map.Entry entry: hashTagIds.entrySet()) {
-//                    String tag = entry.getKey().toString();
-//                    entry.getValue().
-//                }
+//                hashTagIds.forEach((tag, idsTimestamps) -> {
+//                    idsTimestamps.forEach((id, timestamp) -> {
+//                        zSetOperations.add(tag, id, timestamp);
+//                    });
+//                });
+////                for (Map.Entry entry: hashTagIds.entrySet()) {
+////                    String tag = entry.getKey().toString();
+////                    entry.getValue().
+////                }
 //
 //                // Выполняем транзакцию
 //                List<Object> result = redisTemplatePost.exec();
@@ -284,7 +372,7 @@ public class PostCacheOperations {
     }
 
     public Set<String> findIdsByHashTag(String tag, int start, int end) {
-        return zSetOperations.range(tag, start, end);
+        return zSetOperations.reverseRange(tag, start, end);
     }
 
     public List<PostCacheDto> findAllByIds(List<String> ids) {
@@ -294,5 +382,23 @@ public class PostCacheOperations {
     public PostCacheDto findPostById(String id) {
         return redisTemplatePost.opsForValue().get(id);
     }
+
+//    public Set<String> findIdsByHashTag(String tag, int start, int end) {
+//        return zSetOperations.range(tag, start, end)
+//                .stream()
+//                .map(id -> (String) id)
+//                .collect(Collectors.toSet());
+//    }
+//
+//    public List<PostCacheDto> findAllByIds(List<String> ids) {
+//        return redisTemplatePost.opsForValue().multiGet(ids)
+//                .stream()
+//                .map(post -> (PostCacheDto) post)
+//                .toList();
+//    }
+//
+//    public PostCacheDto findPostById(String id) {
+//        return (PostCacheDto) redisTemplatePost.opsForValue().get(id);
+//    }
 
 }
