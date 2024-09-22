@@ -17,7 +17,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "comment")
-public class Comment {
+public class Comment implements Likeable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -8,9 +8,21 @@ public interface PostService {
 
     List<PostDto> getPostsByHashtag(String hashtag);
 
-    //temp method
+    PostDto createDraftPost(PostDto postDto);
+
     PostDto publishPost(PostDto postDto);
 
-    //temp method
     PostDto updatePost(PostDto postDto);
+
+    PostDto softDeletePost(Long postId);
+
+    PostDto getPost(Long id);
+
+    List<PostDto> getAllDraftsByAuthorId(Long userId);
+
+    List<PostDto> getAllDraftsByProjectId(Long projectId);
+
+    List<PostDto> getAllPublishedPostsByAuthorId(Long userId);
+
+    List<PostDto> getAllPublishedPostsByProjectId(Long projectId);
 }

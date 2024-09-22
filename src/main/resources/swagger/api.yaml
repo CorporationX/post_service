@@ -1,0 +1,169 @@
+openapi: 3.0.0
+info:
+  title: Like API
+  description: API для управления лайками комментариев и постам
+  version: 1.0.0
+  contact:
+    name: Евгений
+paths:
+  /like/commnetId/{commentId}:
+    post:
+      summary: Добавить лайк к комментарию
+      description: Добавляет лайк к комментарию с указанным ID и указанным ID пользователя в header "x-user-id"
+      operationId: createLikeComment
+      tags:
+        - Likes
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: ID комментария, к которому добавляется лайк
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: ID пользователя добавляющего лайк
+      responses:
+        '200':
+          description: Успешно созданный лайк
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LikeDto'
+        '400' :
+          description: Некорректный запрос
+        '402' :
+          description: Комментарий не найден
+    delete:
+      summary: Удаляет лайк с комментария
+      description: Удаляет лайк с комментария с указанным `commentId` и указанным ID пользователя в header "x-user-id"
+      operationId: deleteLikeComment
+      tags:
+        - Likes
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: ID комментария, с которого удаляется лайк
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: ID пользователя добавляющего лайк
+      responses:
+        '200':
+          description: Успешное удаление лайка
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Comment with id 1 was deleted successfully."
+        '400':
+          description: Некорректный запрос
+        '404':
+          description: Комментарий не найден
+  /like/postId/{postId}:
+    post:
+      summary: Добавить лайк к посту
+      description: Добавляет лайк к посту с указанным ID и указанным ID пользователя в header "x-user-id"
+      operationId: createLikePost
+      tags:
+        - Likes
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: ID поста, к которому добавляется лайк
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: ID пользователя добавляющего лайк
+      responses:
+        '200':
+          description: Успешно созданный лайк
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LikeDto'
+        '400' :
+          description: Некорректный запрос
+        '402' :
+          description: Комментарий не найден
+    delete:
+      summary: Удаляет лайк с поста
+      description: Удаляет лайк с поста с указанным `commentId` и указанным ID пользователя в header "x-user-id"
+      operationId: deleteLikePost
+      tags:
+        - Likes
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: ID поста, с которого удаляется лайк
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: ID пользователя добавляющего лайк
+      responses:
+        '200':
+          description: Успешное удаление лайка
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Comment with id 1 was deleted successfully."
+        '400':
+          description: Некорректный запрос
+        '404':
+          description: Комментарий не найден
+components:
+  schemas:
+    LikeDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор лайка
+        userId:
+          type: integer
+          format: int64
+          description: ID пользователя, который поставил лайк
+        commentId:
+          type: integer
+          format: int64
+          description: ID комментария, к которому относится лайк
+        postId:
+          type: integer
+          format: int64
+          description: ID поста, к которому относиться лайк

@@ -1,14 +1,18 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.HashtagService;
+import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.StreamSupport;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -19,35 +23,131 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final HashtagService hashtagService;
+    private final PostValidator postValidator;
 
-    //this is temp method
     @Override
-    public PostDto publishPost(PostDto postDto) {
-        Post post = postRepository.findById(postDto.id())
-                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postDto.id()));
+    @Transactional
+    public PostDto createDraftPost(PostDto postDto) {
+        postValidator.createDraftPostValidator(postDto);
 
-        post.setPublished(true);
-        postRepository.save(post);
-        hashtagService.createHashtags(post); //just need to insert this row
+        Post post = postMapper.toEntity(postDto);
 
-        return PostDto.builder().build();
+        post.setPublished(false);
+
+        return postMapper.toDto(postRepository.save(post));
     }
 
-    //this is temp method
+    @Transactional
+    public PostDto publishPost(PostDto postDto) {
+        Post post = getPostFromRepository(postDto.getId());
+
+        postValidator.publishPostValidator(post);
+
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+
+        postRepository.save(post);
+        hashtagService.createHashtags(post);
+
+        return postMapper.toDto(post);
+    }
+
     @Override
     @Transactional
     public PostDto updatePost(PostDto postDto) {
-        Post post = postRepository.findById(postDto.id())
-                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postDto.id()));
+        Post post = getPostFromRepository(postDto.getId());
 
-//        postValidator.updatePostValidator(post, postDto);
+        postValidator.updatePostValidator(post, postDto);
 
-//        post.setUpdatedAt(LocalDateTime.now());
-        post.setContent(postDto.content());
+        post.setTitle(postDto.getTitle());
+        post.setContent(postDto.getContent());
+
         postRepository.save(post);
-        hashtagService.updateHashtags(post); //just need to insert this row
+        hashtagService.updateHashtags(post);
 
         return postMapper.toDto(post);
+    }
+
+    @Transactional
+    public PostDto softDeletePost(Long postId) {
+        Post post = getPostFromRepository(postId);
+
+        post.setPublished(false);
+        post.setDeleted(true);
+
+        return postMapper.toDto(postRepository.save(post));
+    }
+
+    @Transactional
+    public PostDto getPost(Long id) {
+        Post post = getPostFromRepository(id);
+
+        return postMapper.toDto(post);
+    }
+
+    @Transactional
+    public List<PostDto> getAllDraftsByAuthorId(Long userId) {
+        postValidator.validateIfAuthorExists(userId);
+
+        List<PostDto> posts = postRepository.findAll().stream()
+                .filter(post -> Objects.equals(post. getAuthorId(), userId))
+                .filter(post -> !post.isPublished())
+                .filter(post -> !post.isDeleted())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .map(postMapper::toDto)
+                .toList();
+
+        return posts;
+    }
+
+    @Transactional
+    public List<PostDto> getAllDraftsByProjectId(Long projectId) {
+        postValidator.validateIfProjectExists(projectId);
+
+        List<PostDto> posts = postRepository.findAll().stream()
+                .filter(post -> Objects.equals(post.getProjectId(), projectId))
+                .filter(post -> !post.isPublished())
+                .filter(post -> !post.isDeleted())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .map(postMapper::toDto)
+                .toList();
+
+        return posts;
+    }
+
+    @Transactional
+    public List<PostDto> getAllPublishedPostsByAuthorId(Long userId) {
+        postValidator.validateIfAuthorExists(userId);
+
+        List<PostDto> posts = postRepository.findAll().stream()
+                .filter(post -> Objects.equals(post.getAuthorId(), userId))
+                .filter(Post::isPublished)
+                .filter(post -> !post.isDeleted())
+                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
+                .map(postMapper::toDto)
+                .toList();
+
+        return posts;
+    }
+
+    @Transactional
+    public List<PostDto> getAllPublishedPostsByProjectId(Long projectId) {
+        postValidator.validateIfProjectExists(projectId);
+
+        List<PostDto> posts = postRepository.findAll().stream()
+                .filter(post -> Objects.equals(post.getProjectId(), projectId))
+                .filter(Post::isPublished)
+                .filter(post -> !post.isDeleted())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .map(postMapper::toDto)
+                .toList();
+
+        return posts;
+    }
+
+    private Post getPostFromRepository(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
     }
 
     @Override
