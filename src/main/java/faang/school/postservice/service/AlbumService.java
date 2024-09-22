@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -137,10 +136,10 @@ public class AlbumService {
     }
 
     private void validUserExist(Long authorId) {
-//        UserDto userDto = userServiceClient.getUser(authorId);
-//        if (Objects.isNull(userDto)) {
-//            throw new IllegalArgumentException("This user does not exist.");
-//        }
+        UserDto userDto = userServiceClient.getUser(authorId);
+        if (Objects.isNull(userDto)) {
+            throw new IllegalArgumentException("This user does not exist.");
+        }
     }
 
     private void validUniqueAlbumTitleByAuthor(Album album) {
@@ -171,7 +170,7 @@ public class AlbumService {
 
     private void validAlbumExist(long albumId) {
         boolean existStatus = albumRepository.existsById(albumId);
-        if(!existStatus){
+        if (!existStatus) {
             throw new IllegalArgumentException("Album doesn't exist.");
         }
     }
