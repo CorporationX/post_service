@@ -6,7 +6,7 @@ info:
   contact:
     name: Евгений
 paths:
-  /commnetId/{commentId}:
+  /like/commnetId/{commentId}:
     post:
       summary: Добавить лайк к комментарию
       description: Добавляет лайк к комментарию с указанным ID и указанным ID пользователя в header "x-user-id"
@@ -76,7 +76,7 @@ paths:
           description: Некорректный запрос
         '404':
           description: Комментарий не найден
-  /postId/{postId}:
+  /like/postId/{postId}:
     post:
       summary: Добавить лайк к посту
       description: Добавляет лайк к посту с указанным ID и указанным ID пользователя в header "x-user-id"
