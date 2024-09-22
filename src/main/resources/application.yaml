@@ -35,6 +35,14 @@ spring:
         comment: comment_channel
         comment_achievement: comment_channel
 
+    kafka:
+      bootstrap-servers: localhost:9092
+      topic:
+        posts:
+          name: posts
+          partitions: 1
+          replication-factor: 1
+
     elasticsearch:
       rest:
         uris: http://localhost:9200
