@@ -86,6 +86,7 @@ spring:
     topic:
       new-post: posts
       like-post: likes
+      post-views: post_views
       comment-post: comments
     consumer:
       group-id: post

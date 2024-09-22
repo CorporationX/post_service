@@ -20,6 +20,8 @@ public class KafkaTopicConfig {
     private String likePostTopicName;
     @Value("${spring.kafka.topic.comment-post}")
     private String commentPostTopicName;
+    @Value("${spring.kafka.topic.post-views}")
+    private String postViewTopicName;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -41,5 +43,10 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic commentPostTopic() {
         return new NewTopic(commentPostTopicName, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic postViewTopic() {
+        return new NewTopic(postViewTopicName, 1, (short) 1);
     }
 }
