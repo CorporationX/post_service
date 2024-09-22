@@ -63,7 +63,7 @@ public class PostService {
 
         if (Objects.nonNull(post.getAuthorId())) {
             validateUserExists(post);
-        } else if (Objects.nonNull(post.getProjectId())) {
+        } else {
             validateProjectExists(post);
         }
     }
