@@ -3,6 +3,7 @@ package faang.school.postservice;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
@@ -13,10 +14,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -101,5 +106,86 @@ public class PostServiceTest {
         postService.deletePost(post.getId());
 
         verify(postRepository, times(1)).save(post);
+    }
+
+    @Test
+    public void testGetPostById_Success() {
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+
+        Post result = postService.getPostById(post.getId());
+
+        assertNotNull(result);
+        assertEquals(post.getId(), result.getId());
+        verify(postRepository, times(1)).findById(post.getId());
+    }
+
+    @Test
+    public void testGetPostById_NotFound() {
+        when(postRepository.findById(post.getId())).thenReturn(Optional.empty());
+
+        assertThrows(PostRequirementsException.class, () -> postService.getPostById(post.getId()));
+        verify(postRepository, times(1)).findById(post.getId());
+    }
+
+    @Test
+    public void testGetUserDrafts_Success() {
+        List<Post> drafts = new ArrayList<>();
+        drafts.add(post);
+        when(postRepository.findDraftsByAuthorId(post.getAuthorId())).thenReturn(drafts);
+
+        List<Post> result = postService.getUserDrafts(post.getAuthorId());
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        verify(postRepository, times(1)).findDraftsByAuthorId(post.getAuthorId());
+    }
+
+    @Test
+    public void testGetProjectDrafts_Success() {
+        post.setProjectId(1L);
+
+        List<Post> drafts = new ArrayList<>();
+        drafts.add(post);
+
+        when(postRepository.findDraftsByProjectId(post.getProjectId())).thenReturn(drafts);
+
+        List<Post> result = postService.getProjectDrafts(post.getProjectId());
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(1L, result.get(0).getProjectId());
+        verify(postRepository, times(1)).findDraftsByProjectId(post.getProjectId());
+    }
+
+    @Test
+    public void testGetUserPublishedPosts_Success() {
+        post.setPublished(true);
+        List<Post> publishedPosts = new ArrayList<>();
+        publishedPosts.add(post);
+        when(postRepository.findPublishedByAuthorId(post.getAuthorId())).thenReturn(publishedPosts);
+
+        List<Post> result = postService.getUserPublishedPosts(post.getAuthorId());
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        verify(postRepository, times(1)).findPublishedByAuthorId(post.getAuthorId());
+    }
+
+    @Test
+    public void testGetProjectPublishedPosts_Success() {
+        post.setProjectId(1L);
+        post.setPublished(true);
+
+        List<Post> publishedPosts = new ArrayList<>();
+        publishedPosts.add(post);
+
+        when(postRepository.findPublishedByProjectId(post.getProjectId())).thenReturn(publishedPosts);
+
+        List<Post> result = postService.getProjectPublishedPosts(post.getProjectId());
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(1L, result.get(0).getProjectId());
+        verify(postRepository, times(1)).findPublishedByProjectId(post.getProjectId());
     }
 }
