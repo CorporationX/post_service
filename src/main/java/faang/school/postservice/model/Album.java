@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import java.util.Set;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +26,14 @@ public class Album {
 
     @Column(name = "title", nullable = false, length = 256)
     private String title;
+
+    @Enumerated(EnumType.STRING)
+    private Visibility visibility;
+
+    @ElementCollection
+    @CollectionTable(name = "album_allowed_users", joinColumns = @JoinColumn(name = "album_id"))
+    @Column(name = "user_id")
+    private Set<Long> allowedUsers;
 
     @Column(name = "description", nullable = false, length = 4096)
     private String description;
@@ -52,5 +61,9 @@ public class Album {
 
     public void removePost(long postId) {
         posts.removeIf(post -> post.getId() == postId);
+    }
+
+    public enum Visibility {
+        PUBLIC, SUBSCRIBERS, SELECTED_USERS, AUTHOR
     }
 }
