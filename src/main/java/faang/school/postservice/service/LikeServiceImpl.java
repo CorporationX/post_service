@@ -2,7 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -13,11 +12,15 @@ import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+@Validated
 @RequiredArgsConstructor
 @Component
 public class LikeServiceImpl implements LikeService {
@@ -29,7 +32,7 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient userServiceClient;
 
     @Override
-    public void addLikeToPost(LikeDto likeDto, long postId) {
+    public void addLikeToPost(@Valid LikeDto likeDto, @NotNull long postId) {
         Like like = likeMapper.toLike(likeDto);
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("There is no such post"));
@@ -45,7 +48,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public void deleteLikeFromPost(LikeDto likeDto, long postId) {
+    public void deleteLikeFromPost(@Valid LikeDto likeDto, @NotNull long postId) {
         Like like = likeMapper.toLike(likeDto);
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("There is no such post"));
@@ -57,7 +60,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public void addLikeToComment(LikeDto likeDto, long commentId) {
+    public void addLikeToComment(@Valid LikeDto likeDto, @NotNull long commentId) {
         Like like = likeMapper.toLike(likeDto);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("There is no such comment"));
@@ -69,7 +72,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public void deleteLikeFromComment(LikeDto likeDto, long commentId) {
+    public void deleteLikeFromComment(@Valid LikeDto likeDto, @NotNull long commentId) {
         Like like = likeMapper.toLike(likeDto);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("There is no such comment"));
@@ -81,7 +84,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public List<LikeDto> findLikesOfPublishedPost(long postId) {
+    public List<LikeDto> findLikesOfPublishedPost(@NotNull long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new DataValidationException("There is no such post"));
         if (post.isPublished()) {
             return postRepository.findById(postId)
@@ -92,7 +95,7 @@ public class LikeServiceImpl implements LikeService {
         }
     }
 
-     private void checkUser(long userId) {
+    private void checkUser(long userId) {
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException e) {

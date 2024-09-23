@@ -1,12 +1,12 @@
 package faang.school.postservice.dto.project;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class ProjectDto {
-    @NotNull(message = "Author ID cannot be null")
+    @Min(value = 1, message = "ID must be a positive number")
     private long id;
     @NotBlank(message = "Author ID cannot be blank")
     private String title;
