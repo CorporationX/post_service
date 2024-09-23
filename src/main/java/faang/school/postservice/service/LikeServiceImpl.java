@@ -92,7 +92,7 @@ public class LikeServiceImpl implements LikeService {
         }
     }
 
-    private void checkUser(long userId) {
+     private void checkUser(long userId) {
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException e) {
