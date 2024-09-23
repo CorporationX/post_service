@@ -8,8 +8,12 @@ import faang.school.postservice.repository.redis.RedisPostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -19,6 +23,7 @@ import java.util.TreeSet;
 @Component
 @RequiredArgsConstructor
 public class KafkaCommentListener implements KafkaEventListener<CommentKafkaEvent> {
+    private final RedisTemplate<String, String> redisTemplate;
 
     private final RedisPostRepository redisPostRepository;
     private final CommentMapper commentMapper;
@@ -29,6 +34,9 @@ public class KafkaCommentListener implements KafkaEventListener<CommentKafkaEven
     @Override
     @KafkaListener(topics = "${spring.kafka.topic.comments}",
             groupId = "${spring.kafka.consumer.group-id}")
+    @Retryable(value = {OptimisticLockingFailureException.class},
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000))
     public void onMessage(CommentKafkaEvent event, Acknowledgment acknowledgment) {
         log.info("Comment event received. Comment ID: {}, Author ID: {}, Post ID: {}",
                 event.getId(), event.getAuthorId(), event.getPostId());
@@ -52,8 +60,14 @@ public class KafkaCommentListener implements KafkaEventListener<CommentKafkaEven
                         log.info("Comments are larger than maximum: {}, remove comment: {}, and add new comment: {}",
                                 maxCapacity, pollComment, commentRedis);
                     }
-
+                    try {
+                    redisPostRepository.save(postRedis);
                     acknowledgment.acknowledge();
+                    } catch (OptimisticLockingFailureException e){
+                        log.error("Failed to update Post with ID: {} due to version conflict", postRedis.getId());
+                        throw e;
+                    }
+
                 },
                 () -> {
                     acknowledgment.acknowledge();

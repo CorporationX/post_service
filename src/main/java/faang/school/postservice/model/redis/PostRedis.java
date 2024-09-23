@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.time.LocalDateTime;
@@ -28,4 +29,7 @@ public class PostRedis {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long views;
+
+    @Version
+    private Long version;
 }
