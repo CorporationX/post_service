@@ -1,7 +1,9 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.HashtagServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.kafka.KafkaPostEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.hashtag.HashtagResponse;
 import faang.school.postservice.dto.post.PostDto;
@@ -11,6 +13,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.producer.KafkaProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
@@ -35,7 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -83,6 +85,12 @@ public class PostServiceTest {
 
     @Mock
     private UserContext userContext;
+
+    @Mock
+    private KafkaProducer kafkaProducer;
+
+    @Mock
+    private UserServiceClient userServiceClient;
 
     private PostDto postDto;
     private Post post;
@@ -218,6 +226,7 @@ public class PostServiceTest {
         when(entityManager.merge(any(Hashtag.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
+        when(userServiceClient.getFollowerIds(anyLong())).thenReturn(anyList());
         postDto.setHashtagNames(hashtagNames);
         PostDto result = postService.createPost(postDto);
 
@@ -227,6 +236,7 @@ public class PostServiceTest {
         verify(elasticsearchService, times(1)).indexPost(postDto);
         assertEquals(postDto, result);
         verify(postEventPublisher, times(1)).publish(any());
+        verify(kafkaProducer, times(1)).sendEvent(any(KafkaPostEvent.class));
     }
 
     @Test
