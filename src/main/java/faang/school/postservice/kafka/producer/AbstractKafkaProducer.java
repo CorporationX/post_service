@@ -1,7 +1,7 @@
 package faang.school.postservice.kafka.producer;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class AbstractKafkaProducer<T> {
+@RequiredArgsConstructor
+public class AbstractKafkaProducer {
 
-    @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendMessage(String topic, String key, T message) {
+    public void sendMessage(String topic, String key, Object message) {
         kafkaTemplate.send(topic, key, message);
         log.info("Sent message with key: {}, to topic: {}", key, topic);
     }

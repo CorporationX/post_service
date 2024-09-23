@@ -19,12 +19,6 @@ public class CommentAspect {
 
     @AfterReturning(pointcut = "execution(* faang.school.postservice.service.CommentService.createComment(..))", returning = "result")
     public void afterCreateComment(CommentDto result) {
-        CommentDto commentEvent = CommentDto.builder()
-                .id(result.getId())
-                .postId(result.getPostId())
-                .authorId(result.getAuthorId())
-                .createdAt(result.getCreatedAt())
-                .build();
-        kafkaCommentProducer.sendMessage(commentEvent);
+        kafkaCommentProducer.sendMessage(result);
     }
 }
