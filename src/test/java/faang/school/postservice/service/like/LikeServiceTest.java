@@ -8,6 +8,7 @@ import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -48,6 +49,9 @@ class LikeServiceTest {
 
     @Mock
     private LikeMapper likeMapper;
+
+    @Mock
+    private KafkaLikeProducer likeProducer;
 
     @Mock
     private LikeValidator likeValidator;
@@ -100,8 +104,8 @@ class LikeServiceTest {
         firstLike = Like.builder().id(1L).userId(1L).build();
         secondLike = Like.builder().id(2L).userId(2L).build();
         likes = List.of(firstLike, secondLike);
-        userOne = new UserDto(1L, "first", "mail.one");
-        userTwo = new UserDto(2L, "second", "mail.two");
+        userOne = new UserDto(1L, "first", "mail.one", List.of());
+        userTwo = new UserDto(2L, "second", "mail.two", List.of());
         users = List.of(userOne, userTwo);
     }
 

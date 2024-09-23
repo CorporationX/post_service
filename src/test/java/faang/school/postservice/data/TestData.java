@@ -615,6 +615,7 @@ public class TestData {
     public final static DraftPostDto correctDraftWithAudioFile =
             DraftPostDto.builder()
                     .projectId(EXISTENT_PROJECT_ID)
+                    .authorId(EXISTENT_AUTHOR_ID)
                     .content(correctContent)
                     .scheduledAt(defaultScheduledAt)
                     .resource(List.of(audioFile))
@@ -623,6 +624,7 @@ public class TestData {
     public final static Post creatablePostWithAudioFile =
             Post.builder()
                     .projectId(EXISTENT_PROJECT_ID)
+                    .authorId(EXISTENT_AUTHOR_ID)
                     .content(correctContent)
                     .scheduledAt(
                             correctDraftWithAudioFile.getScheduledAt()
@@ -632,6 +634,7 @@ public class TestData {
     public final static Post storedPostWithAudioFile =
             Post.builder()
                     .id(EXISTENT_POST_ID)
+                    .authorId(EXISTENT_AUTHOR_ID)
                     .projectId(EXISTENT_PROJECT_ID)
                     .content(correctContent)
                     .scheduledAt(
@@ -661,6 +664,7 @@ public class TestData {
     public final static PostDto savedPostDtoWithAudioFile = PostDto.builder()
             .id(EXISTENT_POST_ID)
             .projectId(EXISTENT_PROJECT_ID)
+            .authorId(1L)
             .content(correctContent)
             .scheduledAt(correctDraftWithAudioFile.getScheduledAt())
             .createdAt(defaultCreateAt)

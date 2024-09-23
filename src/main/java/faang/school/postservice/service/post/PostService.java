@@ -1,19 +1,24 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.GetPostsDto;
 import faang.school.postservice.dto.post.UpdatablePostDto;
 import faang.school.postservice.dto.publishable.PostEvent;
+import faang.school.postservice.dto.publishable.PostViewEvent;
 import faang.school.postservice.dto.resource.PreviewPostResourceDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.post.DraftPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.UpdatableResourceDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.messages.ValidationExceptionMessage;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.exception.validation.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.post.ResourceMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
@@ -41,16 +46,21 @@ public class PostService {
 
     private final UpdatePostResourceCommand updatePostResource;
 
+    private final UserServiceClient userServiceClient;
+
     private final PostMapper postMapper;
     private final ResourceMapper resourceMapper;
 
     private final PostServiceValidator validator;
     private final PostEventPublisher postEventPublisher;
 
+    private final KafkaPostProducer postProducer;
+    private final KafkaPostViewProducer postViewProducer;
+
     @Transactional
     public PostDto createPostDraft(DraftPostDto draft) {
 
-        validator.validateCreatablePostDraft(draft);
+         validator.validateCreatablePostDraft(draft);
 
         PostDto postDto = postMapper.fromDraftPostDto(draft);
         Post post = postMapper.toEntity(postDto);
@@ -69,6 +79,15 @@ public class PostService {
 
         savedPostDto.setResources(resourcePreviews);
 
+        UserDto userDto = userServiceClient.getUser(savedPost.getAuthorId());
+        PostEvent postEvent = PostEvent.builder()
+                .postId(savedPostDto.getId())
+                .authorId(savedPostDto.getAuthorId())
+                .subscriberIds(userDto.getSubscriberIds())
+                .build();
+
+        postProducer.sendEvent(postEvent);
+
         return savedPostDto;
     }
 
@@ -84,7 +103,7 @@ public class PostService {
 
         Post savedPost = postRepository.save(post);
 
-        PostEvent postEvent = new PostEvent(post.getAuthorId(), postId);
+        PostEvent postEvent = new PostEvent(post.getAuthorId(), postId, List.of());
         postEventPublisher.publish(postEvent);
 
         return postMapper.toDto(savedPost);
@@ -156,6 +175,9 @@ public class PostService {
         Post post = getPost(postId);
 
         validator.verifyPostDeletion(post);
+
+        PostViewEvent postViewEvent = new PostViewEvent(postId);
+        postViewProducer.sendEvent(postViewEvent);
 
         return postMapper.toDto(post);
     }

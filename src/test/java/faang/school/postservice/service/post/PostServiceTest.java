@@ -1,11 +1,15 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.data.TestData;
 import faang.school.postservice.dto.post.*;
 import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.mapper.post.*;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
@@ -44,6 +48,15 @@ public class PostServiceTest {
     @Mock
     UpdatePostResourceCommand updatePostResourceCommand;
 
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private KafkaPostProducer postProducer;
+
+    @Mock
+    private KafkaPostViewProducer postViewProducer;
+
     @Spy
     private PostMapper postMapper = new PostMapperImpl();
 
@@ -54,6 +67,8 @@ public class PostServiceTest {
     private PostServiceValidator postServiceValidator;
     @Mock
     private PostEventPublisher postEventPublisher;
+
+    private UserDto userDto;
 
     @InjectMocks
     private PostService postService;
@@ -68,14 +83,24 @@ public class PostServiceTest {
     ) {
     }
 
+    @BeforeEach
+    public void setUp() {
+        userDto = UserDto.builder()
+                .id(1L)
+                .username("some name")
+                .email("some email")
+                .build();
+    }
+
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideTestDataForCreateDraftMethod")
     @DisplayName("Test PostService.createPostDraft")
     void createPostDraftTest(String testCaseName, CreatePostDraftTestParam p) {
         initMockForCreatePostDraftTests(p);
+        p.savedPost.setAuthorId(1L);
+        when(userServiceClient.getUser(p.savedPost.getAuthorId())).thenReturn(userDto);
 
         var draft = p.draft;
-
         var expected = p.expectedSavedPost;
         var actual = postService.createPostDraft(draft);
 
@@ -167,6 +192,7 @@ public class PostServiceTest {
                         List.of(TestData.savedAudioFileResourceDto),
                         TestData.savedPostDtoWithAudioFile
                 )
+
         ));
 
         // Test 6
@@ -243,20 +269,20 @@ public class PostServiceTest {
 
         when(postRepository.save(
                 argThat(o ->
-                        o.getId() == saved.getId() &&
-                                Objects.equals(o.getContent(), saved.getContent()) &&
-                                Objects.equals(o.getAuthorId(), saved.getAuthorId()) &&
-                                Objects.equals(o.getProjectId(), saved.getProjectId()) &&
-                                Objects.equals(o.getLikes(), saved.getLikes()) &&
-                                Objects.equals(o.getComments(), saved.getComments()) &&
-                                Objects.equals(o.getAlbums(), saved.getAlbums()) &&
-                                Objects.equals(o.getAd(), saved.getAd()) &&
+                                o.getId() == saved.getId() &&
+                                        Objects.equals(o.getContent(), saved.getContent()) &&
+                                        Objects.equals(o.getAuthorId(), saved.getAuthorId()) &&
+                                        Objects.equals(o.getProjectId(), saved.getProjectId()) &&
+                                        Objects.equals(o.getLikes(), saved.getLikes()) &&
+                                        Objects.equals(o.getComments(), saved.getComments()) &&
+                                        Objects.equals(o.getAlbums(), saved.getAlbums()) &&
+                                        Objects.equals(o.getAd(), saved.getAd()) &&
 //                                Objects.equals(o.getResources(), saved.getResources()) &&
-                                o.isPublished() == saved.isPublished() &&
-                                Objects.equals(o.getPublishedAt(), saved.getPublishedAt()) &&
-                                Objects.equals(o.getScheduledAt(), saved.getScheduledAt()) &&
-                                o.isDeleted() == saved.isDeleted() &&
-                                Objects.equals(o.getCreatedAt(), saved.getCreatedAt())
+                                        o.isPublished() == saved.isPublished() &&
+                                        Objects.equals(o.getPublishedAt(), saved.getPublishedAt()) &&
+                                        Objects.equals(o.getScheduledAt(), saved.getScheduledAt()) &&
+                                        o.isDeleted() == saved.isDeleted() &&
+                                        Objects.equals(o.getCreatedAt(), saved.getCreatedAt())
                 )
         )).thenReturn(p.savedUpdatedPost);
     }

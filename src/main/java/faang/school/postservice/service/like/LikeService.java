@@ -8,6 +8,7 @@ import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -32,6 +33,8 @@ public class LikeService {
     private final LikeValidator likeValidator;
     private final UserServiceClient userServiceClient;
     private final LikeEventPublisher eventPublisher;
+    private final KafkaLikeProducer likeProducer;
+
     @Value("${like.userBatchSize}")
     private int userBatchSize;
   
@@ -49,7 +52,13 @@ public class LikeService {
         like.setPost(post);
         likeRepository.save(like);
 
-        LikeEvent event = new LikeEvent(like.getUserId(), post.getAuthorId(), post.getId());
+        LikeEvent event = LikeEvent.builder()
+                .actorId(like.getUserId())
+                .receiverId(post.getAuthorId())
+                .postId(post.getId())
+                .build();
+
+        likeProducer.sendEvent(event);
         eventPublisher.publish(event);
     }
 
