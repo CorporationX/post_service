@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.post.PostMapperList;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.cache.PostCacheService;
@@ -36,6 +37,7 @@ public class PostService {
     private final PostHashTagService postHashTagService;
     private final PostCacheService postCacheService;
     private final PostMapper postMapper;
+    private final PostMapperList postMapperList;
 
     @Transactional
     public Post create(Post post) {
@@ -93,15 +95,13 @@ public class PostService {
         postRepository.save(post);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PostCacheDto> findInRangeByHashTag(String hashTag, int start, int end) {
         List<PostCacheDto> postDtos = postCacheService.findInRangeByHashTag(hashTag, start, end);
         if (postDtos.isEmpty()) {
             String jsonTag = postHashTagService.convertTagToJson(hashTag);
             List<Post> posts = postRepository.findTopByHashTagByDate(jsonTag, numberOfTopIntCache);
-            List<PostCacheDto> postCacheDtos = posts.stream()
-                    .map(postMapper::toPostCacheDto)
-                    .toList();
+            List<PostCacheDto> postCacheDtos = postMapperList.mapToPostCacheDtos(posts);
             postCacheService.addListOfPostsToCache(postCacheDtos, hashTag);
             postDtos = postCacheService.findInRangeByHashTag(hashTag, start, end);
         }
