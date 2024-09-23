@@ -2,9 +2,11 @@ package faang.school.postservice.service.album;
 
 import faang.school.postservice.client.UserServiceClientMock;
 import faang.school.postservice.exception.BadRequestException;
+import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,10 +16,11 @@ import java.util.List;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALBUM_NOT_EXISTS;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.TITLE_NOT_UNIQUE;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.USER_IS_NOT_CREATOR;
+import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.USER_NOT_FOUND;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
+@Component
 public class AlbumServiceChecker {
     private final PostRepository postRepository;
     private final AlbumRepository albumRepository;
@@ -28,29 +31,33 @@ public class AlbumServiceChecker {
     }
 
     public void checkUserExists(Long userId) {
-        userServiceClient.getUser(userId);
+        try {
+            userServiceClient.getUser(userId);
+        } catch (FeignException e) {
+            throw new UserNotFoundException(USER_NOT_FOUND, userId);
+        }
     }
 
     public Album findByIdWithPosts(long id) {
         return albumRepository.findByIdWithPosts(id)
                 .orElseThrow(() -> {
-                    log.error(ALBUM_NOT_EXISTS);
-                    return new BadRequestException(ALBUM_NOT_EXISTS);
+                    log.error("The album with id {} not exist", id);
+                    return new BadRequestException(ALBUM_NOT_EXISTS, id);
                 });
     }
 
     public void checkAlbumExistsWithTitle(String title, long authorId) {
         boolean existsWithTitle = albumRepository.existsByTitleAndAuthorId(title, authorId);
         if (existsWithTitle) {
-            log.error(TITLE_NOT_UNIQUE);
-            throw new BadRequestException(TITLE_NOT_UNIQUE);
+            log.error("The user with id {} already has album with title - {}", authorId, title);
+            throw new BadRequestException(TITLE_NOT_UNIQUE, authorId, title);
         }
     }
 
     public void isCreatorOfAlbum(long userId, Album album) {
         if (userId != album.getAuthorId()) {
-            log.error(USER_IS_NOT_CREATOR);
-            throw new BadRequestException(USER_IS_NOT_CREATOR);
+            log.error("User with id {} is not a creator of album with id {}", userId, album.getId());
+            throw new BadRequestException(USER_IS_NOT_CREATOR, userId, album.getId());
         }
     }
 

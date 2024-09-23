@@ -18,8 +18,8 @@ import static faang.school.postservice.service.album.error_messages.AlbumErrorMe
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.NOT_FAVORITE;
 
 @Slf4j
-@Service
 @RequiredArgsConstructor
+@Service
 public class AlbumService {
     private final AlbumRepository albumRepository;
     private final PostRepository postRepository;
@@ -56,11 +56,10 @@ public class AlbumService {
     }
 
     @Transactional
-    public Album deleteAlbum(long userId, long albumId) {
+    public void deleteAlbum(long userId, long albumId) {
         Album album = getAlbumAfterChecks(userId, albumId);
         albumRepository.delete(album);
         log.info("Album with id {} deleted", albumId);
-        return album;
     }
 
     @Transactional
@@ -74,13 +73,12 @@ public class AlbumService {
     }
 
     @Transactional
-    public Album deleteAlbumFromFavorites(long userId, long albumId) {
+    public void deleteAlbumFromFavorites(long userId, long albumId) {
         checker.checkUserExists(userId);
         Album album = checker.findByIdWithPosts(albumId);
         checker.checkFavoritesAlbumsContainsAlbum(userId, album, NOT_FAVORITE, false);
         albumRepository.deleteAlbumFromFavorites(albumId, userId);
         log.info("Album with id {} deleted from favorites albums", albumId);
-        return album;
     }
 
     @Transactional

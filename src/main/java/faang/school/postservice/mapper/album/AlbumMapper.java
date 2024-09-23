@@ -15,14 +15,16 @@ import static org.mapstruct.ReportingPolicy.IGNORE;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = IGNORE)
 public interface AlbumMapper {
-    @Mapping(source = "posts", target = "postIds", qualifiedByName = "map")
+    @Mapping(source = "posts", target = "postIds", qualifiedByName = "mapPostsToPostIds")
     AlbumResponseDto toAlbumResponseDto(Album album);
+
+    List<AlbumResponseDto> toAlbumResponseDtos(List<Album> album);
 
     @Mapping(target = "posts", ignore = true)
     Album toEntity(CreateAlbumDto albumDto);
 
-    @Named("map")
-    default List<Long> map(List<Post> posts) {
+    @Named("mapPostsToPostIds")
+    default List<Long> mapPostsToPostIds(List<Post> posts) {
         if (posts == null) {
             return new ArrayList<>();
         }

@@ -1,8 +1,10 @@
 package faang.school.postservice.dto.album;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class UpdateAlbumDto {
     private Long id;
     private String title;

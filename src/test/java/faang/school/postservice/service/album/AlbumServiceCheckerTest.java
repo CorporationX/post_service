@@ -16,8 +16,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALBUM_NOT_EXISTS;
+import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALREADY_FAVORITE;
+import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.NOT_FAVORITE;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.TITLE_NOT_UNIQUE;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.USER_IS_NOT_CREATOR;
+import static faang.school.postservice.util.album.BuilderForAlbumsTests.buildAlbum;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,6 +30,10 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AlbumServiceCheckerTest {
+    private static final long USER_ID = 1;
+    private static final long ALBUM_ID = 1;
+    private static final String TITLE = "title";
+
     @Mock
     private PostRepository postRepository;
     @Mock
@@ -36,6 +43,8 @@ class AlbumServiceCheckerTest {
 
     @InjectMocks
     private AlbumServiceChecker checker;
+
+    private Album album;
 
     @Test
     void testIsExistingPosts() {
@@ -50,93 +59,82 @@ class AlbumServiceCheckerTest {
 
     @Test
     void testCheckUserExists() {
-        long userId = 1;
+        userServiceClient.getUser(USER_ID);
 
-        userServiceClient.getUser(userId);
-
-        verify(userServiceClient, Mockito.times(1)).getUser(userId);
+        verify(userServiceClient, Mockito.times(1)).getUser(USER_ID);
     }
 
     @Test
     void testFindByIdWithPostsIsSuccessful() {
-        long albumId = 1;
-        when(albumRepository.findByIdWithPosts(albumId)).thenReturn(Optional.of(new Album()));
-        Album album = checker.findByIdWithPosts(albumId);
+        when(albumRepository.findByIdWithPosts(ALBUM_ID)).thenReturn(Optional.of(new Album()));
+        album = checker.findByIdWithPosts(ALBUM_ID);
 
         assertNotNull(album);
     }
 
     @Test
     void testFindByIdWithPostsIsNotSuccessful() {
-        long albumId = 1;
-        when(albumRepository.findByIdWithPosts(albumId)).thenReturn(Optional.empty());
+        when(albumRepository.findByIdWithPosts(ALBUM_ID)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(BadRequestException.class, () -> checker.findByIdWithPosts(albumId));
-        assertEquals(ALBUM_NOT_EXISTS, exception.getMessage());
+        RuntimeException exception = assertThrows(BadRequestException.class, () -> checker.findByIdWithPosts(ALBUM_ID));
+        String expected = String.format(ALBUM_NOT_EXISTS, ALBUM_ID);
+        assertEquals(expected, exception.getMessage());
     }
 
     @Test
     void testCheckAlbumExistsWithTitleIsSuccessful() {
-        long authorId = 1;
-        String title = "title";
-        when(albumRepository.existsByTitleAndAuthorId(title, authorId)).thenReturn(false);
+        when(albumRepository.existsByTitleAndAuthorId(TITLE, USER_ID)).thenReturn(false);
 
-        checker.checkAlbumExistsWithTitle(title, authorId);
+        checker.checkAlbumExistsWithTitle(TITLE, USER_ID);
 
-        verify(albumRepository, Mockito.times(1)).existsByTitleAndAuthorId(title, authorId);
+        verify(albumRepository, Mockito.times(1)).existsByTitleAndAuthorId(TITLE, USER_ID);
     }
 
     @Test
     void testCheckAlbumExistsWithTitleIsNotSuccessful() {
-        long authorId = 1;
-        String title = "title";
-        when(albumRepository.existsByTitleAndAuthorId(title, authorId)).thenReturn(true);
+        when(albumRepository.existsByTitleAndAuthorId(TITLE, USER_ID)).thenReturn(true);
 
         RuntimeException exception = assertThrows(BadRequestException.class,
-                () -> checker.checkAlbumExistsWithTitle(title, authorId));
-        assertEquals(TITLE_NOT_UNIQUE, exception.getMessage());
+                () -> checker.checkAlbumExistsWithTitle(TITLE, USER_ID));
+        String expected = String.format(TITLE_NOT_UNIQUE, USER_ID, TITLE);
+        assertEquals(expected, exception.getMessage());
     }
 
     @Test
     void testIsNotCreatorOfAlbum() {
-        long userId = 1;
         long authorId = 2;
-        Album album = new Album();
-        album.setAuthorId(authorId);
+        album = buildAlbum(authorId);
 
         RuntimeException exception = assertThrows(BadRequestException.class,
-                () -> checker.isCreatorOfAlbum(userId, album));
-        assertEquals(USER_IS_NOT_CREATOR, exception.getMessage());
+                () -> checker.isCreatorOfAlbum(USER_ID, album));
+        String expected = String.format(USER_IS_NOT_CREATOR, USER_ID, album.getId());
+        assertEquals(expected, exception.getMessage());
     }
 
     @Test
     void checkFavoritesAlbumsWhenContainsAlbum() {
-        long userId = 1;
-        Album album = new Album();
-        album.setAuthorId(userId);
+        album = buildAlbum(USER_ID);
         List<Album> favoritesAlbums = List.of(album);
-        String exceptionMessage = "Some message";
+        String exceptionMessage = ALREADY_FAVORITE;
         boolean isContains = true;
-        when(albumRepository.findFavoriteAlbumsByUserId(userId)).thenReturn(favoritesAlbums.stream());
+        when(albumRepository.findFavoriteAlbumsByUserId(USER_ID)).thenReturn(favoritesAlbums.stream());
 
         RuntimeException exception = assertThrows(BadRequestException.class,
-                () -> checker.checkFavoritesAlbumsContainsAlbum(userId, album, exceptionMessage, isContains));
+                () -> checker.checkFavoritesAlbumsContainsAlbum(USER_ID, album, exceptionMessage, isContains));
         assertEquals(exceptionMessage, exception.getMessage());
     }
 
     @Test
     void checkFavoritesAlbumsWhenNotContainsAlbum() {
-        long userId = 1;
-        Album album = new Album();
-        album.setAuthorId(userId);
+        album = buildAlbum(USER_ID);
         Album secondAlbum = new Album();
         List<Album> favoritesAlbums = List.of(secondAlbum);
-        String exceptionMessage = "Some message";
+        String exceptionMessage = NOT_FAVORITE;
         boolean isContains = false;
-        when(albumRepository.findFavoriteAlbumsByUserId(userId)).thenReturn(favoritesAlbums.stream());
+        when(albumRepository.findFavoriteAlbumsByUserId(USER_ID)).thenReturn(favoritesAlbums.stream());
 
         RuntimeException exception = assertThrows(BadRequestException.class,
-                () -> checker.checkFavoritesAlbumsContainsAlbum(userId, album, exceptionMessage, isContains));
+                () -> checker.checkFavoritesAlbumsContainsAlbum(USER_ID, album, exceptionMessage, isContains));
         assertEquals(exceptionMessage, exception.getMessage());
     }
 }

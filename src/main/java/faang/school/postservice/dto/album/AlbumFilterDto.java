@@ -1,11 +1,11 @@
 package faang.school.postservice.dto.album;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
 @Builder
 public class AlbumFilterDto {
     private String title;

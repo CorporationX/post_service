@@ -11,6 +11,7 @@ import faang.school.postservice.service.album.filter.AlbumCreatedToFilter;
 import faang.school.postservice.service.album.filter.AlbumFilter;
 import faang.school.postservice.service.album.filter.AlbumTitleFilter;
 import faang.school.postservice.service.album.filter.MinimumOfPostsAtAlbum;
+import faang.school.postservice.util.album.BuilderForAlbumsTests;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,13 +22,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALREADY_FAVORITE;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.NOT_FAVORITE;
+import static faang.school.postservice.util.album.BuilderForAlbumsTests.buildAlbum;
+import static faang.school.postservice.util.album.BuilderForAlbumsTests.buildPost;
+import static faang.school.postservice.util.album.BuilderForAlbumsTests.getRandomLong;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -37,6 +40,11 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AlbumServiceTest {
+    private static final long USER_ID = 1;
+    private static final long ALBUM_ID = 1;
+    private static final String TITLE = "title";
+    private static final String DESCRIPTION = "description";
+
     @Mock
     private AlbumRepository albumRepository;
     @Mock
@@ -56,215 +64,174 @@ class AlbumServiceTest {
             new AlbumCreatedFromFilter(),
             new AlbumCreatedToFilter()
     );
-    private final Random random = new Random();
+    private Album album;
 
     @Test
     void createNewAlbum() {
-        long authorId = 1;
-        Album album = Album.builder()
-                .title("Title")
-                .description("Description")
-                .build();
-        when(albumRepository.save(Mockito.any(Album.class))).thenReturn(album);
+        album = buildAlbum(TITLE, DESCRIPTION);
 
-        albumService.createNewAlbum(authorId, album);
+        albumService.createNewAlbum(USER_ID, album);
 
-        verify(checker, Mockito.times(1)).checkUserExists(authorId);
-        verify(checker, Mockito.times(1)).checkAlbumExistsWithTitle(album.getTitle(), authorId);
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
+        verify(checker, Mockito.times(1)).checkAlbumExistsWithTitle(album.getTitle(), USER_ID);
         verify(albumRepository, Mockito.times(1)).save(album);
     }
 
     @Test
     void getAlbum() {
-        long userId = 1;
-        long albumId = 2;
         Album expected = new Album();
-        when(checker.findByIdWithPosts(albumId)).thenReturn(expected);
-        Album album = albumService.getAlbum(userId, albumId);
+        when(checker.findByIdWithPosts(ALBUM_ID)).thenReturn(expected);
+        album = albumService.getAlbum(USER_ID, ALBUM_ID);
 
-        verify(checker, Mockito.times(1)).checkUserExists(userId);
-        verify(checker, Mockito.times(1)).findByIdWithPosts(albumId);
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
+        verify(checker, Mockito.times(1)).findByIdWithPosts(ALBUM_ID);
         assertEquals(expected, album);
     }
 
     @Test
     void testUpdateAlbum() {
-        long userId = 1;
-        String title = "New title";
-        String description = "New description";
+        String newTitle = "New title";
+        String newDescription = "New description";
 
-        Album album = forUpdateAlbumTest(userId, title, description);
+        album = forUpdateAlbumTest(newTitle, newDescription);
 
-        verify(checker, Mockito.times(1)).checkAlbumExistsWithTitle(title, userId);
-        assertEquals(album.getTitle(), title);
-        assertEquals(album.getDescription(), description);
+        verify(checker, Mockito.times(1)).checkAlbumExistsWithTitle(newTitle, USER_ID);
+        assertEquals(album.getTitle(), newTitle);
+        assertEquals(album.getDescription(), newDescription);
     }
 
     @Test
     void testUpdateAlbumWhenDescriptionIsNull() {
-        long userId = 1;
-        String title = "New title";
-        String description = null;
+        String newTitle = "New title";
+        String newDescription = null;
 
-        Album album = forUpdateAlbumTest(userId, title, description);
+        album = forUpdateAlbumTest(newTitle, newDescription);
 
-        verify(checker, Mockito.times(1)).checkAlbumExistsWithTitle(title, userId);
-        assertEquals(album.getTitle(), title);
+        verify(checker, Mockito.times(1)).checkAlbumExistsWithTitle(newTitle, USER_ID);
+        assertEquals(album.getTitle(), newTitle);
         assertNotNull(album.getDescription());
     }
 
     @Test
     void testUpdateAlbumWhenEmptyTitle() {
-        long userId = 1;
-        String title = " ";
-        String description = "New description";
+        String newTitle = " ";
+        String newDescription = "New description";
 
-        Album album = forUpdateAlbumTest(userId, title, description);
+        album = forUpdateAlbumTest(newTitle, newDescription);
 
-        assertNotEquals(album.getTitle(), title);
-        assertEquals(album.getDescription(), description);
+        assertNotEquals(album.getTitle(), newTitle);
+        assertEquals(album.getDescription(), newDescription);
     }
 
     @Test
     void testDeleteAlbum() {
-        long userId = 1;
-        long albumId = 2;
-        Album album = Album.builder()
-                .id(2)
-                .authorId(1)
-                .build();
-        when(checker.findByIdWithPosts(albumId)).thenReturn(album);
+        album = buildAlbum(2, 1);
+        when(checker.findByIdWithPosts(ALBUM_ID)).thenReturn(album);
 
-        albumService.deleteAlbum(userId, albumId);
+        albumService.deleteAlbum(USER_ID, ALBUM_ID);
 
-        verify(checker, Mockito.times(1)).checkUserExists(userId);
-        verify(checker, Mockito.times(1)).findByIdWithPosts(albumId);
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
+        verify(checker, Mockito.times(1)).findByIdWithPosts(ALBUM_ID);
         verify(albumRepository, Mockito.times(1)).delete(album);
     }
 
     @Test
     void addAlbumToFavorites() {
-        long userId = 1;
-        long albumId = 2;
         boolean isContains = true;
-        when(checker.findByIdWithPosts(albumId)).thenReturn(new Album());
+        when(checker.findByIdWithPosts(ALBUM_ID)).thenReturn(new Album());
 
-        Album album = albumService.addAlbumToFavorites(userId, albumId);
+        album = albumService.addAlbumToFavorites(USER_ID, ALBUM_ID);
 
-        verify(checker, Mockito.times(1)).checkUserExists(userId);
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
         verify(checker, Mockito.times(1))
-                .checkFavoritesAlbumsContainsAlbum(userId, album, ALREADY_FAVORITE, isContains);
-        verify(albumRepository, Mockito.times(1)).addAlbumToFavorites(albumId, userId);
+                .checkFavoritesAlbumsContainsAlbum(USER_ID, album, ALREADY_FAVORITE, isContains);
+        verify(albumRepository, Mockito.times(1)).addAlbumToFavorites(ALBUM_ID, USER_ID);
     }
 
     @Test
     void deleteAlbumFromFavorites() {
-        long userId = 1;
-        long albumId = 2;
+        album = new Album();
         boolean isContains = false;
-        when(checker.findByIdWithPosts(albumId)).thenReturn(new Album());
+        when(checker.findByIdWithPosts(ALBUM_ID)).thenReturn(album);
 
-        Album album = albumService.deleteAlbumFromFavorites(userId, albumId);
+        albumService.deleteAlbumFromFavorites(USER_ID, ALBUM_ID);
 
-        verify(checker, Mockito.times(1)).checkUserExists(userId);
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
         verify(checker, Mockito.times(1))
-                .checkFavoritesAlbumsContainsAlbum(userId, album, NOT_FAVORITE, isContains);
-        verify(albumRepository, Mockito.times(1)).deleteAlbumFromFavorites(albumId, userId);
+                .checkFavoritesAlbumsContainsAlbum(USER_ID, album, NOT_FAVORITE, isContains);
+        verify(albumRepository, Mockito.times(1)).deleteAlbumFromFavorites(ALBUM_ID, USER_ID);
     }
 
     @Test
     void addNewPosts() {
-        long userId = 1;
-        long albumId = 2;
         List<Post> posts = new ArrayList<>(List.of(new Post()));
-        Album album = Album.builder()
-                .id(albumId)
-                .title("Title")
-                .authorId(userId)
-                .posts(posts)
-                .build();
+        album = buildAlbum(ALBUM_ID, TITLE, USER_ID, posts);
         List<Long> postsIds = List.of(1L, 4L);
-        Post post1 = new Post();
-        post1.setId(postsIds.get(0));
-        Post post2 = new Post();
-        post2.setId(postsIds.get(1));
+        Post post1 = buildPost(postsIds.get(0));
+        Post post2 = buildPost(postsIds.get(1));
         List<Post> postToAdd = List.of(post1, post2);
-        when(checker.findByIdWithPosts(albumId)).thenReturn(album);
+        when(checker.findByIdWithPosts(ALBUM_ID)).thenReturn(album);
         when(checker.isExistingPosts(1)).thenReturn(true);
         when(checker.isExistingPosts(4)).thenReturn(true);
         when(postRepository.findAllById(postsIds)).thenReturn(postToAdd);
 
-        albumService.addNewPosts(userId, albumId, postsIds);
+        albumService.addNewPosts(USER_ID, ALBUM_ID, postsIds);
 
         assertEquals(album.getPosts().size(), 3);
         assertTrue(album.getPosts().contains(post1));
         assertTrue(album.getPosts().contains(post2));
-        verify(checker, Mockito.times(1)).checkUserExists(userId);
-        verify(checker, Mockito.times(1)).findByIdWithPosts(albumId);
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
+        verify(checker, Mockito.times(1)).findByIdWithPosts(ALBUM_ID);
         verify(albumRepository, Mockito.times(1)).save(album);
     }
 
     @Test
     void deletePosts() {
-        long userId = 1;
-        long albumId = 2;
-        Post post1 = new Post();
-        post1.setId(3L);
+        Post post1 = buildPost(3);
         List<Post> expected = List.of(post1);
         List<Post> posts = LongStream.rangeClosed(1, 5)
-                .mapToObj(id -> {
-                    Post post = new Post();
-                    post.setId(id);
-                    return post;
-                })
+                .mapToObj(BuilderForAlbumsTests::buildPost)
                 .collect(Collectors.toCollection(ArrayList::new));
         List<Long> postIdsToDelete = List.of(4L, 2L, 5L, 1L);
-        Album album = Album.builder()
-                .id(albumId)
-                .title("Title")
-                .authorId(userId)
-                .posts(posts)
-                .build();
-        when(checker.findByIdWithPosts(albumId)).thenReturn(album);
+        album = buildAlbum(ALBUM_ID, TITLE, USER_ID, posts);
+        when(checker.findByIdWithPosts(ALBUM_ID)).thenReturn(album);
 
-        albumService.deletePosts(userId, albumId, postIdsToDelete);
+        albumService.deletePosts(USER_ID, ALBUM_ID, postIdsToDelete);
 
         assertEquals(album.getPosts().size(), 1);
         assertEquals(album.getPosts(), expected);
-        verify(checker, Mockito.times(1)).checkUserExists(userId);
-        verify(checker, Mockito.times(1)).findByIdWithPosts(albumId);
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
+        verify(checker, Mockito.times(1)).findByIdWithPosts(ALBUM_ID);
         verify(albumRepository, Mockito.times(1)).save(album);
     }
 
     @Test
     void getUserAlbums() {
-        long userId = 1;
         AlbumFilterDto albumFilterDto = AlbumFilterDto.builder()
-                .title("Some title")
+                .title(TITLE)
                 .createdFrom(LocalDateTime.now().minusMonths(1))
                 .build();
         List<Album> albums = createAlbumsStreamWithTitlesAndCreatedAt(1, 10,
-                1, 20, "Some title")
+                1, 20, TITLE)
                 .collect(Collectors.toCollection(ArrayList::new));
         List<Album> expected = new ArrayList<>(albums);
         createAlbumsStreamWithTitlesAndCreatedAt(11, 20,
-                32, 50, "Some title")
+                32, 50, TITLE)
                 .forEach(albums::add);
         createAlbumsStreamWithTitlesAndCreatedAt(21, 30,
                 1, 25, "Some else title")
                 .forEach(albums::add);
         when(albumFilters.stream()).thenReturn(filters.stream());
-        when(albumRepository.findByAuthorId(userId)).thenReturn(albums);
+        when(albumRepository.findByAuthorId(USER_ID)).thenReturn(albums);
 
-        List<Album> result = albumService.getUserAlbums(userId, albumFilterDto);
+        List<Album> result = albumService.getUserAlbums(USER_ID, albumFilterDto);
 
         assertEquals(expected, result);
-        verify(checker, Mockito.times(1)).checkUserExists(userId);
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
     }
 
     @Test
     void getFavoriteAlbums() {
-        long userId = 1;
         AlbumFilterDto albumFilterDto = AlbumFilterDto.builder()
                 .minQuantityOfPosts(10)
                 .build();
@@ -274,17 +241,16 @@ class AlbumServiceTest {
         createAlbumsStreamWithPosts(11, 20, 0, 9)
                 .forEach(albums::add);
         when(albumFilters.stream()).thenReturn(filters.stream());
-        when(albumRepository.findFavoriteAlbumsByUserId(userId)).thenReturn(albums.stream());
+        when(albumRepository.findFavoriteAlbumsByUserId(USER_ID)).thenReturn(albums.stream());
 
-        List<Album> result = albumService.getFavoriteAlbums(userId, albumFilterDto);
+        List<Album> result = albumService.getFavoriteAlbums(USER_ID, albumFilterDto);
 
-        verify(checker, Mockito.times(1)).checkUserExists(userId);
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
         assertEquals(expected, result);
     }
 
     @Test
     void getAllAlbums() {
-        long userId = 1;
         AlbumFilterDto albumFilterDto = AlbumFilterDto.builder()
                 .authorId(1L)
                 .createdTo(LocalDateTime.now().minusMonths(1))
@@ -302,67 +268,43 @@ class AlbumServiceTest {
         when(albumFilters.stream()).thenReturn(filters.stream());
         when(albumRepository.findAll()).thenReturn(albums);
 
-        List<Album> result = albumService.getAllAlbums(userId, albumFilterDto);
+        List<Album> result = albumService.getAllAlbums(USER_ID, albumFilterDto);
 
-        verify(checker, Mockito.times(1)).checkUserExists(userId);
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
         assertEquals(expected, result);
     }
 
     private Stream<Album> createAlbumsStreamWithPosts(long fromId, long toId,
                                                       long fromQuantityOfPosts, long toQuantityOfPosts) {
         List<Post> posts = LongStream.rangeClosed(1, getRandomLong(fromQuantityOfPosts, toQuantityOfPosts))
-                .mapToObj(id -> Post.builder()
-                        .id(id)
-                        .build())
+                .mapToObj(BuilderForAlbumsTests::buildPost)
                 .toList();
         return LongStream.rangeClosed(fromId, toId)
-                .mapToObj(id -> Album.builder()
-                        .id(id)
-                        .authorId(random.nextLong(1, 25))
-                        .posts(posts)
-                        .build());
+                .mapToObj(id -> buildAlbum(id, TITLE, getRandomLong(1, 25), posts));
     }
 
     private Stream<Album> createAlbumsStreamWithAlbumsIdAndCreatedAt(long fromId, long toId,
                                                                      long fromMinusDays, long toMinusDays,
                                                                      long authorId) {
         return LongStream.rangeClosed(fromId, toId)
-                .mapToObj(id -> Album.builder()
-                        .id(id)
-                        .authorId(authorId)
-                        .createdAt(LocalDateTime.now().minusDays(getRandomLong(fromMinusDays, toMinusDays)))
-                        .build());
+                .mapToObj(id -> buildAlbum(id, authorId, fromMinusDays, toMinusDays));
     }
 
     private Stream<Album> createAlbumsStreamWithTitlesAndCreatedAt(long fromId, long toId,
                                                                    long fromMinusDays, long toMinusDays,
                                                                    String title) {
         return LongStream.rangeClosed(fromId, toId)
-                .mapToObj(id -> Album.builder()
-                        .id(id)
-                        .title(title)
-                        .createdAt(LocalDateTime.now().minusDays(getRandomLong(fromMinusDays, toMinusDays)))
-                        .build());
+                .mapToObj(id -> buildAlbum(id, title, fromMinusDays, toMinusDays));
     }
 
-    private long getRandomLong(long from, long to) {
-        return random.nextLong(from, to);
-    }
+    private Album forUpdateAlbumTest(String newTitle, String newDescription) {
+        album = buildAlbum(ALBUM_ID, TITLE, DESCRIPTION, USER_ID);
+        when(checker.findByIdWithPosts(ALBUM_ID)).thenReturn(album);
 
-    private Album forUpdateAlbumTest(long userId, String title, String description) {
-        long albumId = 2;
-        Album album = Album.builder()
-                .id(2)
-                .title("Title")
-                .description("Description")
-                .authorId(1)
-                .build();
-        when(checker.findByIdWithPosts(albumId)).thenReturn(album);
+        albumService.updateAlbum(USER_ID, ALBUM_ID, newTitle, newDescription);
 
-        albumService.updateAlbum(userId, albumId, title, description);
-
-        verify(checker, Mockito.times(1)).checkUserExists(userId);
-        verify(checker, Mockito.times(1)).findByIdWithPosts(albumId);
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
+        verify(checker, Mockito.times(1)).findByIdWithPosts(ALBUM_ID);
         verify(albumRepository, Mockito.times(1)).save(album);
         return album;
     }

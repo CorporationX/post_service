@@ -4,20 +4,25 @@ import faang.school.postservice.dto.album.AlbumResponseDto;
 import faang.school.postservice.dto.album.CreateAlbumDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.util.album.BuilderForAlbumsTests;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.LongStream;
 
+import static faang.school.postservice.util.album.BuilderForAlbumsTests.buildAlbum;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AlbumMapperTest {
-    AlbumMapper mapper;
+    private static final String TITLE = "Title";
+    private static final String DESCRIPTION = "Description";
+
+    private AlbumMapper mapper;
+    private Album album;
 
     @BeforeEach
     void setUp() {
@@ -25,27 +30,13 @@ class AlbumMapperTest {
     }
 
     @Test
-    void toAlbumResponseDto() {
-        Post post1 = new Post();
-        post1.setId(1);
+    void testAlbumToAlbumResponseDto() {
         List<Long> postIds = new ArrayList<>();
         List<Post> posts = LongStream.rangeClosed(1, 5)
                 .peek(postIds::add)
-                .mapToObj(id -> {
-                    Post post = new Post();
-                    post.setId(id);
-                    return post;
-                })
+                .mapToObj(BuilderForAlbumsTests::buildPost)
                 .toList();
-        Album album = Album.builder()
-                .id(1)
-                .title("Some title")
-                .description("descripton")
-                .authorId(2)
-                .posts(posts)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        album = buildAlbum(1, TITLE, DESCRIPTION, 2, posts);
 
         AlbumResponseDto albumResponseDto = mapper.toAlbumResponseDto(album);
 
@@ -57,12 +48,12 @@ class AlbumMapperTest {
     }
 
     @Test
-    void toEntity() {
+    void testAlbumResponseDtoToEntity() {
         CreateAlbumDto createAlbumDto = new CreateAlbumDto();
-        createAlbumDto.setTitle("Some title");
-        createAlbumDto.setDescription("description");
+        createAlbumDto.setTitle(TITLE);
+        createAlbumDto.setDescription(DESCRIPTION);
 
-        Album album = mapper.toEntity(createAlbumDto);
+        album = mapper.toEntity(createAlbumDto);
 
         assertThat(createAlbumDto)
                 .usingRecursiveComparison()
