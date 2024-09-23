@@ -9,4 +9,14 @@ class PostServiceAppTests {
     void contextLoads() {
         Assertions.assertThat(40 + 2).isEqualTo(42);
     }
+
+    @Test
+    void positiveTest() {
+        Assertions.assertThat(42).isEqualTo(40 + 2);
+    }
+
+    @Test
+    void negativeTest() {
+        org.junit.jupiter.api.Assertions.fail();
+    }
 }
