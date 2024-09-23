@@ -20,7 +20,7 @@ public class KafkaTopicConfig {
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> config = new HashMap<>();
-        config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         return new KafkaAdmin(config);
     }
 
@@ -32,5 +32,10 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic like() {
         return TopicBuilder.name("likes").build();
+    }
+
+    @Bean
+    public NewTopic comment() {
+        return new NewTopic("likes", 1, (short) 1);
     }
 }
