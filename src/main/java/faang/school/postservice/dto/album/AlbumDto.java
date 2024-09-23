@@ -1,6 +1,6 @@
 package faang.school.postservice.dto.album;
 
-import faang.school.postservice.model.AlbumStatus;
+import faang.school.postservice.model.AlbumVisibility;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -26,7 +26,7 @@ public class AlbumDto {
     private String title;
 
     @NotNull(message = "status can't be null")
-    private AlbumStatus status;
+    private AlbumVisibility status;
 
     private String description;
 

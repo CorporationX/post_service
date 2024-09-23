@@ -15,10 +15,10 @@ import java.util.Objects;
 public interface AlbumMapper {
 
     @Mapping(source = "posts", target = "postIds", qualifiedByName = "mapToLongList")
-    AlbumDto toDto(Album album);
+    AlbumDto toAlbumDto(Album album);
 
     @Mapping(source = "postIds", target = "posts", qualifiedByName = "mapToPostList")
-    Album toEntity(AlbumDto albumDto);
+    Album toAlbumEntity(AlbumDto albumDto);
 
     List<AlbumDto> toDtoList(List<Album> albums);
 

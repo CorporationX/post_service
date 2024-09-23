@@ -35,7 +35,7 @@ public class Album {
 
     @Column(name = "visibility", nullable = false)
     @Enumerated(EnumType.ORDINAL)
-    private AlbumStatus status;
+    private AlbumVisibility status;
 
     @ManyToMany
     @JoinTable(name = "post_album",

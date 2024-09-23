@@ -4,15 +4,15 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Album;
-import faang.school.postservice.model.AlbumStatus;
+import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.AlbumService;
 import faang.school.postservice.service.album_status_executor.AlbumAllExecutor;
 import faang.school.postservice.service.album_status_executor.AlbumOnlyAuthorExecutor;
-import faang.school.postservice.service.album_status_executor.AlbumSomeUsersExecutor;
-import faang.school.postservice.service.album_status_executor.AlbumStatusExecutor;
+import faang.school.postservice.service.album_status_executor.AlbumAllowedUsersExecutor;
+import faang.school.postservice.service.album_status_executor.AlbumVisibilityExecutor;
 import faang.school.postservice.service.album_status_executor.AlbumSubscribersExecutor;
 import faang.school.postservice.service.filter.AlbumFilter;
 import faang.school.postservice.service.filter.AlbumFilterByAfterTime;
@@ -46,9 +46,9 @@ class AlbumServiceTest {
     private UserServiceClient userServiceClient = mock(UserServiceClient.class);
     private PostRepository postRepository = mock(PostRepository.class);
     private List<AlbumFilter> albumFilters = mock(List.class);
-    private List<AlbumStatusExecutor> albumStatusExecutors = mock(List.class);
+    private List<AlbumVisibilityExecutor> albumVisibilityExecutors = mock(List.class);
     private AlbumService albumService = new AlbumService(albumRepository, userServiceClient, postRepository,
-            albumFilters, albumStatusExecutors);
+            albumFilters, albumVisibilityExecutors);
 
     private UserDto userDto;
     private long authorId;
@@ -110,35 +110,35 @@ class AlbumServiceTest {
                 .authorId(authorId)
                 .title("Kotlin")
                 .createdAt(LocalDateTime.of(2024, 7, 10, 0, 0))
-                .status(AlbumStatus.ONLY_AUTHOR)
+                .status(AlbumVisibility.ONLY_AUTHOR)
                 .build();
         albumTwo = Album.builder()
                 .id(11L)
                 .authorId(authorId)
                 .title("Java")
                 .createdAt(LocalDateTime.of(2024, 9, 11, 0, 0))
-                .status(AlbumStatus.ONLY_AUTHOR)
+                .status(AlbumVisibility.ONLY_AUTHOR)
                 .build();
         albumThree = Album.builder()
                 .id(12L)
                 .authorId(authorId)
                 .title("Java Core")
                 .createdAt(LocalDateTime.of(2024, 5, 10, 0, 0))
-                .status(AlbumStatus.ONLY_AUTHOR)
+                .status(AlbumVisibility.ONLY_AUTHOR)
                 .build();
         albumFour = Album.builder()
                 .id(13L)
                 .authorId(authorId)
                 .title("Java Framework")
                 .createdAt(LocalDateTime.of(2024, 7, 20, 0, 0))
-                .status(AlbumStatus.ONLY_AUTHOR)
+                .status(AlbumVisibility.ONLY_AUTHOR)
                 .build();
         albumFive = Album.builder()
                 .id(13L)
                 .authorId(authorId)
                 .title("Java Collection")
                 .createdAt(LocalDateTime.of(2024, 7, 30, 0, 0))
-                .status(AlbumStatus.ALL)
+                .status(AlbumVisibility.ALL)
                 .build();
 
         albumFilterDto = AlbumFilterDto.builder()
@@ -259,10 +259,10 @@ class AlbumServiceTest {
     @Test
     @DisplayName("testGetAlbumsWithALLStatus_Success()")
     public void testGetAlbumsWithALLStatus_Success() {
-        album.setStatus(AlbumStatus.ALL);
+        album.setStatus(AlbumVisibility.ALL);
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
 
-        when(albumStatusExecutors.stream())
+        when(albumVisibilityExecutors.stream())
                 .thenReturn(Stream.of(new AlbumAllExecutor()));
 
         Album newAlbum = albumService.getAlbum(albumId, userId);
@@ -276,10 +276,10 @@ class AlbumServiceTest {
                 .followerIds(List.of(userId))
                 .build();
 
-        album.setStatus(AlbumStatus.SUBSCRIBERS);
+        album.setStatus(AlbumVisibility.SUBSCRIBERS);
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
 
-        when(albumStatusExecutors.stream())
+        when(albumVisibilityExecutors.stream())
                 .thenReturn(Stream.of(new AlbumSubscribersExecutor(userServiceClient)));
         when(userServiceClient.getUser(albumId)).thenReturn(userWithFollower);
 
@@ -290,11 +290,11 @@ class AlbumServiceTest {
     @Test
     @DisplayName("testGetAlbumsWithSomeUserStatus_Success")
     public void testGetAlbumsWithSomeUserStatus_Success() {
-        album.setStatus(AlbumStatus.SOME_USERS);
+        album.setStatus(AlbumVisibility.ALLOWED_USERS);
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
 
-        when(albumStatusExecutors.stream())
-                .thenReturn(Stream.of(new AlbumSomeUsersExecutor(albumRepository)));
+        when(albumVisibilityExecutors.stream())
+                .thenReturn(Stream.of(new AlbumAllowedUsersExecutor(albumRepository)));
         when(albumRepository.findUserIdsWithAlbumAccess(albumId)).thenReturn(List.of(userId));
 
         Album newAlbum = albumService.getAlbum(albumId, userId);
@@ -304,10 +304,10 @@ class AlbumServiceTest {
     @Test
     @DisplayName("testGetAlbumsWithOnlyAuthor")
     public void testGetAlbumsWithOnlyAuthor() {
-        album.setStatus(AlbumStatus.ONLY_AUTHOR);
+        album.setStatus(AlbumVisibility.ONLY_AUTHOR);
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
 
-        when(albumStatusExecutors.stream())
+        when(albumVisibilityExecutors.stream())
                 .thenReturn(Stream.of(new AlbumOnlyAuthorExecutor()));
 
         Album newAlbum = albumService.getAlbum(albumId, authorId);
@@ -332,12 +332,12 @@ class AlbumServiceTest {
                 .authorId(album.getAuthorId())
                 .title(newTitle)
                 .description(newDescription)
-                .status(AlbumStatus.SOME_USERS)
+                .status(AlbumVisibility.ALLOWED_USERS)
                 .userWithAccessIds(List.of(userId))
                 .posts(List.of())
                 .build();
 
-        album.setStatus(AlbumStatus.SOME_USERS);
+        album.setStatus(AlbumVisibility.ALLOWED_USERS);
 
         when(albumRepository.findByAuthorId(authorId)).thenReturn(Stream.of(album));
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
@@ -370,7 +370,7 @@ class AlbumServiceTest {
                 new AlbumFilterByAfterTime(),
                 new AlbumFilterByBeforeTime(),
                 new AlbumFilterByTitlePattern()));
-        when(albumStatusExecutors.stream())
+        when(albumVisibilityExecutors.stream())
                 .thenReturn(Stream.of(
                         new AlbumAllExecutor(),
                         new AlbumOnlyAuthorExecutor()));
@@ -392,7 +392,7 @@ class AlbumServiceTest {
                 new AlbumFilterByAfterTime(),
                 new AlbumFilterByBeforeTime(),
                 new AlbumFilterByTitlePattern()));
-        when(albumStatusExecutors.stream())
+        when(albumVisibilityExecutors.stream())
                 .thenReturn(Stream.of(
                         new AlbumAllExecutor(),
                         new AlbumOnlyAuthorExecutor()));
@@ -413,7 +413,7 @@ class AlbumServiceTest {
                 new AlbumFilterByAfterTime(),
                 new AlbumFilterByBeforeTime(),
                 new AlbumFilterByTitlePattern()));
-        when(albumStatusExecutors.stream())
+        when(albumVisibilityExecutors.stream())
                 .thenReturn(Stream.of(
                         new AlbumAllExecutor(),
                         new AlbumOnlyAuthorExecutor()));

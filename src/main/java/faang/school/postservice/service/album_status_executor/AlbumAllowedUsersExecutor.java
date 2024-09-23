@@ -1,7 +1,7 @@
 package faang.school.postservice.service.album_status_executor;
 
 import faang.school.postservice.model.Album;
-import faang.school.postservice.model.AlbumStatus;
+import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.repository.AlbumRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -10,13 +10,13 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class AlbumSomeUsersExecutor implements AlbumStatusExecutor {
+public class AlbumAllowedUsersExecutor implements AlbumVisibilityExecutor {
 
     private final AlbumRepository albumRepository;
 
     @Override
-    public AlbumStatus getStatus() {
-        return AlbumStatus.SOME_USERS;
+    public AlbumVisibility getStatus() {
+        return AlbumVisibility.ALLOWED_USERS;
     }
 
     @Override

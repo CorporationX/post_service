@@ -3,7 +3,7 @@ package faang.school.postservice.service.album_status_executor;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Album;
-import faang.school.postservice.model.AlbumStatus;
+import faang.school.postservice.model.AlbumVisibility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class AlbumSubscribersExecutor implements AlbumStatusExecutor {
+public class AlbumSubscribersExecutor implements AlbumVisibilityExecutor {
 
     private final UserServiceClient userServiceClient;
 
     @Override
-    public AlbumStatus getStatus() {
-        return AlbumStatus.SUBSCRIBERS;
+    public AlbumVisibility getStatus() {
+        return AlbumVisibility.SUBSCRIBERS;
     }
 
     @Override

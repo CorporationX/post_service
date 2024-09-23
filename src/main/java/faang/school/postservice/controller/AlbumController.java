@@ -31,25 +31,25 @@ public class AlbumController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public AlbumDto createAlbum(@RequestBody @Valid AlbumDto albumDto) {
-        Album album = albumMapper.toEntity(albumDto);
+        Album album = albumMapper.toAlbumEntity(albumDto);
         Album saveAlbum = service.createAlbum(album);
-        return albumMapper.toDto(saveAlbum);
+        return albumMapper.toAlbumDto(saveAlbum);
     }
 
     @PutMapping("/{album-id}/add-post")
-    public AlbumDto addPostToAlbum(@RequestParam long postId,
-                                   @PathVariable("album-id") long albumId,
+    public AlbumDto addPostToAlbum(@PathVariable("album-id") long albumId,
+                                   @RequestParam long postId,
                                    @RequestParam long userId) {
         Album saveAlbum = service.addPostToAlbum(postId, albumId, userId);
-        return albumMapper.toDto(saveAlbum);
+        return albumMapper.toAlbumDto(saveAlbum);
     }
 
     @PutMapping("/{album-id}/remove-post")
-    public AlbumDto removePostFromAlbum(@RequestParam long postId,
-                                        @PathVariable("album-id") long albumId,
+    public AlbumDto removePostFromAlbum(@PathVariable("album-id") long albumId,
+                                        @RequestParam long postId,
                                         @RequestParam long userId) {
         Album saveAlbum = service.removePostFromAlbum(postId, albumId, userId);
-        return albumMapper.toDto(saveAlbum);
+        return albumMapper.toAlbumDto(saveAlbum);
     }
 
     @PutMapping("/{album-id}/favorite")
@@ -65,16 +65,16 @@ public class AlbumController {
     @GetMapping("/{album-id}")
     public AlbumDto getAlbum(@PathVariable("album-id") long albumId, @RequestParam long userId) {
         Album album = service.getAlbum(albumId, userId);
-        return albumMapper.toDto(album);
+        return albumMapper.toAlbumDto(album);
     }
 
     @PutMapping("/{album-id}")
     public AlbumDto updateAlbum(@PathVariable("album-id") long albumId,
                                 @RequestParam long authorId,
                                 @RequestBody @Valid AlbumDto albumDto) {
-        Album album = albumMapper.toEntity(albumDto);
+        Album album = albumMapper.toAlbumEntity(albumDto);
         Album modifiedAlbum = service.updateAlbum(albumId, authorId, album);
-        return albumMapper.toDto(modifiedAlbum);
+        return albumMapper.toAlbumDto(modifiedAlbum);
     }
 
     @DeleteMapping("/{album-id}")

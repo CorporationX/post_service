@@ -3,7 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.model.Album;
-import faang.school.postservice.model.AlbumStatus;
+import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -91,8 +91,8 @@ public class AlbumService {
         existingAlbum.setTitle(album.getTitle());
         existingAlbum.setDescription(album.getDescription());
 
-        if (existingAlbum.getStatus().equals(AlbumStatus.SOME_USERS)
-                || album.getStatus().equals(AlbumStatus.SOME_USERS)) {
+        if (existingAlbum.getStatus().equals(AlbumVisibility.ALLOWED_USERS)
+                || album.getStatus().equals(AlbumVisibility.ALLOWED_USERS)) {
             existingAlbum.setUserWithAccessIds(album.getUserWithAccessIds());
         }
         existingAlbum.setStatus(album.getStatus());

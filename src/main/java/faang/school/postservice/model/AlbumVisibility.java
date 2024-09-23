@@ -1,8 +1,8 @@
 package faang.school.postservice.model;
 
-public enum AlbumStatus {
+public enum AlbumVisibility {
     ONLY_AUTHOR,    //0
-    SOME_USERS,     //1
+    ALLOWED_USERS,     //1
     SUBSCRIBERS,    //2
     ALL             //3
 }

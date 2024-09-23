@@ -1,12 +1,12 @@
 package faang.school.postservice.service.album_status_executor;
 
 import faang.school.postservice.model.Album;
-import faang.school.postservice.model.AlbumStatus;
+import faang.school.postservice.model.AlbumVisibility;
 
 import java.util.List;
 
-public interface AlbumStatusExecutor {
-    AlbumStatus getStatus();
+public interface AlbumVisibilityExecutor {
+    AlbumVisibility getStatus();
 
     Album compute(Album album, Long userId);
 
