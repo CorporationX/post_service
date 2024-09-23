@@ -1,12 +1,9 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.model.Like;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
 public interface LikeService {
     void addLikeToPost(LikeDto likeDto, long postId);
 
@@ -16,5 +13,5 @@ public interface LikeService {
 
     void deleteLikeFromComment(LikeDto likeDto, long commentId);
 
-    List<Like> findLikesOfPublishedPost(long postId);
+    List<LikeDto> findLikesOfPublishedPost(long postId);
 }

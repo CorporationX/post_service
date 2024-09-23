@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -48,11 +49,11 @@ public class LikeServiceImpl implements LikeService {
         Like like = likeMapper.toLike(likeDto);
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("There is no such post"));
-        if (post.getLikes().contains(like)) {
-            post.getLikes().remove(like);
-        } else {
+        if (!post.getLikes().remove(like)) {
             throw new DataValidationException("Post is not liked");
         }
+        likeRepository.delete(like);
+        postRepository.save(post);
     }
 
     @Override
@@ -60,12 +61,9 @@ public class LikeServiceImpl implements LikeService {
         Like like = likeMapper.toLike(likeDto);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("There is no such comment"));
-        try {
-            userServiceClient.getUser(like.getUserId());
-        } catch (FeignException e) {
-            throw new DataValidationException("There is no such user");
-        }
-        likeValidator.validateLike(like,comment.getPost());
+        checkUser(like.getUserId());
+        likeValidator.validateLike(like, comment.getPost());
+        likeValidator.validatePostAndCommentLikes(comment.getPost(), like); //возможна рекурсия
         like.setComment(comment);
         likeRepository.save(like);
     }
@@ -75,17 +73,30 @@ public class LikeServiceImpl implements LikeService {
         Like like = likeMapper.toLike(likeDto);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("There is no such comment"));
-        if (comment.getLikes().contains(like)) {
-            comment.getLikes().remove(like);
-        } else {
+        if (!comment.getLikes().remove(like)) {
             throw new DataValidationException("Comment is not liked");
         }
+        likeRepository.delete(like);
+        commentRepository.save(comment);
     }
 
     @Override
-    public List<Like> findLikesOfPublishedPost(long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new DataValidationException("There is no such comment"))
-                .getLikes();
+    public List<LikeDto> findLikesOfPublishedPost(long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new DataValidationException("There is no such post"));
+        if (post.isPublished()) {
+            return postRepository.findById(postId)
+                    .orElseThrow(() -> new DataValidationException("There is no such comment"))
+                    .getLikes().stream().map(likeMapper::toLikeDto).toList();
+        } else {
+            throw new DataValidationException("Post is not published");
+        }
+    }
+
+    private void checkUser(long userId) {
+        try {
+            userServiceClient.getUser(userId);
+        } catch (FeignException e) {
+            throw new DataValidationException("There is no such user");
+        }
     }
 }
