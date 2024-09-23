@@ -1,5 +1,7 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.cache.entity.PostCache;
+import faang.school.postservice.cache.repository.PostCacheRepository;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
@@ -9,8 +11,8 @@ import faang.school.postservice.dto.post.PostResponse;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
@@ -21,12 +23,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -35,10 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -54,6 +59,8 @@ public class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private PostCacheRepository postCacheRepository;
 
     @Mock
     private SpellCheckerService spellCheckerService;
@@ -84,6 +91,8 @@ public class PostServiceTest {
     @Mock
     private UserContext userContext;
 
+    @Captor
+    private ArgumentCaptor<PostCache> postCacheArgumentCaptor;
     private PostDto postDto;
     private Post post;
     private List<Post> draftPosts;
@@ -227,6 +236,7 @@ public class PostServiceTest {
         verify(elasticsearchService, times(1)).indexPost(postDto);
         assertEquals(postDto, result);
         verify(postEventPublisher, times(1)).publish(any());
+        verify(postCacheRepository, times(1)).save(postCacheArgumentCaptor.capture());
     }
 
     @Test

@@ -34,6 +34,9 @@ spring:
         album: album_channel
         comment: comment_channel
         comment_achievement: comment_channel
+      cache:
+        post:
+          ttl: 86400
 
     elasticsearch:
       rest:
