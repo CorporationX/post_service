@@ -18,17 +18,17 @@ import java.util.List;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("like/")
+@RequestMapping("/like")
 public class LikeController {
     private final LikeService service;
 
-    @GetMapping("post/{postId}")
+    @GetMapping("/post/{postId}")
     public List<UserDto> getUsersLikedPost(@PathVariable @Positive Long postId,
                                            @RequestHeader(name = "x-user-id") Long header) {
         return service.getUsersLikedPost(postId);
     }
 
-    @GetMapping("comment/{commentId}")
+    @GetMapping("/comment/{commentId}")
     public List<UserDto> getUsersLikedComm(@PathVariable @Positive Long commentId,
                                            @RequestHeader(name = "x-user-id") Long header) {
         return service.getUsersLikedComm(commentId);
