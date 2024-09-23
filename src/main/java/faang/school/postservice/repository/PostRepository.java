@@ -38,6 +38,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             SELECT * FROM post
             WHERE hash_tags @> CAST(:hashTag AS jsonb)
             AND published = true
+            AND deleted = false
             ORDER BY published_at DESC LIMIT :number
             """)
     List<Post> findTopByHashTagByDate(@Param("hashTag") String hashTag, @Param("number") int number);
