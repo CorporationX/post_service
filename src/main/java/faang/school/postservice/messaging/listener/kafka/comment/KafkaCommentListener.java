@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.retry.annotation.Backoff;
@@ -23,8 +22,6 @@ import java.util.TreeSet;
 @Component
 @RequiredArgsConstructor
 public class KafkaCommentListener implements KafkaEventListener<CommentKafkaEvent> {
-    private final RedisTemplate<String, String> redisTemplate;
-
     private final RedisPostRepository redisPostRepository;
     private final CommentMapper commentMapper;
 
@@ -61,13 +58,12 @@ public class KafkaCommentListener implements KafkaEventListener<CommentKafkaEven
                                 maxCapacity, pollComment, commentRedis);
                     }
                     try {
-                    redisPostRepository.save(postRedis);
-                    acknowledgment.acknowledge();
-                    } catch (OptimisticLockingFailureException e){
+                        redisPostRepository.save(postRedis);
+                        acknowledgment.acknowledge();
+                    } catch (OptimisticLockingFailureException e) {
                         log.error("Failed to update Post with ID: {} due to version conflict", postRedis.getId());
                         throw e;
                     }
-
                 },
                 () -> {
                     acknowledgment.acknowledge();
