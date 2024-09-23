@@ -38,26 +38,28 @@ public class RedisConfig {
         return new JedisConnectionFactory(config);
     }
 
-//    @Bean
-//    public ObjectMapper objectMapper() {
-//        ObjectMapper mapper = new ObjectMapper();
-//        mapper.registerModule(new JavaTimeModule());
-//        return mapper;
-//    }
-
     @Bean
     public RedisTemplate<String, PostCacheDto> postCacheDtoRedisTemplate(JedisConnectionFactory jedisConnectionFactory,
                                                                          ObjectMapper objectMapper) {
         RedisTemplate<String, PostCacheDto> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory);
 
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(/*objectMapper*/);
-        template.setKeySerializer(new StringRedisSerializer());
+
+        template.setKeySerializer(stringRedisSerializer);
         template.setValueSerializer(serializer);
-        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(stringRedisSerializer);
         template.setHashValueSerializer(serializer);
         return template;
     }
+
+    //    @Bean
+//    public ObjectMapper objectMapper() {
+//        ObjectMapper mapper = new ObjectMapper();
+//        mapper.registerModule(new JavaTimeModule());
+//        return mapper;
+//    }
 
 //    @Bean
 //    public RedisTemplate<String, PostCacheDto> postCacheDtoRedisTemplate(JedisConnectionFactory jedisConnectionFactory

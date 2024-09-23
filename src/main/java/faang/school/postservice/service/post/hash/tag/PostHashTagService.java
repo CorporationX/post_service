@@ -23,7 +23,7 @@ public class PostHashTagService {
     }
 
     private List<String> parseByHashTag(String content) {
-        log.info("Pars by hash tag, content: {}", content);
+        log.info("Pars by hash-tag, content: {}", content);
         Pattern pattern = Pattern.compile(HASH_TAG_PATTERN);
         Matcher matcher = pattern.matcher(content);
         return matcher.results()
@@ -35,6 +35,7 @@ public class PostHashTagService {
         log.info("Get new hash-tags between primal: {} AND updated: {}", primalHashTags, updatedHashTags);
         List<String> newHashTags = new ArrayList<>(updatedHashTags);
         newHashTags.removeAll(primalHashTags);
+        log.info("New hash-tags: {}", newHashTags);
         return newHashTags;
     }
 
@@ -42,6 +43,7 @@ public class PostHashTagService {
         log.info("Get deleted hash-tags between primal: {} AND updated: {}", primalHashTags, updatedHashTags);
         List<String> deletedHashTags = new ArrayList<>(primalHashTags);
         deletedHashTags.removeAll(updatedHashTags);
+        log.info("Deleted hash-tags: {}", deletedHashTags);
         return deletedHashTags;
     }
 }

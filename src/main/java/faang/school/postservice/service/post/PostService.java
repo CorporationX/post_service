@@ -102,7 +102,7 @@ public class PostService {
             List<PostCacheDto> postCacheDtos = posts.stream()
                     .map(postMapper::toPostCacheDto)
                     .toList();
-            postCacheOperations.addListOfPostsToCache(postCacheDtos);
+            postCacheOperations.addListOfPostsToCache(postCacheDtos, hashTag);
             postDtos = postCacheService.findInRangeByHashTag(hashTag, start, end);
         }
         return postDtos;
