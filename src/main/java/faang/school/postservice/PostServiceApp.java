@@ -6,6 +6,8 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -15,6 +17,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableRetry
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
+@EnableJpaRepositories(basePackages = "faang.school.postservice.repository")
+@EnableRedisRepositories(basePackages = "faang.school.postservice.cache.repository")
 @OpenAPIDefinition(info = @Info(
     title = "Post Service",
     version = "1.0",

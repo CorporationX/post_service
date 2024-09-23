@@ -1,6 +1,8 @@
 package faang.school.postservice.service;
 
 
+import faang.school.postservice.cache.entity.PostCache;
+import faang.school.postservice.cache.repository.PostCacheRepository;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
@@ -48,9 +50,13 @@ public class PostService {
     private final PostContextMapper context;
     private final PostEventPublisher postEventPublisher;
     private final UserContext userContext;
+    private final PostCacheRepository postCacheRepository;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
+
+    @Value("${spring.data.redis.cache.post.ttl}")
+    private long ttl;
 
     @Async(value = "threadPool")
     @Transactional
@@ -81,6 +87,8 @@ public class PostService {
         sendToRedisPublisher(userContext.getUserId(), post.getId());
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
+        PostCache postCache = new PostCache(post.getId(), postDtoForReturns, ttl);
+        postCacheRepository.save(postCache);
         return postDtoForReturns;
     }
 
