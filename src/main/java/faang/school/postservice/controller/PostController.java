@@ -53,12 +53,12 @@ public class PostController {
         return service.getPost(id);
     }
 
-    @GetMapping("/post/draft/author/{authorId}")
+    @GetMapping("/posts/draft/author/{authorId}")
     public List<PostDto> getDraftPostsForUser(@Min(1) @PathVariable("authorId") long authorId) {
         return service.getDraftPostsForUser(authorId);
     }
 
-    @GetMapping("/post/draft/project/{projectId}")
+    @GetMapping("/posts/draft/project/{projectId}")
     public List<PostDto> getDraftPostsForProject(@Min(1) @PathVariable("projectId") long projectId) {
         return service.getDraftPostsForProject(projectId);
     }
