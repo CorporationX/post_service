@@ -22,10 +22,18 @@ spring:
       port: 6379
       host: localhost
       channels:
-         like_post_channel:
+        like_post_channel:
           name: like_channel
-         comment_channel:
-           name: comment_channel
+        comment_channel:
+          name: comment_channel
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topics:
+      posts: posts
 
 server:
   port: 8081
@@ -58,3 +66,8 @@ cron-expression: 00 50 17 ? * *
 
 like-service:
   batch-size: 100
+
+task-executor:
+  min-pool-size: 10
+  max-pool-size: 20
+  queue-capacity: 50

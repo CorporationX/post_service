@@ -2,7 +2,7 @@ package faang.school.postservice.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import faang.school.postservice.controller.PostController;
+import faang.school.postservice.controller.post.PostController;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;

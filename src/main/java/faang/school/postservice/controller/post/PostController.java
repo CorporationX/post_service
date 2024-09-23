@@ -1,4 +1,4 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;

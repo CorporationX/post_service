@@ -15,15 +15,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostDto {
+
     private long id;
-    @NotBlank(message = "Пост должен содержать текст.")
+
+    @NotBlank(message = "The post must contain text")
     private String content;
-    @Min(value = 0, message = "АйДи автора должно быть положительным.")
-    @NotNull(message = "АйДи автора не может быть пустым.")
+
+    @Min(value = 0, message = "The author's ID must be positive")
+    @NotNull(message = "Author ID cannot be empty")
     private Long authorId;
-    @Min(value = 0, message = "АйДи проекта должно быть положительным.")
-    @NotNull(message = "АйДи проекта не может быть пустым.")
+
+    @Min(value = 0, message = "Project ID must be positive.")
+    @NotNull(message = "Project ID cannot be empty")
     private Long projectId;
+
     boolean published;
 
     LocalDateTime publishedAt;

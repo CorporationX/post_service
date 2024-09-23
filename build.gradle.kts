@@ -25,6 +25,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation("org.springframework.kafka:spring-kafka:3.2.3")
+    implementation("org.apache.kafka:kafka-clients:3.8.0")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
