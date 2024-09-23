@@ -1,7 +1,7 @@
-package faang.school.postservice.messaging.kafka.listener.post;
+package faang.school.postservice.messaging.kafka.listener.like;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.event.post.PostEvent;
+import faang.school.postservice.event.like.LikeEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -12,14 +12,14 @@ import java.io.IOException;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class KafkaPostViewConsumer {
+public class KafkaLikeConsumer {
     private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = "${spring.kafka.topic.post_views}",
+    @KafkaListener(topics = "${spring.kafka.topic.likes}",
             groupId = "${spring.kafka.consumer.group-id}")
     public void onMessage(String message) {
         try {
-            PostEvent postEvent = objectMapper.readValue(message.getBytes(), PostEvent.class);
+            LikeEvent likeEvent = objectMapper.readValue(message.getBytes(), LikeEvent.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -8,13 +8,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostDto {
+public class PostDto implements Serializable {
     private Long id;
 
     private Long authorId;
@@ -25,4 +26,5 @@ public class PostDto {
     private String content;
 
     private List<CommentDto> comments;
+//    private List<Long> likes;
 }

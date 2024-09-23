@@ -16,4 +16,5 @@ public class PostEvent {
     private long authorId;
     private String content;
     private LocalDateTime publishedAt;
+    private LocalDateTime createdAt;
 }

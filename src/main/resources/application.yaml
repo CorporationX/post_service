@@ -34,6 +34,7 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
     topic:
       post_views: post_views
       posts: posts
@@ -55,6 +56,13 @@ spring:
           name: like_channel
         comment_channel:
           name: comment_channel
+      cache:
+        capacity:
+          queue: 3
+        ttl:
+          users: 86400
+          posts: 86400
+          feed: 86400
 server:
   port: 8081
 

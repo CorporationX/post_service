@@ -13,7 +13,7 @@ public class UserService {
 
     private final UserServiceClient userServiceClient;
 
-    public UserDto getListFollowersId(long userId) {
+    public UserDto getUser(long userId) {
         UserDto userDto = userServiceClient.getUser(userId);
         log.info("Get user {} from database", userDto);
 

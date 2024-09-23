@@ -1,14 +1,19 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.entity.redis.Users;
 import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.messaging.redis.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.publisher.EventPublisherService;
+import faang.school.postservice.service.redis.RedisUserService;
+import faang.school.postservice.service.user.UserService;
 import faang.school.postservice.validator.comment.UserClientValidation;
 import jakarta.persistence.PersistenceException;
 import java.util.ArrayList;
@@ -25,6 +30,8 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserClientValidation userClientValidation;
     private final PostService postService;
+    private final UserService userService;
+    private final RedisUserService redisUserService;
     private final CommentMapper commentMapper;
     private final PostMapper postMapper;
 //    private final CommentEventPublisher commentEventPublisher;
@@ -41,6 +48,10 @@ public class CommentService {
             log.error(ExceptionMessages.FAILED_PERSISTENCE, e);
             throw new PersistenceException(ExceptionMessages.FAILED_PERSISTENCE, e);
         }
+
+        UserDto userDto = userService.getUser(comment.getAuthorId());
+        //сохранение user в редис
+        redisUserService.save(userDto.getId(), userDto);
 
 //        commentEventPublisher.publish(commentMapper.toEvent(comment));
         eventPublisherService.sendCommentEventToKafka(comment);

@@ -50,9 +50,9 @@ public class EventPublisherService {
     private final PostMapper postMapper;
     private final CommentMapper commentMapper;
 
-    public void sendFollowersEventToKafka(long authorId, List<Long> followersIds){
+    public void sendFollowersEventToKafka(long postId, List<Long> followersIds){
         FollowersPostEvent followersPostEvent = FollowersPostEvent.builder()
-                .authorId(authorId)
+                .postId(postId)
                 .followersIds(followersIds)
                 .build();
         kafkaFollowersPostPublisher.publish(followersPostEvent);
