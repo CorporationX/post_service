@@ -18,7 +18,7 @@ import java.util.List;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/like")
+@RequestMapping("/api/v1/like")
 public class LikeController {
     private final LikeService service;
 
