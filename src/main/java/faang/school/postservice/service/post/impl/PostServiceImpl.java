@@ -7,8 +7,10 @@ import faang.school.postservice.dto.post.request.PostCreationRequest;
 import faang.school.postservice.dto.post.request.PostUpdatingRequest;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.PostCreator;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.post.impl.filter.PostFilter;
@@ -17,7 +19,6 @@ import faang.school.postservice.service.post.impl.filter.UnPublishedPostFilter;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -58,7 +59,7 @@ public class PostServiceImpl implements PostService {
     public PostDto publish(Long id) {
         Post post = getPost(id);
         if (post.isPublished()) {
-            throw new IllegalArgumentException("Post is already published with id: " + id);
+            throw new PostAlreadyPublishedException("Post is already published with id: " + id);
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
@@ -93,45 +94,25 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDto> getUnpublishedPostsByAuthorId(Long authorId) {
-        List<Post> posts = postRepository.findByAuthorId(authorId);
-        posts = applyFilterToPosts(posts, new UnPublishedPostFilter());
-        log.debug("Found {} unpublished posts by authorId - {}", posts.size(), authorId);
+    public List<PostDto> getPostsByCreatorAndPublishedStatus(Long creatorId,
+                                                             PostCreator creator, Boolean publishedStatus) {
+        List<Post> posts = getPostsByCreatorId(creatorId, creator);
+        PostFilter filter = getPostFilter(publishedStatus);
+        posts = applyFilterToPosts(posts, filter);
+        log.debug("Found {} posts by {} with id {} with published - {}",
+                posts.size(), creator, creatorId, publishedStatus);
         return postMapper.toPostDtoList(posts);
     }
 
-    @Override
-    public List<PostDto> getUnpublishedPostsByProjectId(Long projectId) {
-        List<Post> posts = postRepository.findByProjectId(projectId);
-        posts = applyFilterToPosts(posts, new UnPublishedPostFilter());
-        log.debug("Found {} unpublished posts by projectId - {}", posts.size(), projectId);
-        return postMapper.toPostDtoList(posts);
+    private List<Post> getPostsByCreatorId(Long creatorId, PostCreator creator) {
+        return switch (creator) {
+            case AUTHOR -> postRepository.findByAuthorId(creatorId);
+            case PROJECT -> postRepository.findByProjectId(creatorId);
+        };
     }
 
-    @Override
-    public List<PostDto> getPublishedPostsByAuthorId(Long authorId) {
-        List<Post> posts = postRepository.findByAuthorId(authorId);
-        posts = applyFilterToPosts(posts, new PublishedPostFilter());
-        log.debug("Found {} published posts by authorId - {}", posts.size(), authorId);
-        return postMapper.toPostDtoList(posts);
-    }
-
-    @Override
-    public List<PostDto> getPublishedPostsByProjectId(Long projectId) {
-        List<Post> posts = postRepository.findByProjectId(projectId);
-        posts = applyFilterToPosts(posts, new PublishedPostFilter());
-        log.debug("Found {} published posts by projectId - {}", posts.size(), projectId);
-        return postMapper.toPostDtoList(posts);
-    }
-
-    @Scheduled(fixedRate = 600000)
-    public void publishScheduledPosts() {
-        List<Post> posts = postRepository.findReadyToPublish();
-        posts.forEach(post -> {
-            post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
-        });
-        postRepository.saveAll(posts);
+    private PostFilter getPostFilter(Boolean publishedStatus) {
+        return publishedStatus ? new PublishedPostFilter() : new UnPublishedPostFilter();
     }
 
     private List<Post> applyFilterToPosts(List<Post> posts, PostFilter filter) {
@@ -143,10 +124,7 @@ public class PostServiceImpl implements PostService {
     }
 
     private Post getPost(Long id) {
-        Post post = postRepository.findByIdAndDeletedFalse(id);
-        if (post == null) {
-            throw new EntityNotFoundException("Post not found with id: " + id);
-        }
-        return post;
+        return postRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post with id " + id + " not found"));
     }
 }

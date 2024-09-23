@@ -7,8 +7,10 @@ import faang.school.postservice.dto.post.request.PostCreationRequest;
 import faang.school.postservice.dto.post.request.PostUpdatingRequest;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.PostCreator;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.impl.PostServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -134,7 +137,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("Publish a post that was not found")
     public void testPublishPostWithNotExistId() {
-        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(null);
+        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> postService.publish(0L));
     }
@@ -149,15 +152,15 @@ public class PostServiceTest {
                 .projectId(null)
                 .published(true)
                 .build();
-        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(post);
+        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.of(post));
 
-        assertThrows(IllegalArgumentException.class, () -> postService.publish(0L));
+        assertThrows(PostAlreadyPublishedException.class, () -> postService.publish(0L));
     }
 
     @Test
     @DisplayName("Publish a post success")
     public void testPublishPostSuccess() {
-        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(post);
+        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.of(post));
         when(postRepository.save(post)).thenReturn(post);
 
         postDto = postService.publish(0L);
@@ -170,7 +173,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("Update a post with not exists post")
     public void testUpdatePostWithNotExistId() {
-        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(null);
+        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> postService.update(0L, updatingRequest));
     }
@@ -178,7 +181,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("Update a post success")
     public void testUpdatePostSuccess() {
-        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(post);
+        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.of(post));
         when(postRepository.save(post)).thenReturn(post);
 
         postDto = postService.update(0L, updatingRequest);
@@ -190,7 +193,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("Remove a post with not exists post")
     public void testRemovePostWithNotExistId() {
-        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(null);
+        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> postService.remove(0L));
     }
@@ -198,7 +201,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("Remove a post success")
     public void testRemovePostSuccess() {
-        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(post);
+        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.of(post));
         when(postRepository.save(post)).thenReturn(post);
 
         postDto = postService.remove(0L);
@@ -210,7 +213,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("Get a post with not exists post")
     public void testGetPostWithNotExistId() {
-        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(null);
+        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> postService.getPostById(0L));
     }
@@ -218,7 +221,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("Get a post success")
     public void testGetPostSuccess() {
-        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(post);
+        when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.of(post));
 
         PostDto postDto = postService.getPostById(0L);
 
@@ -233,7 +236,7 @@ public class PostServiceTest {
         List<Post> posts = new ArrayList<>();
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
 
-        List<PostDto> postDtos = postService.getUnpublishedPostsByAuthorId(1L);
+        List<PostDto> postDtos = postService.getPostsByCreatorAndPublishedStatus(1L, PostCreator.AUTHOR, false);
 
         verify(postRepository).findByAuthorId(1L);
         assertEquals(0, postDtos.size());
@@ -266,7 +269,7 @@ public class PostServiceTest {
         List<Post> posts = List.of(post, post2, post3, post4);
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
 
-        List<PostDto> postDtos = postService.getUnpublishedPostsByAuthorId(1L);
+        List<PostDto> postDtos = postService.getPostsByCreatorAndPublishedStatus(1L, PostCreator.AUTHOR, false);
 
         verify(postRepository).findByAuthorId(1L);
         assertEquals(3, postDtos.size());
@@ -280,7 +283,7 @@ public class PostServiceTest {
         List<Post> posts = new ArrayList<>();
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
 
-        List<PostDto> postDtos = postService.getUnpublishedPostsByProjectId(1L);
+        List<PostDto> postDtos = postService.getPostsByCreatorAndPublishedStatus(1L, PostCreator.PROJECT, false);
 
         verify(postRepository).findByProjectId(1L);
         assertEquals(0, postDtos.size());
@@ -313,7 +316,7 @@ public class PostServiceTest {
         List<Post> posts = List.of(post, post2, post3, post4);
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
 
-        List<PostDto> postDtos = postService.getUnpublishedPostsByProjectId(1L);
+        List<PostDto> postDtos = postService.getPostsByCreatorAndPublishedStatus(1L, PostCreator.PROJECT, false);
 
         verify(postRepository).findByProjectId(1L);
         assertEquals(3, postDtos.size());
@@ -348,7 +351,7 @@ public class PostServiceTest {
         List<Post> posts = List.of(post, post2, post3, post4);
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
 
-        List<PostDto> postDtos = postService.getPublishedPostsByAuthorId(1L);
+        List<PostDto> postDtos = postService.getPostsByCreatorAndPublishedStatus(1L, PostCreator.AUTHOR, true);
 
         verify(postRepository).findByAuthorId(1L);
         assertEquals(3, postDtos.size());
@@ -382,38 +385,11 @@ public class PostServiceTest {
         List<Post> posts = List.of(post, post2, post3, post4);
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
 
-        List<PostDto> postDtos = postService.getPublishedPostsByProjectId(1L);
+        List<PostDto> postDtos = postService.getPostsByCreatorAndPublishedStatus(1L, PostCreator.PROJECT, true);
 
         verify(postRepository).findByProjectId(1L);
         assertEquals(3, postDtos.size());
         assertEquals(1L, postDtos.get(0).id());
         assertEquals(2L, postDtos.get(2).id());
-    }
-
-    @Test
-    @DisplayName("Publish scheduled posts")
-    public void testPublishScheduledPosts() {
-        post = Post.builder()
-                .id(0L)
-                .published(false)
-                .scheduledAt(LocalDateTime.of(2024, 9, 21, 17, 30))
-                .build();
-        Post post2 = Post.builder()
-                .id(1L)
-                .published(false)
-                .scheduledAt(LocalDateTime.of(2024, 9, 21, 17, 32))
-                .build();
-        List<Post> posts = List.of(post, post2);
-        when(postRepository.findReadyToPublish()).thenReturn(posts);
-        when(postRepository.saveAll(posts)).thenReturn(posts);
-
-        postService.publishScheduledPosts();
-
-        verify(postRepository).findReadyToPublish();
-        verify(postRepository).saveAll(posts);
-        assertTrue(post.isPublished());
-        assertTrue(post2.isPublished());
-        assertNotNull(post.getPublishedAt());
-        assertNotNull(post2.getPublishedAt());
     }
 }

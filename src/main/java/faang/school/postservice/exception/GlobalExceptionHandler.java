@@ -2,6 +2,7 @@ package faang.school.postservice.exception;
 
 import faang.school.postservice.dto.response.ConstraintErrorResponse;
 import faang.school.postservice.dto.response.ErrorResponse;
+import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.validation.Violation;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,8 +20,8 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(PostAlreadyPublishedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleExceptionWithBadRequest(RuntimeException ex) {
         log.error(ex.getMessage(), ex);
         return new ErrorResponse(ex.getMessage());
