@@ -4,8 +4,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
-  profiles:
-    active: local
+#  profiles:
+#    active: local
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -18,6 +18,28 @@ spring:
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 1
+      buffer-memory: 33554432
+    consumer:
+      group-id: feed-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+    topic:
+      post_views: post_views
+      posts: posts
+      likes: likes
+      comments: comments
 
   data:
     redis:
@@ -34,6 +56,14 @@ spring:
           name: like_channel
         comment_channel:
           name: comment_channel
+      cache:
+        capacity:
+          queue: 3
+        ttl:
+          users: 86400
+          posts: 86400
+          feed: 86400
+
 server:
   port: 8081
 
