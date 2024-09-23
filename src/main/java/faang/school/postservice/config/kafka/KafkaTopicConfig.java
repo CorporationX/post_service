@@ -1,4 +1,4 @@
-package faang.school.postservice.config.context.kafka;
+package faang.school.postservice.config.kafka;
 
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -20,17 +20,17 @@ public class KafkaTopicConfig {
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> config = new HashMap<>();
-        config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092");
+        config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         return new KafkaAdmin(config);
     }
 
     @Bean
-    public NewTopic posts() {
+    public NewTopic post() {
         return new NewTopic("posts", 1, (short) 1);
     }
 
-//    @Bean
-//    public NewTopic post2() {
-//        return TopicBuilder.name("post-2").build();
-//    }
+    @Bean
+    public NewTopic like() {
+        return TopicBuilder.name("likes").build();
+    }
 }
