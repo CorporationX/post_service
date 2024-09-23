@@ -121,6 +121,15 @@ public class FeedService {
         saveAuthorComment(commentCache.getAuthorId());
     }
 
+    @Retryable(retryFor = OptimisticLockException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    public void addViewToPost(long postId) {
+        CachePost cachePost = getCachePost(postId);
+
+        cachePost.incrementView();
+        cachePost.incrementVersion();
+        redisPostRepository.save(cachePost);
+    }
+
     private CachePost getCachePost(long postId) {
         return redisPostRepository.findById(postId).orElseGet(() -> {
             Post post = postRepository.findByIdWithLikes(postId).orElseThrow(() -> {

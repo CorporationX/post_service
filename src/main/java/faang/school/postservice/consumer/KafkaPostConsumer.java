@@ -15,12 +15,9 @@ public class KafkaPostConsumer extends AbstractConsumer<NewPostEvent> {
         super(feedService);
     }
 
-    @Override
     @KafkaListener(topics = "${spring.kafka.topic.new-post}",
             groupId = "${spring.kafka.consumer.group-id}")
     public void listen(NewPostEvent event, Acknowledgment ack) {
-        log.info("New post event received: {}", event);
-        feedService.addPostToFollowers(event);
-        ack.acknowledge();
+        handle(event, ack, () -> feedService.addPostToFollowers(event));
     }
 }
