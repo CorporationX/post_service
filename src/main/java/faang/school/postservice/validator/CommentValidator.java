@@ -2,6 +2,7 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import jakarta.validation.ValidationException;
@@ -18,8 +19,8 @@ public class CommentValidator {
         return commentRepository.findById(commentDto.getId()).orElseThrow();
     }
 
-    public void existsAuthor(CommentDto commentDto) {
-        if (userClient.getUser(commentDto.getAuthorId()) == null) {
+    public void existsAuthor(UserDto user) {
+        if (user == null) {
             throw new ValidationException("Author name is required");
         }
     }
@@ -49,7 +50,7 @@ public class CommentValidator {
         }
     }
 
-    public void validateDeleteComment(CommentDto commentDto) {
+    public void validateAuthorDeleteComment(CommentDto commentDto) {
         if (!(commentDto.getAuthorId().equals(commentRepository.findById(commentDto.getId()).get().getAuthorId()))) {
             throw new ValidationException("Comment can't be deleted by this user");
         }

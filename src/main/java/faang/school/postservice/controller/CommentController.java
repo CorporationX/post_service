@@ -24,13 +24,13 @@ public class CommentController {
         return commentService.updateComment(commentDto);
     }
 
-    @GetMapping
-    public List<CommentDto> getAllCommentsByPostId(@RequestBody long postId) {
+    @GetMapping("{id}")
+    public List<CommentDto> getAllCommentsByPostId(@PathVariable(name = "id") long postId) {
         return commentService.getAllCommentsByPostId(postId);
     }
 
-    @DeleteMapping
-    public void deleteComment(@RequestBody long commentId) {
+    @DeleteMapping("{commentId}")
+    public void deleteComment(@PathVariable long commentId) {
         commentService.deleteComment(commentId);
     }
 }
