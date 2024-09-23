@@ -95,6 +95,7 @@ kafka:
 
   posts-topic:
     name: posts
+    group-id: postGroup
 
 async:
   core-pool-size: 5

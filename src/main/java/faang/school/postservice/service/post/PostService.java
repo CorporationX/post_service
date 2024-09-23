@@ -207,7 +207,7 @@ public class PostService {
 
         PostEvent postEvent = new PostEvent(postId, authorId, followers);
 
-        postProducer.sendPostEvent(postEvent);
+        postProducer.sendEvent(postEvent);
     }
 
     private List<PostDto> findAllPublishedAuthorPosts(long authorId) {
