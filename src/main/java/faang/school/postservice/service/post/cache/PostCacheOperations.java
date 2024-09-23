@@ -1,15 +1,20 @@
 package faang.school.postservice.service.post.cache;
 
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
+import faang.school.postservice.exception.redis.RedisTransactionInterrupted;
 import faang.school.postservice.service.post.hash.tag.PostHashTagService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneOffset;
@@ -17,11 +22,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static faang.school.postservice.exception.redis.RedisErrorMessages.REDIS_TRANSACTION_INTERRUPTED;
+
 @Slf4j
-@Service
+@EnableRetry
 @RequiredArgsConstructor
+@Service
 public class PostCacheOperations {
-    private static final String POST_ID_PREFIX = "post:";
+
+    @Value("${app.post.cache.post_id_prefix}")
+    private String postIdPrefix;
 
     private final PostHashTagService postHashTagService;
     private final RedisTemplate<String, PostCacheDto> redisTemplatePost;
@@ -37,7 +47,7 @@ public class PostCacheOperations {
 
     public void addPostToCacheByTag(PostCacheDto post, List<String> newTags, String tagToFind) {
         log.info("Add post to cache by tag: {}, post with id: {}", tagToFind, post.getId());
-        String postId = POST_ID_PREFIX + post.getId();
+        String postId = postIdPrefix + post.getId();
         long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
         newTags = compareWithTagsInCache(newTags, tagToFind);
 
@@ -48,7 +58,7 @@ public class PostCacheOperations {
 
     public void addPostToCache(PostCacheDto post, List<String> newTags) {
         log.info("Add post to cache, post with id: {}", post.getId());
-        String postId = POST_ID_PREFIX + post.getId();
+        String postId = postIdPrefix + post.getId();
         long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
         newTags = compareWithTagsInCache(newTags);
 
@@ -59,14 +69,14 @@ public class PostCacheOperations {
 
     public void deletePostOfCache(PostCacheDto post, List<String> primalTags) {
         log.info("Delete post of cache, post with id: {}", post.getId());
-        String postId = POST_ID_PREFIX + post.getId();
+        String postId = postIdPrefix + post.getId();
 
         toExecute(post, postId, 0, new ArrayList<>(), primalTags, true);
     }
 
     public void updatePostOfCache(PostCacheDto post, List<String> primalTags, List<String> updTags) {
         log.info("Update post of cache, post with id: {}", post.getId());
-        String postId = POST_ID_PREFIX + post.getId();
+        String postId = postIdPrefix + post.getId();
         long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
         List<String> delTags = postHashTagService.getDeletedHashTags(primalTags, updTags);
         List<String> newTags = postHashTagService.getNewHashTags(primalTags, updTags);
@@ -96,31 +106,32 @@ public class PostCacheOperations {
         });
     }
 
+    @Retryable(retryFor = RedisTransactionInterrupted.class,
+            maxAttemptsExpression = "${app.post.cache.retryable.save_keys.max_attempts}",
+            backoff = @Backoff(delayExpression = "${app.post.cache.retryable.save_keys.delay}",
+                    multiplierExpression = "${app.post.cache.retryable.save_keys.multiplier}"))
     private List<Object> tryToSaveKeys(PostCacheDto post, String postId, long timestamp, List<String> newTags,
                                        List<String> delTags, boolean toDeletePost) {
-        List<Object> resultOfExec = new ArrayList<>();
         List<String> tagsInCache = compareWithTagsInCache(post.getHashTags());
-        boolean success = false;
-        while (!success) {
-            redisTemplatePost.multi();
-            log.info("Transaction started");
 
-            if (!newTags.isEmpty()) {
-                redisTemplatePost.opsForValue().set(postId, post);
-            } else if (toDeletePost || tagsInCache.isEmpty()) {
-                redisTemplatePost.delete(postId);
-            }
-            delTags.forEach(tag -> zSetOperations.remove(tag, postId));
-            newTags.forEach(tag -> zSetOperations.add(tag, postId, timestamp));
+        redisTemplatePost.multi();
+        log.info("Transaction started");
 
-            resultOfExec = redisTemplatePost.exec();
-            if (!resultOfExec.isEmpty()) {
-                success = true;
-                log.info("Transaction executed successfully");
-            } else {
-                redisTemplatePost.discard();
-                log.info("Transaction discarded");
-            }
+        if (!newTags.isEmpty()) {
+            redisTemplatePost.opsForValue().set(postId, post);
+        } else if (toDeletePost || tagsInCache.isEmpty()) {
+            redisTemplatePost.delete(postId);
+        }
+        delTags.forEach(tag -> zSetOperations.remove(tag, postId));
+        newTags.forEach(tag -> zSetOperations.add(tag, postId, timestamp));
+
+        List<Object> resultOfExec = redisTemplatePost.exec();
+        if (!resultOfExec.isEmpty()) {
+            log.info("Transaction executed successfully");
+        } else {
+            redisTemplatePost.discard();
+            log.info("Transaction discarded");
+            throw new RedisTransactionInterrupted(REDIS_TRANSACTION_INTERRUPTED, post.getId());
         }
         return resultOfExec;
     }

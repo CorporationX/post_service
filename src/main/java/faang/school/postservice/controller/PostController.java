@@ -2,7 +2,6 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.FilterPostRequestDto;
-import faang.school.postservice.dto.post.HashTagRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
@@ -80,7 +79,7 @@ public class PostController {
     }
 
     @GetMapping
-    public List<PostCacheDto> findAllByHashTags(@RequestParam(name ="hash_tag") String hashTag,
+    public List<PostCacheDto> findAllByHashTags(@RequestParam(name = "hash_tag") String hashTag,
                                                 @RequestParam(name = "start") int start,
                                                 @RequestParam(name = "end") int end) {
         return postService.findInRangeByHashTag(hashTag, start, end);

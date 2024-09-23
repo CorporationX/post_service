@@ -6,13 +6,13 @@ import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.post.cache.PostCacheOperations;
 import faang.school.postservice.service.post.cache.PostCacheService;
 import faang.school.postservice.service.post.hash.tag.PostHashTagService;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Slf4j
+@EnableRetry
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -35,7 +36,6 @@ public class PostService {
     private final PostHashTagService postHashTagService;
     private final PostCacheService postCacheService;
     private final PostMapper postMapper;
-    private final PostCacheOperations postCacheOperations;
 
     @Transactional
     public Post create(Post post) {

@@ -53,4 +53,10 @@ payment-service:
 app:
   post:
     cache:
-      number_of_top_in_cache: 100;
+      post_id_prefix: "post:"
+      number_of_top_in_cache: 100
+      retryable:
+        save_keys:
+          max_attempts: 3
+          delay: 100
+          multiplier: 2
