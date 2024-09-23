@@ -1,14 +1,11 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.post.GetPostsDto;
-import faang.school.postservice.dto.post.UpdatablePostDto;
+import faang.school.postservice.dto.post.*;
 import faang.school.postservice.dto.publishable.PostEvent;
 import faang.school.postservice.dto.publishable.PostViewEvent;
 import faang.school.postservice.dto.resource.PreviewPostResourceDto;
 import faang.school.postservice.dto.resource.ResourceDto;
-import faang.school.postservice.dto.post.DraftPostDto;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.UpdatableResourceDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.messages.ValidationExceptionMessage;
@@ -20,6 +17,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
 import faang.school.postservice.validator.post.PostServiceValidator;
@@ -57,6 +55,8 @@ public class PostService {
     private final KafkaPostProducer postProducer;
     private final KafkaPostViewProducer postViewProducer;
 
+    private final RedisPostRepository redisPostRepository;
+
     @Transactional
     public PostDto createPostDraft(DraftPostDto draft) {
 
@@ -86,6 +86,16 @@ public class PostService {
                 .subscriberIds(userDto.getSubscriberIds())
                 .build();
 
+        CachedPostDto cachedPostDto = CachedPostDto.builder()
+                .id(postDto.getId())
+                .authorId(postDto.getAuthorId())
+                .projectId(postDto.getProjectId())
+                .content(postDto.getContent())
+                .likesCount(postDto.getLikesCount())
+                .commentsCount(postDto.getCommentsCount())
+                .build();
+
+        redisPostRepository.save(cachedPostDto);
         postProducer.sendEvent(postEvent);
 
         return savedPostDto;
