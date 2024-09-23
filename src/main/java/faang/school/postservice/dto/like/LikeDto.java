@@ -1,4 +1,10 @@
 package faang.school.postservice.dto.like;
 
-public record LikeDto(long id,Long userId) {
+import jakarta.validation.constraints.Min;
+
+public record LikeDto(
+        @Min(value = 1, message = "ID must be a positive number")
+        long id,
+        @Min(value = 1, message = "ID must be a positive number")
+        Long userId) {
 }
