@@ -1,4 +1,4 @@
-package faang.school.postservice.event.comment;
+package faang.school.postservice.event.redis.comment;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package faang.school.postservice.event.like;
+package faang.school.postservice.event.redis.like;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
