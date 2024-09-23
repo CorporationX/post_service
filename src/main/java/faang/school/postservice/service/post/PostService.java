@@ -12,6 +12,7 @@ import faang.school.postservice.service.post.hash.tag.PostHashTagService;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,9 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class PostService {
-    private static final int NUMBER_OF_TOP_INT_CACHE = 100;
+
+    @Value("${app.post.cache.number_of_top_in_cache}")
+    private int numberOfTopIntCache;
 
     private final PostRepository postRepository;
     private final PostValidator postValidator;
@@ -90,19 +93,16 @@ public class PostService {
         postRepository.save(post);
     }
 
-//    public PostCacheDto findByIdCache(long id) {
-//        return postCacheOperations.findPostById(id);
-//    }
-
+    @Transactional
     public List<PostCacheDto> findInRangeByHashTag(String hashTag, int start, int end) {
-        List<PostCacheDto> postDtos =  postCacheService.findInRangeByHashTag(hashTag, start, end);
+        List<PostCacheDto> postDtos = postCacheService.findInRangeByHashTag(hashTag, start, end);
         if (postDtos.isEmpty()) {
-            String jsonTag = "[\"" + hashTag +"\"]";
-            List<Post> posts = postRepository.findTopByHashTagByDate(jsonTag, NUMBER_OF_TOP_INT_CACHE);
+            String jsonTag = postHashTagService.convertTagToJson(hashTag);
+            List<Post> posts = postRepository.findTopByHashTagByDate(jsonTag, numberOfTopIntCache);
             List<PostCacheDto> postCacheDtos = posts.stream()
                     .map(postMapper::toPostCacheDto)
                     .toList();
-            postCacheOperations.addListOfPostsToCache(postCacheDtos, hashTag);
+            postCacheService.addListOfPostsToCache(postCacheDtos, hashTag);
             postDtos = postCacheService.findInRangeByHashTag(hashTag, start, end);
         }
         return postDtos;

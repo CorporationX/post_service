@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static com.fasterxml.jackson.databind.type.LogicalType.Collection;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -45,16 +43,13 @@ public class PostCacheService {
         }
     }
 
+    public void addListOfPostsToCache(List<PostCacheDto> posts, String tagToFind) {
+        log.info("Add to cache list of posts");
+        posts.forEach(post -> postCacheOperations.addPostToCacheByTag(post, post.getHashTags(), tagToFind));
+    }
+
     public List<PostCacheDto> findInRangeByHashTag(String hashTag, int start, int end) {
         Set<String> postIds = postCacheOperations.findIdsByHashTag(hashTag, start, end);
         return postCacheOperations.findAllByIds(new ArrayList<>(postIds));
     }
-
-//    public List<PostCacheDto> findAllByHashTag(String hashTag, ) {
-//        Set<String> ids = postCacheOperations.findIdsByHashTag(hashTag);
-//
-//        return ids.stream()
-//                .map(postCacheOperations::findPostById)
-//                .toList();
-//    }
 }

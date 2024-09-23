@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class PostHashTagService {
     private static final String HASH_TAG_PATTERN = "#(\\w++)";
+    private static final String JSON_PREFIX = "[\"";
+    private static final String JSON_POSTFIX = "\"]";
 
     public void updateHashTags(Post post) {
         log.info("Update hash-tags of post with id: {}", post.getId());
@@ -45,5 +47,9 @@ public class PostHashTagService {
         deletedHashTags.removeAll(updatedHashTags);
         log.info("Deleted hash-tags: {}", deletedHashTags);
         return deletedHashTags;
+    }
+
+    public String convertTagToJson(String hashTag) {
+        return JSON_PREFIX + hashTag + JSON_POSTFIX;
     }
 }

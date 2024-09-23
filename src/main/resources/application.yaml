@@ -49,3 +49,8 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+app:
+  post:
+    cache:
+      number_of_top_in_cache: 100;
