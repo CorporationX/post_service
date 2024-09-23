@@ -18,12 +18,15 @@ public interface LikeMapper {
     Like toEntity(LikeDto likeDto);
 
     @Mapping(source = "id", target = "likeId")
-    @Mapping(source = "comment.id", target = "commentId")
-    @Mapping(source = "post.id", target = "postId")
+    @Mapping(source = "comment", target = "commentId", qualifiedByName = "convertCommentToId")
+    @Mapping(source = "post", target = "postId", qualifiedByName = "convertPostToId")
     LikeDto toDto(Like like);
 
     @Named("convertIdToPost")
     default Post convertIdToPost(Long id) {
+        if (id == null)
+            return null;
+
         Post post = new Post();
         post.setId(id);
         return post;
@@ -31,8 +34,26 @@ public interface LikeMapper {
 
     @Named("convertIdToComment")
     default Comment convertIdToComment(Long id) {
+        if (id == null)
+            return null;
+
         Comment comment = new Comment();
         comment.setId(id);
+
         return comment;
+    }
+
+    @Named("convertCommentToId")
+    default Long convertCommentToId(Comment comment) {
+        if (comment == null)
+            return null;
+        return comment.getId();
+    }
+
+    @Named("convertPostToId")
+    default Long convertPostToId(Post post) {
+        if (post == null)
+            return null;
+        return post.getId();
     }
 }
