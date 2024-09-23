@@ -15,7 +15,7 @@ public class CommentValidator {
     private final UserServiceClient userClient;
     private final CommentRepository commentRepository;
 
-    private Comment getComment(CommentDto commentDto) {
+    public Comment getComment(CommentDto commentDto) {
         return commentRepository.findById(commentDto.getId()).orElseThrow();
     }
 
@@ -29,7 +29,6 @@ public class CommentValidator {
         if (!(commentDto.getAuthorId() == getComment(commentDto).getAuthorId())) {
             throw new ValidationException("Author name can't be changed");
         }
-
     }
 
     public void validatePostIdUpdateComment(CommentDto commentDto) {

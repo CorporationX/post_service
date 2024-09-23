@@ -7,7 +7,6 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.post.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.PostService;

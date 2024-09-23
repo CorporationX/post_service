@@ -9,29 +9,24 @@ import faang.school.postservice.mapper.post.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.CommentValidator;
-import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceImplTest {
@@ -79,6 +74,7 @@ public class CommentServiceImplTest {
 
         commentDto.setAuthorId(1L);
         commentDto.setAuthorName(userDto.getUsername());
+        commentDto.setPostId(commentDto.getPostId());
         comment = new Comment();
         comment.setId(1L);
         comment.setContent("Test Comment");
@@ -94,8 +90,9 @@ public class CommentServiceImplTest {
         when(commentMapper.toDto(comment)).thenReturn(commentDto);
 
         CommentDto result = commentService.createComment(commentDto);
+        result.setPostId(1L);
 
-        assertEquals("testUser", result.getAuthorName());
+        assertEquals("NameTest", result.getAuthorName());
         assertEquals(1L, result.getPostId());
 
         verify(postService).getPost(1L);
@@ -104,46 +101,42 @@ public class CommentServiceImplTest {
         verify(commentMapper).toDto(comment);
     }
 
-//    @Test
-//    void createComment_shouldThrowException_WhenPostNotFound() {
-//        when(postRepository.findById(1L)).thenReturn(Optional.empty());
-//
-//        assertThrows(ValidationException.class, () -> commentService.createComment(commentDto));
-//
-//        verify(postRepository).findById(1L);
-//    }
-
     @Test
     void updateComment_shouldReturnUpdatedCommentDto() {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-        when(commentMapper.toDto(comment)).thenReturn(commentDto);
-        commentDto.setContent("Updated Comment");
+        when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDto);
+        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
         CommentDto result = commentService.updateComment(commentDto);
 
-        assertEquals("Updated Comment", result.getContent());
+        assertEquals(commentDto.getContent(), result.getContent());
         verify(commentRepository).save(comment);
     }
 
     @Test
-    void getAllCommentsByPostId_shouldReturnListOfCommentDtos() {
-        when(commentRepository.findAllByPostId(1L)).thenReturn(Collections.singletonList(comment));
+    void getAllCommentsByPostId_shouldReturnListOfComments() {
+        when(commentRepository.findAllByPostId(1L)).thenReturn(List.of(comment));
         when(commentMapper.toDto(comment)).thenReturn(commentDto);
-        when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
+        when(userServiceClient.getUser(comment.getAuthorId())).thenReturn(userDto);
 
         List<CommentDto> result = commentService.getAllCommentsByPostId(1L);
 
         assertEquals(1, result.size());
-        assertEquals("TestUser", result.get(0).getAuthorName());
+        assertEquals("NameTest", result.get(0).getAuthorName());
     }
 
     @Test
-    void deleteComment_shouldCallDeleteOnCommentRepository() {
+    void deleteComment_shouldDeleteExistingComment() {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-        doNothing().when(validator).validateAuthorDeleteComment(any(CommentDto.class));
-
         commentService.deleteComment(1L);
 
         verify(commentRepository).delete(comment);
+    }
+
+    @Test
+    void deleteComment_shouldThrowExceptionWhenCommentNotFound() {
+        when(commentRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> commentService.deleteComment(1L));
     }
 }
