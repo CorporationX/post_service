@@ -14,4 +14,9 @@ class PostServiceAppTests {
     void positiveTest() {
         Assertions.assertThat(42).isEqualTo(40 + 2);
     }
+
+    @Test
+    void negativeTest() {
+        org.junit.jupiter.api.Assertions.fail();
+    }
 }
