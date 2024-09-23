@@ -15,7 +15,7 @@ public class KafkaLikeProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendMessage(String topic,String message) {
+    public void sendMessage(String topic,Object message) {
         log.info("Sending message {} to topic {}.", message, topic);
         CompletableFuture<SendResult<String, Object>> future
                 = kafkaTemplate.send(topic, message);

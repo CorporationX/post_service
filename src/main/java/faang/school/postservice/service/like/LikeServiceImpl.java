@@ -10,6 +10,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.kafka.KafkaLikeEvent;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
@@ -20,6 +21,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +45,8 @@ public class LikeServiceImpl implements LikeService {
     private final PostMapper postMapper;
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
+    private final KafkaLikeProducer kafkaLikeProducer;
+    private NewTopic likeTopic;
 
     @Value("${like-service.batch-size}")
     private int batchSize;
@@ -93,6 +97,7 @@ public class LikeServiceImpl implements LikeService {
                 like.getId(),
                 postId,
                 userId);
+        kafkaLikeProducer.sendMessage(likeTopic.name(), likeMapper.dtoToKafkaLikeEvent(likeDto));
         return likeMapper.toDto(like);
     }
 
