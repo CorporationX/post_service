@@ -20,6 +20,9 @@ public class KafkaConfig {
     @Value("${kafka.host-port}")
     private String hostPort;
 
+    @Value("${kafka.topic.name.post}")
+    private String postTopicName;
+
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -36,6 +39,6 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic postsTopic() {
-        return new NewTopic("posts", 1, (short) 1);
+        return new NewTopic(postTopicName, 1, (short) 1);
     }
 }

@@ -89,6 +89,9 @@ payment-service:
 
 kafka:
   host-port: localhost:9092
+  topic:
+    name:
+      post: posts
 
   posts-topic:
     name: posts
@@ -101,6 +104,9 @@ async:
 
 cache:
   post-ttl-seconds: 86400
+
+feed:
+  max-size: 500
 
 #springdoc:
 #  api-docs:
