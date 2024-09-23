@@ -91,12 +91,9 @@ public class LikeService {
     public LikeDto addLikeToPost(LikeDto likeDto) {
         Post post = postService.getPost(likeDto.getPostId());
         UserDto userDto = userServiceClient.getUser(likeDto.getUserId());
-
         Optional<Like> optionalLike = likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId());
         likeServiceValidator.checkDuplicateLike(optionalLike);
         Like like = likeMapper.toEntity(likeDto);
-
-
 
         post.getLikes().add(like);
 

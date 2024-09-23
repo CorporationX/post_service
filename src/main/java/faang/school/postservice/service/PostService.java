@@ -7,6 +7,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentCache;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.event.kafka.NewPostEvent;
+import faang.school.postservice.dto.event.kafka.PostViewEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.post.CachePost;
@@ -16,6 +17,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -59,6 +61,7 @@ public class PostService {
     private final RedisPostRepository redisPostRepository;
     private final RedisUserRepository redisUserRepository;
     private final CommentRepository commentRepository;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
@@ -98,10 +101,6 @@ public class PostService {
         sendToRedisPublisher(userContext.getUserId(), post.getId());
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
-        kafkaPostProducer.send(NewPostEvent.builder()
-                .id(post.getId())
-                .subscribersIds(userServiceClient.getFollowerIds(post.getId()))
-                .build());
         return postDtoForReturns;
     }
 
@@ -128,23 +127,13 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
-        List<CommentCache> commentCaches = commentRepository.findByPostIdToCache(
-                        post.getId(), PageRequest.of(0, maxCommentToCachePost)).stream()
-                .map(comment ->
-                        CommentCache.builder()
-                                .id(comment.getId())
-                                .content(comment.getContent())
-                                .authorId(comment.getAuthorId())
-                                .build())
-                .toList();
-
-        redisPostRepository.save(CachePost.builder()
+        kafkaPostProducer.send(NewPostEvent.builder()
                 .id(post.getId())
-                .content(post.getContent())
-                .countLike(post.getLikes().size())
-                .comments(post.getComments().isEmpty() ?
-                        null : new LinkedHashSet<>(commentCaches))
-                .ttl(postTtl)
+                .subscribersIds(userServiceClient.getFollowerIds(post.getId()))
+                .build());
+        kafkaPostViewProducer.send(PostViewEvent.builder()
+                .postId(post.getId())
+                .userId(post.getAuthorId())
                 .build());
 
         return postMapper.toDto(post);
