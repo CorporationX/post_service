@@ -1,6 +1,8 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeKafkaDto;
+import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.model.Like;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -16,4 +18,6 @@ public interface LikeMapper {
     @Mapping(target = "post.id", source = "postId")
     @Mapping(target = "comment.id", source = "commentId")
     Like toEntity(LikeDto likeDto);
+
+    LikeKafkaDto toKafkaDto(LikeEvent like);
 }

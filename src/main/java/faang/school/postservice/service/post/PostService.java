@@ -54,8 +54,6 @@ public class PostService {
     @Async
     public void asyncPublishKafka(PostDto postDto) throws JsonProcessingException {
         kafkaPostProducer.send("posts", postDto);
-//        kafkaLikeProducer.send("likes", postDto);
-//        kafkaCommentProducer.send("comments", postDto);
     }
 
     private void validatePostPublishing(Post post) {

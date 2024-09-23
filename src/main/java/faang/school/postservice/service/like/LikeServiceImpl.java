@@ -1,5 +1,6 @@
 package faang.school.postservice.service.like;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -10,6 +11,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
@@ -43,9 +45,13 @@ public class LikeServiceImpl implements LikeService {
     private final PostMapper postMapper;
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
+    private final KafkaLikeProducer kafkaLikeProducer;
 
     @Value("${like-service.batch-size}")
     private int batchSize;
+
+    @Value("${spring.data.kafka.topics.like_topic}")
+    private String likeTopic;
 
     @Override
     @Transactional
@@ -116,6 +122,13 @@ public class LikeServiceImpl implements LikeService {
                 .authorPostId(commentId != null ? authorId : null)
                 .completedAt(LocalDateTime.now())
                 .build();
+
+        try {
+            kafkaLikeProducer.send(likeTopic, event);
+        } catch (JsonProcessingException e) {
+            log.error("kafka producer error", e);
+            throw new RuntimeException(e);
+        }
         likePublisher.publish(event);
     }
 

@@ -4,10 +4,12 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.error.CommentServiceErrors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +22,10 @@ public class CommentService {
     private final CommentRepository repository;
     private final PostRepository postRepository;
     private final CommentMapper mapper;
+    private final KafkaCommentProducer kafkaCommentProducer;
+
+    @Value("${spring.data.kafka.topics.comment_topic}")
+    private String commentTopic;
 
     public CommentDto addComment(Long postId, CommentDto commentDto) {
         if (commentDto.getContent() == null || commentDto.getContent().isBlank()) {
@@ -37,6 +43,7 @@ public class CommentService {
         post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
 
+        kafkaCommentProducer.send(commentTopic, commentDto);
         return mapper.toDto(saveComment);
     }
 

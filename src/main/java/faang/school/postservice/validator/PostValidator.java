@@ -19,24 +19,24 @@ public class PostValidator implements PostServiceValidator<PostDto> {
         Long authorId = postDto.getAuthorId();
         Long projectId = postDto.getProjectId();
 
-        if (authorId == null && projectId == null || authorId != null && projectId != null) {
-            throw new IllegalArgumentException("Post must have either author or project");
-        }
+//        if (authorId == null && projectId == null || authorId != null && projectId != null) {
+//            throw new IllegalArgumentException("Post must have either author or project");
+//        }
 
-        if (authorId != null) {
-            UserDto user = userServiceClient.getUser(authorId);
+//        if (authorId != null) {
+//            UserDto user = userServiceClient.getUser(authorId);
+//
+//            if (user == null) {
+//                throw new IllegalArgumentException("User not found");
+//            }
+//        }
 
-            if (user == null) {
-                throw new IllegalArgumentException("User not found");
-            }
-        }
-
-        if (projectId != null) {
-            ProjectDto project = projectServiceClient.getProject(projectId);
-
-            if (project == null) {
-                throw new IllegalArgumentException("Project not found");
-            }
-        }
+//        if (projectId != null) {
+//            ProjectDto project = projectServiceClient.getProject(projectId);
+//
+//            if (project == null) {
+//                throw new IllegalArgumentException("Project not found");
+//            }
+//        }
     }
 }

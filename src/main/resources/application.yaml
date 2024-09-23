@@ -27,7 +27,7 @@ spring:
          comment_channel:
            name: comment_channel
     kafka:
-      bootstrap-servers: host.docker.internal:29092,host.docker.internal:29093
+      bootstrap-servers: PLAINTEXT://localhost:9092
       topics:
         post_topic: posts
         like_topic: likes
