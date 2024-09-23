@@ -86,27 +86,21 @@ public class ServiceValidator {
 
     public Post validateAndGetPost(LikeDto likeDto) {
         List<Post> postsUser = postRepository.findByAuthorIdWithLikes(likeDto.getUserId());
-        Optional<Post> post = postsUser
+        Post post = postsUser
                 .stream()
                 .filter(filter -> filter.getId() == likeDto.getPostId())
-                .findFirst();
-        if (post.isPresent()) {
-            return post.get();
-        } else {
-            throw new DataValidationException("Post not found!");
-        }
+                .findFirst()
+                .orElseThrow(() -> new DataValidationException("post not found in getPost"));
+       return post;
     }
 
     public Comment validateAndGetComment(LikeDto likeDto) {
         List<Comment> comments = commentRepository.findAllByPostId(likeDto.getPostId());
-        Optional<Comment> comment = comments
+        Comment comment = comments
                 .stream()
                 .filter(filter -> filter.getId() == likeDto.getCommentId())
-                .findFirst();
-        if (comment.isPresent()) {
-            return comment.get();
-        } else {
-            throw new DataValidationException("Comment not found!");
-        }
+                .findFirst()
+                .orElseThrow(() -> new DataValidationException("comment not found in getComment"));
+        return comment;
     }
 }

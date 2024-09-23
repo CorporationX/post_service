@@ -10,14 +10,17 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.validator.ServiceValidator;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class LikeServiceImpl implements LikeService {
 
     private final LikeRepository likeRepository;
@@ -27,7 +30,7 @@ public class LikeServiceImpl implements LikeService {
     private final PostRepository postRepository;
 
     @Transactional
-    public LikeDto likeToPost(LikeDto likeDto) {
+    public LikeDto likeToPost(@Valid LikeDto likeDto) {
         validator.validateUserReal(likeDto);
         Post post = postRepository.findById(likeDto.getPostId())
                 .orElseThrow(() -> new DataValidationException("Post not found"));
@@ -46,13 +49,13 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Transactional
-    public void unlikeFromPost(LikeDto likeDto) {
+    public void unlikeFromPost(@Valid LikeDto likeDto) {
         Post post =  validator.validateAndGetPost(likeDto);
         likeRepository.deleteByPostIdAndUserId(post.getId(), likeDto.getUserId());
     }
 
     @Transactional
-    public LikeDto likeToComment(LikeDto likeDto) {
+    public LikeDto likeToComment(@Valid LikeDto likeDto) {
         validator.validateUserReal(likeDto);
         Comment comment = commentRepository.findById(likeDto.getCommentId())
                 .orElseThrow(() -> new DataValidationException("Comment not found"));
@@ -73,7 +76,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Transactional
-    public void unlikeFromComment(LikeDto likeDto) {
+    public void unlikeFromComment(@Valid LikeDto likeDto) {
         Comment comment = validator.validateAndGetComment(likeDto);
         likeRepository.deleteByCommentIdAndUserId(comment.getId(), likeDto.getUserId());
     }
