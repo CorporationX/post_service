@@ -4,6 +4,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.service.comment.CommentService;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -22,6 +23,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/comments")
+@Validated
 public class CommentController {
 
     private final CommentService commentService;
@@ -41,12 +43,12 @@ public class CommentController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable("id") Long id) {
+    public void delete(@PathVariable("id") @Positive Long id) {
         commentService.delete(id);
     }
 
     @GetMapping("/postId/{postId}")
-    public List<CommentResponseDto> findAll(@PathVariable("postId") Long postId) {
+    public List<CommentResponseDto> findAll(@PathVariable("postId") @Positive Long postId) {
         return commentService.findAll(postId);
     }
 }

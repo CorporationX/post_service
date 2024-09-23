@@ -1,16 +1,20 @@
 package faang.school.postservice.dto.like;
 
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 @Data
 public class LikeDto {
-    @PositiveOrZero
+    @Positive
     private Long Id;
-    @PositiveOrZero
+
+    @Positive
     private Long userId;
-    @PositiveOrZero
+
+    @Positive
     private Long commentId;
-    @PositiveOrZero
+
+    @Positive
     private Long postId;
 }

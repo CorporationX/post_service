@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,12 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/v1/like")
 @RequiredArgsConstructor
+@Validated
 public class LikeController {
     private final LikeService likeService;
 
 
     @PostMapping("/commentId/{commentId}")
-    public LikeDto createLikeComment(@PathVariable @Positive long commentId) {
+    public LikeDto createLikeComment(@PathVariable @Positive Long commentId) {
         return likeService.createLikeComment(commentId);
     }
 
