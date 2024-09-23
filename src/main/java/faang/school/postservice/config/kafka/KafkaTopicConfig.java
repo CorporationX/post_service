@@ -38,4 +38,9 @@ public class KafkaTopicConfig {
     public NewTopic comment() {
         return new NewTopic("likes", 1, (short) 1);
     }
+
+    @Bean
+    public NewTopic postView() {
+        return new NewTopic("post_views", 1, (short) 1);
+    }
 }
