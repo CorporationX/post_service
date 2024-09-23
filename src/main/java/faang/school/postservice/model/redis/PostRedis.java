@@ -27,5 +27,5 @@ public class PostRedis {
     private LocalDateTime publishedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private int views;
+    private Long views;
 }

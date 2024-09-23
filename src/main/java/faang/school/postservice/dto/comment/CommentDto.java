@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -23,4 +24,5 @@ public class CommentDto {
     private List<Long> likesId;
     @NotNull(message = DtoValidationConstraints.COMMENT_DTO_POST_ID_MISSING)
     private long postId;
+    private LocalDateTime updatedAt; // нужно посмотреть основную логику
 }

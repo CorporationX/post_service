@@ -58,7 +58,7 @@ spring:
           name: comment_channel
       cache:
         capacity:
-          queue: 3
+          max: 3
         ttl:
           users: 86400
           posts: 86400

@@ -1,8 +1,8 @@
 package faang.school.postservice.service.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.event.post.PostEvent;
-import faang.school.postservice.messaging.publisher.post.PostEventPublisher;
+import faang.school.postservice.event.redis.post.PostEvent;
+import faang.school.postservice.messaging.publisher.redis.post.PostEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,9 +13,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+
 import java.time.LocalDateTime;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
