@@ -34,6 +34,13 @@ spring:
           name: like_channel
         comment_channel:
           name: comment_channel
+
+  kafka:
+    host: localhost
+    port: 9092
+    topics:
+      comment: comments_topic
+
 server:
   port: 8081
 

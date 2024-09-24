@@ -1,14 +1,15 @@
 package faang.school.postservice.mapper.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.event.comment.CommentEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
-import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
@@ -20,7 +21,7 @@ public interface CommentMapper {
     Comment toEntity(CommentDto commentDto);
 
     @Named("listLikesToLong")
-    default List<Long> listLikesToLong(List<Like> likes){
+    default List<Long> listLikesToLong(List<Like> likes) {
         return likes.stream().map(Like::getId).toList();
     }
 
