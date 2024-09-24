@@ -59,10 +59,11 @@ public class PostCacheOperations {
         log.info("Add post to cache by tag: {}, post with id: {}", tagToFind, post.getId());
         String postId = postIdPrefix + post.getId();
         long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
+        boolean toDeletePostFromCache = false;
         newTags = compareWithTagsInCache(newTags, tagToFind);
 
         if (!newTags.isEmpty()) {
-            toExecute(post, postId, timestamp, newTags, new ArrayList<>(), false);
+            savePost(post, postId, timestamp, newTags, new ArrayList<>(), toDeletePostFromCache);
         }
     }
 
@@ -70,10 +71,11 @@ public class PostCacheOperations {
         log.info("Add post to cache, post with id: {}", post.getId());
         String postId = postIdPrefix + post.getId();
         long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
+        boolean toDeletePostFromCache = false;
         newTags = compareWithTagsInCache(newTags);
 
         if (!newTags.isEmpty()) {
-            toExecute(post, postId, timestamp, newTags, new ArrayList<>(), false);
+            savePost(post, postId, timestamp, newTags, new ArrayList<>(), toDeletePostFromCache);
         }
     }
 
@@ -81,9 +83,10 @@ public class PostCacheOperations {
         log.info("Delete post of cache, post with id: {}", post.getId());
         String postId = postIdPrefix + post.getId();
         primalTags = compareWithTagsInCache(primalTags);
+        boolean toDeletePostFromCache = true;
 
         if (!primalTags.isEmpty()) {
-            toExecute(post, postId, 0, new ArrayList<>(), primalTags, true);
+            savePost(post, postId, 0, new ArrayList<>(), primalTags, toDeletePostFromCache);
         }
     }
 
@@ -91,18 +94,22 @@ public class PostCacheOperations {
         log.info("Update post of cache, post with id: {}", post.getId());
         String postId = postIdPrefix + post.getId();
         long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
+
+        List<String> tagsOfPostInCache = compareWithTagsInCache(updTags);
         List<String> delTags = postHashTagService.getDeletedHashTags(primalTags, updTags);
         List<String> newTags = postHashTagService.getNewHashTags(primalTags, updTags);
         delTags = compareWithTagsInCache(delTags);
         newTags = compareWithTagsInCache(newTags);
 
+        boolean toDeletePostFromCache = newTags.isEmpty() && tagsOfPostInCache.isEmpty();
+
         if (!newTags.isEmpty() || !delTags.isEmpty()) {
-            toExecute(post, postId, timestamp, newTags, delTags, false);
+            savePost(post, postId, timestamp, newTags, delTags, toDeletePostFromCache);
         }
     }
 
-    private void toExecute(PostCacheDto post, String postId, long timestamp, List<String> newTags,
-                           List<String> delTags, boolean toDeletePost) {
+    private void savePost(PostCacheDto post, String postId, long timestamp, List<String> newTags,
+                          List<String> delTags, boolean toDeletePost) {
         redisTemplatePost.execute(new SessionCallback<>() {
             @Override
             public List<Object> execute(@NonNull RedisOperations operations) throws DataAccessException {
@@ -111,7 +118,7 @@ public class PostCacheOperations {
                     delTags.forEach(redisTemplatePost::watch);
                     newTags.forEach(redisTemplatePost::watch);
                     redisTemplatePost.setEnableTransactionSupport(true);
-                    return postCacheOperationsTries.tryToSaveKeys(post, postId, timestamp, newTags, delTags, toDeletePost);
+                    return postCacheOperationsTries.tryToSavePost(post, postId, timestamp, newTags, delTags, toDeletePost);
                 } finally {
                     redisTemplatePost.setEnableTransactionSupport(false);
                     redisTemplatePost.unwatch();

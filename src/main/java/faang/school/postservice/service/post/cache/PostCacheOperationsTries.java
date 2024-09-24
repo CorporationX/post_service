@@ -32,17 +32,15 @@ public class PostCacheOperationsTries {
                     multiplierExpression = "${app.post.cache.retryable.save_keys.multiplier}"
             )
     )
-    public List<Object> tryToSaveKeys(PostCacheDto post, String postId, long timestamp, List<String> newTags,
+    public List<Object> tryToSavePost(PostCacheDto post, String postId, long timestamp, List<String> newTags,
                                       List<String> delTags, boolean toDeletePost) {
-        List<String> tagsOfPostInCache = tryCompareWithTagsInCache(post.getHashTags(), null);
-
         redisTemplatePost.multi();
         log.info("Transaction started");
 
-        if (!newTags.isEmpty()) {
-            redisTemplatePost.opsForValue().set(postId, post);
-        } else if (toDeletePost || tagsOfPostInCache.isEmpty()) {
+        if (toDeletePost) {
             redisTemplatePost.delete(postId);
+        } else if (!newTags.isEmpty()) {
+            redisTemplatePost.opsForValue().set(postId, post);
         }
         delTags.forEach(tag -> zSetOperations.remove(tag, postId));
         newTags.forEach(tag -> zSetOperations.add(tag, postId, timestamp));
