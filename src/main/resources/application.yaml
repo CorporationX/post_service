@@ -37,6 +37,8 @@ spring:
       cache:
         post:
           ttl: 86400
+        user:
+          ttl: 86400
 
     elasticsearch:
       rest:
