@@ -5,7 +5,6 @@ import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.post.PostService;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class CommentValidator {
     private final UserServiceClient userServiceClient;
     private final PostService postService;
+
     public void validateCreate(Long postId, Comment comment) {
         validatePost(postId);
         validateComment(comment);
@@ -34,10 +34,6 @@ public class CommentValidator {
     }
 
     private void validateComment(Comment comment) {
-        try {
-            userServiceClient.getUser(comment.getAuthorId());
-        } catch (FeignException exception) {
-            throw new ValidationException(exception.getMessage());
-        }
+        userServiceClient.getUser(comment.getAuthorId());
     }
 }

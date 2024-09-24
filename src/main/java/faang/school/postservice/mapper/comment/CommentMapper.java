@@ -13,8 +13,6 @@ import java.util.Collection;
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface CommentMapper {
-    CommentRequestDto toDto(Comment comment);
-
     Comment toEntity(CommentRequestDto commentRequestDto);
 
     Collection<CommentResponseDto> toDtos(Collection<Comment> comments);

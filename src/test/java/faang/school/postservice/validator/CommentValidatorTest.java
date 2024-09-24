@@ -42,12 +42,11 @@ class CommentValidatorTest {
         Comment comment = Comment.builder().id(postId).authorId(userId).build();
 
         var ex = Mockito.mock(FeignException.class);
-        when(ex.getMessage()).thenReturn("FeignException message");
 
         when(userServiceClient.getUser(userId)).thenThrow(ex);
 
         assertThrows(
-                ValidationException.class,
+                FeignException.class,
                 () -> commentValidator.validateCreate(postId, comment)
         );
     }

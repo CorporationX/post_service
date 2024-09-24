@@ -11,5 +11,6 @@ import java.util.Map;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
     private Map<String, String> errorFields;
+    private Integer status;
     private String message;
 }

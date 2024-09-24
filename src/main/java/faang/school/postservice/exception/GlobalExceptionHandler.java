@@ -1,11 +1,14 @@
 package faang.school.postservice.exception;
 
 import faang.school.postservice.exception.comment.CommentNotFoundException;
+import feign.FeignException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,8 +55,42 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 ErrorResponse.builder()
                         .message(ex.getMessage())
+                        .status(ex.getStatus().value())
+                        .build(),
+                ex.getStatus()
+        );
+    }
+
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<?> handleFeignServiceUnavailableException(FeignException ex) {
+
+        String message;
+
+        if (ex.getCause() instanceof ConnectException) {
+            message = "Connection to external service failed";
+        } else {
+            message = ex.getMessage();
+        }
+
+        return new ResponseEntity<>(
+                ErrorResponse.builder()
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .message(message)
                         .build(),
                 HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return new ResponseEntity<>(
+                ErrorResponse.builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .message(ex.getMessage())
+                        .build(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
 }

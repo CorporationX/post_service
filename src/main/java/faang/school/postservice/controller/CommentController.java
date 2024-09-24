@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,35 +24,35 @@ import java.util.Collection;
 @RequiredArgsConstructor
 @RequestMapping("/comments")
 public class CommentController {
+    private final UserContext userContext;
     private final CommentService commentService;
     private final CommentMapper commentMapper;
     private final InputCommentControllerValidator inputCommentControllerValidator;
-    private final static String DEFAULT_USER_ID = "x-user-id";
 
     @PostMapping("/{postId}")
-    public void createComment(@RequestHeader(DEFAULT_USER_ID) Long defaultUser,
-                              @PathVariable("postId") Long postId,
+    public void createComment(@PathVariable("postId") Long postId,
                               @RequestBody @Valid CommentRequestDto commentRequestDto,
                               BindingResult bindingResult) {
 
         inputCommentControllerValidator.validate(bindingResult);
+        Long authorId = userContext.getUserId();
 
         var entity = commentMapper.toEntity(commentRequestDto);
-        entity.setAuthorId(defaultUser);
+        entity.setAuthorId(authorId);
         
         commentService.createComment(postId, entity);
     }
 
     @PatchMapping("{commentId}")
-    public void updateComment(@RequestHeader(DEFAULT_USER_ID) Long defaultUser,
-                              @PathVariable("commentId") Long commentId,
+    public void updateComment(@PathVariable("commentId") Long commentId,
                               @RequestBody @Valid CommentRequestDto commentRequestDto,
                               BindingResult bindingResult) {
 
         inputCommentControllerValidator.validate(bindingResult);
+        Long authorId = userContext.getUserId();
 
         var entity = commentMapper.toEntity(commentRequestDto);
-        entity.setAuthorId(defaultUser);
+        entity.setAuthorId(authorId);
 
         commentService.updateComment(commentId, entity);
     }
