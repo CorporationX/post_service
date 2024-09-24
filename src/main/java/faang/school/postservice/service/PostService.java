@@ -2,12 +2,16 @@ package faang.school.postservice.service;
 
 
 import faang.school.postservice.cache.entity.PostCache;
+import faang.school.postservice.cache.entity.UserCache;
 import faang.school.postservice.cache.repository.PostCacheRepository;
+import faang.school.postservice.cache.repository.UserCacheRepository;
 import faang.school.postservice.client.HashtagServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
@@ -40,6 +44,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PostService {
 
+    private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
     private final SpellCheckerService spellCheckerService;
     private final PostMapper postMapper;
@@ -51,12 +56,16 @@ public class PostService {
     private final PostEventPublisher postEventPublisher;
     private final UserContext userContext;
     private final PostCacheRepository postCacheRepository;
+    private final UserCacheRepository userCacheRepository;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
 
     @Value("${spring.data.redis.cache.post.ttl}")
-    private long ttl;
+    private long POST_TTL;
+
+    @Value("${spring.data.redis.cache.post.ttl}")
+    private long USER_TTL;
 
     @Async(value = "threadPool")
     @Transactional
@@ -87,8 +96,14 @@ public class PostService {
         sendToRedisPublisher(userContext.getUserId(), post.getId());
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
-        PostCache postCache = new PostCache(post.getId(), postDtoForReturns, ttl);
+
+        PostCache postCache = new PostCache(post.getId(), postDtoForReturns, POST_TTL);
         postCacheRepository.save(postCache);
+
+        UserDto userDto = userServiceClient.getUser(userContext.getUserId());
+        UserCache userCache = new UserCache(userDto.getId(), userDto, USER_TTL);
+        userCacheRepository.save(userCache);
+
         return postDtoForReturns;
     }
 
