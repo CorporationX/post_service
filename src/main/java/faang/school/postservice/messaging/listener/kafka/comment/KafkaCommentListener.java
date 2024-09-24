@@ -25,8 +25,8 @@ public class KafkaCommentListener implements KafkaEventListener<CommentKafkaEven
     private final RedisPostRepository redisPostRepository;
     private final CommentMapper commentMapper;
 
-    @Value("${spring.data.redis.cache.capacity.max}")
-    private int maxCapacity;
+    @Value("${spring.data.redis.cache.capacity.max.comments}")
+    private int maxCapacityComments;
 
     @Override
     @KafkaListener(topics = "${spring.kafka.topic.comments}",
@@ -48,14 +48,14 @@ public class KafkaCommentListener implements KafkaEventListener<CommentKafkaEven
                         log.info("Create Set in Post: {}", postRedis.getId());
                     }
 
-                    if (postRedis.getComments().size() < maxCapacity) {
+                    if (postRedis.getComments().size() < maxCapacityComments) {
                         postRedis.getComments().add(commentRedis);
                         log.info("In Post: {} add new comment: {}", postRedis.getId(), commentRedis);
                     } else {
                         CommentRedis pollComment = postRedis.getComments().pollFirst();
                         postRedis.getComments().add(commentRedis);
                         log.info("Comments are larger than maximum: {}, remove comment: {}, and add new comment: {}",
-                                maxCapacity, pollComment, commentRedis);
+                                maxCapacityComments, pollComment, commentRedis);
                     }
                     try {
                         redisPostRepository.save(postRedis);

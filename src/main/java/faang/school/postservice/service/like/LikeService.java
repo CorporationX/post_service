@@ -3,7 +3,9 @@ package faang.school.postservice.service.like;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.kafka.LikeKafkaEvent;
 import faang.school.postservice.exception.ExceptionMessages;
+import faang.school.postservice.messaging.publisher.kafka.like.KafkaLikePublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -25,6 +27,7 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
     private final EventPublisherService eventPublisherService;
+    private final KafkaLikePublisher kafkaLikePublisher;
 
     @Value("${user.batch.size:100}")
     private int batchSize;
@@ -38,6 +41,11 @@ public class LikeService {
         likeRepository.save(like);
 
         eventPublisherService.submitEvent(likeDto);
+        kafkaLikePublisher.publish(LikeKafkaEvent.builder()
+                .authorId(like.getUserId())
+                .commentId(like.getComment().getId())
+                .postId(like.getPost().getId())
+                .build());
     }
 
 

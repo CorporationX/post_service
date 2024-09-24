@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.time.LocalDateTime;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Data
 @Builder
@@ -23,12 +24,12 @@ public class PostRedis {
     private String content;
     private Long authorId;
     private Long projectId;
-    private Long likes;
+    private AtomicLong likes;
     private TreeSet<CommentRedis> comments;
     private LocalDateTime publishedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Long views;
+    private AtomicLong views;
 
     @Version
     private Long version;
