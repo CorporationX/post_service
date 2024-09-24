@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -117,5 +118,11 @@ public class CommentService {
             partitions.add(new ArrayList<>(list.subList(i, Math.min(list.size(), i + partitionSize))));
         }
         return partitions;
+    }
+
+    public CommentDto findById(long id) {
+        return commentMapper.toDto(commentRepository.findById(id)
+                .orElseThrow(IllegalArgumentException::new));
+
     }
 }

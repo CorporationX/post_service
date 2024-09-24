@@ -27,6 +27,7 @@ spring:
       port: 6379
       host: localhost
       TTL: 86400
+      max-comments-size: 3
       channels:
         calculations_channel: calculations_channel
         like: like_channel
