@@ -9,8 +9,8 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.publisher.PublicationService;
-import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
+//import faang.school.postservice.service.publisher.PublicationService;
+//import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,8 +49,8 @@ class CommentServiceTest {
 
     @Spy
     private CommentMapperImpl mapper;
-    @Mock
-    private PublicationService<CommentEventPublisher, CommentEvent> publishService;
+//    @Mock
+//    private PublicationService<CommentEventPublisher, CommentEvent> publishService;
     @Mock
     private PostRepository postRepository;
     @Mock
@@ -165,7 +165,7 @@ class CommentServiceTest {
         //Act
         CommentDto actualDto = service.addComment(postId, commentDto);
         //Assert
-        Mockito.verify(publishService).publishEvent(commentEvent);
+//        Mockito.verify(publishService).publishEvent(commentEvent);
         assertEquals(expDto, actualDto);
     }
 

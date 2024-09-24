@@ -8,7 +8,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
+//import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,8 +41,8 @@ class LikeServiceTest {
     private LikeDto dto;
     private Like like;
 
-    @Mock
-    private LikeEventPublisher likeEventPublisher;
+//    @Mock
+//    private LikeEventPublisher likeEventPublisher;
     @Mock
     private PostRepository postRepository;
     @Mock
@@ -119,7 +119,7 @@ class LikeServiceTest {
         when(mapper.toEntity(Mockito.any())).thenReturn(like);
         when(likeRepository.save(Mockito.any())).thenReturn(like);
         when(likeEventMapper.toEntity(Mockito.any())).thenReturn(new LikeEvent());
-        doNothing().when(likeEventPublisher).publish(Mockito.any());
+//        doNothing().when(likeEventPublisher).publish(Mockito.any());
         service.addPostLike(VALID_ID_IN_DB, dto);
         //Assert
         Mockito.verify(mapper).toDto(like);

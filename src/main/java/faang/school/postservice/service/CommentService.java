@@ -9,8 +9,8 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.publisher.PublicationService;
-import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
+//import faang.school.postservice.service.publisher.PublicationService;
+//import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
-    private final PublicationService<CommentEventPublisher, CommentEvent> publishService;
+//    private final PublicationService<CommentEventPublisher, CommentEvent> publishService;
 
     public CommentDto addComment(Long postId, CommentDto dto) throws JsonProcessingException {
         Post post = getPost(postId);
@@ -49,7 +49,7 @@ public class CommentService {
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
         log.info("comment with id:{} created.", savedComment.getId());
-        publishService.publishEvent(mapper.toCommentEvent(savedComment));
+//        publishService.publishEvent(mapper.toCommentEvent(savedComment));
         return mapper.toDto(savedComment);
     }
 

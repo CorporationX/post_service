@@ -8,7 +8,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
+//import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeRepository likeRepository;
     private final LikeMapper mapper;
-    private final LikeEventPublisher likeEventPublisher;
+//    private final LikeEventPublisher likeEventPublisher;
     private final LikeEventMapper likeEventMapper;
 
     public LikeDto addPostLike(Long postId, LikeDto dto) {
@@ -37,7 +37,7 @@ public class LikeService {
         Like like = mapper.toEntity(dto);
         like.setPost(post);
         LikeEvent publisherEvent = conerterLikeEvent(dto , postId);
-        likeEventPublisher.publish(publisherEvent);
+//        likeEventPublisher.publish(publisherEvent);
         return mapper.toDto(likeRepository.save(like));
     }
 
