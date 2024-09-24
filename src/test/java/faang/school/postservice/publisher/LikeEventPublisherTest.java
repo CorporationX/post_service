@@ -1,7 +1,7 @@
 package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.redisEvent.LikeEvent;
+import faang.school.postservice.dto.event.LikeEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

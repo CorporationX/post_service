@@ -1,6 +1,8 @@
-package faang.school.postservice.exception;
+package faang.school.postservice.handler;
 
-import faang.school.postservice.dto.error.ErrorDto;
+import faang.school.postservice.dto.ErrorDto;
+import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.ErrorResponse;
 import faang.school.postservice.exception.post.ImmutablePostDataException;
 import faang.school.postservice.exception.post.PostAlreadyDeletedException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;

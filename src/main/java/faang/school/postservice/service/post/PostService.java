@@ -1,10 +1,10 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.filter.PostFilterDto;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.filter.post.PostFilter;
-import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;

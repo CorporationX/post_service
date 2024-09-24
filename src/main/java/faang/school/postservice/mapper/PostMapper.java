@@ -1,6 +1,6 @@
-package faang.school.postservice.mapper.post;
+package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;

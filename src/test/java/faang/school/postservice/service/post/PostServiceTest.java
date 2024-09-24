@@ -1,7 +1,7 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.filter.PostFilterDto;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.post.PostAlreadyDeletedException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.post.PostWOAuthorException;
@@ -11,7 +11,7 @@ import faang.school.postservice.filter.post.filterImpl.PostFilterProjectDraftNon
 import faang.school.postservice.filter.post.filterImpl.PostFilterProjectPostNonDeleted;
 import faang.school.postservice.filter.post.filterImpl.PostFilterUserDraftNonDeleted;
 import faang.school.postservice.filter.post.filterImpl.PostFilterUserPostNonDeleted;
-import faang.school.postservice.mapper.post.PostMapperImpl;
+import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
