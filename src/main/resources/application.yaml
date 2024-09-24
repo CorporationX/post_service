@@ -51,7 +51,7 @@ spring:
     consumer:
       group-id: posts-group-id
       deserializer-trusted-packages:
-        "java.util,java.lang,faang.school.postservice.dto"
+        "java.util,java.lang,faang.school.postservice.dto.publishable"
       backoff:
         interval: 5000
         max-attempts: 5

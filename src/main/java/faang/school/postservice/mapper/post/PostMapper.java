@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper.post;
 
+import faang.school.postservice.dto.post.CachedPostDto;
 import faang.school.postservice.dto.post.DraftPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.PreviewPostResourceDto;
@@ -24,6 +25,14 @@ public interface PostMapper {
     @Mapping(source = "content", target = "content")
     @Mapping(source = "scheduledAt", target = "scheduledAt")
     PostDto fromDraftPostDto(DraftPostDto draftPostDto);
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "authorId", target = "authorId")
+    @Mapping(source = "projectId", target = "projectId")
+    @Mapping(source = "content", target = "content")
+    @Mapping(target = "likesCount", source = "likes", qualifiedByName = "mapLikes")
+    @Mapping(target = "commentsCount", source = "comments", qualifiedByName = "mapComments")
+    CachedPostDto toCachedPostDto(Post post);
 
 
     @Mapping(source = "id", target = "id")

@@ -67,17 +67,17 @@ public class PostService {
 
         Post savedPost = postRepository.save(post);
 
-        List<ResourceDto> savedResources = resourceService.createResources(
-                savedPost.getId(), draft.getResource()
-        );
+//        List<ResourceDto> savedResources = resourceService.createResources(
+//                savedPost.getId(), draft.getResource()
+//        );
 
         PostDto savedPostDto = postMapper.toDto(savedPost);
 
-        List<PreviewPostResourceDto> resourcePreviews = savedResources.stream()
-                .map(resourceMapper::toPreviewPostResourceDto)
-                .toList();
-
-        savedPostDto.setResources(resourcePreviews);
+//        List<PreviewPostResourceDto> resourcePreviews = savedResources.stream()
+//                .map(resourceMapper::toPreviewPostResourceDto)
+//                .toList();
+//
+//        savedPostDto.setResources(resourcePreviews);
 
         UserDto userDto = userServiceClient.getUser(savedPost.getAuthorId());
         PostEvent postEvent = PostEvent.builder()
@@ -123,6 +123,11 @@ public class PostService {
         return postRepository.findById(postId).orElseThrow(
                 () -> new UnexistentPostException(postId)
         );
+    }
+
+    public CachedPostDto getPostFromCache(Long postId){
+        return redisPostRepository.findById(postId)
+                .orElse(postMapper.toCachedPostDto(getPost(postId)));
     }
 
     @Transactional
