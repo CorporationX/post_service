@@ -1,13 +1,15 @@
-package faang.school.postservice.service.Post;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.AlreadyDeletedException;
+import faang.school.postservice.exception.AlreadyPublishedException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,17 +24,15 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
-    private final UserContext userContext;
 
     @Override
     public PostDto create(PostDto postDto) {
         if (postDto.getAuthorId() != null) {
-            userContext.setUserId(postDto.getAuthorId());
-
             userServiceClient.getUser(postDto.getAuthorId());
         } else {
             projectServiceClient.getProject(postDto.getProjectId());
         }
+        postDto.setCreatedAt(LocalDateTime.now());
 
         Post post = postMapper.toEntity(postDto);
         post.setPublished(false);
@@ -44,11 +44,13 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDto publish(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(DataValidationException::new);
+        Post post = postRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
 
         if (post.isPublished()) {
-            throw new DataValidationException();
+            throw new AlreadyPublishedException();
         }
+
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
@@ -58,7 +60,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDto update(PostDto postDto, Long id) {
-        Post post = postRepository.findById(id).orElseThrow(DataValidationException::new);
+        Post post = postRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
 
         post.setUpdatedAt(LocalDateTime.now());
         post.setContent(postDto.getContent());
@@ -70,9 +73,11 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDto delete(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(DataValidationException::new);
+        Post post = postRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
+
         if (post.isDeleted()) {
-            throw new DataValidationException();
+            throw new AlreadyDeletedException();
         }
 
         post.setPublished(false);
@@ -86,50 +91,59 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto get(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(DataValidationException::new);
-        return postMapper.toDto(post);
+    public PostDto getPost(Long id) {
+        return postRepository.findById(id)
+                .map(postMapper::toDto)
+                .orElseThrow(EntityNotFoundException::new);
     }
 
     @Override
     public List<PostDto> getAllNonPublishedByAuthorId(Long id) {
-        userServiceClient.getUser(id);
+        validateUserExist(id);
 
-        return postRepository.findByAuthorId(id).stream()
-                .filter(post -> !post.isDeleted() && !post.isPublished())
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .map(postMapper::toDto)
-                .toList();
+        return filterNonPublishedPostsByTimeToDto(postRepository.findByAuthorId(id));
     }
 
     @Override
     public List<PostDto> getAllNonPublishedByProjectId(Long id) {
-        projectServiceClient.getProject(id);
+        validateProjectExist(id);
 
-        return postRepository.findByProjectId(id).stream()
-                .filter(post -> !post.isDeleted() && !post.isPublished())
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .map(postMapper::toDto)
-                .toList();
+        return filterNonPublishedPostsByTimeToDto(postRepository.findByProjectId(id));
     }
 
     @Override
     public List<PostDto> getAllPublishedByAuthorId(Long id) {
-        userServiceClient.getUser(id);
+        validateUserExist(id);
 
-        return postRepository.findByAuthorId(id).stream()
+        return filterPublishedPostsByTimeToDto(postRepository.findByAuthorId(id));
+    }
+
+    @Override
+    public List<PostDto> getAllPublishedByProjectId(Long id) {
+        validateProjectExist(id);
+
+        return filterPublishedPostsByTimeToDto(postRepository.findByProjectId(id));
+    }
+
+    private void validateUserExist(Long id) {
+        userServiceClient.getUser(id);
+    }
+
+    private void validateProjectExist(Long id) {
+        projectServiceClient.getProject(id);
+    }
+
+    private List<PostDto> filterPublishedPostsByTimeToDto(List<Post> posts) {
+        return posts.stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
     }
 
-    @Override
-    public List<PostDto> getAllPublishedByProjectId(Long id) {
-        projectServiceClient.getProject(id);
-
-        return postRepository.findByProjectId(id).stream()
-                .filter(post -> !post.isDeleted() && post.isPublished())
+    private List<PostDto> filterNonPublishedPostsByTimeToDto(List<Post> posts) {
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();

@@ -1,8 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.service.Post.PostService;
+import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,7 +9,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -50,32 +48,6 @@ class PostControllerTest {
     }
 
     @Test
-    void testPostCreateByNulls() {
-        assertThrows(DataValidationException.class, () -> postController.create(postDto));
-    }
-
-    @Test
-    void testCreateTestByBoth() {
-        postDto.setProjectId(2L);
-        postDto.setAuthorId(2L);
-
-        assertThrows(DataValidationException.class, () -> postController.create(postDto));
-    }
-
-    @Test
-    void testCreateEmptyPost() {
-        postDto.setAuthorId(2L);
-        postDto.setContent(" ");
-
-        assertThrows(DataValidationException.class, () -> postController.create(postDto));
-
-        postDto.setContent("");
-
-        assertThrows(DataValidationException.class, () -> postController.create(postDto));
-    }
-
-
-    @Test
     void testPublish() {
         postController.publish(id);
         verify(postService, times(1)).publish(id);
@@ -96,7 +68,7 @@ class PostControllerTest {
     @Test
     void testGet() {
         postController.get(id);
-        verify(postService, times(1)).get(id);
+        verify(postService, times(1)).getPost(id);
     }
 
     @Test

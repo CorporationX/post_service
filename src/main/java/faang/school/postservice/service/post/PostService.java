@@ -1,4 +1,4 @@
-package faang.school.postservice.service.Post;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
 
@@ -13,7 +13,7 @@ public interface PostService {
 
     PostDto delete(Long id);
 
-    PostDto get(Long id);
+    PostDto getPost(Long id);
 
     List<PostDto> getAllNonPublishedByAuthorId(Long id);
 

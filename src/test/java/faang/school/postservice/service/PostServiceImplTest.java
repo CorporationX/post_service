@@ -6,12 +6,14 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.AlreadyDeletedException;
+import faang.school.postservice.exception.AlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.Post.PostServiceImpl;
+import faang.school.postservice.service.post.PostServiceImpl;
 import feign.FeignException;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,8 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
 
 @ExtendWith(SpringExtension.class)
 class PostServiceImplTest {
@@ -129,7 +131,7 @@ class PostServiceImplTest {
     void testPublishNonExistentPost() {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.empty());
 
-        assertThrows(DataValidationException.class, () -> postService.publish(2L));
+        assertThrows(EntityNotFoundException.class, () -> postService.publish(2L));
     }
 
     @Test
@@ -138,7 +140,7 @@ class PostServiceImplTest {
 
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
 
-        assertThrows(DataValidationException.class, () -> postService.publish(postDto.getId()));
+        assertThrows(AlreadyPublishedException.class, () -> postService.publish(postDto.getId()));
     }
 
     @Test
@@ -155,7 +157,7 @@ class PostServiceImplTest {
     void testUpdateNonExistentPost() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(DataValidationException.class, () -> postService.update(postDto, 1L));
+        assertThrows(EntityNotFoundException.class, () -> postService.update(postDto, 1L));
     }
 
     @Test
@@ -172,7 +174,7 @@ class PostServiceImplTest {
     void testDeleteNonExistentPost() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(DataValidationException.class, () -> postService.delete(1L));
+        assertThrows(EntityNotFoundException.class, () -> postService.delete(1L));
     }
 
     @Test
@@ -191,14 +193,17 @@ class PostServiceImplTest {
         post.setDeleted(true);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
-        assertThrows(DataValidationException.class, () -> postService.delete(1L));
+        assertThrows(AlreadyDeletedException.class, () -> postService.delete(1L));
     }
 
     @Test
     void testGet() {
-        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        Optional<Post> opt = Optional.of(post);
 
-        postService.get(1L);
+        when(postRepository.findById(1L)).thenReturn(opt);
+        when(postMapper.toDto(post)).thenReturn(postDto);
+
+        postService.getPost(1L);
 
         verify(postMapper, times(1)).toDto(post);
     }
@@ -207,7 +212,7 @@ class PostServiceImplTest {
     void testGetNonExistentPost() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(DataValidationException.class, () -> postService.get(1L));
+        assertThrows(EntityNotFoundException.class, () -> postService.getPost(1L));
     }
 
     @Test
