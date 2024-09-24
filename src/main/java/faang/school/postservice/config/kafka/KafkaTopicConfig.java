@@ -20,6 +20,9 @@ public class KafkaTopicConfig {
     @Value("${spring.kafka.topics.likes.name}")
     private String likesName;
 
+    @Value("${spring.kafka.topics.comments.name}")
+    private String commentsName;
+
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
@@ -35,5 +38,11 @@ public class KafkaTopicConfig {
     public NewTopic likesTopic() {
         KafkaTopicsProperties.Topic likesTopic = kafkaTopicsProperties.getTopics().get(likesName);
         return new NewTopic(likesTopic.getName(), likesTopic.getPartitions(), likesTopic.getReplicationFactor());
+    }
+
+    @Bean
+    public NewTopic commentsTopic() {
+        KafkaTopicsProperties.Topic commentsTopic = kafkaTopicsProperties.getTopics().get(commentsName);
+        return new NewTopic(commentsTopic.getName(), commentsTopic.getPartitions(), commentsTopic.getReplicationFactor());
     }
 }
