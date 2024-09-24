@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.producer.KafkaCommentProducer;
-import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
@@ -25,10 +23,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostServiceValidator<PostDto> validator;
     private final KafkaPostProducer kafkaPostProducer;
-    private final KafkaLikeProducer kafkaLikeProducer;
-    private final KafkaCommentProducer kafkaCommentProducer;
 
-    public PostDto createPost(final PostDto postDto)  {
+    public PostDto createPost(final PostDto postDto) {
         validator.validate(postDto);
         Post post = postMapper.toEntity(postDto);
         return postMapper.toDto(postRepository.save(post));

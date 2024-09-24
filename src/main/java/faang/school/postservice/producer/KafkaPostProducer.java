@@ -24,10 +24,10 @@ public class KafkaPostProducer {
     private final PostMapper postMapper;
 
     public void send(String topic, PostDto postDto) throws JsonProcessingException {
-//        List<Long> subscribers = userServiceClient.getFollowers(postDto.getAuthorId()).stream()
-//                .map(UserDto::getId)
-//                .toList();
-        List<Long> subscribers = List.of(1L,2L,3L,4L,5L,6L,7L,8L,9L);
+        List<Long> subscribers = userServiceClient.getFollowers(postDto.getAuthorId()).stream()
+                .map(UserDto::getId)
+                .toList();
+
         PostKafkaDto postKafkaDto = postMapper.toPostKafkaDto(postDto, subscribers);
         log.info("send post kafka: {}", postKafkaDto);
         String ms = objectMapper.writeValueAsString(postKafkaDto);

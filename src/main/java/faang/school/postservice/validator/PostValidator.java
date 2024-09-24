@@ -3,8 +3,6 @@ package faang.school.postservice.validator;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.user.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

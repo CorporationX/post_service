@@ -2,9 +2,7 @@ package faang.school.postservice.producer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeKafkaDto;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import lombok.RequiredArgsConstructor;

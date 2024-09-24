@@ -17,7 +17,7 @@ public class KafkaCommentProducer {
 
     public void send(String topic, CommentDto commentDto) {
 
-        String ms = null;
+        String ms;
         try {
             ms = objectMapper.writeValueAsString(commentDto);
         } catch (JsonProcessingException e) {
