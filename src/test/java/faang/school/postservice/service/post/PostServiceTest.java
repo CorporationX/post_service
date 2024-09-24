@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.post.PostMapperList;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.cache.PostCacheOperations;
 import faang.school.postservice.service.post.cache.PostCacheService;
 import faang.school.postservice.service.post.hash.tag.PostHashTagService;
 import faang.school.postservice.validator.PostValidator;
@@ -72,6 +73,9 @@ public class PostServiceTest {
     @Mock
     private PostMapperList postMapperList;
 
+    @Mock
+    private PostCacheOperations postCacheOperations;
+
     @InjectMocks
     private PostService postService;
 
@@ -85,7 +89,7 @@ public class PostServiceTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(postService, "numberOfTopIntCache", NUMBER_OF_TOP_IN_CASH);
+        ReflectionTestUtils.setField(postService, "numberOfTopInCache", NUMBER_OF_TOP_IN_CASH);
 
         postForCreate = buildPost(FIRST_POST_ID, DEFAULT_CONTENT);
         postForUpdate = buildPost(FIRST_POST_ID, UPDATED_CONTENT, SECOND_AUTHOR_ID, defaultHashTags);
@@ -143,7 +147,6 @@ public class PostServiceTest {
         verify(postCacheService).newPostProcess(any(PostCacheDto.class));
     }
 
-
     @Test
     void testDeleteSuccessful() {
         PostCacheDto postCacheDto = mock(PostCacheDto.class);
@@ -162,10 +165,8 @@ public class PostServiceTest {
     void testFindInRangeByHashTagCacheResultEmpty() {
         List<PostCacheDto> postCacheDtos = buildPostCacheDtosForMapping();
         List<Post> posts = buildPostsForMapping();
-        when(postCacheService.findInRangeByHashTag(HASH_TAG, START_RANGE, END_RANGE))
-                .thenReturn(new ArrayList<>())
-                .thenReturn(postCacheDtos);
-
+        when(postCacheService.findInRangeByHashTag(HASH_TAG, START_RANGE, END_RANGE)).thenReturn(new ArrayList<>());
+        when(postCacheOperations.isRedisConnected()).thenReturn(true);
         when(postHashTagService.convertTagToJson(HASH_TAG)).thenReturn(HASH_TAG_JSON);
         when(postRepository.findTopByHashTagByDate(HASH_TAG_JSON, NUMBER_OF_TOP_IN_CASH)).thenReturn(posts);
         when(postMapperList.mapToPostCacheDtos(posts)).thenReturn(postCacheDtos);
@@ -174,6 +175,21 @@ public class PostServiceTest {
                 .isEqualTo(postCacheDtos);
 
         verify(postCacheService).addListOfPostsToCache(postCacheDtos, HASH_TAG);
+    }
+
+    @Test
+    @DisplayName("Given empty list of post from cache and redis disconnect when check then find posts in DB")
+    void testFindInRangeByHashTagCacheResultEmptyRedisDisconnect() {
+        List<PostCacheDto> postCacheDtos = buildPostCacheDtosForMapping();
+        List<Post> posts = buildPostsForMapping();
+        when(postCacheService.findInRangeByHashTag(HASH_TAG, START_RANGE, END_RANGE)).thenReturn(new ArrayList<>());
+        when(postCacheOperations.isRedisConnected()).thenReturn(false);
+        when(postHashTagService.convertTagToJson(HASH_TAG)).thenReturn(HASH_TAG_JSON);
+        when(postRepository.findInRangeByHashTagByDate(HASH_TAG_JSON, START_RANGE, END_RANGE)).thenReturn(posts);
+        when(postMapperList.mapToPostCacheDtos(posts)).thenReturn(postCacheDtos);
+
+        assertThat(postService.findInRangeByHashTag(HASH_TAG, START_RANGE, END_RANGE))
+                .isEqualTo(postCacheDtos);
     }
 
     @Test

@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.exception.redis.RedisTransactionInterrupted;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -21,6 +22,10 @@ import static faang.school.postservice.exception.redis.RedisErrorMessages.REDIS_
 @RequiredArgsConstructor
 @Service
 public class PostCacheOperationsTries {
+
+    @Value("${app.post.cache.number_of_top_in_cache}")
+    private int numberOfTopInCache;
+
     private final RedisTemplate<String, PostCacheDto> redisTemplatePost;
     private final ZSetOperations<String, String> zSetOperations;
 
@@ -32,19 +37,21 @@ public class PostCacheOperationsTries {
                     multiplierExpression = "${app.post.cache.retryable.save_keys.multiplier}"
             )
     )
-    public List<Object> tryToSavePost(PostCacheDto post, String postId, long timestamp, List<String> newTags,
-                                      List<String> delTags, boolean toDeletePost) {
+    public List<Object> tryToSaveChangesOfPost(PostCacheDto post, String postId, long timestamp, List<String> newTags,
+                                               List<String> delTags, boolean toDeletePost) {
         redisTemplatePost.multi();
         log.info("Transaction started");
 
         if (toDeletePost) {
             redisTemplatePost.delete(postId);
-        } else if (!newTags.isEmpty()) {
+        } else {
             redisTemplatePost.opsForValue().set(postId, post);
         }
         delTags.forEach(tag -> zSetOperations.remove(tag, postId));
-        newTags.forEach(tag -> zSetOperations.add(tag, postId, timestamp));
-
+        newTags.forEach(tag -> {
+            zSetOperations.add(tag, postId, timestamp);
+            zSetOperations.removeRange(tag, 0, (numberOfTopInCache + 1) * -1);
+        });
         List<Object> resultOfExec = redisTemplatePost.exec();
         if (!resultOfExec.isEmpty()) {
             log.info("Transaction executed successfully");
@@ -61,7 +68,7 @@ public class PostCacheOperationsTries {
             maxAttemptsExpression = "${app.post.cache.retryable.compare_tags.max_attempts}",
             backoff = @Backoff(delayExpression = "${app.post.cache.retryable.compare_tags.delay}")
     )
-    public List<String> tryCompareWithTagsInCache(List<String> tags, String tagToFind)
+    public List<String> tryFilterByTagsInCache(List<String> tags, String tagToFind)
             throws RedisConnectionFailureException {
         return tags
                 .stream()

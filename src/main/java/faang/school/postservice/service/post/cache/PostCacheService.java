@@ -24,21 +24,23 @@ public class PostCacheService {
     }
 
     public void deletePostProcess(PostCacheDto post, List<String> primalTags) {
-        log.info("Delete post process, post with id: {}", post.getId());
+        log.info("Delete post in cache process, post with id: {}", post.getId());
         if (!primalTags.isEmpty()) {
             postCacheOperations.deletePostOfCache(post, primalTags);
         }
     }
 
     public void updatePostProcess(PostCacheDto post, List<String> primalTags) {
-        log.info("Updated post process, post with id: {}", post.getId());
+        log.info("Update post in cache process, post with id: {}", post.getId());
         List<String> updTags = post.getHashTags();
 
         if (primalTags.isEmpty() && !updTags.isEmpty()) {
             postCacheOperations.addPostToCache(post, updTags);
-        } else if (!primalTags.isEmpty() && updTags.isEmpty()) {
+        }
+        else if (!primalTags.isEmpty() && updTags.isEmpty()) {
             postCacheOperations.deletePostOfCache(post, primalTags);
-        } else if (!primalTags.isEmpty()) {
+        }
+        else if (!primalTags.isEmpty()) {
             postCacheOperations.updatePostOfCache(post, primalTags, updTags);
         }
     }

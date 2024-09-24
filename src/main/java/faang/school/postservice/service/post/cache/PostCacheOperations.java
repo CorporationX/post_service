@@ -29,9 +29,6 @@ public class PostCacheOperations {
     @Value("${app.post.cache.post_id_prefix}")
     private String postIdPrefix;
 
-    @Value("${app.post.cache.number_of_top_in_cache}")
-    private int numberOfTopIntCache;
-
     private final PostHashTagService postHashTagService;
     private final PostCacheOperationsTries postCacheOperationsTries;
     private final RedisTemplate<String, PostCacheDto> redisTemplatePost;
@@ -60,10 +57,10 @@ public class PostCacheOperations {
         String postId = postIdPrefix + post.getId();
         long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
         boolean toDeletePostFromCache = false;
-        newTags = compareWithTagsInCache(newTags, tagToFind);
+        newTags = filterByTagsInCache(newTags, tagToFind);
 
         if (!newTags.isEmpty()) {
-            savePost(post, postId, timestamp, newTags, new ArrayList<>(), toDeletePostFromCache);
+            saveChangesOfPost(post, postId, timestamp, newTags, new ArrayList<>(), toDeletePostFromCache);
         }
     }
 
@@ -72,21 +69,21 @@ public class PostCacheOperations {
         String postId = postIdPrefix + post.getId();
         long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
         boolean toDeletePostFromCache = false;
-        newTags = compareWithTagsInCache(newTags);
+        newTags = filterByTagsInCache(newTags);
 
         if (!newTags.isEmpty()) {
-            savePost(post, postId, timestamp, newTags, new ArrayList<>(), toDeletePostFromCache);
+            saveChangesOfPost(post, postId, timestamp, newTags, new ArrayList<>(), toDeletePostFromCache);
         }
     }
 
     public void deletePostOfCache(PostCacheDto post, List<String> primalTags) {
         log.info("Delete post of cache, post with id: {}", post.getId());
         String postId = postIdPrefix + post.getId();
-        primalTags = compareWithTagsInCache(primalTags);
         boolean toDeletePostFromCache = true;
+        primalTags = filterByTagsInCache(primalTags);
 
-        if (!primalTags.isEmpty()) {
-            savePost(post, postId, 0, new ArrayList<>(), primalTags, toDeletePostFromCache);
+        if (!primalTags.isEmpty() || postIsInCache(postId)) {
+            saveChangesOfPost(post, postId, 0, new ArrayList<>(), primalTags, toDeletePostFromCache);
         }
     }
 
@@ -95,53 +92,16 @@ public class PostCacheOperations {
         String postId = postIdPrefix + post.getId();
         long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
 
-        List<String> tagsOfPostInCache = compareWithTagsInCache(updTags);
+        List<String> updTagsOfPostInCache = filterByTagsInCache(updTags);
         List<String> delTags = postHashTagService.getDeletedHashTags(primalTags, updTags);
         List<String> newTags = postHashTagService.getNewHashTags(primalTags, updTags);
-        delTags = compareWithTagsInCache(delTags);
-        newTags = compareWithTagsInCache(newTags);
+        delTags = filterByTagsInCache(delTags);
+        newTags = filterByTagsInCache(newTags);
 
-        boolean toDeletePostFromCache = newTags.isEmpty() && tagsOfPostInCache.isEmpty();
+        boolean toDeletePostFromCache = newTags.isEmpty() && updTagsOfPostInCache.isEmpty();
 
-        if (!newTags.isEmpty() || !delTags.isEmpty()) {
-            savePost(post, postId, timestamp, newTags, delTags, toDeletePostFromCache);
-        }
-    }
-
-    private void savePost(PostCacheDto post, String postId, long timestamp, List<String> newTags,
-                          List<String> delTags, boolean toDeletePost) {
-        redisTemplatePost.execute(new SessionCallback<>() {
-            @Override
-            public List<Object> execute(@NonNull RedisOperations operations) throws DataAccessException {
-                try {
-                    redisTemplatePost.watch(postId);
-                    delTags.forEach(redisTemplatePost::watch);
-                    newTags.forEach(redisTemplatePost::watch);
-                    redisTemplatePost.setEnableTransactionSupport(true);
-                    return postCacheOperationsTries.tryToSavePost(post, postId, timestamp, newTags, delTags, toDeletePost);
-                } finally {
-                    redisTemplatePost.setEnableTransactionSupport(false);
-                    redisTemplatePost.unwatch();
-                }
-            }
-        });
-    }
-
-    public List<String> compareWithTagsInCache(List<String> tags) {
-        try {
-            return postCacheOperationsTries.tryCompareWithTagsInCache(tags, null);
-        } catch (Exception exception) {
-            log.error("Compare with tags in cache failure {}: {}", exception.getClass(), exception.getMessage());
-            return new ArrayList<>();
-        }
-    }
-
-    private List<String> compareWithTagsInCache(List<String> tags, String tagToFind) {
-        try {
-            return postCacheOperationsTries.tryCompareWithTagsInCache(tags, tagToFind);
-        } catch (Exception exception) {
-            log.error("Compare with tags in cache failure by tag {}: {}", exception.getClass(), exception.getMessage());
-            return new ArrayList<>();
+        if (!delTags.isEmpty() || !newTags.isEmpty() || postIsInCache(postId)) {
+            saveChangesOfPost(post, postId, timestamp, newTags, delTags, toDeletePostFromCache);
         }
     }
 
@@ -151,6 +111,53 @@ public class PostCacheOperations {
             return PONG.equals(pingResponse);
         } catch (Exception exception) {
             log.error("{} : {}", exception.getClass(), exception.getMessage());
+            return false;
+        }
+    }
+
+    private void saveChangesOfPost(PostCacheDto post, String postId, long timestamp, List<String> newTags,
+                                   List<String> delTags, boolean toDeletePost) {
+        redisTemplatePost.execute(new SessionCallback<>() {
+            @Override
+            public List<Object> execute(@NonNull RedisOperations operations) throws DataAccessException {
+                try {
+                    redisTemplatePost.watch(postId);
+                    delTags.forEach(redisTemplatePost::watch);
+                    newTags.forEach(redisTemplatePost::watch);
+                    redisTemplatePost.setEnableTransactionSupport(true);
+                    return postCacheOperationsTries
+                            .tryToSaveChangesOfPost(post, postId, timestamp, newTags, delTags, toDeletePost);
+                } finally {
+                    redisTemplatePost.setEnableTransactionSupport(false);
+                    redisTemplatePost.unwatch();
+                }
+            }
+        });
+    }
+
+    public List<String> filterByTagsInCache(List<String> tags) {
+        try {
+            return postCacheOperationsTries.tryFilterByTagsInCache(tags, null);
+        } catch (Exception exception) {
+            log.error("Compare with tags in cache failure {}: {}", exception.getClass(), exception.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    private List<String> filterByTagsInCache(List<String> tags, String tagToFind) {
+        try {
+            return postCacheOperationsTries.tryFilterByTagsInCache(tags, tagToFind);
+        } catch (Exception exception) {
+            log.error("Compare with tags in cache failure by tag {}: {}", exception.getClass(), exception.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    private boolean postIsInCache(String postId) {
+        try {
+            return Boolean.TRUE.equals(redisTemplatePost.hasKey(postId));
+        } catch (Exception exception) {
+            log.error("Check for post is in cache {}: {}", exception.getClass(), exception.getMessage());
             return false;
         }
     }

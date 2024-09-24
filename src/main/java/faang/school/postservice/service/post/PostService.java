@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 public class PostService {
 
     @Value("${app.post.cache.number_of_top_in_cache}")
-    private int numberOfTopIntCache;
+    private int numberOfTopInCache;
 
     private final PostRepository postRepository;
     private final PostValidator postValidator;
@@ -101,11 +101,12 @@ public class PostService {
 
         if (postDtos.isEmpty() && postCacheOperations.isRedisConnected()) {
             String jsonTag = postHashTagService.convertTagToJson(hashTag);
-            List<Post> posts = postRepository.findTopByHashTagByDate(jsonTag, numberOfTopIntCache);
-            List<PostCacheDto> postCacheDtos = postMapperList.mapToPostCacheDtos(posts);
-            postCacheService.addListOfPostsToCache(postCacheDtos, hashTag);
-            postDtos = postCacheService.findInRangeByHashTag(hashTag, start, end);
-        } else if (postDtos.isEmpty()) {
+            List<Post> posts = postRepository.findTopByHashTagByDate(jsonTag, numberOfTopInCache);
+            List<PostCacheDto> postDtosByTop = postMapperList.mapToPostCacheDtos(posts);
+            postCacheService.addListOfPostsToCache(postDtosByTop, hashTag);
+            postDtos = postDtosByTop.subList(0, Math.min(postDtosByTop.size(), end));
+        }
+        else if (postDtos.isEmpty()) {
             String jsonTag = postHashTagService.convertTagToJson(hashTag);
             List<Post> posts = postRepository.findInRangeByHashTagByDate(jsonTag, start, end);
             postDtos = postMapperList.mapToPostCacheDtos(posts);
