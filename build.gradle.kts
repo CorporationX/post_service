@@ -71,30 +71,6 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.3")
 }
 
-jacoco {
-    toolVersion = "0.8.7"
-}
-
-tasks.test {
-    finalizedBy(tasks.jacocoTestReport)
-}
-
-tasks.jacocoTestReport {
-    reports {
-        xml.required.set(true)
-        csv.required.set(false)
-        html.outputLocation.set(file("${buildDir}/jacocoHtml"))
-    }
-    classDirectories.setFrom(
-        fileTree(project.buildDir) {
-            include("**/post_service/service/**",
-                "**/post_service/validator/**",
-                "**/post_service/filter/**",
-                "**/post_service/controller/**")
-        }
-    )
-}
-
 tasks.test {
     useJUnitPlatform()
 }
