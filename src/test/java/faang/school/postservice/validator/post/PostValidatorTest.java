@@ -49,7 +49,7 @@ public class PostValidatorTest {
     void testCreateDraftPostValidator_WhenAuthorExists() {
         // Arrange
         when(userServiceClient.getUser(1L))
-                .thenReturn(new UserDto(1L, "", ""));
+                .thenReturn(new UserDto(1L, "", "", ""));
 
         // Act
         postValidator.createDraftPostValidator(postDto);

@@ -61,7 +61,7 @@ class LikeServiceImplTest {
         post = new Post();
         likeDto = new LikeDto();
         like = new Like();
-        userDto = new UserDto(1L, "david", "@mail.ru");
+        userDto = new UserDto(1L, "david", "da_vid_228", "david@mail.ru");
     }
 
     @Test
