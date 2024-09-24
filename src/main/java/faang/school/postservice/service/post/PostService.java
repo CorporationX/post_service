@@ -20,6 +20,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostServiceValidator<PostDto> validator;
 
+    // bag fix post service
     public PostDto createPost(final PostDto postDto) {
         validator.validate(postDto);
 
