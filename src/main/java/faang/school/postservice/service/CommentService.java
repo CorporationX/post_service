@@ -3,14 +3,10 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentAchievementEvent;
 import faang.school.postservice.dto.event.CommentEvent;
-import faang.school.postservice.mapper.CommentAchievementMapper;
-import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
-import faang.school.postservice.redisPublisher.CommentEventPublisher;
+import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -34,9 +30,7 @@ public class CommentService {
     private final UserContext userContext;
     private final CommentValidator commentValidator;
     private final PostRepository postRepository;
-    private final CommentEventPublisher commentEventPublisher;
-    private final CommentAchievementEventPublisher commentAchievementEventPublisher;
-    private final CommentAchievementMapper commentAchievementMapper;
+    private final KafkaCommentProducer kafkaCommentProducer;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
@@ -52,8 +46,7 @@ public class CommentService {
                 .createdAt(savedComment.getCreatedAt())
                 .postAuthorId(savedComment.getPost().getAuthorId())
                 .build();
-        commentEventPublisher.publish(commentEvent);
-        publishCommentAchievementEvent(commentDto);
+        kafkaCommentProducer.sendMessage(commentEvent);
         return commentMapper.entityToDto(savedComment);
     }
 
@@ -93,9 +86,5 @@ public class CommentService {
     public Comment getComment(long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment with the same id does not exist"));
-    }
-
-    private void publishCommentAchievementEvent(CommentDto commentDto) {
-        commentAchievementEventPublisher.publish(commentAchievementMapper.commentDtoToCommentAchievementEvent(commentDto));
     }
 }

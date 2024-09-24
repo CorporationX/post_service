@@ -24,6 +24,10 @@ spring:
         name: likes
         partitions: 1
         replication-factor: 1
+      comments:
+        name: comments
+        partitions: 1
+        replication-factor: 1
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
