@@ -37,11 +37,7 @@ public class LikeServiceImpl implements LikeService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("There is no such post"));
         likeValidator.validateLike(like, post);
-        try {
-            userServiceClient.getUser(like.getUserId());
-        } catch (FeignException e) {
-            throw new DataValidationException("There is no such user");
-        }
+        checkUser(like.getUserId());
         likeValidator.validatePostAndCommentLikes(post, like);
         like.setPost(post);
         likeRepository.save(like);
@@ -95,7 +91,7 @@ public class LikeServiceImpl implements LikeService {
         }
     }
 
-    private void checkUser(long userId) {
+    private void checkUser(@NotNull long userId) {
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException e) {
