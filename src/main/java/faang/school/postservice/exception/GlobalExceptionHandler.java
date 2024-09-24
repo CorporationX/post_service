@@ -1,84 +1,81 @@
 package faang.school.postservice.exception;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.MimeTypeUtils;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.sql.rowset.serial.SerialException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ValidationException.class)
-    public void handleValidationException(ValidationException e, HttpServletResponse response) throws IOException {
-        log.error("Validation exception", e);
-        response.sendError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        for (FieldError fieldError : ex.getFieldErrors()) {
+            errorResponse.put(fieldError.getField(), fieldError.getDefaultMessage());
+        }
+        log.error("Validation failed for request. Method Argument Not Valid Exception", ex);
+        return errorResponse;
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public void handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletResponse response) throws IOException {
-        log.error("Validation failed for request. Method Argument Not Valid Exception", e);
-        Map<String, String> errors = e.getBindingResult().getAllErrors().stream()
-                .collect(Collectors.toMap(
-                        error -> ((FieldError) error).getField(),
-                        error -> Objects.requireNonNull(error.getDefaultMessage(), "")
-                ));
-
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
-        response.setContentType("application/json");
-
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonResponse = mapper.writeValueAsString(errors);
-
-        response.getWriter().write(jsonResponse);
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationException(ValidationException e) {
+        log.error("Validation exception", e);
+        return new ErrorResponse("Validation exception", e.getMessage());
     }
 
     @ExceptionHandler(NoSuchElementException.class)
-    public void handleNoSuchElementException(NoSuchElementException e, HttpServletResponse response) throws IOException {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoSuchElementException(NoSuchElementException e) {
         log.error("NoSuchElementException", e);
-        response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+        return new ErrorResponse("NoSuchElementException", e.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public void handleIllegalArgumentException(IllegalArgumentException e, HttpServletResponse response) throws IOException {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgumentException(IllegalArgumentException e) {
         log.error("IllegalArgumentException", e);
-        response.sendError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        return new ErrorResponse("IllegalArgumentException", e.getMessage());
     }
 
     @ExceptionHandler(IOException.class)
-    public void handleIOException(IOException e, HttpServletResponse response) throws IOException {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleIOException(IOException e) {
         log.error("IOException", e);
-        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+        return new ErrorResponse("IOException", e.getMessage());
     }
 
     @ExceptionHandler(SerialException.class)
-    public void handleSerialException(SerialException e, HttpServletResponse response) throws IOException {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleSerialException(SerialException e) {
         log.error("SerialException", e);
-        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+        return new ErrorResponse("SerialException", e.getMessage());
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public void handleRuntimeException(RuntimeException e, HttpServletResponse response) throws IOException {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleRuntimeException(RuntimeException e) {
         log.error("RuntimeException", e);
-        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+        return new ErrorResponse("RuntimeException", e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
-    public void handleException(Exception e, HttpServletResponse response) throws IOException {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleException(Exception e) {
         log.error("Exception", e);
-        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+        return new ErrorResponse("Exception", e.getMessage());
     }
 }
