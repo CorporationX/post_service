@@ -72,7 +72,7 @@ public class PostCacheOperationsTries {
             throws RedisConnectionFailureException {
         return tags
                 .stream()
-                .filter(tag -> tag.equals(tagToFind) | Boolean.TRUE.equals(redisTemplatePost.hasKey(tag)))
+                .filter(tag -> tag.equals(tagToFind) || Boolean.TRUE.equals(redisTemplatePost.hasKey(tag)))
                 .toList();
     }
 }

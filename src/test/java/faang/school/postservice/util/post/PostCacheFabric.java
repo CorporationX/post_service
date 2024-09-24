@@ -90,6 +90,14 @@ public class PostCacheFabric {
                 .build();
     }
 
+    public static PostCacheDto buildPostCacheDto(Long id, LocalDateTime publishedAt) {
+        return PostCacheDto
+                .builder()
+                .id(id)
+                .publishedAt(publishedAt)
+                .build();
+    }
+
     public static List<PostCacheDto> buildPostCacheDtosWithTags(int number) {
         return LongStream
                 .rangeClosed(1, number)

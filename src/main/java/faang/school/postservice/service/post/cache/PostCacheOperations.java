@@ -60,7 +60,7 @@ public class PostCacheOperations {
         newTags = filterByTagsInCache(newTags, tagToFind);
 
         if (!newTags.isEmpty()) {
-            saveChangesOfPost(post, postId, timestamp, newTags, new ArrayList<>(), toDeletePostFromCache);
+            saveChangesOfPost(post, postId, timestamp, newTags, List.of(), toDeletePostFromCache);
         }
     }
 
@@ -72,18 +72,19 @@ public class PostCacheOperations {
         newTags = filterByTagsInCache(newTags);
 
         if (!newTags.isEmpty()) {
-            saveChangesOfPost(post, postId, timestamp, newTags, new ArrayList<>(), toDeletePostFromCache);
+            saveChangesOfPost(post, postId, timestamp, newTags, List.of(), toDeletePostFromCache);
         }
     }
 
     public void deletePostOfCache(PostCacheDto post, List<String> primalTags) {
         log.info("Delete post of cache, post with id: {}", post.getId());
         String postId = postIdPrefix + post.getId();
+        long timestamp = 0;
         boolean toDeletePostFromCache = true;
         primalTags = filterByTagsInCache(primalTags);
 
         if (!primalTags.isEmpty() || postIsInCache(postId)) {
-            saveChangesOfPost(post, postId, 0, new ArrayList<>(), primalTags, toDeletePostFromCache);
+            saveChangesOfPost(post, postId, timestamp, List.of(), primalTags, toDeletePostFromCache);
         }
     }
 
@@ -97,6 +98,9 @@ public class PostCacheOperations {
         List<String> newTags = postHashTagService.getNewHashTags(primalTags, updTags);
         delTags = filterByTagsInCache(delTags);
         newTags = filterByTagsInCache(newTags);
+
+        System.out.println(delTags);
+        System.out.println(newTags);
 
         boolean toDeletePostFromCache = newTags.isEmpty() && updTagsOfPostInCache.isEmpty();
 
