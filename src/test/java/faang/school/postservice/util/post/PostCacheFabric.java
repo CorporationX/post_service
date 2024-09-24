@@ -83,6 +83,35 @@ public class PostCacheFabric {
                 .build();
     }
 
+    public static PostCacheDto buildPostCacheDto(Long id) {
+        return PostCacheDto
+                .builder()
+                .id(id)
+                .build();
+    }
+
+    public static List<PostCacheDto> buildPostCacheDtosWithTags(int number) {
+        return LongStream
+                .rangeClosed(1, number)
+                .mapToObj(i -> buildPostCacheDtoWithTags(i, buildHashTags(DEFAULT_NUMBER_OF_OBJECT)))
+                .toList();
+    }
+
+    public static PostCacheDto buildPostCacheDtoWithTags(Long id, List<String> tags) {
+        return PostCacheDto
+                .builder()
+                .id(id)
+                .hashTags(tags)
+                .build();
+    }
+
+    public static List<String> buildHashTags(int number) {
+        return IntStream
+                .rangeClosed(1, number)
+                .mapToObj(i -> "tag" + i)
+                .toList();
+    }
+
     public static List<PostCacheDto> buildPostCacheDtosForMapping() {
         return IntStream
                 .range(0, DEFAULT_NUMBER_OF_OBJECT)
