@@ -4,8 +4,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
 
     @Mapping(target = "projectId", ignore = true)
@@ -17,6 +18,5 @@ public interface PostMapper {
     @Mapping(target = "scheduledAt", ignore = true)
     Post toPost(PostDto postDto);
 
-    @Mapping(target = "authorType", ignore = true)
     PostDto toPostDto(Post post);
 }
