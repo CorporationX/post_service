@@ -60,3 +60,6 @@ app:
           max_attempts: 3
           delay: 100
           multiplier: 2
+        compare_tags:
+          max_attempts: 3
+          delay: 50

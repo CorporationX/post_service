@@ -42,4 +42,15 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             ORDER BY published_at DESC LIMIT :number
             """)
     List<Post> findTopByHashTagByDate(@Param("hashTag") String hashTag, @Param("number") int number);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post
+            WHERE hash_tags @> CAST(:hashTag AS jsonb)
+            AND published = true
+            AND deleted = false
+            ORDER BY published_at DESC
+            LIMIT :limit
+            OFFSET :offset
+            """)
+    List<Post> findInRangeByHashTagByDate(@Param("hashTag") String hashTag, @Param("offset") int offset, @Param("limit") int limit);
 }
