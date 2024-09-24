@@ -9,13 +9,13 @@ import java.util.List;
 
 @Validated
 public interface LikeService {
-    void addLikeToPost(@Valid LikeDto likeDto, @NotNull long postId);
+    void addLikeToPost(@Valid LikeDto likeDto, long postId);
 
-    void deleteLikeFromPost(@Valid LikeDto likeDto, @NotNull long postId);
+    void deleteLikeFromPost(@Valid LikeDto likeDto, long postId);
 
-    void addLikeToComment(@Valid LikeDto likeDto, @NotNull long commentId);
+    void addLikeToComment(@Valid LikeDto likeDto, long commentId);
 
-    void deleteLikeFromComment(@Valid LikeDto likeDto, @NotNull long commentId);
+    void deleteLikeFromComment(@Valid LikeDto likeDto, long commentId);
 
-    List<LikeDto> findLikesOfPublishedPost(@NotNull long postId);
+    List<LikeDto> findLikesOfPublishedPost( long postId);
 }
