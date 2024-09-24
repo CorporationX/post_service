@@ -150,19 +150,19 @@ public class PostControllerTest {
     }
 
     @Test
-    void testGetNullHashtagThrows() throws Exception {
-        assertThrows(DataValidationException.class,
-                () -> postController.getPostsByHashtag(null));
+    void testGetNullHashtag() {
+        List<PostDto> posts = postController.getPostsByHashtag(null);
 
-        verify(postService, never()).getPostsByHashtag(anyString());
+        assertEquals(List.of(), posts);
+        verify(postService, times(1)).getPostsByHashtag(null);
     }
 
     @Test
-    void testGetEmptyHashtagThrows() {
-        assertThrows(DataValidationException.class,
-                () -> postController.getPostsByHashtag(""));
+    void testGetEmptyHashtag() {
+        List<PostDto> posts = postController.getPostsByHashtag("");
 
-        verify(postService, never()).getPostsByHashtag(anyString());
+        assertEquals(List.of(), posts);
+        verify(postService, times(1)).getPostsByHashtag("");
     }
 
     @Test
