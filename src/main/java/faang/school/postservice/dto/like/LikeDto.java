@@ -14,7 +14,5 @@ public class LikeDto {
 
     @NotNull
     private Long userId;
-    private Long postId;
-    private Long commentId;
     private LocalDateTime createdAt;
 }
