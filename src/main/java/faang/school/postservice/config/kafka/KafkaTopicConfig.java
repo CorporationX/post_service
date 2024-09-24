@@ -23,6 +23,9 @@ public class KafkaTopicConfig {
     @Value("${spring.kafka.topics.comments.name}")
     private String commentsName;
 
+    @Value("${spring.kafka.topics.post_views.name}")
+    private String postViewsName;
+
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
@@ -44,5 +47,11 @@ public class KafkaTopicConfig {
     public NewTopic commentsTopic() {
         KafkaTopicsProperties.Topic commentsTopic = kafkaTopicsProperties.getTopics().get(commentsName);
         return new NewTopic(commentsTopic.getName(), commentsTopic.getPartitions(), commentsTopic.getReplicationFactor());
+    }
+
+    @Bean
+    public NewTopic postViewsTopic() {
+        KafkaTopicsProperties.Topic postViewsTopic = kafkaTopicsProperties.getTopics().get(postViewsName);
+        return new NewTopic(postViewsTopic.getName(), postViewsTopic.getPartitions(), postViewsTopic.getReplicationFactor());
     }
 }

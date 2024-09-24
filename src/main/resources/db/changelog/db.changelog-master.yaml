@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003_album_visibility.sql
   - include:
       file: db/changelog/changeset/post_V004_album_visibility_enum.sql
+  - include:
+      file: db/changelog/changeset/post_V005_add_view_count_and_version_to_post.sql
