@@ -125,6 +125,11 @@ public class PostService {
         );
     }
 
+    public CachedPostDto getPostFromCache(Long postId){
+        return redisPostRepository.findById(postId)
+                .orElse(postMapper.toCachedPostDto(getPost(postId)));
+    }
+
     @Transactional
     public PostDto updatePost(UpdatablePostDto updatablePost) {
 
