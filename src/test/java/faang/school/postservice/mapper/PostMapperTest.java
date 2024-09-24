@@ -31,21 +31,18 @@ public class PostMapperTest {
 
     @Test
     void testToDto() {
-        // when
         PostDto actualDto = mapper.toDto(entity);
 
-        // then
         assertEquals(dto, actualDto);
     }
 
     @Test
     void testToEntity() {
-        // given
-        Post expEntity = getEntity();
-        // when
-        Post actualEntity = mapper.toEntity(dto);
-        // then
-        assertEquals(expEntity, actualEntity);
+        Post expected = getEntity();
+
+        Post actual = mapper.toEntity(dto);
+
+        assertEquals(expected, actual);
     }
 
     private Post getEntity() {
@@ -57,6 +54,8 @@ public class PostMapperTest {
         post.setPublished(dto.isPublished());
         post.setPublishedAt(dto.getPublishedAt());
         post.setScheduledAt(dto.getScheduledAt());
+        post.setCreatedAt(dto.getCreatedAt());
+        post.setUpdatedAt(dto.getUpdatedAt());
         post.setDeleted(dto.isDeleted());
 
         return post;
@@ -77,13 +76,11 @@ public class PostMapperTest {
         Comment secondComment = new Comment();
         firstComment.setId(++postId);
         secondComment.setId(++postId);
-        List<Long> commentIds = List.of(firstComment.getId(), secondComment.getId());
         List<Comment> comments = List.of(firstComment, secondComment);
         Album firstAlbum = new Album();
         Album secondAlbum = new Album();
         firstAlbum.setId(++postId);
         secondAlbum.setId(++postId);
-        List<Long> albumIds = List.of(firstAlbum.getId(), secondAlbum.getId());
         List<Album> albums = List.of(firstAlbum, secondAlbum);
         Ad ad = new Ad();
         ad.setId(++postId);
@@ -91,7 +88,6 @@ public class PostMapperTest {
         Resource secondResource = new Resource();
         firstResource.setId(++postId);
         secondResource.setId(++postId);
-        List<Long> resourceIds = List.of(firstResource.getId(), secondResource.getId());
         List<Resource> resources = List.of(firstResource, secondResource);
         boolean published = false;
         LocalDateTime publishedAt = LocalDateTime.now();
@@ -99,12 +95,12 @@ public class PostMapperTest {
         boolean deleted = false;
         LocalDateTime createdAt = publishedAt.minusDays(1);
         LocalDateTime updatedAt = publishedAt.plusMinutes(5);
-        Long numLikes = (long) likeIds.size();
+        Long likesCount = (long) likeIds.size();
 
         Optional<Post> postOptional = Optional.of(new Post(postId, content, authorId, projectId, likes, comments,
                 albums, ad, resources, published, publishedAt, scheduledAt, deleted, createdAt, updatedAt));
-        Optional<PostDto> dtoOptional = Optional.of(new PostDto(postId, content, authorId, projectId, likeIds, commentIds,
-                albumIds, ad.getId(), resourceIds, published, publishedAt, scheduledAt, deleted, numLikes));
+        Optional<PostDto> dtoOptional = Optional.of(new PostDto(postId, content, authorId, projectId, published,
+                publishedAt, scheduledAt, createdAt, updatedAt, deleted, likesCount));
 
         return List.of(postOptional, dtoOptional);
     }

@@ -6,7 +6,7 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.post.ImmutablePostDataException;
 import faang.school.postservice.exception.post.PostAlreadyDeletedException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
-import faang.school.postservice.exception.post.PostWOAuthorException;
+import faang.school.postservice.exception.post.PostWithoutAuthorException;
 import faang.school.postservice.exception.post.PostWithTwoAuthorsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.util.container.PostContainer;
@@ -45,8 +45,8 @@ public class PostValidatorTest {
                 .build();
 
         // then
-        Assertions.assertThrows(PostAlreadyPublishedException.class, () -> validator.validatePublished(publishedPost));
-        assertDoesNotThrow(() -> validator.validatePublished(isNotPublishedPost));
+        Assertions.assertThrows(PostAlreadyPublishedException.class, () -> validator.validateBeforePublishing(publishedPost));
+        assertDoesNotThrow(() -> validator.validateBeforePublishing(isNotPublishedPost));
     }
 
     @Test
@@ -64,8 +64,8 @@ public class PostValidatorTest {
                 .build();
 
         // then
-        Assertions.assertThrows(PostAlreadyDeletedException.class, () -> validator.validateDeleted(deletedPost));
-        assertDoesNotThrow(() -> validator.validateDeleted(isNotDeletedPost));
+        Assertions.assertThrows(PostAlreadyDeletedException.class, () -> validator.validateBeforeDeleting(deletedPost));
+        assertDoesNotThrow(() -> validator.validateBeforeDeleting(isNotDeletedPost));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class PostValidatorTest {
                 .build();
 
         // then
-        Assertions.assertThrows(PostWOAuthorException.class, () -> validator.validateBeforeCreate(dtoWOAuthors));
+        Assertions.assertThrows(PostWithoutAuthorException.class, () -> validator.validateBeforeCreate(dtoWOAuthors));
         Assertions.assertThrows(PostWithTwoAuthorsException.class, () -> validator.validateBeforeCreate(dtoWithTwoAuthors));
         assertDoesNotThrow(() -> validator.validateBeforeCreate(authorsDtoPost));
         assertDoesNotThrow(() -> validator.validateBeforeCreate(projectsDtoPost));

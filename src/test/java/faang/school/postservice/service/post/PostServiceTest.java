@@ -4,7 +4,7 @@ import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.post.PostAlreadyDeletedException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
-import faang.school.postservice.exception.post.PostWOAuthorException;
+import faang.school.postservice.exception.post.PostWithoutAuthorException;
 import faang.school.postservice.exception.post.PostWithTwoAuthorsException;
 import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.filter.post.filterImpl.PostFilterProjectDraftNonDeleted;
@@ -26,11 +26,14 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,8 +41,6 @@ public class PostServiceTest {
     private PostService postService;
     @Mock
     private PostRepository postRepository;
-    @Mock
-    private PostDataPreparer preparer;
     @Mock
     private PostValidator validator;
     @Spy
@@ -65,7 +66,7 @@ public class PostServiceTest {
         List<PostFilter> postFilters = List.of(userDraftNonDeleted, userPostNonDeleted, projectDraftNonDeleted,
                 projectPostNonDeleted);
 
-        postService = new PostService(postRepository, validator, mapper, preparer, postFilters);
+        postService = new PostService(postRepository, validator, mapper, postFilters);
     }
 
     @Test
@@ -80,46 +81,34 @@ public class PostServiceTest {
                 .build();
 
         // when
-        doThrow(PostWOAuthorException.class).when(validator).validateBeforeCreate(dtoWOAuthors);
+        doThrow(PostWithoutAuthorException.class).when(validator).validateBeforeCreate(dtoWOAuthors);
         doThrow(PostWithTwoAuthorsException.class).when(validator).validateBeforeCreate(dtoWithTwoAuthors);
 
         // then
-        Assertions.assertThrows(PostWOAuthorException.class, () -> postService.create(dtoWOAuthors));
+        Assertions.assertThrows(PostWithoutAuthorException.class, () -> postService.create(dtoWOAuthors));
         Assertions.assertThrows(PostWithTwoAuthorsException.class, () -> postService.create(dtoWithTwoAuthors));
     }
 
     @Test
     void testCreateSuccessfully() {
-        // given
         PostDto inputDto = PostDto.builder()
                 .authorId(container.authorId())
                 .content(container.content())
-                .resourceIds(container.resourceIds())
                 .build();
-
-        Post postEntity = mapper.toEntity(inputDto);
-
-        Post preparedPost = Post.builder()
+        Post entity = Post.builder()
                 .authorId(container.authorId())
                 .content(container.content())
-                .resources(container.resources())
                 .build();
 
-        Post createdPost = Post.builder()
-                .id(container.postId())
-                .authorId(container.authorId())
-                .content(container.content())
-                .resources(container.resources())
-                .build();
+        when(mapper.toEntity(inputDto)).thenReturn(entity);
+        when(postRepository.save(entity)).thenReturn(entity);
+        when(mapper.toDto(entity)).thenReturn(inputDto);
 
-        when(preparer.prepareForCreate(inputDto, postEntity)).thenReturn(preparedPost);
-        when(postRepository.save(preparedPost)).thenReturn(createdPost);
+        PostDto actual = postService.create(inputDto);
 
-        // when
-        postService.create(inputDto);
-
-        // then
-        verify(postRepository, times(1)).save(preparedPost);
+        verify(validator, times(1)).validateBeforeCreate(inputDto);
+        verify(postRepository, times(1)).save(entity);
+        assertEquals(inputDto, actual);
     }
 
     @Test
@@ -127,7 +116,7 @@ public class PostServiceTest {
         // given
         Long postId = container.postId();
         when(postRepository.findById(postId)).thenReturn(Optional.of(entity));
-        doThrow(PostAlreadyPublishedException.class).when(validator).validatePublished(entity);
+        doThrow(PostAlreadyPublishedException.class).when(validator).validateBeforePublishing(entity);
 
         // then
         Assertions.assertThrows(PostAlreadyPublishedException.class, () -> postService.publish(postId));
@@ -138,6 +127,7 @@ public class PostServiceTest {
         // given
         Long postId = entity.getId();
         boolean isNotPublished = container.published();
+        LocalDateTime currentTime = LocalDateTime.now();
 
         Post entity = Post.builder()
                 .id(postId)
@@ -145,18 +135,16 @@ public class PostServiceTest {
                 .build();
         when(postRepository.findById(postId)).thenReturn(Optional.of(entity));
 
-        Post publishedPost = Post.builder()
-                .id(postId)
-                .publishedAt(container.publishedAt())
-                .published(!isNotPublished)
-                .build();
-        when(preparer.prepareForPublish(entity)).thenReturn(publishedPost);
-
         // when
         postService.publish(postId);
 
         // then
-        verify(postRepository, times(1)).save(publishedPost);
+        verify(postRepository, times(1)).save(captorPost.capture());
+        Post capturedPost = captorPost.getValue();
+        LocalDateTime publishedAt = capturedPost.getPublishedAt();
+        assertEquals(entity.getId(), capturedPost.getId());
+        assertTrue(capturedPost.isPublished());
+        assertTrue(Duration.between(currentTime, publishedAt).toSeconds() < 1);
     }
 
     @Test
@@ -171,19 +159,27 @@ public class PostServiceTest {
 
     @Test
     void testUpdateSuccessfully() {
-        // given
-        Post updatedEntity = Post.builder()
-                .id(container.postId())
+        PostDto dto = PostDto.builder()
+                .id(1L)
+                .content("new content")
                 .build();
-
+        Post entity = Post.builder()
+                .id(1L)
+                .content("content")
+                .build();
+        Post updatedEntity = Post.builder()
+                .id(1L)
+                .content("new content")
+                .build();
         when(postRepository.findById(dto.getId())).thenReturn(Optional.of(entity));
-        when(preparer.prepareForUpdate(dto, entity)).thenReturn(updatedEntity);
+        when(mapper.toDto(updatedEntity)).thenReturn(dto);
+        when(postRepository.save(updatedEntity)).thenReturn(updatedEntity);
 
-        // when
-        postService.update(dto);
+        PostDto actual = postService.update(dto);
 
-        // then
         verify(postRepository, times(1)).save(updatedEntity);
+        verify(validator, times(1)).validateBeforeUpdate(dto, updatedEntity);
+        assertEquals(dto, actual);
     }
 
     @Test
@@ -191,7 +187,7 @@ public class PostServiceTest {
         // given
         Long postId = container.postId();
         when(postRepository.findById(postId)).thenReturn(Optional.of(entity));
-        doThrow(PostAlreadyDeletedException.class).when(validator).validateDeleted(entity);
+        doThrow(PostAlreadyDeletedException.class).when(validator).validateBeforeDeleting(entity);
 
         // then
         Assertions.assertThrows(PostAlreadyDeletedException.class, () -> postService.delete(postId));

@@ -6,7 +6,7 @@ import faang.school.postservice.exception.ErrorResponse;
 import faang.school.postservice.exception.post.ImmutablePostDataException;
 import faang.school.postservice.exception.post.PostAlreadyDeletedException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
-import faang.school.postservice.exception.post.PostWOAuthorException;
+import faang.school.postservice.exception.post.PostWithoutAuthorException;
 import faang.school.postservice.exception.post.PostWithTwoAuthorsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -50,9 +50,9 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(PostWOAuthorException.class)
+    @ExceptionHandler(PostWithoutAuthorException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handlePostWOAuthorException(PostWOAuthorException e) {
+    public ErrorResponse handlePostWithoutAuthorException(PostWithoutAuthorException e) {
         log.error("The post without author.", e);
         return new ErrorResponse(e.getMessage());
     }

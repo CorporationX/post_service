@@ -1,9 +1,9 @@
 package faang.school.postservice.exception.post;
 
-public class PostWOAuthorException extends RuntimeException {
+public class PostWithoutAuthorException extends RuntimeException {
     private static final String MESSAGE = "У сообщения отсутствует автор.";
 
-    public PostWOAuthorException() {
+    public PostWithoutAuthorException() {
         super(MESSAGE);
     }
 }

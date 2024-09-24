@@ -118,16 +118,13 @@ public class PostContainer {
                 .content(content)
                 .authorId(authorId)
                 .projectId(projectId)
-                .likeIds(likeIds())
-                .commentIds(commentIds())
-                .albumIds(albumIds())
-                .adId(adId)
-                .resourceIds(resourceIds())
                 .published(published)
                 .publishedAt(publishedAt)
                 .scheduledAt(scheduledAt)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
                 .deleted(deleted)
-                .numLikes((long) likes().size())
+                .likesCount((long) likes().size())
                 .build();
     }
 

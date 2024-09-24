@@ -6,7 +6,7 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.post.ImmutablePostDataException;
 import faang.school.postservice.exception.post.PostAlreadyDeletedException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
-import faang.school.postservice.exception.post.PostWOAuthorException;
+import faang.school.postservice.exception.post.PostWithoutAuthorException;
 import faang.school.postservice.exception.post.PostWithTwoAuthorsException;
 import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class PostValidator {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
-    public void validatePublished(Post post) {
+    public void validateBeforePublishing(Post post) {
         if (post.isPublished()) {
             throw new PostAlreadyPublishedException();
         }
@@ -31,35 +31,35 @@ public class PostValidator {
     }
 
     public void validateBeforeCreate(PostDto postDto) {
-        checkAuthor(postDto);
-        checkAuthorOrProject(postDto);
+        checkOwner(postDto);
+        checkExistingOwner(postDto);
     }
 
-    public void validateDeleted(Post entity) {
+    public void validateBeforeDeleting(Post entity) {
         if (entity.isDeleted()) {
             throw new PostAlreadyDeletedException();
         }
     }
 
-    private void checkChangedAuthor(PostDto postDto, Post post) {
-        if (!Objects.equals(postDto.getAuthorId(), post.getAuthorId())
-                || !Objects.equals(postDto.getProjectId(), post.getProjectId())) {
+    private void checkChangedAuthor(PostDto dto, Post entity) {
+        if (!Objects.equals(dto.getAuthorId(), entity.getAuthorId())
+                || !Objects.equals(dto.getProjectId(), entity.getProjectId())) {
             throw new ImmutablePostDataException("Автора нельзя изменить.");
         }
     }
 
-    private void checkAuthor(PostDto postDto) {
-        boolean flagFirst = postDto.getAuthorId() == null;
-        boolean flagSecond = postDto.getProjectId() == null;
-        if (flagFirst && flagSecond) {
-            throw new PostWOAuthorException();
+    private void checkOwner(PostDto postDto) {
+        boolean isAuthor = postDto.getAuthorId() == null;
+        boolean isProject = postDto.getProjectId() == null;
+        if (isAuthor && isProject) {
+            throw new PostWithoutAuthorException();
         }
-        if (flagFirst == flagSecond) {
+        if (isAuthor == isProject) {
             throw new PostWithTwoAuthorsException();
         }
     }
 
-    private void checkAuthorOrProject(PostDto postDto) {
+    private void checkExistingOwner(PostDto postDto) {
         Long authorId = postDto.getAuthorId();
         Long projectId = postDto.getProjectId();
 

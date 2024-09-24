@@ -22,50 +22,51 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostValidator validator;
     private final PostMapper mapper;
-    private final PostDataPreparer preparer;
     private final List<PostFilter> postFilters;
 
-    public PostDto create(PostDto postDto) {
-        validator.validateBeforeCreate(postDto);
+    public PostDto create(PostDto dto) {
+        validator.validateBeforeCreate(dto);
 
-        Post postEntity = mapper.toEntity(postDto);
-        postEntity = preparer.prepareForCreate(postDto, postEntity);
+        Post entity = mapper.toEntity(dto);
 
-        Post createdEntity = postRepository.save(postEntity);
+        Post createdEntity = postRepository.save(entity);
         log.info("Created a post: {}", createdEntity);
 
         return mapper.toDto(createdEntity);
     }
 
     public PostDto publish(Long postId) {
-        Post entity = getPostEntity(postId);
-        validator.validatePublished(entity);
-        Post publishedPost = preparer.prepareForPublish(entity);
+        Post entity = getEntityFromDB(postId);
+        validator.validateBeforePublishing(entity);
 
-        publishedPost = postRepository.save(publishedPost);
+        entity.setPublished(true);
+        entity.setPublishedAt(LocalDateTime.now());
+
+        Post publishedPost = postRepository.save(entity);
         log.info("Published post: {}", publishedPost);
 
         return mapper.toDto(publishedPost);
     }
 
-    public PostDto update(PostDto postDto) {
-        Post entity = getPostEntity(postDto.getId());
-        validator.validateBeforeUpdate(postDto, entity);
+    public PostDto update(PostDto dto) {
+        Post entity = getEntityFromDB(dto.getId());
+        validator.validateBeforeUpdate(dto, entity);
 
-        Post updatedEntity = preparer.prepareForUpdate(postDto, entity);
-        updatedEntity = postRepository.save(updatedEntity);
+        entity.setContent(dto.getContent());
+
+        Post updatedEntity = postRepository.save(entity);
         log.info("Updated post: {}", updatedEntity);
 
         return mapper.toDto(updatedEntity);
     }
 
     public PostDto delete(Long postId) {
-        Post entity = getPostEntity(postId);
-        validator.validateDeleted(entity);
+        Post entity = getEntityFromDB(postId);
+        validator.validateBeforeDeleting(entity);
 
         entity.setPublished(false);
         entity.setDeleted(true);
-        entity.setUpdatedAt(LocalDateTime.now());
+
         Post deletedEntity = postRepository.save(entity);
         log.info("Deleted post: {}", deletedEntity);
 
@@ -73,7 +74,7 @@ public class PostService {
     }
 
     public PostDto getPost(Long postId) {
-        return mapper.toDto(getPostEntity(postId));
+        return mapper.toDto(getEntityFromDB(postId));
     }
 
     public List<PostDto> getFilteredPosts(PostFilterDto filters) {
@@ -87,7 +88,7 @@ public class PostService {
                 .toList();
     }
 
-    private Post getPostEntity(Long postId) {
+    private Post getEntityFromDB(Long postId) {
         return postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Такого сообщения не существует."));
     }
 }
