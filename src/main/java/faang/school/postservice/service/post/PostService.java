@@ -188,18 +188,21 @@ public class PostService {
         postRepository.save(post);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PostDto findPost(long postId) {
 
         Post post = getPost(postId);
 
         validator.verifyPostDeletion(post);
+        post.setViews(post.getViews()+1);
 
         PostViewEvent postViewEvent = new PostViewEvent(postId);
         postViewProducer.sendEvent(postViewEvent);
 
+        postRepository.save(post);
         return postMapper.toDto(post);
     }
+
 
     @Transactional(readOnly = true)
     public List<PostDto> getPosts(@NotNull GetPostsDto getPostsDto) {

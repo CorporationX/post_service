@@ -31,6 +31,7 @@ public interface PostMapper {
     @Mapping(source = "projectId", target = "projectId")
     @Mapping(source = "content", target = "content")
     @Mapping(target = "likesCount", source = "likes", qualifiedByName = "mapLikes")
+    @Mapping(source = "views", target = "views")
     CachedPostDto toCachedPostDto(Post post);
 
 

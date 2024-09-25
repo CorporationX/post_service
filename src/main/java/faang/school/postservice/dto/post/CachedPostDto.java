@@ -24,12 +24,18 @@ public class CachedPostDto implements Serializable {
     private String content;
     private long likesCount;
     private Set<CommentDto> comments;
+    private long views;
 
     @Version
     private Long version = 0L;
 
     public void incrementLikesCount() {
         likesCount += 1;
+        version++;
+    }
+
+    public void incrementViewsCount(){
+        views++;
         version++;
     }
 
