@@ -15,27 +15,26 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException exception) {
-        return generateResponse("Invalid argument: ", exception, HttpStatus.BAD_REQUEST);
+        return generateResponse(exception, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<String> handleValidationException(ValidationException exception) {
-        return generateResponse("Validation failed: ", exception, HttpStatus.BAD_REQUEST);
+        return generateResponse(exception, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException exception) {
-        return generateResponse("Entity not found: ", exception, HttpStatus.NOT_FOUND);
+        return generateResponse(exception, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(FeignException.class)
     public ResponseEntity<String> handleFeignException(FeignException exception) {
-        return generateResponse("Feign failed: ", exception, HttpStatus.INTERNAL_SERVER_ERROR);
+        return generateResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private ResponseEntity<String> generateResponse(String prefix, Exception exception, HttpStatus httpStatus) {
-        String message = exception.getMessage();
-        log.error(message);
-        return new ResponseEntity<>(prefix + message, httpStatus);
+    private ResponseEntity<String> generateResponse(Exception exception, HttpStatus httpStatus) {
+        log.error(String.valueOf(exception));
+        return new ResponseEntity<>(exception.getMessage(), httpStatus);
     }
 }
