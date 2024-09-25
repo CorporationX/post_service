@@ -37,7 +37,7 @@ public class LikeService {
         like.setUserId(likeDto.getUserId());
         likeRepository.save(like);
 
-        eventPublisherService.submitEvent(likeDto);
+        eventPublisherService.publishLikeEvent(likeDto);
     }
 
 

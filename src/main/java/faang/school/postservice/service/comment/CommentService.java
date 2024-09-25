@@ -4,19 +4,19 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.ExceptionMessages;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.messaging.publisher.comment.CommentEventPublisher;
-import faang.school.postservice.messaging.publisher.comment.KafkaCommentProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.publisher.EventPublisherService;
 import faang.school.postservice.validator.comment.UserClientValidation;
 import jakarta.persistence.PersistenceException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @Slf4j
@@ -27,8 +27,7 @@ public class CommentService {
     private final PostService postService;
     private final CommentMapper commentMapper;
     private final PostMapper postMapper;
-    private final CommentEventPublisher commentEventPublisher;
-    private final KafkaCommentProducer kafkaCommentProducer;
+    private final EventPublisherService eventPublisherService;
 
     public CommentDto addNewCommentInPost(CommentDto commentDto) {
         userClientValidation.checkUser(commentDto.getAuthorId());
@@ -42,8 +41,7 @@ public class CommentService {
             throw new PersistenceException(ExceptionMessages.FAILED_PERSISTENCE, e);
         }
 
-        commentEventPublisher.publish(commentMapper.toEvent(comment));
-        kafkaCommentProducer.publish(commentMapper.toEvent(comment));
+        eventPublisherService.publishCommentEvent(comment);
         return commentMapper.toDto(comment);
     }
 
