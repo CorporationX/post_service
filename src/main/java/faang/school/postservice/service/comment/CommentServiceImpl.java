@@ -11,15 +11,15 @@ import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
@@ -28,17 +28,19 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     @Override
+    @SneakyThrows
     public CommentDto addComment(CommentDto commentDto) {
         try {
             userServiceClient.getUser(commentDto.getAuthorId());
         } catch (Exception exception) {
-            throw new EntityNotFoundException("User not found.");
+            throw new Exception(String.format("An error occurred in the process of obtaining a user with ID %s",
+                    commentDto.getAuthorId()));
         }
 
         Post post = postRepository
                 .findById(commentDto.getPostId())
                 .orElseThrow(()
-                        -> new EntityNotFoundException(String.format("Post with ID %s not found", commentDto.getPostId()))
+                        -> new EntityNotFoundException(String.format("Post with ID %s not found.", commentDto.getPostId()))
                 );
 
         Comment comment = commentMapper.toComment(commentDto);
@@ -49,12 +51,15 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
+    @SneakyThrows
     public void updateComment(long commentId, UpdateCommentDto updateCommentDto) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Comment with ID %s not found", commentId)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Comment with ID %s not found.", commentId)));
 
-        if (updateCommentDto.authorId() != comment.getAuthorId()) {
-            throw new EntityNotFoundException("This comment belongs to another user.");
+        long authorId = comment.getAuthorId();
+        if (updateCommentDto.authorId() != authorId) {
+            throw new AccessDeniedException(String.format("User with ID %s is not allowed to update this comment.",
+                    updateCommentDto.authorId()));
         }
 
         commentRepository.updateContentAndDateById(commentId, updateCommentDto.content(), LocalDateTime.now());

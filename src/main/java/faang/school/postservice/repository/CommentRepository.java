@@ -19,5 +19,6 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     @Query(nativeQuery = true, value = "UPDATE Comment SET content = :content, updated_at = :updateDate WHERE id = :id")
     void updateContentAndDateById(long id, String content, LocalDateTime updateDate);
 
+    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId ORDER BY c.createdAt DESC")
     List<Comment> getByPostIdOrderByCreatedAtDesc(long postId);
 }

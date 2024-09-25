@@ -101,7 +101,7 @@ class CommentServiceImplTest {
         when(userServiceClient.getUser(authorId)).thenThrow(FeignException.class);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
-        assertThrows(EntityNotFoundException.class, () -> commentService.addComment(commentDto));
+        assertThrows(Exception.class, () -> commentService.addComment(commentDto));
 
         verify(userServiceClient).getUser(authorId);
         verify(commentRepository, never()).save(any(Comment.class));
