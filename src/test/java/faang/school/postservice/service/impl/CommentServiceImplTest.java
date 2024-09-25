@@ -10,7 +10,6 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.PostService;
-import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,9 +38,6 @@ public class CommentServiceImplTest {
 
     @Mock
     private PostService postService;
-
-    @Mock
-    CommentValidator validator;
 
     @Mock
     UserServiceClient userServiceClient;

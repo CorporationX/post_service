@@ -10,12 +10,13 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.PostService;
-import faang.school.postservice.validator.CommentValidator;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +25,6 @@ public class CommentServiceImpl implements CommentService {
     private final PostService postService;
     private final CommentMapper commentMapper;
     private final PostMapper postMapper;
-    private final CommentValidator validator;
     private final UserServiceClient userClient;
 
     @Override
@@ -47,7 +47,11 @@ public class CommentServiceImpl implements CommentService {
 
     private UserDto getAuthor(CommentDto commentDto) {
         UserDto user = userClient.getUser(commentDto.getAuthorId());
-        validator.existsAuthor(user);
+
+        if (user == null) {
+            throw new ValidationException("Author name is required");
+        }
+
         return user;
     }
 
@@ -59,12 +63,13 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto updateComment(CommentDto commentDto) {
-        Comment comment = commentRepository.findById(commentDto.getId()).orElseThrow();
+        Comment comment = commentRepository.findById(commentDto.getId())
+                .orElseThrow(() -> new NoSuchElementException("Comment not found"));
 
-        validator.validateAuthorIdUpdateComment(commentDto);
-        validator.validatePostIdUpdateComment(commentDto);
-        validator.validateCommentIdUpdateComment(commentDto);
-        validator.validateAuthorNameUpdateComment(commentDto);
+        validateAuthorIdUpdateComment(commentDto);
+        validatePostIdUpdateComment(commentDto);
+        validateCommentIdUpdateComment(commentDto);
+        validateAuthorNameUpdateComment(commentDto);
 
         comment.setContent(commentDto.getContent());
         return commentMapper.toDto(commentRepository.save(comment));
@@ -90,8 +95,42 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteComment(long commentId) {
         Comment comment = commentRepository.findById(commentId).orElseThrow();
-        validator.validateAuthorDeleteComment(commentMapper.toDto(comment));
+        validateAuthorDeleteComment(commentMapper.toDto(comment), comment);
 
         commentRepository.delete(comment);
+    }
+
+    private Comment getComment(CommentDto commentDto) {
+        return commentRepository.findById(commentDto.getId()).orElseThrow();
+    }
+
+    private void validateAuthorIdUpdateComment(CommentDto commentDto) {
+        if (!(commentDto.getAuthorId() == getComment(commentDto).getAuthorId())) {
+            throw new ValidationException("Author name can't be changed");
+        }
+    }
+
+    private void validatePostIdUpdateComment(CommentDto commentDto) {
+        if (!(commentDto.getPostId() == getComment(commentDto).getPost().getId())) {
+            throw new ValidationException("Post id can't be changed");
+        }
+    }
+
+    private void validateAuthorNameUpdateComment(CommentDto commentDto) {
+        if (!(commentDto.getAuthorName().equals(userClient.getUser(commentDto.getAuthorId()).getUsername()))) {
+            throw new ValidationException("Author name can't be changed");
+        }
+    }
+
+    private void validateCommentIdUpdateComment(CommentDto commentDto) {
+        if (!(commentDto.getId().equals(getComment(commentDto).getId()))) {
+            throw new ValidationException("Comment id can't be changed");
+        }
+    }
+
+    private void validateAuthorDeleteComment(CommentDto commentDto, Comment comment) {
+        if (!(comment.getAuthorId() == commentDto.getAuthorId())) {
+            throw new ValidationException("Comment can't be deleted by this user");
+        }
     }
 }
