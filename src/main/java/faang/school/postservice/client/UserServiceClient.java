@@ -13,15 +13,15 @@ import java.util.List;
 @FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}")
 public interface UserServiceClient {
 
-    @GetMapping("/api/users/{userId}")
+    @GetMapping("/api/user/{userId}")
     UserDto getUser(@PathVariable long userId);
 
-    @GetMapping("/api/users/list")
+    @GetMapping("/api/user/list")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 
-    @PutMapping("/api/users/{userId}/diactivate")
+    @PutMapping("/api/user/{userId}/deactivate")
     UserDto deactivatesUserProfile(@PathVariable Long userId);
 
-    @GetMapping("/api/users/premium")
+    @GetMapping("/api/user/premium")
     List<UserDto> getPremiumUsers(@RequestBody UserFilterDto userFilterDto);
 }

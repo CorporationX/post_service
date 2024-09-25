@@ -19,12 +19,12 @@ public interface CommentMapper {
 
     Comment toEntity(CommentDto commentDto);
 
+    @Mapping(source = "post.id", target = "postId")
+    CommentEvent toCommentEvent(Comment comment);
+
     @Named("likesToLikesId")
     default List<Long> likesToLikesId(List<Like> likes) {
         if (likes == null) return List.of();
         return likes.stream().map(Like::getId).toList();
     }
-
-    @Mapping(source = "post.id", target = "postId")
-    CommentEvent toCommentEvent(Comment comment);
 }

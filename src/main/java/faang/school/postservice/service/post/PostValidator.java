@@ -22,7 +22,10 @@ public class PostValidator {
 
     public void validateBeforePublishing(Post post) {
         if (post.isPublished()) {
-            throw new PostAlreadyPublishedException();
+            throw new PostAlreadyPublishedException(String.format("Post by id %s already published", post.getId()));
+        }
+        if (post.isDeleted()) {
+            throw new PostAlreadyDeletedException(String.format("Post by id %s was deleted", post.getId()));
         }
     }
 
@@ -35,16 +38,16 @@ public class PostValidator {
         checkExistingOwner(postDto);
     }
 
-    public void validateBeforeDeleting(Post entity) {
-        if (entity.isDeleted()) {
-            throw new PostAlreadyDeletedException();
+    public void validateBeforeDeleting(Post post) {
+        if (post.isDeleted()) {
+            throw new PostAlreadyDeletedException(String.format("Post by id %s already deleted", post.getId()));
         }
     }
 
     private void checkChangedAuthor(PostDto dto, Post entity) {
         if (!Objects.equals(dto.getAuthorId(), entity.getAuthorId())
                 || !Objects.equals(dto.getProjectId(), entity.getProjectId())) {
-            throw new ImmutablePostDataException("Автора нельзя изменить.");
+            throw new ImmutablePostDataException("The author cannot be changed");
         }
     }
 

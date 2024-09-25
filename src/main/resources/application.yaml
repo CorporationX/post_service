@@ -21,11 +21,11 @@ spring:
     redis:
       port: 6379
       host: localhost
-      channels:
-        like_event_channel: like_event_channel
-        calculations_channel:
-          name: calculations_channel
-        comment: comment_channel
+      cache:
+        post:
+          ttl-hours: 24
+        user:
+          ttl-hours: 24
 
 server:
   port: 8081

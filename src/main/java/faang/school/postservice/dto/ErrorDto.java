@@ -1,15 +1,16 @@
 package faang.school.postservice.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 
 import java.util.UUID;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
 public class ErrorDto {
-    private UUID id;
-    private String message;
+    private final UUID id;
+    private final String message;
+
+    public ErrorDto(String message) {
+        this.id = UUID.randomUUID();
+        this.message = message;
+    }
 }
