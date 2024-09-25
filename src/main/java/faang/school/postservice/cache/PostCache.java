@@ -42,17 +42,30 @@ public class PostCache extends AbstractCache {
                 String jsonValue = writeAsString(postDto);
                 connection.hashCommands().hSet(postsKeyName.getBytes(), postKey.getBytes(), jsonValue.getBytes());
                 connection.keyCommands().expire(postKey.getBytes(), ttl);
-                connection.exec();
                 return true;
-            });
+            }));
 
             if (success == null || !success) {
                 throw new OptimisticLockingFailureException(String.format("Unsuccessfully trying to save post %s to posts cache", postDto.getId()));
             }
 
             log.info(String.format("Successfully trying to save post %s to posts cache", postDto.getId()));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+    }
+
+    @Retryable(retryFor = {OptimisticLockingFailureException.class}, maxAttempts = 5, backoff = @Backoff(delay = 100, multiplier = 3))
+    public void addLike(PostDto postDto) {
+        String postKey = preparePostKey(postDto.getId());
+
+        Boolean success = executeTransactionalOperation(postKey, (connection -> {
+            postDto.setLikesAmount(postDto.getLikesAmount() + 1);
+            String jsonValue = writeAsString(postDto);
+            connection.hashCommands().hSet(postsKeyName.getBytes(), postKey.getBytes(), jsonValue.getBytes());
+            connection.keyCommands().expire(postKey.getBytes(), ttl);
+            return true;
+        }));
+
+        if (success == null || !success) {
+            throw new OptimisticLockingFailureException(String.format("Unsuccessfully trying to increment post %s likes in posts cache", postDto.getId()));
         }
     }
 
