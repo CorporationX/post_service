@@ -5,13 +5,13 @@ import faang.school.postservice.dto.post.PostDto;
 import java.util.List;
 
 public interface PostService {
-    PostDto create(PostDto postDto);
+    PostDto createPost(PostDto postDto);
 
-    PostDto publish(Long id);
+    PostDto publishPost(Long id);
 
-    PostDto update(PostDto postDto, Long id);
+    PostDto updatePost(PostDto postDto);
 
-    PostDto delete(Long id);
+    PostDto deletePost(Long id);
 
     PostDto getPost(Long id);
 

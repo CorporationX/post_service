@@ -36,7 +36,7 @@ class PostControllerTest {
         postDto.setContent("content");
 
         postController.create(postDto);
-        verify(postService, times(1)).create(postDto);
+        verify(postService, times(1)).createPost(postDto);
     }
 
     @Test
@@ -44,25 +44,25 @@ class PostControllerTest {
         postDto.setProjectId(2L);
 
         postController.create(postDto);
-        verify(postService, times(1)).create(postDto);
+        verify(postService, times(1)).createPost(postDto);
     }
 
     @Test
     void testPublish() {
         postController.publish(id);
-        verify(postService, times(1)).publish(id);
+        verify(postService, times(1)).publishPost(id);
     }
 
     @Test
     void testDelete() {
-        postController.delete(id);
-        verify(postService, times(1)).delete(id);
+        postController.markDeleted(id);
+        verify(postService, times(1)).deletePost(id);
     }
 
     @Test
     void testUpdate() {
-        postController.update(postDto, id);
-        verify(postService, times(1)).update(postDto, id);
+        postController.update(postDto);
+        verify(postService, times(1)).updatePost(postDto);
     }
 
     @Test

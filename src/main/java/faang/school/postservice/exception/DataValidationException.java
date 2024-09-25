@@ -1,7 +1,7 @@
 package faang.school.postservice.exception;
 
 public class DataValidationException extends RuntimeException {
-    public DataValidationException() {
-        super("data validation failed");
+    public DataValidationException(String message) {
+        super(message);
     }
 }

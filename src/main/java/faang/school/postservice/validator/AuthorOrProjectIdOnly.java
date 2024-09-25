@@ -1,4 +1,4 @@
-package faang.school.postservice.validation.onlyAuthorOrProjectId;
+package faang.school.postservice.validator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

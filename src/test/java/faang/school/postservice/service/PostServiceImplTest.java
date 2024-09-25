@@ -6,8 +6,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.AlreadyDeletedException;
-import faang.school.postservice.exception.AlreadyPublishedException;
+import faang.school.postservice.exception.PostException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -94,7 +93,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    void testPostCreate() {
+    void testPostCreatePost() {
         UserDto userDto = new UserDto(1L, "v", "@");
         ProjectDto projectDto = new ProjectDto();
         projectDto.setId(1L);
@@ -103,12 +102,12 @@ class PostServiceImplTest {
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         when(projectServiceClient.getProject(1L)).thenReturn(projectDto);
 
-        postService.create(postDto);
+        postService.createPost(postDto);
 
         postDto.setAuthorId(null);
         postDto.setProjectId(1L);
 
-        postService.create(postDto);
+        postService.createPost(postDto);
 
         verify(postRepository, times(2)).save(post);
     }
@@ -117,83 +116,83 @@ class PostServiceImplTest {
     void testNonExistentAuthor() {
         when(userServiceClient.getUser(1L)).thenThrow(FeignException.class);
 
-        assertThrows(FeignException.class, () -> postService.create(postDto));
+        assertThrows(FeignException.class, () -> postService.createPost(postDto));
     }
 
     @Test
     void testNonExistentProject() {
         when(userServiceClient.getUser(1L)).thenThrow(FeignException.class);
 
-        assertThrows(FeignException.class, () -> postService.create(postDto));
+        assertThrows(FeignException.class, () -> postService.createPost(postDto));
     }
 
     @Test
-    void testPublishNonExistentPost() {
+    void testPublishPostNonExistentPost() {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> postService.publish(2L));
+        assertThrows(EntityNotFoundException.class, () -> postService.publishPost(2L));
     }
 
     @Test
-    void testPublishPublishedPost() {
+    void testPublishPostPublishedPost() {
         post.setPublished(true);
 
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
 
-        assertThrows(AlreadyPublishedException.class, () -> postService.publish(postDto.getId()));
+        assertThrows(PostException.class, () -> postService.publishPost(postDto.getId()));
     }
 
     @Test
-    void testPublishExistentPost() {
+    void testPublishPostExistentPost() {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
 
-        postService.publish(postDto.getId());
+        postService.publishPost(postDto.getId());
 
         verify(postRepository, times(1)).save(post);
         verify(postMapper,times(1)).toDto(post);
     }
 
     @Test
-    void testUpdateNonExistentPost() {
+    void testUpdatePostNonExistentPost() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> postService.update(postDto, 1L));
+        assertThrows(EntityNotFoundException.class, () -> postService.updatePost(postDto));
     }
 
     @Test
-    void testUpdateExistentPost() {
+    void testUpdatePostExistentPost() {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
         when(postMapper.toEntity(postDto)).thenReturn(post);
 
-        postService.update(postDto, 1L);
+        postService.updatePost(postDto);
 
         verify(postRepository, times(1)).save(post);
     }
 
     @Test
-    void testDeleteNonExistentPost() {
+    void testDeletePostNonExistentPost() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> postService.delete(1L));
+        assertThrows(EntityNotFoundException.class, () -> postService.deletePost(1L));
     }
 
     @Test
-    void testDeleteExistentPost() {
+    void testDeletePostExistentPost() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(postMapper.toDto(post)).thenReturn(postDto);
 
-        postService.delete(1L);
+        postService.deletePost(1L);
 
         verify(postRepository, times(1)).save(post);
         verify(postMapper, times(1)).toDto(post);
     }
 
     @Test
-    void testDeleteDeletedPost() {
+    void testDeletePostDeletedPost() {
         post.setDeleted(true);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
-        assertThrows(AlreadyDeletedException.class, () -> postService.delete(1L));
+        assertThrows(PostException.class, () -> postService.deletePost(1L));
     }
 
     @Test

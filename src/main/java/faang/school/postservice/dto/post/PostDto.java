@@ -1,6 +1,6 @@
 package faang.school.postservice.dto.post;
 
-import faang.school.postservice.validation.onlyAuthorOrProjectId.AuthorOrProjectIdOnly;
+import faang.school.postservice.validator.AuthorOrProjectIdOnly;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

@@ -4,65 +4,60 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/post")
+@Validated
+@RequestMapping("/api/v1/post")
 public class PostController {
     private final PostService postService;
 
-    @PostMapping("/createPost")
+    @PostMapping
     public PostDto create(@RequestBody @Valid PostDto postDto) {
-        return postService.create(postDto);
+        return postService.createPost(postDto);
     }
 
-    @PutMapping("/publish/{id}")
+    @PutMapping("/{id}")
     public PostDto publish(@PathVariable Long id) {
-        return postService.publish(id);
-    }
-
-    @PutMapping("/update/{id}")
-    public PostDto update(@RequestBody PostDto postDto, @PathVariable Long id) {
-        postDto.setId(id);
-        return postService.update(postDto, id);
+        return postService.publishPost(id);
     }
 
     @PutMapping("/delete/{id}")
-    public PostDto delete(@PathVariable Long id) {
-        return postService.delete(id);
+    public PostDto markDeleted(@PathVariable Long id) {
+        return postService.deletePost(id);
     }
 
-    @GetMapping("/get/{id}")
-    public PostDto get(@PathVariable Long id) {
+    @PutMapping
+    public PostDto update(@RequestBody PostDto postDto) {
+        return postService.updatePost(postDto);
+    }
+
+    @GetMapping("/{id}")
+    public PostDto getPost(@PathVariable Long id) {
         return postService.getPost(id);
     }
 
-    @GetMapping("/getAuthorPosts/{id}")
+    @GetMapping("/author-posts/{id}")
     public List<PostDto> getAllNonPublishedByAuthorId(@PathVariable Long id) {
         return postService.getAllNonPublishedByAuthorId(id);
     }
 
-    @GetMapping("/getProjectPosts/{id}")
+    @GetMapping("/project-posts/{id}")
     public List<PostDto> getAllNonPublishedByProjectId(@PathVariable Long id) {
         return postService.getAllNonPublishedByProjectId(id);
     }
 
-    @GetMapping("/getPublishedByAuthorId/{id}")
+    @GetMapping("/published-by-user/{id}")
     public List<PostDto> getAllPublishedByAuthorId(@PathVariable Long id) {
         return postService.getAllPublishedByAuthorId(id);
     }
 
-    @GetMapping("/getPublishedByProjectId/{id}")
+    @GetMapping("/published-by-project/{id}")
     public List<PostDto> getAllPublishedByProjectId(@PathVariable Long id) {
         return postService.getAllPublishedByProjectId(id);
     }
-
-    private boolean validatePostCreate(PostDto postDto) {
-        return ((postDto.getAuthorId() == null && postDto.getProjectId() != null) || (postDto.getAuthorId() != null && postDto.getProjectId() == null)); //&&
-                //(postDto.getContent() != null && !postDto.getContent().isBlank());
-    }
-
 }

@@ -3,9 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.AlreadyDeletedException;
-import faang.school.postservice.exception.AlreadyPublishedException;
-import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.PostException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -26,12 +24,9 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectServiceClient;
 
     @Override
-    public PostDto create(PostDto postDto) {
-        if (postDto.getAuthorId() != null) {
-            userServiceClient.getUser(postDto.getAuthorId());
-        } else {
-            projectServiceClient.getProject(postDto.getProjectId());
-        }
+    public PostDto createPost(PostDto postDto) {
+        isPostAuthorExist(postDto);
+
         postDto.setCreatedAt(LocalDateTime.now());
 
         Post post = postMapper.toEntity(postDto);
@@ -43,12 +38,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto publish(Long id) {
+    public PostDto publishPost(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(EntityNotFoundException::new);
 
         if (post.isPublished()) {
-            throw new AlreadyPublishedException();
+            throw new PostException("Post is already published");
         }
 
         post.setPublished(true);
@@ -59,8 +54,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto update(PostDto postDto, Long id) {
-        Post post = postRepository.findById(id)
+    public PostDto updatePost(PostDto postDto) {
+        Post post = postRepository.findById(postDto.getId())
                 .orElseThrow(EntityNotFoundException::new);
 
         post.setUpdatedAt(LocalDateTime.now());
@@ -72,12 +67,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto delete(Long id) {
+    public PostDto deletePost(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(EntityNotFoundException::new);
 
         if (post.isDeleted()) {
-            throw new AlreadyDeletedException();
+            throw new PostException("post already deleted");
         }
 
         post.setPublished(false);
@@ -147,5 +142,13 @@ public class PostServiceImpl implements PostService {
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    private void isPostAuthorExist(PostDto postDto) {
+        if (postDto.getAuthorId() != null) {
+            userServiceClient.getUser(postDto.getAuthorId());
+        } else {
+            projectServiceClient.getProject(postDto.getProjectId());
+        }
     }
 }
