@@ -143,12 +143,9 @@ public class PostService {
         }
     }
 
-    public List<Post> getPostBatch(Long postId, Long userId) {
-        UserDto userDto = userServiceClient.getUser(userId);
-
-        if(postId == 0) {
-        }
-        return null;
+    public List<PostDto> getPostsByIds(List<Long> ids) {
+        List<Post> posts = postRepository.findAllById(ids);
+        return postMapper.toDtos(posts);
     }
 
     private boolean validateDraftPostPublisherExist(Post post) {

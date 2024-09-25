@@ -2,7 +2,6 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.WrongInputException;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.constraints.Positive;
 import lombok.NonNull;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -95,11 +93,6 @@ public class PostController {
                 .projectId(publisherId)
                 .build();
         return postService.getPostsSortedByDate(postDto);
-    }
-
-    @GetMapping("/feed")
-    public List<Post> getPostBatch(@RequestParam Long postId, @RequestParam @NonNull @Positive Long userId) {
-        return postService.getPostBatch(postId, userId);
     }
 
     private boolean isAuthorOrProjectNotNull(PostDto dto) {

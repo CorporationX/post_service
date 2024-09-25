@@ -8,6 +8,8 @@ import faang.school.postservice.repository.redis.UserCacheRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserCacheService {
@@ -20,5 +22,9 @@ public class UserCacheService {
         UserDto userDto = userServiceClient.getUser(userId);
         UserForCache userForSaveToCache = userMapper.toUserForCache(userDto);
         userCacheRepository.save(userForSaveToCache);
+    }
+
+    public Optional<UserForCache> getUserFromCache(Long userId) {
+        return userCacheRepository.findById(userId);
     }
 }
