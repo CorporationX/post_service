@@ -16,12 +16,8 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     List<Comment> findAllByPostId(long postId);
 
     @Modifying
-    @Query(nativeQuery = true, value = "UPDATE Comment SET content = :content WHERE id = :id")
-    void updateContentById(long id, String content);
-
-    @Modifying
-    @Query(nativeQuery = true, value = "UPDATE Comment SET updated_at = :updateDate WHERE id = :id")
-    void updateDateById(long id, LocalDateTime updateDate);
+    @Query(nativeQuery = true, value = "UPDATE Comment SET content = :content, updated_at = :updateDate WHERE id = :id")
+    void updateContentAndDateById(long id, String content, LocalDateTime updateDate);
 
     List<Comment> getByPostIdOrderByCreatedAtDesc(long postId);
 }

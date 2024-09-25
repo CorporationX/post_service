@@ -1,6 +1,7 @@
 package faang.school.postservice.controller.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -27,24 +27,22 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("add")
-    public ResponseEntity<CommentDto> addComment(@Validated @RequestBody CommentDto commentDto) {
-        CommentDto createdComment = commentService.addComment(commentDto);
-        return ResponseEntity.ok(createdComment);
+    @PostMapping
+    public CommentDto addComment(@RequestBody @Validated CommentDto commentDto) {
+        return commentService.addComment(commentDto);
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Boolean> deleteComment(@PathVariable long commentId) {
-        if (commentService.deleteComment(commentId)) {
-            return ResponseEntity.ok(true);
-        }
-        return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(false);
+    public ResponseEntity<Void> deleteComment(@PathVariable long commentId) {
+        commentService.deleteComment(commentId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{commentId}")
-    public ResponseEntity<Boolean> updateComment(@PathVariable long commentId, @Validated @RequestParam String content) {
-        commentService.updateComment(commentId, content);
-        return ResponseEntity.ok(true);
+    public ResponseEntity<Void> updateComment(@PathVariable long commentId,
+                                              @RequestBody @Validated UpdateCommentDto updateCommentDto) {
+        commentService.updateComment(commentId, updateCommentDto);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("post/{postId}")

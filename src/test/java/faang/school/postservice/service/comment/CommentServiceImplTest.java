@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,15 +49,19 @@ class CommentServiceImplTest {
     private CommentServiceImpl commentService;
 
     private long authorId;
-    private CommentDto commentDto;
+    private long commentId;
     private long postId;
     private Post post;
+    private Comment mockComment;
+
+    private CommentDto commentDto;
+    private UpdateCommentDto updateCommentDto;
 
     @BeforeEach
     void setUp() {
         authorId = 1L;
         postId = 1L;
-        String commentText = "Тестовый комментарий";
+        commentId = 1L;
 
         post = Post.builder()
                 .id(postId)
@@ -64,10 +70,19 @@ class CommentServiceImplTest {
 
         commentDto = CommentDto.builder()
                 .id(1L)
-                .content(commentText)
+                .content("Тестовый комментарий")
                 .authorId(authorId)
                 .postId(postId)
                 .build();
+
+         mockComment = Comment.builder()
+                .id(commentId)
+                .content("Старое содержимое")
+                .authorId(authorId)
+                .post(post)
+                .build();
+
+        updateCommentDto = UpdateCommentDto.builder().content("Новый текстовый комментарий").build();
     }
 
     @Test
@@ -103,13 +118,12 @@ class CommentServiceImplTest {
 
     @Test
     void updateComment() {
-        long commentId = 1L;
-        String content = "Тестовый комментарий";
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(mockComment));
 
-        commentService.updateComment(commentId, content);
+        commentService.updateComment(commentId, updateCommentDto);
 
-        verify(commentRepository).updateContentById(commentId, content);
-        verify(commentRepository).updateDateById(eq(commentId), any(LocalDateTime.class));
+        verify(commentRepository, times(1))
+                .updateContentAndDateById(eq(commentId), eq(updateCommentDto.content()), any(LocalDateTime.class));
     }
 
     @Test
