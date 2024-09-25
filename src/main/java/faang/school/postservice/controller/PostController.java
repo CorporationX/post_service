@@ -158,6 +158,6 @@ public class PostController {
 
     @GetMapping("/list/ids")
     public List<PostDto> findPostsByIds(@RequestParam List<Long> postIds) {
-        return postService.getPostsByIds(postIds);
+        return postService.getPostsDtoByIds(postIds);
     }
 }

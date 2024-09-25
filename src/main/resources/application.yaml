@@ -70,6 +70,34 @@ spring:
 
   post:
     max-image-quantity: 10
+    cache:
+      ttl: 86400
+      max-comment: 3
+
+  author-comment:
+    ttl: 86400
+
+  user:
+    ttl: 86400
+
+  feed:
+    max-size: 500
+    max-size-batch: 20
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      new-post: posts
+      like-post: likes
+      post-views: post_views
+      comment-post: comments
+      heater-feed: heaters
+    consumer:
+      group-id:
+        post-group: post
+        heater-group: heater
+
+
 
 server:
   port: 8081

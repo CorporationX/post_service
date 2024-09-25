@@ -8,7 +8,8 @@ import faang.school.postservice.mapper.CommentAchievementMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
+import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
 import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
@@ -52,6 +53,8 @@ public class CommentServiceTest {
     private CommentAchievementEventPublisher commentAchievementEventPublisher;
     @Mock
     private CommentAchievementMapper commentAchievementMapper;
+    @Mock
+    private KafkaCommentProducer kafkaCommentProducer;
 
     private long commentId;
     private long postId;

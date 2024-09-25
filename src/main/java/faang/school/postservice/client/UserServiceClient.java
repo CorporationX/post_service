@@ -40,4 +40,13 @@ public interface UserServiceClient {
 
     @PostMapping("/users/exists/followers")
     boolean doesFollowersExist(@RequestBody List<Long> followerIds);
+
+    @GetMapping("/subscription/following/{followeeId}")
+    List<Long> getFollowingIds(@PathVariable long followeeId);
+
+    @GetMapping("/subscription/followers/{userId}")
+    List<Long> getFollowerIds(@PathVariable long userId);
+
+    @GetMapping("/all")
+    List<UserDto> getAllUsers();
 }

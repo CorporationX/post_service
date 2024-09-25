@@ -1,6 +1,8 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.kafka.PostLikeEvent;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
@@ -8,7 +10,8 @@ import faang.school.postservice.mapper.LikeEventMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.redisPublisher.LikePostPublisher;
 import faang.school.postservice.redisPublisher.PostLikeEventPublisher;
@@ -42,6 +45,8 @@ public class LikeService {
     private final PostLikeEventPublisher postLikeEventPublisher;
     private final LikePostPublisher likePostPublisher;
     private final LikeEventMapper likeEventMapper;
+    private final KafkaLikeProducer kafkaLikeProducer;
+    private final UserContext userContext;
 
     public List<UserDto> getLikesUsersByPostId(Long postId) {
 
@@ -86,7 +91,6 @@ public class LikeService {
     public LikeDto addLikeToPost(LikeDto likeDto) {
         Post post = postService.getPost(likeDto.getPostId());
         UserDto userDto = userServiceClient.getUser(likeDto.getUserId());
-
         Optional<Like> optionalLike = likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId());
         likeServiceValidator.checkDuplicateLike(optionalLike);
         Like like = likeMapper.toEntity(likeDto);
@@ -97,6 +101,10 @@ public class LikeService {
         likeEventPublisher.publish(new LikeEvent(post.getId(), post.getAuthorId(), likeId));
         publishEventLikePost(likeDto, post);
 
+        kafkaLikeProducer.send(PostLikeEvent.builder()
+                .postId(post.getId())
+                .authorId(userContext.getUserId())
+                .build());
         return likeMapper.toLikeDto(like);
     }
 

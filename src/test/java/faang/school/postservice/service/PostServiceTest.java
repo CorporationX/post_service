@@ -1,7 +1,9 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.HashtagServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.kafka.NewPostEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.hashtag.HashtagResponse;
 import faang.school.postservice.dto.post.PostDto;
@@ -9,10 +11,13 @@ import faang.school.postservice.dto.post.PostResponse;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityManager;
@@ -35,10 +40,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -51,38 +54,34 @@ import static org.mockito.Mockito.when;
 public class PostServiceTest {
     @InjectMocks
     private PostService postService;
-
     @Mock
     private PostRepository postRepository;
-
     @Mock
     private SpellCheckerService spellCheckerService;
-
-
     @Mock
     private PostMapper postMapper;
-
     @Mock
     private PostServiceValidator postServiceValidator;
-
     @Mock
     private HashtagServiceClient hashtagServiceClient;
-
     @Mock
     private ElasticsearchService elasticsearchService;
-
     @Mock
     private EntityManager entityManager;
-
     @Mock
     private PostContextMapper postContextMapper;
-    private List<Post> postList;
-
     @Mock
     private PostEventPublisher postEventPublisher;
-
+    @Mock
+    private UserServiceClient userServiceClient;
+    @Mock
+    private KafkaPostProducer kafkaPostProducer;
+    @Mock
+    private RedisPostRepository redisPostRepository;
     @Mock
     private UserContext userContext;
+    @Mock
+    private KafkaPostViewProducer kafkaPostViewProducer;
 
     private PostDto postDto;
     private Post post;
@@ -93,6 +92,7 @@ public class PostServiceTest {
     private List<String> hashtagNames;
     private HashtagRequest hashtagRequest;
     private List<Hashtag> hashtags;
+    private List<Post> postList;
 
     @BeforeEach
     public void setUp() {
@@ -110,8 +110,6 @@ public class PostServiceTest {
                         .content(secondPostContent).build()
         );
 
-        postDto = new PostDto();
-        post = new Post();
         Post draftPost1 = Post.builder()
                 .id(1L)
                 .content("Draft 1")
@@ -195,6 +193,8 @@ public class PostServiceTest {
                 .projectId(null)
                 .content("New post")
                 .hashtags(hashtags)
+                .likes(List.of(new Like()))
+                .comments(Collections.emptyList())
                 .build();
 
         draftPostDtos = Arrays.asList(draftPostDto1, draftPostDto2);
@@ -218,6 +218,7 @@ public class PostServiceTest {
         when(entityManager.merge(any(Hashtag.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
+
         postDto.setHashtagNames(hashtagNames);
         PostDto result = postService.createPost(postDto);
 
@@ -255,7 +256,6 @@ public class PostServiceTest {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
         doNothing().when(postServiceValidator).validatePublishPost(post);
         when(postRepository.save(any(Post.class))).thenReturn(post);
-
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
 
         PostDto result = postService.publishPost(postDto);

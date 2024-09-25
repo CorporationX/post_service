@@ -2,15 +2,23 @@ package faang.school.postservice.service;
 
 
 import faang.school.postservice.client.HashtagServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
+import faang.school.postservice.dto.event.kafka.NewPostEvent;
+import faang.school.postservice.dto.event.kafka.PostViewEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
+import faang.school.postservice.mapper.CachePostMapper;
+import faang.school.postservice.model.post.CachePost;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
+import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
@@ -20,6 +28,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
@@ -27,11 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -48,9 +53,15 @@ public class PostService {
     private final PostContextMapper context;
     private final PostEventPublisher postEventPublisher;
     private final UserContext userContext;
+    private final KafkaPostProducer kafkaPostProducer;
+    private final UserServiceClient userServiceClient;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
+    private final CachePostMapper cachePostMapper;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
+    @Value("${spring.feed.max-size}")
+    private int maxSizeFeed;
 
     @Async(value = "threadPool")
     @Transactional
@@ -107,6 +118,15 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
+        kafkaPostProducer.send(NewPostEvent.builder()
+                .id(post.getId())
+                .subscribersIds(userServiceClient.getFollowerIds(post.getId()))
+                .build());
+        kafkaPostViewProducer.send(PostViewEvent.builder()
+                .postId(post.getId())
+                .userId(post.getAuthorId())
+                .build());
+
         return postMapper.toDto(post);
     }
 
@@ -198,8 +218,31 @@ public class PostService {
         return elasticsearchService.searchPostsByHashtag(hashtagName, page, size);
     }
 
-    public List<PostDto> getPostsByIds(List<Long> postIds) {
+    public Post findPostByIdWithLikes(long postId) {
+        return postRepository.findByIdWithLikes(postId).orElseThrow(() -> {
+            String errorMsg = String.format("Post id: %d not found", postId);
+            log.error(errorMsg);
+            return new EntityNotFoundException(errorMsg);
+        });
+    }
+
+    public List<Post> findPostsByAuthorIds(List<Long> authorIds, PageRequest pageRequest) {
+        return postRepository.findPostsByAuthorIds(authorIds, pageRequest);
+    }
+
+    public List<PostDto> getPostsDtoByIds(List<Long> postIds) {
         return postMapper.toDto(postRepository.findPostsByIds(postIds));
+    }
+
+    public List<Post> getPostsByIdsWithLikes(List<Long> postIds) {
+        return postRepository.findPostsByIdsWithLikes(postIds);
+    }
+
+    public List<CachePost> getPostsByAuthorsIds(List<Long> authorsIds) {
+        List<Post> posts = postRepository.findPostsByAuthorIds(authorsIds,
+                PageRequest.of(0, maxSizeFeed));
+
+        return cachePostMapper.convertPostsToCachePosts(posts);
     }
 
     private List<Post> sortPostsByCreateAt(List<Post> posts) {
