@@ -14,46 +14,37 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class LikeService {
-    final LikeRepository likeRepository;
-    final UserServiceClient userServiceClient;
-    final PostRepository postRepository;
-
-    public final String USER_NOT_EXIST = "User not exist";
-    public final String POST_NOT_EXIST = "Post not exist";
-    public final String COMMENT_NOT_EXIST = "Comment not exist";
-    public final String LIKE_NOT_EXIST = "Like not exist";
-    public final String SECOND_LIKE = "Second like is denied";
+    private final LikeRepository likeRepository;
+    private final UserServiceClient userServiceClient;
+    private final PostRepository postRepository;
     private final CommentRepository commentRepository;
 
-
     @Transactional
-    public Like addToPost(Long postId, Like entity) {
-        checkUserExist(entity.getUserId());
-
-        Optional<Like> like = likeRepository.findByPostIdAndUserId(postId, entity.getUserId());
-        if (like.isPresent()) {
-            log.error("PostId = {} and UserId = {}. {}", postId, entity.getUserId(), SECOND_LIKE);
-            throw new RuntimeException(SECOND_LIKE);
-        }
+    public Like addToPost(Long postId, Like tempLike) {
+        checkUserExist(tempLike.getUserId());
 
         Optional<Post> post = postRepository.findById(postId);
         if (post.isEmpty()) {
-            log.error("Post = {}. {}", postId, POST_NOT_EXIST);
-            throw new RuntimeException(POST_NOT_EXIST);
+            throw new NoSuchElementException(Util.POST_NOT_EXIST);
         }
 
-        entity.setPost(post.get());
-        Like newLike = likeRepository.save(entity);
+        Optional<Like> like = likeRepository.findByPostIdAndUserId(postId, tempLike.getUserId());
+        if (like.isPresent()) {
+            throw new RuntimeException(Util.SECOND_LIKE);
+        }
+
+        tempLike.setPost(post.get());
+        Like newLike = likeRepository.save(tempLike);
         List<Like> likeList = post.get().getLikes();
         likeList.add(newLike);
         post.get().setLikes(likeList);
-        postRepository.save(post.get());
 
         return newLike;
     }
@@ -62,16 +53,14 @@ public class LikeService {
     public Like addToComment(Long commentId, Like entity) {
         checkUserExist(entity.getUserId());
 
-        Optional<Like> like = likeRepository.findByCommentIdAndUserId(commentId, entity.getUserId());
-        if (like.isPresent()) {
-            log.error("CommentId = {} and UserId = {}. {}", commentId, entity.getUserId(), SECOND_LIKE);
-            throw new RuntimeException(SECOND_LIKE);
-        }
-
         Optional<Comment> comment = commentRepository.findById(commentId);
         if (comment.isEmpty()) {
-            log.error("Comment = {}. {}", commentId, COMMENT_NOT_EXIST);
-            throw new RuntimeException(COMMENT_NOT_EXIST);
+            throw new NoSuchElementException(Util.COMMENT_NOT_EXIST);
+        }
+
+        Optional<Like> like = likeRepository.findByCommentIdAndUserId(commentId, entity.getUserId());
+        if (like.isPresent()) {
+            throw new RuntimeException(Util.SECOND_LIKE);
         }
 
         entity.setComment(comment.get());
@@ -79,51 +68,32 @@ public class LikeService {
         List<Like> likeList = comment.get().getLikes();
         likeList.add(newLike);
         comment.get().setLikes(likeList);
-        commentRepository.save(comment.get());
 
         return newLike;
     }
 
-    private void checkUserExist(Long userId) {
-        // Поскольку контроллера для UserService пока нет, создаем заглушку
-        //UserDto userDto = userServiceClient.getUser(entity.getUserId().longValue());
-        UserDto userDto = new UserDto(1L, "Alex", "alex@gmail.com");
-        if (userDto.getId() == null) {
-            log.error("Id = {}. {}", userId, USER_NOT_EXIST);
-            throw new RuntimeException(USER_NOT_EXIST);
-        }
-    }
-
-    private void checkPostExist(Long postId) {
-        if (!postRepository.existsById(postId)) {
-            log.error("PostId = {}. {}", postId, POST_NOT_EXIST);
-            throw new RuntimeException(POST_NOT_EXIST);
-        }
-    }
 
     @Transactional
-    public void deletePostLike(Long postId, Long userId) {
+    public void removeFromPost(Long postId, Long userId) {
         checkUserExist(userId);
         checkPostExist(postId);
 
-        likeRepository.findByCommentIdAndUserId(postId, userId).ifPresentOrElse(like -> {
+        likeRepository.findByPostIdAndUserId(postId, userId).ifPresentOrElse(like -> {
                     Post post = postRepository.findById(postId).get();
                     post.getLikes().remove(like);
                     postRepository.save(post);
-                    likeRepository.deleteByCommentIdAndUserId(postId, userId);
+                    likeRepository.deleteByPostIdAndUserId(postId, userId);
                 },
                 () -> {
-                    log.error("For postId = {} and userId = {}. {}", postId, userId, LIKE_NOT_EXIST);
-                    throw new RuntimeException(LIKE_NOT_EXIST);
+                    throw new NoSuchElementException(Util.LIKE_NOT_EXIST);
                 });
     }
 
     @Transactional
-    public void deleteCommentLike(Long commentId, Long userId) {
+    public void removeFromComment(Long commentId, Long userId) {
         checkUserExist(userId);
         if (!commentRepository.existsById(commentId)) {
-            log.error("CommentId = {}. {}", commentId, COMMENT_NOT_EXIST);
-            throw new RuntimeException(COMMENT_NOT_EXIST);
+            throw new RuntimeException(Util.COMMENT_NOT_EXIST);
         }
 
         likeRepository.findByCommentIdAndUserId(commentId, userId).ifPresentOrElse(like -> {
@@ -133,8 +103,7 @@ public class LikeService {
                     likeRepository.deleteByCommentIdAndUserId(commentId, userId);
                 },
                 () -> {
-                    log.error("For commentId = {} and userId = {}. {}", commentId, userId, LIKE_NOT_EXIST);
-                    throw new RuntimeException(LIKE_NOT_EXIST);
+                    throw new NoSuchElementException(Util.LIKE_NOT_EXIST);
                 });
     }
 
@@ -144,5 +113,22 @@ public class LikeService {
 
         Optional<Post> post = postRepository.findById(postId);
         return post.map(value -> value.getLikes().size()).orElse(0);
+    }
+
+    private void checkUserExist(Long userId) {
+        // Поскольку контроллера для UserService пока нет, создаем заглушку
+        //UserDto userDto = new UserDto(1L, "Alex", "alex@gmail.com");
+
+        UserDto userDto = userServiceClient.getUser(userId);
+
+        if (userDto.getId() == null) {
+            throw new NoSuchElementException(Util.USER_NOT_EXIST);
+        }
+    }
+
+    private void checkPostExist(Long postId) {
+        if (!postRepository.existsById(postId)) {
+            throw new NoSuchElementException(Util.POST_NOT_EXIST);
+        }
     }
 }

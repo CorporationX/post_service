@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/likes")
+@RequestMapping("api/v1")
 public class LikeController {
     private final LikeMapper likeMapper;
     private final LikeService likeService;
 
-    @PostMapping("/add/post/{postId}")
+    @PostMapping("/posts/{postId}/like")
     @ResponseStatus(HttpStatus.CREATED)
     LikeDto addToPost(@NonNull @PathVariable Long postId, @RequestBody @Validated LikeDto likeDto) {
         Like fakeLike = likeMapper.toEntity(likeDto);
@@ -26,7 +26,7 @@ public class LikeController {
         return likeMapper.toDto(like);
     }
 
-    @PostMapping("/add/comment/{commentId}")
+    @PostMapping("/comments/{commentId}/like")
     @ResponseStatus(HttpStatus.CREATED)
     LikeDto addToComment(@NonNull @PathVariable Long commentId, @RequestBody @Validated LikeDto likeDto) {
         Like fakeLike = likeMapper.toEntity(likeDto);
@@ -37,18 +37,18 @@ public class LikeController {
 
     @DeleteMapping("/remove/post/{postId}")
     @ResponseStatus(HttpStatus.OK)
-    void deletePostLike(@NonNull @PathVariable Long postId, @RequestParam Long userId) {
-        likeService.deletePostLike(postId, userId);
+    void removeFromPost(@NonNull @PathVariable Long postId, @RequestParam Long userId) {
+        likeService.removeFromPost(postId, userId);
     }
 
     @DeleteMapping("/remove/comment/{commentId}")
     @ResponseStatus(HttpStatus.OK)
-    void deleteCommentLike(@NonNull @PathVariable Long commentId, @RequestParam Long userId) {
-        likeService.deleteCommentLike(commentId, userId);
+    void removeFromComment(@NonNull @PathVariable Long commentId, @RequestParam Long userId) {
+        likeService.removeFromComment(commentId, userId);
     }
 
-    @GetMapping("/all/{postId}")
-    int getLikesByPost(@NonNull @PathVariable Long postId) {
+    @GetMapping("/likes/posts")
+    int getLikesByPost(@NonNull @RequestParam Long postId) {
         return likeService.getLikesByPost(postId);
     }
 }
