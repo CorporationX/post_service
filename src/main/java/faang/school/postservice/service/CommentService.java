@@ -1,12 +1,14 @@
 package faang.school.postservice.service;
 
 
+import faang.school.postservice.cache.entity.UserCache;
+import faang.school.postservice.cache.repository.UserCacheRepository;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentAchievementEvent;
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentAchievementMapper;
-import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
@@ -14,10 +16,10 @@ import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
-
 import jakarta.persistence.EntityNotFoundException;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +29,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
@@ -37,6 +39,11 @@ public class CommentService {
     private final CommentEventPublisher commentEventPublisher;
     private final CommentAchievementEventPublisher commentAchievementEventPublisher;
     private final CommentAchievementMapper commentAchievementMapper;
+    private final UserServiceClient userServiceClient;
+    private final UserCacheRepository userCacheRepository;
+
+    @Value("${spring.data.redis.cache.user.ttl}")
+    private long userTtl;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
@@ -54,6 +61,11 @@ public class CommentService {
                 .build();
         commentEventPublisher.publish(commentEvent);
         publishCommentAchievementEvent(commentDto);
+
+        UserDto userDto = userServiceClient.getUser(userContext.getUserId());
+        UserCache userCache = new UserCache(userDto.getId(), userDto, userTtl);
+        userCacheRepository.save(userCache);
+
         return commentMapper.entityToDto(savedComment);
     }
 
