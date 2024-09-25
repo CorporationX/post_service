@@ -31,6 +31,12 @@ spring:
         like: like_channel
         post: post_channel
 
+    kafka:
+      port:
+      host:
+      topics:
+        posts: posts
+
   aws:
     s3:
       endpoint: http://localhost:9000 # or 'default' , then will be use default s3 url
