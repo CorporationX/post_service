@@ -2,7 +2,6 @@ package faang.school.postservice.service;
 
 
 import faang.school.postservice.client.HashtagServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.post.PostDto;
@@ -10,7 +9,7 @@ import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.redisPublisher.PostEventPublisher;
+import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
@@ -19,6 +18,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -46,8 +46,7 @@ public class PostService {
     private final ElasticsearchService elasticsearchService;
     private final EntityManager entityManager;
     private final PostContextMapper context;
-    private final PostEventPublisher postEventPublisher;
-    private final UserContext userContext;
+    private final KafkaPostProducer kafkaPostProducer;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
@@ -78,7 +77,18 @@ public class PostService {
                 .build();
 
         post = postRepository.save(post);
-        sendToRedisPublisher(userContext.getUserId(), post.getId());
+
+        List<Long> subscribersIds = postRepository.findSubscribersByAuthorId(postDto.getAuthorId());
+
+        val postEvent = PostEvent.builder()
+            .authorId(post.getAuthorId())
+            .postId(post.getId())
+            .subscriberIds(subscribersIds)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        kafkaPostProducer.sendMessage(postEvent);
+
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
         return postDtoForReturns;
@@ -185,9 +195,6 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post with the same id does not exist"));
         long countLike;
-        if (post.getLikes() == null) {
-            countLike = 0;
-        }
         countLike = post.getLikes().size();
         context.getCountLikeEveryonePost().put(postId, countLike);
 
@@ -214,23 +221,15 @@ public class PostService {
                 .toList();
     }
 
-    private void sendToRedisPublisher(long userId, long postId) {
-        PostEvent event = PostEvent.builder()
-                .authorId(userId)
-                .postId(postId)
-                .build();
-        postEventPublisher.publish(event);
-    }
-
     private Post getPostById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.error("Post ID " + postId + " not found");
+                    log.error("Post ID {} not found", postId);
                     return new EntityNotFoundException("Post ID " + postId + " not found");
                 });
     }
 
-    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    @Retryable(retryFor = FeignException.class, backoff = @Backoff(delay = 3000))
     public void saveHashtags(List<String> hashtagNames) {
         hashtagServiceClient.saveHashtags(HashtagRequest.builder()
                 .hashtagNames(hashtagNames)
@@ -238,7 +237,7 @@ public class PostService {
         log.info("Hashtags have been saved successfully");
     }
 
-    @Retryable(retryFor = FeignException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    @Retryable(retryFor = FeignException.class, backoff = @Backoff(delay = 3000))
     public List<Hashtag> getHashtagsByNames(List<String> hashtagNames) {
         List<Hashtag> hashtags = hashtagServiceClient.getHashtagsByNames(HashtagRequest.builder()
                 .hashtagNames(hashtagNames)
