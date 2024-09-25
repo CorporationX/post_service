@@ -67,6 +67,13 @@ public class PostCache extends AbstractCache {
         if (success == null || !success) {
             throw new OptimisticLockingFailureException(String.format("Unsuccessfully trying to increment post %s likes in posts cache", postDto.getId()));
         }
+
+        log.info(String.format("Successfully trying to increment post likes %s in posts cache", postDto.getId()));
+    }
+
+    public PostDto getByKey(Long postId) {
+        String post = hashOperations.get(postsKeyName, preparePostKey(postId));
+        return readToDto(post);
     }
 
     public List<PostDto> getByList(List<Long> postIds) {
@@ -74,7 +81,7 @@ public class PostCache extends AbstractCache {
         List<String> posts = hashOperations.multiGet(postsKeyName, preparedPostKeys);
 
         return posts.stream()
-                .map(this::readToPostDto)
+                .map(this::readToDto)
                 .toList();
     }
 
@@ -82,9 +89,17 @@ public class PostCache extends AbstractCache {
         return String.format("%s_%s", postsKeyName, postId);
     }
 
-    public PostDto readToPostDto(String value) {
+    public PostDto readToDto(String value) {
         try {
             return objectMapper.readValue(value, PostDto.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String writeAsString(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
