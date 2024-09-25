@@ -36,7 +36,7 @@ public class CommentController {
 
     @PutMapping("/{commentId}")
     public void updateComment(@PathVariable long commentId,
-                              @RequestBody @Validated UpdateCommentDto updateCommentDto) {
+                              @RequestBody @Valid UpdateCommentDto updateCommentDto) {
         commentService.updateComment(commentId, updateCommentDto);
     }
 
