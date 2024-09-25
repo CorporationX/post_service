@@ -1,7 +1,6 @@
 package faang.school.postservice.validator.like;
 
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.exception.DataValidateException;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Likeable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,7 @@ public class LikeValidator {
     public <T, R extends JpaRepository<T, Long>> T validateCommentOrPost(long commentAndPostId, R repository) {
         return repository.findById(commentAndPostId).orElseThrow(() -> {
             log.error("The comment with ID {}  does not exist", commentAndPostId);
-            return new DataValidateException("Комментарий не существует " + commentAndPostId);
+            return new DataValidationException("Комментарий не существует " + commentAndPostId);
         });
     }
 
@@ -35,7 +34,7 @@ public class LikeValidator {
                             userId,
                             commentOrPost.getClass().getName(),
                             commentOrPost.getId());
-                    throw new DataValidateException("User with ID " +
+                    throw new DataValidationException("User with ID " +
                             userId +
                             " already liked the" +
                             commentOrPost.getClass().getName() +

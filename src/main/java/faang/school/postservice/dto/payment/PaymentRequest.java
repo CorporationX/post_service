@@ -1,7 +1,7 @@
 package faang.school.postservice.dto.payment;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
@@ -9,7 +9,7 @@ public record PaymentRequest(
         @NotNull
         long paymentNumber,
 
-        @Min(1)
+        @Positive
         @NotNull
         BigDecimal amount,
 

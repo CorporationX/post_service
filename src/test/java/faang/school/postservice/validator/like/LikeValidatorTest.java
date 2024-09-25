@@ -1,6 +1,6 @@
 package faang.school.postservice.validator.like;
 
-import faang.school.postservice.exception.DataValidateException;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Likeable;
@@ -56,7 +56,7 @@ class LikeValidatorTest {
     void givenNotValidWhenValidateThenReturnException() {
         Mockito.when(repository.findById(commentAndPostId)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(DataValidateException.class, () ->
+        Assertions.assertThrows(DataValidationException.class, () ->
                 likeValidator.validate(commentAndPostId, userId, repository));
 
         Mockito.verify(repository).findById(commentAndPostId);
@@ -76,7 +76,7 @@ class LikeValidatorTest {
     void givenNotValidWhenValidateCommentOrPostThenReturnThenReturnException() {
         Mockito.when(repository.findById(commentAndPostId)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(DataValidateException.class, () ->
+        Assertions.assertThrows(DataValidationException.class, () ->
                 likeValidator.validate(commentAndPostId, userId, repository));
 
         Mockito.verify(repository).findById(commentAndPostId);
@@ -97,7 +97,7 @@ class LikeValidatorTest {
         like.setUserId(userId);
         Mockito.when(likeable.getLikes()).thenReturn(List.of(like));
 
-        Assertions.assertThrows(DataValidateException.class, () ->
+        Assertions.assertThrows(DataValidationException.class, () ->
                 likeValidator.checkingExistingLike(likeable, userId));
 
 
