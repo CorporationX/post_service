@@ -3,12 +3,10 @@ package faang.school.postservice.cache;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.user.UserDto;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -17,13 +15,19 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
-public class UserCache {
+public class UserCache extends AbstractCache {
 
-    private final RedisTemplate<String, Object> redisTemplate;
     private final HashOperations<String, String, String> hashOperations;
     private final ObjectMapper objectMapper;
+
+    public UserCache(RedisTemplate<String, Object> redisTemplate,
+                     HashOperations<String, String, String> hashOperations,
+                     ObjectMapper objectMapper) {
+        super(redisTemplate);
+        this.hashOperations = hashOperations;
+        this.objectMapper = objectMapper;
+    }
 
     @Value("${spring.data.redis.properties.ttl}")
     private int ttl;
@@ -37,14 +41,11 @@ public class UserCache {
             String jsonValue = objectMapper.writeValueAsString(userDto);
             String userKey = prepareUserKey(userDto.getId());
 
-            Boolean success = redisTemplate.execute((RedisCallback<Boolean>) connection -> {
-                connection.watch(userKey.getBytes());
-                connection.multi();
+            Boolean success = executeTransactionalOperation(userKey, (connection -> {
                 connection.hashCommands().hSet(usersKeyName.getBytes(), userKey.getBytes(), jsonValue.getBytes());
                 connection.keyCommands().expire(userKey.getBytes(), ttl);
-                connection.exec();
                 return true;
-            });
+            }));
 
             if (success == null || !success) {
                 throw new OptimisticLockingFailureException(String.format("Unsuccessfully trying to save user %s to users cache", userDto.getId()));

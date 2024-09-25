@@ -1,11 +1,9 @@
 package faang.school.postservice.cache;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.retry.annotation.Backoff;
@@ -18,13 +16,18 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
-public class FeedCache {
-
-    private final RedisTemplate<String, Object> redisTemplate;
+public class FeedCache extends AbstractCache {
     private final HashOperations<String, String, String> hashOperations;
     private final ZSetOperations<String, String> zSetOperations;
+
+    public FeedCache(RedisTemplate<String, Object> redisTemplate,
+                     HashOperations<String, String, String> hashOperations,
+                     ZSetOperations<String, String> zSetOperations) {
+        super(redisTemplate);
+        this.hashOperations = hashOperations;
+        this.zSetOperations = zSetOperations;
+    }
 
     @Value("${spring.data.redis.keys.feed}")
     private String feedKeyName;
@@ -39,10 +42,7 @@ public class FeedCache {
         String feedKey = prepareFeedKey(userId);
         AtomicReference<String> zSetKeyFeedValue = new AtomicReference<>(getByKey(feedKey));
 
-        Boolean success = redisTemplate.execute((RedisCallback<Boolean>) connection -> {
-            connection.watch(feedKey.getBytes());
-            connection.multi();
-
+        Boolean success = executeTransactionalOperation(feedKey, (connection -> {
             if (zSetKeyFeedValue.get() == null) {
                 zSetKeyFeedValue.set(prepareZSetKeyFeedValue(feedKey));
                 connection.hashCommands().hSet(feedKeyName.getBytes(), feedKey.getBytes(), zSetKeyFeedValue.get().getBytes());
@@ -52,9 +52,8 @@ public class FeedCache {
 
             connection.zAdd(zSetKeyFeedValue.get().getBytes(), score, postId.toString().getBytes());
             connection.keyCommands().expire(zSetKeyFeedValue.get().getBytes(), ttl);
-            connection.exec();
             return true;
-        });
+        }));
 
         if (success == null || !success) {
             throw new OptimisticLockingFailureException(String.format("Unsuccessfully trying to save feed for user %s", userId));
