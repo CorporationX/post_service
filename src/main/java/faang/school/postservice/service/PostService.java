@@ -43,7 +43,6 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class PostService {
-
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
     private final SpellCheckerService spellCheckerService;
@@ -62,10 +61,10 @@ public class PostService {
     private int postCacheSize;
 
     @Value("${spring.data.redis.cache.post.ttl}")
-    private long POST_TTL;
+    private long postTtl;
 
-    @Value("${spring.data.redis.cache.post.ttl}")
-    private long USER_TTL;
+    @Value("${spring.data.redis.cache.user.ttl}")
+    private long userTtl;
 
     @Async(value = "threadPool")
     @Transactional
@@ -97,11 +96,11 @@ public class PostService {
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
 
-        PostCache postCache = new PostCache(post.getId(), postDtoForReturns, POST_TTL);
+        PostCache postCache = new PostCache(post.getId(), postDtoForReturns, postTtl);
         postCacheRepository.save(postCache);
 
         UserDto userDto = userServiceClient.getUser(userContext.getUserId());
-        UserCache userCache = new UserCache(userDto.getId(), userDto, USER_TTL);
+        UserCache userCache = new UserCache(userDto.getId(), userDto, userTtl);
         userCacheRepository.save(userCache);
 
         return postDtoForReturns;
