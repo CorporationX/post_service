@@ -40,6 +40,7 @@ spring:
     port: 9092
     topics:
       comment: comments_topic
+      like: likes_topic
 
 server:
   port: 8081

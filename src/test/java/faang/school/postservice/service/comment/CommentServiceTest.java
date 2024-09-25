@@ -1,5 +1,25 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.publisher.EventPublisherService;
+import faang.school.postservice.validator.comment.UserClientValidation;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -7,24 +27,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.mapper.comment.CommentMapper;
-import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.messaging.publisher.comment.CommentEventPublisher;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.validator.comment.UserClientValidation;
-import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -38,10 +40,10 @@ class CommentServiceTest {
     private PostService postService;
     @Mock
     private UserClientValidation userClientValidation;
-    @Mock
-    private CommentEventPublisher commentEventPublisher;
-    @Mock
+    @Spy
     private PostMapper postMapper;
+    @Mock
+    private EventPublisherService eventPublisherService;
 
     CommentDto commentDto;
     Comment existingComment;
@@ -67,25 +69,18 @@ class CommentServiceTest {
     @DisplayName("testAddCommentService")
     void testAddCommentService() {
         doNothing().when(userClientValidation).checkUser(anyLong());
-        when(commentMapper.toEntity(any(CommentDto.class)))
-                .thenReturn(existingComment);
-        when(postService.getById(anyLong()))
-                .thenReturn(postDto);
-        when(commentRepository.save(any(Comment.class)))
-                .thenReturn(existingComment);
+        when(commentMapper.toEntity(any(CommentDto.class))).thenReturn(existingComment);
+        when(postService.getById(anyLong())).thenReturn(postDto);
+        when(commentRepository.save(any(Comment.class))).thenReturn(existingComment);
         when(commentMapper.toDto(any(Comment.class))).thenReturn(new CommentDto());
 
         commentService.addNewCommentInPost(commentDto);
 
-        verify(commentMapper, times(1))
-                .toEntity(any(CommentDto.class));
-        verify(postService, times(1))
-                .getById(anyLong());
-        verify(commentRepository, times(1))
-                .save(existingComment);
-        verify(commentMapper, times(1))
-                .toDto(any(Comment.class));
-        verify(commentEventPublisher).publish(commentMapper.toEvent(existingComment));
+        verify(commentMapper, times(1)).toEntity(any(CommentDto.class));
+        verify(postService, times(1)).getById(anyLong());
+        verify(commentRepository, times(1)).save(existingComment);
+        verify(commentMapper, times(1)).toDto(any(Comment.class));
+        verify(eventPublisherService, times(1)).publishCommentEvent(any(Comment.class));
     }
 
     @Test
@@ -96,21 +91,15 @@ class CommentServiceTest {
         updatedComment.setContent("Updated content");
 
         doNothing().when(userClientValidation).checkUser(anyLong());
-        when(commentRepository.findById(anyLong()))
-                .thenReturn(Optional.ofNullable(existingComment));
-        when(commentRepository.save(any(Comment.class)))
-                .thenReturn(updatedComment);
-        when(commentMapper.toDto(updatedComment))
-                .thenReturn(commentDto);
+        when(commentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(existingComment));
+        when(commentRepository.save(any(Comment.class))).thenReturn(updatedComment);
+        when(commentMapper.toDto(updatedComment)).thenReturn(commentDto);
 
         CommentDto result = commentService.updateExistingComment(commentDto);
 
-        verify(commentRepository, times(1))
-                .findById(anyLong());
-        verify(commentRepository, times(1))
-                .save(any(Comment.class));
-        verify(commentMapper, times(1))
-                .toDto(updatedComment);
+        verify(commentRepository, times(1)).findById(anyLong());
+        verify(commentRepository, times(1)).save(any(Comment.class));
+        verify(commentMapper, times(1)).toDto(updatedComment);
 
         assertEquals("Updated content", result.getContent());
     }
@@ -118,7 +107,6 @@ class CommentServiceTest {
     @Test
     @DisplayName("testGetCommentsService")
     void testGetCommentsService() {
-        Comment commentOne = Comment.builder().id(1L).content("Updated content").build();
         PostDto post1 = PostDto.builder().id(postId).build();
         when(postService.getById(postId)).thenReturn(post1);
 
