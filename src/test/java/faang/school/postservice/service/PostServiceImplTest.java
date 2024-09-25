@@ -40,9 +40,6 @@ class PostServiceImplTest {
     @Mock
     private ProjectServiceClient projectServiceClient;
 
-    @Mock
-    private UserContext userContext;
-
     @Spy
     private PostMapper postMapper;
 

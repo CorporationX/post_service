@@ -67,7 +67,7 @@ class PostControllerTest {
 
     @Test
     void testGet() {
-        postController.get(id);
+        postController.getPost(id);
         verify(postService, times(1)).getPost(id);
     }
 
