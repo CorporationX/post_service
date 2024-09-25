@@ -14,6 +14,7 @@ import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.RedisPostRepository;
@@ -79,6 +80,8 @@ public class PostServiceTest {
     private RedisPostRepository redisPostRepository;
     @Mock
     private UserContext userContext;
+    @Mock
+    private KafkaPostViewProducer kafkaPostViewProducer;
 
     private PostDto postDto;
     private Post post;
@@ -215,7 +218,6 @@ public class PostServiceTest {
         when(entityManager.merge(any(Hashtag.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
-        when(userServiceClient.getFollowerIds(postDto.getAuthorId())).thenReturn(List.of(1L, 2L));
 
         postDto.setHashtagNames(hashtagNames);
         PostDto result = postService.createPost(postDto);
@@ -255,7 +257,6 @@ public class PostServiceTest {
         doNothing().when(postServiceValidator).validatePublishPost(post);
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
-
 
         PostDto result = postService.publishPost(postDto);
 
