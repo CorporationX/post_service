@@ -1,11 +1,9 @@
 package faang.school.postservice.client;
 
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserFilterDto;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,4 +18,7 @@ public interface UserServiceClient {
 
     @GetMapping("/user/{id}/exists")
     boolean existsUserById(@PathVariable long id);
+
+    @GetMapping("/subscription/followers")
+    List<UserDto> getFollowers(@RequestParam Long followeeId, @RequestBody UserFilterDto userFilterDto);
 }

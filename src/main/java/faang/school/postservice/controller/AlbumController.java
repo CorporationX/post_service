@@ -73,7 +73,8 @@ public class AlbumController {
 
     @GetMapping("/albums/{id}")
     public ResponseEntity<AlbumDto> getAlbumById(@PathVariable Long id) {
-        AlbumDto albumDto = albumService.getAlbumById(id);
+        Long userId = userContext.getUserId();
+        AlbumDto albumDto = albumService.getAlbumById(id, userId);
         return new ResponseEntity<>(albumDto, HttpStatus.OK);
     }
 
@@ -93,7 +94,8 @@ public class AlbumController {
 
     @GetMapping("/albums/all")
     public ResponseEntity<List<AlbumDto>> getAllAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
-        List<AlbumDto> albumDtoList = albumService.getAllAlbums(albumFilterDto);
+        Long userId = userContext.getUserId();
+        List<AlbumDto> albumDtoList = albumService.getAllAlbums(albumFilterDto, userId);
         return new ResponseEntity<>(albumDtoList, HttpStatus.OK);
     }
 

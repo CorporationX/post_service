@@ -3,10 +3,13 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserFilterDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.filter.AlbumFilter;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -78,23 +81,35 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     public void addAlbumToFavorites(Long id, Long userId) {
+        Album album = albumRepository.findByIdWithPosts(id)
+                .orElseThrow(() -> new EntityNotFoundException("Album not found"));
+
+        if (!isAlbumVisibleForUser(album, userId)) {
+            throw new DataValidationException("Album is not visible for user");
+        }
+
         albumRepository.addAlbumToFavorites(id, userId);
     }
 
     @Override
     public void deleteAlbumFromFavorites(Long id, Long userId) {
-        albumRepository.deleteAlbumFromFavorites(id, userId);
+        if (albumRepository.existsById(id)) {
+            albumRepository.deleteAlbumFromFavorites(id, userId);
+        }
     }
 
     @Override
-    public AlbumDto getAlbumById(Long id) {
+    public AlbumDto getAlbumById(Long id, Long userId) {
         Album album = albumRepository.findByIdWithPosts(id)
                 .orElseThrow(() -> new EntityNotFoundException("Album not found"));
+
+        if (!isAlbumVisibleForUser(album, userId)) {
+            throw new DataValidationException("Album is not visible for user");
+        }
 
         AlbumDto albumDto = albumMapper.toDto(album);
         List<Long> postIds = album.getPosts().stream().map(Post::getId).toList();
         albumDto.setPostIds(postIds);
-
         return albumDto;
     }
 
@@ -111,8 +126,9 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    public List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto) {
-        Stream<Album> albums = albumRepository.findAll().stream();
+    public List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto, Long userId) {
+        Stream<Album> albums = albumRepository.findAll().stream()
+                .filter(album -> isAlbumVisibleForUser(album, userId));
         return albumMapper.toDto(filerAlbums(albumFilterDto, albums));
     }
 
@@ -150,5 +166,26 @@ public class AlbumServiceImpl implements AlbumService {
         if (albumRepository.existsByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId())) {
             throw new DataValidationException("Album with title " + albumDto.getTitle() + " already exists");
         }
+    }
+
+    private boolean isAlbumVisibleForUser(Album album, Long userId) {
+        AlbumVisibility visibility = album.getVisibility();
+
+        if (visibility.equals(AlbumVisibility.AUTHOR_ONLY)) {
+            return userId.equals(album.getAuthorId());
+        }
+        if (visibility.equals(AlbumVisibility.SELECTED_USERS)) {
+            return albumRepository.getSelectedUserIdsForAlbum(album.getId()).contains(userId);
+        }
+        if (visibility.equals(AlbumVisibility.ALL_FOLLOWERS)) {
+            List<Long> followerIds = userServiceClient.getFollowers(
+                            album.getAuthorId(), new UserFilterDto()
+                    ).stream()
+                    .map(UserDto::getId)
+                    .toList();
+            return followerIds.contains(userId);
+        }
+
+        return true;
     }
 }

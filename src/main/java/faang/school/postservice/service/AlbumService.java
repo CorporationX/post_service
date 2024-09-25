@@ -18,13 +18,13 @@ public interface AlbumService {
 
     void deleteAlbumFromFavorites(Long id, Long userId);
 
-    AlbumDto getAlbumById(Long id);
+    AlbumDto getAlbumById(Long id, Long userId);
 
     List<AlbumDto> getAlbums(Long authorId, AlbumFilterDto albumFilterDto);
 
     List<AlbumDto> getFavoriteAlbums(Long userId, AlbumFilterDto albumFilterDto);
 
-    List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto);
+    List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto, Long userId);
 
     void deleteAlbum(Long id);
 }

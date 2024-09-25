@@ -1,6 +1,7 @@
 package faang.school.postservice.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,6 +36,10 @@ public class Album {
     @ManyToMany
     @JoinTable(name = "post_album", joinColumns = @JoinColumn(name = "album_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
     private List<Post> posts;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private AlbumVisibility visibility;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
