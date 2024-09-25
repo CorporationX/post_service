@@ -50,8 +50,12 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void updateComment(long commentId, UpdateCommentDto updateCommentDto) {
-        commentRepository.findById(commentId)
+        Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Comment with ID %s not found", commentId)));
+
+        if (updateCommentDto.authorId() != comment.getAuthorId()) {
+            throw new EntityNotFoundException("This comment belongs to another user.");
+        }
 
         commentRepository.updateContentAndDateById(commentId, updateCommentDto.content(), LocalDateTime.now());
     }

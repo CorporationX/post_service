@@ -82,7 +82,10 @@ class CommentServiceImplTest {
                 .post(post)
                 .build();
 
-        updateCommentDto = UpdateCommentDto.builder().content("Новый текстовый комментарий").build();
+        updateCommentDto = UpdateCommentDto.builder()
+                .content("Новый текстовый комментарий")
+                .authorId(authorId)
+                .build();
     }
 
     @Test
