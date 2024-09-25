@@ -4,6 +4,8 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -65,5 +67,10 @@ public class PostController {
     @GetMapping("/published/project/{projectId}")
     public ResponseEntity<List<PostDto>> getProjectPublishedPosts(@PathVariable @NotNull Long projectId) {
         return ResponseEntity.ok(postService.getProjectPublishedPosts(projectId));
+    }
+
+    @GetMapping("/all/hashtag/")
+    public Page<PostDto> getAllPostsByHashtag(@NotNull @RequestParam String hashtagContent, Pageable pageable){
+        return postService.getAllPostsByHashtagId(hashtagContent, pageable);
     }
 }
