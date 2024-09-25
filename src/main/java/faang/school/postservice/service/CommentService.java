@@ -3,7 +3,6 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
