@@ -32,6 +32,8 @@ spring:
 cache:
   type: redis
   ttl: 24
+  batch_size: 20
+  last_comments_amount: 3
 
 server:
   port: 8081

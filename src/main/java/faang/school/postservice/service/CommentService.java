@@ -81,4 +81,8 @@ public class CommentService {
         return commentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Comment id=%d not found", id)));
     }
+
+    public List<Comment> getAllByIds(List<Long> ids) {
+        return commentRepository.findAllById(ids);
+    }
 }

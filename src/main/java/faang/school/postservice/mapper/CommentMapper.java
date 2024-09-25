@@ -1,12 +1,14 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentFeedDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.events.CommentEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
@@ -32,4 +34,16 @@ public interface CommentMapper {
     @Mapping(target = "commentContent", source = "content")
     @Mapping(target = "sendAt", expression = "java(java.time.LocalDateTime.now())")
     CommentEvent toEvent(Comment comment);
+
+    @Mapping(source = "post.id", target = "postId")
+    @Mapping(source = "likes", target = "likesAmount", qualifiedByName = "mapToAmount")
+    CommentFeedDto toCommentFeedDto(Comment comment);
+
+    @Named("mapToAmount")
+    default int mapToAmount(List<?> list) {
+        if (list == null) {
+            return 0;
+        }
+        return list.size();
+    }
 }

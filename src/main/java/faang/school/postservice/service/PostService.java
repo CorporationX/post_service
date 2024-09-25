@@ -143,6 +143,11 @@ public class PostService {
         }
     }
 
+    public List<PostDto> getPostsByIds(List<Long> ids) {
+        List<Post> posts = postRepository.findAllById(ids);
+        return postMapper.toDtos(posts);
+    }
+
     private boolean validateDraftPostPublisherExist(Post post) {
         boolean result = false;
         if (post.getAuthorId() != null) {
