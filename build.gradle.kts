@@ -64,6 +64,11 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     /**
+     * Kafka
+     */
+    implementation("org.springframework.kafka:spring-kafka:3.0.6")
+
+    /**
      * S3 SDK
      */
     implementation("software.amazon.awssdk:s3:2.20.0")
