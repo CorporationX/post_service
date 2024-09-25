@@ -9,6 +9,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostLikePublisher;
+import faang.school.postservice.publisher.kafka.PostLikeKafkaPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.Test;
@@ -51,6 +52,8 @@ class LikeServiceTest {
     private PostLikePublisher postLikePublisher;
 
     @Mock
+    private PostLikeKafkaPublisher postLikeKafkaPublisher;
+    @Mock
     private CommentService commentService;
 
     @Test
@@ -74,6 +77,7 @@ class LikeServiceTest {
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
         when(likeRepository.save(like)).thenReturn(like);
         doNothing().when(postLikePublisher).publish(any(PostLikeEventDto.class));
+        doNothing().when(postLikeKafkaPublisher).publish(any(PostLikeEventDto.class));
         when(likeMapper.toDto(like)).thenReturn(likeDto);
 
         LikeDto result = likeService.createLikeToPost(likeDto);

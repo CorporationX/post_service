@@ -15,6 +15,9 @@ public interface UserServiceClient {
     @GetMapping("/v1/users/{userId}")
     UserDto getUser(@PathVariable("userId") long userId);
 
+    @GetMapping("/v1/users/{userId}/follows")
+    List<UserDto> getUserFollows(@PathVariable("userId") Long userId);
+
     @GetMapping("/v1/users/exists/{userId}")
     boolean userExist(@PathVariable("userId") long userId);
 

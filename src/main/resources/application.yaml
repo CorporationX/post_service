@@ -21,6 +21,13 @@ spring:
     redis:
       port: 6379
       host: localhost
+      properties:
+        ttl: 86400
+        feed-size: 20
+      keys:
+        post: Posts
+        feed: Feed
+        user: Users
       channels:
         post-view: post_view_channel
         post-create: post_channel
@@ -33,6 +40,18 @@ spring:
         max-size: 10
         core-size: 6
         queue-capacity: 20
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      like-post: Post-Like
+    producer:
+      acks: all
+      retries: 5
+      enable-idempotence: true
+    consumer:
+      group-id: consumer-group-id-1
+
 
 server:
   port: 8081
@@ -64,7 +83,7 @@ post:
 
 user-service:
   host: localhost
-  port: 8080
+  port: 8083
 project-service:
   host: localhost
   port: 8082

@@ -1,6 +1,7 @@
 package faang.school.postservice.repository.post;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +16,12 @@ import java.util.List;
 public interface PostRepository extends CrudRepository<Post, Long>, JpaSpecificationExecutor<Post> {
 
     List<Post> findByAuthorId(long authorId);
+
+    @Query("SELECT p FROM Post p " +
+            "WHERE p.updatedAt < (SELECT p2.updatedAt FROM Post p2 WHERE p2.id = :postId) " +
+            "AND p.authorId IN :authorIds " +
+            "ORDER BY p.updatedAt DESC")
+    List<Post> findPreviousFeedPostsByAuthorIdAndPostId(Long postId, List<Long> authorIds, Pageable pageable);
 
     List<Post> findByProjectId(long projectId);
 
