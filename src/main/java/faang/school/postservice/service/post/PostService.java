@@ -1,6 +1,7 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.post.*;
 import faang.school.postservice.dto.publishable.PostEvent;
 import faang.school.postservice.dto.publishable.PostViewEvent;
@@ -18,6 +19,7 @@ import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
 import faang.school.postservice.validator.post.PostServiceValidator;
@@ -32,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -56,6 +59,7 @@ public class PostService {
     private final KafkaPostViewProducer postViewProducer;
 
     private final RedisPostRepository redisPostRepository;
+    private final CommentService commentService;
 
     @Transactional
     public PostDto createPostDraft(DraftPostDto draft) {
@@ -92,7 +96,7 @@ public class PostService {
                 .projectId(postDto.getProjectId())
                 .content(postDto.getContent())
                 .likesCount(postDto.getLikesCount())
-                .commentsCount(postDto.getCommentsCount())
+                .comments(new HashSet<>(commentService.getCommentsByPost(postDto.getId())))
                 .build();
 
         redisPostRepository.save(cachedPostDto);
@@ -123,6 +127,11 @@ public class PostService {
         return postRepository.findById(postId).orElseThrow(
                 () -> new UnexistentPostException(postId)
         );
+    }
+
+    public CachedPostDto getPostFromCache(Long postId){
+        return redisPostRepository.findById(postId)
+                .orElse(postMapper.toCachedPostDto(getPost(postId)));
     }
 
     @Transactional
@@ -179,18 +188,21 @@ public class PostService {
         postRepository.save(post);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PostDto findPost(long postId) {
 
         Post post = getPost(postId);
 
         validator.verifyPostDeletion(post);
+        post.setViews(post.getViews()+1);
 
         PostViewEvent postViewEvent = new PostViewEvent(postId);
         postViewProducer.sendEvent(postViewEvent);
 
+        postRepository.save(post);
         return postMapper.toDto(post);
     }
+
 
     @Transactional(readOnly = true)
     public List<PostDto> getPosts(@NotNull GetPostsDto getPostsDto) {
