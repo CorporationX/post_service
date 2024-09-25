@@ -3,7 +3,11 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.service.aws.s3.S3Service;
+import faang.school.postservice.utils.ImageRestrictionRule;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,30 +15,52 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
+    private static final int IMAGES_MAX_NUMBER = 10;
+
     @Mock
     private PostRepository postRepository;
     @Mock
     private PostValidator postValidator;
+    @Mock
+    private ResourceRepository resourceRepository;
+    @Mock
+    private S3Service s3Service;
+    @Mock
+    private MultipartFile image1;
+    @Mock
+    private MultipartFile image2;
+    @Mock
+    private InputStream inputStream;
     @InjectMocks
     private PostService postService;
 
@@ -46,6 +72,9 @@ public class PostServiceTest {
 
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(postService, "imagesMaxNumber", IMAGES_MAX_NUMBER);
+
+
         postForCreate = Post.builder()
                 .content("Some Content")
                 .authorId(1L)
@@ -283,5 +312,55 @@ public class PostServiceTest {
 
         verify(postRepository).findByProjectId(filterPost.getProjectId());
         verify(postRepository, times(0)).findByAuthorId(anyLong());
+    }
+
+    @Test
+    void testUploadImages_Success() throws IOException {
+        Long postId = 1L;
+        List<MultipartFile> images = List.of(image1, image2);
+        List<Resource> existedImages = List.of(new Resource(), new Resource());
+        Post existedPost = new Post();
+        Resource savedResource = new Resource();
+
+        when(image1.getOriginalFilename()).thenReturn("image1.jpg");
+        when(image2.getOriginalFilename()).thenReturn("image2.png");
+        when(image1.getContentType()).thenReturn("image/jpeg");
+        when(image2.getContentType()).thenReturn("image/png");
+
+        when(resourceRepository.findAllByPostId(postId)).thenReturn(existedImages);
+        when(postRepository.findByIdAndNotDeleted(postId)).thenReturn(Optional.of(existedPost));
+        when(s3Service.uploadFile(any(MultipartFile.class), anyString(), any(ImageRestrictionRule.class))).thenReturn(savedResource);
+        when(resourceRepository.saveAll(anyList())).thenReturn(List.of(savedResource));
+
+        assertDoesNotThrow(() -> postService.uploadImages(postId, images));
+    }
+
+    @Test
+    void testDownloadImage_Success() throws IOException {
+        Resource resource = new Resource();
+        resource.setKey("resourceKey");
+        byte[] bytes = new byte[]{};
+
+        when(s3Service.downloadFile(eq(resource.getKey()))).thenReturn(inputStream);
+        when(inputStream.readAllBytes()).thenReturn(bytes);
+
+        byte[] result = postService.downloadImage(resource);
+
+        assertArrayEquals(bytes, result);
+    }
+
+    @Test
+    void testDeleteImagesFromPost_Success() {
+        List<Long> resourceIds = List.of(1L, 2L);
+        Post post = Post.builder().id(1L).build();
+        List<Resource> existedImages = List.of(
+                Resource.builder().id(1L).key("key1").post(post).build(),
+                Resource.builder().id(2L).key("key1").post(post).build());
+
+        when(resourceRepository.findAllByIdIn(eq(resourceIds))).thenReturn(existedImages);
+        doNothing().when(s3Service).deleteFiles(anyList());
+        doNothing().when(resourceRepository).deleteAll(existedImages);
+
+        postService.deleteImagesFromPost(resourceIds);
     }
 }
