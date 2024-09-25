@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.cache.RedisManager;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.dto.event.PostCreateEventDto;
@@ -30,13 +31,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.redis.cache.RedisCache;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +56,7 @@ public class PostService {
     private final UserContext userContext;
     private final ModerationDictionary moderationDictionary;
     private final KafkaPublisherService kafkaPublisherService;
-    private final RedisCache redisCache;
+    private final RedisManager redisManager;
 
     @Value("${post.publisher.batch-size}")
     private int postsBatchSize;
@@ -133,7 +131,7 @@ public class PostService {
         }
         Post post = postMapper.toPost(postDto);
         postRepository.save(post);
-        redisCache.cachePostAuthor(postDto.getAuthorId());
+        redisManager.cachePostAuthor(postDto.getAuthorId());
     }
 
     @Transactional

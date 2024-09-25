@@ -19,8 +19,8 @@ public class KafkaConsumerService {
     private final PostService postService;
     private String messageLogInfo = "Received message class: {}, message object: {}, time: {}";
 
-    @KafkaListener(topics = "${spring.kafka.topic.consumer.payment-request}",
-            groupId = "${spring.kafka.topic.consumer.group-id}")
+    @KafkaListener(topics = "${spring.kafka.topic.consumer.post-views}",
+            groupId = "${spring.kafka.topic.consumer.group-id.post-views}")
     public void listenPaymentRequest(ConsumerRecord<String, PostDto> record, Acknowledgment acknowledgment) {
         try {
             PostDto postDto = record.value();

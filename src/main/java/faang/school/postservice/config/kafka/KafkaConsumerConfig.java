@@ -19,10 +19,15 @@ import java.util.Map;
 @Configuration
 @RequiredArgsConstructor
 public class KafkaConsumerConfig {
+    private final String hostWithPortFromProps;
     @Value("${spring.kafka.host}")
     private String host;
     @Value("${spring.kafka.port}")
     private int port;
+    @Value("${spring.kafka.topic.consumer.group-id.post-views}")
+    private String postViewGroupId;
+
+
 
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, Object>> kafkaListenerContainerFactory() {
@@ -34,15 +39,13 @@ public class KafkaConsumerConfig {
 
     @Bean
     public ConsumerFactory<String, Object> consumerFactory() {
-        String hostWithPortFromProps = host + ":" + port;
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, hostWithPortFromProps);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
-
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "postViewGroupId");
         return new DefaultKafkaConsumerFactory<>(props);
     }
 }

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class KafkaPublisherService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private String messageLogInfo = "Object: {} send success in topic: {}";
-    @Value("${kafka.topic.consumer.post-views}")
+    @Value("${spring.kafka.topic.producer.post-views}")
     private String postView;
 
     public void publishingPostToKafka(PostDto postDto) {

@@ -20,7 +20,7 @@ import java.time.Duration;
 public class RedisManager {
     private final JedisConnectionFactory jedisConnectionFactory;
     private final RedisTemplate<String, Object> redisTemplate;
-    @Value("${spring.cache.redis.time-to-live}")
+    @Value("${spring.data.redis.time-to-live}")
     private long timeToLive;
 
     @Bean
@@ -34,7 +34,7 @@ public class RedisManager {
                 .build();
     }
 
-    private void cachePostAuthor(Long authorId) {
+    public void cachePostAuthor(Long authorId) {
         String cacheKey = "postAuthor";
         redisTemplate.opsForValue().set(cacheKey, authorId, Duration.ofHours(timeToLive));
     }

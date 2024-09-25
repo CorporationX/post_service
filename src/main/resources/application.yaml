@@ -43,6 +43,8 @@ spring:
         post-views: post-views
       consumer:
         post-views: post-views
+        group-id:
+          post-views: group-post-view
 
 server:
   port: 8081
