@@ -4,7 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.util.CustomValidator;
+import faang.school.postservice.util.ExceptionThrowingValidator;
 import feign.FeignException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class LikeService {
 
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
-    private final CustomValidator validator;
+    private final ExceptionThrowingValidator validator;
 
     public List<UserDto> getAllUsersLikedPost(long postId) {
         List<Like> likesByPostId = likeRepository.findByPostId(postId);

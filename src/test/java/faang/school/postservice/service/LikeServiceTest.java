@@ -6,7 +6,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.util.CustomValidator;
+import faang.school.postservice.util.ExceptionThrowingValidator;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
@@ -43,7 +43,7 @@ class LikeServiceTest {
     @Mock
     private UserServiceClient userServiceClient;
     @Mock
-    private CustomValidator validator;
+    private ExceptionThrowingValidator validator;
 
     @InjectMocks
     private LikeService likeService;
