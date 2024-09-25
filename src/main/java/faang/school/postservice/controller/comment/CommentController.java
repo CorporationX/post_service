@@ -5,8 +5,6 @@ import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,20 +31,18 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable long commentId) {
+    public void deleteComment(@PathVariable long commentId) {
         commentService.deleteComment(commentId);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{commentId}")
-    public ResponseEntity<Void> updateComment(@PathVariable long commentId,
-                                              @RequestBody @Validated UpdateCommentDto updateCommentDto) {
+    public void updateComment(@PathVariable long commentId,
+                              @RequestBody @Validated UpdateCommentDto updateCommentDto) {
         commentService.updateComment(commentId, updateCommentDto);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("post/{postId}")
-    public ResponseEntity<List<CommentDto>> getCommentsByPostId(@PathVariable long postId) {
-        return ResponseEntity.ok(commentService.getCommentsByPostId(postId));
+    public List<CommentDto> getCommentsByPostId(@PathVariable long postId) {
+        return commentService.getCommentsByPostId(postId);
     }
 }

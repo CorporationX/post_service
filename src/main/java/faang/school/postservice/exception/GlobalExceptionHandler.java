@@ -1,11 +1,11 @@
-package faang.school.postservice.exception.handler;
+package faang.school.postservice.exception;
 
+import faang.school.postservice.exception.dto.ErrorResponseDto;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -14,27 +14,27 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException exception) {
+    public ErrorResponseDto handleIllegalArgumentException(IllegalArgumentException exception) {
         return generateResponse(exception, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<String> handleValidationException(ValidationException exception) {
+    public ErrorResponseDto handleValidationException(ValidationException exception) {
         return generateResponse(exception, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException exception) {
+    public ErrorResponseDto handleEntityNotFoundException(EntityNotFoundException exception) {
         return generateResponse(exception, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(FeignException.class)
-    public ResponseEntity<String> handleFeignException(FeignException exception) {
+    public ErrorResponseDto handleFeignException(FeignException exception) {
         return generateResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private ResponseEntity<String> generateResponse(Exception exception, HttpStatus httpStatus) {
+    private ErrorResponseDto generateResponse(Exception exception, HttpStatus httpStatus) {
         log.error(String.valueOf(exception));
-        return new ResponseEntity<>(exception.getMessage(), httpStatus);
+        return new ErrorResponseDto(httpStatus.value(), exception.getMessage());
     }
 }
