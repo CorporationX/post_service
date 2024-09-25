@@ -13,7 +13,7 @@ public class KafkaCommentConsumer extends AbstractConsumer<PostCommentEvent> {
         super(feedService);
     }
 
-    @KafkaListener(topics = "${spring.kafka.topic.comment-post}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${spring.kafka.topic.comment-post}", groupId = "${spring.kafka.consumer.group-id.post-group}")
     public void listen(PostCommentEvent event, Acknowledgment ack) {
         handle(event, ack, () ->
                 feedService.addCommentToPost(event.getPostId(), event.getComment()));

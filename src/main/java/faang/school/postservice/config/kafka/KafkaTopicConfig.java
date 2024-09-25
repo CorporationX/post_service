@@ -22,6 +22,8 @@ public class KafkaTopicConfig {
     private String commentPostTopicName;
     @Value("${spring.kafka.topic.post-views}")
     private String postViewTopicName;
+    @Value("${spring.kafka.topic.heater-feed}")
+    private String heaterFeesTopicName;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -48,5 +50,10 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic postViewTopic() {
         return new NewTopic(postViewTopicName, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic heaterFeedTopic() {
+        return new NewTopic(heaterFeesTopicName, 1, (short) 1);
     }
 }

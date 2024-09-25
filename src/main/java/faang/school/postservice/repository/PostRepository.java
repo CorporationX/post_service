@@ -33,7 +33,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.id IN :postIds")
     List<Post> findPostsByIds(List<Long> postIds);
 
-    @Query("SELECT p FROM Post p WHERE p.authorId IN :authorsIds order by p.createdAt DESC")
+    @Query("SELECT p FROM Post p JOIN FETCH p.likes WHERE p.id IN :postIds")
+    List<Post> findPostsByIdsWithLikes(List<Long> postIds);
+
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.authorId IN  :authorsIds order by p.createdAt DESC")
     List<Post> findPostsByAuthorIds(@Param("authorsIds") List<Long> authorIds, Pageable pageable);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.id = :postId")

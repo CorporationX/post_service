@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -90,7 +91,7 @@ public class CommentService {
         if (comments.isEmpty()) {
             String msg = "Post with id:%d has no comments";
             log.error(String.format(msg, postId));
-            throw new EntityNotFoundException(String.format(msg, postId));
+            return Collections.emptyList();
         }
         return comments.stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())

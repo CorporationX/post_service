@@ -14,7 +14,7 @@ public class KafkaPostViewConsumer extends AbstractConsumer<PostViewEvent> {
     }
 
     @KafkaListener(topics = "${spring.kafka.topic.post-views}",
-            groupId = "${spring.kafka.consumer.group-id}")
+            groupId = "${spring.kafka.consumer.group-id.post-group}")
     public void listen(PostViewEvent event, Acknowledgment ack) {
         handle(event, ack, () -> feedService.addViewToPost(event.getPostId()));
     }

@@ -216,7 +216,6 @@ public class PostServiceTest {
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
         when(userServiceClient.getFollowerIds(postDto.getAuthorId())).thenReturn(List.of(1L, 2L));
-        doNothing().when(kafkaPostProducer).sendMessage(any(NewPostEvent.class));
 
         postDto.setHashtagNames(hashtagNames);
         PostDto result = postService.createPost(postDto);

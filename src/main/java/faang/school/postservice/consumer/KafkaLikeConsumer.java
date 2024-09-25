@@ -16,7 +16,7 @@ public class KafkaLikeConsumer extends AbstractConsumer<PostLikeEvent> {
     }
 
     @KafkaListener(topics = "${spring.kafka.topic.like-post}",
-            groupId = "${spring.kafka.consumer.group-id}")
+            groupId = "${spring.kafka.consumer.group-id.post-group}")
     public void listen(PostLikeEvent event, Acknowledgment ack) {
          handle(event, ack, () -> feedService.addLikeToPost(event.getPostId()));
     }

@@ -4,12 +4,11 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.comment.CommentCache;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.event.kafka.NewPostEvent;
 import faang.school.postservice.dto.event.kafka.PostViewEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.mapper.CachePostMapper;
 import faang.school.postservice.model.post.CachePost;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostContextMapper;
@@ -21,8 +20,6 @@ import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.RedisPostRepository;
-import faang.school.postservice.repository.RedisUserRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
 import feign.FeignException;
@@ -58,19 +55,13 @@ public class PostService {
     private final UserContext userContext;
     private final KafkaPostProducer kafkaPostProducer;
     private final UserServiceClient userServiceClient;
-    private final RedisPostRepository redisPostRepository;
-    private final RedisUserRepository redisUserRepository;
-    private final CommentRepository commentRepository;
     private final KafkaPostViewProducer kafkaPostViewProducer;
+    private final CachePostMapper cachePostMapper;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
-    @Value("${spring.post.cache.ttl}")
-    private int postTtl;
     @Value("${spring.feed.max-size}")
     private int maxSizeFeed;
-    @Value("${spring.post.cache.max-comment}")
-    private int maxCommentToCachePost;
 
     @Async(value = "threadPool")
     @Transactional
@@ -227,28 +218,31 @@ public class PostService {
         return elasticsearchService.searchPostsByHashtag(hashtagName, page, size);
     }
 
-    public List<PostDto> getPostsByIds(List<Long> postIds) {
+    public Post findPostByIdWithLikes(long postId) {
+        return postRepository.findByIdWithLikes(postId).orElseThrow(() -> {
+            String errorMsg = String.format("Post id: %d not found", postId);
+            log.error(errorMsg);
+            return new EntityNotFoundException(errorMsg);
+        });
+    }
+
+    public List<Post> findPostsByAuthorIds(List<Long> authorIds, PageRequest pageRequest) {
+        return postRepository.findPostsByAuthorIds(authorIds, pageRequest);
+    }
+
+    public List<PostDto> getPostsDtoByIds(List<Long> postIds) {
         return postMapper.toDto(postRepository.findPostsByIds(postIds));
+    }
+
+    public List<Post> getPostsByIdsWithLikes(List<Long> postIds) {
+        return postRepository.findPostsByIdsWithLikes(postIds);
     }
 
     public List<CachePost> getPostsByAuthorsIds(List<Long> authorsIds) {
         List<Post> posts = postRepository.findPostsByAuthorIds(authorsIds,
                 PageRequest.of(0, maxSizeFeed));
 
-        return posts.stream().map(post -> CachePost.builder()
-                .id(post.getId())
-                .countLike(post.getLikes().size())
-                .comments(post.getComments().isEmpty() ?
-                        null : new LinkedHashSet<>(post.getComments().stream()
-                        .limit(maxCommentToCachePost)
-                        .toList().stream()
-                        .map(comment -> CommentCache.builder()
-                                .id(comment.getId())
-                                .authorId(comment.getAuthorId())
-                                .content(comment.getContent())
-                                .build()).toList()))
-                .ttl(postTtl)
-                .build()).toList();
+        return cachePostMapper.convertPostsToCachePosts(posts);
     }
 
     private List<Post> sortPostsByCreateAt(List<Post> posts) {

@@ -24,7 +24,7 @@ public class CachePost implements Serializable {
     private String content;
     private long countLike;
     private long countView;
-    private LinkedHashSet<CommentCache> comments = new LinkedHashSet<>();
+    private LinkedHashSet<CommentCache> comments;
 
     @TimeToLive
     private long ttl;
