@@ -6,6 +6,7 @@ import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.publisher.PostLikePublisher;
+import faang.school.postservice.publisher.kafka.PostLikeKafkaPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
     private final PostLikePublisher postLikePublisher;
+    private final PostLikeKafkaPublisher postLikeKafkaPublisher;
 
     @Transactional
     public LikeDto createLikeToPost(LikeDto likeDto) {
@@ -33,13 +35,17 @@ public class LikeService {
         userServiceClient.getUser(likeDto.getUserId());
         var entityLike = likeMapper.toEntity(likeDto);
         entityLike.setPost(post);
+        entityLike.setComment(null);
         var createLike = likeRepository.save(entityLike);
 
-        postLikePublisher.publish(PostLikeEventDto.builder()
+        PostLikeEventDto event = PostLikeEventDto.builder()
                 .postId(likeDto.getPostId())
                 .actionUserId(likeDto.getLikeId())
                 .authorId(post.getAuthorId())
-                .build());
+                .build();
+
+        postLikePublisher.publish(event);
+        postLikeKafkaPublisher.publish(event);
 
         return likeMapper.toDto(createLike);
     }
