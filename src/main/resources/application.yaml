@@ -17,6 +17,11 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 50MB
+
   data:
     redis:
       port: 6379
@@ -49,3 +54,16 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+services:
+  s3:
+    endpoint: http://127.0.0.1:9000
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+    region: us-east-1
+
+resources:
+  picture-allowed-types: image/jpeg, image/png, image/webp
+  max-image-in-post: 10
+  max-image-pixel-size: 1080
