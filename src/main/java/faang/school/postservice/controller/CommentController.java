@@ -34,9 +34,10 @@ public class CommentController {
     }
 
     @PutMapping("/comments/{commentId}")
-    public CommentDto updateComment(@PathVariable @Positive Long commentId,
+    public CommentDto updateComment(@PathVariable @Positive Long postId,
+                                    @PathVariable @Positive Long commentId,
                                     @RequestBody @Validated(Update.class) CommentDto commentDto) {
-        return commentService.updateComment(commentId, commentDto);
+        return commentService.updateComment(postId, commentId, commentDto);
     }
 
     @GetMapping("/comments")
@@ -46,7 +47,8 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentId}")
-    public CommentDto deleteComment(@PathVariable @Positive Long commentId) {
-        return commentService.deleteComment(commentId);
+    public CommentDto deleteComment(@PathVariable @Positive Long postId,
+                                    @PathVariable @Positive Long commentId) {
+        return commentService.deleteComment(postId, commentId);
     }
 }
