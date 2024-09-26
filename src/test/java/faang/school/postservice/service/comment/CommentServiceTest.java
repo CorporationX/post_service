@@ -96,7 +96,7 @@ class CommentServiceTest {
 
         when(commentRepository.findById(commentId)).thenReturn(Optional.ofNullable(found));
         doThrow(ValidationException.class)
-                .when(commentValidator).validateUpdate(invalidAuthorId, found);
+                .when(commentValidator).validateCommentAuthorId(invalidAuthorId, found);
 
         assertThrows(
                 ValidationException.class,

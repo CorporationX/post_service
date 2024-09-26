@@ -29,10 +29,10 @@ public class CommentService {
 
     @Transactional
     public Comment updateComment(Long commentId, Comment comment) {
-        Comment found = getById(commentId);
-        commentValidator.validateUpdate(comment.getAuthorId(), found);
-        found.setContent(comment.getContent());
-        return commentRepository.save(found);
+        var foundComment = getById(commentId);
+        commentValidator.validateCommentAuthorId(comment.getAuthorId(), foundComment);
+        foundComment.setContent(comment.getContent());
+        return commentRepository.save(foundComment);
     }
 
     public Collection<Comment> getAllCommentsByPostId(Long postId) {
@@ -48,8 +48,7 @@ public class CommentService {
     }
 
     public Comment getById(Long id) {
-        return commentRepository
-                .findById(id)
+        return commentRepository.findById(id)
                 .orElseThrow(
                         () -> new CommentNotFoundException("Comment not found")
                 );

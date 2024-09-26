@@ -19,7 +19,7 @@ public class CommentValidator {
         validateComment(comment);
     }
 
-    public void validateUpdate(Long userId, Comment comment) {
+    public void validateCommentAuthorId(Long userId, Comment comment) {
         if (comment.getAuthorId() != userId) {
             throw new ValidationException("You cannot update not yours comment");
         }

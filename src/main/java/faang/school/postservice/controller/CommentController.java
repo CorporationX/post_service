@@ -47,7 +47,7 @@ public class CommentController {
         return commentMapper.toDto(comment);
     }
 
-    @PatchMapping("{commentId}")
+    @PatchMapping("/{commentId}")
     public CommentResponseDto updateComment(@PathVariable Long commentId,
                               @RequestBody @Valid CommentRequestDto commentRequestDto,
                               BindingResult bindingResult) {

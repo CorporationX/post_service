@@ -66,7 +66,7 @@ class CommentValidatorTest {
     @Test
     void testValidateUpdate() {
         Comment comment = Comment.builder().authorId(userId).build();
-        commentValidator.validateUpdate(userId, comment);
+        commentValidator.validateCommentAuthorId(userId, comment);
     }
 
     @Test
@@ -74,7 +74,7 @@ class CommentValidatorTest {
         Comment comment = Comment.builder().authorId(userId).build();
         assertThrows(
                 ValidationException.class,
-                () -> commentValidator.validateUpdate(invalidUserId, comment)
+                () -> commentValidator.validateCommentAuthorId(invalidUserId, comment)
         );
     }
 }

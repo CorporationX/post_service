@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.net.ConnectException;
 import java.util.HashMap;
@@ -15,7 +14,7 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Object> handleValidationException(ValidationException exception) {
+    public ResponseEntity<Object> handleCommentNotFoundException(ValidationException exception) {
         Map<String, Object> body = new HashMap<>();
         body.put("message", exception.getMessage());
 
@@ -41,7 +40,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CommentNotFoundException.class)
-    public ResponseEntity<?> handleValidationException(RuntimeException ex) {
+    public ResponseEntity<?> handleCommentNotFoundException(CommentNotFoundException ex) {
         return new ResponseEntity<>(
                 ErrorResponse.builder()
                         .message(ex.getMessage())
@@ -55,7 +54,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 ErrorResponse.builder()
                         .message(ex.getMessage())
-                        .status(ex.getStatus().value())
                         .build(),
                 ex.getStatus()
         );
@@ -74,7 +72,6 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(
                 ErrorResponse.builder()
-                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .message(message)
                         .build(),
                 HttpStatus.INTERNAL_SERVER_ERROR
@@ -82,15 +79,12 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException ex) {
         return new ResponseEntity<>(
                 ErrorResponse.builder()
-                        .status(HttpStatus.BAD_REQUEST.value())
                         .message(ex.getMessage())
                         .build(),
                 HttpStatus.BAD_REQUEST
         );
     }
-
 }
