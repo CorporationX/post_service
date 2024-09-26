@@ -2,7 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.comment.CommentCreateUpdateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.SortingField;
 import faang.school.postservice.dto.comment.SortingOrder;
@@ -57,10 +56,10 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDto createComment(Long postId, CommentCreateUpdateDto commentCreateDto) {
+    public CommentDto createComment(Long postId, CommentDto commentDto) {
         Post post = getPost(postId);
-        validateAuthor(commentCreateDto.authorId());
-        Comment comment = commentMapper.toComment(commentCreateDto);
+        validateAuthor(commentDto.authorId());
+        Comment comment = commentMapper.toComment(commentDto);
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
         log.info("Saved comment: {}, for post: {}", savedComment.getId(), post.getId());
@@ -68,14 +67,14 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDto updateComment(Long commentId, CommentCreateUpdateDto commentUpdateDto) {
+    public CommentDto updateComment(Long commentId, CommentDto commentDto) {
         Comment comment = getComment(commentId);
         validateAuthor(comment.getAuthorId());
         if (comment.getPost().isDeleted()) {
             throw new DataValidationException(
                     POST_DELETED_OR_NOT_PUBLISHED.getMessage().formatted(comment.getPost().getId()));
         }
-        comment.setContent(commentUpdateDto.content());
+        comment.setContent(commentDto.content());
         Comment updatedComment = commentRepository.save(comment);
         log.info("Updated comment: {}, for post: {}", updatedComment.getId(), comment.getPost().getId());
         return commentMapper.toCommentDto(updatedComment);

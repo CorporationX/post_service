@@ -1,6 +1,5 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.comment.CommentCreateUpdateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.SortingStrategyDto;
 import faang.school.postservice.dto.comment.validation.group.Create;
@@ -30,14 +29,14 @@ public class CommentController {
 
     @PostMapping("/comments")
     public CommentDto createComment(@PathVariable @Positive Long postId,
-                                    @RequestBody @Validated(Create.class) CommentCreateUpdateDto commentCreateDto) {
-        return commentService.createComment(postId, commentCreateDto);
+                                    @RequestBody @Validated(Create.class) CommentDto commentDto) {
+        return commentService.createComment(postId, commentDto);
     }
 
     @PutMapping("/comments/{commentId}")
     public CommentDto updateComment(@PathVariable @Positive Long commentId,
-                                    @RequestBody @Validated(Update.class) CommentCreateUpdateDto commentUpdateDto) {
-        return commentService.updateComment(commentId, commentUpdateDto);
+                                    @RequestBody @Validated(Update.class) CommentDto commentDto) {
+        return commentService.updateComment(commentId, commentDto);
     }
 
     @GetMapping("/comments")
