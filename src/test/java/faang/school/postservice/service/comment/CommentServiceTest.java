@@ -59,8 +59,10 @@ class CommentServiceTest {
     void testCreateComment() {
         Post post = Post.builder().id(postId).build();
         Comment comment = Comment.builder().content(content).build();
+
         when(postService.findPostById(postId)).thenReturn(post);
         commentService.createComment(postId, comment);
+
         verify(commentValidator).validateCreate(postId, comment);
         verify(commentRepository).save(commentCaptor.capture());
         assertEquals(postId, commentCaptor.getValue().getPost().getId());

@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleInputValidationErrors(InputValidationException ex) {
         return new ResponseEntity<>(
                 ErrorResponse.builder()
-                        .errorFields(ex.getMap())
+                        .errorFields(ex.getErrorFields())
                         .build(),
                 HttpStatus.BAD_REQUEST
         );

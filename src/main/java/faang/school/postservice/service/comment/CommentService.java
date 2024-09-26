@@ -20,19 +20,19 @@ public class CommentService {
     private final CommentValidator commentValidator;
 
     @Transactional
-    public void createComment(Long postId, Comment comment) {
+    public Comment createComment(Long postId, Comment comment) {
         commentValidator.validateCreate(postId, comment);
         Post post = postService.findPostById(postId);
         comment.setPost(post);
-        commentRepository.save(comment);
+        return commentRepository.save(comment);
     }
 
     @Transactional
-    public void updateComment(Long commentId, Comment comment) {
+    public Comment updateComment(Long commentId, Comment comment) {
         Comment found = getById(commentId);
         commentValidator.validateUpdate(comment.getAuthorId(), found);
         found.setContent(comment.getContent());
-        commentRepository.save(found);
+        return commentRepository.save(found);
     }
 
     public Collection<Comment> getAllCommentsByPostId(Long postId) {
