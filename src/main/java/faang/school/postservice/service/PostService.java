@@ -9,6 +9,7 @@ import faang.school.postservice.exception.DataDoesNotExistException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publishers.KafkaPostProducer;
 import faang.school.postservice.publishers.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.redis.PostCacheService;
@@ -35,6 +36,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
     private final PostViewPublisher postViewPublisher;
+    private final KafkaPostProducer kafkaPostProducer;
     private final PostCacheService postCacheService;
     private final UserCacheService userCacheService;
 
@@ -65,6 +67,7 @@ public class PostService {
                 postRepository.save(post.get());
                 postCacheService.save(post.get());
                 userCacheService.save(post.get().getAuthorId());
+                kafkaPostProducer.sendMessage(post.get());
             }
             return postMapper.toDto(post.get());
         } else {

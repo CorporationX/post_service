@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.listener.ChannelTopic;
 
 @Configuration
-public class TopicConfig {
+public class RedisTopicConfig {
     @Value("${spring.data.redis.channels.post_comment_channel.name}")
     private String channelTopic;
 

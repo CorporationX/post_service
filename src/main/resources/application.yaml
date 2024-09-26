@@ -28,6 +28,10 @@ spring:
           name: post_comment_channel
         post_view_channel: post_view_channel
         like_topic: like_topic
+    kafka:
+      bootstrap-servers:
+      topic:
+        posts_topic: posts
 
 cache:
   type: redis
