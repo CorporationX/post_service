@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class PostProducer extends AbstractProducer<PostEvent> {
     public PostProducer(KafkaTemplate<String, Object> kafkaTemplate,
-                        @Value("${kafka.posts-topic.name}") String topicName) {
+                        @Value("${kafka.topic.posts-topic.name}") String topicName) {
         super(kafkaTemplate, topicName);
     }
 }

@@ -90,12 +90,12 @@ payment-service:
 kafka:
   host-port: localhost:9092
   topic:
-    name:
-      post: posts
-
-  posts-topic:
-    name: posts
-    group-id: postGroup
+    posts-topic:
+      name: posts
+      group-id: postGroup
+    user-cache-topic:
+      name: user-cache
+      group-id: user-cache-group
 
 async:
   core-pool-size: 5
