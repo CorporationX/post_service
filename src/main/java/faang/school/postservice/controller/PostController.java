@@ -41,22 +41,22 @@ public class PostController {
         return postService.getPost(id);
     }
 
-    @GetMapping("/author-posts/{id}")
+    @GetMapping("/author_posts/{id}")
     public List<PostDto> getAllNonPublishedByAuthorId(@PathVariable Long id) {
         return postService.getAllNonPublishedByAuthorId(id);
     }
 
-    @GetMapping("/project-posts/{id}")
+    @GetMapping("/project_posts/{id}")
     public List<PostDto> getAllNonPublishedByProjectId(@PathVariable Long id) {
         return postService.getAllNonPublishedByProjectId(id);
     }
 
-    @GetMapping("/published-by-user/{id}")
+    @GetMapping("/published_by_user/{id}")
     public List<PostDto> getAllPublishedByAuthorId(@PathVariable Long id) {
         return postService.getAllPublishedByAuthorId(id);
     }
 
-    @GetMapping("/published-by-project/{id}")
+    @GetMapping("/published_by_project/{id}")
     public List<PostDto> getAllPublishedByProjectId(@PathVariable Long id) {
         return postService.getAllPublishedByProjectId(id);
     }
