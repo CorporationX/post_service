@@ -27,4 +27,13 @@ public class ResourceController {
         List<Resource> resources = resourceService.addImagesToPost(files, postId);
         return resourceMapper.toResourceDtoList(resources);
     }
+
+    @PutMapping("/images/edit")
+    public ResourceDto updateImageInPost(@RequestBody MultipartFile file,
+                                         @RequestParam("resource-id") Long resourceId,
+                                         @RequestParam("post-id") Long postId) {
+
+        Resource updatedResource = resourceService.updateImageInPost(file, resourceId, postId);
+        return resourceMapper.toResourceDto(updatedResource);
+    }
 }

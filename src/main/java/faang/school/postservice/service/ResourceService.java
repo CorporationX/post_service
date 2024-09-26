@@ -5,7 +5,7 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.ResourceType;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.s3.AWSPictureService;
+import faang.school.postservice.service.s3.S3ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -22,7 +21,7 @@ public class ResourceService {
 
     private final ResourceRepository resourceRepository;
     private final PostRepository postRepository;
-    private final AWSPictureService awsService;
+    private final S3ImageService s3ImageService;
 
     @Value("${resources.max-image-in-post}")
     private int maxImageInPost;
@@ -35,27 +34,14 @@ public class ResourceService {
         Post post = postRepository.findById(postId).orElseThrow();
         validateAmount(post, files);
 
-        Map<String, MultipartFile> fileByCustomKey = awsService.putObjectsToAWS(files, postId);
-        List<Resource> resources = mapToResourceList(fileByCustomKey, post);
+        List<Resource> resources = s3ImageService.addFilesToStorage(files, post);
 
         return resourceRepository.saveAll(resources);
     }
 
-    private List<Resource> mapToResourceList(Map<String, MultipartFile> fileByCustomKey, Post post) {
-        return fileByCustomKey.entrySet().stream()
-                .map(entry -> {
-                    String key = entry.getKey();
-                    MultipartFile file = entry.getValue();
-
-                    return Resource.builder()
-                            .type(ResourceType.IMAGE)
-                            .key(key)
-//                            .size(file.getSize())
-                            .name(file.getOriginalFilename())
-                            .post(post)
-                            .build();
-                })
-                .toList();
+    @Transactional
+    public Resource updateImageInPost(MultipartFile file, Long resourceId, Long postId) {
+        return null;
     }
 
     private void validateAmount(Post post, List<MultipartFile> files) {

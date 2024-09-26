@@ -7,8 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ResourceDto {
-    private Long resourceId;
     private Long postId;
+    private Long resourceId;
     private String name;
     private ResourceType type;
 }
