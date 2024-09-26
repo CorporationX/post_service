@@ -15,7 +15,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -37,9 +36,6 @@ public class AlbumServiceImpl implements AlbumService {
 
         addPostsToAlbum(albumDto, newAlbum);
 
-        newAlbum.setCreatedAt(LocalDateTime.now());
-        newAlbum.setUpdatedAt(LocalDateTime.now());
-
         albumRepository.save(newAlbum);
     }
 
@@ -52,7 +48,6 @@ public class AlbumServiceImpl implements AlbumService {
 
         albumMapper.updateFromDto(albumDto, albumToUpdate);
         addPostsToAlbum(albumDto, albumToUpdate);
-        albumToUpdate.setUpdatedAt(LocalDateTime.now());
 
         albumRepository.save(albumToUpdate);
     }
@@ -101,29 +96,27 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     public List<AlbumDto> getAlbums(Long authorId, AlbumFilterDto albumFilterDto) {
         Stream<Album> albums = albumRepository.findByAuthorId(authorId);
-        return albumMapper.toDto(filerAlbums(albumFilterDto, albums));
+        return albumMapper.toDto(filterAlbums(albumFilterDto, albums));
     }
 
     @Override
     public List<AlbumDto> getFavoriteAlbums(Long userId, AlbumFilterDto albumFilterDto) {
         Stream<Album> albums = albumRepository.findFavoriteAlbumsByUserId(userId);
-        return albumMapper.toDto(filerAlbums(albumFilterDto, albums));
+        return albumMapper.toDto(filterAlbums(albumFilterDto, albums));
     }
 
     @Override
     public List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto) {
         Stream<Album> albums = albumRepository.findAll().stream();
-        return albumMapper.toDto(filerAlbums(albumFilterDto, albums));
+        return albumMapper.toDto(filterAlbums(albumFilterDto, albums));
     }
 
     @Override
     public void deleteAlbum(Long id) {
-        if (albumRepository.existsById(id)) {
-            albumRepository.deleteById(id);
-        }
+        albumRepository.deleteById(id);
     }
 
-    private List<Album> filerAlbums(AlbumFilterDto albumFilterDto, Stream<Album> albums) {
+    private List<Album> filterAlbums(AlbumFilterDto albumFilterDto, Stream<Album> albums) {
         return filters.stream()
                 .filter(filter -> filter.isApplicable(albumFilterDto))
                 .flatMap(filter -> filter.apply(albumFilterDto, albums))
