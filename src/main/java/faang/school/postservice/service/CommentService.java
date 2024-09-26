@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.comment.CommentCreateUpdateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.SortingStrategyDto;
 
