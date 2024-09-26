@@ -1,7 +1,6 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.model.kafka.KafkaCommentEvent;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Qualifier;
