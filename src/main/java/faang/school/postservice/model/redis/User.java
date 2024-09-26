@@ -1,5 +1,6 @@
 package faang.school.postservice.model.redis;
 
+import faang.school.postservice.dto.user.UserInfoDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,8 +17,9 @@ import java.io.Serializable;
 public class User implements Serializable {
     @Id
     private Long id;
-    private String username;
-    private boolean active;
+    private UserInfoDto userInfo;
+//    private String username;
+//    private boolean active;
     @Version
     private int version;
 }

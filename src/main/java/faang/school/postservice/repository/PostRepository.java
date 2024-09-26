@@ -22,4 +22,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
+
+    @Query(nativeQuery = true, value = """
+            SELECT p.id FROM post p WHERE p.author_id = ?1 ORDER BY p.updated_at DESC OFFSET ?2 LIMIT ?3
+            """)
+    List<Long> findPosts(Long userId, int offset, int limit);
 }

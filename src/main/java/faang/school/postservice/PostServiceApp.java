@@ -10,11 +10,13 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
 @EnableCaching
+@EnableKafka
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
 public class PostServiceApp {
     public static void main(String[] args) {

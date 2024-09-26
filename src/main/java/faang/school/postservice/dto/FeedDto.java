@@ -1,21 +1,24 @@
 package faang.school.postservice.dto;
 
-import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.Post.PostInfoDto;
+import faang.school.postservice.dto.comment.LastCommentDto;
+import faang.school.postservice.dto.user.UserInfoDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.HashMap;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 
 public class FeedDto {
-    private UserDto author;
-    private String postContent;
-    private List<CommentDto> comments;
-//    private HashMap<UserDto,List<String>> comments;
-    private long likes;
+    private UserInfoDto authorInfo;
+    private PostInfoDto postInfo;
+//    private String postContent;
+//    private LinkedHashSet<LastCommentDto> comments;
+//    private long likes;
+//    private LocalDateTime updatedAt;
 }

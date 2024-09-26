@@ -25,11 +25,4 @@ public class PostCacheService {
         return toList(postRepository.findAllById(ids));
     }
 
-    public List<Long> gatherAuthorsIds(List<Post> posts) {
-        return posts.stream().map(Post::getAuthorId).toList();
-    }
-
-    public List<Long> gatherProjectsIds(List<Post> posts) {
-        return posts.stream().map(Post::getProjectId).toList();
-    }
 }

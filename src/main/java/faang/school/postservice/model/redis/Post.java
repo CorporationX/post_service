@@ -1,5 +1,6 @@
 package faang.school.postservice.model.redis;
 
+import faang.school.postservice.dto.Post.PostInfoDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,8 +16,9 @@ import org.springframework.lang.Nullable;
 public class Post {
     @Id
     private Long id;
-    private String content;
-    private Long authorId;
+    private PostInfoDto postInfoDto;
+//    private String content;
+//    private Long authorId;
 //    @Nullable
 //    private Long projectId;
     @Version

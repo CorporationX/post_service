@@ -22,6 +22,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation("org.springframework.kafka:spring-kafka:3.2.4")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
@@ -29,6 +30,7 @@ dependencies {
      */
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
+    implementation("org.redisson:redisson:3.36.0")
     runtimeOnly("org.postgresql:postgresql")
 
     /**

@@ -10,6 +10,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.CommentEventPublisher;
+import faang.school.postservice.publishers.kafka.CommentEventKafkaPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final PostService postService;
     private final CommentEventPublisher commentEventPublisher;
+    private final CommentEventKafkaPublisher commentEventKafkaPublisher;
 
     public CommentDto createComment(CreateCommentDto createCommentDto) {
         checkUserService.checkUserExistence(createCommentDto);
@@ -40,6 +42,7 @@ public class CommentService {
         comment = commentRepository.save(comment);
         log.info("Comment with ID = {} was created", comment.getId());
         commentEventPublisher.publish(comment);
+        commentEventKafkaPublisher.publish(comment);
         return commentMapper.toDto(comment);
     }
 

@@ -10,6 +10,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.LikeEventPublisher;
+import faang.school.postservice.publishers.kafka.LikeEventKafkaPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class LikeService {
     private final CommentService commentService;
 
     private final LikeEventPublisher likeEventPublisher;
+    private final LikeEventKafkaPublisher likeEventKafkaPublisher;
 
     @Transactional
     public LikeResponseDto addLikeToPost(long userId, long postId) {
@@ -45,6 +47,7 @@ public class LikeService {
 
         like = likeRepository.save(like);
         likeEventPublisher.publish(like);
+        likeEventKafkaPublisher.publish(like);
         return likeMapper.toResponseDto(like);
     }
 

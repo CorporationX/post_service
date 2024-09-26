@@ -59,3 +59,22 @@ news-feed:
   feed:
     amount: 20
     posts_size: 100
+    max_retries: 5
+    max_comments: 3
+  heat:
+    post_amount: 500
+  cache:
+    suffix:
+      feed: feed
+      post: post
+      user: user
+
+kafka:
+  address: localhost:9092
+  topics:
+    partitions: 3
+    replications: 3
+    like_event: like
+    comment_event: comment
+    post_event: post
+    post_view_event: post_view

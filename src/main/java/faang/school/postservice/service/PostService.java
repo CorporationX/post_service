@@ -10,6 +10,8 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publishers.PostViewPublisher;
+import faang.school.postservice.publishers.kafka.PostEventKafkaPublisher;
+import faang.school.postservice.publishers.kafka.PostViewEventKafkaPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.redis.PostCacheService;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,8 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final PostViewPublisher postViewPublisher;
     private final PostCacheService postCacheService;
+    private final PostEventKafkaPublisher postEventKafkaPublisher;
+    private final PostViewEventKafkaPublisher postViewEventKafkaPublisher;
 
     @Transactional(readOnly = true)
     public Post getById(long id) {
@@ -61,6 +65,8 @@ public class PostService {
                 post.get().setPublishedAt(LocalDateTime.now());
                 log.info("Post with id = {} has been published successfully", draftId);
                 postRepository.save(post.get());
+                log.info("Post with id = {} has been published to kafka successfully", draftId);
+                postEventKafkaPublisher.publish(post.get());
             }
             return postMapper.toDto(post.get());
         } else {
@@ -100,6 +106,9 @@ public class PostService {
         Optional<Post> post = postRepository.findById(postId);
         if (post.isPresent()) {
             postViewPublisher.publish(post.get());
+            log.info("publish post view event to redis successfully for post {}", postId);
+            postViewEventKafkaPublisher.publish(post.get());
+            log.info("publish post view event to kafka successfully for post {}", postId);
             return postMapper.toDto(post.get());
         } else {
             log.error("Post with id = {} doesn't exist in database", postId);
@@ -131,7 +140,12 @@ public class PostService {
                         .map(postMapper::toDto)
                         .toList();
             }
-            sortedList.forEach(p -> postViewPublisher.publish(postMapper.toEntity(p)));
+            sortedList.forEach(p -> {
+                postViewPublisher.publish(postMapper.toEntity(p));
+                log.info("publish post view event to redis successfully for post {}", p.getId());
+                postViewEventKafkaPublisher.publish(postMapper.toEntity(p));
+                log.info("publish post view event to kafka successfully for post {}", p.getId());
+            });
             return sortedList;
         } else {
             log.info("There's no one post in database written by your publisher");

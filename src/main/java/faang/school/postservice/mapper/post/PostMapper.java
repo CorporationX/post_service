@@ -2,6 +2,7 @@ package faang.school.postservice.mapper.post;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.Post.PostDto;
+import faang.school.postservice.events.PostEvent;
 import faang.school.postservice.events.PostViewEvent;
 import faang.school.postservice.model.Post;
 import lombok.NoArgsConstructor;
@@ -30,6 +31,10 @@ public abstract class PostMapper {
     @Mapping(target = "authorId", source = "post.authorId")
     @Mapping(target = "viewedAt", expression = "java(java.time.LocalDateTime.now())")
     public abstract PostViewEvent toEvent(Post post);
+
+    @Mapping(target = "postId", source = "post.id")
+    @Mapping(target = "authorId", source = "post.authorId")
+    public abstract PostEvent toPostEvent(Post post);
 
     @Named("sizeToLong")
     Long sizeToLong(List<?> list) {
