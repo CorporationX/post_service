@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.LikeMapper;
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.service.LikeService;
