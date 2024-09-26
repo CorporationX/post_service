@@ -4,10 +4,12 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.kafka.KafkaCommentEvent;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.error.CommentServiceErrors;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +22,7 @@ public class CommentService {
     private final CommentRepository repository;
     private final PostRepository postRepository;
     private final CommentMapper mapper;
+    private final KafkaCommentProducer kafkaCommentProducer;
 
     public CommentDto addComment(Long postId, CommentDto commentDto) {
         if (commentDto.getContent() == null || commentDto.getContent().isBlank()) {
@@ -36,6 +39,7 @@ public class CommentService {
         post.getComments().add(saveComment);
         post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
+        kafkaCommentProducer.sendMessage(new KafkaCommentEvent(postId, commentDto.getAuthorId()));
 
         return mapper.toDto(saveComment);
     }
@@ -76,7 +80,8 @@ public class CommentService {
     }
 
     private Comment getCommentByIdOrFail(Long commentId) {
-        return repository.findById(commentId).orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+        return repository.findById(commentId).orElseThrow(
+                () -> new IllegalArgumentException("Comment not found"));
     }
 
     private Post getPost(Long postId) {

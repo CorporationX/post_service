@@ -12,9 +12,11 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.kafka.KafkaLikeEvent;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.like.KafkaLikeProducer;
 import faang.school.postservice.service.like.LikeServiceImpl;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.LikeValidator;
@@ -40,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -64,6 +67,8 @@ class LikeServiceImplTest {
     private CommentMapper commentMapper;
     @Mock
     UserServiceClient userServiceClient;
+    @Mock
+    KafkaLikeProducer kafkaLikeProducer;
 
     @InjectMocks
     private LikeServiceImpl likeService;
@@ -118,9 +123,13 @@ class LikeServiceImplTest {
         when(likeMapper.toEntity(any(LikeDto.class))).thenReturn(like);
         when(likeRepository.save(like)).thenReturn(like);
         when(likeMapper.toDto(any(Like.class))).thenReturn(likeDto);
+        when(likeMapper.dtoToKafkaLikeEvent(likeDto))
+                .thenReturn(new KafkaLikeEvent(1L, 1L));
 
         LikeDto result = likeService.addPostLike(likeDto);
 
+        verify(kafkaLikeProducer, times(1))
+                .sendMessage(any(KafkaLikeEvent.class));
         verify(likeValidator).validateUserExistence(likeDto.getUserId());
         verify(likeValidator).validateLikeToPost(post, likeDto.getUserId());
         verify(likeRepository).save(like);
