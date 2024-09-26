@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.redis.GeneralRedisConfig;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.event.post.PostEvent;
 import faang.school.postservice.exception.PostValidationException;
@@ -15,17 +16,23 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +51,12 @@ class PostServiceTest {
     private PostValidator postValidator;
     @Mock
     private PostEventPublisher postEventPublisher;
+    @Mock
+    private GeneralRedisConfig redisConfig;
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
+    @Mock
+    private ValueOperations<String, Object> valueOperations;
 
     private PostDto postDto;
     private Post post;
@@ -82,9 +95,19 @@ class PostServiceTest {
         doNothing().when(postEventPublisher).publish(any(PostEvent.class));
         when(postRepository.save(post)).thenReturn(post);
 
+        when(redisConfig.getPostCacheTtl()).thenReturn(86400L);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+
         PostDto returnedPostDto = postService.publish(defaultIdForTests);
 
         assertEquals(postDto, returnedPostDto);
+
+        verify(redisTemplate.opsForValue(), times(1)).set(
+                eq(String.valueOf(defaultIdForTests)),
+                eq(postDto),
+                eq(86400L),
+                eq(TimeUnit.SECONDS)
+        );
     }
 
     @Test

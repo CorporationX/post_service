@@ -1,5 +1,6 @@
 package faang.school.postservice.config.redis;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,10 @@ public class GeneralRedisConfig {
 
     @Value("${spring.data.redis.port}")
     private int port;
+
+    @Getter
+    @Value("${spring.data.redis.post-cache-ttl}")
+    private long postCacheTtl;
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
