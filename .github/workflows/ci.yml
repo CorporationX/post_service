@@ -3,7 +3,7 @@
   on:
     pull_request:
       branches:
-        - dev
+        - hydra-master-stream6
     push:
       branches:
         - hydra-master-stream6
