@@ -23,10 +23,11 @@ public class CommentService {
 
     @Transactional
     public Comment createComment(Comment comment) {
-        Post post = getPostById(comment.getPost().getId());
-
         UserDto user = userServiceClient.getUser(comment.getAuthorId());
         commentServiceHandler.userExistsByIdValidation(user.getId());
+
+        Long postId = comment.getPost().getId();
+        Post post = getPostById(postId);
 
         comment.setAuthorId(user.getId());
         post.getComments().add(comment);
@@ -59,11 +60,11 @@ public class CommentService {
 
     private Post getPostById(Long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(() -> new DataValidationException("Post with ID: " + postId + " not found"));
+                .orElseThrow(() -> new DataValidationException("Post with ID: " + postId + " not found."));
     }
 
     private Comment getCommentById(Long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new DataValidationException("Comment with ID: " + commentId + " not found"));
+                .orElseThrow(() -> new DataValidationException("Comment with ID: " + commentId + " not found."));
     }
 }
