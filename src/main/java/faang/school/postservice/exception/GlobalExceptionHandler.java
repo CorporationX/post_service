@@ -76,10 +76,11 @@ public class GlobalExceptionHandler {
         log.error(ex.getMessage(), ex);
         return new ErrorResponse(ex.getMessage());
     }
-@ExceptionHandler(Throwable.class)
-@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-public ErrorResponse handleOtherExceptions(Throwable ex) {
-    log.error(ex.getMessage(), ex);
-    return new ErrorResponse(ex.getMessage());
-}
+
+    @ExceptionHandler(Throwable.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleOtherExceptions(Throwable ex) {
+        log.error(ex.getMessage(), ex);
+        return new ErrorResponse(ex.getMessage());
+    }
 }

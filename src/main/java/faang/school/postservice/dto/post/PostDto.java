@@ -16,6 +16,7 @@ public record PostDto(
         LocalDateTime publishedAt,
         @JsonInclude(JsonInclude.Include.NON_NULL)
         LocalDateTime scheduledAt,
-        boolean deleted
+        boolean deleted,
+        long likes
 ) {
 }

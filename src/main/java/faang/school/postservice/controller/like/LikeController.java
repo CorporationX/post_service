@@ -20,26 +20,22 @@ public class LikeController {
     private final LikeService likeService;
 
     @PostMapping("/posts/{postId}")
-    public LikeDto likePost(@PathVariable @Positive Long postId,
-                            @RequestHeader("x-user-id") @Positive Long userId) {
+    public LikeDto likePost(@PathVariable @Positive Long postId) {
         return likeService.likePost(postId);
     }
 
     @DeleteMapping("/posts/{postId}")
-    public LikeDto removeLikeOnPost(@PathVariable @Positive Long postId,
-                                    @RequestHeader("x-user-id") @Positive Long userId) {
+    public LikeDto removeLikeOnPost(@PathVariable @Positive Long postId) {
         return likeService.removeLikeOnPost(postId);
     }
 
     @PostMapping("/comments/{commentId}")
-    public LikeDto likeComment(@PathVariable @Positive Long commentId,
-                            @RequestHeader("x-user-id") @Positive Long userId) {
+    public LikeDto likeComment(@PathVariable @Positive Long commentId) {
         return likeService.likeComment(commentId);
     }
 
     @DeleteMapping("/comments/{commentId}")
-    public LikeDto removeLikeOnComment(@PathVariable @Positive Long commentId,
-                                       @RequestHeader("x-user-id") @Positive Long userId) {
+    public LikeDto removeLikeOnComment(@PathVariable @Positive Long commentId) {
         return likeService.removeLikeOnComment(commentId);
     }
 }
