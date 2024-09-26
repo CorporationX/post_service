@@ -4,7 +4,6 @@ import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.mapper.post.PostMapperList;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.cache.PostCacheOperations;
@@ -27,7 +26,6 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class PostService {
-
     @Value("${app.post.cache.number_of_top_in_cache}")
     private int numberOfTopInCache;
 
@@ -36,7 +34,6 @@ public class PostService {
     private final PostHashTagService postHashTagService;
     private final PostCacheService postCacheService;
     private final PostMapper postMapper;
-    private final PostMapperList postMapperList;
     private final PostCacheOperations postCacheOperations;
 
     @Transactional
@@ -63,7 +60,7 @@ public class PostService {
         postHashTagService.updateHashTags(post);
 
         if (!post.isDeleted() && post.isPublished()) {
-            postCacheService.updatePostProcess(postMapper.toPostCacheDto(post), primalTags);
+            postCacheService.executeUpdatePostProcess(postMapper.toPostCacheDto(post), primalTags);
         }
         return postRepository.save(post);
     }
@@ -78,7 +75,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postHashTagService.updateHashTags(post);
-        postCacheService.newPostProcess(postMapper.toPostCacheDto(post));
+        postCacheService.executeNewPostProcess(postMapper.toPostCacheDto(post));
 
         return postRepository.save(post);
     }
@@ -90,7 +87,7 @@ public class PostService {
 
         post.setDeleted(true);
         post.setUpdatedAt(LocalDateTime.now());
-        postCacheService.deletePostProcess(postMapper.toPostCacheDto(post), post.getHashTags());
+        postCacheService.executeDeletePostProcess(postMapper.toPostCacheDto(post), post.getHashTags());
 
         postRepository.save(post);
     }
@@ -102,21 +99,20 @@ public class PostService {
         if (postDtos.isEmpty() && postCacheOperations.isRedisConnected()) {
             String jsonTag = postHashTagService.convertTagToJson(hashTag);
             List<Post> posts = postRepository.findTopByHashTagByDate(jsonTag, numberOfTopInCache);
-            List<PostCacheDto> postDtosByTop = postMapperList.mapToPostCacheDtos(posts);
+            List<PostCacheDto> postDtosByTop = postMapper.mapToPostCacheDtos(posts);
             postCacheService.addListOfPostsToCache(postDtosByTop, hashTag);
             postDtos = postDtosByTop.subList(0, Math.min(postDtosByTop.size(), end));
         }
         else if (postDtos.isEmpty()) {
             String jsonTag = postHashTagService.convertTagToJson(hashTag);
             List<Post> posts = postRepository.findInRangeByHashTagByDate(jsonTag, start, end);
-            postDtos = postMapperList.mapToPostCacheDtos(posts);
+            postDtos = postMapper.mapToPostCacheDtos(posts);
         }
         return postDtos;
     }
 
     @Transactional(readOnly = true)
     public Post findPostById(Long id) {
-        log.info("Find post with id: {}", id);
         return postRepository.findByIdAndNotDeleted(id).orElseThrow(() -> new PostNotFoundException(id));
     }
 

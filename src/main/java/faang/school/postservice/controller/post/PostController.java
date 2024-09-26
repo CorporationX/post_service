@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -79,9 +80,10 @@ public class PostController {
     }
 
     @GetMapping
-    public List<PostCacheDto> findAllByHashTags(@RequestParam(name = "hash_tag") String hashTag,
-                                                @RequestParam(name = "start") int start,
-                                                @RequestParam(name = "end") int end) {
-        return postService.findInRangeByHashTag(hashTag, start, end);
+    public List<PostResponseDto> findAllByHashTags(@RequestParam(name = "hash_tag") String hashTag,
+                                                   @RequestParam(name = "start") int start,
+                                                   @RequestParam(name = "end") int end) {
+        List<PostCacheDto> postCacheDtos = postService.findInRangeByHashTag(hashTag, start, end);
+        return mapper.toDtos(postCacheDtos);
     }
 }

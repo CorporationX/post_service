@@ -19,7 +19,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
-    PostResponseDto toDto(Post post);
 
     Post toEntity(CreatePostRequestDto dto);
 
@@ -27,11 +26,21 @@ public interface PostMapper {
 
     Post toEntity(FilterPostRequestDto dto);
 
+    PostResponseDto toDto(Post post);
+
+    List<PostResponseDto> listEntitiesToListDto(List<Post> posts);
+
+    PostResponseDto toDto(PostCacheDto postCacheDto);
+
+    List<PostResponseDto> toDtos(List<PostCacheDto> postCacheDtos);
+
     @Mapping(source = "likes", target = "likesIds", qualifiedByName = "mapLikes")
     @Mapping(source = "comments", target = "commentIds", qualifiedByName = "mapComments")
     @Mapping(source = "albums", target = "albumIds", qualifiedByName = "mapAlbums")
     @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "mapResources")
     PostCacheDto toPostCacheDto(Post post);
+
+    List<PostCacheDto> mapToPostCacheDtos(List<Post> posts);
 
     @Named("mapLikes")
     default List<Long> mapLikes(List<Like> likes) {
@@ -62,12 +71,6 @@ public interface PostMapper {
         return resources
                 .stream()
                 .map(Resource::getId)
-                .toList();
-    }
-
-    default List<PostResponseDto> listEntitiesToListDto(List<Post> posts) {
-        return posts.stream()
-                .map(this::toDto)
                 .toList();
     }
 }

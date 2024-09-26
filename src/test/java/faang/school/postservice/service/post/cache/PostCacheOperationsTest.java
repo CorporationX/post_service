@@ -169,7 +169,7 @@ class PostCacheOperationsTest {
     @Test
     @DisplayName("Given post with tags for deleted and save changes to cache")
     void testUpdatePostOfCacheHaveDelTags() {
-        when(postCacheOperationsTries.tryFilterByTagsInCache(hashTags, null)).thenReturn(hashTags);
+        when(postCacheOperationsTries.tryFilterByTagsInCache(emptyHashTags, null)).thenReturn(hashTags);
         postCacheOperations.updatePostOfCache(post, hashTags, emptyHashTags);
 
         verify(redisTemplatePost).execute(any(SessionCallback.class));
@@ -187,8 +187,7 @@ class PostCacheOperationsTest {
     @Test
     @DisplayName("Given post no have tags for save but is cache and save changes to cache")
     void testUpdatePostOfCacheInCacheTrue() {
-        when(postCacheOperationsTries.tryFilterByTagsInCache(hashTags, null)).thenReturn(hashTags);
-        when(redisTemplatePost.hasKey(POST_ID_STR)).thenReturn(true);
+        when(postCacheOperationsTries.tryFilterByTagsInCache(emptyHashTags, null)).thenReturn(hashTags);
         postCacheOperations.updatePostOfCache(post, emptyHashTags, emptyHashTags);
 
         verify(redisTemplatePost).execute(any(SessionCallback.class));

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
@@ -37,8 +38,9 @@ public class PostCacheOperations {
     public Set<String> findIdsByHashTag(String tag, int start, int end) {
         try {
             return zSetOperations.reverseRange(tag, start, end);
-        } catch (Exception exception) {
-            log.error("Find ids by hash tag in cache failure {}: {}", exception.getClass(), exception.getMessage());
+        } catch (RedisConnectionFailureException exception) {
+            log.error("Find ids by hash tag {} in cache failure {}: {}", tag, exception.getClass(),
+                    exception.getMessage());
             return new HashSet<>();
         }
     }
@@ -46,8 +48,9 @@ public class PostCacheOperations {
     public List<PostCacheDto> findAllByIds(List<String> ids) {
         try {
             return redisTemplatePost.opsForValue().multiGet(ids);
-        } catch (Exception exception) {
-            log.error("Find all post in cache by ids failure {}: {}", exception.getClass(), exception.getMessage());
+        } catch (RedisConnectionFailureException exception) {
+            log.error("Find all post in cache by ids {} failure {}: {}", ids.toString(), exception.getClass(),
+                    exception.getMessage());
             return new ArrayList<>();
         }
     }
@@ -110,7 +113,7 @@ public class PostCacheOperations {
         try {
             String pingResponse = Objects.requireNonNull(redisTemplatePost.getConnectionFactory()).getConnection().ping();
             return PONG.equals(pingResponse);
-        } catch (Exception exception) {
+        } catch (RedisConnectionFailureException exception) {
             log.error("{} : {}", exception.getClass(), exception.getMessage());
             return false;
         }
@@ -139,7 +142,7 @@ public class PostCacheOperations {
     public List<String> filterByTagsInCache(List<String> tags) {
         try {
             return postCacheOperationsTries.tryFilterByTagsInCache(tags, null);
-        } catch (Exception exception) {
+        } catch (RedisConnectionFailureException exception) {
             log.error("Compare with tags in cache failure {}: {}", exception.getClass(), exception.getMessage());
             return new ArrayList<>();
         }
@@ -148,7 +151,7 @@ public class PostCacheOperations {
     private List<String> filterByTagsInCache(List<String> tags, String tagToFind) {
         try {
             return postCacheOperationsTries.tryFilterByTagsInCache(tags, tagToFind);
-        } catch (Exception exception) {
+        } catch (RedisConnectionFailureException exception) {
             log.error("Compare with tags in cache failure by tag {}: {}", exception.getClass(), exception.getMessage());
             return new ArrayList<>();
         }
@@ -157,7 +160,7 @@ public class PostCacheOperations {
     private boolean postIsInCache(String postId) {
         try {
             return Boolean.TRUE.equals(redisTemplatePost.hasKey(postId));
-        } catch (Exception exception) {
+        } catch (RedisConnectionFailureException exception) {
             log.error("Check for post is in cache {}: {}", exception.getClass(), exception.getMessage());
             return false;
         }

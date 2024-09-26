@@ -22,7 +22,6 @@ import static faang.school.postservice.exception.redis.RedisErrorMessages.REDIS_
 @RequiredArgsConstructor
 @Service
 public class PostCacheOperationsTries {
-
     @Value("${app.post.cache.number_of_top_in_cache}")
     private int numberOfTopInCache;
 

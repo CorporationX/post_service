@@ -15,7 +15,7 @@ import java.util.Set;
 public class PostCacheService {
     private final PostCacheOperations postCacheOperations;
 
-    public void newPostProcess(PostCacheDto post) {
+    public void executeNewPostProcess(PostCacheDto post) {
         log.info("New post process, post with id: {}", post.getId());
         List<String> newTags = post.getHashTags();
         if (!newTags.isEmpty()) {
@@ -23,14 +23,14 @@ public class PostCacheService {
         }
     }
 
-    public void deletePostProcess(PostCacheDto post, List<String> primalTags) {
+    public void executeDeletePostProcess(PostCacheDto post, List<String> primalTags) {
         log.info("Delete post in cache process, post with id: {}", post.getId());
         if (!primalTags.isEmpty()) {
             postCacheOperations.deletePostOfCache(post, primalTags);
         }
     }
 
-    public void updatePostProcess(PostCacheDto post, List<String> primalTags) {
+    public void executeUpdatePostProcess(PostCacheDto post, List<String> primalTags) {
         log.info("Update post in cache process, post with id: {}", post.getId());
         List<String> updTags = post.getHashTags();
 

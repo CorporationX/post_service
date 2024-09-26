@@ -17,6 +17,7 @@ import static faang.school.postservice.util.post.PostCacheFabric.buildPostCacheD
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -25,7 +26,6 @@ class PostCacheServiceTest {
     private static final int NUMBER_OF_TAGS = 3;
     private static final int NUMBER_OF_POSTS = NUMBER_OF_TAGS;
     private static final long USER_ID = 1L;
-    private static final int NEVER = 0;
     private static final String TAG = "java";
     private static final int START = 0;
     private static final int END = 9;
@@ -46,45 +46,45 @@ class PostCacheServiceTest {
     @Test
     @DisplayName("Given post with no new tags when check then will not add to cache")
     void testNewPostProcessNoNewTags() {
-        postCacheService.newPostProcess(postEmptyTags);
-        verify(postCacheOperations, times(NEVER)).addPostToCache(postEmptyTags, postEmptyTags.getHashTags());
+        postCacheService.executeNewPostProcess(postEmptyTags);
+        verify(postCacheOperations, never()).addPostToCache(postEmptyTags, postEmptyTags.getHashTags());
     }
 
     @Test
     @DisplayName("Given post with new tags and add post to cache")
     void testNewPostProcessSuccessful() {
-        postCacheService.newPostProcess(postWithTags);
+        postCacheService.executeNewPostProcess(postWithTags);
         verify(postCacheOperations).addPostToCache(postWithTags, postWithTags.getHashTags());
     }
 
     @Test
     @DisplayName("Given post with no primal tags when check then will not delete from cache")
     void testDeletePostProcessNoPrimalTags() {
-        postCacheService.deletePostProcess(post, emptyHashTags);
-        verify(postCacheOperations, times(NEVER)).deletePostOfCache(post, emptyHashTags);
+        postCacheService.executeDeletePostProcess(post, emptyHashTags);
+        verify(postCacheOperations, never()).deletePostOfCache(post, emptyHashTags);
     }
 
     @Test
     @DisplayName("Given post with primal tags and delete from cache")
     void testDeletePostProcessSuccessful() {
-        postCacheService.deletePostProcess(post, hashTags);
+        postCacheService.executeDeletePostProcess(post, hashTags);
         verify(postCacheOperations).deletePostOfCache(post, hashTags);
     }
 
     @Test
     @DisplayName("Update post process no tags post")
     void testUpdatePostProcessNothingToDo() {
-        postCacheService.updatePostProcess(postEmptyTags, emptyHashTags);
+        postCacheService.executeUpdatePostProcess(postEmptyTags, emptyHashTags);
 
-        verify(postCacheOperations, times(NEVER)).addPostToCache(postEmptyTags, emptyHashTags);
-        verify(postCacheOperations, times(NEVER)).deletePostOfCache(postEmptyTags, emptyHashTags);
-        verify(postCacheOperations, times(NEVER)).updatePostOfCache(post, emptyHashTags, emptyHashTags);
+        verify(postCacheOperations, never()).addPostToCache(postEmptyTags, emptyHashTags);
+        verify(postCacheOperations, never()).deletePostOfCache(postEmptyTags, emptyHashTags);
+        verify(postCacheOperations, never()).updatePostOfCache(post, emptyHashTags, emptyHashTags);
     }
 
     @Test
     @DisplayName("Given empty primal and ful upd tags and add post to cache")
     void testUpdatePostProcessAddPostToCache() {
-        postCacheService.updatePostProcess(postWithTags, emptyHashTags);
+        postCacheService.executeUpdatePostProcess(postWithTags, emptyHashTags);
 
         verify(postCacheOperations).addPostToCache(postWithTags, postWithTags.getHashTags());
     }
@@ -92,7 +92,7 @@ class PostCacheServiceTest {
     @Test
     @DisplayName("Given ful primal and empty upd tags and delete post from cache")
     void testUpdatePostProcessDelete() {
-        postCacheService.updatePostProcess(postEmptyTags, hashTags);
+        postCacheService.executeUpdatePostProcess(postEmptyTags, hashTags);
 
         verify(postCacheOperations).deletePostOfCache(postEmptyTags, hashTags);
     }
@@ -100,7 +100,7 @@ class PostCacheServiceTest {
     @Test
     @DisplayName("Given ful primal and ful upd tags and update post in cache")
     void testUpdatePostProcessUpdate() {
-        postCacheService.updatePostProcess(postWithTags, hashTags);
+        postCacheService.executeUpdatePostProcess(postWithTags, hashTags);
 
         verify(postCacheOperations).updatePostOfCache(postWithTags, hashTags, postWithTags.getHashTags());
     }

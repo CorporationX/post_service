@@ -4,7 +4,6 @@ import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.mapper.post.PostMapperList;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.cache.PostCacheOperations;
@@ -69,9 +68,6 @@ public class PostServiceTest {
 
     @Mock
     private PostMapper postMapper;
-
-    @Mock
-    private PostMapperList postMapperList;
 
     @Mock
     private PostCacheOperations postCacheOperations;
@@ -144,7 +140,7 @@ public class PostServiceTest {
         assertNotNull(result.getPublishedAt());
 
         verify(postHashTagService).updateHashTags(findedPost);
-        verify(postCacheService).newPostProcess(any(PostCacheDto.class));
+        verify(postCacheService).executeNewPostProcess(any(PostCacheDto.class));
     }
 
     @Test
@@ -156,7 +152,7 @@ public class PostServiceTest {
 
         assertTrue(findedPost.isDeleted());
 
-        verify(postCacheService).deletePostProcess(postCacheDto, findedPost.getHashTags());
+        verify(postCacheService).executeDeletePostProcess(postCacheDto, findedPost.getHashTags());
         verify(postRepository).save(findedPost);
     }
 
@@ -169,7 +165,7 @@ public class PostServiceTest {
         when(postCacheOperations.isRedisConnected()).thenReturn(true);
         when(postHashTagService.convertTagToJson(HASH_TAG)).thenReturn(HASH_TAG_JSON);
         when(postRepository.findTopByHashTagByDate(HASH_TAG_JSON, NUMBER_OF_TOP_IN_CASH)).thenReturn(posts);
-        when(postMapperList.mapToPostCacheDtos(posts)).thenReturn(postCacheDtos);
+        when(postMapper.mapToPostCacheDtos(posts)).thenReturn(postCacheDtos);
 
         assertThat(postService.findInRangeByHashTag(HASH_TAG, START_RANGE, END_RANGE))
                 .isEqualTo(postCacheDtos);
@@ -186,7 +182,7 @@ public class PostServiceTest {
         when(postCacheOperations.isRedisConnected()).thenReturn(false);
         when(postHashTagService.convertTagToJson(HASH_TAG)).thenReturn(HASH_TAG_JSON);
         when(postRepository.findInRangeByHashTagByDate(HASH_TAG_JSON, START_RANGE, END_RANGE)).thenReturn(posts);
-        when(postMapperList.mapToPostCacheDtos(posts)).thenReturn(postCacheDtos);
+        when(postMapper.mapToPostCacheDtos(posts)).thenReturn(postCacheDtos);
 
         assertThat(postService.findInRangeByHashTag(HASH_TAG, START_RANGE, END_RANGE))
                 .isEqualTo(postCacheDtos);
