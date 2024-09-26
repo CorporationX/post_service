@@ -41,26 +41,6 @@ public class CommentServiceImpl implements CommentService {
         return setValues(dto, user, postDto);
     }
 
-    private PostDto getPost(CommentDto commentDto) {
-        return postService.getPost(commentDto.getPostId());
-    }
-
-    private UserDto getAuthor(CommentDto commentDto) {
-        UserDto user = userClient.getUser(commentDto.getAuthorId());
-
-        if (user == null) {
-            throw new ValidationException("Author name is required");
-        }
-
-        return user;
-    }
-
-    private CommentDto setValues(CommentDto commentDto, UserDto userDto, PostDto postDto) {
-        commentDto.setAuthorName(userDto.getUsername());
-        commentDto.setPostId(postDto.getId());
-        return commentDto;
-    }
-
     @Override
     public CommentDto updateComment(CommentDto commentDto) {
         Comment comment = commentRepository.findById(commentDto.getId())
@@ -98,6 +78,26 @@ public class CommentServiceImpl implements CommentService {
         validateAuthorDeleteComment(commentMapper.toDto(comment), comment);
 
         commentRepository.delete(comment);
+    }
+
+    private PostDto getPost(CommentDto commentDto) {
+        return postService.getPost(commentDto.getPostId());
+    }
+
+    private UserDto getAuthor(CommentDto commentDto) {
+        UserDto user = userClient.getUser(commentDto.getAuthorId());
+
+        if (user == null) {
+            throw new ValidationException("Author name is required");
+        }
+
+        return user;
+    }
+
+    private CommentDto setValues(CommentDto commentDto, UserDto userDto, PostDto postDto) {
+        commentDto.setAuthorName(userDto.getUsername());
+        commentDto.setPostId(postDto.getId());
+        return commentDto;
     }
 
     private Comment getComment(CommentDto commentDto) {
