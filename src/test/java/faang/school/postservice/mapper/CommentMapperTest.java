@@ -14,6 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class CommentMapperTest {
+    private final long id = 1L;
+    private final long authorId = 1L;
+    private final String content = "test";
 
     @InjectMocks
     private CommentMapperImpl commentMapper;
@@ -23,9 +26,9 @@ class CommentMapperTest {
     void testToComment() {
 
         CommentDto commentDto = CommentDto.builder()
-                .id(1L)
-                .authorId(1L)
-                .content("test")
+                .id(id)
+                .authorId(authorId)
+                .content(content)
                 .createdAt(LocalDateTime.of(2024, 9, 23, 19, 4))
                 .updatedAt(LocalDateTime.of(2024, 9, 25, 11, 32))
                 .build();
@@ -43,9 +46,9 @@ class CommentMapperTest {
     @DisplayName("success mapping Comment to CommentDto")
     void testToCommentDto() {
         Comment comment = Comment.builder()
-                .id(1L)
-                .authorId(1L)
-                .content("test")
+                .id(id)
+                .authorId(authorId)
+                .content(content)
                 .createdAt(LocalDateTime.of(2024, 9, 23, 19, 4))
                 .updatedAt(LocalDateTime.of(2024, 9, 25, 11, 32))
                 .build();

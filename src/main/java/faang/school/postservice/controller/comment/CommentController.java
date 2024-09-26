@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentController {
 
-    CommentService commentService;
+    private CommentService commentService;
 
     @PostMapping
     public CommentDto createComment(@PathVariable long postId, @RequestBody CommentDto commentDto) {
@@ -20,7 +20,7 @@ public class CommentController {
     }
 
     @PutMapping
-    public CommentDto updateComment(@PathVariable long postId, CommentDto commentDto) {
+    public CommentDto updateComment(@PathVariable long postId, @RequestBody CommentDto commentDto) {
         return commentService.updateComment(postId, commentDto);
     }
 
