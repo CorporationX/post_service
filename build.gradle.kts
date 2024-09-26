@@ -23,8 +23,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.3")
-    implementation("io.swagger:swagger-annotations:1.6.14")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**

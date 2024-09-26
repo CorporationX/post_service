@@ -45,6 +45,11 @@ public class PublishPostTest {
         publishedPost.setPublished(true);
         publishedPost.setContent("Here is the already published post");
         publishedPost.setPublishedAt(LocalDateTime.now());
+
+        publishedPostDto = new PostDto();
+        publishedPostDto.setId(1L);
+        publishedPostDto.setPublished(true);
+        publishedPostDto.setContent("Here is the published post");
     }
 
     @Test
