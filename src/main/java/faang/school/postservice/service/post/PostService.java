@@ -1,5 +1,7 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -7,8 +9,10 @@ import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.PostRedis;
+import faang.school.postservice.model.redis.UserRedis;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.PostRedisRepository;
+import faang.school.postservice.repository.redis.UserRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,8 @@ import java.util.stream.StreamSupport;
 public class PostService {
     private final PostRepository postRepository;
     private final PostRedisRepository postRedisRepository;
+    private final UserRedisRepository userRedisRepository;
+    private final UserServiceClient userServiceClient;
     private final PostValidator validator;
     private final PostMapper mapper;
     private final List<PostFilter> postFilters;
@@ -106,6 +112,10 @@ public class PostService {
 
     private void saveToCache(Post post) {
         postRedisRepository.save(mapper.toRedis(post));
+        if (!userRedisRepository.existsById(post.getAuthorId())) {
+            UserDto userDto = userServiceClient.getUser(post.getAuthorId());
+            userRedisRepository.save(new UserRedis(userDto.getId(), userDto.getUsername()));
+        }
     }
 
     private void updateInCacheIfExists(Post updatedEntity) {
