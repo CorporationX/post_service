@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class CommentEvent {
+    private Long commentId;
     private Long authorId;
     private Long postId;
 }
