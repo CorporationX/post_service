@@ -2,15 +2,15 @@ package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
 import feign.Param;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PostRepository extends CrudRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.id = :id AND p.deleted = false")
     Optional<Post> findByIdAndNotDeleted(@Param("id") Long id);
 
