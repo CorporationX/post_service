@@ -1,16 +1,16 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Album;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
-public interface AlbumRepository extends CrudRepository<Album, Long> {
+public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     boolean existsByTitleAndAuthorId(String title, long authorId);
 
@@ -28,10 +28,11 @@ public interface AlbumRepository extends CrudRepository<Album, Long> {
     void deleteAlbumFromFavorites(long albumId, long userId);
 
     @Query(nativeQuery = true, value = """
-            SELECT * FROM album
+            SELECT a.* FROM album a
             WHERE id IN (
                 SELECT album_id FROM favorite_albums WHERE user_id = :userId
             )
             """)
     Stream<Album> findFavoriteAlbumsByUserId(long userId);
+
 }
