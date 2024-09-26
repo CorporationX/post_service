@@ -4,12 +4,14 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.post.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.PostService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,7 +46,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto updateComment(CommentDto commentDto) {
         Comment comment = commentRepository.findById(commentDto.getId())
-                .orElseThrow(() -> new NoSuchElementException("Comment not found"));
+                .orElseThrow(() ->
+                        new EntityNotFoundException("There is no comment with ID " + commentDto.getId()));
 
         validateAuthorIdUpdateComment(commentDto);
         validatePostIdUpdateComment(commentDto);
@@ -88,7 +91,7 @@ public class CommentServiceImpl implements CommentService {
         UserDto user = userClient.getUser(commentDto.getAuthorId());
 
         if (user == null) {
-            throw new ValidationException("Author name is required");
+            throw new DataValidationException("There is no user");
         }
 
         return user;
@@ -106,31 +109,31 @@ public class CommentServiceImpl implements CommentService {
 
     private void validateAuthorIdUpdateComment(CommentDto commentDto) {
         if (!(commentDto.getAuthorId() == getComment(commentDto).getAuthorId())) {
-            throw new ValidationException("Author name can't be changed");
+            throw new DataValidationException("Author name can't be changed");
         }
     }
 
     private void validatePostIdUpdateComment(CommentDto commentDto) {
         if (!(commentDto.getPostId() == getComment(commentDto).getPost().getId())) {
-            throw new ValidationException("Post id can't be changed");
+            throw new DataValidationException("Post id can't be changed");
         }
     }
 
     private void validateAuthorNameUpdateComment(CommentDto commentDto) {
         if (!(commentDto.getAuthorName().equals(userClient.getUser(commentDto.getAuthorId()).getUsername()))) {
-            throw new ValidationException("Author name can't be changed");
+            throw new DataValidationException("Author name can't be changed");
         }
     }
 
     private void validateCommentIdUpdateComment(CommentDto commentDto) {
         if (!(commentDto.getId().equals(getComment(commentDto).getId()))) {
-            throw new ValidationException("Comment id can't be changed");
+            throw new DataValidationException("Comment id can't be changed");
         }
     }
 
     private void validateAuthorDeleteComment(CommentDto commentDto, Comment comment) {
         if (!(comment.getAuthorId() == commentDto.getAuthorId())) {
-            throw new ValidationException("Comment can't be deleted by this user");
+            throw new DataValidationException("Comment can't be deleted by this user");
         }
     }
 }
