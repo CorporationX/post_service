@@ -6,11 +6,16 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.enums.AuthorType;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -19,22 +24,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
-
-    public PostService(PostRepository postRepository,
-                       UserServiceClient userServiceClient,
-                       ProjectServiceClient projectServiceClient,
-                       PostMapper postMapper) {
-        this.postRepository = postRepository;
-        this.userServiceClient = userServiceClient;
-        this.projectServiceClient = projectServiceClient;
-        this.postMapper = postMapper;
-    }
+    private final NewPostPublisher newPostPublisher;
 
     public PostDto createPost(PostDto postDto) {
         if (postDto.getAuthorType() == AuthorType.USER) {
@@ -53,8 +50,10 @@ public class PostService {
 
         Post post = postMapper.toPost(postDto);
         Post savedPost = postRepository.save(post);
+        PostDto result = postMapper.toPostDto(savedPost);
 
-        return postMapper.toPostDto(savedPost);
+        newPostPublisher.publish(result);
+        return result;
     }
 
     public PostDto publishPost(Long id) {
@@ -130,5 +129,21 @@ public class PostService {
     private Post getPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found with id: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostDto> getAllPostsByHashtagId(String content, Pageable pageable){
+        return postRepository.findByHashtagsContent(content, pageable).map(postMapper::toPostDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Post getPostByIdInternal(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new DataValidationException("'Post not in database' error occurred while fetching post"));
+    }
+
+    @Transactional
+    public Post updatePostInternal(Post post){
+        return postRepository.save(post);
     }
 }

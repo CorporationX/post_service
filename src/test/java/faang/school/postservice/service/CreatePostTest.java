@@ -31,6 +31,9 @@ public class CreatePostTest {
     private UserServiceClient userServiceClient;
 
     @Mock
+    private NewPostPublisher newPostPublisher;
+
+    @Mock
     private ProjectServiceClient projectServiceClient;
 
     @Mock
