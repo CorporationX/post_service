@@ -12,7 +12,7 @@ import java.util.List;
 @Validated
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1")
 public class LikeController {
     private final LikeService likeService;
 
@@ -21,22 +21,22 @@ public class LikeController {
         likeService.addLikeToPost(likeDto, postId);
     }
 
-    @DeleteMapping("/remove_post_like/{postId}")
+    @DeleteMapping("/post_like/{postId}")
     public void deleteLikeFromPost(@Valid LikeDto likeDto, @PathVariable("postId") long postId) {
         likeService.deleteLikeFromPost(likeDto, postId);
     }
 
-    @PutMapping("/like_comment/{commentId}")
+    @PutMapping("/comment_like/{commentId}")
     public void addLikeToComment(@Valid LikeDto likeDto, @PathVariable("commentId") long commentId) {
         likeService.addLikeToComment(likeDto, commentId);
     }
 
-    @DeleteMapping("/remove_comment_like/{commentId}")
+    @DeleteMapping("/comment_like/{commentId}")
     public void deleteLikeFromComment(@Valid LikeDto likeDto, @PathVariable("commentId") long commentId) {
         likeService.deleteLikeFromComment(likeDto, commentId);
     }
 
-    @GetMapping("/find_like/{postId}")
+    @GetMapping("/like/{postId}")
     public List<LikeDto> findLikesOfPublishedPost(@PathVariable("postId") long postId) {
         return likeService.findLikesOfPublishedPost(postId);
     }

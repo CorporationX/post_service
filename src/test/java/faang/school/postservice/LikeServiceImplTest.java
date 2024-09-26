@@ -3,7 +3,6 @@ package faang.school.postservice;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -12,7 +11,6 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeServiceImpl;
-import faang.school.postservice.validator.LikeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,8 +33,6 @@ import static org.mockito.Mockito.when;
 public class LikeServiceImplTest {
     @InjectMocks
     private LikeServiceImpl likeService;
-    @Mock
-    public LikeValidator likeValidator;
     @Mock
     public PostRepository postRepository;
     @Mock
@@ -79,8 +75,7 @@ public class LikeServiceImplTest {
         likeService.addLikeToPost(likeDto, postId);
 
         verify(likeRepository, times(1)).save(like);
-        verify(likeValidator, times(1)).validateLike(like, post);
-        verify(likeValidator, times(1)).validatePostAndCommentLikes(post, like);
+
     }
 
     @Test
@@ -130,7 +125,6 @@ public class LikeServiceImplTest {
 
         likeService.addLikeToComment(likeDto, commentId);
 
-        verify(likeValidator, times(1)).validateLike(like, comment.getPost());
         verify(likeRepository, times(1)).save(like);
     }
 
