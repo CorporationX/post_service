@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.redis.GeneralRedisConfig;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
@@ -8,12 +9,14 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 @Service
@@ -23,6 +26,8 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostValidator postValidator;
     private final PostEventPublisher postEventPublishers;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final GeneralRedisConfig redisConfig;
 
     public PostDto create(PostDto postDto) {
         postValidator.validateCreate(postDto);
@@ -46,7 +51,12 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         postEventPublishers.publish(postMapper.toPostEvent(post));
 
-        return postMapper.toDto(postRepository.save(post));
+        PostDto postDto = postMapper.toDto(postRepository.save(post));
+
+        String cacheKey = postId.toString();
+        redisTemplate.opsForValue().set(cacheKey, postDto, redisConfig.getPostCacheTtl(), TimeUnit.SECONDS);
+
+        return postDto;
     }
 
     public PostDto update(Long postId, PostDto postDto) {
