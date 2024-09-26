@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceAppTests {
@@ -30,10 +31,10 @@ class PostServiceAppTests {
 
     @Mock
     private LikeRepository likeRepository;
-    @Mock
-    private CommentRepository commentRepository;
-    @Mock
-    private PostRepository postRepository;
+    //@Mock
+    private final CommentRepository commentRepository = mock(CommentRepository.class);
+    // @Mock
+    private final PostRepository postRepository = mock(PostRepository.class);
     @Mock
     private UserServiceClient userServiceClient;
 
@@ -203,9 +204,6 @@ class PostServiceAppTests {
     @Test
     @DisplayName("Remove like from post: check post exist")
     public void testRemoveFromPostCheckPostExist() {
-        Like tempLike = new Like();
-        tempLike.setUserId(2L);
-
         UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
@@ -215,22 +213,19 @@ class PostServiceAppTests {
         Assert.assertThrows(RuntimeException.class, () -> service.removeFromPost(1L, 1L));
     }
 
-//    @Test
-//    @DisplayName("Remove like from post: check like exist")
-//    public void testRemoveFromPostCheckLikeExist() {
-//        Like tempLike = new Like();
-//        tempLike.setUserId(2L);
-//
-//        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
-////        Mockito.when(userServiceClient.getUser(1))
-////                .thenReturn(userDto);
-//
-//        Mockito.when(postRepository.existsById(1L)).thenReturn(true);
-//
-//        Mockito.when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenThrow();
-//
-//        Assert.assertThrows(RuntimeException.class, () -> service.removeFromPost(1L, 1L));
-//    }
+    @Test
+    @DisplayName("Remove like from post: check like exist")
+    public void testRemoveFromPostCheckLikeExist() {
+        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
+//        Mockito.when(userServiceClient.getUser(1))
+//                .thenReturn(userDto);
+
+        Mockito.when(postRepository.existsById(1L)).thenReturn(true);
+
+        Mockito.when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenThrow();
+
+        Assert.assertThrows(RuntimeException.class, () -> service.removeFromPost(1L, 1L));
+    }
 
     @Test
     @DisplayName("Remove like from post: check execution")
@@ -268,34 +263,28 @@ class PostServiceAppTests {
     @Test
     @DisplayName("Remove like from comment: check post exist")
     public void testRemoveFromCommentCheckPostExist() {
-        Like tempLike = new Like();
-        tempLike.setUserId(2L);
-
         UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
-        Mockito.when(commentRepository.findById(1L)).thenThrow();
+        Mockito.when(commentRepository.existsById(1L)).thenReturn(false);
 
         Assert.assertThrows(RuntimeException.class, () -> service.removeFromComment(1L, 1L));
     }
 
-//    @Test
-//    @DisplayName("Remove like from comment: check like exist")
-//    public void testRemoveFromCommentCheckLikeExist() {
-//        Like tempLike = new Like();
-//        tempLike.setUserId(2L);
-//
-//        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
-////        Mockito.when(userServiceClient.getUser(1))
-////                .thenReturn(userDto);
-//
-//        Mockito.when(commentRepository.existsById(1L)).thenReturn(true);
-//
-//        Mockito.when(likeRepository.findByCommentIdAndUserId(1L, 1L)).thenThrow();
-//
-//        Assert.assertThrows(RuntimeException.class, () -> service.removeFromComment(1L, 1L));
-//    }
+    @Test
+    @DisplayName("Remove like from comment: check like exist")
+    public void testRemoveFromCommentCheckLikeExist() {
+        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
+//        Mockito.when(userServiceClient.getUser(1))
+//                .thenReturn(userDto);
+
+        Mockito.when(commentRepository.existsById(1L)).thenReturn(true);
+
+        Mockito.when(likeRepository.findByCommentIdAndUserId(1L, 1L)).thenThrow();
+
+        Assert.assertThrows(RuntimeException.class, () -> service.removeFromComment(1L, 1L));
+    }
 
     @Test
     @DisplayName("Remove like from comment: check execution")
@@ -322,9 +311,6 @@ class PostServiceAppTests {
     @Test
     @DisplayName("Get likes by post: check post exist")
     public void testGetLikesByPostCheckPostExist() {
-        Like tempLike = new Like();
-        tempLike.setUserId(2L);
-
         UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
@@ -334,17 +320,17 @@ class PostServiceAppTests {
         Assert.assertThrows(RuntimeException.class, () -> service.getLikesByPost(1L));
     }
 
-//    @Test
-//    @DisplayName("Get likes by post: check execution")
-//    public void testGetLikesByPostCheckExecution() {
-//        Post post = new Post();
-//        post.setLikes(List.of(new Like(), new Like()));
-//        Mockito.when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-//
-//        Assert.assertThrows(RuntimeException.class, () -> service.getLikesByPost(1L));
-//
-//        Assert.assertEquals(post.getLikes().size(), 2);
-//    }
+    @Test
+    @DisplayName("Get likes by post: check execution")
+    public void testGetLikesByPostCheckExecution() {
 
+        Post post = new Post();
+        post.setId(2);
+        post.setLikes(List.of(new Like(), new Like()));
+        Mockito.when(postRepository.existsById(post.getId())).thenReturn(true);
+        Mockito.when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        int size = service.getLikesByPost(post.getId());
 
+        Assert.assertEquals(post.getLikes().size(), size);
+    }
 }
