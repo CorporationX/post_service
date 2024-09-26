@@ -12,6 +12,7 @@ import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
@@ -61,6 +62,9 @@ public class PostServiceTest {
 
     @Mock
     private CommentService commentService;
+
+    @Mock
+    private RedisUserRepository redisUserRepository;
 
     @Mock
     private RedisPostRepository redisPostRepository;

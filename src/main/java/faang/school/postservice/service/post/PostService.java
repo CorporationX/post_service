@@ -8,17 +8,20 @@ import faang.school.postservice.dto.publishable.PostViewEvent;
 import faang.school.postservice.dto.resource.PreviewPostResourceDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.resource.UpdatableResourceDto;
+import faang.school.postservice.dto.user.CachedUserDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.messages.ValidationExceptionMessage;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.exception.validation.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.post.ResourceMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
@@ -34,7 +37,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -59,12 +62,13 @@ public class PostService {
     private final KafkaPostViewProducer postViewProducer;
 
     private final RedisPostRepository redisPostRepository;
+    private final RedisUserRepository redisUserRepository;
     private final CommentService commentService;
 
     @Transactional
     public PostDto createPostDraft(DraftPostDto draft) {
 
-         validator.validateCreatablePostDraft(draft);
+        validator.validateCreatablePostDraft(draft);
 
         PostDto postDto = postMapper.fromDraftPostDto(draft);
         Post post = postMapper.toEntity(postDto);
@@ -90,16 +94,25 @@ public class PostService {
                 .subscriberIds(userDto.getSubscriberIds())
                 .build();
 
+
         CachedPostDto cachedPostDto = CachedPostDto.builder()
-                .id(postDto.getId())
-                .authorId(postDto.getAuthorId())
-                .projectId(postDto.getProjectId())
-                .content(postDto.getContent())
-                .likesCount(postDto.getLikesCount())
-                .comments(new HashSet<>(commentService.getCommentsByPost(postDto.getId())))
+                .id(savedPostDto.getId())
+                .authorId(savedPostDto.getAuthorId())
+                .projectId(savedPostDto.getProjectId())
+                .content(savedPostDto.getContent())
+                .likesCount(savedPostDto.getLikesCount())
+                .comments(new HashSet<>())
+                .build();
+
+        CachedUserDto cachedUserDto = CachedUserDto.builder()
+                .id(userDto.getId())
+                .username(userDto.getUsername())
+                .email(userDto.getEmail())
+                .subscriberIds(userDto.getSubscriberIds())
                 .build();
 
         redisPostRepository.save(cachedPostDto);
+        redisUserRepository.save(cachedUserDto);
         postProducer.sendEvent(postEvent);
 
         return savedPostDto;
@@ -129,7 +142,7 @@ public class PostService {
         );
     }
 
-    public CachedPostDto getPostFromCache(Long postId){
+    public CachedPostDto getPostFromCache(Long postId) {
         return redisPostRepository.findById(postId)
                 .orElse(postMapper.toCachedPostDto(getPost(postId)));
     }
@@ -194,7 +207,7 @@ public class PostService {
         Post post = getPost(postId);
 
         validator.verifyPostDeletion(post);
-        post.setViews(post.getViews()+1);
+        post.setViews(post.getViews() + 1);
 
         PostViewEvent postViewEvent = new PostViewEvent(postId);
         postViewProducer.sendEvent(postViewEvent);
