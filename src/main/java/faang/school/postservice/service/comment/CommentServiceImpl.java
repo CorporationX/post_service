@@ -48,10 +48,10 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Comment with ID %s not found.", commentId)));
 
-        long authorId = comment.getAuthorId();
-        if (updateCommentDto.authorId() != authorId) {
+        long dtoAuthorId = updateCommentDto.authorId();
+        if (dtoAuthorId != comment.getAuthorId()) {
             throw new CommentException(String.format("User with ID %s is not allowed to update this comment.",
-                    updateCommentDto.authorId()));
+                    dtoAuthorId));
         }
 
         commentRepository.updateContentAndDateById(commentId, updateCommentDto.content(), LocalDateTime.now());
