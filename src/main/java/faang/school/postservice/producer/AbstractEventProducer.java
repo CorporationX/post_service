@@ -6,19 +6,19 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 @Slf4j
 @AllArgsConstructor
-public class AbstractEventProducer<T> {
+public abstract class AbstractEventProducer<T> {
     protected final KafkaTemplate<String, Object> kafkaTemplate;
 
     protected final String topicName;
 
     public void sendEvent(T event) {
         kafkaTemplate.send(topicName, event);
-        log.info("Event {} sent successfully to topic {}", event.toString(), topicName);
+        log.info("Event {} sent successfully to topic {}", event, topicName);
     }
 
     public void sendEvent(T event, String messageKey) {
         kafkaTemplate.send(topicName, messageKey, event);
         log.info("Event {} sent successfully to topic {} with messageKey {}",
-                event.toString(), topicName, messageKey);
+                event, topicName, messageKey);
     }
 }
