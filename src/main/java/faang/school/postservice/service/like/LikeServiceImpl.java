@@ -1,6 +1,8 @@
 package faang.school.postservice.service.like;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -10,17 +12,15 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.validator.ServiceValidator;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Validated
 public class LikeServiceImpl implements LikeService {
 
     private final LikeRepository likeRepository;
@@ -28,14 +28,17 @@ public class LikeServiceImpl implements LikeService {
     private final CommentRepository commentRepository;
     private final ServiceValidator validator;
     private final PostRepository postRepository;
+    private final UserServiceClient userServiceClient;
 
     @Transactional
-    public LikeDto likeToPost(@Valid LikeDto likeDto) {
-        validator.validateUserReal(likeDto);
+    public LikeDto likePost(LikeDto likeDto) {
+        UserDto userDto = userServiceClient.getUser(likeDto.getUserId());
+        validator.validateUserReal(likeDto, userDto);
         Post post = postRepository.findById(likeDto.getPostId())
                 .orElseThrow(() -> new DataValidationException("Post not found"));
-        validator.validateDuplicateLikeForPost(likeDto);
-        validator.validateLikeToPostAndCommentForPost(likeDto);
+        List<Like> postLikes = likeRepository.findByPostId(likeDto.getPostId());
+        validator.validateDuplicateLikeForPost(likeDto, postLikes);
+        validateLikeToPostAndCommentForPost(likeDto);
 
         Like like = likeMapper.toEntity(likeDto);
         like.setPost(post);
@@ -49,18 +52,20 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Transactional
-    public void unlikeFromPost(@Valid LikeDto likeDto) {
-        Post post =  validator.validateAndGetPost(likeDto);
+    public void unlikePost(LikeDto likeDto) {
+        Post post =  validateAndGetPost(likeDto);
         likeRepository.deleteByPostIdAndUserId(post.getId(), likeDto.getUserId());
     }
 
     @Transactional
-    public LikeDto likeToComment(@Valid LikeDto likeDto) {
-        validator.validateUserReal(likeDto);
+    public LikeDto likeComment(LikeDto likeDto) {
+        UserDto userDto = userServiceClient.getUser(likeDto.getUserId());
+        validator.validateUserReal(likeDto, userDto);
         Comment comment = commentRepository.findById(likeDto.getCommentId())
                 .orElseThrow(() -> new DataValidationException("Comment not found"));
-        validator.validateLikeToPostAndCommentForComment(likeDto);
-        validator.validateDuplicateLikeForComment(likeDto);
+        validateLikeToPostAndCommentForComment(likeDto);
+        List<Like> commentLikes = likeRepository.findByCommentId(likeDto.getCommentId());
+        validator.validateDuplicateLikeForComment(likeDto, commentLikes);
 
         Like like = likeMapper.toEntity(likeDto);
         like.setComment(comment);
@@ -76,8 +81,55 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Transactional
-    public void unlikeFromComment(@Valid LikeDto likeDto) {
-        Comment comment = validator.validateAndGetComment(likeDto);
+    public void unlikeComment(LikeDto likeDto) {
+        Comment comment = validateAndGetComment(likeDto);
         likeRepository.deleteByCommentIdAndUserId(comment.getId(), likeDto.getUserId());
+    }
+
+    private void validateLikeToPostAndCommentForComment(LikeDto likeDto) {
+        List<Long> postLikes =  postRepository
+                .findById(likeDto.getPostId())
+                .orElseThrow(() -> new DataValidationException("Post not found"))
+                .getLikes()
+                .stream()
+                .map(Like::getUserId)
+                .toList();
+
+        if (postLikes.contains(likeDto.getUserId())) {
+            throw new DataValidationException("Like already exist on the post!");
+        }
+    }
+
+    private void validateLikeToPostAndCommentForPost(LikeDto likeDto) {
+        List<Long> commentsLikes = postRepository
+                .findById(likeDto.getPostId())
+                .orElseThrow(() -> new DataValidationException("Post not found"))
+                .getComments()
+                .stream()
+                .flatMap(comment -> comment.getLikes().stream())
+                .map(Like::getUserId)
+                .toList();
+
+        if (commentsLikes.contains(likeDto.getUserId())) {
+            throw new DataValidationException("Like already exist on the comment!");
+        }
+    }
+
+    private Post validateAndGetPost(LikeDto likeDto) {
+        List<Post> postsUser = postRepository.findByAuthorIdWithLikes(likeDto.getUserId());
+        return postsUser
+                .stream()
+                .filter(filter -> filter.getId() == likeDto.getPostId())
+                .findFirst()
+                .orElseThrow(() -> new DataValidationException("post not found in getPost"));
+    }
+
+    private Comment validateAndGetComment(LikeDto likeDto) {
+        List<Comment> comments = commentRepository.findAllByPostId(likeDto.getPostId());
+        return comments
+                .stream()
+                .filter(filter -> filter.getId() == likeDto.getCommentId())
+                .findFirst()
+                .orElseThrow(() -> new DataValidationException("comment not found in getComment"));
     }
 }

@@ -32,25 +32,25 @@ class LikeControllerTest {
 
     @Test
     void testLikeToPost() {
-        likeController.likeToPost(likeDto);
-        verify(likeService, times(1)).likeToPost(likeDto);
+        likeController.likePost(likeDto);
+        verify(likeService, times(1)).likePost(likeDto);
     }
 
     @Test
     void testUnlikeFromPost() {
-        likeController.unlikeFromPost(likeDto);
-        verify(likeService, times(1)).unlikeFromPost(likeDto);
+        likeController.unlikePost(likeDto);
+        verify(likeService, times(1)).unlikePost(likeDto);
     }
 
     @Test
     void testLikeToComment() {
-        likeController.likeToComment(likeDto);
-        verify(likeService, times(1)).likeToComment(likeDto);
+        likeController.likeComment(likeDto);
+        verify(likeService, times(1)).likeComment(likeDto);
     }
 
     @Test
     void testUnlikeFromComment() {
-        likeController.unlikeFromComment(likeDto);
-        verify(likeService, times(1)).unlikeFromComment(likeDto);
+        likeController.unlikeComment(likeDto);
+        verify(likeService, times(1)).unlikeComment(likeDto);
     }
 }
