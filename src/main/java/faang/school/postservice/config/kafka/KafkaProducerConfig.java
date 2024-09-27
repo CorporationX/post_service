@@ -1,6 +1,6 @@
 package faang.school.postservice.config.kafka;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
+
 import com.fasterxml.jackson.databind.ser.std.StringSerializer;
 import faang.school.postservice.events.CommentEvent;
 import faang.school.postservice.events.LikeEvent;
@@ -15,6 +15,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -85,6 +86,23 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, PostViewEvent> postViewTemplate() {
         return new KafkaTemplate<>(postViewEventProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, Object> kafkaProducerFactory() {
+        Map<String, Object> configs = new HashMap<>();
+        configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, address);
+        configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+//        configs.put(JsonSerializer.TYPE_MAPPINGS,
+//                "likeEvent:faang.school.postservice.events.LikeEvent,commentEvent:faang.school.postservice.events.CommentEvent," +
+//                        "postEvent:faang.school.postservice.events.PostEvent,postViewEvent:faang.school.postservice.events.PostViewEvent");
+        return new DefaultKafkaProducerFactory<>(configs);
+    }
+
+    @Bean
+    public KafkaTemplate<String, Object> kafkaTemplate() {
+        return new KafkaTemplate<>(kafkaProducerFactory());
     }
 
 }

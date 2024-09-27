@@ -28,6 +28,8 @@ spring:
           name: post_comment_channel
         post_view_channel: post_view_channel
         like_topic: like_topic
+  kafka:
+    bootstrap-servers: localhost:9092
 
 server:
   port: 8081
@@ -73,8 +75,9 @@ kafka:
   address: localhost:9092
   topics:
     partitions: 3
-    replications: 3
+    replications: 1
     like_event: like
     comment_event: comment
     post_event: post
     post_view_event: post_view
+  header_class_key: type

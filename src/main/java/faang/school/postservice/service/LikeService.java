@@ -2,7 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeResponseDto;
-import faang.school.postservice.events.LikeEvent;
 import faang.school.postservice.exception.AlreadyExistsException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
@@ -33,6 +32,7 @@ public class LikeService {
 
     private final LikeEventPublisher likeEventPublisher;
     private final LikeEventKafkaPublisher likeEventKafkaPublisher;
+
 
     @Transactional
     public LikeResponseDto addLikeToPost(long userId, long postId) {
