@@ -63,7 +63,8 @@ public class AlbumController {
     }
 
     @GetMapping("/{album-id}")
-    public AlbumDto getAlbum(@PathVariable("album-id") long albumId, @RequestParam long userId) {
+    public AlbumDto getAlbum(@PathVariable("album-id") long albumId,
+                             @RequestParam("user-id") long userId) {
         Album album = service.getAlbum(albumId, userId);
         return albumMapper.toAlbumDto(album);
     }
@@ -83,7 +84,7 @@ public class AlbumController {
     }
 
     @GetMapping("/available")
-    public List<AlbumDto> getAllAvailableAlbums(@RequestParam Long userId) {
+    public List<AlbumDto> getAllAvailableAlbums(@RequestParam("user-id") Long userId) {
         List<Album> albums = service.getAllAvailableAlbums(userId);
         return albumMapper.toDtoList(albums);
     }

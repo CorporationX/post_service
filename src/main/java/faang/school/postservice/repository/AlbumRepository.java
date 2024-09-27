@@ -44,13 +44,13 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     @Query(nativeQuery = true, value = """
             SELECT id FROM album
-            WHERE visibility = 'ONLY_AUTHOR' AND user_id = :userId
+            WHERE visibility = 'ONLY_AUTHOR' AND author_id = :userId
             """)
     List<Long> findAlbumsIdsAllowedOnlyThisUser(Long userId);
 
     @Query(nativeQuery = true, value = """
             SELECT id FROM album
-            WHERE visibility = 'SUBSCRIPTION' AND user_id IN (:followingsIds)
+            WHERE visibility = 'SUBSCRIBERS' AND author_id IN (:followingsIds)
             """)
     List<Long> findAlbumAllowedFollowings(List<Long> followingsIds);
 }

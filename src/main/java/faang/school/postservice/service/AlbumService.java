@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumFilterDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 
@@ -133,6 +135,7 @@ public class AlbumService {
         return albumRepository.findAllById(albumsIds);
     }
 
+    @Transactional(readOnly = true)
     public List<Album> getAllAvailableAlbumsByFilters(Long userId, AlbumFilterDto albumFilterDto) {
         List<Album> albums = getAllAvailableAlbums(userId);
         return applyAllFilters(albums, albumFilterDto);
@@ -140,6 +143,7 @@ public class AlbumService {
 
     private List<Long> findAlbumsIdsAllowedBySubs(Long userId) {
         List<Long> followingsIds = userServiceClient.getUser(userId).getFollowingsIds();
+        followingsIds.add(userId);
         return albumRepository.findAlbumAllowedFollowings(followingsIds);
     }
 
