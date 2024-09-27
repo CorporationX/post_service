@@ -9,6 +9,7 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publishers.kafka.KafkaCommentProducer;
 import faang.school.postservice.publishers.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -32,6 +33,7 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final PostService postService;
     private final CommentEventPublisher commentEventPublisher;
+    private final KafkaCommentProducer kafkaCommentProducer;
     private final UserCacheService userCacheService;
 
     public CommentDto createComment(CreateCommentDto createCommentDto) {
@@ -43,6 +45,7 @@ public class CommentService {
         log.info("Comment with ID = {} was created", comment.getId());
         userCacheService.save(comment.getAuthorId());
         commentEventPublisher.publish(comment);
+        kafkaCommentProducer.sendMessage(comment);
         return commentMapper.toDto(comment);
     }
 

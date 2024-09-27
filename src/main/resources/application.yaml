@@ -34,6 +34,7 @@ spring:
         group-id: 1
       topic:
         posts_topic: posts
+        comments_topic: comments
 
 cache:
   type: redis

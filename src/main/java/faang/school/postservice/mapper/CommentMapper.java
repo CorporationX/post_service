@@ -4,6 +4,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentFeedDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.events.CommentEvent;
+import faang.school.postservice.events.CommentEventForKafka;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
@@ -34,6 +35,10 @@ public interface CommentMapper {
     @Mapping(target = "commentContent", source = "content")
     @Mapping(target = "sendAt", expression = "java(java.time.LocalDateTime.now())")
     CommentEvent toEvent(Comment comment);
+
+    @Mapping(target = "commentId", source = "id")
+    @Mapping(target = "postId", source = "post.id")
+    CommentEventForKafka toCommentEventForKafka(Comment comment);
 
     @Mapping(source = "post.id", target = "postId")
     @Mapping(source = "likes", target = "likesAmount", qualifiedByName = "mapToAmount")
