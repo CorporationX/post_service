@@ -1,11 +1,13 @@
 package faang.school.postservice.util.album;
 
-import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.album.Album;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+
+import static faang.school.postservice.model.album.AlbumVisibility.ALL_USERS;
 
 public class BuilderForAlbumsTests {
     private static final Random random = new Random();
@@ -50,6 +52,7 @@ public class BuilderForAlbumsTests {
                 .id(albumId)
                 .authorId(authorId)
                 .createdAt(LocalDateTime.now().minusDays(getRandomLong(fromMinusDays, toMinusDays)))
+                .visibility(ALL_USERS)
                 .build();
     }
 

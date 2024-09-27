@@ -1,8 +1,11 @@
 package faang.school.postservice.service.album;
 
+import faang.school.postservice.client.UserServiceClientMock;
 import faang.school.postservice.dto.album.AlbumFilterDto;
-import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.album.Album;
+import faang.school.postservice.model.album.AlbumChosenUsers;
+import faang.school.postservice.model.album.AlbumVisibility;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.album.filter.AlbumAuthorFilter;
@@ -26,15 +29,24 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
+import static faang.school.postservice.model.album.AlbumVisibility.ALL_USERS;
+import static faang.school.postservice.model.album.AlbumVisibility.AUTHOR_ONLY;
+import static faang.school.postservice.model.album.AlbumVisibility.CHOSEN_USERS;
+import static faang.school.postservice.model.album.AlbumVisibility.SUBSCRIBERS_ONLY;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALREADY_FAVORITE;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.NOT_FAVORITE;
 import static faang.school.postservice.util.album.BuilderForAlbumsTests.buildAlbum;
 import static faang.school.postservice.util.album.BuilderForAlbumsTests.buildPost;
 import static faang.school.postservice.util.album.BuilderForAlbumsTests.getRandomLong;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,6 +63,8 @@ class AlbumServiceTest {
     private PostRepository postRepository;
     @Mock
     private AlbumServiceChecker checker;
+    @Mock
+    private UserServiceClientMock userServiceClient;
     @Mock
     private List<AlbumFilter> albumFilters;
 
@@ -70,7 +84,7 @@ class AlbumServiceTest {
     void createNewAlbum() {
         album = buildAlbum(TITLE, DESCRIPTION);
 
-        albumService.createNewAlbum(USER_ID, album);
+        albumService.createNewAlbum(USER_ID, album, null);
 
         verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
         verify(checker, Mockito.times(1)).checkAlbumExistsWithTitle(album.getTitle(), USER_ID);
@@ -307,5 +321,148 @@ class AlbumServiceTest {
         verify(checker, Mockito.times(1)).findByIdWithPosts(ALBUM_ID);
         verify(albumRepository, Mockito.times(1)).save(album);
         return album;
+    }
+
+    @Test
+    void testCreateAlbum_Success_All_Users() {
+        long authorId = 1L;
+        Album album = new Album();
+        album.setVisibility(ALL_USERS);
+        album.setTitle("title");
+        List<Long> chosenUserIds = null;
+
+        doNothing().when(checker).checkUserExists(authorId);
+        doNothing().when(checker).checkAlbumExistsWithTitle(anyString(), eq(authorId));
+
+        when(albumRepository.save(any())).thenReturn(album);
+
+        Album result = albumService.createNewAlbum(authorId, album, chosenUserIds);
+
+        assertThat(result)
+                .usingRecursiveComparison()
+                .isEqualTo(album);
+    }
+
+    @Test
+    void testCreateAlbum_Success_Chosen_Users() {
+        long authorId = 1L;
+        Album album = new Album();
+        album.setVisibility(CHOSEN_USERS);
+        album.setTitle("title");
+        List<Long> chosenUserIds = List.of(2L, 3L);
+
+        doNothing().when(checker).checkUserExists(authorId);
+        doNothing().when(checker).checkAlbumExistsWithTitle(anyString(), eq(authorId));
+
+        when(albumRepository.save(any())).thenReturn(album);
+
+        Album result = albumService.createNewAlbum(authorId, album, chosenUserIds);
+
+        assertThat(result)
+                .usingRecursiveComparison()
+                .isEqualTo(album);
+    }
+
+    @Test
+    void testUpdateAlbumVisibility_Success_Chosen_Users() {
+        long userId = 1L;
+        long albumId = 2L;
+        AlbumVisibility visibility = CHOSEN_USERS;
+        List<Long> chosenUserIds = List.of(2L, 3L);
+
+        Album existedAlbum = new Album();
+        Album updatedAlbum = new Album();
+
+        when(checker.findByIdWithPosts(eq(albumId))).thenReturn(existedAlbum);
+        doNothing().when(checker).validateAlbumVisibility(any(), eq(chosenUserIds));
+        when(albumRepository.save(any())).thenReturn(updatedAlbum);
+
+        Album result = albumService.updateAlbumVisibility(userId, albumId, visibility, chosenUserIds);
+
+        assertThat(result)
+                .usingRecursiveComparison()
+                .isEqualTo(updatedAlbum);
+    }
+
+    @Test
+    void testGetAllAlbums_UserIsAuthor() {
+        long userId = 1L;
+        AlbumFilterDto albumFilterDto = new AlbumFilterDto();
+        Album existedAlbum = new Album();
+        existedAlbum.setAuthorId(1L);
+
+        doNothing().when(checker).checkUserExists(userId);
+        when(albumRepository.findAll()).thenReturn(List.of(existedAlbum));
+
+        List<Album> result = albumService.getAllAlbums(userId, albumFilterDto);
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void testGetAllAlbums_ALL_USERS() {
+        long userId = 1L;
+        AlbumFilterDto albumFilterDto = new AlbumFilterDto();
+        Album existedAlbum = new Album();
+        existedAlbum.setAuthorId(2L);
+        existedAlbum.setVisibility(ALL_USERS);
+
+        doNothing().when(checker).checkUserExists(userId);
+        when(albumRepository.findAll()).thenReturn(List.of(existedAlbum));
+
+        List<Album> result = albumService.getAllAlbums(userId, albumFilterDto);
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void testGetAllAlbums_SUBSCRIBERS_ONLY() {
+        long userId = 1L;
+        AlbumFilterDto albumFilterDto = new AlbumFilterDto();
+        Album existedAlbum = new Album();
+        existedAlbum.setAuthorId(2L);
+        existedAlbum.setVisibility(SUBSCRIBERS_ONLY);
+
+        doNothing().when(checker).checkUserExists(userId);
+        when(albumRepository.findAll()).thenReturn(List.of(existedAlbum));
+        when(userServiceClient.getFollowers(2L)).thenReturn(List.of(1L));
+
+        List<Album> result = albumService.getAllAlbums(userId, albumFilterDto);
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void testGetAllAlbums_CHOSEN_USERS() {
+        long userId = 1L;
+        AlbumFilterDto albumFilterDto = new AlbumFilterDto();
+        Album existedAlbum = new Album();
+        existedAlbum.setAuthorId(2L);
+        existedAlbum.setVisibility(CHOSEN_USERS);
+        existedAlbum.setChosenUsers(AlbumChosenUsers.builder().userIds(List.of(1L)).build());
+
+        doNothing().when(checker).checkUserExists(userId);
+        when(albumRepository.findAll()).thenReturn(List.of(existedAlbum));
+
+        List<Album> result = albumService.getAllAlbums(userId, albumFilterDto);
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void testGetAllAlbums_AUTHOR_ONLY() {
+        long userId = 1L;
+        AlbumFilterDto albumFilterDto = new AlbumFilterDto();
+        Album existedAlbum = new Album();
+        existedAlbum.setAuthorId(2L);
+        existedAlbum.setVisibility(AUTHOR_ONLY);
+        existedAlbum.setChosenUsers(AlbumChosenUsers.builder().userIds(List.of(1L)).build());
+
+        doNothing().when(checker).checkUserExists(userId);
+        when(albumRepository.findAll()).thenReturn(List.of(existedAlbum));
+
+        List<Album> result = albumService.getAllAlbums(userId, albumFilterDto);
+
+        assertEquals(0, result.size());
     }
 }
