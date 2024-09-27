@@ -24,8 +24,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceImplTest {
@@ -78,8 +77,7 @@ public class CommentServiceImplTest {
         comment.setContent("Test Comment");
         comment.setPost(post);
         comment.setAuthorId(1L);
-
-        when(userServiceClient.getUser(1L)).thenReturn(userDto);
+        lenient().when(userServiceClient.getUser(1L)).thenReturn(userDto);
     }
 
     @Test
