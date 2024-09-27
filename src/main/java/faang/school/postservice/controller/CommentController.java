@@ -52,9 +52,7 @@ public class CommentController {
 
     @GetMapping("/post/{postId}")
     public List<CommentDto> findAllComments(@PathVariable long postId) {
-        return commentService.findAllComments(postId)
-                .stream()
-                .map(commentMapper::toDto)
-                .toList();
+        List<Comment> commentList = commentService.findAllComments(postId);
+        return commentMapper.toDtoList(commentList);
     }
 }

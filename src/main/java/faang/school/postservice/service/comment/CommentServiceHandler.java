@@ -16,19 +16,19 @@ public class CommentServiceHandler {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
 
-    public void userExistsByIdValidation(long authorId) {
+    public void userExistValidation(long authorId) {
         if (userServiceClient.getUser(authorId) == null) {
             throw new DataValidationException("Author with ID: " + authorId + " not found.");
         }
     }
 
-    public void commentExistsByIdValidation(long commentId) {
+    public void commentExistsValidation(long commentId) {
         if (!commentRepository.existsById(commentId)) {
             throw new DataValidationException("Comment with ID: " + commentId + " not found.");
         }
     }
 
-    public void postExistsByIdValidation(long postId) {
+    public void postExistsValidation(long postId) {
         if (!postRepository.existsById(postId)) {
             throw new DataValidationException("Post with ID: " + postId + " not found.");
         }

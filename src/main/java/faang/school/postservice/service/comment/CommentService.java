@@ -24,7 +24,7 @@ public class CommentService {
     @Transactional
     public Comment createComment(Comment comment) {
         UserDto user = userServiceClient.getUser(comment.getAuthorId());
-        commentServiceHandler.userExistsByIdValidation(user.getId());
+        commentServiceHandler.userExistValidation(user.getId());
 
         Long postId = comment.getPost().getId();
         Post post = getPostById(postId);
@@ -37,25 +37,25 @@ public class CommentService {
     @Transactional
     public Comment updateComment(Comment comment) {
         UserDto user = userServiceClient.getUser(comment.getAuthorId());
-        commentServiceHandler.userExistsByIdValidation(user.getId());
+        commentServiceHandler.userExistValidation(user.getId());
 
-        Comment updatedComment = getCommentById(comment.getId());
-        commentServiceHandler.editCommentByAuthorValidation(user, updatedComment);
+        Comment commentToUpdate = getCommentById(comment.getId());
+        commentServiceHandler.editCommentByAuthorValidation(user, commentToUpdate);
 
-        updatedComment.setContent(comment.getContent());
-        return commentRepository.save(updatedComment);
+        commentToUpdate.setContent(comment.getContent());
+        return commentRepository.save(commentToUpdate);
     }
 
     @Transactional
     public void deleteComment(long commentId) {
-        commentServiceHandler.commentExistsByIdValidation(commentId);
+        commentServiceHandler.commentExistsValidation(commentId);
         commentRepository.deleteById(commentId);
     }
 
     @Transactional(readOnly = true)
     public List<Comment> findAllComments(long postId) {
-        commentServiceHandler.postExistsByIdValidation(postId);
-        return commentRepository.findAllByPostIdOrderByUpdatedAtDesc(postId);
+        commentServiceHandler.postExistsValidation(postId);
+        return commentRepository.findAllByPostIdOrderByCreatedAtDesc(postId);
     }
 
     private Post getPostById(Long postId) {

@@ -69,7 +69,7 @@ class CommentServiceTest {
 
             verify(postRepository, atLeastOnce()).findById(post.getId());
             verify(userServiceClient, atLeastOnce()).getUser(userDto.getId());
-            verify(commentServiceHandler, atLeastOnce()).userExistsByIdValidation(userDto.getId());
+            verify(commentServiceHandler, atLeastOnce()).userExistValidation(userDto.getId());
             verify(commentRepository, atLeastOnce()).save(comment);
         }
 
@@ -84,7 +84,7 @@ class CommentServiceTest {
             assertEquals(comment.getContent(), updatedComment.getContent());
 
             verify(userServiceClient, atLeastOnce()).getUser(userDto.getId());
-            verify(commentServiceHandler, atLeastOnce()).userExistsByIdValidation(userDto.getId());
+            verify(commentServiceHandler, atLeastOnce()).userExistValidation(userDto.getId());
             verify(commentServiceHandler, atLeastOnce()).editCommentByAuthorValidation(userDto, comment);
             verify(commentRepository, atLeastOnce()).save(comment);
         }
@@ -94,7 +94,7 @@ class CommentServiceTest {
             long commentId = 1L;
             commentService.deleteComment(commentId);
 
-            verify(commentServiceHandler, atLeastOnce()).commentExistsByIdValidation(commentId);
+            verify(commentServiceHandler, atLeastOnce()).commentExistsValidation(commentId);
             verify(commentRepository, atLeastOnce()).deleteById(commentId);
         }
 
@@ -102,14 +102,14 @@ class CommentServiceTest {
         void testFindAllCommentsSuccess() {
             List<Comment> comments = List.of(comment, comment2);
 
-            when(commentRepository.findAllByPostIdOrderByUpdatedAtDesc(post.getId())).thenReturn(comments);
+            when(commentRepository.findAllByPostIdOrderByCreatedAtDesc(post.getId())).thenReturn(comments);
 
             List<Comment> foundComments = commentService.findAllComments(post.getId());
             assertNotNull(foundComments);
             assertEquals(2, foundComments.size());
 
-            verify(commentServiceHandler, atLeastOnce()).postExistsByIdValidation(post.getId());
-            verify(commentRepository, atLeastOnce()).findAllByPostIdOrderByUpdatedAtDesc(post.getId());
+            verify(commentServiceHandler, atLeastOnce()).postExistsValidation(post.getId());
+            verify(commentRepository, atLeastOnce()).findAllByPostIdOrderByCreatedAtDesc(post.getId());
         }
     }
 

@@ -88,12 +88,12 @@ class CommentControllerTest {
         List<CommentDto> commentDtoList = List.of(commentDto);
 
         when(commentService.findAllComments(post.getId())).thenReturn(commentList);
-        when(commentMapper.toDto(comment)).thenReturn(commentDto);
+        when(commentMapper.toDtoList(commentList)).thenReturn(commentDtoList);
 
         List<CommentDto> result = commentController.findAllComments(post.getId());
         assertEquals(commentDtoList, result);
 
         verify(commentService, atLeastOnce()).findAllComments(post.getId());
-        verify(commentMapper, atLeastOnce()).toDto(comment);
+        verify(commentMapper, atLeastOnce()).toDtoList(commentList);
     }
 }

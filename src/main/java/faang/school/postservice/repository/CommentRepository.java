@@ -16,7 +16,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     @Query(nativeQuery = true, value = """
             SELECT * FROM comment
              WHERE post_id = :postId
-             ORDER BY updated_at DESC
+             ORDER BY created_at DESC
              """)
-    List<Comment> findAllByPostIdOrderByUpdatedAtDesc(long postId);
+    List<Comment> findAllByPostIdOrderByCreatedAtDesc(long postId);
 }

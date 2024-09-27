@@ -46,33 +46,33 @@ class CommentServiceHandlerTest {
     }
 
     @Test
-    void testUserExistsByIdValidation_UserNotFound_throwDataValidationException() {
+    void testUserExistsValidation_UserNotFound_throwDataValidationException() {
         when(userServiceClient.getUser(userDto.getId())).thenReturn(null);
 
         DataValidationException exception = assertThrows(DataValidationException.class,
-                () -> commentServiceHandler.userExistsByIdValidation(userDto.getId())
+                () -> commentServiceHandler.userExistValidation(userDto.getId())
         );
 
         assertEquals("Author with ID: " + userDto.getId() + " not found.", exception.getMessage());
     }
 
     @Test
-    void testCommentExistsByIdValidation_CommentNotFound_throwDataValidationException() {
+    void testCommentExistsValidation_CommentNotFound_throwDataValidationException() {
         when(commentRepository.existsById(comment.getId())).thenReturn(false);
 
         DataValidationException exception = assertThrows(DataValidationException.class,
-                () -> commentServiceHandler.commentExistsByIdValidation(comment.getId())
+                () -> commentServiceHandler.commentExistsValidation(comment.getId())
         );
 
         assertEquals("Comment with ID: " + comment.getId() + " not found.", exception.getMessage());
     }
 
     @Test
-    void testPostExistsByIdValidation_PostNotFound_throwDataValidationException() {
+    void testPostExistsValidation_PostNotFound_throwDataValidationException() {
         when(postRepository.existsById(post.getId())).thenReturn(false);
 
         DataValidationException exception = assertThrows(DataValidationException.class,
-                () -> commentServiceHandler.postExistsByIdValidation(post.getId())
+                () -> commentServiceHandler.postExistsValidation(post.getId())
         );
 
         assertEquals("Post with ID: " + post.getId() + " not found.", exception.getMessage());

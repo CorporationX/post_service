@@ -17,6 +17,7 @@ public class CommentDto {
 
     @Size(min = 1, max = 4096)
     @NotBlank(message = "Content cannot be blank")
+    @NotNull(message = "Content cannot be null")
     private String content;
 
     @NotNull(message = "AuthorID cannot be null")
