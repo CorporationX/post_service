@@ -40,18 +40,18 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
             SELECT id FROM album
             WHERE visibility = 'ALL'
             """)
-    List<Long> findAlbumIdsWithAllStatus();
+    List<Long> findAlbumIdsAllStatus();
 
     @Query(nativeQuery = true, value = """
             SELECT id FROM album
             WHERE visibility = 'ONLY_AUTHOR' AND author_id = :userId
             """)
-    List<Long> findAlbumsIdsAllowedOnlyThisUser(Long userId);
+    List<Long> findAlbumsIdsOnlyAuthor(Long userId);
 
     @Query(nativeQuery = true, value = """
             SELECT id FROM album
             WHERE visibility = 'SUBSCRIBERS' AND author_id IN (:followingsIds)
             """)
-    List<Long> findAlbumAllowedFollowings(List<Long> followingsIds);
+    List<Long> findAlbumIdsByAuthorIdsAndSubsStatus(List<Long> authorIds);
 }
 

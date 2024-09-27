@@ -18,6 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -257,8 +260,6 @@ class AlbumServiceTest {
         album.setStatus(AlbumVisibility.ALL);
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
 
-        when(albumVisibilityExecutors.stream())
-                .thenReturn(Stream.of(new AlbumAllExecutor()));
 
         Album newAlbum = albumService.getAlbum(albumId, userId);
         assertThat(newAlbum).usingRecursiveComparison().isEqualTo(album);
@@ -266,47 +267,74 @@ class AlbumServiceTest {
 
     @Test
     @DisplayName("testGetAlbumsWithALLStatus_Success")
-    public void testGetAlbumsWithSubscribeStatus_Success() {
-        UserDto userWithFollower = UserDto.builder()
-                .followerIds(List.of(userId))
+    public void testGetAlbumsWithSubscriberStatus_Success() {
+        UserDto userWithFollowings = UserDto.builder()
+                .followingsIds(List.of(userId))
                 .build();
 
         album.setStatus(AlbumVisibility.SUBSCRIBERS);
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
-
-        when(albumVisibilityExecutors.stream())
-                .thenReturn(Stream.of(new AlbumSubscribersExecutor(userServiceClient)));
-        when(userServiceClient.getUser(albumId)).thenReturn(userWithFollower);
+        when(userServiceClient.getUser(album.getAuthorId())).thenReturn(userWithFollowings);
 
         Album newAlbum = albumService.getAlbum(albumId, userId);
         assertThat(newAlbum).usingRecursiveComparison().isEqualTo(album);
     }
 
     @Test
-    @DisplayName("testGetAlbumsWithSomeUserStatus_Success")
-    public void testGetAlbumsWithSomeUserStatus_Success() {
+    @DisplayName("testGetAlbumsWithALLStatus_Invalid")
+    public void testGetAlbumsWithSubscriberStatus_Invalid() {
+        UserDto userWithFollowings = UserDto.builder()
+                .followingsIds(List.of())
+                .build();
+
+        album.setStatus(AlbumVisibility.SUBSCRIBERS);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+        when(userServiceClient.getUser(album.getAuthorId())).thenReturn(userWithFollowings);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> albumService.getAlbum(albumId, userId));
+    }
+
+    @Test
+    @DisplayName("testGetAlbumsWithAllowedUsersStatus_Success")
+    public void testGetAlbumsWithAllowedUsersStatus_Success() {
         album.setStatus(AlbumVisibility.ALLOWED_USERS);
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
-
-        when(albumVisibilityExecutors.stream())
-                .thenReturn(Stream.of(new AlbumAllowedUsersExecutor(albumRepository)));
-        when(albumRepository.findUserIdsWithAlbumAccess(albumId)).thenReturn(List.of(userId));
+        when(userAlbumAccessRepository.hasUserAccessToAlbum(userId, albumId)).thenReturn(true);
 
         Album newAlbum = albumService.getAlbum(albumId, userId);
         assertThat(newAlbum).usingRecursiveComparison().isEqualTo(album);
     }
 
     @Test
-    @DisplayName("testGetAlbumsWithOnlyAuthor")
-    public void testGetAlbumsWithOnlyAuthor() {
+    @DisplayName("testGetAlbumsWithAllowedUsersStatus_Invalid")
+    public void testGetAlbumsWithAllowedUsersStatus_Invalid() {
+        album.setStatus(AlbumVisibility.ALLOWED_USERS);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+        when(userAlbumAccessRepository.hasUserAccessToAlbum(userId, albumId)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> albumService.getAlbum(albumId, userId));
+    }
+
+    @Test
+    @DisplayName("testGetAlbumsWithOnlyAuthor_Success")
+    public void testGetAlbumsWithOnlyAuthor_Success() {
         album.setStatus(AlbumVisibility.ONLY_AUTHOR);
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
 
-        when(albumVisibilityExecutors.stream())
-                .thenReturn(Stream.of(new AlbumOnlyAuthorExecutor()));
-
         Album newAlbum = albumService.getAlbum(albumId, authorId);
         assertThat(newAlbum).usingRecursiveComparison().isEqualTo(album);
+    }
+
+    @Test
+    @DisplayName("testGetAlbumsWithOnlyAuthor_Invalid")
+    public void testGetAlbumsWithOnlyAuthor_Invalid() {
+        album.setStatus(AlbumVisibility.ONLY_AUTHOR);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> albumService.getAlbum(albumId, userId));
     }
 
     @Test
@@ -314,7 +342,8 @@ class AlbumServiceTest {
     public void testGetAlbumFailed() {
         when(albumRepository.findById(albumId))
                 .thenReturn(Optional.empty());
-        assertThrows(NoSuchElementException.class, () -> albumService.getAlbum(albumId, userId));
+        assertThrows(NoSuchElementException.class,
+                () -> albumService.getAlbum(albumId, userId));
     }
 
     @Test
@@ -328,7 +357,6 @@ class AlbumServiceTest {
                 .title(newTitle)
                 .description(newDescription)
                 .status(AlbumVisibility.ALLOWED_USERS)
-                .userWithAccessIds(List.of(userId))
                 .posts(List.of())
                 .build();
 
@@ -352,68 +380,60 @@ class AlbumServiceTest {
         albumService.deleteAlbum(albumId, authorId);
     }
 
-    @Test
-    @DisplayName("testGetAlbumsByFilter")
-    public void testGetAlbumsByFilter() {
-        when(albumRepository.findAll()).thenReturn(List.of(
-                albumOne,
-                albumTwo,
-                albumThree,
-                albumFour,
-                albumFive));
-        when(albumFilters.stream()).thenReturn(Stream.of(
-                new AlbumFilterByAfterTime(),
-                new AlbumFilterByBeforeTime(),
-                new AlbumFilterByTitlePattern()));
-        when(albumVisibilityExecutors.stream())
-                .thenReturn(Stream.of(
-                        new AlbumAllExecutor(),
-                        new AlbumOnlyAuthorExecutor()));
+    @Captor
+    ArgumentCaptor<List<Long>> captor;
 
-        List<Album> filteredAlbums = albumService.getAlbumsByFilters(userId, albumFilterDto);
-        assertThat(filteredAlbums.get(0)).usingRecursiveComparison().isEqualTo(albumFive);
+    @Test
+    @DisplayName("testGetAllAvailableAlbums_Success")
+    public void testGetAllAvailableAlbums_Success() {
+        UserDto userDto = UserDto.builder()
+                .id(userId)
+                .followingsIds(new ArrayList<>())
+                .build();
+
+        when(albumRepository.findAlbumIdsAllStatus()).thenReturn(List.of(1L));
+        when(albumRepository.findAlbumsIdsOnlyAuthor(userId)).thenReturn(List.of(2L));
+        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(albumRepository.findAlbumIdsByAuthorIdsAndSubsStatus(List.of(userId))).thenReturn(List.of(3L));
+        when(userAlbumAccessRepository.findAlbumIdsAllowedUser(userId)).thenReturn(List.of(4L, 5L));
+
+        albumService.getAllAvailableAlbums(userId);
+
+        verify(albumRepository).findAllById(captor.capture());
+
+        assertIterableEquals(List.of(1L, 2L, 3L, 4L, 5L), captor.getValue());
     }
 
+
+
+
     @Test
-    @DisplayName("testGetUserAlbumsByFilters")
-    public void testGetUserAlbumsByFilters() {
-        when(albumRepository.findByAuthorId(userId)).thenReturn(Stream.of(
+    @DisplayName("testGetAllAvailableAlbumsByFilters")
+    public void testGetAllAvailableAlbumsByFilters() {
+        UserDto userDto = UserDto.builder()
+                .id(userId)
+                .followingsIds(new ArrayList<>())
+                .build();
+
+        when(albumRepository.findAlbumIdsAllStatus()).thenReturn(List.of(1L));
+        when(albumRepository.findAlbumsIdsOnlyAuthor(userId)).thenReturn(List.of(2L));
+        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(albumRepository.findAlbumIdsByAuthorIdsAndSubsStatus(List.of(userId))).thenReturn(List.of(3L));
+        when(userAlbumAccessRepository.findAlbumIdsAllowedUser(userId)).thenReturn(List.of(4L, 5L));
+
+        when(albumRepository.findAllById(List.of(1L, 2L, 3L, 4L, 5L))).thenReturn(List.of(
                 albumOne,
                 albumTwo,
                 albumThree,
                 albumFour,
                 albumFive));
+
         when(albumFilters.stream()).thenReturn(Stream.of(
                 new AlbumFilterByAfterTime(),
                 new AlbumFilterByBeforeTime(),
                 new AlbumFilterByTitlePattern()));
-        when(albumVisibilityExecutors.stream())
-                .thenReturn(Stream.of(
-                        new AlbumAllExecutor(),
-                        new AlbumOnlyAuthorExecutor()));
 
-        List<Album> filteredAlbums = albumService.getUserAlbumsByFilters(userId, albumFilterDto);
-        assertThat(filteredAlbums.get(0)).usingRecursiveComparison().isEqualTo(albumFive);
-    }
-
-    @Test
-    public void testFavoriteUserAlbumsByFilters() {
-        when(albumRepository.findFavoriteAlbumsByUserId(userId)).thenReturn(Stream.of(
-                albumOne,
-                albumTwo,
-                albumThree,
-                albumFour,
-                albumFive));
-        when(albumFilters.stream()).thenReturn(Stream.of(
-                new AlbumFilterByAfterTime(),
-                new AlbumFilterByBeforeTime(),
-                new AlbumFilterByTitlePattern()));
-        when(albumVisibilityExecutors.stream())
-                .thenReturn(Stream.of(
-                        new AlbumAllExecutor(),
-                        new AlbumOnlyAuthorExecutor()));
-
-        List<Album> filteredAlbums = albumService.getFavoriteUserAlbumsByFilters(userId, albumFilterDto);
-        assertThat(filteredAlbums.get(0)).usingRecursiveComparison().isEqualTo(albumFive);
+        List<Album> filteredAlbums = albumService.getAllAvailableAlbumsByFilters(userId, albumFilterDto);
+        assertThat(filteredAlbums.get(0)).usingRecursiveComparison().isEqualTo(albumFour);
     }
 }

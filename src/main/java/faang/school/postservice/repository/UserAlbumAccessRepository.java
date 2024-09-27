@@ -23,6 +23,9 @@ public interface UserAlbumAccessRepository extends CrudRepository<UserAlbumAcces
             SELECT EXISTS (
                 SELECT album_id FROM user_album_access
                 WHERE album_id = :albumId AND user_id = :userId
+                UNION
+                SELECT id FROM album
+                WHERE id = :albumId AND author_id = :userId
             )
             AS result
             """)

@@ -15,10 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 
 @Service
@@ -101,12 +100,10 @@ public class AlbumService {
         Album existingAlbum = albumRepository.findById(albumId).orElseThrow();
         existingAlbum.setTitle(album.getTitle());
         existingAlbum.setDescription(album.getDescription());
-
-        if (existingAlbum.getStatus().equals(AlbumVisibility.ALLOWED_USERS)
-                || album.getStatus().equals(AlbumVisibility.ALLOWED_USERS)) {
+        existingAlbum.setStatus(album.getStatus());
+        if (existingAlbum.getStatus().equals(AlbumVisibility.ALLOWED_USERS)) {
             existingAlbum.setUsersAlbumAccess(album.getUsersAlbumAccess());
         }
-        existingAlbum.setStatus(album.getStatus());
 
         return albumRepository.save(existingAlbum);
     }
@@ -121,12 +118,12 @@ public class AlbumService {
 
     @Transactional(readOnly = true)
     public List<Album> getAllAvailableAlbums(Long userId) {
-        List<Long> allAlbumsIds = albumRepository.findAlbumIdsWithAllStatus();
-        List<Long> onlyAuthorAlbumsIds = albumRepository.findAlbumsIdsAllowedOnlyThisUser(userId);
-        List<Long> subsAlbumsIds = findAlbumsIdsAllowedBySubs(userId);
+        List<Long> allAlbumsIds = albumRepository.findAlbumIdsAllStatus();
+        List<Long> onlyAuthorAlbumsIds = albumRepository.findAlbumsIdsOnlyAuthor(userId);
+        List<Long> subsAlbumsIds = findAlbumsIdsSubsStatus(userId);
         List<Long> someUsersAlbumsIds = userAlbumAccessRepository.findAlbumIdsAllowedUser(userId);
 
-        Set<Long> albumsIds = new HashSet<>();
+        List<Long> albumsIds = new ArrayList<>();
         albumsIds.addAll(allAlbumsIds);
         albumsIds.addAll(onlyAuthorAlbumsIds);
         albumsIds.addAll(subsAlbumsIds);
@@ -141,10 +138,10 @@ public class AlbumService {
         return applyAllFilters(albums, albumFilterDto);
     }
 
-    private List<Long> findAlbumsIdsAllowedBySubs(Long userId) {
+    private List<Long> findAlbumsIdsSubsStatus(Long userId) {
         List<Long> followingsIds = userServiceClient.getUser(userId).getFollowingsIds();
         followingsIds.add(userId);
-        return albumRepository.findAlbumAllowedFollowings(followingsIds);
+        return albumRepository.findAlbumIdsByAuthorIdsAndSubsStatus(followingsIds);
     }
 
     private void validAlbumBelongsToUser(long albumId, long userId) {
