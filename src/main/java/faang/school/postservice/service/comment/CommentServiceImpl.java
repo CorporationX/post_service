@@ -3,6 +3,7 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
+import faang.school.postservice.exception.comment.CommentException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -14,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,14 +28,8 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     @Override
-    @SneakyThrows
     public CommentDto addComment(CommentDto commentDto) {
-        try {
-            userServiceClient.getUser(commentDto.getAuthorId());
-        } catch (Exception exception) {
-            throw new Exception(String.format("An error occurred in the process of obtaining a user with ID %s",
-                    commentDto.getAuthorId()));
-        }
+        userServiceClient.getUser(commentDto.getAuthorId());
 
         Post post = postRepository
                 .findById(commentDto.getPostId())
@@ -58,7 +52,7 @@ public class CommentServiceImpl implements CommentService {
 
         long authorId = comment.getAuthorId();
         if (updateCommentDto.authorId() != authorId) {
-            throw new AccessDeniedException(String.format("User with ID %s is not allowed to update this comment.",
+            throw new CommentException(String.format("User with ID %s is not allowed to update this comment.",
                     updateCommentDto.authorId()));
         }
 
