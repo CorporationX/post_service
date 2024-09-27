@@ -1,11 +1,15 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.publishable.CommentEvent;
+import faang.school.postservice.dto.user.CachedUserDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -29,6 +34,8 @@ public class CommentService {
     private final ModerationDictionary moderationDictionary;
     private final ExecutorService moderationExecutor;
     private final KafkaCommentProducer commentProducer;
+    private final RedisUserRepository redisUserRepository;
+    private final UserServiceClient userServiceClient;
 
     @Value("${comment.batchSize}")
     private int batchSize;
@@ -39,7 +46,9 @@ public class CommentService {
             CommentValidator commentValidator,
             ModerationDictionary moderationDictionary,
             @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor,
-            KafkaCommentProducer commentProducer
+            KafkaCommentProducer commentProducer,
+            RedisUserRepository redisUserRepository,
+            UserServiceClient userServiceClient
     ) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
@@ -47,6 +56,8 @@ public class CommentService {
         this.moderationDictionary = moderationDictionary;
         this.moderationExecutor = moderationExecutor;
         this.commentProducer = commentProducer;
+        this.redisUserRepository = redisUserRepository;
+        this.userServiceClient = userServiceClient;
     }
 
     @Transactional
@@ -59,6 +70,15 @@ public class CommentService {
                 .postId(commentDto.getPostId())
                 .build();
 
+        UserDto userDto = userServiceClient.getUser(savedComment.getAuthorId());
+        CachedUserDto cachedUserDto = CachedUserDto.builder()
+                .id(userDto.getId())
+                .username(userDto.getUsername())
+                .email(userDto.getEmail())
+                .subscriberIds(userDto.getSubscriberIds())
+                .build();
+
+        redisUserRepository.save(cachedUserDto);
         commentProducer.sendEvent(commentEvent);
         return commentMapper.toDto(savedComment);
     }
@@ -117,5 +137,11 @@ public class CommentService {
             partitions.add(new ArrayList<>(list.subList(i, Math.min(list.size(), i + partitionSize))));
         }
         return partitions;
+    }
+
+    public CommentDto findById(long id) {
+        return commentMapper.toDto(commentRepository.findById(id)
+                .orElseThrow(IllegalArgumentException::new));
+
     }
 }

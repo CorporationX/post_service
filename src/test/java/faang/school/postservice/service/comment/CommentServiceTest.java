@@ -4,11 +4,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -37,11 +41,18 @@ public class CommentServiceTest {
     @Mock
     private KafkaCommentProducer commentProducer;
 
+    @Mock
+    private RedisUserRepository redisUserRepository;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
     @InjectMocks
     private CommentService commentService;
 
     private CommentDto commentDto;
     private Comment comment;
+    private UserDto userDto;
 
     @BeforeEach
     public void setUp() {
@@ -58,9 +69,17 @@ public class CommentServiceTest {
                 .authorId(1L)
                 .build();
 
+        userDto = UserDto.builder()
+                .id(1L)
+                .email("testEmail@mail.ru")
+                .username("someName")
+                .subscriberIds(new ArrayList<>())
+                .build();
+
         lenient().when(commentMapper.toEntity(any(CommentDto.class))).thenReturn(comment);
         lenient().when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         lenient().when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDto);
+        lenient().when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
     }
 
     @Test
