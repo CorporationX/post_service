@@ -34,7 +34,7 @@ public class Album {
     private long authorId;
 
     @Column(name = "visibility", nullable = false)
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private AlbumVisibility status;
 
     @ManyToMany
