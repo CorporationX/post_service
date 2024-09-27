@@ -28,6 +28,10 @@ spring:
       host: localhost
       TTL: 86400
       max-comments-size: 3
+      feed:
+        max-feed-size: 500
+        TTL: 3
+        prefix: feed
       channels:
         calculations_channel: calculations_channel
         like: like_channel
@@ -93,6 +97,10 @@ comment:
 
 like:
   userBatchSize: 100
+
+news-feed:
+  pool:
+    thread-count: 10
 
 user-service:
   host: localhost
