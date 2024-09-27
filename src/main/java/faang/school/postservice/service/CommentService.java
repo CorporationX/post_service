@@ -2,20 +2,18 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.comment.CreateCommentRequest;
+import faang.school.postservice.dto.comment.UpdateCommentRequest;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -33,15 +31,13 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
 
 
-    public CommentDto createComment(long postId, CommentDto commentDto) {
-        commentValidator.validateCommentDto(commentDto);
-        commentValidator.checkGetCreatedAtForZero(commentDto);
-        userServiceClient.getUser(commentDto.getAuthorId());
-        log.info("[{}] Validation successful for postId: {}, CommentDto: {}", "createComment", postId, commentDto);
+    public CommentDto createComment(long postId, CreateCommentRequest createCommentRequest) {
+        userServiceClient.getUser(createCommentRequest.getAuthorId());
+        log.info("[{}] Validation successful for postId: {}, CommentDto: {}", "createComment", postId, createCommentRequest);
 
-        Comment comment = commentMapper.toComment(commentDto);
+        Comment comment = commentMapper.toComment(createCommentRequest);
         log.info(" [{}] Mapping of CommentDto to Comment entity successful for postId: {}, " +
-                "commentDto'{}', comment: {}", "createComment", postId, commentDto, comment);
+                "createCommentRequest'{}', comment: {}", "createComment", postId, createCommentRequest, comment);
 
         Post post = postRepository.findById(postId).orElseThrow(() ->
                 new EntityNotFoundException("Post with id " + postId + " not found"));
@@ -54,16 +50,15 @@ public class CommentService {
         return commentMapper.toCommentDto(comment);
     }
 
-    public CommentDto updateComment(long postId, CommentDto commentDto) {
-        commentValidator.validateCommentDto(commentDto);
-        Comment OldComment = commentRepository.findById(commentDto.getId()).orElseThrow(() ->
+    public CommentDto updateComment(long postId, long commentId, UpdateCommentRequest updateCommentRequest) {
+        Comment oldComment = commentRepository.findById(commentId).orElseThrow(() ->
                 new DataValidationException("Comment is null"));
-        commentValidator.checkingForCompliance(OldComment, commentDto);
-        log.info("[{}] Validation successful for postId: {}, CommentDto: {}", "updateComment", postId, commentDto);
+        commentValidator.checkingForCompliance(oldComment, updateCommentRequest);
+        log.info("[{}] Validation successful for postId: {}, updateCommentRequest: {}", "updateComment", postId, updateCommentRequest);
 
-        Comment comment = commentMapper.toComment(commentDto);
+        Comment comment = commentMapper.toComment(updateCommentRequest);
         log.info(" [{}] Mapping of CommentDto to Comment entity successful for postId: {}, " +
-                "commentDto'{}', comment: {}", "updateComment", postId, commentDto, comment);
+                "updateCommentRequest: '{}', comment: {}", "updateComment", postId, updateCommentRequest, comment);
 
         Post post = postRepository.findById(postId).orElseThrow(() ->
                 new EntityNotFoundException("Post with id " + postId + " not found"));
@@ -76,9 +71,11 @@ public class CommentService {
         return commentMapper.toCommentDto(comment);
     }
 
-    public List<CommentDto> getAllComment(long postId) {
+    public List<CommentDto> getAllComments(long postId) {
         List<Comment> comments = commentRepository.findAllByPostId(postId);
         comments.sort(Comparator.comparing(Comment::getCreatedAt).reversed());
+        log.info("[{}] we have successfully read the list of comments:/n {}  " +
+                "from the database and sorted the list.", "getAllComments", comments);
 
         return comments.stream()
                 .map(commentMapper::toCommentDto)
@@ -87,5 +84,6 @@ public class CommentService {
 
     public void deleteComment(long commentId) {
         commentRepository.deleteById(commentId);
+        log.info("[{}] the comment with id: {} was successfully deleted", "deleteComment", commentId);
     }
 }

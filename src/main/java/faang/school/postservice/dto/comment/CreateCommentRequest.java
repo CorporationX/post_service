@@ -1,20 +1,18 @@
 package faang.school.postservice.dto.comment;
 
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentDto {
-    private long id;
+public class CreateCommentRequest {
+    @NotBlank
+    @Size(max = 4096)
     private String content;
     private long authorId;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
