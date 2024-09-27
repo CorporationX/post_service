@@ -16,7 +16,9 @@ public class CommentDto {
     @Size(max = 4096, message = "The allowed maximum length is 4096 characters.")
     private final String content;
 
-    @NotNull private final Long authorId;
+    @NotNull
+    private final Long authorId;
 
-    @NotNull private final Long postId;
+    @NotNull
+    private final Long postId;
 }

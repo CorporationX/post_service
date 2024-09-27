@@ -7,8 +7,11 @@ import lombok.Builder;
 
 @Builder
 public record UpdateCommentDto(
-        @NotBlank @Size(max = 4096, message = "The allowed maximum length is 4096 characters.") String content,
+        @NotBlank
+        @Size(max = 4096, message = "The allowed maximum length is 4096 characters.")
+        String content,
 
-        @NotNull Long authorId
+        @NotNull
+        Long authorId
 ) {
 }
