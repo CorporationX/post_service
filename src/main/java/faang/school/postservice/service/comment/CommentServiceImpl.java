@@ -12,7 +12,6 @@ import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -45,7 +44,6 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    @SneakyThrows
     public void updateComment(long commentId, UpdateCommentDto updateCommentDto) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Comment with ID %s not found.", commentId)));
