@@ -21,13 +21,25 @@ spring:
     redis:
       port: 6379
       host: localhost
+      time-to-live: 86400
       channels:
          like_post_channel:
           name: like_channel
          comment_channel:
            name: comment_channel
+      feed-cache:
+        size: 500
+        key-prefix: "feed:"
+      post-cache:
+        key-prefix: "post:"
+        likes: "likes"
+        comments: "comments"
+        views: "view"
+        comments-in-post: 3
 
   kafka:
+    listener:
+      ack-mode: manual
     bootstrap_servers: "localhost:9092"
     topic-name:
       likes: "likes"

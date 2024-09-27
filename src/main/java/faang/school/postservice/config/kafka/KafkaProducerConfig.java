@@ -3,7 +3,6 @@ package faang.school.postservice.config.kafka;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.LongSerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class KafkaCommentProducer {
+public class KafkaProducerConfig {
     @Value("${spring.kafka.bootstrap_servers}")
     private String bootstrapServers;
 
@@ -33,7 +32,7 @@ public class KafkaCommentProducer {
         return new DefaultKafkaProducerFactory<>(producerConfig());
     }
     @Bean
-    public KafkaTemplate<String, Object> commentKafkaTemplate(ProducerFactory<String, Object> producerFactory){
+    public KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory){
         return new KafkaTemplate<>(producerFactory);
     }
 }

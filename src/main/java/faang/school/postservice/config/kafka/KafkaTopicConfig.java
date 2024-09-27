@@ -13,6 +13,8 @@ import java.util.Map;
 
 @Configuration
 public class KafkaTopicConfig {
+    @Value("${spring.kafka.bootstrap_servers}")
+    private String bootstrapServers;
     @Value("${spring.kafka.topic-name.likes:likes}")
     private String likesTopic;
     @Value("${spring.kafka.topic-name.post-views-topic}")
@@ -22,8 +24,6 @@ public class KafkaTopicConfig {
     @Value("${spring.kafka.topic-name.posts}")
     private String postsTopic;
 
-    @Value("${spring.kafka.bootstrap_servers}")
-    private String bootstrapServers;
 
     @Bean
     public KafkaAdmin admin() {

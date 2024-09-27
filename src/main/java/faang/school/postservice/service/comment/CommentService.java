@@ -1,42 +1,34 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.kafka.producer.KafkaEventProducer;
+import faang.school.postservice.kafka.events.CommentEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.mapper.AuthorCacheMapper;
+import faang.school.postservice.redis.repository.AuthorCacheRedisRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.error.CommentServiceErrors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
-    @Value("${spring.kafka.topic-name.comments:comments}")
-    private String commentTopic;
-
     private final CommentRepository repository;
     private final PostRepository postRepository;
     private final CommentMapper mapper;
-    @Qualifier("commentKafkaTemplate")
-    private final KafkaTemplate<Long, Map<String, Long>> commentKafkaTemplate;
-
-    public CommentService(CommentRepository repository, PostRepository postRepository, CommentMapper mapper,
-                          KafkaTemplate<Long, Map<String, Long>> commentKafkaTemplate) {
-        this.repository = repository;
-        this.postRepository = postRepository;
-        this.mapper = mapper;
-        this.commentKafkaTemplate = commentKafkaTemplate;
-    }
+    private final KafkaEventProducer kafkaEventProducer;
+    private final AuthorCacheRedisRepository authorCacheRedisRepository;
+    private final AuthorCacheMapper authorCacheMapper;
+    private final UserServiceClient userServiceClient;
 
     public CommentDto addComment(Long postId, CommentDto commentDto) {
         if (commentDto.getContent() == null || commentDto.getContent().isBlank()) {
@@ -54,18 +46,28 @@ public class CommentService {
         post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
 
+        saveAuthorOfCommentInRedis(comment.getAuthorId());
+
         sendCommentEventToKafka(post, saveComment);
         return mapper.toDto(saveComment);
     }
 
-    private void sendCommentEventToKafka(Post post, Comment comment){
-        Map<String, Long> event = new HashMap<>();
-        var postId = post.getId();
-        event.put("postId", postId);
-        event.put("authorId", comment.getAuthorId());
-        commentKafkaTemplate.send(commentTopic, post.getId(), event);
+    private void saveAuthorOfCommentInRedis(Long authorId){
+        var authorDto = userServiceClient.getUser(authorId);
+
+        authorCacheRedisRepository.save(authorCacheMapper.toAuthorCache(authorDto));
     }
 
+    private void sendCommentEventToKafka(Post post, Comment comment){
+        var postId = post.getId();
+        var event = CommentEvent.builder()
+                .commentId(comment.getId())
+                .content(comment.getContent())
+                .postId(postId)
+                .authorId(comment.getAuthorId())
+                .build();
+        kafkaEventProducer.sendCommentEvent(postId, event);
+    }
 
     public CommentDto updateComment(Long postId, CommentDto commentDto) {
         getPost(postId);

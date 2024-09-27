@@ -1,51 +1,37 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.FixedSizeLinkedHashMap;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.kafka.producer.KafkaEventProducer;
+import faang.school.postservice.kafka.events.PostFollowersEvent;
+import faang.school.postservice.kafka.events.PostEvent;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.mapper.AuthorCacheMapper;
+import faang.school.postservice.redis.mapper.PostCacheMapper;
+import faang.school.postservice.redis.repository.AuthorCacheRedisRepository;
+import faang.school.postservice.redis.repository.PostCacheRedisRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.kafka.core.KafkaTemplate;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
-    @Value("${spring.kafka.topic-name.posts:posts}")
-    private String postTopic;
-    @Value("${spring.kafka.topic-name.post-views-topic}")
-    private String postViewsTopic;
-
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final PostServiceValidator<PostDto> validator;
-    private final KafkaTemplate <Long, Object> postKafkaTemplate;
-    private final KafkaTemplate <Long, Long> postViewKafkaTemplate;
+    private final KafkaEventProducer kafkaEventProducer;
     private final UserServiceClient userServiceClient;
-    private final RedisTemplate<Long, FixedSizeLinkedHashMap<Long, PostDto>> redisTemplate;
-
-    public PostService(PostMapper postMapper, PostRepository postRepository, PostServiceValidator<PostDto> validator,
-                       @Qualifier("postViewKafkaTemplate")KafkaTemplate<Long, Object> postKafkaTemplate, UserServiceClient userServiceClient,
-                       @Qualifier("postViewKafkaTemplate")KafkaTemplate <Long, Long> postViewKafkaTemplate,
-                       @Qualifier("redisCacheTemplate")RedisTemplate<Long, FixedSizeLinkedHashMap<Long, PostDto>> redisTemplate) {
-        this.postMapper = postMapper;
-        this.postRepository = postRepository;
-        this.validator = validator;
-        this.postKafkaTemplate = postKafkaTemplate;
-        this.postViewKafkaTemplate = postViewKafkaTemplate;
-        this.userServiceClient = userServiceClient;
-        this.redisTemplate = redisTemplate;
-    }
+    private final PostCacheRedisRepository postCacheRedisRepository;
+    private final PostCacheMapper postCacheMapper;
+    private final AuthorCacheRedisRepository authorCacheRedisRepository;
+    private final AuthorCacheMapper authorCacheMapper;
 
     public PostDto createPost(final PostDto postDto) {
         validator.validate(postDto);
@@ -67,29 +53,30 @@ public class PostService {
 
         var savedPost = postRepository.save(post);
 
-        sendPostEventToKafka(savedPost);
-//        var authorId = post.getAuthorId();
-//        var author = userServiceClient.getUser(authorId);
-//        author.getFollowers().forEach(followerId -> {
-//            var posts = redisTemplate.opsForValue().get(followerId);
-//            posts.put(postId, postDto);
-//        });
+        postCacheRedisRepository.save(postCacheMapper.toPostCache(savedPost));
+        sendPostFollowersEventToKafka(savedPost);
 
         return postMapper.toDto(savedPost);
     }
-
-    private void sendPostEventToKafka(Post post){
-        Map<String, Object> event = new HashMap<>();
+    //TODO PRIVATE METHODS!
+    private void sendPostFollowersEventToKafka(Post post){
         var postAuthorFollowersIds = getPostAuthorFollowers(post);
         var postId = post.getId();
-        event.put("postId", postId);
-        event.put("followersIds", postAuthorFollowersIds);
-        postKafkaTemplate.send(postTopic, post.getId(), event);
+        var event = PostFollowersEvent.builder()
+                .authorId(post.getAuthorId())
+                .postId(postId)
+                .followersIds(postAuthorFollowersIds)
+                .build();
+
+        kafkaEventProducer.sendPostFollowersEvent(postId, event);
     }
 
     private List<Long> getPostAuthorFollowers(Post post) {
         var postAuthorId = post.getAuthorId();
         var author = userServiceClient.getUser(postAuthorId);
+
+        authorCacheRedisRepository.save(authorCacheMapper.toAuthorCache(author));
+
         return author.getFollowers();
     }
 
@@ -127,11 +114,12 @@ public class PostService {
     }
 
     private void sendPostViewEventToKafka(Post post){
-        Map<String, Long> event = new HashMap<>();
         var postId = post.getId();
-        event.put("postId", postId);
-        event.put("authorId", post.getAuthorId());
-        postKafkaTemplate.send(postViewsTopic, postId, event);
+        var event = PostEvent.builder()
+                .postId(postId)
+                .authorId(post.getAuthorId())
+                .build();
+        kafkaEventProducer.sendPostViewEvent(postId, event);
     }
 
     public List<PostDto> getFilteredPosts(final Long authorId, final Long projectId, final Boolean isPostPublished) {
