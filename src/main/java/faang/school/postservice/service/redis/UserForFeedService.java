@@ -2,7 +2,7 @@ package faang.school.postservice.service.redis;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.model.redis.UserForCache;
+import faang.school.postservice.model.cache.UserForCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ public class UserForFeedService {
     private final UserServiceClient userServiceClient;
 
     public String getUserName(Long userId) {
-        String userName = "";
+        String userName;
         Optional<UserForCache> userFromCacheOptional = userCacheService.getUserFromCache(userId);
         if(userFromCacheOptional.isPresent()){
             UserForCache userFromCache = userFromCacheOptional.get();

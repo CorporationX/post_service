@@ -1,13 +1,11 @@
-package faang.school.postservice.model.redis;
+package faang.school.postservice.model.cache;
 
-import faang.school.postservice.model.Post;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.TreeSet;
 
 @Data

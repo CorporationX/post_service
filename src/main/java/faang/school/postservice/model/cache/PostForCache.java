@@ -1,4 +1,4 @@
-package faang.school.postservice.model.redis;
+package faang.school.postservice.model.cache;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
