@@ -21,6 +21,8 @@ public class UserDto {
     private Integer experience;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private List<Long> followersIds;
+    private List<Long> followeesIds;
     private List<Long> ownedEventsIds;
     private List<Long> menteesIds;
     private List<Long> mentorsIds;

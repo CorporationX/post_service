@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.redis;
 
 import faang.school.postservice.model.redis.PostRedis;
 import faang.school.postservice.model.redis.UserRedis;

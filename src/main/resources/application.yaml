@@ -27,6 +27,15 @@ spring:
         user:
           ttl-hours: 24
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id:
+        post: post
+    topic:
+      post:
+        published: post-published-topic
+
 server:
   port: 8081
 

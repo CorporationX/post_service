@@ -33,6 +33,11 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
+     * Message broker
+     */
+    implementation ("org.springframework.kafka:spring-kafka:3.2.4")
+
+    /**
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
