@@ -29,6 +29,7 @@ spring:
       TTL: 86400
       max-comments-size: 3
       feed:
+        batch-size: 20
         max-feed-size: 500
         TTL: 3
         prefix: feed

@@ -34,6 +34,8 @@ public interface PostMapper {
     @Mapping(source = "views", target = "views")
     CachedPostDto toCachedPostDto(Post post);
 
+    List<CachedPostDto> toCachedPostDtoList(List<Post> posts);
+
 
     @Mapping(source = "id", target = "id")
     @Mapping(source = "authorId", target = "authorId")

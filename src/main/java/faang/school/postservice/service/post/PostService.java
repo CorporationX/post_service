@@ -1,7 +1,6 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.post.*;
 import faang.school.postservice.dto.publishable.PostEvent;
 import faang.school.postservice.dto.publishable.PostViewEvent;
@@ -15,14 +14,12 @@ import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.exception.validation.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.post.ResourceMapper;
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.repository.redis.RedisUserRepository;
-import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
 import faang.school.postservice.validator.post.PostServiceValidator;
@@ -30,6 +27,7 @@ import faang.school.postservice.service.resource.ResourceService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,7 +61,6 @@ public class PostService {
 
     private final RedisPostRepository redisPostRepository;
     private final RedisUserRepository redisUserRepository;
-    private final CommentService commentService;
 
     @Transactional
     public PostDto createPostDraft(DraftPostDto draft) {
@@ -214,6 +211,12 @@ public class PostService {
 
         postRepository.save(post);
         return postMapper.toDto(post);
+    }
+
+
+    public List<CachedPostDto> getPostsByAuthorIds(List<Long> authorIds, long startPostId, int batchSize) {
+        List<Post> posts = postRepository.findPostsByAuthorIds(authorIds, startPostId, PageRequest.of(0, batchSize));
+        return postMapper.toCachedPostDtoList(posts);
     }
 
 
