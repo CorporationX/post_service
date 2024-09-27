@@ -1,7 +1,7 @@
 package faang.school.postservice.config.kafka;
 
 import com.fasterxml.jackson.databind.JsonSerializer;
-import faang.school.postservice.events.PostEvent;
+import faang.school.postservice.events.Event;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +21,7 @@ public class KafkaProducerConfig {
     private String bootstrapAddress;
 
     @Bean
-    public ProducerFactory<String, PostEvent> postEventProducerFactory() {
+    public ProducerFactory<String, Event> eventProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
@@ -33,7 +33,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, PostEvent> postEventKafkaTemplate() {
-        return new KafkaTemplate<>(postEventProducerFactory());
+    public KafkaTemplate<String, Event> eventKafkaTemplate() {
+        return new KafkaTemplate<>(eventProducerFactory());
     }
 }

@@ -6,18 +6,16 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostEvent extends Event {
+public class CommentEventForKafka extends Event {
 
-    private Long postId;
+    private long commentId;
 
-    private Long authorId;
+    private long postId;
 
-    private List<Long> followerIds;
+    private long authorId;
 }

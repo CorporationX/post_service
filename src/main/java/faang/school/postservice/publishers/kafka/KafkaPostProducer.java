@@ -1,5 +1,6 @@
 package faang.school.postservice.publishers.kafka;
 
+import faang.school.postservice.events.Event;
 import faang.school.postservice.events.PostEvent;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.kafka.PostEventService;
@@ -17,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class KafkaPostProducer {
 
-    private final KafkaTemplate<String, PostEvent> postEventKafkaTemplate;
+    private final KafkaTemplate<String, Event> eventKafkaTemplate;
     private final PostEventService postEventService;
 
     @Value(value = "${spring.data.kafka.topic.posts_topic}")
@@ -25,7 +26,7 @@ public class KafkaPostProducer {
 
     public void sendMessage(Post post) {
         PostEvent event = postEventService.getPostEventFromPost(post);
-        CompletableFuture<SendResult<String, PostEvent>> future = postEventKafkaTemplate.send(postsTopic, event);
+        CompletableFuture<SendResult<String, Event>> future = eventKafkaTemplate.send(postsTopic, event);
         future.whenComplete((result, ex) -> {
             if (ex == null) {
                 log.info("Sent post event = [{}] with offset = [{}]", event, result.getRecordMetadata().offset());

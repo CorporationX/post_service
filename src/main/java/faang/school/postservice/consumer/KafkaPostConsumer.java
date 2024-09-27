@@ -3,7 +3,6 @@ package faang.school.postservice.consumer;
 
 import faang.school.postservice.events.PostEvent;
 import faang.school.postservice.service.redis.FeedService;
-import faang.school.postservice.service.redis.UserCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +18,6 @@ import java.util.List;
 public class KafkaPostConsumer {
 
     private final FeedService feedService;
-    private final UserCacheService userCacheService;
 
     @Value(value = "${spring.data.kafka.topic.posts_topic}")
     private String postsTopic;
