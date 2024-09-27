@@ -82,21 +82,16 @@ public class AlbumController {
         service.deleteAlbum(albumId, userId);
     }
 
-    @PostMapping("/filter")
-    public List<AlbumDto> getAlbumsByFilter(@RequestParam long userId, @RequestBody AlbumFilterDto filterDto) {
-        List<Album> albums = service.getAlbumByFilter(userId, filterDto);
+    @GetMapping("/available")
+    public List<AlbumDto> getAllAvailableAlbums(@RequestParam Long userId) {
+        List<Album> albums = service.getAllAvailableAlbums(userId);
         return albumMapper.toDtoList(albums);
     }
 
-    @PostMapping("/by-user")
-    public List<AlbumDto> getUserAlbumsByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
-        List<Album> albums = service.getUserAlbumsByFilters(userId, filterDto);
-        return albumMapper.toDtoList(albums);
-    }
-
-    @PostMapping("/favorite-by-user")
-    public List<AlbumDto> getFavoriteUserAlbumsByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
-        List<Album> albums = service.getFavoriteUserAlbumsByFilters(userId, filterDto);
+    @GetMapping("/filters")
+    public List<AlbumDto> getAllAvailableAlbumsByFilters(@RequestParam Long userId,
+                                                         @RequestBody AlbumFilterDto albumFilterDto) {
+        List<Album> albums = service.getAllAvailableAlbumsByFilters(userId, albumFilterDto);
         return albumMapper.toDtoList(albums);
     }
 }

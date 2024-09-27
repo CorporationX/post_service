@@ -11,3 +11,7 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V005_users_with_access.sql
   - include:
       file: db/changelog/changeset/post_V006_change_album_visibility_type.sql
+  - include:
+      file: db/changelog/changeset/post_V007_change_name_users_with_access.sql
+  - include:
+      file: db/changelog/changeset/post_V008_change_album_visibility_to_uppercase.sql

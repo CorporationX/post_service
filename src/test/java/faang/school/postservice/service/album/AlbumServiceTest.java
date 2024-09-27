@@ -8,12 +8,8 @@ import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.UserAlbumAccessRepository;
 import faang.school.postservice.service.AlbumService;
-import faang.school.postservice.service.album_status_executor.AlbumAllExecutor;
-import faang.school.postservice.service.album_status_executor.AlbumOnlyAuthorExecutor;
-import faang.school.postservice.service.album_status_executor.AlbumAllowedUsersExecutor;
-import faang.school.postservice.service.album_status_executor.AlbumVisibilityExecutor;
-import faang.school.postservice.service.album_status_executor.AlbumSubscribersExecutor;
 import faang.school.postservice.service.filter.AlbumFilter;
 import faang.school.postservice.service.filter.AlbumFilterByAfterTime;
 import faang.school.postservice.service.filter.AlbumFilterByBeforeTime;
@@ -39,16 +35,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
 @ExtendWith(MockitoExtension.class)
 class AlbumServiceTest {
     private AlbumRepository albumRepository = mock(AlbumRepository.class);
     private UserServiceClient userServiceClient = mock(UserServiceClient.class);
     private PostRepository postRepository = mock(PostRepository.class);
+    private UserAlbumAccessRepository userAlbumAccessRepository = mock(UserAlbumAccessRepository.class);
     private List<AlbumFilter> albumFilters = mock(List.class);
-    private List<AlbumVisibilityExecutor> albumVisibilityExecutors = mock(List.class);
-    private AlbumService albumService = new AlbumService(albumRepository, userServiceClient, postRepository,
-            albumFilters, albumVisibilityExecutors);
+    private AlbumService albumService = new AlbumService(albumRepository, userServiceClient,
+            postRepository, userAlbumAccessRepository, albumFilters);
 
     private UserDto userDto;
     private long authorId;

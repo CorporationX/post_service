@@ -32,5 +32,5 @@ public class AlbumDto {
 
     private List<Long> postIds;
 
-    private List<Long> userWithAccessIds;
+    private List<Long> userAlbumAccessIds;
 }

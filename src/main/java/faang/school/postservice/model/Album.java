@@ -1,6 +1,19 @@
 package faang.school.postservice.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +22,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -43,11 +55,8 @@ public class Album {
             inverseJoinColumns = @JoinColumn(name = "post_id"))
     private List<Post> posts;
 
-    @Builder.Default
-    @ElementCollection
-    @CollectionTable(name = "users_with_access", joinColumns = @JoinColumn(name = "album_id"))
-    @Column(name = "user_id")
-    private List<Long> userWithAccessIds = new ArrayList<>();
+    @OneToMany(mappedBy = "album")
+    private List<UserAlbumAccess> usersAlbumAccess;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

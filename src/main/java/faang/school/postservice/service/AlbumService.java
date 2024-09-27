@@ -7,13 +7,17 @@ import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.UserAlbumAccessRepository;
 import faang.school.postservice.service.filter.AlbumFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
+    private final UserAlbumAccessRepository userAlbumAccessRepository;
     private final List<AlbumFilter> albumFilters;
 
     @Transactional
@@ -78,10 +83,14 @@ public class AlbumService {
     public Album getAlbum(long albumId, long userId) {
         Album album = albumRepository.findById(albumId)
                 .orElseThrow();
-        Map<AlbumStatus, AlbumStatusExecutor> executorsByStatus = createExecutorsMap();
-        AlbumStatus status = album.getStatus();
-        AlbumStatusExecutor statusExecutor = executorsByStatus.get(status);
-        return statusExecutor.compute(album, userId);
+
+        switch (album.getStatus()) {
+            case ONLY_AUTHOR -> onlyAuthorUserCheck(album, userId);
+            case ALLOWED_USERS -> allowedUserCheck(album, userId);
+            case SUBSCRIBERS -> subscribersUserCheck(album, userId);
+        }
+
+        return album;
     }
 
     @Transactional
@@ -93,7 +102,7 @@ public class AlbumService {
 
         if (existingAlbum.getStatus().equals(AlbumVisibility.ALLOWED_USERS)
                 || album.getStatus().equals(AlbumVisibility.ALLOWED_USERS)) {
-            existingAlbum.setUserWithAccessIds(album.getUserWithAccessIds());
+            existingAlbum.setUsersAlbumAccess(album.getUsersAlbumAccess());
         }
         existingAlbum.setStatus(album.getStatus());
 
@@ -109,21 +118,29 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    public List<Album> getAlbumsByFilter(AlbumFilterDto albumFilterDto) {
-        List<Album> albums = albumRepository.findAll();
+    public List<Album> getAllAvailableAlbums(Long userId) {
+        List<Long> allAlbumsIds = albumRepository.findAlbumIdsWithAllStatus();
+        List<Long> onlyAuthorAlbumsIds = albumRepository.findAlbumsIdsAllowedOnlyThisUser(userId);
+        List<Long> subsAlbumsIds = findAlbumsIdsAllowedBySubs(userId);
+        List<Long> someUsersAlbumsIds = userAlbumAccessRepository.findAlbumIdsAllowedUser(userId);
+
+        Set<Long> albumsIds = new HashSet<>();
+        albumsIds.addAll(allAlbumsIds);
+        albumsIds.addAll(onlyAuthorAlbumsIds);
+        albumsIds.addAll(subsAlbumsIds);
+        albumsIds.addAll(someUsersAlbumsIds);
+
+        return albumRepository.findAllById(albumsIds);
+    }
+
+    public List<Album> getAllAvailableAlbumsByFilters(Long userId, AlbumFilterDto albumFilterDto) {
+        List<Album> albums = getAllAvailableAlbums(userId);
         return applyAllFilters(albums, albumFilterDto);
     }
 
-    @Transactional(readOnly = true)
-    public List<Album> getUserAlbumsByFilters(Long userId, AlbumFilterDto filterDto) {
-        List<Album> userAlbums = albumRepository.findByAuthorId(userId).toList();
-        return applyAllFilters(userAlbums, filterDto);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Album> getFavoriteUserAlbumsByFilters(Long userId, AlbumFilterDto filterDto) {
-        List<Album> favoriteAlbumsByUser = albumRepository.findFavoriteAlbumsByUserId(userId).toList();
-        return applyAllFilters(favoriteAlbumsByUser, filterDto);
+    private List<Long> findAlbumsIdsAllowedBySubs(Long userId) {
+        List<Long> followingsIds = userServiceClient.getUser(userId).getFollowingsIds();
+        return albumRepository.findAlbumAllowedFollowings(followingsIds);
     }
 
     private void validAlbumBelongsToUser(long albumId, long userId) {
@@ -172,6 +189,26 @@ public class AlbumService {
         boolean existStatus = albumRepository.existsById(albumId);
         if (!existStatus) {
             throw new IllegalArgumentException("Album doesn't exist.");
+        }
+    }
+
+    private void allowedUserCheck(Album album, long userId) {
+        if (!userAlbumAccessRepository.hasUserAccessToAlbum(userId, album.getId())) {
+            throw new IllegalArgumentException("This user does not have access to the album");
+        }
+    }
+
+    private void onlyAuthorUserCheck(Album album, long userId) {
+        if (album.getAuthorId() != userId) {
+            throw new IllegalArgumentException("This user does not have access to the album");
+        }
+    }
+
+    private void subscribersUserCheck(Album album, long userId) {
+        List<Long> followingsIds = userServiceClient.getUser(album.getAuthorId())
+                .getFollowingsIds();
+        if (!followingsIds.contains(userId)) {
+            throw new IllegalArgumentException("This user does not have access to the album");
         }
     }
 }
