@@ -12,4 +12,11 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId")
     List<Comment> findAllByPostId(long postId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM comment
+             WHERE post_id = :postId
+             ORDER BY created_at DESC
+             """)
+    List<Comment> findAllByPostIdOrderByCreatedAtDesc(long postId);
 }
