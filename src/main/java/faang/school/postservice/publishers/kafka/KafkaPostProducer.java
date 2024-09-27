@@ -1,8 +1,8 @@
-package faang.school.postservice.publishers;
+package faang.school.postservice.publishers.kafka;
 
 import faang.school.postservice.events.PostEvent;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.service.PostEventService;
+import faang.school.postservice.service.kafka.PostEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,9 +28,9 @@ public class KafkaPostProducer {
         CompletableFuture<SendResult<String, PostEvent>> future = postEventKafkaTemplate.send(postsTopic, event);
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("Sent post event =[{}] with offset=[{}]", event, result.getRecordMetadata().offset());
+                log.info("Sent post event = [{}] with offset = [{}]", event, result.getRecordMetadata().offset());
             } else {
-                log.info("Unable to send post event=[{}] due to : {}", event, ex.getMessage());
+                log.info("Unable to send post event = [{}] due to : {}", event, ex.getMessage());
             }
         });
     }

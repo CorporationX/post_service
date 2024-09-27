@@ -1,10 +1,10 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.kafka;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.events.PostEvent;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.redis.UserForCache;
+import faang.school.postservice.model.cache.UserForCache;
 import faang.school.postservice.service.redis.UserCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,12 +26,12 @@ public class PostEventService {
         return PostEvent.builder()
                 .postId(post.getId())
                 .authorId(post.getAuthorId())
-                .authorFollowerIds(followerIds)
+                .followerIds(followerIds)
                 .build();
     }
 
     public List<Long> getFollowerIds(Long authorId) {
-        List<Long> followerIds = new ArrayList<>();
+        List<Long> followerIds;
         Optional<UserForCache> userFromCacheOptional = userCacheService.getUserFromCache(authorId);
         if (userFromCacheOptional.isPresent()) {
             UserForCache userFromCache = userFromCacheOptional.get();

@@ -1,7 +1,6 @@
 package faang.school.postservice.dto.post;
 
 import faang.school.postservice.controller.PostController;
-import faang.school.postservice.dto.comment.CommentFeedDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -31,3 +30,8 @@ public class PostDto {
     private boolean published;
     private boolean deleted;
 }
+
+//private String authorName;
+//
+//private List<CommentFeedDto> lastComments;
+

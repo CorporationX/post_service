@@ -6,7 +6,7 @@ import faang.school.postservice.dto.post.PostFeedDto;
 import faang.school.postservice.events.PostViewEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.redis.PostForCache;
+import faang.school.postservice.model.cache.PostForCache;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;

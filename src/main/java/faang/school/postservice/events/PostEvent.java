@@ -17,5 +17,5 @@ public class PostEvent {
 
     private Long authorId;
 
-    private List<Long> authorFollowerIds;
+    private List<Long> followerIds;
 }

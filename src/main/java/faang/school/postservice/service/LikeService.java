@@ -2,14 +2,13 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeResponseDto;
-import faang.school.postservice.events.LikeEvent;
 import faang.school.postservice.exception.AlreadyExistsException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publishers.LikeEventPublisher;
+import faang.school.postservice.publishers.redis.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
