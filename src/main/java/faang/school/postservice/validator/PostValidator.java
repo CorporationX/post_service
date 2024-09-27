@@ -7,6 +7,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -18,8 +20,10 @@ public class PostValidator {
         log.info("authorId: {}, projectId: {}", authorId, projectId);
 
         if (postDto.getContent().isBlank() || isNotValidCreator(authorId, projectId)) {
-            log.warn("PostDto is not valid");
-            throw new DataValidationException("Either an author or a project is required");
+            Map<String, String> fieldErrors = new HashMap<>();
+            fieldErrors.put("postId: %d".formatted(postDto.getId()),
+                    "Either an author or a project is required");
+            throw new DataValidationException("PostDto is not valid", fieldErrors);
         }
     }
 
@@ -32,7 +36,10 @@ public class PostValidator {
     public void validateCreator(boolean exists) {
         log.info("Creator exists: {}", exists);
         if (!exists) {
-            throw new DataValidationException("There is no project/user");
+            Map<String, String> fieldErrors = new HashMap<>();
+            fieldErrors.put("Creator",
+                    "no exists");
+            throw new DataValidationException("There is no project/user", fieldErrors);
         }
     }
 

@@ -49,35 +49,4 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST.value())
                 .build();
     }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleConstraintViolationException(ConstraintViolationException e) {
-        log.error(e.getMessage(), e);
-        return ErrorResponse.builder()
-                .serviceName("PostService")
-                .globalMessage("Validation error occurred")
-                .fieldErrors(e.getFieldErrors())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .build();
-    }
-
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
-//        log.error(exception.getMessage());
-//        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
-//    }
-
-//    @ExceptionHandler(EntityNotFoundException.class)
-//    public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException exception) {
-//        log.error(exception.getMessage());
-//        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
-//    }
-
-//    @ExceptionHandler(DataValidationException.class)
-//    public ResponseEntity<String> handleDataValidationException(DataValidationException exception) {
-//        log.error(exception.getMessage());
-//        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
-//    }
 }

@@ -65,16 +65,21 @@ public class CommentServiceImplTest {
                 .id(1L)
                 .postId(1L)
                 .content("Test Comment")
+                .authorId(1L)
                 .authorName(userDto.getUsername())
                 .build();
 
         commentDto.setAuthorId(1L);
         commentDto.setAuthorName(userDto.getUsername());
         commentDto.setPostId(commentDto.getPostId());
+
         comment = new Comment();
         comment.setId(1L);
         comment.setContent("Test Comment");
         comment.setPost(post);
+        comment.setAuthorId(1L);
+
+        when(userServiceClient.getUser(1L)).thenReturn(userDto);
     }
 
     @Test

@@ -65,7 +65,7 @@ class PostValidatorTest {
     }
 
     private void assertPost() {
-        String correctMessage = "Either an author or a project is required";
+        String correctMessage = "PostDto is not valid";
         var exception = assertThrows(DataValidationException.class,
                 () -> postValidator.validatePost(postDto));
         assertEquals(correctMessage, exception.getMessage());

@@ -16,9 +16,7 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -91,7 +89,10 @@ public class CommentServiceImpl implements CommentService {
         UserDto user = userClient.getUser(commentDto.getAuthorId());
 
         if (user == null) {
-            throw new DataValidationException("There is no user");
+            Map<String, String> fieldErrors = new HashMap<>();
+            fieldErrors.put("authorId: %d".formatted(commentDto.getAuthorId()), "There is no user");
+            String message = String.format("Validation failed for comment with ID: %d", commentDto.getId());
+            throw new DataValidationException(message, fieldErrors);
         }
 
         return user;
@@ -109,31 +110,48 @@ public class CommentServiceImpl implements CommentService {
 
     private void validateAuthorIdUpdateComment(CommentDto commentDto) {
         if (!(commentDto.getAuthorId() == getComment(commentDto).getAuthorId())) {
-            throw new DataValidationException("Author name can't be changed");
+            Map<String, String> fieldErrors = new HashMap<>();
+            fieldErrors.put("authorId: %d".formatted(commentDto.getAuthorId()),
+                    "The request author ID and the comment author ID do not match");
+            throw new DataValidationException("You cannot edit this comment", fieldErrors);
         }
     }
 
     private void validatePostIdUpdateComment(CommentDto commentDto) {
         if (!(commentDto.getPostId() == getComment(commentDto).getPost().getId())) {
-            throw new DataValidationException("Post id can't be changed");
+            Map<String, String> fieldErrors = new HashMap<>();
+            fieldErrors.put("postId: %d".formatted(commentDto.getPostId()),
+                    "The request post id and the comment post id do not match");
+            throw new DataValidationException("Invalid post id", fieldErrors);
         }
     }
 
     private void validateAuthorNameUpdateComment(CommentDto commentDto) {
         if (!(commentDto.getAuthorName().equals(userClient.getUser(commentDto.getAuthorId()).getUsername()))) {
-            throw new DataValidationException("Author name can't be changed");
+            Map<String, String> fieldErrors = new HashMap<>();
+            fieldErrors.put("authorName: %s".formatted(commentDto.getAuthorName()),
+                    "The name of the request author does not match the name of the comment author");
+            String message = String.format("%s are not the author of the comment ", commentDto.getAuthorName());
+            throw new DataValidationException(message, fieldErrors);
         }
     }
 
     private void validateCommentIdUpdateComment(CommentDto commentDto) {
         if (!(commentDto.getId().equals(getComment(commentDto).getId()))) {
-            throw new DataValidationException("Comment id can't be changed");
+            Map<String, String> fieldErrors = new HashMap<>();
+            fieldErrors.put("commentId: %d".formatted(commentDto.getId()),
+                    "Request comment id does not match comment id");
+            throw new DataValidationException("Comment ids do not match", fieldErrors);
         }
     }
 
     private void validateAuthorDeleteComment(CommentDto commentDto, Comment comment) {
         if (!(comment.getAuthorId() == commentDto.getAuthorId())) {
-            throw new DataValidationException("Comment can't be deleted by this user");
+            Map<String, String> fieldErrors = new HashMap<>();
+            fieldErrors.put("authorId: %d".formatted(commentDto.getAuthorId()),
+                    "The request author ID and the comment author ID do not match");
+            String message = String.format("%d this user cannot delete a comment. ", commentDto.getAuthorId());
+            throw new DataValidationException(message, fieldErrors);
         }
     }
 }
