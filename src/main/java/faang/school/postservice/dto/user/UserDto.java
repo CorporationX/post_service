@@ -6,10 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserDto {
     @NotNull(message = "User ID cannot be null")
     private Long id;
