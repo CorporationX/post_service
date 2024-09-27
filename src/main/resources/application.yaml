@@ -32,10 +32,20 @@ spring:
         post: post_channel
 
     kafka:
-      port:
-      host:
+      bootstrap-servers: kafka:9092
       topics:
-        posts: posts
+        post:
+          name: post
+          partitions: 3
+          replicas: 1
+        comment:
+          name: comment
+          partitions: 3
+          replicas: 1
+        like:
+          name: like
+          partitions: 3
+          replicas: 1
 
   aws:
     s3:
@@ -92,6 +102,10 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+feed:
+  kafka:
+    subscribers-batch-size: 1000
 
 #springdoc:
 #  api-docs:
