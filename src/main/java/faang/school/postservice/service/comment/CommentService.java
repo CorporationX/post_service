@@ -1,8 +1,10 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.event.user.UserCacheEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.user.UserCacheProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
     private final ModerationDictionary moderationDictionary;
+    private final UserCacheProducer userCacheProducer;
     private final ExecutorService moderationExecutor;
 
     @Value("${comment.batchSize}")
@@ -35,12 +38,14 @@ public class CommentService {
             CommentMapper commentMapper,
             CommentValidator commentValidator,
             ModerationDictionary moderationDictionary,
+            UserCacheProducer userCacheProducer,
             @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor
     ) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
         this.commentValidator = commentValidator;
         this.moderationDictionary = moderationDictionary;
+        this.userCacheProducer = userCacheProducer;
         this.moderationExecutor = moderationExecutor;
     }
 
@@ -48,6 +53,9 @@ public class CommentService {
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         commentValidator.findPostById(postId);
         Comment savedComment = commentRepository.save(commentMapper.toEntity(commentDto));
+
+        userCacheProducer.sendEvent(new UserCacheEvent(savedComment.getAuthorId()));
+
         return commentMapper.toDto(savedComment);
     }
 

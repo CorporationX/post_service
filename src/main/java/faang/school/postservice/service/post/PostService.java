@@ -52,11 +52,11 @@ public class PostService {
     private final PostServiceValidator validator;
 
     private final PostProducer postProducer;
+    private final UserCacheProducer userCacheProducer;
 
     private final UserServiceClient userServiceClient;
 
     private final PostCacheRepository postCacheRepository;
-    private final UserCacheProducer userCacheProducer;
 
     @Transactional
     public PostDto createPostDraft(DraftPostDto draft) {

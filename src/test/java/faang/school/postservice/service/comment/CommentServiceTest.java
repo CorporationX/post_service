@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.user.UserCacheProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +33,9 @@ public class CommentServiceTest {
 
     @Mock
     private CommentValidator commentValidator;
+
+    @Mock
+    private UserCacheProducer userCacheProducer;
 
     @InjectMocks
     private CommentService commentService;
