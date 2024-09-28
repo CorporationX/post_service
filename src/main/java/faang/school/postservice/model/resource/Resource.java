@@ -1,7 +1,10 @@
-package faang.school.postservice.model;
+package faang.school.postservice.model.resource;
 
+import faang.school.postservice.model.Post;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,6 +44,11 @@ public class Resource {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @Column(name = "name", length = 150)
     private String name;
 
@@ -50,4 +58,8 @@ public class Resource {
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 255)
+    private ResourceStatus status;
 }
