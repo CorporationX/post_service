@@ -87,3 +87,6 @@ postServiceThreadPool:
   poolFeed: 4
   poolFeedAlgo: 4
   poolHeatCache: 10
+
+value:
+  feedSize: 20

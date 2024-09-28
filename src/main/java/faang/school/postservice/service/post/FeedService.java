@@ -39,7 +39,7 @@ public class FeedService {
     private String post;
     @Value("${spring.data.redis.directory.comment}")
     private String comment;
-    @Value("${spring.data.redis.directory.infAuthor}")
+    @Value("${spring.data.redis.directory.infoAboutAuthor}")
     private String infAuthor;
     @Value("${value.feedSize}")
     private int feedSize;
