@@ -1,9 +1,8 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.cache.RedisManager;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dictionary.ModerationDictionary;
-import faang.school.postservice.publisher.PostCreatePublisher;
-import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
@@ -13,8 +12,11 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostCreatePublisher;
+import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.repository.post.PostFilterRepository;
 import faang.school.postservice.repository.post.PostRepository;
+import faang.school.postservice.service.kafka.KafkaPublisherService;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,9 +42,19 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -76,6 +88,12 @@ public class PostServiceTest {
 
     private List<PostFilterRepository> postFilterRepository;
 
+    @Mock
+    private KafkaPublisherService kafkaPublisherService;
+
+    @Mock
+    private RedisManager redisManager;
+
 //    @InjectMocks
     private PostService postService;
 
@@ -89,7 +107,9 @@ public class PostServiceTest {
         post = Post.builder().id(1L).content("content").authorId(null).projectId(1L).build();
         postFilterRepository = List.of(authorFilterSpecification);
 
-        postService = new PostService(postRepository, postFilterRepository, postValidator, postMapper, postPublishService, postViewPublisher, postCreatePublisher, userContext, moderationDictionary);
+        postService = new PostService(postRepository, postFilterRepository, postValidator,
+                postMapper, postPublishService, postViewPublisher, postCreatePublisher,
+                userContext, moderationDictionary, kafkaPublisherService, redisManager);
     }
 
     @Test

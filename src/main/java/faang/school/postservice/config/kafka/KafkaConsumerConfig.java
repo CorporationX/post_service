@@ -20,10 +20,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KafkaConsumerConfig {
     private final String hostWithPortFromProps;
-    @Value("${spring.kafka.host}")
-    private String host;
-    @Value("${spring.kafka.port}")
-    private int port;
     @Value("${spring.kafka.topic.consumer.group-id.post-views}")
     private String postViewGroupId;
 
@@ -45,7 +41,7 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "postViewGroupId");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, postViewGroupId);
         return new DefaultKafkaConsumerFactory<>(props);
     }
 }
