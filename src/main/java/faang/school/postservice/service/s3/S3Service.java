@@ -7,5 +7,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface S3Service {
+
     List<Resource> addFilesToStorage(List<MultipartFile> files, Post post);
+
+    Resource updateFileInStorage(String key, MultipartFile newFile, Post post);
+
+    void removeFileInStorage(String key);
 }

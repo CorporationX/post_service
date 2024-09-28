@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +29,7 @@ public class ResourceService {
 
     @Transactional
     public List<Resource> addImagesToPost(List<MultipartFile> files, Long postId) {
-        validateContentType(files);
+        files.forEach(this::validateContentType);
         Post post = postRepository.findById(postId).orElseThrow();
         validateAmount(post, files);
 
@@ -41,7 +40,25 @@ public class ResourceService {
 
     @Transactional
     public Resource updateImageInPost(MultipartFile file, Long resourceId, Long postId) {
-        return null;
+        validateContentType(file);
+        Resource existImage = resourceRepository.findById(resourceId).orElseThrow();
+        validateResourceBelongPost(existImage, postId);
+
+        Post post = postRepository.findById(postId).orElseThrow();
+        String existImageKey = existImage.getKey();
+        Resource newImage = s3ImageService.updateFileInStorage(existImageKey, file, post);
+        newImage.setId(resourceId);
+
+        return resourceRepository.save(newImage);
+    }
+
+    @Transactional
+    public void removeImageInPost(Long resourceId, Long postId) {
+        Resource existImage = resourceRepository.findById(resourceId).orElseThrow();
+
+        String existImageKey = existImage.getKey();
+        s3ImageService.removeFileInStorage(existImageKey);
+        resourceRepository.deleteById(resourceId);
     }
 
     private void validateAmount(Post post, List<MultipartFile> files) {
@@ -55,13 +72,17 @@ public class ResourceService {
         }
     }
 
-    private void validateContentType(List<MultipartFile> files) {
-        long imageAmount = files.stream()
-                .filter(file -> Objects.nonNull(file.getContentType()))
-                .filter(file -> allowedPictureFileType.contains(file.getContentType()))
-                .count();
-        if (imageAmount != files.size()) {
-            throw new IllegalArgumentException("Some file not .jpeg, .png, .webp image");
+    private void validateResourceBelongPost(Resource resource, Long postId) {
+        if (resource.getPost().getId() != postId) {
+            throw new IllegalArgumentException("This resource doesn`t belong this post");
         }
     }
+
+    private void validateContentType(MultipartFile file) {
+        if (!allowedPictureFileType.contains(file.getContentType())) {
+            throw new IllegalArgumentException("file " + file.getOriginalFilename() + " not .jpeg, .png, .webp image");
+        }
+    }
+
+
 }

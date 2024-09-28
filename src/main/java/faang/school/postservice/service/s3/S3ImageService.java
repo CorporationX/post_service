@@ -41,6 +41,17 @@ public class S3ImageService implements S3Service {
                 .toList();
     }
 
+    @Override
+    public Resource updateFileInStorage(String existImageKey, MultipartFile newFile, Post post) {
+        s3client.deleteObject(bucketName, existImageKey);
+        return addFileToStorage(newFile, post);
+    }
+
+    @Override
+    public void removeFileInStorage(String key) {
+        s3client.deleteObject(bucketName, key);
+    }
+
     private Resource addFileToStorage(MultipartFile file, Post post) {
         String customKey = format("%d/%d_%s", post.getId(), System.currentTimeMillis(), file.getOriginalFilename());
         try {
@@ -94,7 +105,6 @@ public class S3ImageService implements S3Service {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             ImageIO.write(compressedImage, format, output);
             return new ByteArrayInputStream(output.toByteArray());
-
 
         } catch (IOException exception) {
             throw new FileException("Error with compress image");

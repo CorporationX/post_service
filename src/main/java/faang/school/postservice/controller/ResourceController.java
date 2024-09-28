@@ -28,12 +28,18 @@ public class ResourceController {
         return resourceMapper.toResourceDtoList(resources);
     }
 
-    @PutMapping("/images/edit")
+    @PutMapping("/images/update")
     public ResourceDto updateImageInPost(@RequestBody MultipartFile file,
                                          @RequestParam("resource-id") Long resourceId,
                                          @RequestParam("post-id") Long postId) {
 
         Resource updatedResource = resourceService.updateImageInPost(file, resourceId, postId);
         return resourceMapper.toResourceDto(updatedResource);
+    }
+
+    @PutMapping("/images/remove")
+    public void removeImageInPost(@RequestParam("resource-id") Long resourceId,
+                                  @RequestParam("post-id") Long postId) {
+        resourceService.removeImageInPost(resourceId, postId);
     }
 }
