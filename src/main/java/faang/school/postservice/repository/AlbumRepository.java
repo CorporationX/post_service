@@ -50,7 +50,7 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     @Query(nativeQuery = true, value = """
             SELECT id FROM album
-            WHERE visibility = 'SUBSCRIBERS' AND author_id IN (:followingsIds)
+            WHERE visibility = 'SUBSCRIBERS' AND author_id IN (:authorIds)
             """)
     List<Long> findAlbumIdsByAuthorIdsAndSubsStatus(List<Long> authorIds);
 }
