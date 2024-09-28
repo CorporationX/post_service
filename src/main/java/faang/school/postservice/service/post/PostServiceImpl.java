@@ -10,6 +10,7 @@ import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -150,5 +151,10 @@ public class PostServiceImpl implements PostService {
         } else {
             projectServiceClient.getProject(postDto.getProjectId());
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> findPostIdsByFolloweeId(Long userId, Long startPostId) {
+        return postRepository.findPostIdsByFolloweeId(userId, startPostId);
     }
 }
