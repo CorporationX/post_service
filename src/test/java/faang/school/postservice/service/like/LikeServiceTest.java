@@ -109,6 +109,7 @@ public class LikeServiceTest {
         when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID)).thenReturn(Optional.empty());
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+
         assertThrows(EntityNotFoundException.class, () -> likeService.likePost(POST_ID));
 
         verify(likeRepository).findByPostIdAndUserId(POST_ID, USER_ID);
@@ -123,6 +124,7 @@ public class LikeServiceTest {
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID)).thenReturn(Optional.of(new Like()));
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+
         assertThrows(UserAlreadyLikedException.class, () -> likeService.likePost(POST_ID));
 
         verify(likeRepository).findByPostIdAndUserId(POST_ID, USER_ID);
@@ -152,6 +154,7 @@ public class LikeServiceTest {
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID)).thenReturn(Optional.empty());
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+
         assertThrows(EntityNotFoundException.class, () -> likeService.removeLikeOnPost(POST_ID));
         verify(userContext).getUserId();
         verify(likeRepository).findByPostIdAndUserId(POST_ID, USER_ID);
@@ -190,6 +193,7 @@ public class LikeServiceTest {
         when(likeRepository.findByCommentIdAndUserId(COMMENT_ID, USER_ID)).thenReturn(Optional.empty());
         when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.empty());
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+
         assertThrows(EntityNotFoundException.class, () -> likeService.likeComment(COMMENT_ID));
 
         verify(likeRepository).findByCommentIdAndUserId(COMMENT_ID, USER_ID);
@@ -204,6 +208,7 @@ public class LikeServiceTest {
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(likeRepository.findByCommentIdAndUserId(COMMENT_ID, USER_ID)).thenReturn(Optional.of(new Like()));
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+
         assertThrows(UserAlreadyLikedException.class, () -> likeService.likeComment(POST_ID));
 
         verify(likeRepository).findByCommentIdAndUserId(COMMENT_ID, USER_ID);
@@ -218,6 +223,7 @@ public class LikeServiceTest {
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(likeRepository.findByCommentIdAndUserId(COMMENT_ID, USER_ID)).thenReturn(Optional.of(like));
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+
         likeService.removeLikeOnComment(COMMENT_ID);
 
         verify(likeRepository).delete(like);

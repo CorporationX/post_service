@@ -24,6 +24,13 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ErrorResponse handleEntityNotFoundException(EntityNotFoundException ex) {
+        log.error(ex.getMessage(), ex);
+        return new ErrorResponse(ex.getMessage());
+    }
+
     @ExceptionHandler(PostAlreadyPublishedException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleExceptionWithBadRequest(RuntimeException ex) {
@@ -31,9 +38,9 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(ex.getMessage());
     }
 
-    @ExceptionHandler({EntityNotFoundException.class, FeignException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleExceptionWithNotFound(RuntimeException ex) {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(UserAlreadyLikedException.class)
+    public ErrorResponse handleUserAlreadyLikedException(UserAlreadyLikedException ex) {
         log.error(ex.getMessage(), ex);
         return new ErrorResponse(ex.getMessage());
     }

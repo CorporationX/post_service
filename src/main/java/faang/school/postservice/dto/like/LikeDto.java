@@ -6,4 +6,6 @@ public record LikeDto(Long userId,
                       @JsonInclude(JsonInclude.Include.NON_NULL)
                       Long postId,
                       @JsonInclude(JsonInclude.Include.NON_NULL)
-                      Long commentId){}
+                      Long commentId) {
+
+}
