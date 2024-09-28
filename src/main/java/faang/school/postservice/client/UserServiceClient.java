@@ -12,8 +12,11 @@ import java.util.List;
 @FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}/api")
 public interface UserServiceClient {
 
-    @GetMapping("/api/users/{userId}")
+    @GetMapping("/users/{userId}")
     UserDto getUser(@PathVariable long userId);
+
+    @GetMapping("/users/follower/{userId}")
+    List<Long> getFollowerIds(@PathVariable long userId);
 
     @PostMapping("/users/")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);

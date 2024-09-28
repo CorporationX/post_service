@@ -87,6 +87,28 @@ payment-service:
   host: localhost
   port: 9080
 
+kafka:
+  host-port: localhost:9092
+  topic:
+    posts-topic:
+      name: posts
+      group-id: postGroup
+    user-cache-topic:
+      name: user-cache
+      group-id: user-cache-group
+
+async:
+  core-pool-size: 5
+  max-pool-size: 10
+  queue-capacity: 100
+  thread-name-prefix: "AsyncThread-"
+
+cache:
+  post-ttl-seconds: 86400
+
+feed:
+  max-size: 500
+
 #springdoc:
 #  api-docs:
 #    path: /docs
