@@ -12,42 +12,42 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1")
+@RequestMapping("api/v1/likes")
 public class LikeController {
     private final LikeMapper likeMapper;
     private final LikeService likeService;
 
-    @PostMapping("/posts/{postId}/like")
+    @PostMapping("/posts/like")
     @ResponseStatus(HttpStatus.CREATED)
-    LikeDto addToPost(@NonNull @PathVariable Long postId, @RequestBody @Validated LikeDto likeDto) {
+    LikeDto addToPost(@NonNull @RequestParam Long postId, @RequestBody @Validated LikeDto likeDto) {
         Like fakeLike = likeMapper.toEntity(likeDto);
         Like like = likeService.addToPost(postId, fakeLike);
 
         return likeMapper.toDto(like);
     }
 
-    @PostMapping("/comments/{commentId}/like")
+    @PostMapping("/comments/like")
     @ResponseStatus(HttpStatus.CREATED)
-    LikeDto addToComment(@NonNull @PathVariable Long commentId, @RequestBody @Validated LikeDto likeDto) {
+    LikeDto addToComment(@NonNull @RequestParam Long commentId, @RequestBody @Validated LikeDto likeDto) {
         Like fakeLike = likeMapper.toEntity(likeDto);
         Like like = likeService.addToComment(commentId, fakeLike);
 
         return likeMapper.toDto(like);
     }
 
-    @DeleteMapping("/remove/post/{postId}")
+    @DeleteMapping("/post")
     @ResponseStatus(HttpStatus.OK)
-    void removeFromPost(@NonNull @PathVariable Long postId, @RequestParam Long userId) {
+    void removeFromPost(@NonNull @RequestParam Long postId, @RequestParam Long userId) {
         likeService.removeFromPost(postId, userId);
     }
 
-    @DeleteMapping("/remove/comment/{commentId}")
+    @DeleteMapping("/comment")
     @ResponseStatus(HttpStatus.OK)
-    void removeFromComment(@NonNull @PathVariable Long commentId, @RequestParam Long userId) {
+    void removeFromComment(@NonNull @RequestParam Long commentId, @RequestParam Long userId) {
         likeService.removeFromComment(commentId, userId);
     }
 
-    @GetMapping("/likes/posts")
+    @GetMapping("/posts")
     int getLikesByPost(@NonNull @RequestParam Long postId) {
         return likeService.getLikesByPost(postId);
     }

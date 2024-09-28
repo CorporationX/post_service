@@ -30,8 +30,8 @@ public class LikeService {
     public Like addToPost(Long postId, Like tempLike) {
         checkUserExist(tempLike.getUserId());
 
-        Optional<Post> post = postRepository.findById(postId);
-        if (post.isEmpty()) {
+        Optional<Post> postOptional = postRepository.findById(postId);
+        if (postOptional.isEmpty()) {
             throw new NoSuchElementException(Util.POST_NOT_EXIST);
         }
 
@@ -40,11 +40,12 @@ public class LikeService {
             throw new RuntimeException(Util.SECOND_LIKE);
         }
 
-        tempLike.setPost(post.get());
+        Post post = postOptional.get();
+        tempLike.setPost(post);
         Like newLike = likeRepository.save(tempLike);
-        List<Like> likeList = post.get().getLikes();
+        List<Like> likeList = post.getLikes();
         likeList.add(newLike);
-        post.get().setLikes(likeList);
+        post.setLikes(likeList);
 
         return newLike;
     }
@@ -53,8 +54,8 @@ public class LikeService {
     public Like addToComment(Long commentId, Like entity) {
         checkUserExist(entity.getUserId());
 
-        Optional<Comment> comment = commentRepository.findById(commentId);
-        if (comment.isEmpty()) {
+        Optional<Comment> commentOptional = commentRepository.findById(commentId);
+        if (commentOptional.isEmpty()) {
             throw new NoSuchElementException(Util.COMMENT_NOT_EXIST);
         }
 
@@ -62,12 +63,12 @@ public class LikeService {
         if (like.isPresent()) {
             throw new RuntimeException(Util.SECOND_LIKE);
         }
-
-        entity.setComment(comment.get());
+        Comment comment = commentOptional.get();
+        entity.setComment(comment);
         Like newLike = likeRepository.save(entity);
-        List<Like> likeList = comment.get().getLikes();
+        List<Like> likeList = comment.getLikes();
         likeList.add(newLike);
-        comment.get().setLikes(likeList);
+        comment.setLikes(likeList);
 
         return newLike;
     }
@@ -116,10 +117,11 @@ public class LikeService {
     }
 
     private void checkUserExist(Long userId) {
+        //TODO: необходимо реализовать контроллер для UserService
+        //UserDto userDto = userServiceClient.getUser(userId);
+
         // Поскольку контроллера для UserService пока нет, создаем заглушку
         UserDto userDto = new UserDto(1L, "Alex", "alex@gmail.com");
-
-        //UserDto userDto = userServiceClient.getUser(userId);
 
         if (userDto.getId() == null) {
             throw new NoSuchElementException(Util.USER_NOT_EXIST);
