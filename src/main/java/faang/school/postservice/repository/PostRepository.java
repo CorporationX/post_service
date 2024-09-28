@@ -33,6 +33,6 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query(nativeQuery = true, value = "SELECT p.id FROM post p JOIN subscription s ON s.follower_id = p.author_id" +
             " JOIN users u ON s.follower_id = u.id WHERE s.followee_id = :userId AND (:postId IS NULL OR p.id < :postId)" +
-            " AND p.published = true ORDER BY p.updated_at DESC LIMIT 500")
+            " ORDER BY p.updated_at DESC LIMIT 500")
     List<Long> findPostIdsByFolloweeId(@Param("followeeId") Long userId, @Param("postId") Long postId);
 }
