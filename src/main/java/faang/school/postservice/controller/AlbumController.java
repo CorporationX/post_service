@@ -9,27 +9,23 @@ import java.util.List;
 import faang.school.postservice.service.AlbumService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@ResponseStatus(HttpStatus.OK)
-@RequestMapping("api/v1/albums")
+@RequestMapping("/api/v1/album")
 public class AlbumController {
     private final AlbumService albumService;
     private final UserContext userContext;
 
-    @PostMapping("/")
+    @PostMapping("")
     public void createAlbum(@RequestBody @Valid AlbumDto albumDto) {
         albumDto.setAuthorId(userContext.getUserId());
         albumService.createAlbum(albumDto);
     }
 
     @PutMapping("/{id}")
-    public void updateAlbum(
-            @PathVariable Long id,
-            @RequestBody @Valid AlbumDto albumDto) {
+    public void updateAlbum(@PathVariable Long id, @RequestBody @Valid AlbumDto albumDto) {
         if (albumDto.getAuthorId() != null) {
             throw new DataValidationException("Only author can modify albums");
         }
@@ -37,27 +33,25 @@ public class AlbumController {
         albumService.updateAlbum(id, albumDto);
     }
 
-    @PutMapping("/{id}/posts/{postId}")
-    public void addPostToAlbum(
-            @PathVariable Long id,
-            @PathVariable Long postId) {
+    @PutMapping("/{id}/post/{postId}")
+    public void addPostToAlbum(@PathVariable Long id, @PathVariable Long postId) {
         albumService.addPostToAlbum(id, postId);
     }
 
-    @DeleteMapping("/{id}/posts/{postId}")
+    @DeleteMapping("/{id}/post/{postId}")
     public void deletePostFromAlbum(
             @PathVariable Long id,
             @PathVariable Long postId) {
         albumService.deletePostFromAlbum(id, postId);
     }
 
-    @PostMapping("/{id}/favorites")
+    @PostMapping("/{id}/favorite")
     public void addAlbumToFavorites(@PathVariable Long id) {
         Long userId = userContext.getUserId();
         albumService.addAlbumToFavorites(id, userId);
     }
 
-    @DeleteMapping("/{id}/favorites")
+    @DeleteMapping("/{id}/favorite")
     public void deleteAlbumFromFavorites(@PathVariable Long id) {
         Long userId = userContext.getUserId();
         albumService.deleteAlbumFromFavorites(id, userId);
@@ -68,7 +62,7 @@ public class AlbumController {
         return albumService.getAlbumById(id);
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public List<AlbumDto> getAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
         Long authorId = userContext.getUserId();
         return albumService.getAlbums(authorId, albumFilterDto);

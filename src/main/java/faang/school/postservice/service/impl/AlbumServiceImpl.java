@@ -3,7 +3,7 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
-import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.filter.AlbumFilter;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
@@ -11,6 +11,7 @@ import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.service.AlbumService;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -87,7 +88,9 @@ public class AlbumServiceImpl implements AlbumService {
                 .orElseThrow(() -> new EntityNotFoundException("Album not found"));
 
         AlbumDto albumDto = albumMapper.toDto(album);
-        List<Long> postIds = album.getPosts().stream().map(Post::getId).toList();
+        List<Long> postIds = album.getPosts().stream()
+                .map(Post::getId)
+                .toList();
         albumDto.setPostIds(postIds);
 
         return albumDto;
@@ -135,13 +138,13 @@ public class AlbumServiceImpl implements AlbumService {
 
     private void validateAlbumAuthor(Long authorId) {
         if (!userServiceClient.existsUserById(authorId)) {
-            throw new EntityNotFoundException("User not found");
+            throw new UserNotFoundException("User not found");
         }
     }
 
     private void validateAlbumTitle(AlbumDto albumDto) {
         if (albumRepository.existsByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId())) {
-            throw new DataValidationException("Album with title " + albumDto.getTitle() + " already exists");
+            throw new EntityExistsException("Album with title " + albumDto.getTitle() + " already exists");
         }
     }
 }
