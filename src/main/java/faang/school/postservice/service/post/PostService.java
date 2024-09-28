@@ -1,19 +1,25 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.cache.RedisManager;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.event.PostCreateEventDto;
-import faang.school.postservice.publisher.PostCreatePublisher;
-import faang.school.postservice.publisher.PostViewPublisher;
-import faang.school.postservice.dto.event.PostViewEventDto;
 import faang.school.postservice.dictionary.ModerationDictionary;
+import faang.school.postservice.dto.event.PostCreateEventDto;
+import faang.school.postservice.dto.event.PostViewEventDto;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.post.*;
+import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostFilterDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.post.SortField;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostCreatePublisher;
+import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.repository.post.PostFilterRepository;
 import faang.school.postservice.repository.post.PostRepository;
+import faang.school.postservice.service.kafka.KafkaPublisherService;
 import faang.school.postservice.validator.post.PostValidator;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.Valid;
@@ -49,12 +55,13 @@ public class PostService {
     private final PostCreatePublisher postCreatePublisher;
     private final UserContext userContext;
     private final ModerationDictionary moderationDictionary;
+    private final KafkaPublisherService kafkaPublisherService;
+    private final RedisManager redisManager;
 
     @Value("${post.publisher.batch-size}")
     private int postsBatchSize;
     @Value("${post.moderator.count-posts-in-thread}")
     private int countPostsInThread;
-
 
     public void publishScheduledPosts() {
         log.info("Start publishing posts, at: {}", LocalDateTime.now());
@@ -84,7 +91,9 @@ public class PostService {
                 .receivedAt(LocalDateTime.now())
                 .build());
 
-        return postMapper.toDto(createdPost);
+        PostDto postDto = postMapper.toDto(createdPost);
+        kafkaPublisherService.publishingPostToKafka(postDto);
+        return postDto;
     }
 
     @Transactional
@@ -111,6 +120,18 @@ public class PostService {
         Post postToDelete = getEntityById(id);
 
         postRepository.save(postToDelete);
+    }
+
+    @Transactional
+    public void savePostInDataBase(PostDto postDto) {
+        if (postRepository.existsById(postDto.getId())) {
+            log.error("Post with id: {}, already exists, it is impossible to create another post with a similar id, time: {}",
+                    postDto.getId(), LocalDateTime.now());
+            throw new DataValidationException("The post already exists, it is impossible to create a post with it.");
+        }
+        Post post = postMapper.toPost(postDto);
+        postRepository.save(post);
+        redisManager.cachePostAuthor(postDto.getAuthorId());
     }
 
     @Transactional

@@ -21,6 +21,7 @@ spring:
     redis:
       port: 6379
       host: localhost
+      time-to-live: 24
       channels:
         post-view: post_view_channel
         post-create: post_channel
@@ -33,6 +34,17 @@ spring:
         max-size: 10
         core-size: 6
         queue-capacity: 20
+
+  kafka:
+    host: localhost
+    port: 9092
+    topic:
+      producer:
+        post-views: post-views
+      consumer:
+        post-views: post-views
+        group-id:
+          post-views: group-post-view
 
 server:
   port: 8081
