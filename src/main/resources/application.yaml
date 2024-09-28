@@ -29,7 +29,7 @@ spring:
         post_view_channel: post_view_channel
         like_topic: like_topic
     kafka:
-      bootstrap-servers:
+      bootstrap-servers: //localhost:29092
       consumer:
         group-id: 1
       topic:

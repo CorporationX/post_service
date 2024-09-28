@@ -21,7 +21,7 @@ public class CommentFeedDto {
 
     private Long postId;
 
-    private Long likeAmount;
+    private Long likesAmount;
 
     private LocalDateTime createdAt;
 }

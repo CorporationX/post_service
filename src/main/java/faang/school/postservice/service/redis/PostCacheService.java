@@ -5,6 +5,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.cache.PostForCache;
 import faang.school.postservice.repository.redis.PostCacheRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.TreeSet;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostCacheService {
 
     private final PostCacheRepository postCacheRepository;
@@ -26,6 +28,7 @@ public class PostCacheService {
     public void save(Post post) {
         PostForCache postForSaveToCache = postMapper.toPostForCache(post);
         postCacheRepository.save(postForSaveToCache);
+        log.info("Post with id = {} saved to cache", post.getId());
     }
 
     public TreeSet<PostForCache> getAllPostsByIds(Iterable<Long> ids) {

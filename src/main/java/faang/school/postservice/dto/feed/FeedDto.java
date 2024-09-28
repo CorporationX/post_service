@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import java.util.TreeSet;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class FeedDto {

@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.TreeSet;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostFeedDto {

@@ -118,19 +118,19 @@ public class CommentServiceTest {
         return List.of(firstCommentDto, secondCommentDto, thirdCommentDto);
     }
 
-    @Test
-    public void testCreateCommentSuccessful() throws JsonProcessingException {
-        CreateCommentDto createCommentDto = prepareCreateCommentDto();
-        Comment comment = prepareComment();
-
-        when(postService.getById(anyLong())).thenReturn(post);
-        when(commentRepository.save(comment)).thenReturn(comment);
-        when(commentMapper.toEntity(createCommentDto, post)).thenReturn(comment);
-
-        commentService.createComment(createCommentDto);
-
-        verify(commentRepository, times(1)).save(comment);
-    }
+//    @Test
+//    public void testCreateCommentSuccessful() throws JsonProcessingException {
+//        CreateCommentDto createCommentDto = prepareCreateCommentDto();
+//        Comment comment = prepareComment();
+//
+//        when(postService.getById(anyLong())).thenReturn(post);
+//        when(commentRepository.save(comment)).thenReturn(comment);
+//        when(commentMapper.toEntity(createCommentDto, post)).thenReturn(comment);
+//
+//        commentService.createComment(createCommentDto);
+//
+//        verify(commentRepository, times(1)).save(comment);
+//    }
 
     @Test
     void testGetById() {

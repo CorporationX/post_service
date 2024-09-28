@@ -31,7 +31,7 @@ public abstract class PostMapper {
     public abstract Post toEntity(PostDto dto);
 
     @Mapping(target = "likes", source = "likes", qualifiedByName = "sizeToLong")
-    @Mapping(source = "comments", target = "commentIds", qualifiedByName = "mapCommentsToCommentsId")
+    //@Mapping(source = "comments", target = "commentIds", qualifiedByName = "mapCommentsToCommentsId")
     public abstract PostDto toDto(Post post);
 
     public abstract List<PostDto> toDtos(List<Post> posts);
@@ -42,7 +42,7 @@ public abstract class PostMapper {
     @Mapping(target = "viewedAt", expression = "java(java.time.LocalDateTime.now())")
     public abstract PostViewEvent toEvent(Post post);
 
-    @Mapping(source = "comments", target = "lastCommentIds", qualifiedByName = "mapCommentsToLastCommentsId")
+    @Mapping(source = "comments", target = "lastCommentIds", qualifiedByName = "mapCommentsToLastCommentsId", ignore = true)
     @Mapping(source = "comments", target = "commentsAmount", qualifiedByName = "mapToAmount")
     @Mapping(source = "likes", target = "likesAmount", qualifiedByName = "sizeToLong")
     public abstract PostForCache toPostForCache(Post post);

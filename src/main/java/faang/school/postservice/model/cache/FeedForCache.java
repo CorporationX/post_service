@@ -3,6 +3,7 @@ package faang.school.postservice.model.cache;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
@@ -14,6 +15,7 @@ import java.util.TreeSet;
 @RedisHash("Feed")
 public class FeedForCache implements Serializable {
 
+    @Id
     private Long userId;
 
     private TreeSet<Long> postsIds = new TreeSet<>();
