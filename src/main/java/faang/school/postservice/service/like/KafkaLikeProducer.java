@@ -1,5 +1,6 @@
 package faang.school.postservice.service.like;
 
+import faang.school.postservice.model.kafka.KafkaLikeEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,7 +24,7 @@ public class KafkaLikeProducer {
         this.likeTopic = likeTopic;
     }
 
-    public void sendMessage(Object message) {
+    public void sendMessage(KafkaLikeEvent message) {
         log.info("Sending message {} to topic {}.", message, likeTopic.name());
         CompletableFuture<SendResult<String, Object>> future
                 = kafkaTemplate.send(likeTopic.name(), message);
