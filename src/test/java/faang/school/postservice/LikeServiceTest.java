@@ -35,7 +35,6 @@ public class LikeServiceTest {
             .userId(1L)
             .build();
     private static final List<Like> likes = List.of(like1);
-    private static final UserDto user1 = new UserDto(1L, "name", "mail");
 
     @Test
     public void testGetUsersByPostId() {
