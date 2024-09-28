@@ -1,5 +1,6 @@
 package faang.school.postservice.repository.cache;
 
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,14 +21,14 @@ public class PostCacheRepository {
     @Value("${cache.post-ttl-seconds}")
     private long timeToLive;
 
-    public void save(long postId, Post post) {
+    public void save(long postId, PostDto post) {
         String key = CACHE_PREFIX + postId;
         redisTemplate.opsForValue()
                 .set(key, post, timeToLive, TimeUnit.SECONDS);
     }
 
-    public Optional<Post> getPost(long postId) {
+    public Optional<PostDto> getPost(long postId) {
         String key = CACHE_PREFIX + postId;
-        return Optional.ofNullable((Post) redisTemplate.opsForValue().get(key));
+        return Optional.ofNullable((PostDto) redisTemplate.opsForValue().get(key));
     }
 }

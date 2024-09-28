@@ -1,6 +1,5 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.GetPostsDto;
 import faang.school.postservice.dto.post.UpdatablePostDto;
 import faang.school.postservice.dto.resource.PreviewPostResourceDto;
@@ -8,16 +7,13 @@ import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.post.DraftPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.UpdatableResourceDto;
-import faang.school.postservice.event.post.PostEvent;
-import faang.school.postservice.event.user.UserCacheEvent;
 import faang.school.postservice.exception.messages.ValidationExceptionMessage;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.exception.validation.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.post.ResourceMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.producer.post.PostProducer;
-import faang.school.postservice.producer.user.UserCacheProducer;
+import faang.school.postservice.producer.PostServiceProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.cache.PostCacheRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
@@ -51,10 +47,7 @@ public class PostService {
 
     private final PostServiceValidator validator;
 
-    private final PostProducer postProducer;
-    private final UserCacheProducer userCacheProducer;
-
-    private final UserServiceClient userServiceClient;
+    private final List<PostServiceProducer> producers;
 
     private final PostCacheRepository postCacheRepository;
 
@@ -94,10 +87,9 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         Post savedPost = postRepository.save(post);
-        postCacheRepository.save(savedPost.getId(), savedPost);
+        postCacheRepository.save(savedPost.getId(), postMapper.toDto(savedPost));
 
-        sendPostEvent(savedPost.getId(), savedPost.getAuthorId());
-        sendUserCacheEvent(savedPost.getAuthorId());
+        sendAllEvents(savedPost);
 
 
         return postMapper.toDto(savedPost);
@@ -207,17 +199,10 @@ public class PostService {
     }
 
     @Async("taskExecutor")
-    public void sendPostEvent(long postId, long authorId) {
-        List<Long> followers = userServiceClient.getFollowerIds(authorId);
-
-        PostEvent postEvent = new PostEvent(postId, authorId, followers);
-
-        postProducer.sendEvent(postEvent);
-    }
-
-    public void sendUserCacheEvent(long authorId) {
-        UserCacheEvent userCacheEvent = new UserCacheEvent(authorId);
-        userCacheProducer.sendEvent(userCacheEvent);
+    public void sendAllEvents(Post post) {
+        for(var producer: producers) {
+            producer.send(post);
+        }
     }
 
     private List<PostDto> findAllPublishedAuthorPosts(long authorId) {
