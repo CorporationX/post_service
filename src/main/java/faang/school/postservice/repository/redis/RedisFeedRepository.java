@@ -2,8 +2,10 @@ package faang.school.postservice.repository.redis;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CachedPostDto;
+import faang.school.postservice.dto.publishable.FeedHeaterEvent;
 import faang.school.postservice.dto.user.CachedUserDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.producer.KafkaFeedHeaterProducer;
 import faang.school.postservice.service.post.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 
 @Component
@@ -27,6 +30,7 @@ public class RedisFeedRepository {
     private final RedisPostRepository postCache;
     private final RedisUserRepository userCache;
     private final UserServiceClient userServiceClient;
+    private final KafkaFeedHeaterProducer feedHeaterProducer;
 
 
     @Value("${spring.data.redis.feed.prefix}")
@@ -45,13 +49,16 @@ public class RedisFeedRepository {
     public RedisFeedRepository(RedisTemplate<String, Object> redisTemplate,
                                PostService postService,
                                RedisPostRepository postCache,
-                               RedisUserRepository userCache, UserServiceClient userServiceClient) {
+                               RedisUserRepository userCache,
+                               UserServiceClient userServiceClient,
+                               KafkaFeedHeaterProducer feedHeaterProducer) {
         this.redisTemplate = redisTemplate;
         this.zSet = redisTemplate.opsForZSet();
         this.postService = postService;
         this.postCache = postCache;
         this.userCache = userCache;
         this.userServiceClient = userServiceClient;
+        this.feedHeaterProducer = feedHeaterProducer;
     }
 
     public void save(Long userId, Long postId) {
@@ -130,6 +137,21 @@ public class RedisFeedRepository {
         return postIds
                 .stream()
                 .map(obj -> Long.parseLong(obj.toString()))
+                .toList();
+    }
+
+    public void heat(){
+        List<Long> userIds = userServiceClient.getAllUserIds();
+        List<List<Long>> separatedIds = splitList(userIds);
+        separatedIds.stream()
+                .map(FeedHeaterEvent::new)
+                .forEach(feedHeaterProducer::sendEvent);
+    }
+
+    private List<List<Long>> splitList(List<Long> ids) {
+        return IntStream
+                .range(0, (ids.size() + feedBatchSize - 1) / feedBatchSize)
+                .mapToObj(num -> ids.subList(num * feedBatchSize, Math.min(feedBatchSize * (num +1), ids.size())))
                 .toList();
     }
 

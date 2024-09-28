@@ -52,6 +52,7 @@ spring:
       comments: comments
       likes: likes
       post-views: post_views
+      feed-heater: feed_heater
     producer:
       idempotence: true
     consumer:

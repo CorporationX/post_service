@@ -23,4 +23,9 @@ public class FeedController {
         return redisFeedRepository.getFeed(currentUserId, postId);
     }
 
+    @GetMapping("/heat")
+    public void heatFeed() {
+        redisFeedRepository.heat();
+    }
+
 }
