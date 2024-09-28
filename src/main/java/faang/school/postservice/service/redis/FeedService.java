@@ -12,7 +12,6 @@ import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -32,7 +31,7 @@ public class FeedService {
     @Value("${cache.max_size}")
     private int maxFeedSize;
 
-    public List<PostFeedDto> getPostFeedDtos(RequestFeedDto requestFeedDto) {
+    public TreeSet<PostFeedDto> getPostFeedDtos(RequestFeedDto requestFeedDto) {
         Long userId = userContext.getUserId();
         FeedForCache feed = feedRepository.findByUserId(userId);
         List<Long> postIdBatch;
@@ -53,8 +52,8 @@ public class FeedService {
                     .limit(amount)
                     .toList();
         }
-        List<PostFeedDto> postDtosForFeed = new ArrayList<>();
-        List<PostForCache> postBatch = postCacheService.getAllPostsByIds(postIdBatch);
+        TreeSet<PostFeedDto> postDtosForFeed = new TreeSet<>();
+        TreeSet<PostForCache> postBatch = postCacheService.getAllPostsByIds(postIdBatch);
         postBatch.forEach(
                 postForCache -> {
                     PostFeedDto postDtoForFeedFromCache = postForFeedService.getPostDtoForFeedFromCache(postForCache);
@@ -75,8 +74,8 @@ public class FeedService {
         Long newValue = postId;
         redisTemplate.execute((RedisCallback<Object>) connection -> {
             connection.watch(key.getBytes());
-            byte[] currentValueBytes = connection.get(key.getBytes());
-            Integer currentValue = currentValueBytes != null ? Integer.parseInt(new String(currentValueBytes)) : 0;
+            //byte[] currentValueBytes = connection.get(key.getBytes());
+            //Integer currentValue = currentValueBytes != null ? Integer.parseInt(new String(currentValueBytes)) : 0;
             FeedForCache feed = feedRepository.findByUserId(userId);
             TreeSet<Long> feedPostIds = feed.getPostsIds();
             if (feedPostIds.size() >= maxFeedSize) {

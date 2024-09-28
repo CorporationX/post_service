@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.TreeSet;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,7 +17,7 @@ public class FeedController {
     private final FeedService feedService;
 
     @PostMapping("/feed")
-    public List<PostFeedDto> getPostBatch(@RequestBody RequestFeedDto requestFeedDto) {
+    public TreeSet<PostFeedDto> getPostBatch(@RequestBody RequestFeedDto requestFeedDto) {
         return feedService.getPostFeedDtos(requestFeedDto);
     }
 }

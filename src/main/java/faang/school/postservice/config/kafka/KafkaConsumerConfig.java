@@ -1,6 +1,6 @@
 package faang.school.postservice.config.kafka;
 
-import faang.school.postservice.events.PostEvent;
+import faang.school.postservice.events.Event;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +24,7 @@ public class KafkaConsumerConfig {
     private String consumerGroupId;
 
     @Bean
-    public ConsumerFactory<String, PostEvent> postEventConsumerFactory() {
+    public ConsumerFactory<String, Event> eventConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
@@ -37,15 +37,15 @@ public class KafkaConsumerConfig {
         return new DefaultKafkaConsumerFactory<>(
                 props,
                 new StringDeserializer(),
-                new JsonDeserializer<>(PostEvent.class));
+                new JsonDeserializer<>(Event.class));
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, PostEvent> postEventKafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, Event> eventKafkaListenerContainerFactory() {
 
-        ConcurrentKafkaListenerContainerFactory<String, PostEvent> factory =
+        ConcurrentKafkaListenerContainerFactory<String, Event> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(postEventConsumerFactory());
+        factory.setConsumerFactory(eventConsumerFactory());
         return factory;
     }
 }

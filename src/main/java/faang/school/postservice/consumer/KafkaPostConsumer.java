@@ -23,7 +23,7 @@ public class KafkaPostConsumer {
     private String postsTopic;
 
     @KafkaListener(topics = "postsTopic",
-            containerFactory = "postEventKafkaListenerContainerFactory")
+            containerFactory = "eventKafkaListenerContainerFactory")
     public void listenPostEvent(PostEvent event, Acknowledgment ack) {
         log.info("Received post event: {}", event);
         Long postId = event.getPostId();

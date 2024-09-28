@@ -15,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class PostMapper {
@@ -72,7 +75,11 @@ public abstract class PostMapper {
     }
 
     @Named("mapCommentsToLastCommentsId")
-    List<Long> mapCommentsToLastCommentsId(List<Comment> comments) {
-        return comments.stream().map(Comment::getId).limit(lastCommentsAmount).toList();
+    TreeSet<Long> mapCommentsToLastCommentsId(List<Comment> comments) {
+        Set<Long> lastCommentIds = comments.stream()
+                .map(Comment::getId)
+                .skip(comments.size() - lastCommentsAmount)
+                .collect(Collectors.toSet());
+        return (TreeSet<Long>) lastCommentIds;
     }
 }

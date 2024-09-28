@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +30,8 @@ public class PostForFeedService {
     public PostFeedDto getPostDtoForFeedFromCache(PostForCache postForCache) {
         Long authorId = postForCache.getAuthorId();
         String authorName = userForFeedService.getUserName(authorId);
-        List<Long> lastCommentIds = postForCache.getLastCommentIds();
-        List<CommentFeedDto> lastCommentFeedDtos = commentForFeedService.getLastCommentFeedDtos(lastCommentIds);
+        TreeSet<Long> lastCommentIds = postForCache.getLastCommentIds();
+        TreeSet<CommentFeedDto> lastCommentFeedDtos = commentForFeedService.getLastCommentFeedDtos(lastCommentIds);
         PostFeedDto postFeedDto = postMapper.toPostDtoForFeedFromPostForCache(postForCache);
         postFeedDto.setAuthorName(authorName);
         postFeedDto.setLastComments(lastCommentFeedDtos);
@@ -39,15 +41,18 @@ public class PostForFeedService {
     public PostFeedDto getPostDtoForFeedFromDB(PostDto postDto) {
         Long authorId = postDto.getAuthorId();
         String authorName = userForFeedService.getUserName(authorId);
-        List<Long> lastCommentIds = postDto.getCommentIds().stream().limit(lastCommentsAmount).toList();
-        List<CommentFeedDto> lastCommentFeedDtos = commentForFeedService.getLastCommentFeedDtos(lastCommentIds);
+        List<Long> commentIds = postDto.getCommentIds();
+        TreeSet<Long> lastCommentIds = (TreeSet<Long>) postDto.getCommentIds().stream()
+                .skip(commentIds.size() - lastCommentsAmount)
+                .collect(Collectors.toSet());
+        TreeSet<CommentFeedDto> lastCommentFeedDtos = commentForFeedService.getLastCommentFeedDtos(lastCommentIds);
         PostFeedDto postFeedDto = postMapper.toPostDtoForFeedFromPostDto(postDto);
         postFeedDto.setAuthorName(authorName);
         postFeedDto.setLastComments(lastCommentFeedDtos);
         return postFeedDto;
     }
 
-    public List<PostFeedDto> getPostDtosForFeedFromDB(List<PostForCache> postsFromCache, List<Long> postIdsFromFeed) {
+    public List<PostFeedDto> getPostDtosForFeedFromDB(TreeSet<PostForCache> postsFromCache, List<Long> postIdsFromFeed) {
         List<Long> receivedPostIds = postsFromCache.stream().map(PostForCache::getId).toList();
         List<Long> notReceivedPostIds = postIdsFromFeed.stream().dropWhile(receivedPostIds::contains).toList();
         List<PostDto> postsFromDB = postService.getPostsByIds(notReceivedPostIds);
@@ -55,6 +60,4 @@ public class PostForFeedService {
         postsFromDB.forEach(postDto -> postFeedDtos.add(getPostDtoForFeedFromDB(postDto)));
         return postFeedDtos;
     }
-
-
 }

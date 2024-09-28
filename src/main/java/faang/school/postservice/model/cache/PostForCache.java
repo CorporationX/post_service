@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.TreeSet;
 
 @Data
 @NoArgsConstructor
@@ -21,7 +21,7 @@ public class PostForCache implements Serializable {
 
     private Long authorId;
 
-    private List<Long> lastCommentIds;
+    private TreeSet<Long> lastCommentIds = new TreeSet<>();
 
     private int commentsAmount;
 
