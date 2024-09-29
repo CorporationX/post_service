@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -20,11 +20,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static faang.school.postservice.exception.ExceptionMessages.COMMENT_NOT_FOUND;
-import static faang.school.postservice.exception.ExceptionMessages.POST_DELETED_OR_NOT_PUBLISHED;
-import static faang.school.postservice.exception.ExceptionMessages.POST_NOT_FOUND;
-import static faang.school.postservice.exception.ExceptionMessages.WRONG_AUTHOR_ID;
-import static faang.school.postservice.exception.ExceptionMessages.WRONG_POST_ID;
+import static faang.school.postservice.exception.comment.ExceptionMessages.COMMENT_NOT_FOUND;
+import static faang.school.postservice.exception.comment.ExceptionMessages.POST_DELETED_OR_NOT_PUBLISHED;
+import static faang.school.postservice.exception.comment.ExceptionMessages.POST_NOT_FOUND;
+import static faang.school.postservice.exception.comment.ExceptionMessages.WRONG_AUTHOR_ID;
+import static faang.school.postservice.exception.comment.ExceptionMessages.WRONG_POST_ID;
 
 @Slf4j
 @Service
@@ -43,6 +43,7 @@ public class CommentServiceImpl implements CommentService {
         validateAuthor(commentDto.authorId());
         Comment comment = commentMapper.toComment(commentDto);
         comment.setPost(post);
+        commentRepository.save(comment);
         log.info("Saved comment: {}, for post: {}", comment.getId(), post.getId());
         return commentMapper.toCommentDto(comment);
     }
@@ -57,6 +58,7 @@ public class CommentServiceImpl implements CommentService {
                     POST_DELETED_OR_NOT_PUBLISHED.getMessage().formatted(comment.getPost().getId()));
         }
         comment.setContent(commentDto.content());
+        commentRepository.save(comment);
         log.info("Updated comment: {}, for post: {}", comment.getId(), comment.getPost().getId());
         return commentMapper.toCommentDto(comment);
     }
@@ -64,9 +66,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<CommentDto> getComments(Long projectId, SortingStrategyDto sortingStrategy) {
         Post post = getPost(projectId);
-        CommentSortingStrategy sortingApplier = sortingStrategiesAppliers
-                .get(sortingStrategy.order())
-                .get(sortingStrategy.field());
+        CommentSortingStrategy sortingApplier = sortingStrategiesAppliers.getExecutor(
+                sortingStrategy.order(),
+                sortingStrategy.field());
         List<Comment> sortedComments = sortingApplier.getSortedComments(post.getComments());
         log.debug("Find {} comments for post: {}", sortedComments.size(), post.getId());
         return commentMapper.toCommentDtos(sortedComments);
@@ -103,9 +105,10 @@ public class CommentServiceImpl implements CommentService {
 
     private void validateAuthor(Long authorId) {
         UserDto authorDto = userClientService.getUser(authorId);
-        if (authorId != userContext.getUserId()) {
+        Long userId = userContext.getUserId();
+        if (authorId.equals(userId) == false) {
             throw new DataValidationException(
-                    WRONG_AUTHOR_ID.getMessage().formatted(authorId, userContext.getUserId()));
+                    WRONG_AUTHOR_ID.getMessage().formatted(userId, authorId));
         }
     }
 

@@ -1,6 +1,6 @@
 package faang.school.postservice.dto.comment;
 
-public enum SortingField {
+public enum SortingBy {
     UPDATED_AT,
     LIKES_COUNT,
 }
