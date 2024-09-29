@@ -49,16 +49,25 @@ public class KafkaCommentListener implements KafkaEventListener<CommentKafkaEven
                     }
 
                     if (postRedis.getComments().size() < maxCapacityComments) {
-                        postRedis.getComments().add(commentRedis);
-                        log.info("In Post: {} add new comment: {}", postRedis.getId(), commentRedis);
+                        if (!postRedis.getComments().contains(commentRedis)) {
+                            postRedis.getComments().add(commentRedis);
+                            log.info("In Post: {} add new comment: {}", postRedis.getId(), commentRedis);
+                        } else {
+                            log.info("Comment already exists: {}", commentRedis);
+                        }
+
                     } else {
                         CommentRedis pollComment = postRedis.getComments().pollFirst();
                         postRedis.getComments().add(commentRedis);
                         log.info("Comments are larger than maximum: {}, remove comment: {}, and add new comment: {}",
                                 maxCapacityComments, pollComment, commentRedis);
                     }
+                    log.info("Post ID to save: {}", postRedis.getId());
                     try {
                         redisPostRepository.save(postRedis);
+                        log.info("Saving post with ID: {} and comments: {}", postRedis.getId(), postRedis.getComments());
+                        log.info("->->->-> postId {}, Comments: {}", postRedis.getId(), postRedis.getComments());
+
                         acknowledgment.acknowledge();
                     } catch (OptimisticLockingFailureException e) {
                         log.error("Failed to update Post with ID: {} due to version conflict", postRedis.getId());

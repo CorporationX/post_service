@@ -50,6 +50,7 @@ public class CommentService {
         }
 
         commentEventPublisher.publish(commentMapper.toEvent(comment));
+        CommentDto returnCommentDto = commentMapper.toDto(comment);
 
         // отправка пользователя в редис
         UserDto userDto = userServiceClient.getUser(comment.getAuthorId());
@@ -59,10 +60,10 @@ public class CommentService {
                 .build());
         log.info("Save user with ID: {} to Redis", userDto.getId());
         // отправка коммента в кафку
-        kafkaCommentPublisher.publish(commentMapper.toCommentKafkaEvent(commentDto));
-        log.info("Send event with Comment ID: {} to Kafka", commentDto.getPostId());
+        kafkaCommentPublisher.publish(commentMapper.toCommentKafkaEvent(returnCommentDto));
+        log.info("Send event with Comment ID: {} to Kafka", returnCommentDto.getPostId());
 
-        return commentMapper.toDto(comment);
+        return returnCommentDto;
     }
 
     public CommentDto updateExistingComment(CommentDto commentDto) {

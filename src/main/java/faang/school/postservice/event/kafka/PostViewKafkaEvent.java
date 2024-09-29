@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostViewKafkaEvent {
 
-    private long postId;
+    private Long postId;
 }

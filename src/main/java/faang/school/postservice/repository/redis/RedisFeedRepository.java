@@ -10,7 +10,9 @@ import org.springframework.stereotype.Repository;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.util.Optional;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -39,5 +41,20 @@ public class RedisFeedRepository {
             log.error("Failed to fetch feed for follower with ID: {} from Redis", followerId, e);
             return Optional.empty();
         }
+    }
+
+    public Optional<TreeSet<Long>> getPostsIdsByFollowerId(long followerId, int limit) {
+        return getAllPostIdsByFollowerId(followerId)
+                .map(feedRedis -> feedRedis.getPostsIds()
+                        .stream()
+                        .limit(limit)
+                        .collect(Collectors.toCollection(TreeSet::new)));
+    }
+
+    public Optional<Long> getOnePostIdByFollowerId(long followerId) {
+        return getAllPostIdsByFollowerId(followerId)
+                .flatMap(feedRedis -> feedRedis.getPostsIds()
+                        .stream()
+                        .findFirst());
     }
 }

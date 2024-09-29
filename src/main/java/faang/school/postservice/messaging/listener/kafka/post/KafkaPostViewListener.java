@@ -29,11 +29,12 @@ public class KafkaPostViewListener implements KafkaEventListener<PostViewKafkaEv
     public void onMessage(PostViewKafkaEvent event, Acknowledgment acknowledgment) {
         log.info("Post view event received. Post ID: {}", event.getPostId());
 
+
         redisPostRepository.findById(event.getPostId()).ifPresentOrElse(postRedis -> {
                     if (postRedis.getViews() == null) {
-                        postRedis.setViews(new AtomicLong(0));
+                        postRedis.setViews(0L);
                     }
-                    postRedis.getViews().incrementAndGet();
+                    postRedis.incrementViews();
                     try {
                         redisPostRepository.save(postRedis);
                         acknowledgment.acknowledge();

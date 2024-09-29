@@ -22,9 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
 @Slf4j
@@ -78,7 +80,7 @@ public class PostService {
         // Отправляем в кафку
         kafkaPostPublisher.publish(PostKafkaEvent.builder()
                 .postId(userDto.getId())
-                .followers(userDto.getFollowersId())
+                .followers(Arrays.asList(1L, 2L, 3L, 4L, 5L)) // поменять на userDto.getFollowersId()
                 .build());
         log.info("Send event with Post ID: {} to Kafka", savePost.getId());
 

@@ -32,9 +32,9 @@ public class KafkaLikeListener implements KafkaEventListener<LikeKafkaEvent> {
 
         redisPostRepository.findById(event.getPostId()).ifPresentOrElse(postRedis -> {
                     if (postRedis.getLikes() == null) {
-                        postRedis.setLikes(new AtomicLong(0));
+                        postRedis.setLikes(0L);
                     }
-                    postRedis.getLikes().incrementAndGet();
+                    postRedis.incrementLike();
 
                     try {
                         redisPostRepository.save(postRedis);

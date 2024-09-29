@@ -39,18 +39,28 @@ public class KafkaPostListener implements KafkaEventListener<PostKafkaEvent> {
                 event.getPostId(), event.getFollowers());
 
         List<List<Long>> followersSublist = ListUtils.partition(event.getFollowers(), sublistSize);
+        if (followersSublist.isEmpty()){
+            log.warn("No followers to process for Post ID: {}", event.getPostId());
+            acknowledgment.acknowledge();
+            return;
+        }
         ExecutorService executorService = Executors.newFixedThreadPool(Math.min(followersSublist.size(), 10));
         CountDownLatch latch = new CountDownLatch(followersSublist.size());
 
         for (List<Long> followersList : followersSublist) {
-            executorService.submit(() -> {
-                try {
-                    log.info("Post ID: {} to user process started", event.getPostId());
-                    addPostInFollower(followersList, event.getPostId());
-                } finally {
-                    latch.countDown();
-                }
-            });
+            try {
+                executorService.submit(() -> {
+                    try {
+                        log.info("Post ID: {} to user process started", event.getPostId());
+                        addPostInFollower(followersList, event.getPostId());
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            } catch (Exception e){
+                log.error("Error while submitting task for Post ID: {}", event.getPostId(), e);
+                latch.countDown();
+            }
         }
 
         try {

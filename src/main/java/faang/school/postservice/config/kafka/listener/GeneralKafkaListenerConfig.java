@@ -8,6 +8,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,9 +28,11 @@ public class GeneralKafkaListenerConfig {
     private String autoOffsetReset;
     @Value("${spring.kafka.consumer.enable-auto-commit}")
     private String enableAutoCommit;
+    @Value("${spring.kafka.consumer.trusted-packages}")
+    private String trustedPackages;
 
     @Bean
-    public ConsumerFactory<String, String> consumerFactory() {
+    public ConsumerFactory<String, Object> consumerFactory() {
         Map<String, Object> config = new HashMap<>();
 
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -38,6 +41,7 @@ public class GeneralKafkaListenerConfig {
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer);
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset);
         config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, enableAutoCommit);
+        config.put(JsonDeserializer.TRUSTED_PACKAGES, trustedPackages);
 
         return new DefaultKafkaConsumerFactory<>(config);
     }
