@@ -1,11 +1,14 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.exception.FileException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.ResourceType;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.service.s3.S3AudioService;
 import faang.school.postservice.service.s3.S3ImageService;
+import faang.school.postservice.service.s3.S3VideoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,68 +24,135 @@ public class ResourceService {
     private final ResourceRepository resourceRepository;
     private final PostRepository postRepository;
     private final S3ImageService s3ImageService;
+    private final S3AudioService s3AudioService;
+    private final S3VideoService s3VideoService;
 
-    @Value("${resources.max-image-in-post}")
+    @Value("${resources.image.allowed-types}")
+    private List<String> allowedImageTypes;
+    @Value("${resources.audio.allowed-types}")
+    private List<String> allowedAudioTypes;
+    @Value("${resources.video.allowed-types}")
+    private List<String> allowedVideoTypes;
+
+    @Value("${resources.image.max-size}")
+    private long maxImageSize;
+    @Value("${resources.audio.max-size}")
+    private long maxAudioSize;
+    @Value("${resources.video.max-size}")
+    private long maxVideoSize;
+
+    @Value("${resources.image.max-in-post}")
     private int maxImageInPost;
-    @Value("${resources.picture-allowed-types}")
-    private List<String> allowedPictureFileType;
+    @Value("${resources.audio.max-in-post}")
+    private int maxAudioInPost;
+    @Value("${resources.video.max-in-post}")
+    private int maxVideoInPost;
 
     @Transactional
-    public List<Resource> addImagesToPost(List<MultipartFile> files, Long postId) {
-        files.forEach(this::validateContentType);
+    public Resource addFileToPost(MultipartFile file, Long postId) {
+        validateFile(file);
         Post post = postRepository.findById(postId).orElseThrow();
-        validateAmount(post, files);
+        validateFileAmount(file, post);
 
-        List<Resource> resources = s3ImageService.addFilesToStorage(files, post);
+        String mimeType = file.getContentType();
+        ResourceType type = mimeToResType(mimeType);
+        Resource resource = switch (type) {
+            case IMAGE -> s3ImageService.addFileToStorage(file, post);
+            case AUDIO -> s3AudioService.addFileToStorage(file, post);
+            case VIDEO -> s3VideoService.addFileToStorage(file, post);
+        };
 
-        return resourceRepository.saveAll(resources);
+        return resourceRepository.save(resource);
     }
 
     @Transactional
-    public Resource updateImageInPost(MultipartFile file, Long resourceId, Long postId) {
-        validateContentType(file);
-        Resource existImage = resourceRepository.findById(resourceId).orElseThrow();
-        validateResourceBelongPost(existImage, postId);
-
+    public Resource updateFileInPost(MultipartFile file, Long resourceId, Long postId) {
+        validateFile(file);
         Post post = postRepository.findById(postId).orElseThrow();
-        String existImageKey = existImage.getKey();
-        Resource newImage = s3ImageService.updateFileInStorage(existImageKey, file, post);
-        newImage.setId(resourceId);
+        Resource oldResource = post.getResources().stream()
+                .filter(res -> res.getId().equals(resourceId))
+                .findFirst()
+                .orElseThrow();
 
-        return resourceRepository.save(newImage);
+        String key = oldResource.getKey();
+
+        Resource newResource = switch (oldResource.getType()) {
+            case IMAGE -> s3ImageService.updateFileInStorage(key, file, post);
+            case AUDIO -> s3AudioService.updateFileInStorage(key, file, post);
+            case VIDEO -> s3VideoService.updateFileInStorage(key, file, post);
+        };
+        newResource.setId(resourceId);
+
+        return resourceRepository.save(newResource);
     }
 
     @Transactional
-    public void removeImageInPost(Long resourceId, Long postId) {
-        Resource existImage = resourceRepository.findById(resourceId).orElseThrow();
+    public void removeFileInPost(Long resourceId, Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow();
+        Resource resource = post.getResources().stream()
+                .filter(res -> res.getId().equals(resourceId))
+                .findFirst()
+                .orElseThrow();
 
-        String existImageKey = existImage.getKey();
-        s3ImageService.removeFileInStorage(existImageKey);
-        resourceRepository.deleteById(resourceId);
+        String key = resource.getKey();
+        switch (resource.getType()) {
+            case IMAGE -> s3ImageService.removeFileInStorage(key);
+            case AUDIO -> s3AudioService.removeFileInStorage(key);
+            case VIDEO -> s3VideoService.removeFileInStorage(key);
+        }
     }
 
-    private void validateAmount(Post post, List<MultipartFile> files) {
-        long imageAmountInPost = post.getResources().stream()
-                .filter(resource -> resource.getType().equals(ResourceType.IMAGE))
+    private void validateFileAmount(MultipartFile file, Post post) {
+        String mimeType = file.getContentType();
+        ResourceType type = mimeToResType(mimeType);
+        List<Resource> resources = post.getResources();
+
+        switch (type) {
+            case IMAGE -> validateAmount(resources, maxImageInPost, type);
+            case AUDIO -> validateAmount(resources, maxAudioInPost, type);
+            case VIDEO -> validateAmount(resources, maxVideoInPost, type);
+        }
+    }
+
+    private void validateFile(MultipartFile file) {
+        String mimeType = file.getContentType();
+        ResourceType type = mimeToResType(mimeType);
+
+        switch (type) {
+            case IMAGE -> validateSize(file, maxImageSize);
+            case AUDIO -> validateSize(file, maxAudioSize);
+            case VIDEO -> validateSize(file, maxVideoSize);
+        }
+    }
+
+    private void validateAmount(List<Resource> resources, int maxInPost, ResourceType resourceType) {
+        long amountByType = resources.stream()
+                .filter(resource -> resource.getType().equals(resourceType))
                 .count();
-
-        if (maxImageInPost - imageAmountInPost < files.size()) {
-            throw new IllegalArgumentException("Exceeded the allowed number of images. " +
-                    "You can add a maximum of " + (maxImageInPost - imageAmountInPost) + " images.");
+        if (amountByType >= maxInPost) {
+            throw new IllegalArgumentException("The number of " + resourceType.name() +
+                    " cannot be more than " + maxInPost);
         }
     }
 
-    private void validateResourceBelongPost(Resource resource, Long postId) {
-        if (resource.getPost().getId() != postId) {
-            throw new IllegalArgumentException("This resource doesn`t belong this post");
+    private void validateSize(MultipartFile file, long maxSize) {
+        if (file.getSize() > maxSize) {
+            throw new FileException(file.getOriginalFilename() + " " + file.getContentType()
+                    + ". Exceeded size of " + maxSize + " byte");
         }
     }
 
-    private void validateContentType(MultipartFile file) {
-        if (!allowedPictureFileType.contains(file.getContentType())) {
-            throw new IllegalArgumentException("file " + file.getOriginalFilename() + " not .jpeg, .png, .webp image");
+    private ResourceType mimeToResType(String mimeType) {
+        if (allowedImageTypes.contains(mimeType)) {
+            return ResourceType.IMAGE;
+
+        } else if (allowedAudioTypes.contains(mimeType)) {
+            return ResourceType.AUDIO;
+
+        } else if (allowedVideoTypes.contains(mimeType)) {
+            return ResourceType.VIDEO;
+        } else {
+            throw new FileException("Unsupported file format");
         }
     }
-
-
 }

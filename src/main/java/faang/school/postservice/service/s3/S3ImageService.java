@@ -18,14 +18,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Objects;
 
 import static java.lang.String.format;
 
 @Component
 @RequiredArgsConstructor
-public class S3ImageService implements S3Service {
+public class S3ImageService {
     private final AmazonS3 s3client;
 
     @Value("${services.s3.bucketName}")
@@ -34,26 +33,7 @@ public class S3ImageService implements S3Service {
     @Value("${resources.max-image-pixel-size}")
     private int maxPixelSize;
 
-    @Override
-    public List<Resource> addFilesToStorage(List<MultipartFile> files, Post post) {
-        return files.stream()
-                .map(file -> addFileToStorage(file, post))
-                .toList();
-    }
-
-    @Override
-    public Resource updateFileInStorage(String existImageKey, MultipartFile newFile, Post post) {
-        s3client.deleteObject(bucketName, existImageKey);
-        return addFileToStorage(newFile, post);
-    }
-
-    @Override
-    public void removeFileInStorage(String key) {
-        s3client.deleteObject(bucketName, key);
-    }
-
-    private Resource addFileToStorage(MultipartFile file, Post post) {
-        String customKey = format("%d/%d_%s", post.getId(), System.currentTimeMillis(), file.getOriginalFilename());
+    public Resource addFileToStorage(MultipartFile file, Post post) {
         try {
             String type = file.getContentType();
             String name = file.getOriginalFilename();
@@ -64,6 +44,8 @@ public class S3ImageService implements S3Service {
 
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(type);
+
+            String customKey = format("post_%d/image/%d_%s", post.getId(), System.currentTimeMillis(), name);
 
             s3client.putObject(bucketName, customKey, compressedFileStream, metadata);
 
@@ -76,8 +58,17 @@ public class S3ImageService implements S3Service {
                     .build();
 
         } catch (IOException e) {
-            throw new FileException("Error with compressed file");
+            throw new FileException("Error with image file");
         }
+    }
+
+    public Resource updateFileInStorage(String key, MultipartFile newFile, Post post) {
+        s3client.deleteObject(bucketName, key);
+        return addFileToStorage(newFile, post);
+    }
+
+    public void removeFileInStorage(String key) {
+        s3client.deleteObject(bucketName, key);
     }
 
     private InputStream compressFileStream(InputStream fileStream, String format) {
@@ -107,7 +98,7 @@ public class S3ImageService implements S3Service {
             return new ByteArrayInputStream(output.toByteArray());
 
         } catch (IOException exception) {
-            throw new FileException("Error with compress image");
+            throw new FileException("Error with image compressing");
         }
     }
 

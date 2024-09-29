@@ -6,7 +6,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum ResourceType {
-    IMAGE("image");
-
-    private String type;
+    IMAGE,
+    AUDIO,
+    VIDEO
 }
