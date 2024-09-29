@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.comment.CommentServiceProducer;
 import faang.school.postservice.producer.user.UserCacheProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
@@ -37,6 +38,9 @@ public class CommentServiceTest {
     @Mock
     private UserCacheProducer userCacheProducer;
 
+    @Mock
+    private List<CommentServiceProducer> producers;
+
     @InjectMocks
     private CommentService commentService;
 
@@ -66,6 +70,9 @@ public class CommentServiceTest {
     @Test
     @DisplayName("Создание комментария - Успешный сценарий")
     public void createComment_Success() {
+        CommentServiceProducer mockProducer = mock(CommentServiceProducer.class);
+        when(producers.iterator()).thenReturn(Collections.singletonList(mockProducer).iterator());
+
         CommentDto result = commentService.createComment(1L, commentDto);
 
         assertNotNull(result);
