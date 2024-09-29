@@ -50,7 +50,7 @@ public class PostController {
         return postMapper.toDto(updatedPost);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("{id}")
     public PostDto deletePost(@PathVariable Long id) {
         return postMapper.toDto(postService.deletePost(id));
     }
