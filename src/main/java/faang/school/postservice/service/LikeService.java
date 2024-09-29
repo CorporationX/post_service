@@ -121,7 +121,7 @@ public class LikeService {
         //UserDto userDto = userServiceClient.getUser(userId);
 
         // Поскольку контроллера для UserService пока нет, создаем заглушку
-        UserDto userDto = new UserDto(1L, "Alex", "alex@gmail.com");
+        UserDto userDto = new UserDto(1L, "Alex", "alex@gmail.com", List.of(), List.of());
 
         if (userDto.getId() == null) {
             throw new NoSuchElementException(Util.USER_NOT_EXIST);

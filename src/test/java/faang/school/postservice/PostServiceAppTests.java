@@ -10,6 +10,7 @@ import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeService;
 import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,6 +39,11 @@ class PostServiceAppTests {
     @Mock
     private UserServiceClient userServiceClient;
 
+    @BeforeEach
+    public void setUp() {
+        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com", List.of(), List.of());
+
+    }
     @Test
     @DisplayName("Add like to post: check user exist")
     public void testAddToPostCheckUserExist() {
@@ -55,7 +61,7 @@ class PostServiceAppTests {
         Like tempLike = new Like();
         tempLike.setUserId(2L);
 
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
+
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -70,7 +76,6 @@ class PostServiceAppTests {
         Like tempLike = new Like();
         tempLike.setUserId(2L);
 
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -90,7 +95,6 @@ class PostServiceAppTests {
         Like tempLike = new Like();
         tempLike.setUserId(2L);
 
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -131,7 +135,6 @@ class PostServiceAppTests {
         Like tempLike = new Like();
         tempLike.setUserId(2L);
 
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -146,7 +149,6 @@ class PostServiceAppTests {
         Like tempLike = new Like();
         tempLike.setUserId(2L);
 
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -166,7 +168,6 @@ class PostServiceAppTests {
         Like tempLike = new Like();
         tempLike.setUserId(2L);
 
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -204,7 +205,6 @@ class PostServiceAppTests {
     @Test
     @DisplayName("Remove like from post: check post exist")
     public void testRemoveFromPostCheckPostExist() {
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -216,7 +216,6 @@ class PostServiceAppTests {
     @Test
     @DisplayName("Remove like from post: check like exist")
     public void testRemoveFromPostCheckLikeExist() {
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -233,7 +232,6 @@ class PostServiceAppTests {
         Like tempLike = new Like();
         tempLike.setUserId(2L);
 
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -263,7 +261,6 @@ class PostServiceAppTests {
     @Test
     @DisplayName("Remove like from comment: check post exist")
     public void testRemoveFromCommentCheckPostExist() {
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -275,7 +272,6 @@ class PostServiceAppTests {
     @Test
     @DisplayName("Remove like from comment: check like exist")
     public void testRemoveFromCommentCheckLikeExist() {
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -292,7 +288,6 @@ class PostServiceAppTests {
         Like tempLike = new Like();
         tempLike.setUserId(2L);
 
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
@@ -311,7 +306,6 @@ class PostServiceAppTests {
     @Test
     @DisplayName("Get likes by post: check post exist")
     public void testGetLikesByPostCheckPostExist() {
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com");
 //        Mockito.when(userServiceClient.getUser(1))
 //                .thenReturn(userDto);
 
