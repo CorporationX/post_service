@@ -9,28 +9,28 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/like")
 @Validated
 public class LikeController {
 
     private final LikeService likeService;
 
-    @PostMapping("/likePost")
+    @PostMapping("/post")
     public LikeDto likePost(@RequestBody @Valid LikeDto likeDto) {
         return likeService.likePost(likeDto);
     }
 
-    @DeleteMapping("/unlikePost")
+    @DeleteMapping("/post")
     public void unlikePost(@RequestBody @Valid LikeDto likeDto) {
         likeService.unlikePost(likeDto);
     }
 
-    @PostMapping("/likeComment")
+    @PostMapping("/comment")
     public LikeDto likeComment(@RequestBody @Valid LikeDto likeDto) {
         return likeService.likeComment(likeDto);
     }
 
-    @DeleteMapping("/unlikeComment")
+    @DeleteMapping("/comment")
     public void unlikeComment(@RequestBody @Valid LikeDto likeDto) {
         likeService.unlikeComment(likeDto);
     }

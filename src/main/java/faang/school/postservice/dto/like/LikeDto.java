@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.like;
 
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -14,22 +15,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class LikeDto {
 
-    @Positive(message = "Field cannot be less then zero")
+    @Positive
     private Long id;
 
-    @NotNull(message = "Field cannot be empty")
-    @NotBlank(message = "Field cannot be empty")
-    @Positive(message = "Field cannot be less then zero")
+    @NotNull
+    @Positive
     private Long userId;
 
-    @Positive(message = "Field cannot be less then zero")
+    @Positive
     private Long commentId;
 
-    @NotNull(message = "Field cannot be empty")
-    @NotBlank(message = "Field cannot be empty")
-    @Positive(message = "Field cannot be less then zero")
+    @Positive
     private Long postId;
 
-    @Positive(message = "Field cannot be less then zero")
     private LocalDateTime createdAt;
 }
