@@ -3,14 +3,17 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Assertions;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,10 +64,12 @@ public class AlbumServiceImplTest {
     public void testCreateAlbumByNonExistingUser() {
         when(userServiceClient.existsUserById(albumDto.getAuthorId())).thenReturn(false);
 
-        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+        UserNotFoundException thrown = assertThrows(UserNotFoundException.class,
                 () -> albumService.createAlbum(albumDto)
         );
+
         Assertions.assertEquals("User not found", thrown.getMessage());
+      
         verify(albumRepository, never()).save(any(Album.class));
     }
 
@@ -73,9 +78,10 @@ public class AlbumServiceImplTest {
         when(userServiceClient.existsUserById(albumDto.getAuthorId())).thenReturn(true);
         when(albumRepository.existsByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId())).thenReturn(true);
 
-        DataValidationException thrown = assertThrows(DataValidationException.class,
+        EntityExistsException thrown = assertThrows(EntityExistsException.class,
                 () -> albumService.createAlbum(albumDto)
         );
+
         Assertions.assertEquals("Album with title " + albumDto.getTitle() + " already exists", thrown.getMessage());
         verify(albumRepository, never()).save(any(Album.class));
     }
@@ -96,9 +102,10 @@ public class AlbumServiceImplTest {
     public void testUpdateAlbumWithExistingTitleForUser() {
         when(albumRepository.existsByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId())).thenReturn(true);
 
-        DataValidationException thrown = assertThrows(DataValidationException.class,
+        EntityExistsException thrown = assertThrows(EntityExistsException.class,
                 () -> albumService.updateAlbum(albumId, albumDto)
         );
+
         Assertions.assertEquals("Album with title " + albumDto.getTitle() + " already exists", thrown.getMessage());
         verify(albumRepository, never()).save(any(Album.class));
     }
@@ -262,13 +269,17 @@ public class AlbumServiceImplTest {
         when(albumRepository.findByIdWithPosts(albumId)).thenReturn(Optional.of(album));
         album.setPosts(List.of(post));
 
-        when(albumRepository.getSelectedUserIdsForAlbum(album.getId())).thenReturn(Collections.emptyList());
+        when(albumRepository.findSelectedUserIdsForAlbum(album.getId())).thenReturn(Collections.emptyList());
 
         DataValidationException thrown = assertThrows(DataValidationException.class,
                 () -> albumService.getAlbumById(albumId, userId)
         );
 
         Assertions.assertEquals("Album is not visible for user", thrown.getMessage());
+                () -> albumService.getAlbumById(albumId)
+        );
+
+        assertEquals("Album not found", thrown.getMessage());
         verify(albumMapper, never()).toDto(any(Album.class));
     }
 
@@ -283,7 +294,7 @@ public class AlbumServiceImplTest {
         when(albumRepository.findByIdWithPosts(albumId)).thenReturn(Optional.of(album));
         album.setPosts(List.of(post));
 
-        when(albumRepository.getSelectedUserIdsForAlbum(album.getId())).thenReturn(List.of(userId));
+        when(albumRepository.findSelectedUserIdsForAlbum(album.getId())).thenReturn(List.of(userId));
 
         when(albumMapper.toDto(album)).thenReturn(albumDto);
         albumDto.setPostIds(List.of(postId));

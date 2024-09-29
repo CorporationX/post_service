@@ -1,9 +1,11 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.exception.DataValidationException;
+import java.util.List;
+
 import faang.school.postservice.service.AlbumService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +27,7 @@ public class AlbumController {
     }
 
     @PutMapping("/{id}")
-    public void updateAlbum(
-            @PathVariable Long id,
-            @RequestBody @Valid AlbumDto albumDto) {
+    public void updateAlbum(@PathVariable Long id, @RequestBody @Valid AlbumDto albumDto) {
         if (albumDto.getAuthorId() != null) {
             throw new DataValidationException("Only author can modify albums");
         }
@@ -35,14 +35,12 @@ public class AlbumController {
         albumService.updateAlbum(id, albumDto);
     }
 
-    @PutMapping("/{id}/posts/{postId}")
-    public void addPostToAlbum(
-            @PathVariable Long id,
-            @PathVariable Long postId) {
+    @PutMapping("/{id}/post/{postId}")
+    public void addPostToAlbum(@PathVariable Long id, @PathVariable Long postId) {
         albumService.addPostToAlbum(id, postId);
     }
 
-    @DeleteMapping("/{id}/posts/{postId}")
+    @DeleteMapping("/{id}/post/{postId}")
     public void deletePostFromAlbum(
             @PathVariable Long id,
             @PathVariable Long postId) {

@@ -4,11 +4,14 @@ import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.model.Album;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
+
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface AlbumMapper {
     Album toEntity(AlbumDto albumDto);
 

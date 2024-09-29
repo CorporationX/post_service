@@ -14,6 +14,7 @@ import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
+
 import faang.school.postservice.service.AlbumService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -44,9 +45,6 @@ public class AlbumServiceImpl implements AlbumService {
 
         addPostsToAlbum(albumDto, newAlbum);
 
-        newAlbum.setCreatedAt(LocalDateTime.now());
-        newAlbum.setUpdatedAt(LocalDateTime.now());
-
         albumRepository.save(newAlbum);
     }
 
@@ -59,7 +57,6 @@ public class AlbumServiceImpl implements AlbumService {
 
         albumMapper.updateFromDto(albumDto, albumToUpdate);
         addPostsToAlbum(albumDto, albumToUpdate);
-        albumToUpdate.setUpdatedAt(LocalDateTime.now());
 
         albumRepository.save(albumToUpdate);
     }
@@ -91,7 +88,7 @@ public class AlbumServiceImpl implements AlbumService {
         if (!isAlbumVisibleForUser(album, userId)) {
             throw new DataValidationException("Album is not visible for user");
         }
-
+      
         albumRepository.addAlbumToFavorites(id, userId);
     }
 
@@ -110,28 +107,37 @@ public class AlbumServiceImpl implements AlbumService {
         }
 
         AlbumDto albumDto = albumMapper.toDto(album);
-        List<Long> postIds = album.getPosts().stream().map(Post::getId).toList();
+        List<Long> postIds = album.getPosts().stream()
+          .map(Post::getId)
+          .toList();
         albumDto.setPostIds(postIds);
+  
         return albumDto;
     }
 
     @Override
     public List<AlbumDto> getAlbums(Long authorId, AlbumFilterDto albumFilterDto) {
         Stream<Album> albums = albumRepository.findByAuthorId(authorId);
-        return albumMapper.toDto(filerAlbums(albumFilterDto, albums));
+        return albumMapper.toDto(filterAlbums(albumFilterDto, albums));
     }
 
     @Override
     public List<AlbumDto> getFavoriteAlbums(Long userId, AlbumFilterDto albumFilterDto) {
         Stream<Album> albums = albumRepository.findFavoriteAlbumsByUserId(userId);
-        return albumMapper.toDto(filerAlbums(albumFilterDto, albums));
+        return albumMapper.toDto(filterAlbums(albumFilterDto, albums));
     }
 
     @Override
     public List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto, Long userId) {
         Stream<Album> albums = albumRepository.findAll().stream()
                 .filter(album -> isAlbumVisibleForUser(album, userId));
-        return albumMapper.toDto(filerAlbums(albumFilterDto, albums));
+        return albumMapper.toDto(filterAlbums(albumFilterDto, albums));
+    }
+
+    @Override
+    public List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto) {
+        Stream<Album> albums = albumRepository.findAll().stream();
+        return albumMapper.toDto(filterAlbums(albumFilterDto, albums));
     }
 
     @Override
@@ -139,7 +145,7 @@ public class AlbumServiceImpl implements AlbumService {
         albumRepository.deleteById(id);
     }
 
-    private List<Album> filerAlbums(AlbumFilterDto albumFilterDto, Stream<Album> albums) {
+    private List<Album> filterAlbums(AlbumFilterDto albumFilterDto, Stream<Album> albums) {
         return filters.stream()
                 .filter(filter -> filter.isApplicable(albumFilterDto))
                 .flatMap(filter -> filter.apply(albumFilterDto, albums))
