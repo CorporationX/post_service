@@ -8,6 +8,7 @@ import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.like.LikeServiceProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -24,11 +25,13 @@ import org.mockito.Mock;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +53,11 @@ class LikeServiceTest {
     private LikeMapper likeMapper;
 
     @Mock
+    private List<LikeServiceProducer> producers;
+
+    @Mock
     private LikeValidator likeValidator;
+
     @Mock
     private LikeEventPublisher eventPublisher;
 
@@ -110,6 +117,10 @@ class LikeServiceTest {
     void testLikePost() {
         post.setAuthorId(10L);
         post.setId(100L);
+
+        LikeServiceProducer mockProducer = mock(LikeServiceProducer.class);
+        when(producers.iterator()).thenReturn(Collections.singletonList(mockProducer).iterator());
+
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
         when(likeRepository.findByPostIdAndUserId(1L, 1L)).thenReturn(Optional.empty());

@@ -20,6 +20,7 @@ public class PostCacheRepository {
 
     private static final String CACHE_PREFIX = "post:";
     private static final String COMMENT_SUFFIX = ":comments";
+    private static final String LIKE_SUFFIX = ":likes";
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -38,7 +39,8 @@ public class PostCacheRepository {
 
     public Optional<PostDto> getPost(long postId) {
         String key = CACHE_PREFIX + postId;
-        return Optional.ofNullable((PostDto) redisTemplate.opsForValue().get(key));
+        Object value = redisTemplate.opsForValue().get(key);
+        return Optional.ofNullable(objectMapper.convertValue(value, PostDto.class));
     }
 
     public void addComment(long postId, CommentDto comment) {
@@ -59,6 +61,17 @@ public class PostCacheRepository {
         String key = CACHE_PREFIX + postId + COMMENT_SUFFIX;
         List<Object> range = redisTemplate.opsForList().range(key, 0, -1);
         return deserializeComments(range);
+    }
+
+    public void incrementLike(long postId) {
+        String key = CACHE_PREFIX + postId + LIKE_SUFFIX;
+        redisTemplate.opsForValue().increment(key);
+    }
+
+    public Long getLikes(long postId) {
+        String key = CACHE_PREFIX + postId + LIKE_SUFFIX;
+        Object value = redisTemplate.opsForValue().get(key);
+        return objectMapper.convertValue(value, Long.class);    
     }
 
     private List<CommentDto> deserializeComments(List<Object> serializedComments) {

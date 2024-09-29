@@ -100,6 +100,10 @@ kafka:
     comments-topic:
       name: comments
       group-id: comment-group
+    likes-topic:
+      name: likes
+      group-id: like-group
+
 
 async:
   core-pool-size: 5
