@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.like;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LikeDto {
     private Long id;
+    @NotNull(message = "user ID must be provided")
     private Long userId;
     private Long postId;
     private Long commentId;
