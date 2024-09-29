@@ -68,10 +68,16 @@ public class PostCacheRepository {
         redisTemplate.opsForValue().increment(key);
     }
 
+    public void setLike(long postId, long likes) {
+        String key = CACHE_PREFIX + postId + LIKE_SUFFIX;
+        redisTemplate.opsForValue()
+                .set(key, likes, timeToLive, TimeUnit.SECONDS);
+    }
+
     public Long getLikes(long postId) {
         String key = CACHE_PREFIX + postId + LIKE_SUFFIX;
         Object value = redisTemplate.opsForValue().get(key);
-        return objectMapper.convertValue(value, Long.class);    
+        return objectMapper.convertValue(value, Long.class);
     }
 
     private List<CommentDto> deserializeComments(List<Object> serializedComments) {

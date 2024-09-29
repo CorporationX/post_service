@@ -39,6 +39,11 @@ public interface PostMapper {
     @Mapping(target = "commentsCount", source = "comments", qualifiedByName = "mapComments")
     PostDto toDto(Post post);
 
+    @Mapping(target = "likesCount", source = "likes", qualifiedByName = "mapLikes")
+    @Mapping(target = "resources", ignore = true)
+    @Mapping(target = "commentsCount", ignore = true)
+    PostDto toDtoForCache(Post post);
+
     @Named("mapResources")
     default List<PreviewPostResourceDto> mapResources(List<Resource> resources) {
 
