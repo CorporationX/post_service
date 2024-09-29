@@ -1,63 +1,76 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
+@RequestMapping("/posts")
 @Validated
-@RequestMapping("/api/v1/post")
 public class PostController {
+
     private final PostService postService;
 
-    @PostMapping
-    public PostDto create(@RequestBody @Valid PostDto postDto) {
-        return postService.createPost(postDto);
+    public PostController(PostService postService) {
+        this.postService = postService;
     }
 
-    @PutMapping("/{id}")
-    public PostDto publish(@PathVariable Long id) {
-        return postService.publishPost(id);
+    @PostMapping("/create")
+    public ResponseEntity<PostDto> createPost(@Valid @RequestBody PostDto postDto) {
+        return ResponseEntity.ok(postService.createPost(postDto));
     }
 
-    @PutMapping("/delete/{id}")
-    public PostDto markDeleted(@PathVariable Long id) {
-        return postService.deletePost(id);
+    @PostMapping("/publish/{id}")
+    public ResponseEntity<PostDto> publishPost(@NotNull @PathVariable Long id) {
+        return ResponseEntity.ok(postService.publishPost(id));
     }
 
-    @PutMapping
-    public PostDto update(@RequestBody PostDto postDto) {
-        return postService.updatePost(postDto);
+    @PutMapping("/update/{id}")
+    public ResponseEntity<PostDto> updatePost(@PathVariable @NotNull Long id, @Valid @RequestBody PostDto postDto) {
+        return ResponseEntity.ok(postService.updatePost(id, postDto));
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable @NotNull Long id) {
+        postService.deletePost(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")
-    public PostDto getPost(@PathVariable Long id) {
-        return postService.getPost(id);
+    public ResponseEntity<PostDto> getPost(@PathVariable @NotNull Long id) {
+        return ResponseEntity.ok(postService.getPost(id));
     }
 
-    @GetMapping("/author_posts/{id}")
-    public List<PostDto> getAllNonPublishedByAuthorId(@PathVariable Long id) {
-        return postService.getAllNonPublishedByAuthorId(id);
+    @GetMapping("/drafts/user/{authorId}")
+    public ResponseEntity<List<PostDto>> getUserDrafts(@PathVariable @NotNull Long authorId) {
+        return ResponseEntity.ok(postService.getUserDrafts(authorId));
     }
 
-    @GetMapping("/project_posts/{id}")
-    public List<PostDto> getAllNonPublishedByProjectId(@PathVariable Long id) {
-        return postService.getAllNonPublishedByProjectId(id);
+    @GetMapping("/drafts/project/{projectId}")
+    public ResponseEntity<List<PostDto>> getProjectDrafts(@PathVariable @NotNull Long projectId) {
+        return ResponseEntity.ok(postService.getProjectDrafts(projectId));
     }
 
-    @GetMapping("/published_by_user/{id}")
-    public List<PostDto> getAllPublishedByAuthorId(@PathVariable Long id) {
-        return postService.getAllPublishedByAuthorId(id);
+    @GetMapping("/published/user/{authorId}")
+    public ResponseEntity<List<PostDto>> getUserPublishedPosts(@PathVariable @NotNull Long authorId) {
+        return ResponseEntity.ok(postService.getUserPublishedPosts(authorId));
     }
 
-    @GetMapping("/published_by_project/{id}")
-    public List<PostDto> getAllPublishedByProjectId(@PathVariable Long id) {
-        return postService.getAllPublishedByProjectId(id);
+    @GetMapping("/published/project/{projectId}")
+    public ResponseEntity<List<PostDto>> getProjectPublishedPosts(@PathVariable @NotNull Long projectId) {
+        return ResponseEntity.ok(postService.getProjectPublishedPosts(projectId));
+    }
+
+    @GetMapping("/all/hashtag/")
+    public Page<PostDto> getAllPostsByHashtag(@NotNull @RequestParam String hashtagContent, Pageable pageable){
+        return postService.getAllPostsByHashtagId(hashtagContent, pageable);
     }
 }
