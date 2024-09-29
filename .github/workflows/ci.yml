@@ -1,4 +1,4 @@
-  name: CI for post_service
+  name: CI for post_service on hydra-master-stream6
 
   on:
     pull_request:
