@@ -3,7 +3,6 @@ package faang.school.postservice.repository.cache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
