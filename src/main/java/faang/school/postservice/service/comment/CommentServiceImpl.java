@@ -12,7 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.sort.CommentSortingStrategy;
-import faang.school.postservice.service.comment.sort.SortingApplierExecutorsMap;
+import faang.school.postservice.service.comment.sort.SortingStrategyAppliersMap;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserServiceClient userClientService;
     private final UserContext userContext;
     private final CommentMapper commentMapper;
-    private final SortingApplierExecutorsMap sortingStrategiesAppliers;
+    private final SortingStrategyAppliersMap sortingStrategiesAppliers;
 
     @Override
     public CommentDto createComment(Long postId, CommentDto commentDto) {
@@ -66,10 +66,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<CommentDto> getComments(Long projectId, SortingStrategyDto sortingStrategy) {
         Post post = getPost(projectId);
-        CommentSortingStrategy sortingApplier = sortingStrategiesAppliers.getExecutor(
+        CommentSortingStrategy sortingApplier = sortingStrategiesAppliers.getStrategy(
                 sortingStrategy.order(),
                 sortingStrategy.field());
-        List<Comment> sortedComments = sortingApplier.getSortedComments(post.getComments());
+        List<Comment> sortedComments = sortingApplier.apply(post.getComments());
         log.debug("Find {} comments for post: {}", sortedComments.size(), post.getId());
         return commentMapper.toCommentDtos(sortedComments);
     }
@@ -88,7 +88,6 @@ public class CommentServiceImpl implements CommentService {
         return commentMapper.toCommentDto(comment);
     }
 
-    //неудобно через postService пока так оставлю
     private Post getPost(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new EntityNotFoundException(POST_NOT_FOUND.getMessage().formatted(postId)));

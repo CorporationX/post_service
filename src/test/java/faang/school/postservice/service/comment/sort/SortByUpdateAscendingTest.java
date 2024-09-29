@@ -28,7 +28,7 @@ class SortByUpdateAscendingTest {
     void sortByUpdateAscendingTest_GetSortedStreamOfComments() {
         List<Comment> comments = initComments();
 
-        var result = sorter.getSortedComments(comments);
+        var result = sorter.apply(comments);
 
         assertThat(result).isSortedAccordingTo(comparator);
         assertEquals(comments.size(), result.size());
@@ -40,7 +40,7 @@ class SortByUpdateAscendingTest {
     void sortByUpdateAscendingTest_GetSortedSingleComment() {
         Comment comment = initComment(1L, LocalDateTime.of(2022, 1, 1, 1, 1));
 
-        var result = sorter.getSortedComments(List.of(comment));
+        var result = sorter.apply(List.of(comment));
 
         assertEquals(1, result.size());
         assertTrue(result.contains(comment));
@@ -51,7 +51,7 @@ class SortByUpdateAscendingTest {
     void sortByUpdateAscendingTest_GetSortedEmptyList() {
         List<Comment> comments = List.of();
 
-        var result = sorter.getSortedComments(comments);
+        var result = sorter.apply(comments);
 
         assertTrue(result.isEmpty());
     }
@@ -59,7 +59,7 @@ class SortByUpdateAscendingTest {
     @Test
     @DisplayName("Get sorted list of comments with null arguments")
     void sortByUpdateAscendingTest_GetSortedListWithNullArguments() {
-        var ex = assertThrows(NullPointerException.class, () -> sorter.getSortedComments(null));
+        var ex = assertThrows(NullPointerException.class, () -> sorter.apply(null));
         assertEquals("comments is marked non-null but is null", ex.getMessage());
     }
 

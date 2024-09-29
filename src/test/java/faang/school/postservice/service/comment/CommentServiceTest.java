@@ -15,7 +15,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.sort.SortByUpdateAscending;
 import faang.school.postservice.service.comment.sort.SortByUpdateDescending;
-import faang.school.postservice.service.comment.sort.SortingApplierExecutorsMap;
+import faang.school.postservice.service.comment.sort.SortingStrategyAppliersMap;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -70,11 +70,11 @@ class CommentServiceTest {
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
-    private SortingApplierExecutorsMap sortingApplierExecutorsMap;
+    private SortingStrategyAppliersMap sortingStrategyAppliersMap;
 
     @BeforeEach
     void setUp() {
-        sortingApplierExecutorsMap = new SortingApplierExecutorsMap(
+        sortingStrategyAppliersMap = new SortingStrategyAppliersMap(
                 List.of(new SortByUpdateAscending(), new SortByUpdateDescending()));
         commentService = new CommentServiceImpl(
                 commentRepository,
@@ -82,7 +82,7 @@ class CommentServiceTest {
                 userServiceClient,
                 userContext,
                 commentMapper,
-                sortingApplierExecutorsMap);
+                sortingStrategyAppliersMap);
         post = initPost(POST_ID, true, false);
         author = initAuthor(AUTHOR_ID);
     }

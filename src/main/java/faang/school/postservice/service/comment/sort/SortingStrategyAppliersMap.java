@@ -12,10 +12,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
-public class SortingApplierExecutorsMap {
+public class SortingStrategyAppliersMap {
     private final Map<SortingOrder, Map<SortingBy, CommentSortingStrategy>> executors;
 
-    public SortingApplierExecutorsMap(List<CommentSortingStrategy> sortingStrategies) {
+    public SortingStrategyAppliersMap(List<CommentSortingStrategy> sortingStrategies) {
         executors = sortingStrategies.stream()
                 .collect(Collectors.collectingAndThen(Collectors.groupingBy(
                                 CommentSortingStrategy::getOrder,
@@ -23,7 +23,7 @@ public class SortingApplierExecutorsMap {
                         Collections::unmodifiableMap));
     }
 
-    public CommentSortingStrategy getExecutor(@NotNull SortingOrder order, @NotNull SortingBy field) {
+    public CommentSortingStrategy getStrategy(@NotNull SortingOrder order, @NotNull SortingBy field) {
         return executors.get(order).get(field);
     }
 }

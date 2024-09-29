@@ -31,7 +31,7 @@ class SortByLikesCountDescendingTest {
     void sortByUpdateDescendingTest_GetSortedComments() {
         List<Comment> comments = initComments();
 
-        var result = sorter.getSortedComments(comments);
+        var result = sorter.apply(comments);
 
         assertThat(result).isSortedAccordingTo(comparator);
         assertEquals(comments.size(), result.size());
@@ -43,7 +43,7 @@ class SortByLikesCountDescendingTest {
     void sortByUpdateDescendingTest_GetSortedSingleComment() {
         Comment comment = initComment(1L, initLikes(15));
 
-        var result = sorter.getSortedComments(List.of(comment));
+        var result = sorter.apply(List.of(comment));
 
         assertEquals(1, result.size());
         assertTrue(result.contains(comment));
@@ -54,7 +54,7 @@ class SortByLikesCountDescendingTest {
     void sortByUpdateDescendingTest_GetSortedEmptyList() {
         List<Comment> comments = List.of();
 
-        var result = sorter.getSortedComments(comments);
+        var result = sorter.apply(comments);
 
         assertTrue(result.isEmpty());
     }
@@ -62,7 +62,7 @@ class SortByLikesCountDescendingTest {
     @Test
     @DisplayName("Getting sorted list of comments with null arguments")
     void sortByUpdateDescendingTest_GetSortedNullArguments() {
-        var ex = assertThrows(NullPointerException.class, () -> sorter.getSortedComments(null));
+        var ex = assertThrows(NullPointerException.class, () -> sorter.apply(null));
         assertEquals("comments is marked non-null but is null", ex.getMessage());
     }
 

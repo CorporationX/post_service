@@ -16,7 +16,7 @@ public class SortByLikesCountDescending extends CommentSortingStrategy {
     }
 
     @Override
-    public List<Comment> getSortedComments(@NonNull List<Comment> comments) {
+    public List<Comment> apply(@NonNull List<Comment> comments) {
         return comments.stream()
                 .sorted(Comparator.comparing(comment -> comment.getLikes().size(), Comparator.reverseOrder()))
                 .toList();

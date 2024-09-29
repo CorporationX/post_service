@@ -15,8 +15,8 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class SortingApplierExecutorsMapTest {
-    private SortingApplierExecutorsMap sortingApplierExecutorsMap;
+class SortingStrategyAppliersMapTest {
+    private SortingStrategyAppliersMap sortingStrategyAppliersMap;
 
     @BeforeEach
     void setUpd() {
@@ -25,14 +25,14 @@ class SortingApplierExecutorsMapTest {
                 new SortByUpdateAscending(),
                 new SortByLikesCountDescending(),
                 new SortByLikesCountAscending());
-        sortingApplierExecutorsMap = new SortingApplierExecutorsMap(strategies);
+        sortingStrategyAppliersMap = new SortingStrategyAppliersMap(strategies);
     }
 
     @ParameterizedTest
     @MethodSource("provideArguments")
     @DisplayName("Check map contains executors and correct getting it with method")
     void sortingApplierExecutorsMapTest_checkExecutorsMap(SortingOrder order, SortingBy field, String executorName) {
-        CommentSortingStrategy executor = sortingApplierExecutorsMap.getExecutor(order, field);
+        CommentSortingStrategy executor = sortingStrategyAppliersMap.getStrategy(order, field);
 
         assertEquals(order, executor.getOrder());
         assertEquals(field, executor.getField());
@@ -43,11 +43,11 @@ class SortingApplierExecutorsMapTest {
     @DisplayName("Check get method with null arguments")
     void sortingApplierExecutorsMapTest_checkGetWithNullArguments() {
         assertThrows(NullPointerException.class,
-                () -> sortingApplierExecutorsMap.getExecutor(null, SortingBy.LIKES_COUNT));
+                () -> sortingStrategyAppliersMap.getStrategy(null, SortingBy.LIKES_COUNT));
         assertThrows(NullPointerException.class,
-                () -> sortingApplierExecutorsMap.getExecutor(SortingOrder.ASC, null));
+                () -> sortingStrategyAppliersMap.getStrategy(SortingOrder.ASC, null));
         assertThrows(NullPointerException.class,
-                () -> sortingApplierExecutorsMap.getExecutor(null, null));
+                () -> sortingStrategyAppliersMap.getStrategy(null, null));
     }
 
     static Stream<Arguments> provideArguments() {

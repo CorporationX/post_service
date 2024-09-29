@@ -14,5 +14,5 @@ public abstract class CommentSortingStrategy {
     private final SortingBy field;
     private final SortingOrder order;
 
-    public abstract List<Comment> getSortedComments(List<Comment> comments);
+    public abstract List<Comment> apply(List<Comment> comments);
 }
