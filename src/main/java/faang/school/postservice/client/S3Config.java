@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class S3Config {
+
     @Value("${services.s3.endpoint}")
     private String endpoint;
 
