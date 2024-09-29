@@ -4,10 +4,10 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.event.user.UserCacheEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.comment.CommentServiceProducer;
 import faang.school.postservice.producer.user.UserCacheProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 public class CommentService {
@@ -28,6 +27,7 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final ModerationDictionary moderationDictionary;
     private final UserCacheProducer userCacheProducer;
+    private final List<CommentServiceProducer> producers;
     private final ExecutorService moderationExecutor;
 
     @Value("${comment.batchSize}")
@@ -39,6 +39,7 @@ public class CommentService {
             CommentValidator commentValidator,
             ModerationDictionary moderationDictionary,
             UserCacheProducer userCacheProducer,
+            List<CommentServiceProducer> producers,
             @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor
     ) {
         this.commentRepository = commentRepository;
@@ -46,6 +47,7 @@ public class CommentService {
         this.commentValidator = commentValidator;
         this.moderationDictionary = moderationDictionary;
         this.userCacheProducer = userCacheProducer;
+        this.producers = producers;
         this.moderationExecutor = moderationExecutor;
     }
 
@@ -55,6 +57,10 @@ public class CommentService {
         Comment savedComment = commentRepository.save(commentMapper.toEntity(commentDto));
 
         userCacheProducer.sendEvent(new UserCacheEvent(savedComment.getAuthorId()));
+
+        for(var producer: producers) {
+            producer.send(savedComment);
+        }
 
         return commentMapper.toDto(savedComment);
     }

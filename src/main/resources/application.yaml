@@ -96,6 +96,9 @@ kafka:
     user-cache-topic:
       name: user-cache
       group-id: user-cache-group
+    comments-topic:
+      name: comments
+      group-id: comment-group
 
 async:
   core-pool-size: 5
@@ -105,6 +108,8 @@ async:
 
 cache:
   post-ttl-seconds: 86400
+  comments:
+    max: 3
 
 feed:
   max-size: 500
