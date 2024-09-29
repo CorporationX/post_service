@@ -30,7 +30,7 @@ public class S3ImageService {
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
-    @Value("${resources.max-image-pixel-size}")
+    @Value("${resources.image.max-pixel-size}")
     private int maxPixelSize;
 
     public Resource addFileToStorage(MultipartFile file, Post post) {

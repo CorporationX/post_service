@@ -75,7 +75,6 @@ public class ResourceService {
                 .orElseThrow();
 
         String key = oldResource.getKey();
-
         Resource newResource = switch (oldResource.getType()) {
             case IMAGE -> s3ImageService.updateFileInStorage(key, file, post);
             case AUDIO -> s3AudioService.updateFileInStorage(key, file, post);
@@ -100,6 +99,8 @@ public class ResourceService {
             case AUDIO -> s3AudioService.removeFileInStorage(key);
             case VIDEO -> s3VideoService.removeFileInStorage(key);
         }
+
+        resourceRepository.deleteById(resourceId);
     }
 
     private void validateFileAmount(MultipartFile file, Post post) {
