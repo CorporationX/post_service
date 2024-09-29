@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,7 +26,7 @@ public class PostService {
     @Transactional
     public Post createDraftPost(Post post) {
         validateAuthorOrProject(post);
-        post.markAsDraft();
+        markAsDraft(post);
         return postRepository.save(post);
     }
 
@@ -35,21 +36,21 @@ public class PostService {
         if (existingPost.isPublished()) {
             throw new PostRequirementsException("This post is already published");
         }
-        existingPost.publish();
+        publish(existingPost);
         return postRepository.save(existingPost);
     }
 
     @Transactional
     public Post updatePost(Post post) {
         Post existingPost = postRepository.findById(post.getId()).orElseThrow(() -> new PostRequirementsException("Post not found"));
-        existingPost.updateContent(post.getContent());
+        updateContent(existingPost, post.getContent());
         return postRepository.save(existingPost);
     }
 
     @Transactional
     public Post deletePost(Long id) {
         Post post = postRepository.findById(id).orElseThrow(() -> new PostRequirementsException("Post not found"));
-        post.delete();
+        delete(post);
         return postRepository.save(post);
     }
 
@@ -101,6 +102,25 @@ public class PostService {
 
     private void validateProjectExists(Post post) {
         projectServiceClient.getProject(post.getProjectId());
+    }
+
+    private void markAsDraft(Post post) {
+        post.setPublished(false);
+    }
+
+    private void publish(Post post) {
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+    }
+
+    private void updateContent(Post post, String content) {
+        post.setContent(content);
+        post.setUpdatedAt(LocalDateTime.now());
+    }
+
+    private void delete(Post post) {
+        post.setDeleted(true);
+        post.setPublished(false);
     }
 }
 

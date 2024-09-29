@@ -30,7 +30,6 @@ import java.util.List;
 @Entity
 @Table(name = "post")
 public class Post {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -82,24 +81,4 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-
-    public void markAsDraft() {
-        this.published = false;
-    }
-
-    public void publish() {
-        this.published = true;
-        this.publishedAt = LocalDateTime.now();
-    }
-
-    public void updateContent(String content) {
-        this.content = content;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void delete() {
-        this.deleted = true;
-        this.published = false;
-    }
 }
