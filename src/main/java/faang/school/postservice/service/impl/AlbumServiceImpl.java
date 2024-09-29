@@ -175,7 +175,7 @@ public class AlbumServiceImpl implements AlbumService {
             return userId.equals(album.getAuthorId());
         }
         if (visibility.equals(AlbumVisibility.SELECTED_USERS)) {
-            return albumRepository.getSelectedUserIdsForAlbum(album.getId()).contains(userId);
+            return albumRepository.findSelectedUserIdsForAlbum(album.getId()).contains(userId);
         }
         if (visibility.equals(AlbumVisibility.ALL_FOLLOWERS)) {
             Set<Long> followerIds = userServiceClient.getFollowers(

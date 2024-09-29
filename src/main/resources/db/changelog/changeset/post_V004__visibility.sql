@@ -1,8 +1,7 @@
 CREATE TABLE IF NOT EXISTS album_visibility (
-    id bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
+    id bigint PRIMARY KEY,
     album_id bigint NOT NULL,
     user_id bigint NOT NULL,
-
     CONSTRAINT fk_album_id FOREIGN KEY (album_id) REFERENCES album (id) ON DELETE CASCADE
 );
 

@@ -37,5 +37,5 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     Stream<Album> findFavoriteAlbumsByUserId(long userId);
 
     @Query(nativeQuery = true, value = "SELECT user_id FROM album_visibility WHERE album_id = :albumId")
-    List<Long> getSelectedUserIdsForAlbum(long albumId);
+    List<Long> findSelectedUserIdsForAlbum(long albumId);
 }
