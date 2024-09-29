@@ -20,7 +20,7 @@ public class KafkaLikeConsumer {
 
     @KafkaListener(topics = "${spring.kafka.topic-name.likes:likes}")
     void listener(PostEvent event){
-        incrementLikesInPostCache(event.postId());
+        incrementLikesInPostCache(event.id());
     }
 
     private void incrementLikesInPostCache(Long postId){

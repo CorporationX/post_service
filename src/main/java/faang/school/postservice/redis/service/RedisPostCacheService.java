@@ -1,5 +1,7 @@
 package faang.school.postservice.redis.service;
 
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.redis.mapper.PostCacheMapper;
 import faang.school.postservice.redis.model.PostCache;
 import faang.school.postservice.redis.repository.PostCacheRedisRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +27,12 @@ public class RedisPostCacheService {
     @Qualifier("redisCacheTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
     private final PostCacheRedisRepository postCacheRedisRepository;
+    private final PostCacheMapper postCacheMapper;
 
-    public RedisPostCacheService(RedisTemplate<String, Object> redisTemplate, PostCacheRedisRepository postCacheRedisRepository) {
+    public RedisPostCacheService(RedisTemplate<String, Object> redisTemplate, PostCacheRedisRepository postCacheRedisRepository, PostCacheMapper postCacheMapper) {
         this.redisTemplate = redisTemplate;
         this.postCacheRedisRepository = postCacheRedisRepository;
+        this.postCacheMapper = postCacheMapper;
     }
 
     public void incrementConcurrentPostViews(Long postId) {
@@ -62,5 +66,10 @@ public class RedisPostCacheService {
         Iterable<PostCache> iterable = postCacheRedisRepository.findAllById(postIds);
         return StreamSupport.stream(iterable.spliterator(), false)
                 .toList();
+    }
+
+    public void savePostCache(PostDto postDto) {
+        var postCache = postCacheMapper.toPostCache(postDto);
+        postCacheRedisRepository.save(postCache);
     }
 }

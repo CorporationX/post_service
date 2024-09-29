@@ -23,7 +23,8 @@ public class KafkaTopicConfig {
     private String commentsTopic;
     @Value("${spring.kafka.topic-name.posts}")
     private String postsTopic;
-
+    @Value("${spring.kafka.topic-name.heat-posts}")
+    private String heatPostsTopic;
 
     @Bean
     public KafkaAdmin admin() {
@@ -61,6 +62,15 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic postTopic(){
         return TopicBuilder.name(postsTopic)
+                .partitions(1)
+                .replicas(1)
+                .compact()
+                .build();
+    }
+
+    @Bean
+    public NewTopic feedsTopic(){
+        return TopicBuilder.name(heatPostsTopic)
                 .partitions(1)
                 .replicas(1)
                 .compact()

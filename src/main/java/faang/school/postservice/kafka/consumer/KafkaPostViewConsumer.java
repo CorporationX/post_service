@@ -20,7 +20,7 @@ public class KafkaPostViewConsumer {
 
     @KafkaListener(topics = "${spring.kafka.topic-name. post-views:post_views}")
     void listener(PostEvent event){
-        addPostView(event.postId());
+        addPostView(event.id());
     }
 
     private void addPostView(Long postId){

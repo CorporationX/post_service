@@ -5,8 +5,8 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record PostFollowersEvent(
+public record PostFollowersEvent(//TODO should be FeedEvent
         Long authorId,
-        Long postId,
-        List<Long> followersIds //TODO Int totalFollower
+        Long postId,//TODO delete!!!
+        List<Long> followersIds
 ) {}

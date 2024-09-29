@@ -16,5 +16,5 @@ public class PostCache implements Serializable {
     private Long authorId;
     private Integer likes;
     private Integer views;
-    private RedisZSet<Long> comments;
+    private RedisZSet<Long> comments;//TODO make as  RedisZSet<CommentDto>
 }

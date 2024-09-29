@@ -46,7 +46,7 @@ spring:
       post-views: "post_views"
       comments: "comments"
       posts: "posts"
-
+      heat: "heat"
 
 server:
   port: 8081

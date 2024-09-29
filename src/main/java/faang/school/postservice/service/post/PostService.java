@@ -14,6 +14,7 @@ import faang.school.postservice.redis.repository.PostCacheRedisRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+    @Value("${spring.kafka.topic-name.posts:posts}")
+    private String postTopic;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final PostServiceValidator<PostDto> validator;
@@ -52,11 +55,12 @@ public class PostService {
         post.setUpdatedAt(now);
 
         var savedPost = postRepository.save(post);
+        var postDto = postMapper.toDto(savedPost);
 
-        postCacheRedisRepository.save(postCacheMapper.toPostCache(savedPost));
+        postCacheRedisRepository.save(postCacheMapper.toPostCache(postDto));
         sendPostFollowersEventToKafka(savedPost);
 
-        return postMapper.toDto(savedPost);
+        return postDto;
     }
     //TODO PRIVATE METHODS!
     private void sendPostFollowersEventToKafka(Post post){
@@ -68,7 +72,7 @@ public class PostService {
                 .followersIds(postAuthorFollowersIds)
                 .build();
 
-        kafkaEventProducer.sendPostFollowersEvent(postId, event);
+        kafkaEventProducer.sendPostFollowersEvent(event);
     }
 
     private List<Long> getPostAuthorFollowers(Post post) {
@@ -116,7 +120,7 @@ public class PostService {
     private void sendPostViewEventToKafka(Post post){
         var postId = post.getId();
         var event = PostEvent.builder()
-                .postId(postId)
+                .id(postId)
                 .authorId(post.getAuthorId())
                 .build();
         kafkaEventProducer.sendPostViewEvent(postId, event);
@@ -139,5 +143,11 @@ public class PostService {
 
     private Post getPostByIdOrFail(long postId) {
         return postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+    }
+
+    public List<PostDto> getPostsByIds(List<Long> postIds) {
+        return postRepository.findAllById(postIds).stream()
+                .map(postMapper::toDto)
+                .toList();
     }
 }

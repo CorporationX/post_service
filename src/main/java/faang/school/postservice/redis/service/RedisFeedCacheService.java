@@ -2,7 +2,7 @@ package faang.school.postservice.redis.service;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.redis.mapper.CommentCacheToCommentDtoMapper;
-import faang.school.postservice.redis.mapper.PostCacheToPostDtoMapper;
+import faang.school.postservice.redis.mapper.PostCacheMapper;
 import faang.school.postservice.redis.repository.CommentCacheRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ public class RedisFeedCacheService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisPostCacheService redisPostCacheService;
-    private final PostCacheToPostDtoMapper cacheToPostMapper;
+    private final PostCacheMapper postCacheMapper;
     private final CommentCacheRepository commentCacheRepository;
     private final CommentCacheToCommentDtoMapper commentCacheToCommentDtoMapper;
 
@@ -46,7 +46,7 @@ public class RedisFeedCacheService {
 
         return redisPostCacheService.getPostCacheByIds(postIds)
                 .stream()
-                .map(postCache -> cacheToPostMapper.toDto(postCache, commentCacheRepository, commentCacheToCommentDtoMapper))
+                .map(postCache -> postCacheMapper.toDto(postCache, commentCacheRepository, commentCacheToCommentDtoMapper))
                 .toList();
     }
     private void addPostToFollower(Long postId, Long followerId) {
@@ -62,4 +62,5 @@ public class RedisFeedCacheService {
     private String generateFeedCacheKey(Long followerId) {
         return feedCacheKeyPrefix + followerId;
     }
+
 }
