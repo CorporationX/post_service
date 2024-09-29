@@ -93,7 +93,7 @@ public class PostServiceTest {
     public void testUpdatePost() {
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
 
-        postService.updatePost(post);
+        postService.updatePost(post.getId(), post.getContent());
 
         verify(postRepository, times(1)).save(post);
     }

@@ -40,13 +40,9 @@ public class PostController {
         return postMapper.toDto(publishedPost);
     }
 
-    @PatchMapping("/edit/{id}")
-    public PostDto updatePost(@PathVariable Long id, @RequestBody String content) {
-        Post post = Post.builder()
-                .id(id)
-                .content(content)
-                .build();
-        Post updatedPost = postService.updatePost(post);
+    @PatchMapping("/edit")
+    public PostDto updatePost(@RequestBody PostDto postDto) {
+        Post updatedPost = postService.updatePost(postDto.getId(), postDto.getContent());
         return postMapper.toDto(updatedPost);
     }
 

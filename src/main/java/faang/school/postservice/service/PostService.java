@@ -41,9 +41,9 @@ public class PostService {
     }
 
     @Transactional
-    public Post updatePost(Post post) {
-        Post existingPost = postRepository.findById(post.getId()).orElseThrow(() -> new PostRequirementsException("Post not found"));
-        updateContent(existingPost, post.getContent());
+    public Post updatePost(Long id, String content) {
+        Post existingPost = postRepository.findById(id).orElseThrow(() -> new PostRequirementsException("Post not found"));
+        updateContent(existingPost, content);
         return postRepository.save(existingPost);
     }
 
