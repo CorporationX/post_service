@@ -1,9 +1,7 @@
 package faang.school.postservice.service.s3;
 
-import com.amazonaws.RequestClientOptions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import faang.school.postservice.exception.FileException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
