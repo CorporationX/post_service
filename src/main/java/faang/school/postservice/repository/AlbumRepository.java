@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -28,11 +29,29 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     void deleteAlbumFromFavorites(long albumId, long userId);
 
     @Query(nativeQuery = true, value = """
-            SELECT a.* FROM album a
+            SELECT * FROM album
             WHERE id IN (
                 SELECT album_id FROM favorite_albums WHERE user_id = :userId
             )
             """)
     Stream<Album> findFavoriteAlbumsByUserId(long userId);
 
+    @Query(nativeQuery = true, value = """
+            SELECT id FROM album
+            WHERE visibility = 'ALL'
+            """)
+    List<Long> findAlbumIdsAllStatus();
+
+    @Query(nativeQuery = true, value = """
+            SELECT id FROM album
+            WHERE visibility = 'ONLY_AUTHOR' AND author_id = :userId
+            """)
+    List<Long> findAlbumsIdsOnlyAuthor(Long userId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT id FROM album
+            WHERE visibility = 'SUBSCRIBERS' AND author_id IN (:authorIds)
+            """)
+    List<Long> findAlbumIdsByAuthorIdsAndSubsStatus(List<Long> authorIds);
 }
+

@@ -31,25 +31,25 @@ public class AlbumController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public AlbumDto createAlbum(@RequestBody @Valid AlbumDto albumDto) {
-        Album album = albumMapper.toEntity(albumDto);
+        Album album = albumMapper.toAlbumEntity(albumDto);
         Album saveAlbum = service.createAlbum(album);
-        return albumMapper.toDto(saveAlbum);
+        return albumMapper.toAlbumDto(saveAlbum);
     }
 
     @PutMapping("/{album-id}/add-post")
-    public AlbumDto addPostToAlbum(@RequestParam long postId,
-                                   @PathVariable("album-id") long albumId,
+    public AlbumDto addPostToAlbum(@PathVariable("album-id") long albumId,
+                                   @RequestParam long postId,
                                    @RequestParam long userId) {
         Album saveAlbum = service.addPostToAlbum(postId, albumId, userId);
-        return albumMapper.toDto(saveAlbum);
+        return albumMapper.toAlbumDto(saveAlbum);
     }
 
     @PutMapping("/{album-id}/remove-post")
-    public AlbumDto removePostFromAlbum(@RequestParam long postId,
-                                        @PathVariable("album-id") long albumId,
+    public AlbumDto removePostFromAlbum(@PathVariable("album-id") long albumId,
+                                        @RequestParam long postId,
                                         @RequestParam long userId) {
         Album saveAlbum = service.removePostFromAlbum(postId, albumId, userId);
-        return albumMapper.toDto(saveAlbum);
+        return albumMapper.toAlbumDto(saveAlbum);
     }
 
     @PutMapping("/{album-id}/favorite")
@@ -63,18 +63,19 @@ public class AlbumController {
     }
 
     @GetMapping("/{album-id}")
-    public AlbumDto getAlbum(@PathVariable("album-id") long albumId) {
-        Album album = service.getAlbum(albumId);
-        return albumMapper.toDto(album);
+    public AlbumDto getAlbum(@PathVariable("album-id") long albumId,
+                             @RequestParam("user-id") long userId) {
+        Album album = service.getAlbum(albumId, userId);
+        return albumMapper.toAlbumDto(album);
     }
 
     @PutMapping("/{album-id}")
     public AlbumDto updateAlbum(@PathVariable("album-id") long albumId,
                                 @RequestParam long authorId,
                                 @RequestBody @Valid AlbumDto albumDto) {
-        Album album = albumMapper.toEntity(albumDto);
+        Album album = albumMapper.toAlbumEntity(albumDto);
         Album modifiedAlbum = service.updateAlbum(albumId, authorId, album);
-        return albumMapper.toDto(modifiedAlbum);
+        return albumMapper.toAlbumDto(modifiedAlbum);
     }
 
     @DeleteMapping("/{album-id}")
@@ -82,21 +83,16 @@ public class AlbumController {
         service.deleteAlbum(albumId, userId);
     }
 
-    @PostMapping("/filter")
-    public List<AlbumDto> getAlbumsByFilter(@RequestBody AlbumFilterDto filterDto) {
-        List<Album> albums = service.getAlbumsByFilter(filterDto);
+    @GetMapping("/available")
+    public List<AlbumDto> getAllAvailableAlbums(@RequestParam("user-id") Long userId) {
+        List<Album> albums = service.getAllAvailableAlbums(userId);
         return albumMapper.toDtoList(albums);
     }
 
-    @PostMapping("/by-user")
-    public List<AlbumDto> getUserAlbumsByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
-        List<Album> albums = service.getUserAlbumsByFilters(userId, filterDto);
-        return albumMapper.toDtoList(albums);
-    }
-
-    @PostMapping("/favorite-by-user")
-    public List<AlbumDto> getFavoriteUserAlbumsByFilter(@RequestParam Long userId, @RequestBody AlbumFilterDto filterDto) {
-        List<Album> albums = service.getFavoriteUserAlbumsByFilters(userId, filterDto);
+    @GetMapping("/filters")
+    public List<AlbumDto> getAllAvailableAlbumsByFilters(@RequestParam Long userId,
+                                                         @RequestBody AlbumFilterDto albumFilterDto) {
+        List<Album> albums = service.getAllAvailableAlbumsByFilters(userId, albumFilterDto);
         return albumMapper.toDtoList(albums);
     }
 }

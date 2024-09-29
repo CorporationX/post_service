@@ -2,7 +2,6 @@ package faang.school.postservice.service.filter;
 
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.model.Album;
-import faang.school.postservice.repository.AlbumRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
