@@ -93,6 +93,7 @@ kafka:
     posts-topic:
       name: posts
       group-id: postGroup
+      batch-size: 100
     user-cache-topic:
       name: user-cache
       group-id: user-cache-group
