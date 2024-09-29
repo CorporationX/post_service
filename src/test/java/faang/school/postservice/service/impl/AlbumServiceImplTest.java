@@ -168,6 +168,78 @@ public class AlbumServiceImplTest {
     }
 
     @Test
+    public void testDeletePostFromNoExistingAlbum() {
+        when(albumRepository.findById(albumId)).thenReturn(Optional.empty());
+
+        albumService.deletePostFromAlbum(albumId, postId);
+
+        verify(albumRepository, never()).save(any(Album.class));
+    }
+
+    @Test
+    public void testDeletePostFromAlbumSuccessfully() {
+        Album album = new Album();
+        album.setId(albumId);
+        Post post = new Post();
+        post.setId(postId);
+        album.setPosts(new ArrayList<>());
+        album.addPost(post);
+
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+
+        albumService.deletePostFromAlbum(albumId, postId);
+
+        verify(albumRepository, times(1)).save(album);
+    }
+
+    @Test
+    public void testAddNotExistingAlbumToFavorites() {
+        when(albumRepository.findById(albumId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+                () -> albumService.addAlbumToFavorites(albumId, userId)
+        );
+
+        Assertions.assertEquals("Album not found", thrown.getMessage());
+        verify(albumRepository, never()).addAlbumToFavorites(albumId, userId);
+    }
+
+    @Test
+    public void testAddNotVisibleToUserAlbumToFavorites() {
+        Album album = new Album();
+        album.setId(albumId);
+        album.setAuthorId(userId + 1);
+        album.setVisibility(AlbumVisibility.AUTHOR_ONLY);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+
+        DataValidationException thrown = assertThrows(DataValidationException.class,
+                () -> albumService.addAlbumToFavorites(albumId, userId)
+        );
+
+        Assertions.assertEquals("Album is not visible for user", thrown.getMessage());
+        verify(albumRepository, never()).addAlbumToFavorites(albumId, userId);
+    }
+
+    @Test
+    public void testAddAlbumToFavoritesSuccessfully() {
+        Album album = new Album();
+        album.setId(albumId);
+        album.setVisibility(AlbumVisibility.ALL_USERS);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+
+        albumService.addAlbumToFavorites(albumId, userId);
+
+        verify(albumRepository, times(1)).addAlbumToFavorites(albumId, userId);
+    }
+
+    @Test
+    public void testDeleteAlbumFromFavorites() {
+        albumService.deleteAlbumFromFavorites(albumId, userId);
+
+        verify(albumRepository, times(1)).deleteAlbumFromFavorites(albumId, userId);
+    }
+
+    @Test
     public void testGetNoExistingAlbumById() {
         when(albumRepository.findByIdWithPosts(albumId)).thenReturn(Optional.empty());
 
@@ -217,5 +289,12 @@ public class AlbumServiceImplTest {
         albumDto.setPostIds(List.of(postId));
 
         Assertions.assertEquals(albumDto, albumService.getAlbumById(albumId, userId));
+    }
+
+    @Test
+    public void testDeleteAlbum() {
+        albumService.deleteAlbum(albumId);
+
+        verify(albumRepository, times(1)).deleteById(albumId);
     }
 }

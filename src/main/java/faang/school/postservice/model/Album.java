@@ -1,7 +1,6 @@
 package faang.school.postservice.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,7 +37,7 @@ public class Album {
     private List<Post> posts;
 
     @Enumerated(EnumType.STRING)
-    @NotNull
+    @Column(name = "visibility", nullable = false)
     private AlbumVisibility visibility;
 
     @CreationTimestamp
