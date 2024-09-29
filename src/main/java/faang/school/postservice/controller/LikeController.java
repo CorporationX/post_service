@@ -1,9 +1,13 @@
 package faang.school.postservice.controller;
 
+
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.like.LikeService;
 import faang.school.postservice.validator.LikeValidator;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.service.LikeService;
 import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,14 +21,14 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("api/v1/likes")
+@RequestMapping("/likes")
 @RequiredArgsConstructor
 public class LikeController {
 
     private final LikeService likeService;
     private final LikeValidator likeValidator;
 
-    @GetMapping("/post/{postId}/get")
+    @GetMapping("/post/{postId}")
     public List<Long> getLikesForPost(@PathVariable Long postId) {
         log.info("Запрос на получение лайков для поста с ID: {}", postId);
         List<Long> userIds = likeService.getLikesFromPost(postId);
@@ -32,7 +36,7 @@ public class LikeController {
         return userIds;
     }
 
-    @GetMapping("/comment/{commentId}/get")
+    @GetMapping("/comment/{commentId}")
     public List<Long> getLikesForComment(@PathVariable Long commentId) {
         log.info("Запрос на получение лайков для комментария с ID: {}", commentId);
         List<Long> userIds = likeService.getLikesFromComment(commentId);
@@ -40,7 +44,7 @@ public class LikeController {
         return userIds;
     }
 
-    @PostMapping("/post/{postId}/add")
+    @PostMapping("/post/{postId}")
     public LikeDto addLikeToPost(@PathVariable Long postId, @RequestBody LikeDto likeDto) {
         likeValidator.likeValidation(likeDto);
         log.info("Попытка добавить лайк к посту с ID: {} от пользователя с ID: {}", postId, likeDto.getUserId());
@@ -49,7 +53,7 @@ public class LikeController {
         return result;
     }
 
-    @DeleteMapping("/post/{postId}/remove")
+    @DeleteMapping("/post/{postId}")
     public LikeDto removeLikeFromPost(@PathVariable Long postId, @RequestBody LikeDto likeDto) {
         likeValidator.likeValidation(likeDto); // Валидация
         log.info("Попытка удалить лайк с поста с ID: {} от пользователя с ID: {}", postId, likeDto.getUserId());
@@ -58,7 +62,7 @@ public class LikeController {
         return  result;
     }
 
-    @PostMapping("/comment/{commentId}/add")
+    @PostMapping("/comment/{commentId}")
     public LikeDto addLikeToComment(@PathVariable Long commentId, @RequestBody LikeDto likeDto) {
         likeValidator.likeValidation(likeDto); // Валидация
         log.info("Попытка добавить лайк к комментарию с ID: {} от пользователя с ID: {}", commentId, likeDto.getUserId());
@@ -67,12 +71,22 @@ public class LikeController {
         return  result;
     }
 
-    @DeleteMapping("/comment/{commentId}/remove")
+    @DeleteMapping("/comment/{commentId}")
     public LikeDto removeLikeFromComment(@PathVariable Long commentId, @RequestBody LikeDto likeDto) {
         likeValidator.likeValidation(likeDto); // Валидация
         log.info("Попытка удалить лайк с комментария с ID: {} от пользователя с ID: {}", commentId, likeDto.getUserId());
         LikeDto result = likeService.removeLikeFromComment(commentId, likeDto);
         log.info("Лайк успешно удалён с комментария с ID: {} от пользователя с ID: {}", commentId, likeDto.getUserId());
         return result;
+    }
+
+    @GetMapping(value = "/users/post/{postId}")
+    public List<UserDto> getAllUsersLikedPost(@PathVariable long postId) {
+        return likeService.getAllUsersLikedPost(postId);
+    }
+
+    @GetMapping(value = "/users/comment/{commentId}")
+    public List<UserDto> getAllUsersLikedComment(@PathVariable long commentId) {
+        return likeService.getAllUsersLikedComment(commentId);
     }
 }
