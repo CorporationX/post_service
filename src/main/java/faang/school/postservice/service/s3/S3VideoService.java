@@ -28,24 +28,27 @@ public class S3VideoService {
         try {
             String type = file.getContentType();
             String name = file.getOriginalFilename();
-
+            long fileSize = file.getSize();
             InputStream fileStream = file.getInputStream();
 
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(type);
+            metadata.setContentLength(fileSize);
 
             String customKey = format("post_%d/video/%d_%s", post.getId(), System.currentTimeMillis(), name);
+
             s3client.putObject(bucketName, customKey, fileStream, metadata);
 
             return Resource.builder()
                     .key(customKey)
-                    .size(fileStream.readAllBytes().length)
+                    .size(fileSize)
                     .name(name)
                     .type(ResourceType.VIDEO)
                     .post(post)
                     .build();
 
         } catch (IOException e) {
+
             throw new FileException("Error with video file");
         }
     }
