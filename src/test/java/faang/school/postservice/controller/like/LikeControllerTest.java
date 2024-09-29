@@ -47,9 +47,6 @@ public class LikeControllerTest {
 
     @BeforeEach
     public void setUp() {
-//        mockMvc = MockMvcBuilders.standaloneSetup(likeController)
-//                .build();
-
         postLikeDto = new LikeDto(USER_ID, POST_ID, null);
         commentLikeDto = new LikeDto(USER_ID, null, COMMENT_ID);
     }
