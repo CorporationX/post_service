@@ -1,6 +1,6 @@
 package faang.school.postservice;
 
-import faang.school.postservice.conroller.LikeController;
+import faang.school.postservice.controller.LikeController;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
 import org.junit.jupiter.api.BeforeEach;
