@@ -51,3 +51,10 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+spell-checker:
+  api:
+    host: https://api.textgears.com
+    key: 18ZFDi6vjqn0XCYm
+    autocorrect: /correct
+    language-detection: /detect

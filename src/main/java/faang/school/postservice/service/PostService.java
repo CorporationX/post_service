@@ -10,6 +10,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.spellcheck.SpellCheckService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
     private final NewPostPublisher newPostPublisher;
+    private final SpellCheckService spellCheckService;
 
     public PostDto createPost(PostDto postDto) {
         if (postDto.getAuthorType() == AuthorType.USER) {
@@ -145,5 +147,18 @@ public class PostService {
     @Transactional
     public Post updatePostInternal(Post post){
         return postRepository.save(post);
+    }
+
+    public void correctSpellingInUnpublishedPosts() {
+        List<Post> unpublishedPosts = postRepository.findReadyToPublish();
+
+        if (!unpublishedPosts.isEmpty()) {
+            unpublishedPosts.stream()
+                    .peek(post -> {
+                        String correctedText = spellCheckService.autoCorrect(post.getContent());
+                        post.setContent(correctedText);
+                    })
+                    .forEach(postRepository::save);
+        }
     }
 }
