@@ -6,8 +6,10 @@ import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,22 +27,24 @@ public class CommentServiceImpl implements CommentService {
     private final UserServiceClient userServiceClient;
 
     @Override
-    public CommentDto create(Long postId, CommentDto commentDto) {
-        validateComment(postId, commentDto);
-        Comment comment = commentRepository.save(mapper.toEntity(commentDto));
+    public CommentDto createComment(Long postId, CommentDto commentDto) {
+        Post post = postRepository.findById(postId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Post with id %s does not exist", postId)));
+        validateUser(commentDto);
+        Comment comment = commentRepository.save(mapper.toEntity(commentDto, post));
         return mapper.toDto(comment);
     }
 
     @Override
-    public CommentDto update(Long commentId, CommentUpdateDto commentUpdateDto) {
+    public CommentDto updateComment(Long commentId, CommentUpdateDto commentUpdateDto) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Comment with id " + commentId + " does not exist"));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Comment with id %s does not exist", commentId)));
         comment.setContent(commentUpdateDto.getContent());
         return mapper.toDto(commentRepository.save(comment));
     }
 
     @Override
-    public List<CommentDto> getByPostId(Long postId) {
+    public List<CommentDto> getComments(Long postId) {
         return commentRepository.findAllByPostId(postId)
                 .stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
@@ -49,17 +53,23 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void delete(Long commentId) {
+    public void deleteComment(Long commentId) {
         commentRepository.deleteById(commentId);
     }
 
-    private void validateComment(Long postId, CommentDto commentDto) {
-        if (!postRepository.existsById(postId)) {
-            throw new EntityNotFoundException("Post with id " + postId + " does not exist");
-        }
-        UserDto user = userServiceClient.getUser(commentDto.getAuthorId());
-        if (user == null) {
-            throw new EntityNotFoundException("User with id " + commentDto.getAuthorId() + " does not exist");
+    private void validateUser(CommentDto commentDto) {
+        try {
+            UserDto user = userServiceClient.getUser(commentDto.getAuthorId());
+            if (user == null ) {
+                throw new IllegalStateException(String.format("User with id %s could not be retrieved (null returned)", commentDto.getAuthorId()));
+            }
+        } catch (FeignException e) {
+            switch (e.status()) {
+                case 404:
+                    throw new EntityNotFoundException(String.format("User with id %s does not exist", commentDto.getAuthorId()));
+                case 400:
+                    throw new IllegalArgumentException(String.format("Bad request: %s", e.getMessage()));
+            }
         }
     }
 }

@@ -6,9 +6,13 @@ import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentServiceImpl;
+import feign.FeignException;
+import feign.Request;
+import feign.RequestTemplate;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,58 +55,62 @@ public class CommentServiceTest {
 
     private CommentDto commentDto = new CommentDto();
     private CommentUpdateDto commentUpdateDto = new CommentUpdateDto();
+    private Post post = new Post();
     private Long postId = 1L;
     private Long commentId = 1L;
     private Long autrorId = 1L;
 
     @Test
-    void create_nonexistentPost_throwsException() {
-        when(postRepository.existsById(postId)).thenReturn(false);
+    void createComment_Comment_nonexistentPost_throwsException() {
+        when(postRepository.findById(postId)).thenThrow(EntityNotFoundException.class);
         assertThrows(EntityNotFoundException.class,
-                () -> commentService.create(postId, commentDto));
+                () -> commentService.createComment(postId, commentDto));
         verify(commentRepository, never()).save(any(Comment.class));
     }
 
     @Test
-    void create_nonexistentUser_throwsException() {
+    void createComment_Comment_nonexistentUser_throwsException() {
         commentDto.setAuthorId(autrorId);
-        when(postRepository.existsById(postId)).thenReturn(true);
-        when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(null);
+        Request request = Request.create(Request.HttpMethod.GET, "url",
+                new HashMap<>(), null, new RequestTemplate());
+        when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
+        when(userServiceClient.getUser(commentDto.getAuthorId())).thenThrow(
+                new FeignException.NotFound("", request, new byte[0], null));
         assertThrows(EntityNotFoundException.class,
-                () -> commentService.create(postId, commentDto));
+                () -> commentService.createComment(postId, commentDto));
         verify(commentRepository, never()).save(any(Comment.class));
     }
 
     @Test
-    void create_validRequest_repositorySaveCalled() {
+    void createComment_Comment_validRequest_repositorySaveCalled() {
         Comment comment = new Comment();
         commentDto.setAuthorId(autrorId);
-        when(postRepository.existsById(postId)).thenReturn(true);
+        when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenReturn(new UserDto());
-        when(mapper.toEntity(commentDto)).thenReturn(comment);
+        when(mapper.toEntity(commentDto, post)).thenReturn(comment);
         when(commentRepository.save(comment)).thenReturn(comment);
-        commentService.create(postId, commentDto);
+        commentService.createComment(postId, commentDto);
         verify(commentRepository).save(any(Comment.class));
         verify(mapper).toDto(any(Comment.class));
     }
 
     @Test
-    void update_nonexistentComment_throwsException() {
+    void updateComment_Comment_nonexistentComment_throwsException() {
         when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class,
-                () -> commentService.update(commentId, commentUpdateDto));
+                () -> commentService.updateComment(commentId, commentUpdateDto));
     }
 
     @Test
-    void update_validUpdate_repositorySaveCalled() {
+    void updateComment_validUpdate_Comment_repositorySaveCalled() {
         Comment comment = new Comment();
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-        commentService.update(commentId, commentUpdateDto);
+        commentService.updateComment(commentId, commentUpdateDto);
         verify(commentRepository).save(any(Comment.class));
     }
 
     @Test
-    void getByPostId_validRequest_returnsSortedComments() {
+    void getComments_validRequest_returnsSortedComments() {
         Comment comment2 = new Comment();
         comment2.setCreatedAt(LocalDateTime
                 .of(2024, Month.SEPTEMBER, 23, 15, 30));
@@ -122,7 +131,7 @@ public class CommentServiceTest {
         });
         when(commentRepository.findAllByPostId(postId))
                 .thenReturn(unsortedComments);
-        List<CommentDto> result = commentService.getByPostId(postId);
+        List<CommentDto> result = commentService.getComments(postId);
         assertIterableEquals(List.of(
                 mapper.toDto(comment3),
                 mapper.toDto(comment2),
@@ -130,7 +139,7 @@ public class CommentServiceTest {
     }
 
     @Test
-    void delete_validRequest_repositoryCalled() {
+    void deleteComment_validRequest_repositoryCalled() {
         commentRepository.deleteById(commentId);
         verify(commentRepository).deleteById(commentId);
     }

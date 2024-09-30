@@ -3,15 +3,21 @@ package faang.school.postservice.controller;
 import faang.school.postservice.controller.comment.CommentController;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.comment.CommentService;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.assertThrows;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -28,60 +34,73 @@ public class CommentControllerTest {
     private CommentUpdateDto commentUpdateDto = new CommentUpdateDto();
     private Long postId = 1L;
     private Long commentId = 1L;
+    private Validator validator;
+
+    @BeforeEach
+    void setUp() {
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            validator = factory.getValidator();
+        }
+    }
+
 
     @Test
-    void create_emptyComment_throwsException() {
+    void createComment_Comment_emptyComment_throwsException() {
         commentDto.setContent("");
-        assertThrows(DataValidationException.class,
-                () -> commentController.create(postId, commentDto));
+        Set<ConstraintViolation<CommentDto>> violations = validator.validate(commentDto);
+        assertEquals(1, violations.size());
+        assertEquals("content", violations.iterator().next().getPropertyPath().toString());
     }
 
     @Test
-    void create_commentIsTooLarge_throwsException() {
+    void createComment_Comment_commentIsTooLarge_throwsException() {
         commentDto.setContent("a".repeat(4097));
-        assertThrows(DataValidationException.class,
-                () -> commentController.create(postId, commentDto));
+        Set<ConstraintViolation<CommentDto>> violations = validator.validate(commentDto);
+        assertEquals(1, violations.size());
+        assertEquals("content", violations.iterator().next().getPropertyPath().toString());
     }
 
     @Test
-    void create_validComment_serviceCreateCalled() {
+    void createComment_validComment_serviceCreateCommentCalled() {
         commentDto.setContent("content");
-        commentController.create(postId, commentDto);
+        commentController.createComment(postId, commentDto);
         verify(commentService, times(1))
-                .create(postId, commentDto);
+                .createComment(postId, commentDto);
     }
 
     @Test
-    void update_emptyComment_throwsException() {
+    void updateComment_Comment_emptyComment_throwsException() {
         commentUpdateDto.setContent("");
-        assertThrows(DataValidationException.class,
-                () -> commentController.update(postId, commentUpdateDto));
+        Set<ConstraintViolation<CommentUpdateDto>> violations = validator.validate(commentUpdateDto);
+        assertEquals(1, violations.size());
+        assertEquals("content", violations.iterator().next().getPropertyPath().toString());
     }
 
     @Test
-    void update_commentIsTooLarge_throwsException() {
+    void updateComment_Comment_commentIsTooLarge_throwsException() {
         commentUpdateDto.setContent("a".repeat(4097));
-        assertThrows(DataValidationException.class,
-                () -> commentController.update(postId, commentUpdateDto));
+        Set<ConstraintViolation<CommentUpdateDto>> violations = validator.validate(commentUpdateDto);
+        assertEquals(1, violations.size());
+        assertEquals("content", violations.iterator().next().getPropertyPath().toString());
     }
 
     @Test
-    void update_validComment_serviceUpdateCalled() {
+    void updateComment_validComment_serviceUpdateCommentCalled() {
         commentUpdateDto.setContent("content");
-        commentController.update(postId, commentUpdateDto);
+        commentController.updateComment(postId, commentUpdateDto);
         verify(commentService, times(1))
-                .update(postId, commentUpdateDto);
+                .updateComment(postId, commentUpdateDto);
     }
 
     @Test
-    void getByPostId_validRequest_serviceGetByPostIdCalled() {
-        commentController.getByPostId(postId);
-        verify(commentService, times(1)).getByPostId(postId);
+    void getComments_validRequest_serviceGetCommentsCalled() {
+        commentController.getComments(postId);
+        verify(commentService, times(1)).getComments(postId);
     }
 
     @Test
-    void delete_validRequest_serviceDeleteCalled() {
-        commentController.delete(commentId);
-        verify(commentService, times(1)).delete(commentId);
+    void deleteComment_validRequest_serviceDeleteCommentCalled() {
+        commentController.deleteComment(commentId);
+        verify(commentService, times(1)).deleteComment(commentId);
     }
 }
