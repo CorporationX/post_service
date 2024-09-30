@@ -21,7 +21,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -131,12 +130,6 @@ public class AlbumServiceImpl implements AlbumService {
     public List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto, Long userId) {
         Stream<Album> albums = albumRepository.findAll().stream()
                 .filter(album -> isAlbumVisibleForUser(album, userId));
-        return albumMapper.toDto(filterAlbums(albumFilterDto, albums));
-    }
-
-    @Override
-    public List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto) {
-        Stream<Album> albums = albumRepository.findAll().stream();
         return albumMapper.toDto(filterAlbums(albumFilterDto, albums));
     }
 

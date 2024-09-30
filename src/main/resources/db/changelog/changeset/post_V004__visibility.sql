@@ -6,5 +6,5 @@ CREATE TABLE IF NOT EXISTS album_visibility (
 );
 
 ALTER TABLE album
-ADD COLUMN visibility VARCHAR(50) NOT NULL DEFAULT 'all_users';
+ADD COLUMN IF NOT EXISTS visibility VARCHAR(50) NOT NULL DEFAULT 'all_users';
 
