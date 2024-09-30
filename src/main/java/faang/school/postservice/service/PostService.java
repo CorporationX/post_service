@@ -5,15 +5,17 @@ import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
-import faang.school.postservice.dto.event.kafka.KafkaPostEvent;
+import faang.school.postservice.dto.event.kafka.PostCreatedEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.hash.PostHash;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
+import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
@@ -53,9 +55,13 @@ public class PostService {
     private final UserContext userContext;
     private final KafkaProducer kafkaProducer;
     private final UserServiceClient userServiceClient;
+    private final PostCacheRepository postCacheRepository;
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
+
+    @Value("${spring.post.cache.ttl}")
+    private long postTtl;
 
     @Async(value = "threadPool")
     @Transactional
@@ -87,7 +93,7 @@ public class PostService {
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
         List<Long> followersIds = userServiceClient.getFollowerIds(userContext.getUserId());
-        KafkaPostEvent newPostEvent = KafkaPostEvent.builder()
+        PostCreatedEvent newPostEvent = PostCreatedEvent.builder()
                 .postId(post.getId())
                 .authorId(post.getAuthorId())
                 .followersId(followersIds)
@@ -111,6 +117,7 @@ public class PostService {
         return postDtoForReturns;
     }
 
+    @Async(value = "threadPool")
     @Transactional
     public PostDto publishPost(PostDto postDto) {
         Post post = getPostById(postDto.getId());
@@ -119,6 +126,16 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
+
+        postCacheRepository.save(PostHash.builder()
+                .postId(post.getId())
+                .authorId(post.getAuthorId())
+                .projectId(post.getProjectId())
+                .publishedAt(post.getPublishedAt())
+                .content(post.getContent())
+                .ttl(postTtl)
+                .build());
+
         return postMapper.toDto(post);
     }
 

@@ -3,7 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.event.kafka.KafkaPostEvent;
+import faang.school.postservice.dto.event.kafka.PostCreatedEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.hashtag.HashtagResponse;
 import faang.school.postservice.dto.post.PostDto;
@@ -15,6 +15,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.producer.KafkaProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
+import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
@@ -91,6 +92,9 @@ public class PostServiceTest {
 
     @Mock
     private UserServiceClient userServiceClient;
+
+    @Mock
+    private PostCacheRepository postCacheRepository;
 
     private PostDto postDto;
     private Post post;
@@ -236,7 +240,7 @@ public class PostServiceTest {
         verify(elasticsearchService, times(1)).indexPost(postDto);
         assertEquals(postDto, result);
         verify(postEventPublisher, times(1)).publish(any());
-        verify(kafkaProducer, times(1)).sendEvent(any(KafkaPostEvent.class));
+        verify(kafkaProducer, times(1)).sendEvent(any(PostCreatedEvent.class));
     }
 
     @Test
@@ -274,6 +278,7 @@ public class PostServiceTest {
         verify(postServiceValidator, times(1)).validatePublishPost(post);
         verify(postRepository, times(1)).save(post);
         verify(postMapper, times(1)).toDto(post);
+        verify(postCacheRepository,times(1)).save(any());
 
         assertTrue(post.isPublished());
         assertNotNull(post.getPublishedAt());
