@@ -69,7 +69,7 @@ public class KafkaCommentListener implements KafkaEventListener<CommentKafkaEven
 
                         acknowledgment.acknowledge();
                     } catch (OptimisticLockingFailureException e) {
-                        log.error("Failed to update Post with ID: {} due to version conflict", postRedis.getId());
+                        log.error("Failed to update Post with ID:{} due to version conflict", postRedis.getId());
                         throw e;
                     }
                 },
