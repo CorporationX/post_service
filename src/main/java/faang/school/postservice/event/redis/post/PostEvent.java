@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class PostEvent {
     private long id;
     private long authorId;
-    private long postId;
-    private long userId;
-    private LocalDateTime timestamp;
+    private String content;
+    private LocalDateTime publishedAt;
+    private LocalDateTime createdAt;
 }

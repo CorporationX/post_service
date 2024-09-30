@@ -30,7 +30,7 @@ class CommentMapperTest {
   }
 
   @Test
-  @DisplayName("Проверка равенства CommentEvent и CommentDto после маппинга")
+  @DisplayName("Проверка равенства CommentsEvent и CommentDto после маппинга")
   void testConverterMentorshipDtoFromUser() {
     final var commentEvent = mapper.toEvent(getComment());
     assertThat(commentEvent.postId()).isEqualTo(getCommentEvent().postId());
