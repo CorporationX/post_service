@@ -1,4 +1,4 @@
-package faang.school.postservice.service.s3;
+package faang.school.postservice.service.resource.s3;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

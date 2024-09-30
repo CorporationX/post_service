@@ -1,4 +1,4 @@
-package faang.school.postservice.service.s3;
+package faang.school.postservice.service.resource.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -18,24 +18,24 @@ import static java.lang.String.format;
 
 @Component
 @RequiredArgsConstructor
-public class S3VideoService {
+public class S3AudioService {
     private final AmazonS3 s3client;
 
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
     public Resource addFileToStorage(MultipartFile file, Post post) {
-        try {
-            String type = file.getContentType();
-            String name = file.getOriginalFilename();
-            long fileSize = file.getSize();
-            InputStream fileStream = file.getInputStream();
+        String type = file.getContentType();
+        String name = file.getOriginalFilename();
+        long fileSize = file.getSize();
+
+        try (InputStream fileStream = file.getInputStream()) {;
 
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(type);
             metadata.setContentLength(fileSize);
 
-            String customKey = format("post_%d/video/%d_%s", post.getId(), System.currentTimeMillis(), name);
+            String customKey = format("post_%d/audio/%d_%s", post.getId(), System.currentTimeMillis(), name);
 
             s3client.putObject(bucketName, customKey, fileStream, metadata);
 
@@ -43,13 +43,12 @@ public class S3VideoService {
                     .key(customKey)
                     .size(fileSize)
                     .name(name)
-                    .type(ResourceType.VIDEO)
+                    .type(ResourceType.AUDIO)
                     .post(post)
                     .build();
 
         } catch (IOException e) {
-
-            throw new FileException("Error with video file");
+            throw new FileException("Error with audio file");
         }
     }
 
@@ -62,4 +61,3 @@ public class S3VideoService {
         s3client.deleteObject(bucketName, key);
     }
 }
-

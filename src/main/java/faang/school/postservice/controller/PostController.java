@@ -3,7 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.service.ResourceService;
+import faang.school.postservice.service.resource.ResourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;

@@ -1,4 +1,4 @@
-package faang.school.postservice.service.s3;
+package faang.school.postservice.service.resource.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;

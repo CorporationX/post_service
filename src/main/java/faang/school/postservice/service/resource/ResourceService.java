@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.resource;
 
 import faang.school.postservice.exception.FileException;
 import faang.school.postservice.model.Post;
@@ -6,9 +6,9 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.ResourceType;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.s3.S3AudioService;
-import faang.school.postservice.service.s3.S3ImageService;
-import faang.school.postservice.service.s3.S3VideoService;
+import faang.school.postservice.service.resource.s3.S3AudioService;
+import faang.school.postservice.service.resource.s3.S3ImageService;
+import faang.school.postservice.service.resource.s3.S3VideoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

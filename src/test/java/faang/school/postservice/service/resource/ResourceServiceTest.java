@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.resource;
 
 import faang.school.postservice.exception.FileException;
 import faang.school.postservice.model.Post;
@@ -6,11 +6,9 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.ResourceType;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.s3.S3AudioService;
-import faang.school.postservice.service.s3.S3ImageService;
-import faang.school.postservice.service.s3.S3VideoService;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeAll;
+import faang.school.postservice.service.resource.s3.S3AudioService;
+import faang.school.postservice.service.resource.s3.S3ImageService;
+import faang.school.postservice.service.resource.s3.S3VideoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
