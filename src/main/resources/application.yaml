@@ -21,6 +21,17 @@ spring:
     active: dev
 
   data:
+    kafka:
+      bootstrap-servers: localhost:29092
+      partition: 1
+      replication_factor: 1
+      backoff:
+        interval: 2000
+        max_failure: 10
+      consumer:
+        group_id: post-service
+      topic:
+        like: like
     redis:
       port: 6379
       host: localhost
