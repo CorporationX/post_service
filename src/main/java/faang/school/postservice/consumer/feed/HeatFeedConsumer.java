@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.feed.HeatFeedEvent;
-import faang.school.postservice.service.feed.FeedService;
+import faang.school.postservice.service.feed.HeatFeedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -19,14 +19,14 @@ import java.util.List;
 public class HeatFeedConsumer {
 
     private final ObjectMapper objectMapper;
-    private final FeedService feedService;
+    private final HeatFeedService HeatFeedService;
 
     @KafkaListener(topics = "heat-feed", groupId = "heat-feed-group")
     public void consume(String message, Acknowledgment acknowledgment) throws JsonProcessingException {
         List<HeatFeedEvent> events = objectMapper.readValue(
                 message, new TypeReference<List<HeatFeedEvent>>() {}
         );
-        feedService.heatFeedUpdateCache(events);
+        HeatFeedService.heatFeedUpdateCache(events);
         acknowledgment.acknowledge();
     }
 }
