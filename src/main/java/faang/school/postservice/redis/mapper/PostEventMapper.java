@@ -1,7 +1,6 @@
 package faang.school.postservice.redis.mapper;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.kafka.events.PostEvent;
 import faang.school.postservice.redis.model.PostCache;
 import org.mapstruct.Mapper;
 

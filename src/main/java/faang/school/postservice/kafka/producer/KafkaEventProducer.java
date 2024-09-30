@@ -3,8 +3,9 @@ package faang.school.postservice.kafka.producer;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.kafka.events.CommentEvent;
 import faang.school.postservice.kafka.events.FeedDto;
-import faang.school.postservice.kafka.events.PostEvent;
+import faang.school.postservice.kafka.events.PostLikeEvent;
 import faang.school.postservice.kafka.events.PostFollowersEvent;
+import faang.school.postservice.kafka.events.PostViewEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -29,22 +30,21 @@ public class KafkaEventProducer {
     public void sendPostFollowersEvent(PostFollowersEvent event) {
         kafkaTemplate.send(postTopic, event);
     }
-    //TODO why do we need postId here
-    public void sendPostViewEvent(Long postId, PostEvent event) {
+    public void sendPostViewEvent(PostViewEvent event) {
         kafkaTemplate.send(postViewsTopic, event);
     }
-    public void sendCommentEvent(Long postId, CommentEvent event){
+    public void sendCommentEvent(CommentEvent event){
         kafkaTemplate.send(commentTopic, event);
     }
-    public void sendLikeEvent(Long postId, PostEvent event){
+    public void sendLikeEvent(PostLikeEvent event){
         kafkaTemplate.send(likeTopic, event);
     }
 
-    public void sendFeedEvent(FeedDto event) {
+    public void sendFeedHeatEvent(FeedDto event) {
         kafkaTemplate.send(heatTopic, event);
     }
 
-    public void sendPostEvent(PostDto event) {
+    public void sendPostHeatEvent(PostDto event) {
         kafkaTemplate.send(heatTopic, event);
     }
 }

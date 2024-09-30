@@ -38,6 +38,11 @@ spring:
         comments-in-post: 3
 
   kafka:
+    consumer:
+      enable-auto-commit: false
+    producer:
+      acks: 1
+      retries: 10
     listener:
       ack-mode: manual
     bootstrap_servers: "localhost:9092"

@@ -4,8 +4,8 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.kafka.EventsGenerator;
 import faang.school.postservice.kafka.producer.KafkaEventProducer;
-import faang.school.postservice.kafka.events.PostEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
@@ -48,7 +48,8 @@ public class LikeServiceImpl implements LikeService {
     private final PostMapper postMapper;
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
-    private final KafkaEventProducer kafkaEventProducer;
+
+    private final EventsGenerator eventsGenerator;
 
     @Override
     @Transactional
@@ -97,18 +98,9 @@ public class LikeServiceImpl implements LikeService {
                 postId,
                 userId);
 
-        sendLikeEventToKafka(post);
+        eventsGenerator.generateAndSendLikeEvent(postMapper.toDto(post));
 
         return likeMapper.toDto(like);
-    }
-
-    private void sendLikeEventToKafka(Post post){
-        var postId = post.getId();
-        var event = PostEvent.builder()
-                .postId(postId)
-                .authorId(post.getAuthorId())
-                .build();
-        kafkaEventProducer.sendLikeEvent(postId, event);
     }
 
     @Override

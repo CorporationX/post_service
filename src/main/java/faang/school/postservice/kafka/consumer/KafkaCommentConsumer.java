@@ -1,6 +1,7 @@
 package faang.school.postservice.kafka.consumer;
 
 import faang.school.postservice.kafka.events.CommentEvent;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.redis.mapper.PostCacheMapper;
 import faang.school.postservice.redis.repository.PostCacheRedisRepository;
 import faang.school.postservice.redis.service.RedisPostCacheService;
@@ -16,10 +17,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaCommentConsumer {
-    private final PostCacheRedisRepository postCacheRedisRepository;
+    private final RedisPostCacheService postCacheService;
     private final RedisPostCacheService redisPostCacheService;
     private final PostRepository postRepository;
-    private final PostCacheMapper mapper;
+    private final PostMapper mapper;
 
     @KafkaListener(topics = "${spring.kafka.topic-name.comments:comments}")
     void listener(CommentEvent event, Acknowledgment acknowledgment){
@@ -34,13 +35,13 @@ public class KafkaCommentConsumer {
     }
 
     private void addComment(Long postId, Long commentId){
-        if (postCacheRedisRepository.existsById(postId)){
+        if (postCacheService.existsById(postId)){
             redisPostCacheService.addCommentToPost(postId, commentId);
         } else {
             var postCache = postRepository.findById(postId)
-                    .map(mapper::toPostCache)
+                    .map(mapper::toDto)
                     .orElseThrow(() -> new EntityNotFoundException("Post not found"));
-            postCacheRedisRepository.save(postCache);
+            postCacheService.savePostCache(postCache);
         }
     }
 }

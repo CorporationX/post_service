@@ -1,20 +1,14 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.kafka.producer.KafkaEventProducer;
-import faang.school.postservice.kafka.events.PostFollowersEvent;
-import faang.school.postservice.kafka.events.PostEvent;
+import faang.school.postservice.kafka.EventsGenerator;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.redis.mapper.AuthorCacheMapper;
-import faang.school.postservice.redis.mapper.PostCacheMapper;
-import faang.school.postservice.redis.repository.AuthorCacheRedisRepository;
-import faang.school.postservice.redis.repository.PostCacheRedisRepository;
+import faang.school.postservice.redis.service.AuthorCacheService;
+import faang.school.postservice.redis.service.RedisPostCacheService;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,17 +18,13 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PostService {
-    @Value("${spring.kafka.topic-name.posts:posts}")
-    private String postTopic;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final PostServiceValidator<PostDto> validator;
-    private final KafkaEventProducer kafkaEventProducer;
-    private final UserServiceClient userServiceClient;
-    private final PostCacheRedisRepository postCacheRedisRepository;
-    private final PostCacheMapper postCacheMapper;
-    private final AuthorCacheRedisRepository authorCacheRedisRepository;
-    private final AuthorCacheMapper authorCacheMapper;
+
+    private final RedisPostCacheService redisPostCacheService;
+    private final EventsGenerator eventsGenerator;
+    private final AuthorCacheService authorCacheService;
 
     public PostDto createPost(final PostDto postDto) {
         validator.validate(postDto);
@@ -57,32 +47,15 @@ public class PostService {
         var savedPost = postRepository.save(post);
         var postDto = postMapper.toDto(savedPost);
 
-        postCacheRedisRepository.save(postCacheMapper.toPostCache(postDto));
-        sendPostFollowersEventToKafka(savedPost);
+        eventsGenerator.generateAndSendPostFollowersEvent(postDto);
+
+        redisPostCacheService.savePostCache(postDto);
+        authorCacheService.saveAuthorCache(postDto.getAuthorId());
 
         return postDto;
     }
-    //TODO PRIVATE METHODS!
-    private void sendPostFollowersEventToKafka(Post post){
-        var postAuthorFollowersIds = getPostAuthorFollowers(post);
-        var postId = post.getId();
-        var event = PostFollowersEvent.builder()
-                .authorId(post.getAuthorId())
-                .postId(postId)
-                .followersIds(postAuthorFollowersIds)
-                .build();
+    //TODO SORT PRIVATE METHODS!
 
-        kafkaEventProducer.sendPostFollowersEvent(event);
-    }
-
-    private List<Long> getPostAuthorFollowers(Post post) {
-        var postAuthorId = post.getAuthorId();
-        var author = userServiceClient.getUser(postAuthorId);
-
-        authorCacheRedisRepository.save(authorCacheMapper.toAuthorCache(author));
-
-        return author.getFollowers();
-    }
 
     private void validatePostPublishing(Post post) {
         if (post.isPublished()) {
@@ -112,18 +85,10 @@ public class PostService {
 
     public PostDto getPost(final long postId) {
         Post post = getPostByIdOrFail(postId);
+        var postDto = postMapper.toDto(post);
 
-        sendPostViewEventToKafka(post);
-        return postMapper.toDto(post);
-    }
-
-    private void sendPostViewEventToKafka(Post post){
-        var postId = post.getId();
-        var event = PostEvent.builder()
-                .id(postId)
-                .authorId(post.getAuthorId())
-                .build();
-        kafkaEventProducer.sendPostViewEvent(postId, event);
+        eventsGenerator.generateAndSendPostViewEvent(postDto);
+        return postDto;
     }
 
     public List<PostDto> getFilteredPosts(final Long authorId, final Long projectId, final Boolean isPostPublished) {

@@ -6,7 +6,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record PostEvent(
+public record PostLikeEvent(
         Long id,
         String content,
         Long authorId,

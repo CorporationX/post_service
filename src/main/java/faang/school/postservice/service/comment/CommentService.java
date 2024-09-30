@@ -1,14 +1,11 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.kafka.producer.KafkaEventProducer;
-import faang.school.postservice.kafka.events.CommentEvent;
+import faang.school.postservice.kafka.EventsGenerator;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.redis.mapper.AuthorCacheMapper;
-import faang.school.postservice.redis.repository.AuthorCacheRedisRepository;
+import faang.school.postservice.redis.service.AuthorCacheService;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.error.CommentServiceErrors;
@@ -25,10 +22,8 @@ public class CommentService {
     private final CommentRepository repository;
     private final PostRepository postRepository;
     private final CommentMapper mapper;
-    private final KafkaEventProducer kafkaEventProducer;
-    private final AuthorCacheRedisRepository authorCacheRedisRepository;
-    private final AuthorCacheMapper authorCacheMapper;
-    private final UserServiceClient userServiceClient;
+    private final EventsGenerator eventsGenerator;
+    private final AuthorCacheService authorCacheService;
 
     public CommentDto addComment(Long postId, CommentDto commentDto) {
         if (commentDto.getContent() == null || commentDto.getContent().isBlank()) {
@@ -45,28 +40,13 @@ public class CommentService {
         post.getComments().add(saveComment);
         post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
+        var savedCommentDto = mapper.toDto(saveComment);
 
-        saveAuthorOfCommentInRedis(comment.getAuthorId());
+        eventsGenerator.generateAndSendCommentEventToKafka(savedCommentDto);
+        authorCacheService.saveAuthorCache(savedCommentDto.getAuthorId());
 
-        sendCommentEventToKafka(post, saveComment);
-        return mapper.toDto(saveComment);
-    }
+        return savedCommentDto;
 
-    private void saveAuthorOfCommentInRedis(Long authorId){
-        var authorDto = userServiceClient.getUser(authorId);
-
-        authorCacheRedisRepository.save(authorCacheMapper.toAuthorCache(authorDto));
-    }
-
-    private void sendCommentEventToKafka(Post post, Comment comment){
-        var postId = post.getId();
-        var event = CommentEvent.builder()
-                .commentId(comment.getId())
-                .content(comment.getContent())
-                .postId(postId)
-                .authorId(comment.getAuthorId())
-                .build();
-        kafkaEventProducer.sendCommentEvent(postId, event);
     }
 
     public CommentDto updateComment(Long postId, CommentDto commentDto) {

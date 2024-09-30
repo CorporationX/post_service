@@ -1,8 +1,8 @@
 package faang.school.postservice.kafka.consumer;
 
 import faang.school.postservice.kafka.events.PostFollowersEvent;
-import faang.school.postservice.redis.repository.PostCacheRedisRepository;
 import faang.school.postservice.redis.service.RedisFeedCacheService;
+import faang.school.postservice.redis.service.RedisPostCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -16,7 +16,7 @@ import java.util.List;
 @Slf4j
 public class KafkaPostConsumer {
     private final RedisFeedCacheService redisFeedCacheService;
-    private final PostCacheRedisRepository postCacheRedisRepository;
+    private final RedisPostCacheService redisPostCacheService;
 
     @KafkaListener(topics = "${spring.kafka.topic-name.posts:posts}")
     void listener(PostFollowersEvent event, Acknowledgment acknowledgment){
@@ -30,8 +30,8 @@ public class KafkaPostConsumer {
     }
 
     private void addPostIdToAuthorFollowers(Long postId, List<Long> followersIds) {
-        if (postCacheRedisRepository.existsById(postId)) {
-            redisFeedCacheService.addPostToFollowersFeed(postId, followersIds);
+        if (redisPostCacheService.existsById(postId)) {
+            redisFeedCacheService.addPostToFeeds(postId, followersIds);
         } else {
             log.warn("Post with id:{} does not exist in Redis.", postId);
         }

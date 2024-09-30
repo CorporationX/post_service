@@ -12,5 +12,5 @@ import java.io.Serializable;
 public class FeedCache implements Serializable {
     @Id
     private Long followerId;
-    private RedisZSet<Long> postIds;
+    private RedisZSet<Long> postIds; //TODO NOT a Best Practice. will be refactored
 }

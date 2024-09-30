@@ -1,11 +1,10 @@
-package faang.school.postservice.service;
+package faang.school.postservice.redis.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.kafka.events.FeedDto;
 import faang.school.postservice.kafka.producer.KafkaEventProducer;
-import faang.school.postservice.redis.service.AuthorCacheService;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,12 +33,12 @@ public class FeedHeatService {
         //TODO create Feeds for each author and send them to KAFKA
         var feedEvents = generateFeedEvents(allUsers);
         feedEvents
-                .forEach(kafkaEventProducer::sendFeedEvent);
+                .forEach(kafkaEventProducer::sendFeedHeatEvent);
 
         //TODO save posts with comments and likes and send them to KAFKA.
         var postEvents = generatePostEvents(feedEvents);
         postEvents
-                .forEach(kafkaEventProducer::sendPostEvent);
+                .forEach(kafkaEventProducer::sendPostHeatEvent);
     }
     //TODO create class EventsGenerator
     private List<FeedDto> generateFeedEvents(List<UserDto> userDtos) {

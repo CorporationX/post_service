@@ -36,30 +36,29 @@ public class RedisPostCacheService {
     }
 
     public void incrementConcurrentPostViews(Long postId) {
-        redisTemplate.opsForHash().increment(createRedisPostKey(postId), postCacheViewsField, 1);
+        redisTemplate.opsForHash().increment(generateCachePostKey(postId), postCacheViewsField, 1);
     }
 
     public void incrementConcurrentPostLikes(Long postId) {
-        redisTemplate.opsForHash().increment(createRedisPostKey(postId), postCacheLikesField, 1);
+        redisTemplate.opsForHash().increment(generateCachePostKey(postId), postCacheLikesField, 1);
     }
 
     public void addCommentToPost(Long postId, Long commentId){
-        //todo PostCache has to have 3 comments only.
-        String cacheKey = generatePostCacheKey(postId);
+        var cacheKey = generateCachePostKey(postId);
         redisTemplate.opsForZSet().add(cacheKey, commentId, System.currentTimeMillis());
 
-        Long setSize = redisTemplate.opsForZSet().zCard(cacheKey);
+        var setSize = redisTemplate.opsForZSet().zCard(cacheKey);
         if (setSize != null && setSize > commentsInPostQuantity) {
             redisTemplate.opsForZSet().removeRange(cacheKey, 0, setSize - commentsInPostQuantity);
         }
     }
 
-    private String createRedisPostKey(Long postId) {
-        return postCacheKeyPrefix + postId;
+    public boolean existsById(Long postId){
+        return postCacheRedisRepository.existsById(postId);
     }
-    //TODO need refactoring here
-    private String generatePostCacheKey(Long followerId) {
-        return postCacheKeyPrefix + followerId;
+
+    private String generateCachePostKey(Long postId) {
+        return postCacheKeyPrefix + postId;
     }
 
     public List<PostCache> getPostCacheByIds(List<Long> postIds) {

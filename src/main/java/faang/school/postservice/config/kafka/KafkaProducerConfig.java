@@ -18,6 +18,10 @@ import java.util.Map;
 public class KafkaProducerConfig {
     @Value("${spring.kafka.bootstrap_servers}")
     private String bootstrapServers;
+    @Value("${spring.kafka.producer.acks:1}")
+    private String acks;
+    @Value("${spring.kafka.producer.retries:10}")
+    private int retries;
 
     @Bean
     public Map<String, Object> producerConfig(){
@@ -25,6 +29,9 @@ public class KafkaProducerConfig {
         configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
         configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+
+        configs.put(ProducerConfig.ACKS_CONFIG, acks);
+        configs.put(ProducerConfig.RETRIES_CONFIG, retries);
         return configs;
     }
     @Bean

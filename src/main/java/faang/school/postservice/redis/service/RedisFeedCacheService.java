@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.redis.mapper.CommentCacheToCommentDtoMapper;
 import faang.school.postservice.redis.mapper.PostCacheMapper;
 import faang.school.postservice.redis.repository.CommentCacheRepository;
+import faang.school.postservice.redis.repository.FeedCacheRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,24 +28,24 @@ public class RedisFeedCacheService {
     private final CommentCacheRepository commentCacheRepository;
     private final CommentCacheToCommentDtoMapper commentCacheToCommentDtoMapper;
 
-    public void addPostToFollowersFeed(Long postId, List<Long> followerIds) {
+    public void addPostToFeeds(Long postId, List<Long> followerIds) {
         followerIds.forEach(followerId -> addPostToFollower(postId, followerId));
     }
 
     public List<PostDto> getUserFeed(Long postId, Long userId) {
-        List<Long> postIds = null;
+        List<Long> postIdList = null;
         if (postId == null){
-            postIds = ((List<Long>) redisTemplate.opsForHash().get(generateFeedCacheKey(userId), "postIds"))
+            postIdList = ((List<Long>) redisTemplate.opsForHash().get(generateFeedCacheKey(userId), "postIdList"))
                     .stream()
                     .limit(20)
                     .toList();
         } else {
-            var totalPostIds = (List<Long>) redisTemplate.opsForHash().get(generateFeedCacheKey(userId), "postIds");
+            var totalPostIds = (List<Long>) redisTemplate.opsForHash().get(generateFeedCacheKey(userId), "postIdList");
             var postIdIndex = totalPostIds.indexOf(postId);
-            postIds = totalPostIds.subList(postIdIndex, totalPostIds.size());
+            postIdList = totalPostIds.subList(postIdIndex, totalPostIds.size());
         }
 
-        return redisPostCacheService.getPostCacheByIds(postIds)
+        return redisPostCacheService.getPostCacheByIds(postIdList)
                 .stream()
                 .map(postCache -> postCacheMapper.toDto(postCache, commentCacheRepository, commentCacheToCommentDtoMapper))
                 .toList();
@@ -55,12 +56,11 @@ public class RedisFeedCacheService {
 
         Long setSize = redisTemplate.opsForZSet().zCard(cacheKey);
         if (setSize != null && setSize > feedCacheSize) {
-            redisTemplate.opsForZSet().removeRange(cacheKey, 0, setSize - feedCacheSize + 1);
+            redisTemplate.opsForZSet().removeRange(cacheKey, 0, setSize - feedCacheSize);
         }
     }
 
     private String generateFeedCacheKey(Long followerId) {
         return feedCacheKeyPrefix + followerId;
     }
-
 }
