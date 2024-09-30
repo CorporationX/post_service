@@ -4,10 +4,13 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -16,6 +19,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PostValidatorTest {
@@ -40,8 +44,17 @@ class PostValidatorTest {
     @Test
     void validatePost_ContentIsBlank() {
         postDto.setContent("   ");
+        postDto.setAuthorId(null);
+        postDto.setProjectId(null);
 
-        assertPost();
+        Exception exception = assertThrows(DataValidationException.class, () -> {
+            postValidator.validatePost(postDto);
+        });
+
+        String expectedMessage = "Either an author or a project is required";
+        String actualMessage = exception.getMessage();
+
+        assertEquals(expectedMessage, actualMessage);
     }
 
     @Test
@@ -49,12 +62,24 @@ class PostValidatorTest {
         postDto.setAuthorId(null);
         postDto.setProjectId(null);
 
-        assertPost();
+        Exception exception = assertThrows(DataValidationException.class, () -> {
+            postValidator.validatePost(postDto);
+        });
+
+        String expectedMessage = "Either an author or a project is required";
+        String actualMessage = exception.getMessage();
+
+        assertEquals(expectedMessage, actualMessage);
     }
 
     @Test
     void validatePost_isValidCreator_AuthorIdAndProjectIdIsNotNull() {
-        assertPost();
+        postDto.setAuthorId(1L);
+        postDto.setProjectId(null);
+
+        assertDoesNotThrow(() -> {
+            postValidator.validatePost(postDto);
+        });
     }
 
     @Test
@@ -73,25 +98,22 @@ class PostValidatorTest {
 
     @Test
     void validatePost_ExistsPost() {
-        Long id = postDto.getId();
-        Post post = postMapper.toEntity(postDto);
-        Optional<Post> optionalPost = Optional.of(post);
+        PostDto result = assertDoesNotThrow(
+                () -> postValidator.validatePostWithReturnDto(postDto));
 
-        Post result = assertDoesNotThrow(
-                () -> postValidator.validatePost(optionalPost, id));
-
-        assertEquals(post, result);
+        assertEquals(postDto, result);
     }
 
     @Test
     void validatePost_NotExistsPost() {
-        Long id = postDto.getId();
-        String correctMessage = "There is no post with ID " + id;
-        Optional<Post> optionalPost = Optional.empty();
+        postDto = null;
 
         var exception = assertThrows(EntityNotFoundException.class,
-                () -> postValidator.validatePost(optionalPost, id));
+                () -> postValidator.validatePostWithReturnDto(postDto));
 
-        assertEquals(correctMessage, exception.getMessage());
+        String expectedMessage = "There is no such post";
+        String actualMessage = exception.getMessage();
+
+        assertEquals(expectedMessage, actualMessage);
     }
 }

@@ -3,6 +3,8 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -51,8 +53,9 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void publishPost(long id) {
-        Optional<Post> optionalPost = postRepository.findById(id);
-        Post post = validator.validatePost(optionalPost, id);
+        Post optionalPost = postRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("Post not found with id: " + id));
+        Post post = postMapper.toEntity(validator.validatePostWithReturnDto(postMapper.toDto(optionalPost)));
 
         if (!post.isPublished()) {
             post.setPublishedAt(LocalDateTime.now());
@@ -75,8 +78,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDto getPost(long id) {
-        Optional<Post> optionalPost = postRepository.findById(id);
-        Post post = validator.validatePost(optionalPost, id);
+        Post optionalPost = postRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("Post not found with id: " + id));
+        Post post = postMapper.toEntity(validator.validatePostWithReturnDto(postMapper.toDto(optionalPost)));
         return postMapper.toDto(post);
     }
 

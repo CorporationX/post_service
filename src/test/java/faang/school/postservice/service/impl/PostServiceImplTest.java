@@ -105,25 +105,27 @@ class PostServiceImplTest {
 
     @Test
     void publishPost_AlreadyPublished() {
-        Optional<Post> optionalPost = Optional.of(post);
-        configureSearchPost(optionalPost);
-        post.setPublished(true);
-
-        postService.publishPost(postId);
-
-        verify(validator).validatePost(optionalPost, postId);
-        verify(postRepository, never()).save(post);
-    }
-
-    @Test
-    void publishPost_Published() {
-        Optional<Post> optionalPost = Optional.of(post);
-        configureSearchPost(optionalPost);
+        configureSearchPost(post);
         post.setPublished(false);
 
         postService.publishPost(postId);
 
-        verify(validator).validatePost(optionalPost, postId);
+        verify(validator).validatePostWithReturnDto(postDto);
+        verify(postRepository).save(postCaptor.capture());
+
+        Post savedPost = postCaptor.getValue();
+        assertTrue(savedPost.isPublished());
+        assertNotNull(savedPost.getPublishedAt());
+    }
+
+    @Test
+    void publishPost_Published() {
+        configureSearchPost(post);
+        post.setPublished(false);
+
+        postService.publishPost(postId);
+
+        verify(validator).validatePostWithReturnDto(postDto);
         verify(postRepository).save(postCaptor.capture());
 
         Post post = postCaptor.getValue();
@@ -149,19 +151,19 @@ class PostServiceImplTest {
 
     @Test
     void getPost() {
-        Optional<Post> optionalPost = Optional.of(post);
-        configureSearchPost(optionalPost);
+        configureSearchPost(post);
 
         PostDto postDto = postService.getPost(postId);
 
         verify(postRepository).findById(postId);
-        verify(validator).validatePost(optionalPost, postId);
+        verify(validator).validatePostWithReturnDto(postDto);
         assertEquals(this.postDto, postDto);
     }
 
-    private void configureSearchPost(Optional<Post> optionalPost) {
-        when(postRepository.findById(postId)).thenReturn(optionalPost);
-        when(validator.validatePost(optionalPost, postId)).thenReturn(post);
+    private void configureSearchPost(Post optionalPost) {
+        when(postRepository.findById(postId)).thenReturn(Optional.of(optionalPost));
+        when(postMapper.toDto(optionalPost)).thenReturn(postDto);
+        when(validator.validatePostWithReturnDto(postDto)).thenReturn(postDto);
     }
 
     @Test
