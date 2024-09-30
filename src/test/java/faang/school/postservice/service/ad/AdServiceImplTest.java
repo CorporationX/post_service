@@ -40,8 +40,6 @@ class AdServiceImplTest {
     @Test
     @DisplayName("Remove Expired Ads")
     void testRemoveExpiredAds() {
-
-
         Ad ad2 = Ad.builder()
                 .startDate(LocalDateTime.now().minusDays(2))
                 .endDate(LocalDateTime.now().plusDays(2))
