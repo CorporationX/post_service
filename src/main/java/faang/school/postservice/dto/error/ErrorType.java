@@ -1,0 +1,16 @@
+package faang.school.postservice.dto.error;
+
+import lombok.Getter;
+
+@Getter
+public enum ErrorType {
+    VALIDATION_ERROR("Validation error"),
+    NOT_FOUND("Requested Entity Not Found"),
+    ILLEGAL_STATE("An unexpected error occurred");
+
+    private final String message;
+
+    ErrorType(String message) {
+        this.message = message;
+    }
+}
