@@ -2,12 +2,13 @@ package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,7 @@ public class AlbumServiceImplTest {
     public void testCreateAlbumByNonExistingUser() {
         when(userServiceClient.existsUserById(albumDto.getAuthorId())).thenReturn(false);
 
-        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+        UserNotFoundException thrown = assertThrows(UserNotFoundException.class,
                 () -> albumService.createAlbum(albumDto)
         );
         assertEquals("User not found", thrown.getMessage());
@@ -68,7 +69,7 @@ public class AlbumServiceImplTest {
         when(userServiceClient.existsUserById(albumDto.getAuthorId())).thenReturn(true);
         when(albumRepository.existsByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId())).thenReturn(true);
 
-        DataValidationException thrown = assertThrows(DataValidationException.class,
+        EntityExistsException thrown = assertThrows(EntityExistsException.class,
                 () -> albumService.createAlbum(albumDto)
         );
         assertEquals("Album with title " + albumDto.getTitle() + " already exists", thrown.getMessage());
@@ -91,7 +92,7 @@ public class AlbumServiceImplTest {
     public void testUpdateAlbumWithExistingTitleForUser() {
         when(albumRepository.existsByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId())).thenReturn(true);
 
-        DataValidationException thrown = assertThrows(DataValidationException.class,
+        EntityExistsException thrown = assertThrows(EntityExistsException.class,
                 () -> albumService.updateAlbum(albumId, albumDto)
         );
         assertEquals("Album with title " + albumDto.getTitle() + " already exists", thrown.getMessage());
