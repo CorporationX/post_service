@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class KafkaPostEvent {
+public class PostCreatedEvent {
     long postId;
     long authorId;
     List<Long> followersId;
