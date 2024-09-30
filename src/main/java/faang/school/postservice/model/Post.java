@@ -76,8 +76,8 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "verified", nullable = false)
-    private boolean verified;
+    @Column(name = "verified", nullable = true)
+    private Boolean verified;
 
     @Column(name = "verified_date")
     private LocalDateTime verifiedDate;
