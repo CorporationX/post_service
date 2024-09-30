@@ -1,6 +1,7 @@
 package faang.school.postservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,7 +23,9 @@ public class PostServiceApp {
     @Bean
     public ObjectMapper objectMapper(){
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
+
         return objectMapper;
     }
 }

@@ -23,7 +23,7 @@ spring:
     bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
       retries: 3
       batch-size: 16384
@@ -33,7 +33,9 @@ spring:
       group-id: feed-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      enable-auto-commit: false
+      trusted-packages: "*"
     topic:
       post_views: post_views
       posts: posts
@@ -55,6 +57,22 @@ spring:
           name: like_channel
         comment_channel:
           name: comment_channel
+      cache:
+        capacity:
+          sublist: 100
+          max:
+            comments: 3
+            feed: 500
+            news_feed: 20
+        ttl:
+          users: 86400
+          posts: 86400
+          feed: 86400
+
+  heater:
+    capacity:
+      max: 500
+
 server:
   port: 8081
 

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.ContainerProperties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,8 @@ public class GeneralKafkaListenerConfig {
     private String valueDeserializer;
     @Value("${spring.kafka.consumer.auto-offset-reset}")
     private String autoOffsetReset;
+    @Value("${spring.kafka.consumer.enable-auto-commit}")
+    private String enableAutoCommit;
 
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
@@ -34,6 +37,7 @@ public class GeneralKafkaListenerConfig {
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer);
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset);
+        config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, enableAutoCommit);
 
         return new DefaultKafkaConsumerFactory<>(config);
     }
@@ -42,6 +46,7 @@ public class GeneralKafkaListenerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 
         return factory;
     }
