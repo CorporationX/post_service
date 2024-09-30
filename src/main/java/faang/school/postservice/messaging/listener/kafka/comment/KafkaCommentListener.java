@@ -66,7 +66,6 @@ public class KafkaCommentListener implements KafkaEventListener<CommentKafkaEven
                     try {
                         redisPostRepository.save(postRedis);
                         log.info("Saving post with ID: {} and comments: {}", postRedis.getId(), postRedis.getComments());
-                        log.info("->->->-> postId {}, Comments: {}", postRedis.getId(), postRedis.getComments());
 
                         acknowledgment.acknowledge();
                     } catch (OptimisticLockingFailureException e) {
