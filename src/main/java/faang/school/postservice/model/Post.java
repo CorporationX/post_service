@@ -76,8 +76,9 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "verified", nullable = true)
-    private Boolean verified;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verification_status", nullable = false)
+    private VerificationPostStatus verificationStatus = VerificationPostStatus.UNVERIFIED;
 
     @Column(name = "verified_date")
     private LocalDateTime verifiedDate;
