@@ -20,15 +20,15 @@ public class PostController {
     private final ResourceMapper resourceMapper;
 
     @PutMapping("{post-id}/files")
-    public ResourceDto addFileToPost(@RequestParam("file") MultipartFile file,
-                                     @PathVariable("post-id") Long postId) {
+    public ResourceDto addFileToPost(@PathVariable("post-id") Long postId,
+                                     @RequestParam MultipartFile file) {
         Resource resource = resourceService.addFileToPost(file, postId);
         return resourceMapper.toResourceDto(resource);
     }
 
     @PutMapping("{post-id}/files/update")
-    public ResourceDto updateFileInPost(@RequestParam("file") MultipartFile file,
-                                        @PathVariable("post-id") Long postId,
+    public ResourceDto updateFileInPost(@PathVariable("post-id") Long postId,
+                                        @RequestParam MultipartFile file,
                                         @RequestParam("resource-id") Long resourceId) {
         Resource updatedResource = resourceService.updateFileInPost(file, resourceId, postId);
         return resourceMapper.toResourceDto(updatedResource);

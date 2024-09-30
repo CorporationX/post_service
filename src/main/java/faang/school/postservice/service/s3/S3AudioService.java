@@ -25,11 +25,11 @@ public class S3AudioService {
     private String bucketName;
 
     public Resource addFileToStorage(MultipartFile file, Post post) {
-        try {
-            String type = file.getContentType();
-            String name = file.getOriginalFilename();
-            long fileSize = file.getSize();
-            InputStream fileStream = file.getInputStream();
+        String type = file.getContentType();
+        String name = file.getOriginalFilename();
+        long fileSize = file.getSize();
+
+        try (InputStream fileStream = file.getInputStream()) {;
 
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(type);
@@ -48,7 +48,6 @@ public class S3AudioService {
                     .build();
 
         } catch (IOException e) {
-
             throw new FileException("Error with audio file");
         }
     }

@@ -34,16 +34,15 @@ public class S3ImageService {
     private int maxPixelSize;
 
     public Resource addFileToStorage(MultipartFile file, Post post) {
-        try {
-            String type = file.getContentType();
-            String name = file.getOriginalFilename();
-            String format = Objects.requireNonNull(type).replace("image/", "");
+        String type = file.getContentType();
+        String name = file.getOriginalFilename();
+        String format = Objects.requireNonNull(type).replace("image/", "");
 
-            InputStream fileStream = file.getInputStream();
-            InputStream compressedFileStream = compressFileStream(fileStream, format);
-
+        try (InputStream compressedFileStream = compressFileStream(file.getInputStream(), format)) {
+            int compressedFileSize = compressedFileStream.available();
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(type);
+            metadata.setContentLength(compressedFileSize);
 
             String customKey = format("post_%d/image/%d_%s", post.getId(), System.currentTimeMillis(), name);
 
@@ -51,7 +50,7 @@ public class S3ImageService {
 
             return Resource.builder()
                     .key(customKey)
-                    .size(compressedFileStream.readAllBytes().length)
+                    .size(compressedFileSize)
                     .name(name)
                     .type(ResourceType.IMAGE)
                     .post(post)
@@ -71,7 +70,7 @@ public class S3ImageService {
         s3client.deleteObject(bucketName, key);
     }
 
-    private InputStream compressFileStream(InputStream fileStream, String format) {
+    private ByteArrayInputStream compressFileStream(InputStream fileStream, String format) {
         try {
             BufferedImage image = ImageIO.read(fileStream);
 

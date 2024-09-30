@@ -152,6 +152,7 @@ public class ResourceService {
 
         } else if (allowedVideoTypes.contains(mimeType)) {
             return ResourceType.VIDEO;
+
         } else {
             throw new FileException("Unsupported file format");
         }
