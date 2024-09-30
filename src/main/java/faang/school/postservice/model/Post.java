@@ -63,6 +63,9 @@ public class Post {
     @Column(name = "deleted", nullable = false)
     private boolean deleted;
 
+    @Column(name = "views")
+    private long views;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")

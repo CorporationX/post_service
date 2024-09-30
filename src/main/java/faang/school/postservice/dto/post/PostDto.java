@@ -35,4 +35,5 @@ public class PostDto {
     private LocalDateTime createdAt;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime updatedAt;
+    private long views;
 }

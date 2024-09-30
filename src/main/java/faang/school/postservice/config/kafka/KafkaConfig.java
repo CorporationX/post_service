@@ -35,6 +35,9 @@ public class KafkaConfig {
     @Value("${kafka.topic.likes-topic.name}")
     private String likesTopicName;
 
+    @Value("${kafka.topic.views-topic.name}")
+    private String viewsTopicName;
+
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -78,5 +81,10 @@ public class KafkaConfig {
     @Bean
     public NewTopic likesTopic() {
         return new NewTopic(likesTopicName, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic viewsTopic() {
+        return new NewTopic(viewsTopicName, 1, (short) 1);
     }
 }

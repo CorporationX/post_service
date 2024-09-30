@@ -73,6 +73,7 @@ public class HeatFeedService {
 
         postCacheRepository.save(postDto.getId(), postDto);
         postCacheRepository.setLike(postDto.getId(), postDto.getLikesCount());
+        postCacheRepository.setViews(postDto.getId(), postDto.getViews());
 
         userCacheProducer.sendEvent(new UserCacheEvent(postDto.getAuthorId()));
     }

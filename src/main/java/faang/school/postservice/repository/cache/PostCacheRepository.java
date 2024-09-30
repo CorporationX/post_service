@@ -21,6 +21,7 @@ public class PostCacheRepository {
     private static final String CACHE_PREFIX = "post:";
     private static final String COMMENT_SUFFIX = ":comments";
     private static final String LIKE_SUFFIX = ":likes";
+    private static final String VIEW_SUFFIX = ":views";
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -76,6 +77,23 @@ public class PostCacheRepository {
 
     public Long getLikes(long postId) {
         String key = CACHE_PREFIX + postId + LIKE_SUFFIX;
+        Object value = redisTemplate.opsForValue().get(key);
+        return objectMapper.convertValue(value, Long.class);
+    }
+
+    public void incrementView(long postId) {
+        String key = CACHE_PREFIX + postId + VIEW_SUFFIX;
+        redisTemplate.opsForValue().increment(key);
+    }
+
+    public void setViews(long postId, long views) {
+        String key = CACHE_PREFIX + postId + VIEW_SUFFIX;
+        redisTemplate.opsForValue()
+                .set(key, views, timeToLive, TimeUnit.SECONDS);
+    }
+
+    public Long getViews(long postId) {
+        String key = CACHE_PREFIX + postId + VIEW_SUFFIX;
         Object value = redisTemplate.opsForValue().get(key);
         return objectMapper.convertValue(value, Long.class);
     }

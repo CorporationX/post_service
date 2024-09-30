@@ -33,6 +33,8 @@ public class FeedController {
         System.err.println(comments);
 
         System.err.println(postCacheRepository.getLikes(id));
+
+        System.err.println(postCacheRepository.getViews(id));
     }
 
     @PostMapping("/heat")

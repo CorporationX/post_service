@@ -103,6 +103,9 @@ kafka:
     likes-topic:
       name: likes
       group-id: like-group
+    views-topic:
+      name: views
+      group-id: view-group
 
 
 async:
