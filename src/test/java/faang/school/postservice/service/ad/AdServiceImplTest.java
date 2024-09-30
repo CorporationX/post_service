@@ -57,5 +57,6 @@ class AdServiceImplTest {
     void testDeleteExpiredAdsByBatch() {
         var batch = List.of(ad);
         adService.deleteExpiredAdsByBatch(batch);
+        verify(adRepository).deleteAllInBatch(batch);
     }
 }
