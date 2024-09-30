@@ -1,9 +1,12 @@
 package faang.school.postservice.service.spellcheck;
 
-import faang.school.postservice.dto.correcter.SpellCheckDto;
+import faang.school.postservice.dto.correcter.LanguageDetectionResponse;
+import faang.school.postservice.dto.correcter.SpellCheckResponse;
+import faang.school.postservice.dto.correcter.TextGearsResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,11 +34,12 @@ public class SpellCheckService {
     @Value("${spell-checker.api.autocorrect}")
     private String autocorrectPath;
 
+    @Value("${spell-checker.api.language-detection}")
+    private String languageDetectionPath;
+
     private final RestTemplate restTemplate;
 
-    public String autoCorrect(String content) {
-        RestTemplate restTemplate = new RestTemplate();
-
+    public String autoCorrect(String content, String language) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
@@ -44,16 +48,15 @@ public class SpellCheckService {
 
         String uri = UriComponentsBuilder.fromHttpUrl(host + autocorrectPath)
                 .queryParam("key", key)
-                //.queryParam("language", LANGUAGE)
                 .toUriString();
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<SpellCheckDto> APIresponse = restTemplate.exchange(
+        ResponseEntity<TextGearsResponse<SpellCheckResponse>> APIresponse = restTemplate.exchange(
                 uri,
                 HttpMethod.POST,
                 requestEntity,
-                SpellCheckDto.class
+                new ParameterizedTypeReference<>() {}
         );
 
         if (APIresponse.getStatusCode().is2xxSuccessful()
@@ -62,6 +65,35 @@ public class SpellCheckService {
             return Objects.requireNonNull(APIresponse.getBody()).getResponse().getCorrected();
         } else {
             throw new RuntimeException("Spell checking failed: " + APIresponse.getStatusCode());
+        }
+    }
+
+    public String detectLanguage(String text) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("text", text);
+
+        String uri = UriComponentsBuilder.fromHttpUrl(host + languageDetectionPath)
+                .queryParam("key", key)
+                .toUriString();
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<TextGearsResponse<LanguageDetectionResponse>> APIresponse = restTemplate.exchange(
+                uri,
+                HttpMethod.POST,
+                requestEntity,
+                new ParameterizedTypeReference<>() {}
+        );
+
+        if (APIresponse.getStatusCode().is2xxSuccessful()
+                && APIresponse.getBody() != null
+                && APIresponse.getBody().isStatus()) {
+            return Objects.requireNonNull(APIresponse.getBody()).getResponse().getLanguage();
+        } else {
+            throw new RuntimeException("Language detection failed: " + APIresponse.getStatusCode());
         }
     }
 }

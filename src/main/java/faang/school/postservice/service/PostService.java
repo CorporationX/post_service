@@ -155,8 +155,11 @@ public class PostService {
         if (!unpublishedPosts.isEmpty()) {
             unpublishedPosts.stream()
                     .peek(post -> {
-                        String correctedText = spellCheckService.autoCorrect(post.getContent());
-                        post.setContent(correctedText);
+                        String language = spellCheckService.detectLanguage(post.getContent());
+                        if ("en".equals(language)) {
+                            String correctedText = spellCheckService.autoCorrect(post.getContent(), language);
+                            post.setContent(correctedText);
+                        }
                     })
                     .forEach(postRepository::save);
         }
