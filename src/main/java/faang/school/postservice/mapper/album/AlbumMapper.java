@@ -4,6 +4,7 @@ import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.model.Album;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
+
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
