@@ -21,19 +21,14 @@ public class AdServiceImpl implements AdService {
     @Override
     @Transactional
     public void removeExpiredAds(int batchSize) {
-        var ads = adRepository.findAll().stream()
-                .filter(ad ->
-                        LocalDateTime.now().isAfter(ad.getEndDate()) ||
-                        ad.getAppearancesLeft() == 0)
-                .toList();
+        var ads = adRepository.findAllByEndDateBefore(LocalDateTime.now());
 
         if (ads.isEmpty()) {
             log.info("No expired ads");
             return;
         }
 
-        List<List<Ad>> partitionedAd = ListUtils.partition(ads, batchSize);
-        partitionedAd.forEach(this::deleteExpiredAdsByBatch);
+        ListUtils.partition(ads, batchSize).forEach(this::deleteExpiredAdsByBatch);
     }
 
     @Async("adRemoverExecutorService")

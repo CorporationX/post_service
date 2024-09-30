@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
@@ -47,10 +48,10 @@ class AdServiceImplTest {
                 .build();
         var adList = new ArrayList<>(List.of(ad, ad2));
 
-        doReturn(adList).when(adRepository).findAll();
+        doReturn(adList).when(adRepository).findAllByEndDateBefore(any(LocalDateTime.class));
         adService.removeExpiredAds(50);
 
-        verify(adRepository).findAll();
+        verify(adRepository).findAllByEndDateBefore(any(LocalDateTime.class));
     }
 
     @Test
