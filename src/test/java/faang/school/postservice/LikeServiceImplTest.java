@@ -47,7 +47,7 @@ public class LikeServiceImplTest {
     private List<Like> likes2;
     private Post post;
     private Comment comment;
-    private Like like;
+    private Like like1;
     private LikeDto likeDto;
     private long postId;
     private long commentId;
@@ -55,7 +55,7 @@ public class LikeServiceImplTest {
     @BeforeEach
     void setUp() {
         post = new Post();
-        like = new Like();
+        like1 = new Like();
         comment = new Comment();
         likeDto = new LikeDto(1L, 2L);
         postId = 3L;
@@ -66,25 +66,26 @@ public class LikeServiceImplTest {
 
     @Test
     void addLikeToPost() {
-        like.setId(1L);
-        like.setUserId(2L);
+        like1.setId(1L);
+        like1.setUserId(2L);
         post.setId(postId);
-        like.setPost(post);
+        post.setLikes(new ArrayList<>());
+        post.setComments(new ArrayList<>());
+        like1.setPost(post);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
         likeService.addLikeToPost(likeDto, postId);
 
-        verify(likeRepository, times(1)).save(like);
-
+        verify(likeRepository, times(1)).save(like1);
     }
 
     @Test
     void deleteLikeFromPostThatNotLiked() {
-        like.setId(1L);
-        like.setUserId(2L);
+        like1.setId(1L);
+        like1.setUserId(2L);
         post.setLikes(likes1);
         post.setId(postId);
-        like.setPost(post);
+        like1.setPost(post);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
         assertThrows(DataValidationException.class, () -> likeService.deleteLikeFromPost(likeDto, postId));
@@ -92,45 +93,41 @@ public class LikeServiceImplTest {
 
     @Test
     void deleteLikeFromPostSuccessful() {
-        likes1.add(like);
-        like.setId(1L);
-        like.setUserId(2L);
+        likes1.add(like1);
+        like1.setId(1L);
+        like1.setUserId(2L);
         post.setLikes(likes1);
         post.setId(postId);
-        like.setPost(post);
+        like1.setPost(post);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        when(likeMapperImpl.toLike(likeDto)).thenReturn(like);
+        when(likeMapperImpl.toLike(likeDto)).thenReturn(like1);
 
         assertDoesNotThrow(() -> likeService.deleteLikeFromPost(likeDto, postId));
     }
 
     @Test
     void addLikeToComment() {
-        LikeDto likeDto = new LikeDto(1L, 2L);
-        long commentId = 3L;
-        Like like = new Like();
-        Post post = new Post();
-        Comment comment = new Comment();
-        List<Like> likes1 = new ArrayList<>();
-        likes1.add(like);
-        like.setId(1L);
-        like.setUserId(2L);
+        likes1.add(like1);
+        like1.setId(1L);
+        like1.setUserId(2L);
         post.setId(commentId);
+        post.setLikes(new ArrayList<>());
+        post.setComments(new ArrayList<>());
         comment.setPost(post);
         post.setComments(List.of(comment));
-        comment.setLikes(likes1);
+        comment.setLikes(new ArrayList<>());
         comment.setId(commentId);
-        like.setComment(comment);
+        like1.setComment(comment);
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
         likeService.addLikeToComment(likeDto, commentId);
 
-        verify(likeRepository, times(1)).save(like);
+        verify(likeRepository, times(1)).save(like1);
     }
 
     @Test
     void deleteLikeFromNotLikedComment() {
-        likes1.add(like);
+        likes1.add(like1);
         likes2.add(new Like());
         comment.setPost(post);
         comment.setId(commentId);
@@ -142,13 +139,13 @@ public class LikeServiceImplTest {
 
     @Test
     void deleteLikeFromComment() {
-        likes1.add(like);
+        likes1.add(like1);
         likes2.add(new Like());
         comment.setPost(post);
         comment.setId(commentId);
         comment.setLikes(new ArrayList<>(likes1));
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-        when(likeMapperImpl.toLike(likeDto)).thenReturn(like);
+        when(likeMapperImpl.toLike(likeDto)).thenReturn(like1);
 
         assertDoesNotThrow(() -> likeService.deleteLikeFromComment(likeDto, commentId));
     }

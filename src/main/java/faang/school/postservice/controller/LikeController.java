@@ -1,17 +1,13 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.LikeService;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -33,4 +29,30 @@ public class LikeController {
                                            @RequestHeader(name = "x-user-id") Long header) {
         return service.getUsersLikedComm(commentId);
     }
+
+    @PutMapping("/like_post/{postId}")
+    public void addLikeToPost(@Valid LikeDto likeDto, @PathVariable("postId") long postId) {
+        service.addLikeToPost(likeDto, postId);
+    }
+
+    @DeleteMapping("/post_like/{postId}")
+    public void deleteLikeFromPost(@Valid LikeDto likeDto, @PathVariable("postId") long postId) {
+        service.deleteLikeFromPost(likeDto, postId);
+    }
+
+    @PutMapping("/comment_like/{commentId}")
+    public void addLikeToComment(@Valid LikeDto likeDto, @PathVariable("commentId") long commentId) {
+        service.addLikeToComment(likeDto, commentId);
+    }
+
+    @DeleteMapping("/comment_like/{commentId}")
+    public void deleteLikeFromComment(@Valid LikeDto likeDto, @PathVariable("commentId") long commentId) {
+        service.deleteLikeFromComment(likeDto, commentId);
+    }
+
+    @GetMapping("/published_likes/{postId}")
+    public List<LikeDto> findLikesOfPublishedPost(@PathVariable("postId") long postId) {
+        return service.findLikesOfPublishedPost(postId);
+    }
 }
+
