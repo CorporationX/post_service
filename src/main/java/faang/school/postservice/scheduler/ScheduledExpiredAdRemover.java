@@ -9,9 +9,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ScheduledExpiredAdRemover {
+    private final AdService adService;
+
     @Value("${post.ad-remover.max-list-size}")
     private int maxListSize;
-    private final AdService adService;
 
     @Scheduled(cron = "${post.ad-remover.scheduler.cron}")
     public void removeExpiredAds() {

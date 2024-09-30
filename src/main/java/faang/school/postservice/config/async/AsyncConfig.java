@@ -10,8 +10,11 @@ import java.util.concurrent.Executors;
 @Configuration
 public class AsyncConfig {
 
+    @Value("${post.ad-remover.threads-count}")
+    private int fixedPoolSize;
+
     @Bean
-    public ExecutorService adRemoverExecutorService(@Value("${post.ad-remover.threads-count}") int threadsCount) {
-        return Executors.newFixedThreadPool(threadsCount);
+    public ExecutorService adRemoverThreadPool() {
+        return Executors.newFixedThreadPool(fixedPoolSize);
     }
 }

@@ -12,10 +12,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,7 +41,7 @@ class AdServiceImplTest {
     }
 
     @Test
-    @DisplayName("Remove Expired Ads")
+    @DisplayName("Remove Expired Ads with no empty list")
     void testRemoveExpiredAds() {
         Ad ad2 = Ad.builder()
                 .startDate(LocalDateTime.now().minusDays(2))
@@ -50,6 +53,15 @@ class AdServiceImplTest {
         adService.removeExpiredAds(50);
 
         verify(adRepository).findAllByEndDateBefore(any(LocalDateTime.class));
+        verify(adRepository).deleteAllInBatch(adList);
+    }
+
+    @Test
+    @DisplayName("Remove Expired Ads with empty list")
+    void testRemoveExpiredAdsEmptyList() {
+        doReturn(Collections.emptyList()).when(adRepository).findAllByEndDateBefore(any(LocalDateTime.class));
+        adService.removeExpiredAds(50);
+        verify(adRepository, never()).deleteAllInBatch(anyList());
     }
 
     @Test
