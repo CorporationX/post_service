@@ -276,10 +276,6 @@ public class AlbumServiceImplTest {
         );
 
         Assertions.assertEquals("Album is not visible for user", thrown.getMessage());
-                () -> albumService.getAlbumById(albumId)
-        );
-
-        assertEquals("Album not found", thrown.getMessage());
         verify(albumMapper, never()).toDto(any(Album.class));
     }
 
