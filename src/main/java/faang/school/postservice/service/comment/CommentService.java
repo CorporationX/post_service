@@ -14,4 +14,6 @@ public interface CommentService {
     List<CommentDto> getCommentsByPostId(long postId);
 
     void deleteComment(long id);
+
+    void checkAllComment();
 }
