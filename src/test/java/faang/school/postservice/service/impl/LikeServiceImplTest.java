@@ -1,7 +1,8 @@
-package faang.school.postservice;
+package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
@@ -11,11 +12,13 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeServiceImpl;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -25,12 +28,10 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class LikeServiceImplTest {
+class LikeServiceImplTest {
     @InjectMocks
     private LikeServiceImpl likeService;
     @Mock
@@ -51,9 +52,11 @@ public class LikeServiceImplTest {
     private LikeDto likeDto;
     private long postId;
     private long commentId;
+    private List<UserDto> userDtos;
+    private final long POST_ID = 1L;
 
     @BeforeEach
-    void setUp() {
+    void init() {
         post = new Post();
         like1 = new Like();
         comment = new Comment();
@@ -62,7 +65,43 @@ public class LikeServiceImplTest {
         commentId = 3L;
         likes1 = new ArrayList<>();
         likes2 = new ArrayList<>();
+        List<Like> likes = new ArrayList<>();
+        userDtos = new ArrayList<>();
+
+
+        for (int i = 1; i < 150; i++) {
+            Like like = new Like();
+            like.setUserId((long) i);
+            likes.add(like);
+
+            UserDto userDto = new UserDto();
+            userDto.setId((long) i);
+            userDtos.add(userDto);
+        }
+
+        List<Long> userIds = likes.stream()
+                .map(Like::getUserId)
+                .toList();
+        Mockito.lenient().when(likeRepository.findByPostId(POST_ID))
+                .thenReturn(likes);
+        Mockito.lenient().when(likeRepository.findByCommentId(POST_ID))
+                .thenReturn(likes);
+        Mockito.lenient().when(userServiceClient.getUsersByIds(userIds.subList(0, 100)))
+                .thenReturn(userDtos.subList(0, 100));
+        Mockito.lenient().when(userServiceClient.getUsersByIds(userIds.subList(100, 149)))
+                .thenReturn(userDtos.subList(100, 149));
     }
+
+    @Test
+    void getUsersLikedPost_whenOk() {
+        Assertions.assertEquals(likeService.getUsersLikedPost(POST_ID), userDtos);
+    }
+
+    @Test
+    void getUsersLikedComm_whenOk() {
+        Assertions.assertEquals(likeService.getUsersLikedComm(POST_ID), userDtos);
+    }
+
 
     @Test
     void addLikeToPost() {
@@ -150,3 +189,4 @@ public class LikeServiceImplTest {
         assertDoesNotThrow(() -> likeService.deleteLikeFromComment(likeDto, commentId));
     }
 }
+
