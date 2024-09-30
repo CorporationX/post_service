@@ -39,6 +39,9 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderation:
+    scheduler:
+      cron: "0 0 0 * * *" # every day at midnight
 
 springdoc:
   swagger-ui:
@@ -55,3 +58,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+moderation:
+  file-path: src/main/resources/badWords.txt

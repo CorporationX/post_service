@@ -84,4 +84,10 @@ public class Post implements Likeable {
             inverseJoinColumns = @JoinColumn(name = "hashtag_id")
     )
     private List<Hashtag> hashtags = new ArrayList<>();
+
+    @Column(name = "verified")
+    private boolean verified;
+
+    @Column(name = "verified_date")
+    private LocalDateTime verifiedDate;
 }

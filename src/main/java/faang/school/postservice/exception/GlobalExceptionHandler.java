@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleEntityNotFoundException(EntityNotFoundException exception) {
-        log.error("Entity not found exception occurred: {}",exception.getMessage());
+        log.error("Entity not found exception occurred: {}", exception.getMessage());
         return ErrorResponse.builder()
                 .code(HttpStatus.NOT_FOUND.value())
                 .message(exception.getMessage())
@@ -37,5 +37,12 @@ public class GlobalExceptionHandler {
                         error -> ((FieldError) error).getField(),
                         error -> Objects.requireNonNullElse(error.getDefaultMessage(), "")
                 ));
+    }
+
+    @ExceptionHandler(ModerationDictionaryException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleFileException(ModerationDictionaryException exception) {
+        log.error("Error during moderation dictionary filling: {}", exception.getMessage());
+        return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage());
     }
 }

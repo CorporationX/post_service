@@ -144,13 +144,23 @@ public class PostServiceImpl implements PostService {
         return posts;
     }
 
-    private Post getPostFromRepository(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
-    }
-
     @Override
     public List<PostDto> getPostsByHashtag(String hashtag) {
         return hashtagService.findPostsByHashtag(hashtag);
+    }
+
+    @Override
+    public void moderatePosts() {
+        List<Post> unverifiedPosts = postRepository.findAllByVerifiedFalse();
+
+        unverifiedPosts.forEach(post -> {
+//            post.setVerified(1);
+            post.setVerifiedDate(LocalDateTime.now());
+        });
+    }
+
+    private Post getPostFromRepository(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
     }
 }
