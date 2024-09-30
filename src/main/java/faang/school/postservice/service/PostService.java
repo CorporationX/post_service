@@ -111,7 +111,7 @@ public class PostService {
     }
 
     public List<PostDto> getUserPublishedPosts(Long authorId) {
-        return postRepository.findByAuthorId(authorId).stream()
+        return postRepository.findByAuthorIdWithLikes(authorId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .map(postMapper::toPostDto)
                 .sorted(Comparator.comparing(PostDto::getPublishedAt).reversed())
@@ -119,7 +119,7 @@ public class PostService {
     }
 
     public List<PostDto> getProjectPublishedPosts(Long projectId) {
-        return postRepository.findByProjectId(projectId).stream()
+        return postRepository.findByProjectIdWithLikes(projectId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .map(postMapper::toPostDto)
                 .sorted(Comparator.comparing(PostDto::getPublishedAt).reversed())

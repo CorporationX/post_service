@@ -112,7 +112,7 @@ class PostServiceTest {
         post.setPublished(true);
         post.setDeleted(false);
 
-        when(postRepository.findByAuthorId(authorId)).thenReturn(List.of(post));
+        when(postRepository.findByAuthorIdWithLikes(authorId)).thenReturn(List.of(post));
         when(postMapper.toPostDto(any(Post.class))).thenReturn(postDto);
 
         List<PostDto> result = postService.getUserPublishedPosts(authorId);
@@ -120,7 +120,7 @@ class PostServiceTest {
         assertEquals(1, result.size());
         assertEquals(postDto.getId(), result.get(0).getId());
         assertEquals(postDto.getPublishedAt(), result.get(0).getPublishedAt());
-        verify(postRepository, times(1)).findByAuthorId(authorId);
+        verify(postRepository, times(1)).findByAuthorIdWithLikes(authorId);
         verify(postMapper, times(1)).toPostDto(any(Post.class));
     }
 
@@ -131,7 +131,7 @@ class PostServiceTest {
         post.setPublished(true);
         post.setDeleted(false);
 
-        when(postRepository.findByProjectId(projectId)).thenReturn(List.of(post));
+        when(postRepository.findByProjectIdWithLikes(projectId)).thenReturn(List.of(post));
         when(postMapper.toPostDto(any(Post.class))).thenReturn(postDto);
 
         List<PostDto> result = postService.getProjectPublishedPosts(projectId);
@@ -139,7 +139,7 @@ class PostServiceTest {
         assertEquals(1, result.size());
         assertEquals(postDto.getId(), result.get(0).getId());
         assertEquals(postDto.getPublishedAt(), result.get(0).getPublishedAt());
-        verify(postRepository, times(1)).findByProjectId(projectId);
+        verify(postRepository, times(1)).findByProjectIdWithLikes(projectId);
         verify(postMapper, times(1)).toPostDto(any(Post.class));
     }
 }

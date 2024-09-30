@@ -11,8 +11,7 @@ import java.util.List;
 
 @FeignClient(
         name = "user-service",
-        url = "${user-service.host}:${user-service.port}",
-        path = "${user-service.path}")
+        url = "${user-service.host}:${user-service.port}")
 public interface UserServiceClient {
 
     @GetMapping("/users/{userId}")
