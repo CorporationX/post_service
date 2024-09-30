@@ -11,6 +11,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/album")
@@ -59,7 +61,8 @@ public class AlbumController {
 
     @GetMapping("/{id}")
     public AlbumDto getAlbumById(@PathVariable Long id) {
-        return albumService.getAlbumById(id);
+        Long userId = userContext.getUserId();
+        return albumService.getAlbumById(id, userId);
     }
 
     @GetMapping("")
@@ -68,7 +71,7 @@ public class AlbumController {
         return albumService.getAlbums(authorId, albumFilterDto);
     }
 
-    @GetMapping("/favorites")
+    @GetMapping("/albums/favorite")
     public List<AlbumDto> getFavoriteAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
         Long userId = userContext.getUserId();
         return albumService.getFavoriteAlbums(userId, albumFilterDto);
@@ -76,7 +79,8 @@ public class AlbumController {
 
     @GetMapping("/all")
     public List<AlbumDto> getAllAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
-        return albumService.getAllAlbums(albumFilterDto);
+        Long userId = userContext.getUserId();
+        return albumService.getAllAlbums(albumFilterDto, userId);
     }
 
     @DeleteMapping("/{id}")

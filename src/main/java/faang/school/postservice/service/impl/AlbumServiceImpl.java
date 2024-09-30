@@ -3,13 +3,18 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserFilterDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.filter.AlbumFilter;
+import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.mapper.album.AlbumMapper;
+
 import faang.school.postservice.service.AlbumService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -74,6 +81,13 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     public void addAlbumToFavorites(Long id, Long userId) {
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Album not found"));
+
+        if (!isAlbumVisibleForUser(album, userId)) {
+            throw new DataValidationException("Album is not visible for user");
+        }
+      
         albumRepository.addAlbumToFavorites(id, userId);
     }
 
@@ -83,16 +97,20 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    public AlbumDto getAlbumById(Long id) {
+    public AlbumDto getAlbumById(Long id, Long userId) {
         Album album = albumRepository.findByIdWithPosts(id)
                 .orElseThrow(() -> new EntityNotFoundException("Album not found"));
 
+        if (!isAlbumVisibleForUser(album, userId)) {
+            throw new DataValidationException("Album is not visible for user");
+        }
+
         AlbumDto albumDto = albumMapper.toDto(album);
         List<Long> postIds = album.getPosts().stream()
-                .map(Post::getId)
-                .toList();
+          .map(Post::getId)
+          .toList();
         albumDto.setPostIds(postIds);
-
+  
         return albumDto;
     }
 
@@ -109,8 +127,9 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    public List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto) {
-        Stream<Album> albums = albumRepository.findAll().stream();
+    public List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto, Long userId) {
+        Stream<Album> albums = albumRepository.findAll().stream()
+                .filter(album -> isAlbumVisibleForUser(album, userId));
         return albumMapper.toDto(filterAlbums(albumFilterDto, albums));
     }
 
@@ -146,5 +165,26 @@ public class AlbumServiceImpl implements AlbumService {
         if (albumRepository.existsByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId())) {
             throw new EntityExistsException("Album with title " + albumDto.getTitle() + " already exists");
         }
+    }
+
+    private boolean isAlbumVisibleForUser(Album album, Long userId) {
+        AlbumVisibility visibility = album.getVisibility();
+
+        if (visibility.equals(AlbumVisibility.AUTHOR_ONLY)) {
+            return userId.equals(album.getAuthorId());
+        }
+        if (visibility.equals(AlbumVisibility.SELECTED_USERS)) {
+            return albumRepository.findSelectedUserIdsForAlbum(album.getId()).contains(userId);
+        }
+        if (visibility.equals(AlbumVisibility.ALL_FOLLOWERS)) {
+            Set<Long> followerIds = userServiceClient.getFollowers(
+                            album.getAuthorId(), new UserFilterDto()
+                    ).stream()
+                    .map(UserDto::getId)
+                    .collect(Collectors.toSet());
+            return followerIds.contains(userId);
+        }
+
+        return true;
     }
 }

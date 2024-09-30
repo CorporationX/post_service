@@ -2,14 +2,18 @@ package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
+import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.Assertions;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,16 +22,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AlbumServiceImplTest {
     private final Long albumId = 2L;
     private final Long postId = 3L;
+    private final Long userId = 4L;
 
     private AlbumDto albumDto;
 
@@ -60,7 +67,9 @@ public class AlbumServiceImplTest {
         UserNotFoundException thrown = assertThrows(UserNotFoundException.class,
                 () -> albumService.createAlbum(albumDto)
         );
-        assertEquals("User not found", thrown.getMessage());
+
+        Assertions.assertEquals("User not found", thrown.getMessage());
+      
         verify(albumRepository, never()).save(any(Album.class));
     }
 
@@ -72,7 +81,8 @@ public class AlbumServiceImplTest {
         EntityExistsException thrown = assertThrows(EntityExistsException.class,
                 () -> albumService.createAlbum(albumDto)
         );
-        assertEquals("Album with title " + albumDto.getTitle() + " already exists", thrown.getMessage());
+
+        Assertions.assertEquals("Album with title " + albumDto.getTitle() + " already exists", thrown.getMessage());
         verify(albumRepository, never()).save(any(Album.class));
     }
 
@@ -95,7 +105,8 @@ public class AlbumServiceImplTest {
         EntityExistsException thrown = assertThrows(EntityExistsException.class,
                 () -> albumService.updateAlbum(albumId, albumDto)
         );
-        assertEquals("Album with title " + albumDto.getTitle() + " already exists", thrown.getMessage());
+
+        Assertions.assertEquals("Album with title " + albumDto.getTitle() + " already exists", thrown.getMessage());
         verify(albumRepository, never()).save(any(Album.class));
     }
 
@@ -108,7 +119,7 @@ public class AlbumServiceImplTest {
                 () -> albumService.updateAlbum(albumId, albumDto)
         );
 
-        assertEquals("Album not found", thrown.getMessage());
+        Assertions.assertEquals("Album not found", thrown.getMessage());
         verify(albumRepository, never()).save(any(Album.class));
     }
 
@@ -131,7 +142,7 @@ public class AlbumServiceImplTest {
                 () -> albumService.addPostToAlbum(albumId, postId)
         );
 
-        assertEquals("Album not found", thrown.getMessage());
+        Assertions.assertEquals("Album not found", thrown.getMessage());
         verify(albumRepository, never()).save(any(Album.class));
     }
 
@@ -145,7 +156,7 @@ public class AlbumServiceImplTest {
                 () -> albumService.addPostToAlbum(albumId, postId)
         );
 
-        assertEquals("Post not found", thrown.getMessage());
+        Assertions.assertEquals("Post not found", thrown.getMessage());
         verify(albumRepository, never()).save(any(Album.class));
     }
 
@@ -164,29 +175,133 @@ public class AlbumServiceImplTest {
     }
 
     @Test
+    public void testDeletePostFromNoExistingAlbum() {
+        when(albumRepository.findById(albumId)).thenReturn(Optional.empty());
+
+        albumService.deletePostFromAlbum(albumId, postId);
+
+        verify(albumRepository, never()).save(any(Album.class));
+    }
+
+    @Test
+    public void testDeletePostFromAlbumSuccessfully() {
+        Album album = new Album();
+        album.setId(albumId);
+        Post post = new Post();
+        post.setId(postId);
+        album.setPosts(new ArrayList<>());
+        album.addPost(post);
+
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+
+        albumService.deletePostFromAlbum(albumId, postId);
+
+        verify(albumRepository, times(1)).save(album);
+    }
+
+    @Test
+    public void testAddNotExistingAlbumToFavorites() {
+        when(albumRepository.findById(albumId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+                () -> albumService.addAlbumToFavorites(albumId, userId)
+        );
+
+        Assertions.assertEquals("Album not found", thrown.getMessage());
+        verify(albumRepository, never()).addAlbumToFavorites(albumId, userId);
+    }
+
+    @Test
+    public void testAddNotVisibleToUserAlbumToFavorites() {
+        Album album = new Album();
+        album.setId(albumId);
+        album.setAuthorId(userId + 1);
+        album.setVisibility(AlbumVisibility.AUTHOR_ONLY);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+
+        DataValidationException thrown = assertThrows(DataValidationException.class,
+                () -> albumService.addAlbumToFavorites(albumId, userId)
+        );
+
+        Assertions.assertEquals("Album is not visible for user", thrown.getMessage());
+        verify(albumRepository, never()).addAlbumToFavorites(albumId, userId);
+    }
+
+    @Test
+    public void testAddAlbumToFavoritesSuccessfully() {
+        Album album = new Album();
+        album.setId(albumId);
+        album.setVisibility(AlbumVisibility.ALL_USERS);
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+
+        albumService.addAlbumToFavorites(albumId, userId);
+
+        verify(albumRepository, times(1)).addAlbumToFavorites(albumId, userId);
+    }
+
+    @Test
+    public void testDeleteAlbumFromFavorites() {
+        albumService.deleteAlbumFromFavorites(albumId, userId);
+
+        verify(albumRepository, times(1)).deleteAlbumFromFavorites(albumId, userId);
+    }
+
+    @Test
     public void testGetNoExistingAlbumById() {
         when(albumRepository.findByIdWithPosts(albumId)).thenReturn(Optional.empty());
 
         EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
-                () -> albumService.getAlbumById(albumId)
+                () -> albumService.getAlbumById(albumId, userId)
         );
 
-        assertEquals("Album not found", thrown.getMessage());
+        Assertions.assertEquals("Album not found", thrown.getMessage());
         verify(albumMapper, never()).toDto(any(Album.class));
     }
 
     @Test
-    public void testGetAlbumByIdSuccessfully() {
+    public void testGetNotVisibleAlbumById() {
         Album album = new Album();
+        album.setId(albumId);
+        album.setVisibility(AlbumVisibility.SELECTED_USERS);
         Post  post = new Post();
         post.setId(postId);
 
         when(albumRepository.findByIdWithPosts(albumId)).thenReturn(Optional.of(album));
         album.setPosts(List.of(post));
 
+        when(albumRepository.findSelectedUserIdsForAlbum(album.getId())).thenReturn(Collections.emptyList());
+
+        DataValidationException thrown = assertThrows(DataValidationException.class,
+                () -> albumService.getAlbumById(albumId, userId)
+        );
+
+        Assertions.assertEquals("Album is not visible for user", thrown.getMessage());
+        verify(albumMapper, never()).toDto(any(Album.class));
+    }
+
+    @Test
+    public void testGetAlbumByIdSuccessfully() {
+        Album album = new Album();
+        album.setId(albumId);
+        album.setVisibility(AlbumVisibility.SELECTED_USERS);
+        Post  post = new Post();
+        post.setId(postId);
+
+        when(albumRepository.findByIdWithPosts(albumId)).thenReturn(Optional.of(album));
+        album.setPosts(List.of(post));
+
+        when(albumRepository.findSelectedUserIdsForAlbum(album.getId())).thenReturn(List.of(userId));
+
         when(albumMapper.toDto(album)).thenReturn(albumDto);
         albumDto.setPostIds(List.of(postId));
 
-        assertEquals(albumDto, albumService.getAlbumById(albumId));
+        Assertions.assertEquals(albumDto, albumService.getAlbumById(albumId, userId));
+    }
+
+    @Test
+    public void testDeleteAlbum() {
+        albumService.deleteAlbum(albumId);
+
+        verify(albumRepository, times(1)).deleteById(albumId);
     }
 }

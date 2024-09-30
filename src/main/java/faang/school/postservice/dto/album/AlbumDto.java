@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.album;
 
+import faang.school.postservice.model.AlbumVisibility;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -13,5 +14,7 @@ public class AlbumDto {
     @NotBlank(message = "Description cannot be empty")
     private String description;
     private Long authorId;
+    private AlbumVisibility albumVisibility;
+    private List<Long> selectedUsersIds;
     private List<Long> postIds;
 }
