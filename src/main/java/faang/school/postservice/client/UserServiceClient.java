@@ -1,11 +1,9 @@
 package faang.school.postservice.client;
 
 import faang.school.postservice.dto.user.UserDto;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import org.apache.catalina.User;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +26,6 @@ public interface UserServiceClient {
     List<UserDto> getUsersByIds(@RequestBody @NotEmpty(message = "Список не должен быть пустым.")
                                 List<Long> ids);
 
-    @PostMapping("/")
-    List<UserDto> getFollowers(@RequestBody Long userDto);
+    @PostMapping("/subscribe/following/{followerId}")
+    List<UserDto> getFollowers(@PathVariable Long followerId);
 }

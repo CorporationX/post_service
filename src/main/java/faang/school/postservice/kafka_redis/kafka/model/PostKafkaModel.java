@@ -1,11 +1,11 @@
-package faang.school.postservice.dto.post;
+package faang.school.postservice.kafka_redis.kafka.model;
 
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class PostKafkaDto {
+public class PostKafkaModel {
 
     private long id;
     private Long authorId;
