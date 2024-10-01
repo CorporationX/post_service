@@ -16,8 +16,10 @@ import faang.school.postservice.service.comment.sort.SortingStrategyAppliersMap;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static faang.school.postservice.exception.comment.ExceptionMessages.COMMENT_NOT_FOUND;
@@ -36,6 +38,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserContext userContext;
     private final CommentMapper commentMapper;
     private final SortingStrategyAppliersMap sortingStrategiesAppliers;
+    private final ModerationDictionary moderationDictionary;
 
     @Override
     public CommentDto createComment(Long postId, CommentDto commentDto) {
@@ -86,6 +89,23 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.delete(comment);
         log.info("Deleted comment: {}", comment.getId());
         return commentMapper.toCommentDto(comment);
+    }
+
+    @Override
+    public List<Comment> getUnverifiedComments() {
+        LocalDateTime lastMonth = LocalDateTime.now().minusMonths(1);
+        return commentRepository.findUnverifiedComments(lastMonth);
+    }
+
+    @Async("taskExecutor")
+    @Override
+    public void verifyComments(List<Comment> comments) {
+        comments.forEach(comment -> {
+            comment.setVerified(moderationDictionary.isAcceptableComment(comment));
+            comment.setVerifiedDate(LocalDateTime.now());
+        });
+        commentRepository.saveAll(comments);
+        log.info("Verified comments: {}", comments.size());
     }
 
     private Post getPost(Long postId) {

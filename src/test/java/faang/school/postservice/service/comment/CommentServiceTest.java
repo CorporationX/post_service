@@ -70,6 +70,9 @@ class CommentServiceTest {
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
+    @Mock
+    private ModerationDictionary moderationDictionary;
+
     private SortingStrategyAppliersMap sortingStrategyAppliersMap;
 
     @BeforeEach
@@ -82,7 +85,8 @@ class CommentServiceTest {
                 userServiceClient,
                 userContext,
                 commentMapper,
-                sortingStrategyAppliersMap);
+                sortingStrategyAppliersMap,
+                moderationDictionary);
         post = initPost(POST_ID, true, false);
         author = initAuthor(AUTHOR_ID);
     }
