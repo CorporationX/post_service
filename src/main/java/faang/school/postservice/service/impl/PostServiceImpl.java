@@ -100,4 +100,9 @@ public class PostServiceImpl implements PostService {
         List<Post> posts = postRepository.findByProjectIdAndPublished(id);
         return postMapper.toDto(posts);
     }
+
+    @Override
+    public List<Long> getAuthorsWithMoreFiveUnverifiedPosts() {
+        return postRepository.findAuthorsWithMoreThanFiveUnverifiedPosts();
+    }
 }
