@@ -43,6 +43,7 @@ post:
 user-service:
   host: localhost
   port: 8080
+  path: user-service
 project-service:
   host: localhost
   port: 8082

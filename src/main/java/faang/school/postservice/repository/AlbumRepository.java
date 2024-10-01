@@ -1,16 +1,17 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Album;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
-public interface AlbumRepository extends CrudRepository<Album, Long> {
+public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     boolean existsByTitleAndAuthorId(String title, long authorId);
 
@@ -34,4 +35,23 @@ public interface AlbumRepository extends CrudRepository<Album, Long> {
             )
             """)
     Stream<Album> findFavoriteAlbumsByUserId(long userId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT id FROM album
+            WHERE visibility = 'ALL'
+            """)
+    List<Long> findAlbumIdsAllStatus();
+
+    @Query(nativeQuery = true, value = """
+            SELECT id FROM album
+            WHERE visibility = 'ONLY_AUTHOR' AND author_id = :userId
+            """)
+    List<Long> findAlbumsIdsOnlyAuthor(Long userId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT id FROM album
+            WHERE visibility = 'SUBSCRIBERS' AND author_id IN (:authorIds)
+            """)
+    List<Long> findAlbumIdsByAuthorIdsAndSubsStatus(List<Long> authorIds);
 }
+

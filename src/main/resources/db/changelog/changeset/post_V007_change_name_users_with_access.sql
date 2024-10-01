@@ -1,0 +1,1 @@
+ALTER TABLE users_with_access RENAME TO user_album_access;
