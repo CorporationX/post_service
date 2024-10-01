@@ -14,4 +14,6 @@ public interface CommentService {
     List<CommentResponseDto> findAll(Long postId);
 
     void delete(Long id);
+
+    void moderateComments();
 }
