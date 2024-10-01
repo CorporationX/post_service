@@ -33,8 +33,14 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
+     * Amazon S3
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+
+    /**
      * Utils & Logging
      */
+    implementation("org.springframework:spring-mock:2.0.8")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
     implementation("org.slf4j:slf4j-api:2.0.5")
     implementation("ch.qos.logback:logback-classic:1.4.6")
