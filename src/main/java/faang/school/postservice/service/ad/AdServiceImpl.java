@@ -20,12 +20,9 @@ public class AdServiceImpl implements AdService {
     @Transactional
     public void removeExpiredAds(int batchSize) {
         var ads = adRepository.findAllByEndDateBefore(LocalDateTime.now());
-
-        if (ads.isEmpty()) {
-            return;
+        if (!ads.isEmpty()) {
+            ListUtils.partition(ads, batchSize).forEach(this::deleteExpiredAdsByBatch);
         }
-
-        ListUtils.partition(ads, batchSize).forEach(this::deleteExpiredAdsByBatch);
     }
 
     @Async("adRemoverThreadPool")
