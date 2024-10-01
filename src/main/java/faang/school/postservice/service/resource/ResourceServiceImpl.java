@@ -75,19 +75,18 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public InputStream downloadResource(Long resource_id) {
         String key = resourceRepository.getById(resource_id).getKey();
+
         return s3Service.downloadFile(key);
     }
 
     private void checkImageCount(int postImageCount) {
         if (!(postImageCount + 1 <= IMAGES_IN_POST_LIMIT)) {
-            log.error("only " + IMAGES_IN_POST_LIMIT + " images allowed");
             throw new FileUploadException("only " + IMAGES_IN_POST_LIMIT + " images allowed");
         }
     }
 
     private void checkFileSize(MultipartFile file) {
         if (file.getSize() > MAX_FILE_SIZE) {
-            log.error("only " + MAX_FILE_SIZE + " file size allowed");
             throw new FileUploadException("only " + MAX_FILE_SIZE + " file size allowed");
         }
     }
@@ -98,6 +97,7 @@ public class ResourceServiceImpl implements ResourceService {
         try {
             bufferedImage = ImageIO.read(file.getInputStream());
         } catch (IOException e) {
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
 
@@ -128,6 +128,7 @@ public class ResourceServiceImpl implements ResourceService {
             ImageIO.write(image, "jpg", baos);
             baos.flush();
         } catch (IOException e) {
+            log.error("Failed to convert image", e);
             throw new RuntimeException("Failed to convert image", e);
         }
 
