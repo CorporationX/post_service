@@ -5,10 +5,12 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentAchievementEvent;
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.event.kafka.CommentCreatedEvent;
 import faang.school.postservice.mapper.CommentAchievementMapper;
 import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.KafkaProducer;
 import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
 import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
@@ -38,6 +40,8 @@ public class CommentService {
     private final CommentAchievementEventPublisher commentAchievementEventPublisher;
     private final CommentAchievementMapper commentAchievementMapper;
 
+    private final KafkaProducer kafkaProducer;
+
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
         commentValidator.existUser(userContext.getUserId());
@@ -54,6 +58,11 @@ public class CommentService {
                 .build();
         commentEventPublisher.publish(commentEvent);
         publishCommentAchievementEvent(commentDto);
+        kafkaProducer.sendEvent(CommentCreatedEvent.builder()
+                .commentId(savedComment.getId())
+                .authorId(savedComment.getAuthorId())
+                .postId(savedComment.getPost().getId())
+                .build());
         return commentMapper.entityToDto(savedComment);
     }
 

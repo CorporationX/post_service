@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaProducer;
 import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
 import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
@@ -29,8 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -52,6 +52,9 @@ public class CommentServiceTest {
     private CommentAchievementEventPublisher commentAchievementEventPublisher;
     @Mock
     private CommentAchievementMapper commentAchievementMapper;
+
+    @Mock
+    private KafkaProducer kafkaProducer;
 
     private long commentId;
     private long postId;
@@ -125,6 +128,7 @@ public class CommentServiceTest {
                 .build();
         verify(commentRepository).save(comment);
         verify(commentAchievementEventPublisher).publish(commentAchievementEvent);
+        verify(kafkaProducer,times(1)).sendEvent(any());
         assertNotNull(result);
         assertEquals(commentDto, result);
     }
