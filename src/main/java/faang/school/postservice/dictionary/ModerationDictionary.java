@@ -33,6 +33,11 @@ public class ModerationDictionary {
                 unverifiedComment.setVerified(false);
                 unverifiedComment.setVerifiedDate(LocalDateTime.now());
                 commentRepository.save(unverifiedComment);
+            } else {
+                unverifiedComment.setVerifiedDate(LocalDateTime.now());
+                unverifiedComment.setVerified(true);
+                commentRepository.save(unverifiedComment);
+
             }
         }
     }
