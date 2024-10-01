@@ -12,7 +12,7 @@ public class ModerationScheduler {
     private final PostService postService;
 
     @Scheduled(cron = "${post.moderation.scheduler.cron}")
-    public void moderatePosts(){
+    public void moderatePosts() {
         postService.moderatePosts();
     }
 }

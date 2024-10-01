@@ -64,3 +64,6 @@ moderation:
 
 posts:
   batch-size: 100
+
+premium:
+  pool-size: 3

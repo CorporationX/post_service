@@ -86,7 +86,7 @@ public class Post implements Likeable {
     private List<Hashtag> hashtags = new ArrayList<>();
 
     @Column(name = "verified")
-    private boolean verified;
+    private Boolean verified;
 
     @Column(name = "verified_date")
     private LocalDateTime verifiedDate;

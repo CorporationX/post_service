@@ -38,11 +38,4 @@ public class GlobalExceptionHandler {
                         error -> Objects.requireNonNullElse(error.getDefaultMessage(), "")
                 ));
     }
-
-    @ExceptionHandler(ModerationDictionaryException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleFileException(ModerationDictionaryException exception) {
-        log.error("Error during moderation dictionary filling: {}", exception.getMessage());
-        return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage());
-    }
 }
