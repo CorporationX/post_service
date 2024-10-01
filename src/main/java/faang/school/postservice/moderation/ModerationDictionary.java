@@ -16,13 +16,17 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-@Getter
 public class ModerationDictionary {
 
     private Set<String> banWords;
 
     @Value("${moderation.file-path}")
     private String filePath;
+
+    public boolean containsBadWords(String content) {
+        return banWords.stream()
+                .anyMatch(badWord -> content.toLowerCase().contains(badWord));
+    }
 
     @PostConstruct
     public void fillSetWithBadWords() {
@@ -31,6 +35,7 @@ public class ModerationDictionary {
         try (var words = Files.lines(path)) {
             banWords = words
                     .map(String::trim)
+                    .map(String::toLowerCase)
                     .collect(Collectors.toSet());
         } catch (IOException e) {
             throw new ModerationDictionaryException("Error during moderation dictionary filling: " + e.getMessage());

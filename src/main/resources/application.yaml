@@ -61,3 +61,6 @@ payment-service:
 
 moderation:
   file-path: src/main/resources/badWords.txt
+
+posts:
+  batch-size: 100

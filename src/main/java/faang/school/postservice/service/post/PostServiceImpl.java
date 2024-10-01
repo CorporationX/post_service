@@ -3,10 +3,14 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +27,10 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final HashtagService hashtagService;
     private final PostValidator postValidator;
+    private final ModerationDictionary dictionary;
+
+    @Value("${posts.batch-size}")
+    private int batchSize;
 
     @Override
     @Transactional
@@ -151,12 +159,22 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void moderatePosts() {
-        List<Post> unverifiedPosts = postRepository.findAllByVerifiedFalse();
+        List<Post> unverifiedPosts = postRepository.findAllByVerifiedDateIsNull();
+        List<List<Post>> batches = ListUtils.partition(unverifiedPosts, batchSize);
 
-        unverifiedPosts.forEach(post -> {
-//            post.setVerified(1);
+        batches.forEach(this::moderatePostsByBatches);
+    }
+
+    @Async("fixedThreadPools")
+    public void moderatePostsByBatches(List<Post> posts) {
+        posts.forEach(post -> {
+            boolean badWordsExist = dictionary.containsBadWords(post.getContent());
+
+            post.setVerified(!badWordsExist);
             post.setVerifiedDate(LocalDateTime.now());
         });
+
+        postRepository.saveAll(posts);
     }
 
     private Post getPostFromRepository(Long postId) {
