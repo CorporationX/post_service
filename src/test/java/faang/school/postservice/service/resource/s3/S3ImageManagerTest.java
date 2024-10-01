@@ -9,7 +9,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,7 +30,7 @@ public class S3ImageManagerTest {
     AmazonS3 s3client = mock(AmazonS3.class);
     S3ImageManager s3ImageManager = new S3ImageManager(s3client);
 
-    MultipartFile file = mock(MockMultipartFile.class);
+    MultipartFile file = mock(MultipartFile.class);
     Post post;
     String fileName;
     String contentType;
