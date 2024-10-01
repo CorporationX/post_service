@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -72,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void verifyCommentsByDate(LocalDateTime verifiedDate) throws IOException {
+    public void verifyCommentsByDate(LocalDateTime verifiedDate) throws IOException, ExecutionException, InterruptedException {
         commentModerator.verifyCommentsByDate(verifiedDate);
     }
 }

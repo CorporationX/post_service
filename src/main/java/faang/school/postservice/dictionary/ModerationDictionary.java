@@ -28,17 +28,14 @@ public class ModerationDictionary {
                 .map(String::toLowerCase)
                 .collect(Collectors.toSet());
 
-        for (String forbiddenWord : forbiddenWords) {
-            if (unverifiedComment.getContent().contains(forbiddenWord)) {
-                unverifiedComment.setVerified(false);
-                unverifiedComment.setVerifiedDate(LocalDateTime.now());
-                commentRepository.save(unverifiedComment);
-            } else {
-                unverifiedComment.setVerifiedDate(LocalDateTime.now());
-                unverifiedComment.setVerified(true);
-                commentRepository.save(unverifiedComment);
-
-            }
+        if (forbiddenWords.stream().anyMatch(unverifiedComment.getContent()::contains)) {
+            unverifiedComment.setVerified(false);
+            unverifiedComment.setVerifiedDate(LocalDateTime.now());
+            commentRepository.save(unverifiedComment);
+        } else {
+            unverifiedComment.setVerifiedDate(LocalDateTime.now());
+            unverifiedComment.setVerified(true);
+            commentRepository.save(unverifiedComment);
         }
     }
 }
