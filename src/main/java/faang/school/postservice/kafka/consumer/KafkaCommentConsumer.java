@@ -2,9 +2,7 @@ package faang.school.postservice.kafka.consumer;
 
 import faang.school.postservice.kafka.events.CommentEvent;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.redis.mapper.PostCacheMapper;
-import faang.school.postservice.redis.repository.PostCacheRedisRepository;
-import faang.school.postservice.redis.service.RedisPostCacheService;
+import faang.school.postservice.redis.service.PostCacheService;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +15,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaCommentConsumer {
-    private final RedisPostCacheService postCacheService;
-    private final RedisPostCacheService redisPostCacheService;
+    private final PostCacheService postCacheService;
     private final PostRepository postRepository;
     private final PostMapper mapper;
 
@@ -36,7 +33,7 @@ public class KafkaCommentConsumer {
 
     private void addComment(Long postId, Long commentId){
         if (postCacheService.existsById(postId)){
-            redisPostCacheService.addCommentToPost(postId, commentId);
+            postCacheService.addCommentToPost(postId, commentId);
         } else {
             var postCache = postRepository.findById(postId)
                     .map(mapper::toDto)

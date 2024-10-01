@@ -30,6 +30,7 @@ spring:
       feed-cache:
         size: 500
         key-prefix: "feed:"
+        batch_size: 20
       post-cache:
         key-prefix: "post:"
         likes: "likes"

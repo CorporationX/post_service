@@ -30,12 +30,15 @@ public class KafkaEventProducer {
     public void sendPostFollowersEvent(PostFollowersEvent event) {
         kafkaTemplate.send(postTopic, event);
     }
+
     public void sendPostViewEvent(PostViewEvent event) {
         kafkaTemplate.send(postViewsTopic, event);
     }
+
     public void sendCommentEvent(CommentEvent event){
         kafkaTemplate.send(commentTopic, event);
     }
+
     public void sendLikeEvent(PostLikeEvent event){
         kafkaTemplate.send(likeTopic, event);
     }

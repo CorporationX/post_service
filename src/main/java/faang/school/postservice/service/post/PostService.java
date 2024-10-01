@@ -5,7 +5,7 @@ import faang.school.postservice.kafka.EventsGenerator;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.redis.service.AuthorCacheService;
-import faang.school.postservice.redis.service.RedisPostCacheService;
+import faang.school.postservice.redis.service.PostCacheService;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostServiceValidator<PostDto> validator;
 
-    private final RedisPostCacheService redisPostCacheService;
+    private final PostCacheService postCacheService;
     private final EventsGenerator eventsGenerator;
     private final AuthorCacheService authorCacheService;
 
@@ -49,7 +49,7 @@ public class PostService {
 
         eventsGenerator.generateAndSendPostFollowersEvent(postDto);
 
-        redisPostCacheService.savePostCache(postDto);
+        postCacheService.savePostCache(postDto);
         authorCacheService.saveAuthorCache(postDto.getAuthorId());
 
         return postDto;

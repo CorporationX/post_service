@@ -25,20 +25,7 @@ public interface PostCacheMapper {
     @Mapping(source = "comments", target = "comments", qualifiedByName = "commentToThreeLastCommentId")
     PostCache toPostCache(PostDto postDto);
 
-    @Mapping(target = "comments", expression = "java(mapComments(postCache.getComments(), commentCacheRepository, commentCacheToCommentDtoMapper))")
-    PostDto toDto(PostCache postCache, CommentCacheRepository commentCacheRepository, CommentCacheToCommentDtoMapper commentCacheToCommentDtoMapper);
-    default List<CommentDto> mapComments(RedisZSet<Long> comments,
-                                         CommentCacheRepository commentCacheRepository,
-                                         CommentCacheToCommentDtoMapper commentCacheToCommentDtoMapper) {
-        if (comments == null) {
-            return new ArrayList<>();
-        }
-        return comments.stream()
-                .map(id -> commentCacheRepository.findById(id).orElse(null))
-                .filter(Objects::nonNull)
-                .map(commentCacheToCommentDtoMapper::toDto)
-                .toList();
-    }
+    PostDto toDto(PostCache postCache);
 
     @Named("countTotalLikes")
     default Integer countTotalLikes(List<Like> likes){

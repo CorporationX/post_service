@@ -2,7 +2,7 @@ package faang.school.postservice.kafka.consumer;
 
 import faang.school.postservice.kafka.events.PostLikeEvent;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.redis.service.RedisPostCacheService;
+import faang.school.postservice.redis.service.PostCacheService;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class KafkaLikeConsumer {
     private final PostRepository postRepository;
-    private final RedisPostCacheService redisPostCacheService;
+    private final PostCacheService postCacheService;
     private final PostMapper mapper;
 
 
@@ -23,14 +23,14 @@ public class KafkaLikeConsumer {
     }
 
     private void incrementLikesInPostCache(Long postId){
-        if (redisPostCacheService.existsById(postId)){
-            redisPostCacheService.incrementConcurrentPostLikes(postId);
+        if (postCacheService.existsById(postId)){
+            postCacheService.incrementConcurrentPostLikes(postId);
         } else {
             var postDto = postRepository.findById(postId)
                     .map(mapper::toDto)
                     .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
-            redisPostCacheService.savePostCache(postDto);
+            postCacheService.savePostCache(postDto);
         }
     }
 }

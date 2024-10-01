@@ -2,7 +2,7 @@ package faang.school.postservice.controller.feed;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.redis.service.RedisFeedCacheService;
+import faang.school.postservice.redis.service.FeedCacheService;
 import faang.school.postservice.redis.service.FeedHeatService;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +17,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 public class FeedController {
-    private final RedisFeedCacheService redisFeedCacheService;
+    private final FeedCacheService feedCacheService;
     private final FeedHeatService feedHeatService;
     private final UserContext userContext;
 
     @GetMapping("/feed")
     public List<PostDto> getUserFeed(@Nullable @RequestParam("postId") Long postId){
         var userId = userContext.getUserId();
-        return redisFeedCacheService.getUserFeed(postId, userId);
+        return feedCacheService.getFeedByUserId(postId, userId);
     }
 
     @GetMapping("/heat")
