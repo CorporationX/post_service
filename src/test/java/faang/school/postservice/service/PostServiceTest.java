@@ -349,7 +349,7 @@ public class PostServiceTest {
     public void testGetPostByPostIdPostFound() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         postService.getPostDtoById(1L);
-
+        verify(kafkaProducer,times(1)).sendEvent(any());
         verify(postMapper, times(1)).toDto(post);
     }
 
