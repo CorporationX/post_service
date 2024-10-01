@@ -78,7 +78,7 @@ public class CommentService {
                 .subscriberIds(userDto.getSubscriberIds())
                 .build();
 
-        redisUserRepository.save(cachedUserDto);
+        redisUserRepository.save(cachedUserDto.getId(), cachedUserDto);
         commentProducer.sendEvent(commentEvent);
         return commentMapper.toDto(savedComment);
     }

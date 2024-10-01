@@ -46,7 +46,7 @@ public class KafkaCommentConsumer {
         }
 
         cachedPostDto.addComment(commentDto, 3);
-        redisPostRepository.save(cachedPostDto);
+        redisPostRepository.save(cachedPostDto.getId(), cachedPostDto);
         log.info("added new comment to post with id = {}", postId);
         ack.acknowledge();
     }

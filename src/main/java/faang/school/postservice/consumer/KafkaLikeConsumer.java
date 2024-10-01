@@ -31,7 +31,7 @@ public class KafkaLikeConsumer {
             throw new IllegalArgumentException(String.format("post with id = %d not exist", postId));
         }
         postDto.incrementLikesCount();
-        redisPostRepository.save(postDto);
+        redisPostRepository.save(postDto.getId(),postDto);
         log.info("added like to post with id = {}", postId);
         ack.acknowledge();
     }

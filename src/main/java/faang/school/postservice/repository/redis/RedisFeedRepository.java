@@ -10,7 +10,6 @@ import faang.school.postservice.service.post.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
@@ -95,7 +94,7 @@ public class RedisFeedRepository {
     }
 
     private UserDto getUserDto(Long userId) {
-        CachedUserDto cachedUserDto = userCache.findById(userId).orElse(null);
+        CachedUserDto cachedUserDto = userCache.get(userId).orElse(null);
         UserDto userDto;
         if (cachedUserDto == null) {
             userDto = userServiceClient.getUser(userId);
@@ -109,7 +108,7 @@ public class RedisFeedRepository {
                     .username(userDto.getUsername())
                     .subscriberIds(userDto.getSubscriberIds())
                     .build();
-            userCache.save(cachedUserDto);
+            userCache.save(cachedUserDto.getId(), cachedUserDto);
         } else {
             userDto = UserDto.builder()
                     .id(cachedUserDto.getId())
@@ -126,7 +125,7 @@ public class RedisFeedRepository {
     private List<CachedPostDto> mapPostIdsToPostDtos(List<Long> postIds) {
         return postIds.stream()
                 .map(postId ->
-                        postCache.findById(postId)
+                        postCache.get(postId)
                                 .orElseGet(() -> postService.getPostFromCache(postId))
                 )
                 .limit(feedBatchSize)
@@ -140,7 +139,7 @@ public class RedisFeedRepository {
                 .toList();
     }
 
-    public void heat(){
+    public void heat() {
         List<Long> userIds = userServiceClient.getAllUserIds();
         List<List<Long>> separatedIds = splitList(userIds);
         separatedIds.stream()
@@ -151,7 +150,7 @@ public class RedisFeedRepository {
     private List<List<Long>> splitList(List<Long> ids) {
         return IntStream
                 .range(0, (ids.size() + feedBatchSize - 1) / feedBatchSize)
-                .mapToObj(num -> ids.subList(num * feedBatchSize, Math.min(feedBatchSize * (num +1), ids.size())))
+                .mapToObj(num -> ids.subList(num * feedBatchSize, Math.min(feedBatchSize * (num + 1), ids.size())))
                 .toList();
     }
 

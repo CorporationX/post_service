@@ -108,8 +108,8 @@ public class PostService {
                 .subscriberIds(userDto.getSubscriberIds())
                 .build();
 
-        redisPostRepository.save(cachedPostDto);
-        redisUserRepository.save(cachedUserDto);
+        redisPostRepository.save(cachedPostDto.getId(),cachedPostDto);
+        redisUserRepository.save(cachedUserDto.getId(), cachedUserDto);
         postProducer.sendEvent(postEvent);
 
         return savedPostDto;
@@ -139,8 +139,8 @@ public class PostService {
         );
     }
 
-    public CachedPostDto getPostFromCache(Long postId) {
-        return redisPostRepository.findById(postId)
+    public CachedPostDto getPostFromCache(@NotNull Long postId) {
+        return redisPostRepository.get(postId)
                 .orElse(postMapper.toCachedPostDto(getPost(postId)));
     }
 
