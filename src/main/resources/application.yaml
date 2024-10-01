@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        user-service:
+          name: ban_user_channel
 
 server:
   port: 8081
@@ -39,6 +41,9 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  ban-user:
+    scheduler:
+      cron: "0 0 2 * * *" # every day
 
 user-service:
   host: localhost
