@@ -5,12 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CommentEvent {
-    private Long commentId;
-    private Long authorId;
-    private Long postId;
+public class FeedHeaterEvent {
+    private List<Long> userIds;
 }
