@@ -22,9 +22,11 @@ public class KafkaConfig {
     private String bootstrapAddress;
     @Value("${spring.kafka.topic.posts.name}")
     private String topicPostName;
-    @Value("${spring.kafka.topic.posts.partitions}")
+    @Value("${spring.kafka.topic.comments.name}")
+    private String topicCommentName;
+    @Value("${spring.kafka.topic.partitions}")
     private int partitions;
-    @Value("${spring.kafka.topic.posts.replication-factor}")
+    @Value("${spring.kafka.topic.replication-factor}")
     private short replications;
 
     @Bean
@@ -36,7 +38,12 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic postsTopic() {
-        return new NewTopic(topicPostName,partitions,replications);
+        return new NewTopic(topicPostName, partitions, replications);
+    }
+
+    @Bean
+    public NewTopic commentsTopic() {
+        return new NewTopic(topicCommentName, partitions, replications);
     }
 
     @Bean

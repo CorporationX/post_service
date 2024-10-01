@@ -76,10 +76,12 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     topic:
+      partitions: 1
+      replication-factor: 1
       posts:
         name: posts
-        partitions: 1
-        replication-factor: 1
+      comments:
+        name: comments
 
 server:
   port: 8081
