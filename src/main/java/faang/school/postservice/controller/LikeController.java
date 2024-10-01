@@ -19,12 +19,12 @@ public class LikeController {
 
     @GetMapping("/post/{postId}")
     public List<UserDto> getUsersByPostId(@PathVariable long postId) {
-        return likeService.getUsersByPostId(postId);
+        return likeService.getUsersLikedPost(postId);
     }
 
     @GetMapping("/comment/{commentId}")
     public List<UserDto> getUsersByCommentId(@PathVariable long commentId) {
-        return likeService.getUsersByCommentId(commentId);
+        return likeService.getUsersLikedComment(commentId);
     }
 
 }

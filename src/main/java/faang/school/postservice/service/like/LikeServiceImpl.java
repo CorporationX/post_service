@@ -18,14 +18,14 @@ public class LikeServiceImpl implements LikeService{
     private final UserServiceClient userServiceClient;
 
     @Override
-    public List<UserDto> getUsersByPostId(long postId) {
+    public List<UserDto> getUsersLikedPost(long postId) {
         List<Like> likes = likeRepository.findByPostId(postId);
 
         return dividingListIntoGroups(likes);
     }
 
     @Override
-    public List<UserDto> getUsersByCommentId(long commentId) {
+    public List<UserDto> getUsersLikedComment(long commentId) {
         List<Like> likes = likeRepository.findByCommentId(commentId);
 
         return dividingListIntoGroups(likes);

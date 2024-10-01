@@ -5,7 +5,7 @@ import faang.school.postservice.dto.user.UserDto;
 import java.util.List;
 
 public interface LikeService {
-    List<UserDto> getUsersByPostId(long postId);
+    List<UserDto> getUsersLikedPost(long postId);
 
-    List<UserDto> getUsersByCommentId(long commentId);
+    List<UserDto> getUsersLikedComment(long commentId);
 }

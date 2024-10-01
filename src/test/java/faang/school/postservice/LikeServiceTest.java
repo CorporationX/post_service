@@ -1,7 +1,6 @@
 package faang.school.postservice;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.like.LikeServiceImpl;
@@ -40,7 +39,7 @@ public class LikeServiceTest {
     public void testGetUsersByPostId() {
         when(likeRepository.findByPostId(1L)).thenReturn(likes);
 
-        likeService.getUsersByPostId(1L);
+        likeService.getUsersLikedPost(1L);
 
         verify(likeRepository).findByPostId(1L);
         verify(userServiceClient).getUsersByIds(List.of(1L));
@@ -50,7 +49,7 @@ public class LikeServiceTest {
     public void testGetUsersByCommentId() {
         when(likeRepository.findByCommentId(1L)).thenReturn(likes);
 
-        likeService.getUsersByCommentId(1L);
+        likeService.getUsersLikedComment(1L);
 
         verify(likeRepository).findByCommentId(1L);
         verify(userServiceClient).getUsersByIds(List.of(1L));
