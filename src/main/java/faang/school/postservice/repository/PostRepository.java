@@ -62,5 +62,11 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             """)
     List<Post> findByProjectIdAndPublished(long projectId);
 
-    List<Post> findByPublishedTrueAndDeletedFalse();
+    @Query(nativeQuery = true, value = """
+            SELECT author_id FROM post
+            WHERE verified = false AND author_id IS NOT NULL
+            GROUP BY author_id
+            HAVING COUNT(*) > 5 ;
+            """)
+    List<Long> findAuthorsWithMoreThanFiveUnverifiedPosts();
 }
