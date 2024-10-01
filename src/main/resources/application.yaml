@@ -84,6 +84,8 @@ spring:
         name: comments
       post-views:
         name: post-views
+      like:
+        name: likes
 
 server:
   port: 8081

@@ -26,6 +26,8 @@ public class KafkaConfig {
     private String topicCommentName;
     @Value("${spring.kafka.topic.post-views.name}")
     private String topicPostViewsName;
+    @Value("${spring.kafka.topic.like.name}")
+    private String topicLikeName;
     @Value("${spring.kafka.topic.partitions}")
     private int partitions;
     @Value("${spring.kafka.topic.replication-factor}")
@@ -51,6 +53,11 @@ public class KafkaConfig {
     @Bean
     public NewTopic postViewsTopic(){
         return new NewTopic(topicPostViewsName, partitions, replications);
+    }
+
+    @Bean
+    public NewTopic likeTopic(){
+        return new NewTopic(topicLikeName, partitions,replications);
     }
 
     @Bean

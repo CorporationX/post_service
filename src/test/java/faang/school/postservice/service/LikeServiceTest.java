@@ -8,6 +8,8 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
+import faang.school.postservice.producer.KafkaProducer;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.redisPublisher.LikePostPublisher;
 import faang.school.postservice.redisPublisher.PostLikeEventPublisher;
@@ -54,6 +56,8 @@ public class LikeServiceTest {
     private LikeEventMapper likeEventMapper;
     @Mock
     private PostLikeEventPublisher postLikeEventPublisher;
+    @Mock
+    private KafkaProducer kafkaProducer;
 
     @InjectMocks
     private LikeService likeService;
@@ -86,6 +90,9 @@ public class LikeServiceTest {
         like = Like.builder()
                 .id(1L)
                 .userId(userId)
+                .post(Post.builder()
+                        .id(postId)
+                        .build())
                 .build();
 
         likeDtoPost = LikeDto.builder()
@@ -193,6 +200,7 @@ public class LikeServiceTest {
         verify(likePostPublisher, times(1)).publish(any());
         verify(postLikeEventPublisher, times(1)).publish(any());
         verify(likeRepository, times(1)).save(like);
+        verify(kafkaProducer, times(1)).sendEvent(any());
     }
 
     @DisplayName("Когда метод по удалению лайка с поста отработал")
