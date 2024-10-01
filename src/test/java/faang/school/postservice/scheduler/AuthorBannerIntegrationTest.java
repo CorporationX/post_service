@@ -2,6 +2,7 @@ package faang.school.postservice.scheduler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.config.RedisProperties;
 import faang.school.postservice.config.RedisTestConfig;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.AfterEach;
@@ -9,14 +10,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import redis.embedded.RedisServer;
@@ -53,21 +52,18 @@ class AuthorBannerIntegrationTest {
     @Autowired
     private RedisMessageListenerContainer redisMessageListenerContainer;
 
+    @Autowired
+    private RedisProperties redisProperties;
+
     private RedisServer redisServer;
-
-    @Value("${spring.data.redis.port}")
-    private Integer port;
-
-    @Value("${spring.data.redis.host}")
-    private String host;
 
     @BeforeEach
     void setUp() {
-        redisServer = new RedisServer(port);
+        redisServer = new RedisServer(redisProperties.getPort());
         redisServer.start();
 
-        System.setProperty("spring.redis.host", host);
-        System.setProperty("spring.redis.port", port.toString());
+        System.setProperty("spring.redis.host", redisProperties.getHost());
+        System.setProperty("spring.redis.port", Integer.toString(redisProperties.getPort()));
 
         redisMessageListenerContainer.start();
         assertTrue(redisMessageListenerContainer.isRunning());
@@ -97,7 +93,7 @@ class AuthorBannerIntegrationTest {
             } finally {
                 latch.countDown();
             }
-        }, new ChannelTopic("ban_user_channel"));
+        }, new ChannelTopic(redisProperties.getChannels().get("user-service")));
 
         authorBanner.banUser();
         boolean messageReceived = latch.await(30, TimeUnit.SECONDS);

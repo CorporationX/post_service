@@ -22,10 +22,8 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
-        user-service:
-          name: ban_user_channel
+        calculations-channel: calculations_channel
+        user-service: ban_user_channel
 
 server:
   port: 8081

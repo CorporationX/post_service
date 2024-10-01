@@ -18,7 +18,7 @@ public class AuthorBanner {
     private final RedisTemplate<String, List<Long>> redisTemplate;
     private final PostService postService;
 
-    @Value("${spring.data.redis.channels.user-service.name}")
+    @Value("${spring.data.redis.channels.user-service}")
     private String channel;
 
     @Scheduled(cron = "${post.ban-user.scheduler.cron}")
