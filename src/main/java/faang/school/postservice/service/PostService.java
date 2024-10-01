@@ -6,6 +6,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.event.kafka.PostCreatedEvent;
+import faang.school.postservice.dto.event.kafka.PostViewEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.hash.PostHash;
@@ -154,7 +155,11 @@ public class PostService {
     }
 
     public PostDto getPostDtoById(Long postId) {
-        return postMapper.toDto(getPostById(postId));
+        Post post = getPostById(postId);
+        kafkaProducer.sendEvent(PostViewEvent.builder()
+                .userId(userContext.getUserId())
+                .postId(post.getId()));
+        return postMapper.toDto(post);
     }
 
     public List<PostDto> getAllDraftPostsByUserId(Long userId) {
