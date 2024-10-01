@@ -24,7 +24,7 @@ import static java.lang.String.format;
 
 @Component
 @RequiredArgsConstructor
-public class S3ImageService {
+public class S3ImageManager {
     private final AmazonS3 s3client;
 
     @Value("${services.s3.bucketName}")

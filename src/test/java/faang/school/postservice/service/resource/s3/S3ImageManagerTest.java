@@ -27,9 +27,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class S3ImageServiceTest {
+public class S3ImageManagerTest {
     AmazonS3 s3client = mock(AmazonS3.class);
-    S3ImageService s3ImageService = new S3ImageService(s3client);
+    S3ImageManager s3ImageManager = new S3ImageManager(s3client);
 
     MultipartFile file = mock(MockMultipartFile.class);
     Post post;
@@ -42,7 +42,7 @@ public class S3ImageServiceTest {
     @BeforeEach
     public void setUp() throws FileNotFoundException {
         bucketName = "test_bucket";
-        ReflectionTestUtils.setField(s3ImageService, "bucketName", bucketName);
+        ReflectionTestUtils.setField(s3ImageManager, "bucketName", bucketName);
 
         post = new Post();
         post.setId(1L);
@@ -60,7 +60,7 @@ public class S3ImageServiceTest {
         when(file.getOriginalFilename()).thenReturn(fileName);
         when(file.getInputStream()).thenReturn(inputStream);
 
-        Resource resource = s3ImageService.addFileToStorage(file, post);
+        Resource resource = s3ImageManager.addFileToStorage(file, post);
 
         assertNotNull(resource);
         assertEquals(fileName, resource.getName());
@@ -77,7 +77,7 @@ public class S3ImageServiceTest {
         when(file.getOriginalFilename()).thenReturn(fileName);
         when(file.getInputStream()).thenReturn(inputStream);
 
-        Resource resource = s3ImageService.updateFileInStorage(key, file, post);
+        Resource resource = s3ImageManager.updateFileInStorage(key, file, post);
 
         assertNotNull(resource);
         assertEquals(fileName, resource.getName());
@@ -90,7 +90,7 @@ public class S3ImageServiceTest {
     @Test
     @DisplayName("testRemoveFileInStorage")
     public void testRemoveFileInStorage() throws IOException {
-        s3ImageService.removeFileInStorage(key);
+        s3ImageManager.removeFileInStorage(key);
         verify(s3client, times(1)).deleteObject(bucketName, key);
 
         inputStream.close();

@@ -6,9 +6,9 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.ResourceType;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.resource.s3.S3AudioService;
-import faang.school.postservice.service.resource.s3.S3ImageService;
-import faang.school.postservice.service.resource.s3.S3VideoService;
+import faang.school.postservice.service.resource.s3.S3AudioManager;
+import faang.school.postservice.service.resource.s3.S3ImageManager;
+import faang.school.postservice.service.resource.s3.S3VideoManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,16 +32,16 @@ import static org.mockito.Mockito.when;
 public class ResourceServiceTest {
     ResourceRepository resourceRepository = mock(ResourceRepository.class);
     PostRepository postRepository = mock(PostRepository.class);
-    S3ImageService s3ImageService = mock(S3ImageService.class);
-    S3AudioService s3AudioService = mock(S3AudioService.class);
-    S3VideoService s3VideoService = mock(S3VideoService.class);
+    S3ImageManager s3ImageManager = mock(S3ImageManager.class);
+    S3AudioManager s3AudioManager = mock(S3AudioManager.class);
+    S3VideoManager s3VideoManager = mock(S3VideoManager.class);
 
     ResourceService resourceService = new ResourceService(
             resourceRepository,
             postRepository,
-            s3ImageService,
-            s3AudioService,
-            s3VideoService
+            s3ImageManager,
+            s3AudioManager,
+            s3VideoManager
     );
 
     List<String> allowedImageTypes = new ArrayList<>() {{
@@ -109,7 +109,7 @@ public class ResourceServiceTest {
     public void testAddFileToPost_Success() {
         when(file.getContentType()).thenReturn("image/jpeg");
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        when(s3ImageService.addFileToStorage(file, post)).thenReturn(resourceNew);
+        when(s3ImageManager.addFileToStorage(file, post)).thenReturn(resourceNew);
 
         resourceService.addFileToPost(file, postId);
 
@@ -162,7 +162,7 @@ public class ResourceServiceTest {
     public void testUpdateFileInPost_Success() {
         when(file.getContentType()).thenReturn("image/jpeg");
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        when(s3ImageService.updateFileInStorage(keyOne, file, post)).thenReturn(resourceNew);
+        when(s3ImageManager.updateFileInStorage(keyOne, file, post)).thenReturn(resourceNew);
 
         resourceService.updateFileInPost(file, resourceOneId, postId);
 
@@ -176,7 +176,7 @@ public class ResourceServiceTest {
 
         resourceService.removeFileInPost(resourceOneId, postId);
 
-        verify(s3ImageService, times(1)).removeFileInStorage(keyOne);
+        verify(s3ImageManager, times(1)).removeFileInStorage(keyOne);
         verify(resourceRepository, times(1)).deleteById(resourceOneId);
     }
 }
