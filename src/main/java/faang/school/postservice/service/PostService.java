@@ -10,8 +10,9 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.spellcheck.SpellCheckService;
+import faang.school.postservice.service.spellcheck.BatchProcessService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -20,20 +21,25 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
+    @Value("${spell-checker.queue-capacity}")
+    private int correcterQueueCapacity;
+
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
     private final NewPostPublisher newPostPublisher;
-    private final SpellCheckService spellCheckService;
+    private final BatchProcessService batchProcessService;
 
     public PostDto createPost(PostDto postDto) {
         if (postDto.getAuthorType() == AuthorType.USER) {
@@ -149,19 +155,27 @@ public class PostService {
         return postRepository.save(post);
     }
 
+    @Transactional
     public void correctSpellingInUnpublishedPosts() {
         List<Post> unpublishedPosts = postRepository.findReadyToPublish();
 
         if (!unpublishedPosts.isEmpty()) {
-            unpublishedPosts.stream()
-                    .peek(post -> {
-                        String language = spellCheckService.detectLanguage(post.getContent());
-                        if ("en".equals(language)) {
-                            String correctedText = spellCheckService.autoCorrect(post.getContent(), language);
-                            post.setContent(correctedText);
-                        }
-                    })
-                    .forEach(postRepository::save);
+            int batchSize = correcterQueueCapacity;
+            List<List<Post>> batches = splitIntoBatches(unpublishedPosts, batchSize);
+
+            List<CompletableFuture<Void>> futures = batches.stream()
+                    .map(batchProcessService::processBatch)
+                    .toList();
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         }
+    }
+
+    private <T> List<List<T>> splitIntoBatches(List<T> list, int batchSize) {
+        List<List<T>> batches = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += batchSize) {
+            batches.add(list.subList(i, Math.min(i + batchSize, list.size())));
+        }
+        return batches;
     }
 }

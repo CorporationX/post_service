@@ -24,6 +24,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+    implementation ("org.springframework.retry:spring-retry")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
@@ -75,6 +76,11 @@ val jacocoInclude = listOf(
     "**/filter/**",
 )
 
+val jacocoExclude = listOf(
+    "**/faang/school/postservice/service/spellcheck**"
+)
+
+
 jacoco {
     toolVersion = "0.8.12"
 }
@@ -103,6 +109,7 @@ tasks.jacocoTestReport {
     classDirectories.setFrom(
         sourceSets.main.get().output.asFileTree.matching {
             include(jacocoInclude)
+            exclude(jacocoExclude)
         }
     )
 }
@@ -124,6 +131,7 @@ tasks.jacocoTestCoverageVerification {
     classDirectories.setFrom(
         sourceSets.main.get().output.asFileTree.matching {
             include(jacocoInclude)
+            exclude(jacocoExclude)
         }
     )
 }

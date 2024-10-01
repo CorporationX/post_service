@@ -4,7 +4,6 @@ import faang.school.postservice.dto.correcter.LanguageDetectionResponse;
 import faang.school.postservice.dto.correcter.SpellCheckResponse;
 import faang.school.postservice.dto.correcter.TextGearsResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -12,9 +11,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -22,7 +24,6 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class SpellCheckService {
 
     @Value("${spell-checker.api.host}")
@@ -39,6 +40,11 @@ public class SpellCheckService {
 
     private final RestTemplate restTemplate;
 
+    @Retryable(
+            retryFor = {RestClientException.class},
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 2000, multiplier = 1.5)
+    )
     public String autoCorrect(String content, String language) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -56,7 +62,8 @@ public class SpellCheckService {
                 uri,
                 HttpMethod.POST,
                 requestEntity,
-                new ParameterizedTypeReference<>() {}
+                new ParameterizedTypeReference<>() {
+                }
         );
 
         if (APIresponse.getStatusCode().is2xxSuccessful()
@@ -68,6 +75,11 @@ public class SpellCheckService {
         }
     }
 
+    @Retryable(
+            retryFor = {RestClientException.class},
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 2000, multiplier = 1.5)
+    )
     public String detectLanguage(String text) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -85,7 +97,8 @@ public class SpellCheckService {
                 uri,
                 HttpMethod.POST,
                 requestEntity,
-                new ParameterizedTypeReference<>() {}
+                new ParameterizedTypeReference<>() {
+                }
         );
 
         if (APIresponse.getStatusCode().is2xxSuccessful()

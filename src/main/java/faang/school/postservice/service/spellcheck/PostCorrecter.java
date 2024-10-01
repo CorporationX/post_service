@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class PostCorrecter {
     private final PostService postService;
 
-    @Scheduled(cron = "${correcter.scheduler.cron}")
+    @Scheduled(cron = "${spell-checker.scheduler.cron}")
     public void correctPostsOnSchedule() {
         postService.correctSpellingInUnpublishedPosts();
     }

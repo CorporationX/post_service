@@ -58,7 +58,6 @@ spell-checker:
     key: 18ZFDi6vjqn0XCYm
     autocorrect: /correct
     language-detection: /detect
-
-correcter:
   scheduler:
     cron: "0 0 3 * * *" # каждый день в 3 часа ночи
+  queue-capacity: 100
