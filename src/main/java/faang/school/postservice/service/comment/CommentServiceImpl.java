@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -71,7 +72,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void checkAllComment() {
-        commentModerator.checkComment();
+    public void verifyCommentsByDate(LocalDateTime verifiedDate) throws IOException {
+        commentModerator.verifyCommentsByDate(verifiedDate);
     }
 }
