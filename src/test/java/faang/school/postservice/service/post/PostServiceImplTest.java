@@ -3,14 +3,13 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
-import faang.school.postservice.service.hashtag.HashtagService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -22,14 +21,16 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceImplTest {
@@ -298,5 +299,22 @@ public class PostServiceImplTest {
         List<PostDto> posts = postService.getPostsByHashtag("a");
 
         assertEquals(2, posts.size());
+    }
+
+    @Test
+    @DisplayName("Publish Scheduled Posts Test")
+    void testPublishScheduledPosts() {
+        doReturn(List.of(examplePost)).when(postRepository).findReadyToPublish();
+
+        postService.publishScheduledPosts(1000);
+
+        verify(postRepository).findReadyToPublish();
+        verify(postRepository).updatePostsAsPublished(anyList(), any(LocalDateTime.class));
+    }
+
+    @Test
+    void publishScheduledPostsAsyncInBatch() {
+        postService.publishScheduledPostsAsyncInBatch(List.of(examplePost));
+        verify(postRepository).updatePostsAsPublished(anyList(), any(LocalDateTime.class));
     }
 }
