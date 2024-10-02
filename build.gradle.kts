@@ -2,7 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
-    id("jacoco")
+//    id("jacoco")
 }
 
 group = "faang.school"
@@ -83,29 +83,32 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
 }
 
-jacoco {
-    toolVersion = "0.8.7"
-}
 
-tasks.test {
-    finalizedBy(tasks.jacocoTestReport)
-}
+//jacoco {
+//    toolVersion = "0.8.7"
+//}
 
-tasks.jacocoTestReport {
-    reports {
-        xml.required.set(true)
-        csv.required.set(false)
-        html.outputLocation.set(file("${buildDir}/jacocoHtml"))
-    }
-    classDirectories.setFrom(
-        fileTree(project.buildDir) {
-            include("**/post_service/service/**",
-                "**/post_service/validator/**",
-                "**/post_service/filter/**",
-                "**/post_service/controller/**")
-        }
-    )
-}
+//tasks.test {
+//    finalizedBy(tasks.jacocoTestReport)
+//}
+
+//tasks.jacocoTestReport {
+//    reports {
+//        xml.required.set(true)
+//        csv.required.set(false)
+//        html.outputLocation.set(file("${buildDir}/jacocoHtml"))
+//    }
+//    classDirectories.setFrom(
+//        fileTree(project.buildDir) {
+//            include(
+//                "**/post_service/service/**",
+//                "**/post_service/validator/**",
+//                "**/post_service/filter/**",
+//                "**/post_service/controller/**"
+//            )
+//        }
+//    )
+//}
 
 tasks.test {
     useJUnitPlatform()
