@@ -49,3 +49,8 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+redis:
+  banner:
+    schedule: "0 0 0 * * ?"
+    topic: "user_ban"

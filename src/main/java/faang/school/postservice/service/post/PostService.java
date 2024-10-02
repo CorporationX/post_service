@@ -3,22 +3,31 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.RedisMessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
+    private final RedisMessagePublisher redisMessagePublisher;
+    private static final int MAX_REJECTED_POSTS = 5;
 
     @Transactional
     public Post create(Post post) {
@@ -92,6 +101,27 @@ public class PostService {
                 .toList();
 
         return posts;
+    }
+
+    @Transactional(readOnly = true)
+    public void publishingUsersForBan() {
+        List<Long> userIdsForBan = findUserIdsForBan();
+        userIdsForBan
+                .forEach(id -> redisMessagePublisher.publish(String.valueOf(id)));
+    }
+
+    private List<Long> findUserIdsForBan() {
+        List<Post> rejectedPosts = postRepository.findAllByVerificationStatus(REJECTED);
+        Map<Long, List<Long>> postsByAuthorId = rejectedPosts.stream()
+                .collect(Collectors.groupingBy(
+                        Post::getAuthorId,
+                        Collectors.mapping(Post::getId, Collectors.toList())));
+        return postsByAuthorId.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().size() > MAX_REJECTED_POSTS)
+                .map(Map.Entry::getKey)
+                .peek(id -> log.info("User with id {} found for banned", id))
+                .toList();
     }
 
     private Stream<Post> applyFiltersAndSorted(List<Post> posts, Post filterPost) {

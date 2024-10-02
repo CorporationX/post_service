@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.RedisMessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +17,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.LongStream;
 
+import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -35,9 +38,13 @@ public class PostServiceTest {
     private PostRepository postRepository;
     @Mock
     private PostValidator postValidator;
+    @Mock
+    private RedisMessagePublisher redisMessagePublisher;
+
     @InjectMocks
     private PostService postService;
 
+    private final List<Post> posts = new ArrayList<>();
     private Post postForCreate;
     private Post postForUpdate;
     private Post findedPost;
@@ -283,5 +290,51 @@ public class PostServiceTest {
 
         verify(postRepository).findByProjectId(filterPost.getProjectId());
         verify(postRepository, times(0)).findByAuthorId(anyLong());
+    }
+
+    @Test
+    void testPublishingUsersForBanWhenAllUsersHasMoreThan5RejectedPosts() {
+        addPostsToList(1, 6, 1);
+        addPostsToList(7, 6, 2);
+        addPostsToList(13, 6, 3);
+        addPostsToList(20, 7, 4);
+        addPostsToList(27, 7, 5);
+        when(postRepository.findAllByVerificationStatus(REJECTED)).thenReturn(posts);
+
+        postService.publishingUsersForBan();
+
+        verify(redisMessagePublisher, times(1)).publish(String.valueOf(1));
+        verify(redisMessagePublisher, times(1)).publish(String.valueOf(2));
+        verify(redisMessagePublisher, times(1)).publish(String.valueOf(3));
+        verify(redisMessagePublisher, times(1)).publish(String.valueOf(4));
+        verify(redisMessagePublisher, times(1)).publish(String.valueOf(5));
+    }
+
+    @Test
+    void testPublishingUsersForBanWhenSomeUsersHasMoreThan5RejectedPosts() {
+        addPostsToList(1, 6, 1);
+        addPostsToList(7, 6, 2);
+        addPostsToList(13, 5, 3);
+        addPostsToList(19, 5, 4);
+        addPostsToList(25, 6, 5);
+        when(postRepository.findAllByVerificationStatus(REJECTED)).thenReturn(posts);
+
+        postService.publishingUsersForBan();
+
+        verify(redisMessagePublisher, times(1)).publish(String.valueOf(1));
+        verify(redisMessagePublisher, times(1)).publish(String.valueOf(2));
+        verify(redisMessagePublisher, times(0)).publish(String.valueOf(3));
+        verify(redisMessagePublisher, times(0)).publish(String.valueOf(4));
+        verify(redisMessagePublisher, times(1)).publish(String.valueOf(5));
+    }
+
+    private void addPostsToList(long from, int quantity, long userId) {
+        LongStream.rangeClosed(from, from + quantity - 1)
+                .mapToObj(id -> Post.builder()
+                        .id(id)
+                        .authorId(userId)
+                        .verificationStatus(REJECTED)
+                        .build())
+                .forEach(posts::add);
     }
 }
