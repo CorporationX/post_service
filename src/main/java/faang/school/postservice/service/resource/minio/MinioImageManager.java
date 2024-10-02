@@ -76,32 +76,39 @@ public class MinioImageManager implements MinioManager {
     private ByteArrayInputStream compressFileStream(InputStream fileStream, String format) {
         try {
             BufferedImage image = ImageIO.read(fileStream);
-
             int width = image.getWidth();
             int height = image.getHeight();
 
-            if (width <= maxPixelSize && height <= maxPixelSize) {
-                ByteArrayOutputStream output = new ByteArrayOutputStream();
-                ImageIO.write(image, format, output);
-                return new ByteArrayInputStream(output.toByteArray());
+            if (!needsResizing(width, height, maxPixelSize)) {
+                return getByteArrayInputStream(format, image);
             }
 
-            double scaleFactor = width > height ?
-                    (double) maxPixelSize / width :
-                    (double) maxPixelSize / height;
-
+            double scaleFactor = calculateScaleFactor(width, height, maxPixelSize);
             int targetWidth = (int) (width * scaleFactor);
             int targetHeight = (int) (height * scaleFactor);
 
             BufferedImage compressedImage = compressImage(image, targetWidth, targetHeight);
-
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            ImageIO.write(compressedImage, format, output);
-            return new ByteArrayInputStream(output.toByteArray());
+            return getByteArrayInputStream(format, compressedImage);
 
         } catch (IOException exception) {
             throw new FileException("Error with image compressing");
         }
+    }
+
+    private boolean needsResizing(int width, int height, int maxPixelSize) {
+        return width > maxPixelSize || height > maxPixelSize;
+    }
+
+    private double calculateScaleFactor(int width, int height, int maxPixelSize) {
+        return width > height ?
+                (double) maxPixelSize / width :
+                (double) maxPixelSize / height;
+    }
+
+    private ByteArrayInputStream getByteArrayInputStream(String format, BufferedImage image) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        ImageIO.write(image, format, output);
+        return new ByteArrayInputStream(output.toByteArray());
     }
 
     private BufferedImage compressImage(BufferedImage image, int targetWidth, int targetHeight) {
