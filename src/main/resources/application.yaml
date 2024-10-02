@@ -19,6 +19,31 @@ spring:
       hibernate:
         format_sql: true
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      idempotence: true
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    topics:
+      like-post:
+        name: like-topic
+        partitions: 1
+        replication-factor: 1
+      comment:
+        name: comment-topic
+        partitions: 1
+        replication-factor: 1
+      post-views:
+        name: post-views-topic
+        partitions: 1
+        replication-factor: 1
+      post:
+        name: post-topic
+        partitions: 1
+        replication-factor: 1
+
+
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
