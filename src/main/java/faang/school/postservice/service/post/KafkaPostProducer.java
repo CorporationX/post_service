@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.model.kafka.KafkaPostEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -14,27 +15,27 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class KafkaPostProducer {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, KafkaPostEvent> kafkaTemplate;
     @Qualifier("post")
     private final NewTopic topicPost;
 
-    public KafkaPostProducer(KafkaTemplate<String, Object> kafkaTemplate,
+    public KafkaPostProducer(KafkaTemplate<String, KafkaPostEvent> kafkaTemplate,
                              @Qualifier("post") NewTopic topicPost) {
         this.kafkaTemplate = kafkaTemplate;
         this.topicPost = topicPost;
     }
 
-    public void sendMessage(String msg) {
+    public void sendMessage(KafkaPostEvent msg) {
         String postTopicName = topicPost.name();
         log.info("Sending message {} to topic {}.", msg, postTopicName);
         kafkaTemplate.send(postTopicName, msg);
         log.info("Message was sent.");
     }
 
-    public void sendMessage2(String message) {
+    public void sendMessage2(KafkaPostEvent message) {
         String postTopicName = topicPost.name();
         log.info("Sending message {} to topic {}.", message, topicPost);
-        CompletableFuture<SendResult<String, Object>> future
+        CompletableFuture<SendResult<String, KafkaPostEvent>> future
                 = kafkaTemplate.send(postTopicName, message);
         future.whenComplete((result, ex) -> {
             if (ex == null) {

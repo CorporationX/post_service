@@ -9,18 +9,20 @@ import faang.school.postservice.repository.redis.PostInRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+@Component
 @Slf4j
 @RequiredArgsConstructor
-@KafkaListener(topics = "likes", groupId = "${spring.kafka.consumer.group-id}")
 public class KafkaLikeConsumer {
 
     private final PostInRedisRepository redisPostRepository;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
 
+    @KafkaListener(topics = "likes", groupId = "${spring.kafka.consumer.group-id}")
     public void receiveLikeEvent(KafkaLikeEvent event) {
         long postId = event.getPostId();
         Optional<PostInRedis> postInRedis = redisPostRepository.findById(postId);

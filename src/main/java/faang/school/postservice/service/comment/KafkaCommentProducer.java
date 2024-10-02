@@ -14,11 +14,11 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class KafkaCommentProducer {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, KafkaCommentEvent> kafkaTemplate;
     @Qualifier("comment")
     private final NewTopic commentTopic;
 
-    public KafkaCommentProducer(KafkaTemplate<String, Object> kafkaTemplate,
+    public KafkaCommentProducer(KafkaTemplate<String, KafkaCommentEvent> kafkaTemplate,
                                 @Qualifier("comment") NewTopic commentTopic) {
         this.kafkaTemplate = kafkaTemplate;
         this.commentTopic = commentTopic;
@@ -27,7 +27,7 @@ public class KafkaCommentProducer {
     public void sendMessage(KafkaCommentEvent commentMessage) {
         String commentTopicName = commentTopic.name();
         log.info("Sending message {} to topic {}.", commentMessage, commentTopic);
-        CompletableFuture<SendResult<String, Object>> future
+        CompletableFuture<SendResult<String, KafkaCommentEvent>> future
                 = kafkaTemplate.send(commentTopicName, commentMessage);
         future.whenComplete((result, ex) -> {
             if (ex == null) {

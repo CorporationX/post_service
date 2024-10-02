@@ -1,5 +1,7 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.model.kafka.KafkaPostEvent;
+import faang.school.postservice.model.kafka.KafkaPostViewEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -13,11 +15,11 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class KafkaPostViewProducer {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, KafkaPostViewEvent> kafkaTemplate;
 
-    public void sendMessage(String topic,String message) {
+    public void sendMessage(String topic, KafkaPostViewEvent message) {
         log.info("Sending message {} to topic {}.", message, topic);
-        CompletableFuture<SendResult<String, Object>> future
+        CompletableFuture<SendResult<String, KafkaPostViewEvent>> future
                 = kafkaTemplate.send(topic, message);
         future.whenComplete((result, ex) -> {
             if (ex == null) {

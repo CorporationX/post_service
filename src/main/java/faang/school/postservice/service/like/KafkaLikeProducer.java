@@ -14,11 +14,11 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class KafkaLikeProducer {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, KafkaLikeEvent> kafkaTemplate;
     @Qualifier("like")
     private final NewTopic likeTopic;
 
-    public KafkaLikeProducer(KafkaTemplate<String, Object> kafkaTemplate,
+    public KafkaLikeProducer(KafkaTemplate<String, KafkaLikeEvent> kafkaTemplate,
                              @Qualifier("like") NewTopic likeTopic) {
         this.kafkaTemplate = kafkaTemplate;
         this.likeTopic = likeTopic;
@@ -26,7 +26,7 @@ public class KafkaLikeProducer {
 
     public void sendMessage(KafkaLikeEvent message) {
         log.info("Sending message {} to topic {}.", message, likeTopic.name());
-        CompletableFuture<SendResult<String, Object>> future
+        CompletableFuture<SendResult<String, KafkaLikeEvent>> future
                 = kafkaTemplate.send(likeTopic.name(), message);
         future.whenComplete((result, ex) -> {
             if (ex == null) {

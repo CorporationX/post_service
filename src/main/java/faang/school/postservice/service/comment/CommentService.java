@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @RequiredArgsConstructor
@@ -38,8 +39,11 @@ public class CommentService {
         post.getComments().add(saveComment);
         post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
-        kafkaCommentProducer.sendMessage(new KafkaCommentEvent(postId, commentDto.getAuthorId()));
-
+        kafkaCommentProducer.sendMessage(new KafkaCommentEvent(commentDto.getAuthorId(),
+                commentDto.getPostId(),
+                commentDto.getContent(),
+                commentDto.getCreatedAt(),
+                new AtomicLong(commentDto.getLikes().size())));
         return mapper.toDto(saveComment);
     }
 

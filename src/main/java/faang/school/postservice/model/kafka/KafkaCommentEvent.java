@@ -4,11 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Data
 @AllArgsConstructor
 public class KafkaCommentEvent implements Serializable {
 
+    private long authorId;
     private long postId;
-    private long commentAuthorId;
+    private String content;
+    private LocalDateTime createdAt;
+    private AtomicLong likesAmount;
 }

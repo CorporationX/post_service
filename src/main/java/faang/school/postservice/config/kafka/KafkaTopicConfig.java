@@ -17,12 +17,12 @@ public class KafkaTopicConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
 
-//    @Bean
-//    public KafkaAdmin kafkaAdmin() {
-//        Map<String, Object> config = new HashMap<>();
-//        config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
-//        return new KafkaAdmin(config);
-//    }
+    @Bean
+    public KafkaAdmin kafkaAdmin() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+        return new KafkaAdmin(config);
+    }
 
     @Bean
     public NewTopic post() {
@@ -36,7 +36,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic comment() {
-        return new NewTopic("likes", 1, (short) 1);
+        return new NewTopic("comments", 1, (short) 1);
     }
 
     @Bean
