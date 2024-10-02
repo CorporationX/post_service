@@ -9,7 +9,6 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -58,18 +57,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void validateUser(CommentDto commentDto) {
-        try {
-            UserDto user = userServiceClient.getUser(commentDto.getAuthorId());
-            if (user == null ) {
-                throw new IllegalStateException(String.format("User with id %s could not be retrieved (null returned)", commentDto.getAuthorId()));
-            }
-        } catch (FeignException e) {
-            switch (e.status()) {
-                case 404:
-                    throw new EntityNotFoundException(String.format("User with id %s does not exist", commentDto.getAuthorId()));
-                case 400:
-                    throw new IllegalArgumentException(String.format("Bad request: %s", e.getMessage()));
-            }
+        UserDto user = userServiceClient.getUser(commentDto.getAuthorId());
+        if (user == null) {
+            throw new IllegalStateException(String.format("User with id %s could not be retrieved (null returned)", commentDto.getAuthorId()));
         }
     }
 }

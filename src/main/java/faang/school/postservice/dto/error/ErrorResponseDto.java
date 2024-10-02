@@ -11,7 +11,7 @@ import java.util.Map;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class ErrorResponseDto {
-    private final ErrorType error;
+    private final String error;
     private final String message;
     private final int status;
     private final String path;
