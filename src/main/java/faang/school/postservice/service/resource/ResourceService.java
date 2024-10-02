@@ -26,13 +26,7 @@ public class ResourceService {
     private final MinioImageManager minioImageManager;
     private final MinioAudioManager minioAudioManager;
     private final MinioVideoManager minioVideoManager;
-
-    @Value("${resources.image.allowed-types}")
-    private List<String> allowedImageTypes;
-    @Value("${resources.audio.allowed-types}")
-    private List<String> allowedAudioTypes;
-    @Value("${resources.video.allowed-types}")
-    private List<String> allowedVideoTypes;
+    private final MimeConverter mimeConverter;
 
     @Value("${resources.image.max-size}")
     private long maxImageSize;
@@ -55,7 +49,7 @@ public class ResourceService {
         validateFileAmount(file, post);
 
         String mimeType = file.getContentType();
-        ResourceType type = mimeToResType(mimeType);
+        ResourceType type = mimeConverter.getType(mimeType);
         Resource resource = switch (type) {
             case IMAGE -> minioImageManager.addFileToStorage(file, post);
             case AUDIO -> minioAudioManager.addFileToStorage(file, post);
@@ -105,7 +99,7 @@ public class ResourceService {
 
     private void validateFileAmount(MultipartFile file, Post post) {
         String mimeType = file.getContentType();
-        ResourceType type = mimeToResType(mimeType);
+        ResourceType type = mimeConverter.getType(mimeType);
         List<Resource> resources = post.getResources();
 
         switch (type) {
@@ -117,7 +111,7 @@ public class ResourceService {
 
     private void validateFile(MultipartFile file) {
         String mimeType = file.getContentType();
-        ResourceType type = mimeToResType(mimeType);
+        ResourceType type = mimeConverter.getType(mimeType);
 
         switch (type) {
             case IMAGE -> validateSize(file, maxImageSize);
@@ -142,19 +136,5 @@ public class ResourceService {
                     + ". Exceeded size of " + maxSize + " byte");
         }
     }
-
-    private ResourceType mimeToResType(String mimeType) {
-        if (allowedImageTypes.contains(mimeType)) {
-            return ResourceType.IMAGE;
-
-        } else if (allowedAudioTypes.contains(mimeType)) {
-            return ResourceType.AUDIO;
-
-        } else if (allowedVideoTypes.contains(mimeType)) {
-            return ResourceType.VIDEO;
-
-        } else {
-            throw new FileException("Unsupported file format");
-        }
-    }
 }
+
