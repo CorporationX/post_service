@@ -76,7 +76,7 @@ public class CommentServiceTest {
         when(postRepository.findById(postId)).thenReturn(Optional.ofNullable(post));
         when(userServiceClient.getUser(commentDto.getAuthorId())).thenThrow(
                 new FeignException.NotFound("", request, new byte[0], null));
-        assertThrows(EntityNotFoundException.class,
+        assertThrows(FeignException.NotFound.class,
                 () -> commentService.createComment(postId, commentDto));
         verify(commentRepository, never()).save(any(Comment.class));
     }
