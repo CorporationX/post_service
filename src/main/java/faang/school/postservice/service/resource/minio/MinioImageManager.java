@@ -1,4 +1,4 @@
-package faang.school.postservice.service.resource.s3;
+package faang.school.postservice.service.resource.minio;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -24,7 +24,7 @@ import static java.lang.String.format;
 
 @Component
 @RequiredArgsConstructor
-public class S3ImageManager {
+public class MinioImageManager implements MinioManager {
     private final AmazonS3 s3client;
 
     @Value("${services.s3.bucketName}")
@@ -33,6 +33,7 @@ public class S3ImageManager {
     @Value("${resources.image.max-pixel-size}")
     private int maxPixelSize;
 
+    @Override
     public Resource addFileToStorage(MultipartFile file, Post post) {
         String type = file.getContentType();
         String name = file.getOriginalFilename();
@@ -61,11 +62,13 @@ public class S3ImageManager {
         }
     }
 
+    @Override
     public Resource updateFileInStorage(String key, MultipartFile newFile, Post post) {
         s3client.deleteObject(bucketName, key);
         return addFileToStorage(newFile, post);
     }
 
+    @Override
     public void removeFileInStorage(String key) {
         s3client.deleteObject(bucketName, key);
     }

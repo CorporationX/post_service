@@ -1,4 +1,4 @@
-package faang.school.postservice.service.resource.s3;
+package faang.school.postservice.service.resource.minio;
 
 import com.amazonaws.services.s3.AmazonS3;
 import faang.school.postservice.model.Post;
@@ -26,9 +26,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class S3ImageManagerTest {
+public class MinioImageManagerTest {
     AmazonS3 s3client = mock(AmazonS3.class);
-    S3ImageManager s3ImageManager = new S3ImageManager(s3client);
+    MinioImageManager minioImageManager = new MinioImageManager(s3client);
 
     MultipartFile file = mock(MultipartFile.class);
     Post post;
@@ -41,13 +41,13 @@ public class S3ImageManagerTest {
     @BeforeEach
     public void setUp() throws FileNotFoundException {
         bucketName = "test_bucket";
-        ReflectionTestUtils.setField(s3ImageManager, "bucketName", bucketName);
+        ReflectionTestUtils.setField(minioImageManager, "bucketName", bucketName);
 
         post = new Post();
         post.setId(1L);
         fileName = "image.jpg";
         contentType = "image/jpeg";
-        File imageFile = new File("src/test/java/faang/school/postservice/service/resource/s3/test_image.jpg");
+        File imageFile = new File("src/main/resources/test/test_image.jpg");
         inputStream = new FileInputStream(imageFile);
         key = "key";
     }
@@ -59,7 +59,7 @@ public class S3ImageManagerTest {
         when(file.getOriginalFilename()).thenReturn(fileName);
         when(file.getInputStream()).thenReturn(inputStream);
 
-        Resource resource = s3ImageManager.addFileToStorage(file, post);
+        Resource resource = minioImageManager.addFileToStorage(file, post);
 
         assertNotNull(resource);
         assertEquals(fileName, resource.getName());
@@ -76,7 +76,7 @@ public class S3ImageManagerTest {
         when(file.getOriginalFilename()).thenReturn(fileName);
         when(file.getInputStream()).thenReturn(inputStream);
 
-        Resource resource = s3ImageManager.updateFileInStorage(key, file, post);
+        Resource resource = minioImageManager.updateFileInStorage(key, file, post);
 
         assertNotNull(resource);
         assertEquals(fileName, resource.getName());
@@ -89,7 +89,7 @@ public class S3ImageManagerTest {
     @Test
     @DisplayName("testRemoveFileInStorage")
     public void testRemoveFileInStorage() throws IOException {
-        s3ImageManager.removeFileInStorage(key);
+        minioImageManager.removeFileInStorage(key);
         verify(s3client, times(1)).deleteObject(bucketName, key);
 
         inputStream.close();

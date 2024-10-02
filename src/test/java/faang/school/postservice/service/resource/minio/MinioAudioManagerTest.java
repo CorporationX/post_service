@@ -1,4 +1,4 @@
-package faang.school.postservice.service.resource.s3;
+package faang.school.postservice.service.resource.minio;
 
 import com.amazonaws.services.s3.AmazonS3;
 import faang.school.postservice.model.Post;
@@ -21,9 +21,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 
-public class S3AudioManagerTest {
+public class MinioAudioManagerTest {
     AmazonS3 s3client = mock(AmazonS3.class);
-    S3AudioManager s3AudioManager = new S3AudioManager(s3client);
+    MinioAudioManager minioAudioManager = new MinioAudioManager(s3client);
 
     MultipartFile file = mock(MultipartFile.class);
     Post post;
@@ -36,7 +36,7 @@ public class S3AudioManagerTest {
     @BeforeEach
     public void setUp() {
         bucketName = "test_bucket";
-        ReflectionTestUtils.setField(s3AudioManager, "bucketName", bucketName);
+        ReflectionTestUtils.setField(minioAudioManager, "bucketName", bucketName);
 
         post = new Post();
         post.setId(1L);
@@ -53,7 +53,7 @@ public class S3AudioManagerTest {
         when(file.getOriginalFilename()).thenReturn(fileName);
         when(file.getSize()).thenReturn((long) inputStream.available());
 
-        Resource resource = s3AudioManager.addFileToStorage(file, post);
+        Resource resource = minioAudioManager.addFileToStorage(file, post);
 
         assertNotNull(resource);
         assertEquals(fileName, resource.getName());
@@ -70,7 +70,7 @@ public class S3AudioManagerTest {
         when(file.getOriginalFilename()).thenReturn(fileName);
         when(file.getSize()).thenReturn((long) inputStream.available());
 
-        Resource resource = s3AudioManager.updateFileInStorage(key, file, post);
+        Resource resource = minioAudioManager.updateFileInStorage(key, file, post);
 
         assertNotNull(resource);
         assertEquals(fileName, resource.getName());
@@ -83,7 +83,7 @@ public class S3AudioManagerTest {
     @Test
     @DisplayName("testRemoveFileInStorage")
     public void testRemoveFileInStorage() throws IOException {
-        s3AudioManager.removeFileInStorage(key);
+        minioAudioManager.removeFileInStorage(key);
         verify(s3client, times(1)).deleteObject(bucketName, key);
 
         inputStream.close();

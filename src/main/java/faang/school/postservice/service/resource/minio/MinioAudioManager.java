@@ -1,4 +1,4 @@
-package faang.school.postservice.service.resource.s3;
+package faang.school.postservice.service.resource.minio;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -18,18 +18,19 @@ import static java.lang.String.format;
 
 @Component
 @RequiredArgsConstructor
-public class S3AudioManager {
+public class MinioAudioManager implements MinioManager {
     private final AmazonS3 s3client;
 
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
+    @Override
     public Resource addFileToStorage(MultipartFile file, Post post) {
         String type = file.getContentType();
         String name = file.getOriginalFilename();
         long fileSize = file.getSize();
 
-        try (InputStream fileStream = file.getInputStream()) {;
+        try (InputStream fileStream = file.getInputStream()) {
 
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(type);
@@ -52,11 +53,13 @@ public class S3AudioManager {
         }
     }
 
+    @Override
     public Resource updateFileInStorage(String key, MultipartFile newFile, Post post) {
         s3client.deleteObject(bucketName, key);
         return addFileToStorage(newFile, post);
     }
 
+    @Override
     public void removeFileInStorage(String key) {
         s3client.deleteObject(bucketName, key);
     }

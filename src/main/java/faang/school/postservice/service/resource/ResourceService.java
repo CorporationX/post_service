@@ -6,9 +6,9 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.ResourceType;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.resource.s3.S3AudioManager;
-import faang.school.postservice.service.resource.s3.S3ImageManager;
-import faang.school.postservice.service.resource.s3.S3VideoManager;
+import faang.school.postservice.service.resource.minio.MinioAudioManager;
+import faang.school.postservice.service.resource.minio.MinioImageManager;
+import faang.school.postservice.service.resource.minio.MinioVideoManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,9 +23,9 @@ public class ResourceService {
 
     private final ResourceRepository resourceRepository;
     private final PostRepository postRepository;
-    private final S3ImageManager s3ImageManager;
-    private final S3AudioManager s3AudioManager;
-    private final S3VideoManager s3VideoManager;
+    private final MinioImageManager minioImageManager;
+    private final MinioAudioManager minioAudioManager;
+    private final MinioVideoManager minioVideoManager;
 
     @Value("${resources.image.allowed-types}")
     private List<String> allowedImageTypes;
@@ -57,9 +57,9 @@ public class ResourceService {
         String mimeType = file.getContentType();
         ResourceType type = mimeToResType(mimeType);
         Resource resource = switch (type) {
-            case IMAGE -> s3ImageManager.addFileToStorage(file, post);
-            case AUDIO -> s3AudioManager.addFileToStorage(file, post);
-            case VIDEO -> s3VideoManager.addFileToStorage(file, post);
+            case IMAGE -> minioImageManager.addFileToStorage(file, post);
+            case AUDIO -> minioAudioManager.addFileToStorage(file, post);
+            case VIDEO -> minioVideoManager.addFileToStorage(file, post);
         };
 
         return resourceRepository.save(resource);
@@ -76,9 +76,9 @@ public class ResourceService {
 
         String key = oldResource.getKey();
         Resource newResource = switch (oldResource.getType()) {
-            case IMAGE -> s3ImageManager.updateFileInStorage(key, file, post);
-            case AUDIO -> s3AudioManager.updateFileInStorage(key, file, post);
-            case VIDEO -> s3VideoManager.updateFileInStorage(key, file, post);
+            case IMAGE -> minioImageManager.updateFileInStorage(key, file, post);
+            case AUDIO -> minioAudioManager.updateFileInStorage(key, file, post);
+            case VIDEO -> minioVideoManager.updateFileInStorage(key, file, post);
         };
         newResource.setId(resourceId);
 
@@ -95,9 +95,9 @@ public class ResourceService {
 
         String key = resource.getKey();
         switch (resource.getType()) {
-            case IMAGE -> s3ImageManager.removeFileInStorage(key);
-            case AUDIO -> s3AudioManager.removeFileInStorage(key);
-            case VIDEO -> s3VideoManager.removeFileInStorage(key);
+            case IMAGE -> minioImageManager.removeFileInStorage(key);
+            case AUDIO -> minioAudioManager.removeFileInStorage(key);
+            case VIDEO -> minioVideoManager.removeFileInStorage(key);
         }
 
         resourceRepository.deleteById(resourceId);
