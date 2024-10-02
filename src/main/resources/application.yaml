@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: classpath:application-minio.yaml
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -54,26 +57,3 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
-
-services:
-  s3:
-    endpoint: http://127.0.0.1:9000
-    accessKey: user
-    secretKey: password
-    bucketName: corpbucket
-    region: us-east-1
-
-resources:
-  image:
-    allowed-types: image/jpeg, image/png, image/webp
-    max-size: 5242880
-    max-in-post: 10
-    max-pixel-size: 1080
-  audio:
-    allowed-types: audio/mpeg, audio/wav, audio/aac
-    max-size: 10485760
-    max-in-post: 10
-  video:
-    allowed-types: video/mpeg, video/mp4, video/x-msvideo, video/avi, video/h264, video/h265
-    max-size: 52428800
-    max-in-post: 10

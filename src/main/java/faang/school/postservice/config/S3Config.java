@@ -1,4 +1,4 @@
-package faang.school.postservice.config.context;
+package faang.school.postservice.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -12,16 +12,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class S3Config {
 
-    @Value("${services.s3.endpoint}")
+    @Value("${s3.endpoint}")
     private String endpoint;
 
-    @Value("${services.s3.region}")
+    @Value("${s3.region}")
     private String region;
 
-    @Value("${services.s3.accessKey}")
+    @Value("${s3.accessKey}")
     private String accessKey;
 
-    @Value("${services.s3.secretKey}")
+    @Value("${s3.secretKey}")
     private String secretKey;
 
     @Bean

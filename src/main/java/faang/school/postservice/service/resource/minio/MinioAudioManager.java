@@ -21,7 +21,7 @@ import static java.lang.String.format;
 public class MinioAudioManager implements MinioManager {
     private final AmazonS3 s3client;
 
-    @Value("${services.s3.bucketName}")
+    @Value("${s3.bucketName}")
     private String bucketName;
 
     @Override
