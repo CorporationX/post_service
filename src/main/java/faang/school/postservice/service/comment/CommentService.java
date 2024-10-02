@@ -1,8 +1,10 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.kafka.CommentKafkaProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final ModerationDictionary moderationDictionary;
     private final ExecutorService moderationExecutor;
+    private final CommentKafkaProducer commentKafkaProducer;
 
     @Value("${comment.batchSize}")
     private int batchSize;
@@ -35,19 +38,29 @@ public class CommentService {
             CommentMapper commentMapper,
             CommentValidator commentValidator,
             ModerationDictionary moderationDictionary,
-            @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor
+            @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor,
+            CommentKafkaProducer commentKafkaProducer
     ) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
         this.commentValidator = commentValidator;
         this.moderationDictionary = moderationDictionary;
         this.moderationExecutor = moderationExecutor;
+        this.commentKafkaProducer = commentKafkaProducer;
     }
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         commentValidator.findPostById(postId);
         Comment savedComment = commentRepository.save(commentMapper.toEntity(commentDto));
+
+        CommentEvent commentEvent = CommentEvent.builder()
+                .commentId(savedComment.getId())
+                .authorId(savedComment.getAuthorId())
+                .postId(postId)
+                .build();
+        commentKafkaProducer.send(commentEvent);
+
         return commentMapper.toDto(savedComment);
     }
 
@@ -83,7 +96,7 @@ public class CommentService {
 
         List<CompletableFuture<Void>> futures = partitions.stream()
                 .map(this::moderatePartition)
-                .collect(Collectors.toList());
+                .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }

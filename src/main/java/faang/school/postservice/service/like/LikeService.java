@@ -2,7 +2,7 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.publishable.LikeEvent;
+import faang.school.postservice.event.LikePostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -11,7 +11,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.publisher.LikeEventPublisher;
+import faang.school.postservice.producer.redis.LikeRedisProducer;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +31,10 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final LikeValidator likeValidator;
     private final UserServiceClient userServiceClient;
-    private final LikeEventPublisher eventPublisher;
+    private final LikeRedisProducer likePostProducer;
     @Value("${like.userBatchSize}")
     private int userBatchSize;
-  
+
     public void likePost(LikeDto likeDto) {
         likeValidator.validateUser(likeDto.getUserId());
 
@@ -49,8 +49,8 @@ public class LikeService {
         like.setPost(post);
         likeRepository.save(like);
 
-        LikeEvent event = new LikeEvent(like.getUserId(), post.getAuthorId(), post.getId());
-        eventPublisher.publish(event);
+        LikePostEvent event = new LikePostEvent(like.getUserId(), post.getAuthorId(), post.getId());
+        likePostProducer.send(event);
     }
 
     public void unlikePost(LikeDto likeDto) {
@@ -81,7 +81,7 @@ public class LikeService {
         likeValidator.validateUser(likeDto.getUserId());
 
         Like like = likeRepository.findByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId())
-                .orElseThrow(()->new IllegalArgumentException("Лайк не найден"));
+                .orElseThrow(() -> new IllegalArgumentException("Лайк не найден"));
         likeRepository.delete(like);
     }
 

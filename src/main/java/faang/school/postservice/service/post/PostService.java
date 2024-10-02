@@ -2,21 +2,23 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.GetPostsDto;
 import faang.school.postservice.dto.post.UpdatablePostDto;
-import faang.school.postservice.dto.publishable.PostEvent;
+import faang.school.postservice.event.PostEvent;
 import faang.school.postservice.dto.resource.PreviewPostResourceDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.post.DraftPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.UpdatableResourceDto;
+import faang.school.postservice.event.PostViewEvent;
 import faang.school.postservice.exception.messages.ValidationExceptionMessage;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.exception.validation.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.post.ResourceMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.PostProducer;
+import faang.school.postservice.producer.kafka.PostViewKafkaProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
-import faang.school.postservice.service.publisher.PostEventPublisher;
 import faang.school.postservice.validator.post.PostServiceValidator;
 import faang.school.postservice.service.resource.ResourceService;
 import jakarta.validation.constraints.NotNull;
@@ -45,7 +47,9 @@ public class PostService {
     private final ResourceMapper resourceMapper;
 
     private final PostServiceValidator validator;
-    private final PostEventPublisher postEventPublisher;
+
+    private final PostProducer postProducer;
+    private final PostViewKafkaProducer postViewKafkaProducer;
 
     @Transactional
     public PostDto createPostDraft(DraftPostDto draft) {
@@ -84,8 +88,10 @@ public class PostService {
 
         Post savedPost = postRepository.save(post);
 
-        PostEvent postEvent = new PostEvent(post.getAuthorId(), postId);
-        postEventPublisher.publish(postEvent);
+        boolean isAuthorsPost = post.getAuthorId() != null;
+        if (isAuthorsPost) {
+            postProducer.send(new PostEvent(post.getAuthorId(), postId));
+        }
 
         return postMapper.toDto(savedPost);
     }
@@ -158,6 +164,12 @@ public class PostService {
         validator.verifyPostDeletion(post);
 
         return postMapper.toDto(post);
+    }
+
+    public void markPostAsViewed(long postId, long viewerID) {
+        postViewKafkaProducer.send(
+                new PostViewEvent(postId, viewerID)
+        );
     }
 
     @Transactional(readOnly = true)
