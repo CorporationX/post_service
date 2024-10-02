@@ -5,8 +5,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.kafka.CommentKafkaProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,8 +35,12 @@ public class CommentServiceTest {
     @Mock
     private CommentValidator commentValidator;
 
+    @Mock
+    private CommentKafkaProducer commentKafkaProducer;
+
     @InjectMocks
     private CommentService commentService;
+
 
     private CommentDto commentDto;
     private Comment comment;
@@ -66,6 +72,13 @@ public class CommentServiceTest {
 
         assertNotNull(result);
         assertEquals("Test content", result.getContent());
+        verify(commentKafkaProducer, times(1)).send(
+                CommentEvent.builder()
+                        .commentId(commentDto.getId())
+                        .authorId(commentDto.getAuthorId())
+                        .postId(1L)
+                        .build()
+        );
         verify(commentValidator, times(1)).findPostById(1L);
         verify(commentRepository, times(1)).save(any(Comment.class));
     }
