@@ -1,21 +1,20 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.exception.ResourceNotFoundException;
-import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
-import faang.school.postservice.exception.post.image.DownloadImageToPostException;
+import faang.school.postservice.exception.post.image.DownloadImageFromPostException;
 import faang.school.postservice.exception.post.image.UploadImageToPostException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.aws.s3.S3Service;
-import faang.school.postservice.utils.ImageProcessingUtils;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,16 +27,12 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static faang.school.postservice.utils.ImageRestrictionRule.POST_IMAGES;
-import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
-    @Value("${post.images.max-to-upload}")
-    private int imagesMaxNumber;
-
-    @Value("${post.images.bucket.name-prfix}")
+    @Value("${post.images.bucket.name-prefix}")
     private String bucketNamePrefix;
 
     private final PostRepository postRepository;
@@ -131,7 +126,7 @@ public class PostService {
     @Transactional
     public void uploadImages(Long postId, List<MultipartFile> images) {
         log.info("Upload images to post {}", postId);
-        validateImagesToUpload(postId, images);
+        postValidator.validateImagesToUpload(postId, images);
 
         List<Resource> resourcesToSave = new ArrayList<>();
 
@@ -153,55 +148,18 @@ public class PostService {
         log.info("Images successfully uploaded to post {}", postId);
     }
 
-    private void validateImagesToUpload(Long postId, List<MultipartFile> images) {
-        if (isEmpty(images)) {
-            throw new ValidationException("List of images to upload to post %s cannot be null or empty", postId);
-        }
-
-        if (images.size() > imagesMaxNumber) {
-            throw new ValidationException("Max number of images to upload to post is %s", imagesMaxNumber);
-        }
-
-        List<Resource> existedImages = resourceRepository.findAllByPostId(postId);
-        if (existedImages.size() + images.size() > imagesMaxNumber) {
-            throw new ValidationException("Post %s already has %s images. You cannot add %s more. Max size is %s",
-                    postId, existedImages.size(), images.size(), imagesMaxNumber);
-        }
-
-        images.forEach(image -> validateImageToUpload(postId, image));
-    }
-
-    private void validateImageToUpload(Long postId, MultipartFile image) {
-        String imageName = image.getOriginalFilename();
-        if (image.getSize() > POST_IMAGES.getMaxSize()) {
-            throw new ValidationException("You cannot upload file %s to post %s with size %s. Max size is %s",
-                    imageName, postId, image.getSize(), POST_IMAGES.getMaxSize());
-        }
-
-        String contentType = image.getContentType();
-        if (contentType == null) {
-            throw new ValidationException("You cannot upload file %s to post %s without contentType.", imageName, postId);
-        }
-
-        List<String> availableImageTypes = ImageProcessingUtils.getAvailableImageTypes();
-        if (availableImageTypes.stream().noneMatch(type -> type.equals(contentType))) {
-            throw new ValidationException("You cannot upload file %s to post %s with %s contentType", imageName, postId, contentType);
-        }
-    }
-
     @Transactional(readOnly = true)
     public Resource findResourceById(Long resourceId) {
         return resourceRepository.findById(resourceId).orElseThrow(() -> new ResourceNotFoundException(resourceId));
     }
 
-    public byte[] downloadImage(Resource resource) {
+    public org.springframework.core.io.Resource downloadImage(Resource resource) {
         log.info("Download image {}", resource.getId());
-        try {
-            InputStream inputStream = s3Service.downloadFile(resource.getKey());
-            return inputStream.readAllBytes();
+        try (InputStream inputStream = s3Service.downloadFile(resource.getKey())) {
+            return new InputStreamResource(inputStream);
         } catch (Exception e) {
             log.error("Failed to download image {}", resource.getId(), e);
-            throw new DownloadImageToPostException(resource.getId());
+            throw new DownloadImageFromPostException(resource.getId());
         }
     }
 

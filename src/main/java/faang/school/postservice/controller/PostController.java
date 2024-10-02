@@ -11,7 +11,6 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -89,14 +88,13 @@ public class PostController {
     }
 
     @GetMapping("/image/{resourceId}")
-    public ResponseEntity<byte[]> downloadImage(@PathVariable Long resourceId) {
+    public ResponseEntity<org.springframework.core.io.Resource> downloadImage(@PathVariable Long resourceId) {
         Resource foundResource = postService.findResourceById(resourceId);
-        byte[] imageBytes = postService.downloadImage(foundResource);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.parseMediaType(foundResource.getType()));
-
-        return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        org.springframework.core.io.Resource imageResource = postService.downloadImage(foundResource);
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.parseMediaType(foundResource.getType()))
+                .body(imageResource);
     }
 
     @DeleteMapping("/images")

@@ -43,7 +43,7 @@ post:
     max-to-upload: 10
     max-size: 5242880
     bucket:
-      name-prfix: posts/post_
+      name-prefix: posts/post_
 
 client:
   s3:
