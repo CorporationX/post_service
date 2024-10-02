@@ -3,15 +3,16 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.data.TestData;
 import faang.school.postservice.dto.post.*;
 import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.event.PostEvent;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.mapper.post.*;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.PostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
-import faang.school.postservice.service.publisher.PostEventPublisher;
+import faang.school.postservice.producer.redis.PostRedisProducer;
 import faang.school.postservice.validator.post.PostServiceValidator;
 import faang.school.postservice.service.resource.ResourceService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -53,7 +54,7 @@ public class PostServiceTest {
     @Mock
     private PostServiceValidator postServiceValidator;
     @Mock
-    private PostEventPublisher postEventPublisher;
+    private PostProducer postProducer;
 
     @InjectMocks
     private PostService postService;
@@ -243,20 +244,20 @@ public class PostServiceTest {
 
         when(postRepository.save(
                 argThat(o ->
-                        o.getId() == saved.getId() &&
-                                Objects.equals(o.getContent(), saved.getContent()) &&
-                                Objects.equals(o.getAuthorId(), saved.getAuthorId()) &&
-                                Objects.equals(o.getProjectId(), saved.getProjectId()) &&
-                                Objects.equals(o.getLikes(), saved.getLikes()) &&
-                                Objects.equals(o.getComments(), saved.getComments()) &&
-                                Objects.equals(o.getAlbums(), saved.getAlbums()) &&
-                                Objects.equals(o.getAd(), saved.getAd()) &&
+                                o.getId() == saved.getId() &&
+                                        Objects.equals(o.getContent(), saved.getContent()) &&
+                                        Objects.equals(o.getAuthorId(), saved.getAuthorId()) &&
+                                        Objects.equals(o.getProjectId(), saved.getProjectId()) &&
+                                        Objects.equals(o.getLikes(), saved.getLikes()) &&
+                                        Objects.equals(o.getComments(), saved.getComments()) &&
+                                        Objects.equals(o.getAlbums(), saved.getAlbums()) &&
+                                        Objects.equals(o.getAd(), saved.getAd()) &&
 //                                Objects.equals(o.getResources(), saved.getResources()) &&
-                                o.isPublished() == saved.isPublished() &&
-                                Objects.equals(o.getPublishedAt(), saved.getPublishedAt()) &&
-                                Objects.equals(o.getScheduledAt(), saved.getScheduledAt()) &&
-                                o.isDeleted() == saved.isDeleted() &&
-                                Objects.equals(o.getCreatedAt(), saved.getCreatedAt())
+                                        o.isPublished() == saved.isPublished() &&
+                                        Objects.equals(o.getPublishedAt(), saved.getPublishedAt()) &&
+                                        Objects.equals(o.getScheduledAt(), saved.getScheduledAt()) &&
+                                        o.isDeleted() == saved.isDeleted() &&
+                                        Objects.equals(o.getCreatedAt(), saved.getCreatedAt())
                 )
         )).thenReturn(p.savedUpdatedPost);
     }
@@ -512,6 +513,11 @@ public class PostServiceTest {
                 .build();
 
         var actualPublishedPost = postService.publishPost(TestData.storedPostWithTextFile.getId());
+
+        verify(postProducer, times(1)).send(new PostEvent(
+                expectedPublishedPost.getAuthorId(),
+                expectedPublishedPost.getId()
+        ));
 
         assertEquals(expectedPublishedPost, actualPublishedPost);
     }

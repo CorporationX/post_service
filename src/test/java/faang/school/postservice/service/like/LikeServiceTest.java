@@ -4,6 +4,7 @@ package faang.school.postservice.service.like;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.LikePostEvent;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -11,7 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.publisher.LikeEventPublisher;
+import faang.school.postservice.producer.redis.LikeRedisProducer;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.Assert;
@@ -52,7 +53,7 @@ class LikeServiceTest {
     @Mock
     private LikeValidator likeValidator;
     @Mock
-    private LikeEventPublisher eventPublisher;
+    private LikeRedisProducer likePostProducer;
 
     LikeDto likeDto;
     private Post post;
@@ -116,6 +117,13 @@ class LikeServiceTest {
         likeService.likePost(likeDto);
 
         verify(likeRepository).save(like);
+        verify(likePostProducer, times(1))
+                .send(LikePostEvent.builder()
+                        .postId(100L)
+                        .receiverId(10L)
+                        .actorId(likeDto.getUserId())
+                        .build()
+                );
     }
 
     @Test
