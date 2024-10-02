@@ -1,10 +1,13 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.mapper.ResourceMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ResourceEntity;
 import faang.school.postservice.model.ResourceType;
+import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.resource.ResourceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,9 +29,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 public class PostControllerTest {
 
+    private final PostService postService = Mockito.mock(PostService.class);
+    private final PostMapper postMapper = new PostMapperImpl();
     private final ResourceService resourceService = Mockito.mock(ResourceService.class);
     private final ResourceMapper resourceMapper = new ResourceMapperImpl();
-    private final PostController postController = new PostController(resourceService, resourceMapper);
+
+    private final PostController postController =
+            new PostController(postService, postMapper, resourceService, resourceMapper);
 
     private MockMvc mockMvc;
     private MockMultipartFile mockFile;
