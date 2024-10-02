@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +34,7 @@ public class CommentService {
 
     public CommentDto createComment(long postId, CreateCommentRequest createCommentRequest) {
         userServiceClient.getUser(createCommentRequest.getAuthorId());
-        log.info("[{}] Validation successful for postId: {}, CommentDto: {}", "createComment", postId, createCommentRequest);
+        log.info("[{}] Validation successful for postId: {}, createCommentRequest: {}", "createComment", postId, createCommentRequest);
 
         Comment comment = commentMapper.toComment(createCommentRequest);
         log.info(" [{}] Mapping of CommentDto to Comment entity successful for postId: {}, " +
@@ -73,6 +74,11 @@ public class CommentService {
 
     public List<CommentDto> getAllComments(long postId) {
         List<Comment> comments = commentRepository.findAllByPostId(postId);
+
+        if (comments.isEmpty()) {
+            throw new NoSuchElementException("List of comments is Empty");
+        }
+
         comments.sort(Comparator.comparing(Comment::getCreatedAt).reversed());
         log.info("[{}] we have successfully read the list of comments:/n {}  " +
                 "from the database and sorted the list.", "getAllComments", comments);
