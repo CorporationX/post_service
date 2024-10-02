@@ -63,3 +63,7 @@ app:
         compare_tags:
           max_attempts: 3
           delay: 50
+
+springdoc:
+  api-docs:
+    path: /api-docs

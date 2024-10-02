@@ -23,6 +23,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
@@ -68,11 +69,19 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
 }
 
+val jacocoInclude = listOf(
+    "**/postservice/service/**",
+    "**/postservice/validator/**",
+    "**/postservice/filter/**",
+    "**/postservice/controller/**"
+)
+
 jacoco {
     toolVersion = "0.8.7"
 }
 
 tasks.test {
+    useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport)
 }
 
@@ -84,16 +93,75 @@ tasks.jacocoTestReport {
     }
     classDirectories.setFrom(
         fileTree(project.buildDir) {
-            include("**/post_service/service/**",
-                "**/post_service/validator/**",
-                "**/post_service/filter/**",
-                "**/post_service/controller/**")
+            include(jacocoInclude)
         }
     )
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.test)
+    violationRules {
+        rule {
+            element = "BUNDLE"
+            enabled = true
+            includes = jacocoInclude
+
+            limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                minimum = "0.80".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.register("checkTotalCoverage") {
+    dependsOn(tasks.jacocoTestReport)
+    doLast {
+        val reportFile = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+        val rule = tasks.jacocoTestCoverageVerification.get()
+            .violationRules
+            .rules.first()
+            .limits.first()
+
+        if (reportFile.exists()) {
+            val minCoverage = rule.minimum?.toFloat()!!
+            val counter = rule.counter
+
+            val reportContent = reportFile.readText()
+            val regex = Regex("""<counter type="$counter" missed="(\d+)" covered="(\d+)"""")
+            val matches = regex.findAll(reportContent)
+
+            var totalCovered = 0
+            var totalMissed = 0
+
+            for (match in matches) {
+                val missed = match.groups[1]?.value?.toIntOrNull() ?: 0
+                val covered = match.groups[2]?.value?.toIntOrNull() ?: 0
+
+                totalMissed += missed
+                totalCovered += covered
+            }
+
+            val total = totalCovered + totalMissed
+            val coveragePercentage = (totalCovered.toFloat() / total.toFloat())
+
+            println("Total test coverage: ${coveragePercentage * 100}%")
+            if (coveragePercentage < minCoverage) {
+                logger.warn("Warning: Total test coverage is below ${minCoverage * 100}%.")
+            }
+        } else {
+            logger.error("Coverage report not found.")
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestCoverageVerification)
+}
+
+tasks.build {
+    finalizedBy("checkTotalCoverage")
 }
 
 tasks.withType<Test> {
