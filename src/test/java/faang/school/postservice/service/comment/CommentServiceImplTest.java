@@ -5,6 +5,7 @@ import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,16 +14,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceImplTest {
@@ -35,6 +39,9 @@ class CommentServiceImplTest {
 
     @Mock
     private CommentValidator commentValidator;
+
+    @Mock
+    private ModerationDictionary dictionary;
 
     @InjectMocks
     private CommentServiceImpl commentService;
@@ -68,7 +75,11 @@ class CommentServiceImplTest {
                 .content("This is a comment")
                 .post(post)
                 .authorId(1L)
+                .verified(null)
+                .verifiedDate(null)
                 .build();
+
+        ReflectionTestUtils.setField(commentService, "batchSize", 1);
     }
 
     @Test
@@ -122,5 +133,26 @@ class CommentServiceImplTest {
         commentService.delete(1L);
         // then
         verify(commentRepository).deleteById(1L);
+    }
+
+    @Test
+    void testModerateComments() {
+        Comment badComment = Comment.builder()
+                .content("I have seen babushka")
+                .verified(null)
+                .verifiedDate(null)
+                .build();
+        List<Comment> comments = List.of(comment, badComment);
+
+        when(commentRepository.findAllByVerifiedDateIsNull()).thenReturn(comments);
+        when(dictionary.containsBadWords(comments.get(0).getContent())).thenReturn(false);
+        when(dictionary.containsBadWords(comments.get(1).getContent())).thenReturn(true);
+
+        commentService.moderateComments();
+
+        assertEquals(true, comments.get(0).getVerified());
+        assertEquals(false, comments.get(1).getVerified());
+
+        verify(commentRepository, times(2)).saveAll(any());
     }
 }

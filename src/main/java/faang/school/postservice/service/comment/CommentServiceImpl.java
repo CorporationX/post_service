@@ -71,7 +71,7 @@ public class CommentServiceImpl implements CommentService {
         batches.forEach(this::moderateCommentsByBatches);
     }
 
-    @Async("fixedThreadPools")
+    @Async("fixedThreadPool")
     public void moderateCommentsByBatches(List<Comment> comments) {
         comments.forEach(comment -> {
             boolean badWordsExist = dictionary.containsBadWords(comment.getContent());

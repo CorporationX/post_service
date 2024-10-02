@@ -1,4 +1,4 @@
-package faang.school.postservice.config.threadPool;
+package faang.school.postservice.config.threadpool;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,11 +9,12 @@ import java.util.concurrent.Executors;
 
 @Configuration
 public class ThreadPoolConfig {
-    @Value("${premium.pool-size}")
+
+    @Value("${thread-pool.fixed.size}")
     private int fixedPoolSize;
 
     @Bean
-    public ExecutorService fixedThreadPools() {
+    public ExecutorService fixedThreadPool() {
         return Executors.newFixedThreadPool(fixedPoolSize);
     }
 }
