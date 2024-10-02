@@ -14,26 +14,17 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class KafkaPostConsumer {
+public class PostEventsConsumer {
     private final FeedCacheService feedCacheService;
-    private final PostCacheService postCacheService;
 
     @KafkaListener(topics = "${spring.kafka.topic-name.posts:posts}")
     void listener(PostFollowersEvent event, Acknowledgment acknowledgment){
         try {
-            addPostIdToAuthorFollowers(event.postId(), event.followersIds());
+            feedCacheService.addPostIdToAuthorFollowers(event.postId(), event.followersIds());
             acknowledgment.acknowledge();
         } catch (Exception e) {
             log.error("Post with id:{} is not added to followers feeds.", event.postId());
             throw e;
-        }
-    }
-
-    private void addPostIdToAuthorFollowers(Long postId, List<Long> followersIds) {
-        if (postCacheService.existsById(postId)) {
-            feedCacheService.addPostToFeeds(postId, followersIds);
-        } else {
-            log.warn("Post with id:{} does not exist in Redis.", postId);
         }
     }
 }

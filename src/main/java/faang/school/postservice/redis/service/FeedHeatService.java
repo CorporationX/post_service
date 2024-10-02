@@ -16,7 +16,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FeedHeatService {
-    @Value("")//TODO add to app.yaml
+    @Value("spring.data.redis.heat.max-posts-in-feed:500")
     private int maxPostsInHeatFeed;
 
     private final KafkaEventProducer kafkaEventProducer;
@@ -24,40 +24,37 @@ public class FeedHeatService {
     private final UserServiceClient userServiceClient;
 
     private final PostService postService;
-
+    //TODO need several threads
     public void sendHeatEvents(){
-        //TODO save all authors tt we have in REDIS.
-        var allUsers = userServiceClient.getAllUsers();
-        var savedAuthorsInRedis = authorCacheService.saveAllAuthorsInRedis(allUsers);
 
-        //TODO create Feeds for each author and send them to KAFKA
-        var feedEvents = generateFeedEvents(allUsers);
+        var allUsers = userServiceClient.getAllUsers();
+        authorCacheService.saveAllAuthorsInCache(allUsers);
+
+        var feedEvents = generateFeedsForAllUserFollowers(allUsers);
         feedEvents
                 .forEach(kafkaEventProducer::sendFeedHeatEvent);
 
-        //TODO save posts with comments and likes and send them to KAFKA.
         var postEvents = generatePostEvents(feedEvents);
         postEvents
                 .forEach(kafkaEventProducer::sendPostHeatEvent);
     }
-    //TODO create class EventsGenerator
-    private List<FeedDto> generateFeedEvents(List<UserDto> userDtos) {
-        List<FeedDto> feedDtos = new ArrayList<>();
 
-        for (UserDto userDto : userDtos) {
-            var followerId = userDto.getId();
-            var followeesUserDtos = userServiceClient.getUsersByIds(userDto.getFollowees());
+    private List<FeedDto> generateFeedsForAllUserFollowers(List<UserDto> allUsersInOurSystem) {
+        List<FeedDto> feeds = new ArrayList<>();
 
-            var postsOfFollowees = followeesUserDtos.stream()
-                    .flatMap(followee -> followee.getPosts().stream())
+        for (UserDto user : allUsersInOurSystem) {
+            var followerId = user.getId();
+            var userBloggers = userServiceClient.getUsersByIds(user.getFollowees());
+
+            var allPostsOfUserBloggers = userBloggers.stream()
+                    .flatMap(blogger -> blogger.getPosts().stream())
                     .limit(maxPostsInHeatFeed)
                     .toList();
 
-            var feedDto = new FeedDto(followerId, postsOfFollowees);
-            feedDtos.add(feedDto);
+            feeds.add(new FeedDto(followerId, allPostsOfUserBloggers));
         }
 
-        return feedDtos;
+        return feeds;
     }
 
     private List<PostDto> generatePostEvents(List<FeedDto> feedDtos){

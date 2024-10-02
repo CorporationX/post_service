@@ -18,7 +18,7 @@ public class AuthorCacheService {
     private final AuthorCacheMapper authorCacheMapper;
     private final UserServiceClient userServiceClient;
 
-    public List<AuthorCache> saveAllAuthorsInRedis(List<UserDto> allUsers){
+    public List<AuthorCache> saveAllAuthorsInCache(List<UserDto> allUsers){
         var authorCaches =allUsers.stream()
                 .map(authorCacheMapper::toAuthorCache)
                 .toList();

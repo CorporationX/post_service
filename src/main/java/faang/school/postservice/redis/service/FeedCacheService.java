@@ -1,6 +1,7 @@
 package faang.school.postservice.redis.service;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.kafka.events.FeedDto;
 import faang.school.postservice.redis.mapper.PostCacheMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ public class FeedCacheService {
     private final PostCacheService postCacheService;
     private final PostCacheMapper postCacheMapper;
 
-    public void addPostToFeeds(Long postId, List<Long> followerIds) {
+    public void addPostIdToAuthorFollowers(Long postId, List<Long> followerIds) {
         followerIds.forEach(followerId -> addPostIdToFollowerFeed(postId, followerId));
     }
 
@@ -38,6 +39,15 @@ public class FeedCacheService {
         return postCacheService.getPostCacheByIds(followerPostIds).stream()
                 .map(postCacheMapper::toDto)
                 .toList();
+    }
+
+    public void saveUserFeedHeat(FeedDto feedDto){
+        var feedCacheKey = generateFeedCacheKey(feedDto.followerId());
+        var score = currentTimeMillis();
+
+        for (Long postId: feedDto.posts()){
+            redisTemplate.opsForZSet().add(feedCacheKey, postId, score++);
+        }
     }
 
     private List<Long> getFollowerPostIds(Long userId, Long postId) {

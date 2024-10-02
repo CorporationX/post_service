@@ -47,9 +47,9 @@ public class PostService {
         var savedPost = postRepository.save(post);
         var postDto = postMapper.toDto(savedPost);
 
+        postCacheService.savePostCache(postDto);
         eventsGenerator.generateAndSendPostFollowersEvent(postDto);
 
-        postCacheService.savePostCache(postDto);
         authorCacheService.saveAuthorCache(postDto.getAuthorId());
 
         return postDto;
