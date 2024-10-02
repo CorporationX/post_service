@@ -36,13 +36,15 @@ post:
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+    threads-count: 10
+    batch-size: 1000
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
 springdoc:
   swagger-ui:
-    url: /api.yaml
+    url: swagger/api.yaml
 
 user-service:
   host: localhost

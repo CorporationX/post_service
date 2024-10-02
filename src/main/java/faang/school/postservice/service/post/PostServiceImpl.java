@@ -1,19 +1,22 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -152,5 +155,21 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostDto> getPostsByHashtag(String hashtag) {
         return hashtagService.findPostsByHashtag(hashtag);
+    }
+
+    @Transactional
+    @Override
+    public void publishScheduledPosts(int batchSize) {
+        var readyToPublishPosts = postRepository.findReadyToPublish();
+        ListUtils.partition(readyToPublishPosts, batchSize).forEach(this::publishScheduledPostsAsyncInBatch);
+    }
+
+    @Async("postsFixedThreadPool")
+    public void publishScheduledPostsAsyncInBatch(List<Post> posts) {
+        var postIds = posts.stream()
+                .map(Post::getId)
+                .toList();
+
+        postRepository.updatePostsAsPublished(postIds, LocalDateTime.now());
     }
 }
