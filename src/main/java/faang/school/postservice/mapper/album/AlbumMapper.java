@@ -4,7 +4,6 @@ import faang.school.postservice.dto.album.AlbumResponseDto;
 import faang.school.postservice.dto.album.CreateAlbumDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.album.Album;
-import faang.school.postservice.model.album.AlbumChosenUsers;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -17,7 +16,6 @@ import static org.mapstruct.ReportingPolicy.IGNORE;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = IGNORE)
 public interface AlbumMapper {
     @Mapping(source = "posts", target = "postIds", qualifiedByName = "mapPostsToPostIds")
-    @Mapping(source = "chosenUsers", target = "chosenUserIds", qualifiedByName = "mapChosenUsersToChosenUserIds")
     AlbumResponseDto toAlbumResponseDto(Album album);
 
     List<AlbumResponseDto> toAlbumResponseDtos(List<Album> album);
@@ -33,13 +31,5 @@ public interface AlbumMapper {
         return posts.stream()
                 .map(Post::getId)
                 .toList();
-    }
-
-    @Named("mapChosenUsersToChosenUserIds")
-    default List<Long> mapChosenUsersToChosenUserIds(AlbumChosenUsers chosenUsers) {
-        if (chosenUsers == null) {
-            return null;
-        }
-        return chosenUsers.getUserIds();
     }
 }

@@ -1,7 +1,9 @@
 package faang.school.postservice.model.album;
 
 import faang.school.postservice.model.Post;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -19,9 +21,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -65,9 +65,11 @@ public class Album {
     @Column(name = "visibility", nullable = false)
     private AlbumVisibility visibility;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "chosen_users")
-    private AlbumChosenUsers chosenUsers;
+    @ElementCollection
+    @CollectionTable(name = "album_chosen_users",
+            joinColumns = @JoinColumn(name = "album_id"))
+    @Column(name = "user_id")
+    private List<Long> chosenUserIds;
 
     public void addPost(Post post) {
         posts.add(post);

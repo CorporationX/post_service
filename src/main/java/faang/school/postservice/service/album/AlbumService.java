@@ -4,7 +4,6 @@ import faang.school.postservice.client.UserServiceClientMock;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.album.Album;
-import faang.school.postservice.model.album.AlbumChosenUsers;
 import faang.school.postservice.model.album.AlbumVisibility;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -37,18 +36,9 @@ public class AlbumService {
         checker.checkAlbumExistsWithTitle(album.getTitle(), authorId);
         checker.validateAlbumVisibility(album.getVisibility(), chosenUserIds);
         album.setAuthorId(authorId);
-        setChosenUsersToAlbum(album, chosenUserIds);
+        album.setChosenUserIds(chosenUserIds);
         log.info("Album created");
         return albumRepository.save(album);
-    }
-
-    private void setChosenUsersToAlbum(Album album, List<Long> chosenUserIds) {
-        if (chosenUserIds == null) {
-            album.setChosenUsers(null);
-        } else {
-            AlbumChosenUsers albumChosenUsers = AlbumChosenUsers.builder().userIds(chosenUserIds).build();
-            album.setChosenUsers(albumChosenUsers);
-        }
     }
 
     @Transactional(readOnly = true)
@@ -77,7 +67,7 @@ public class AlbumService {
         checker.validateAlbumVisibility(visibility, chosenUserIds);
 
         album.setVisibility(visibility);
-        setChosenUsersToAlbum(album, chosenUserIds);
+        album.setChosenUserIds(chosenUserIds);
 
         return albumRepository.save(album);
     }
@@ -180,7 +170,7 @@ public class AlbumService {
         return switch (visibility) {
             case ALL_USERS -> true;
             case SUBSCRIBERS_ONLY -> userServiceClient.getFollowers(authorId).contains(userId);
-            case CHOSEN_USERS -> album.getChosenUsers().getUserIds().contains(userId);
+            case CHOSEN_USERS -> album.getChosenUserIds().contains(userId);
             case AUTHOR_ONLY -> false;
         };
     }

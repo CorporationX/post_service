@@ -4,7 +4,6 @@ import faang.school.postservice.client.UserServiceClientMock;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.album.Album;
-import faang.school.postservice.model.album.AlbumChosenUsers;
 import faang.school.postservice.model.album.AlbumVisibility;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -439,7 +438,7 @@ class AlbumServiceTest {
         Album existedAlbum = new Album();
         existedAlbum.setAuthorId(2L);
         existedAlbum.setVisibility(CHOSEN_USERS);
-        existedAlbum.setChosenUsers(AlbumChosenUsers.builder().userIds(List.of(1L)).build());
+        existedAlbum.setChosenUserIds(List.of(1L));
 
         doNothing().when(checker).checkUserExists(userId);
         when(albumRepository.findAll()).thenReturn(List.of(existedAlbum));
@@ -456,7 +455,7 @@ class AlbumServiceTest {
         Album existedAlbum = new Album();
         existedAlbum.setAuthorId(2L);
         existedAlbum.setVisibility(AUTHOR_ONLY);
-        existedAlbum.setChosenUsers(AlbumChosenUsers.builder().userIds(List.of(1L)).build());
+        existedAlbum.setChosenUserIds(List.of(1L));
 
         doNothing().when(checker).checkUserExists(userId);
         when(albumRepository.findAll()).thenReturn(List.of(existedAlbum));
