@@ -26,17 +26,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 public class PostControllerTest {
 
-    ResourceService resourceService = Mockito.mock(ResourceService.class);
-    ResourceMapper resourceMapper = new ResourceMapperImpl();
-    PostController postController = new PostController(resourceService, resourceMapper);
+    private final ResourceService resourceService = Mockito.mock(ResourceService.class);
+    private final ResourceMapper resourceMapper = new ResourceMapperImpl();
+    private final PostController postController = new PostController(resourceService, resourceMapper);
 
-    MockMvc mockMvc;
-    MockMultipartFile mockFile;
+    private MockMvc mockMvc;
+    private MockMultipartFile mockFile;
 
-    Long postId;
-    Post post;
-    Resource resourceOne;
-    Long resourceOneId;
+    private Long postId;
+    private Resource resourceOne;
+    private Long resourceOneId;
 
     @BeforeEach
     public void setUp() {
@@ -51,7 +50,7 @@ public class PostControllerTest {
         );
 
         postId = 1L;
-        post = Post.builder()
+        Post post = Post.builder()
                 .id(postId)
                 .resources(new ArrayList<>() {{
                     add(resourceOne);
@@ -87,9 +86,9 @@ public class PostControllerTest {
     @Test
     @DisplayName("testUpdateFileToPost")
     public void testUpdateFileToPost() throws Exception {
-        Mockito.when(resourceService.updateFileInPost(mockFile, resourceOneId, postId)).thenReturn(resourceOne);
+        Mockito.when(resourceService.updateFileInPost(mockFile, resourceOneId)).thenReturn(resourceOne);
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/posts/" + postId + "/files/update")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/posts/files/update")
                         .file(mockFile)
                         .with(request -> {
                             request.setMethod("PUT");
@@ -105,7 +104,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("testRemoveFileInPost")
     public void testRemoveFileInPost() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.put("/posts/" + postId + "/files/remove")
+        mockMvc.perform(MockMvcRequestBuilders.put("/posts/files/remove")
                 .param("resource-id", String.valueOf(resourceOneId)))
                 .andExpect(status().isOk());
     }

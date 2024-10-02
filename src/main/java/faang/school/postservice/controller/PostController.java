@@ -26,17 +26,15 @@ public class PostController {
         return resourceMapper.toResourceDto(resource);
     }
 
-    @PutMapping("{post-id}/files/update")
-    public ResourceDto updateFileInPost(@PathVariable("post-id") Long postId,
-                                        @RequestParam MultipartFile file,
+    @PutMapping("/files/update")
+    public ResourceDto updateFileInPost(@RequestParam MultipartFile file,
                                         @RequestParam("resource-id") Long resourceId) {
-        Resource updatedResource = resourceService.updateFileInPost(file, resourceId, postId);
+        Resource updatedResource = resourceService.updateFileInPost(file, resourceId);
         return resourceMapper.toResourceDto(updatedResource);
     }
 
-    @PutMapping("{post-id}/files/remove")
-    public void removeFileInPost(@PathVariable("post-id") Long postId,
-                                 @RequestParam("resource-id") Long resourceId) {
-        resourceService.removeFileInPost(resourceId, postId);
+    @PutMapping("/files/remove")
+    public void removeFileInPost(@RequestParam("resource-id") Long resourceId) {
+        resourceService.removeFileInPost(resourceId);
     }
 }
