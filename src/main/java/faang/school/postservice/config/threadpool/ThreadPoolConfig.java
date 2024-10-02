@@ -9,7 +9,8 @@ import java.util.concurrent.Executors;
 
 @Configuration
 public class ThreadPoolConfig {
-    @Value("${premium.pool-size}")
+
+    @Value("${thread-pool.fixed.size}")
     private int fixedPoolSize;
 
     @Bean

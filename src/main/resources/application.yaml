@@ -67,3 +67,7 @@ posts:
 
 premium:
   pool-size: 3
+
+thread-pool:
+  fixed:
+    size: 5
