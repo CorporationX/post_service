@@ -30,7 +30,7 @@ public abstract class AbstractFileValidator implements FileValidator {
                 .filter(resource -> resource.getType().equals(type))
                 .count();
         if (amountByType >= maxInPost) {
-            throw new IllegalArgumentException("The number of " + type.name() +
+            throw new FileException("The number of " + type.name() +
                     " cannot be more than " + maxInPost);
         }
     }
