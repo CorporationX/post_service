@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "post_resource")
-public class Resource {
+public class ResourceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

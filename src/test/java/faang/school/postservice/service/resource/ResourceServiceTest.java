@@ -1,7 +1,7 @@
 package faang.school.postservice.service.resource;
 
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.ResourceEntity;
 import faang.school.postservice.model.ResourceType;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
@@ -59,8 +59,8 @@ public class ResourceServiceTest {
 
     private Long resourceId;
     private String key;
-    private Resource resource;
-    private Resource resourceNew;
+    private ResourceEntity resourceEntity;
+    private ResourceEntity resourceEntityNew;
     private String imageMimeType;
 
     @BeforeEach
@@ -76,14 +76,14 @@ public class ResourceServiceTest {
 
         resourceId = 10L;
         key = "res1";
-        resource = Resource.builder()
+        resourceEntity = ResourceEntity.builder()
                 .key(key)
                 .id(resourceId)
                 .type(ResourceType.IMAGE)
                 .post(post)
                 .build();
 
-        resourceNew = Resource.builder()
+        resourceEntityNew = ResourceEntity.builder()
                 .type(ResourceType.IMAGE)
                 .build();
     }
@@ -95,11 +95,11 @@ public class ResourceServiceTest {
         when(mimeConverter.getType(imageMimeType)).thenReturn(ResourceType.IMAGE);
 
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        when(minioImageManager.addFileToStorage(file, post)).thenReturn(resourceNew);
+        when(minioImageManager.addFileToStorage(file, post)).thenReturn(resourceEntityNew);
 
         resourceService.addFileToPost(file, postId);
 
-        verify(resourceRepository).save(resourceNew);
+        verify(resourceRepository).save(resourceEntityNew);
     }
 
 
@@ -120,12 +120,12 @@ public class ResourceServiceTest {
         when(file.getContentType()).thenReturn(imageMimeType);
         when(mimeConverter.getType(imageMimeType)).thenReturn(ResourceType.IMAGE);
 
-        when(resourceRepository.findById(resourceId)).thenReturn(Optional.of(resource));
-        when(minioImageManager.updateFileInStorage(key, file, post)).thenReturn(resourceNew);
+        when(resourceRepository.findById(resourceId)).thenReturn(Optional.of(resourceEntity));
+        when(minioImageManager.updateFileInStorage(key, file, post)).thenReturn(resourceEntityNew);
 
         resourceService.updateFileInPost(file, resourceId);
 
-        verify(resourceRepository, times(1)).save(resourceNew);
+        verify(resourceRepository, times(1)).save(resourceEntityNew);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class ResourceServiceTest {
     @Test
     @DisplayName("testRemoveFileInPost_Success")
     public void testRemoveFileInPost_Success() {
-        when(resourceRepository.findById(resourceId)).thenReturn(Optional.of(resource));
+        when(resourceRepository.findById(resourceId)).thenReturn(Optional.of(resourceEntity));
 
         resourceService.removeFileInPost(resourceId);
 

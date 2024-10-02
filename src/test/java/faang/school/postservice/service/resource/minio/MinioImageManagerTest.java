@@ -2,7 +2,7 @@ package faang.school.postservice.service.resource.minio;
 
 import com.amazonaws.services.s3.AmazonS3;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.ResourceEntity;
 import faang.school.postservice.model.ResourceType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -59,12 +59,12 @@ public class MinioImageManagerTest {
         when(file.getOriginalFilename()).thenReturn(fileName);
         when(file.getInputStream()).thenReturn(inputStream);
 
-        Resource resource = minioImageManager.addFileToStorage(file, post);
+        ResourceEntity resourceEntity = minioImageManager.addFileToStorage(file, post);
 
-        assertNotNull(resource);
-        assertEquals(fileName, resource.getName());
-        assertEquals(ResourceType.IMAGE, resource.getType());
-        assertEquals(post, resource.getPost());
+        assertNotNull(resourceEntity);
+        assertEquals(fileName, resourceEntity.getName());
+        assertEquals(ResourceType.IMAGE, resourceEntity.getType());
+        assertEquals(post, resourceEntity.getPost());
 
         inputStream.close();
     }
@@ -76,12 +76,12 @@ public class MinioImageManagerTest {
         when(file.getOriginalFilename()).thenReturn(fileName);
         when(file.getInputStream()).thenReturn(inputStream);
 
-        Resource resource = minioImageManager.updateFileInStorage(key, file, post);
+        ResourceEntity resourceEntity = minioImageManager.updateFileInStorage(key, file, post);
 
-        assertNotNull(resource);
-        assertEquals(fileName, resource.getName());
-        assertEquals(ResourceType.IMAGE, resource.getType());
-        assertEquals(post, resource.getPost());
+        assertNotNull(resourceEntity);
+        assertEquals(fileName, resourceEntity.getName());
+        assertEquals(ResourceType.IMAGE, resourceEntity.getType());
+        assertEquals(post, resourceEntity.getPost());
 
         inputStream.close();
     }

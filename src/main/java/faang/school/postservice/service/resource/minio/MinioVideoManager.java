@@ -4,7 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import faang.school.postservice.exception.FileException;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.ResourceEntity;
 import faang.school.postservice.model.ResourceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +25,7 @@ public class MinioVideoManager implements MinioManager {
     private String bucketName;
 
     @Override
-    public Resource addFileToStorage(MultipartFile file, Post post) {
+    public ResourceEntity addFileToStorage(MultipartFile file, Post post) {
         try {
             String type = file.getContentType();
             String name = file.getOriginalFilename();
@@ -40,7 +40,7 @@ public class MinioVideoManager implements MinioManager {
 
             s3client.putObject(bucketName, customKey, fileStream, metadata);
 
-            return Resource.builder()
+            return ResourceEntity.builder()
                     .key(customKey)
                     .size(fileSize)
                     .name(name)
@@ -54,7 +54,7 @@ public class MinioVideoManager implements MinioManager {
     }
 
     @Override
-    public Resource updateFileInStorage(String key, MultipartFile newFile, Post post) {
+    public ResourceEntity updateFileInStorage(String key, MultipartFile newFile, Post post) {
         s3client.deleteObject(bucketName, key);
         return addFileToStorage(newFile, post);
     }

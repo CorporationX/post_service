@@ -1,7 +1,7 @@
 package faang.school.postservice.service.resource;
 
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.ResourceEntity;
 import faang.school.postservice.model.ResourceType;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
@@ -53,7 +53,7 @@ public class ResourceService {
     }
 
     @Transactional
-    public Resource addFileToPost(MultipartFile file, Long postId) {
+    public ResourceEntity addFileToPost(MultipartFile file, Long postId) {
         String mimeType = file.getContentType();
         ResourceType type = mimeConverter.getType(mimeType);
 
@@ -63,35 +63,35 @@ public class ResourceService {
         validator.validateAmount(type, post);
 
         MinioManager minioManager = managerByType.get(type);
-        Resource resource = minioManager.addFileToStorage(file, post);
+        ResourceEntity resourceEntity = minioManager.addFileToStorage(file, post);
 
-        return resourceRepository.save(resource);
+        return resourceRepository.save(resourceEntity);
     }
 
     @Transactional
-    public Resource updateFileInPost(MultipartFile file, Long resourceId) {
+    public ResourceEntity updateFileInPost(MultipartFile file, Long resourceId) {
         String mimeType = file.getContentType();
         ResourceType type = mimeConverter.getType(mimeType);
         FileValidator validator = validatorByType.get(type);
         validator.validateSize(file);
 
-        Resource oldResource = resourceRepository.findById(resourceId).orElseThrow();
-        Post post = oldResource.getPost();
+        ResourceEntity oldResourceEntity = resourceRepository.findById(resourceId).orElseThrow();
+        Post post = oldResourceEntity.getPost();
 
-        String key = oldResource.getKey();
-        MinioManager minioManager = managerByType.get(oldResource.getType());
-        Resource newResource = minioManager.updateFileInStorage(key, file, post);
-        newResource.setId(resourceId);
+        String key = oldResourceEntity.getKey();
+        MinioManager minioManager = managerByType.get(oldResourceEntity.getType());
+        ResourceEntity newResourceEntity = minioManager.updateFileInStorage(key, file, post);
+        newResourceEntity.setId(resourceId);
 
-        return resourceRepository.save(newResource);
+        return resourceRepository.save(newResourceEntity);
     }
 
     @Transactional
     public void removeFileInPost(Long resourceId) {
-        Resource resource = resourceRepository.findById(resourceId).orElseThrow();
+        ResourceEntity resourceEntity = resourceRepository.findById(resourceId).orElseThrow();
 
-        String key = resource.getKey();
-        MinioManager minioManager = managerByType.get(resource.getType());
+        String key = resourceEntity.getKey();
+        MinioManager minioManager = managerByType.get(resourceEntity.getType());
         minioManager.removeFileInStorage(key);
 
         resourceRepository.deleteById(resourceId);

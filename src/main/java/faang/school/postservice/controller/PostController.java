@@ -2,7 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.mapper.ResourceMapper;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.ResourceEntity;
 import faang.school.postservice.service.resource.ResourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,15 +22,15 @@ public class PostController {
     @PutMapping("{post-id}/files")
     public ResourceDto addFileToPost(@PathVariable("post-id") Long postId,
                                      @RequestParam MultipartFile file) {
-        Resource resource = resourceService.addFileToPost(file, postId);
-        return resourceMapper.toResourceDto(resource);
+        ResourceEntity resourceEntity = resourceService.addFileToPost(file, postId);
+        return resourceMapper.toResourceDto(resourceEntity);
     }
 
     @PutMapping("/files/update")
     public ResourceDto updateFileInPost(@RequestParam MultipartFile file,
                                         @RequestParam("resource-id") Long resourceId) {
-        Resource updatedResource = resourceService.updateFileInPost(file, resourceId);
-        return resourceMapper.toResourceDto(updatedResource);
+        ResourceEntity updatedResourceEntity = resourceService.updateFileInPost(file, resourceId);
+        return resourceMapper.toResourceDto(updatedResourceEntity);
     }
 
     @PutMapping("/files/remove")

@@ -2,7 +2,7 @@ package faang.school.postservice.service.resource.minio;
 
 import com.amazonaws.services.s3.AmazonS3;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.ResourceEntity;
 import faang.school.postservice.model.ResourceType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,12 +53,12 @@ public class MinioAudioManagerTest {
         when(file.getOriginalFilename()).thenReturn(fileName);
         when(file.getSize()).thenReturn((long) inputStream.available());
 
-        Resource resource = minioAudioManager.addFileToStorage(file, post);
+        ResourceEntity resourceEntity = minioAudioManager.addFileToStorage(file, post);
 
-        assertNotNull(resource);
-        assertEquals(fileName, resource.getName());
-        assertEquals(ResourceType.AUDIO, resource.getType());
-        assertEquals(post, resource.getPost());
+        assertNotNull(resourceEntity);
+        assertEquals(fileName, resourceEntity.getName());
+        assertEquals(ResourceType.AUDIO, resourceEntity.getType());
+        assertEquals(post, resourceEntity.getPost());
 
         inputStream.close();
     }
@@ -70,12 +70,12 @@ public class MinioAudioManagerTest {
         when(file.getOriginalFilename()).thenReturn(fileName);
         when(file.getSize()).thenReturn((long) inputStream.available());
 
-        Resource resource = minioAudioManager.updateFileInStorage(key, file, post);
+        ResourceEntity resourceEntity = minioAudioManager.updateFileInStorage(key, file, post);
 
-        assertNotNull(resource);
-        assertEquals(fileName, resource.getName());
-        assertEquals(ResourceType.AUDIO, resource.getType());
-        assertEquals(post, resource.getPost());
+        assertNotNull(resourceEntity);
+        assertEquals(fileName, resourceEntity.getName());
+        assertEquals(ResourceType.AUDIO, resourceEntity.getType());
+        assertEquals(post, resourceEntity.getPost());
 
         inputStream.close();
     }

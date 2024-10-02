@@ -4,7 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import faang.school.postservice.exception.FileException;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.ResourceEntity;
 import faang.school.postservice.model.ResourceType;
 import lombok.RequiredArgsConstructor;
 import org.imgscalr.Scalr;
@@ -34,7 +34,7 @@ public class MinioImageManager implements MinioManager {
     private int maxPixelSize;
 
     @Override
-    public Resource addFileToStorage(MultipartFile file, Post post) {
+    public ResourceEntity addFileToStorage(MultipartFile file, Post post) {
         String type = file.getContentType();
         String name = file.getOriginalFilename();
         String format = Objects.requireNonNull(type).replace("image/", "");
@@ -49,7 +49,7 @@ public class MinioImageManager implements MinioManager {
 
             s3client.putObject(bucketName, customKey, compressedFileStream, metadata);
 
-            return Resource.builder()
+            return ResourceEntity.builder()
                     .key(customKey)
                     .size(compressedFileSize)
                     .name(name)
@@ -63,7 +63,7 @@ public class MinioImageManager implements MinioManager {
     }
 
     @Override
-    public Resource updateFileInStorage(String key, MultipartFile newFile, Post post) {
+    public ResourceEntity updateFileInStorage(String key, MultipartFile newFile, Post post) {
         s3client.deleteObject(bucketName, key);
         return addFileToStorage(newFile, post);
     }

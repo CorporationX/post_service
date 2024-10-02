@@ -3,7 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.mapper.ResourceMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.ResourceEntity;
 import faang.school.postservice.model.ResourceType;
 import faang.school.postservice.service.resource.ResourceService;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ public class PostControllerTest {
     private MockMultipartFile mockFile;
 
     private Long postId;
-    private Resource resourceOne;
+    private ResourceEntity resourceEntityOne;
     private Long resourceOneId;
 
     @BeforeEach
@@ -52,13 +52,13 @@ public class PostControllerTest {
         postId = 1L;
         Post post = Post.builder()
                 .id(postId)
-                .resources(new ArrayList<>() {{
-                    add(resourceOne);
+                .resourceEntities(new ArrayList<>() {{
+                    add(resourceEntityOne);
                 }})
                 .build();
 
         resourceOneId = 10L;
-        resourceOne = Resource.builder()
+        resourceEntityOne = ResourceEntity.builder()
                 .id(resourceOneId)
                 .key("res1")
                 .type(ResourceType.IMAGE)
@@ -69,7 +69,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("testAddFileToPost")
     public void testAddFileToPost() throws Exception {
-        Mockito.when(resourceService.addFileToPost(mockFile, postId)).thenReturn(resourceOne);
+        Mockito.when(resourceService.addFileToPost(mockFile, postId)).thenReturn(resourceEntityOne);
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/posts/" + postId + "/files")
                         .file(mockFile)
@@ -86,7 +86,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("testUpdateFileToPost")
     public void testUpdateFileToPost() throws Exception {
-        Mockito.when(resourceService.updateFileInPost(mockFile, resourceOneId)).thenReturn(resourceOne);
+        Mockito.when(resourceService.updateFileInPost(mockFile, resourceOneId)).thenReturn(resourceEntityOne);
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/posts/files/update")
                         .file(mockFile)

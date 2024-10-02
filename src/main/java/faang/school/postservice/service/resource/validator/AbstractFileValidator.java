@@ -2,7 +2,7 @@ package faang.school.postservice.service.resource.validator;
 
 import faang.school.postservice.exception.FileException;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.ResourceEntity;
 import faang.school.postservice.model.ResourceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,8 +25,8 @@ public abstract class AbstractFileValidator implements FileValidator {
 
     @Override
     public void validateAmount(ResourceType type, Post post) {
-        List<Resource> resources = post.getResources();
-        long amountByType = resources.stream()
+        List<ResourceEntity> resourceEntities = post.getResourceEntities();
+        long amountByType = resourceEntities.stream()
                 .filter(resource -> resource.getType().equals(type))
                 .count();
         if (amountByType >= maxInPost) {
