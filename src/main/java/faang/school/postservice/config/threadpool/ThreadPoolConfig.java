@@ -1,4 +1,4 @@
-package faang.school.postservice.config.threadPool;
+package faang.school.postservice.config.threadpool;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

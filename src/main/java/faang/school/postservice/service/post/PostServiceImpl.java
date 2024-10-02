@@ -158,6 +158,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public void moderatePosts() {
         List<Post> unverifiedPosts = postRepository.findAllByVerifiedDateIsNull();
         List<List<Post>> batches = ListUtils.partition(unverifiedPosts, batchSize);
