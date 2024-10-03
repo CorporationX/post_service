@@ -26,7 +26,7 @@ public class ResourceController {
         postImagesService.updatePostImages(id, images);
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public void deleteImages(@PathVariable Long id) {
         postImagesService.deleteImage(id);
     }

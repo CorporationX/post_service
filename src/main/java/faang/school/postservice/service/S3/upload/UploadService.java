@@ -1,13 +1,15 @@
 package faang.school.postservice.service.S3.upload;
 
+import faang.school.postservice.model.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@FunctionalInterface
 public interface UploadService {
 
     /**
-     * @see UploadImagesS3ServiceImpl #uploadImages
+     * @see UploadFilesS3ServiceImpl #uploadImages
      */
-    List<String> uploadImages(List<MultipartFile> images);
+    List<Resource> uploadFiles(List<MultipartFile> files);
 }

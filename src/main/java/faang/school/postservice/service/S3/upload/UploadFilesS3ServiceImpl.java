@@ -3,15 +3,13 @@ package faang.school.postservice.service.S3.upload;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import faang.school.postservice.model.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +21,7 @@ import java.util.concurrent.Future;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UploadImagesS3ServiceImpl implements UploadService {
+public class UploadFilesS3ServiceImpl implements UploadService {
 
     private final AmazonS3 s3Client;
 
@@ -31,39 +29,28 @@ public class UploadImagesS3ServiceImpl implements UploadService {
     private String bucketName;
 
     /**
-     * Загрузка фотографий в облачное хранилище S3
+     * Загрузка файлов в облачное хранилище S3
      *
-     * @param images Список картинок в байтах
+     * @param files Список файлов
      * @return Список ссылок на загруженные файлы
      * @throws AmazonS3Exception Если возникает проблема при обращении к хранилищу S3
      * @throws RuntimeException  Если во время выполнения одного из потоков произойдёт ошибка
      */
-
-    @Override
-    public List<String> uploadImages(List<MultipartFile> images) {
-
-        List<byte[]> bytes = images.stream().map(image -> {
-            try {
-                return image.getBytes();
-            } catch (IOException e) {
-                throw new RuntimeException(e.getCause());
-            }
-        }).toList();
+    public List<Resource> uploadFiles(List<MultipartFile> files) {
 
         try {
-            ExecutorService executorService = Executors.newFixedThreadPool(images.size());
+            ExecutorService executorService = Executors.newFixedThreadPool(files.size());
             List<Future<String>> futures = new ArrayList<>();
 
-            for (byte[] imageBytes : bytes) {
+            for (MultipartFile file : files) {
                 Future<String> future = executorService.submit(() -> {
                     String fileName = generateUniqueName();
                     var metadata = new ObjectMetadata();
-                    metadata.setContentLength(imageBytes.length);
-                    metadata.setContentType(String.valueOf(ContentType.IMAGE_PNG));
+                    metadata.setContentLength(file.getSize());
+                    metadata.setContentType(file.getContentType());
 
-                    ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
-                    s3Client.putObject(bucketName, fileName, inputStream, metadata);
-                    log.info("Upload Service. Added file: " + fileName + " to bucket: " + bucketName);
+                    s3Client.putObject(bucketName, fileName, file.getInputStream(), metadata);
+                    log.info("Upload Service. Added file: {} to bucket: {}", fileName, bucketName);
 
                     return s3Client.getUrl(bucketName, fileName).toExternalForm();
                 });
@@ -86,7 +73,19 @@ public class UploadImagesS3ServiceImpl implements UploadService {
         } catch (AmazonS3Exception e) {
             log.error("Error uploading images to Object Storage. Reason:", e);
         }
-        return List.of();
+
+        List<Resource> resources = new ArrayList<>();
+        for (MultipartFile file : files) {
+            var resource = new Resource();
+            resource.setSize(file.getSize());
+            resource.setType(file.getContentType());
+            resource.setName(file.getName());
+            resources.add(resource);
+            return resources;
+        }
+
+     return resources;
+
     }
 
     private String generateUniqueName() {

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DeleteImageS3ServiceImpl implements DeleteService{
+public class DeleteFileS3ServiceImpl implements FileDeletion {
 
     private final AmazonS3 s3Client;
 
@@ -18,7 +18,7 @@ public class DeleteImageS3ServiceImpl implements DeleteService{
     private String bucketName;
 
     @Override
-    public void deleteImage(String key) {
+    public void deleteFile(String key) {
         try {
             s3Client.deleteObject(bucketName, key);
         } catch (SdkClientException e) {

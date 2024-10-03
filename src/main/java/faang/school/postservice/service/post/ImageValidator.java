@@ -19,9 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ImageValidator {
 
-    /**
-     * Пока вынес в константы для написания тестов
-     */
     private static final long MAX_FILE_SIZE = 5242816;
     private static final int MAX_IMAGE_HEIGHT = 1080;
     private static final int MAX_FILE_WIDTH = 566;
