@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,7 +47,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     public void unlikePost(LikeDto likeDto) {
-        Post post =  validateAndGetPost(likeDto);
+        Post post = validateAndGetPost(likeDto);
         likeRepository.deleteByPostIdAndUserId(post.getId(), likeDto.getUserId());
     }
 
@@ -87,7 +88,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     private void validateLikeToPostAndCommentForComment(LikeDto likeDto) {
-        List<Long> postLikes =  postRepository
+        List<Long> postLikes = postRepository
                 .findById(likeDto.getPostId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post with %s id not found", likeDto.getPostId())))
                 .getLikes()
@@ -153,5 +154,38 @@ public class LikeServiceImpl implements LikeService {
                 throw new IllegalArgumentException("Comment already liked!");
             }
         }
+    }
+
+    @Override
+    public List<UserDto> getUsersLikedPost (long postId){
+        List<Like> likes = likeRepository.findByPostId(postId);
+
+        return dividingListIntoGroups(likes);
+    }
+
+    @Override
+    public List<UserDto> getUsersLikedComment (long commentId){
+        List<Like> likes = likeRepository.findByCommentId(commentId);
+
+        return dividingListIntoGroups(likes);
+    }
+
+    private List<UserDto> dividingListIntoGroups (List<Like> likes) {
+        List<Long> userIds = likes.stream()
+                .map(Like::getUserId)
+                .toList();
+
+        List<List<UserDto>> results = new ArrayList<>();
+
+        for (int i = 0; i < userIds.size(); i += 100) {
+            List<Long> sublist = userIds.subList(i, Math.min(i + 100, userIds.size()));
+
+            List<UserDto> result = userServiceClient.getUsersByIds(sublist);
+            results.add(result);
+        }
+
+        return results.stream()
+                .flatMap(List::stream)
+                .toList();
     }
 }

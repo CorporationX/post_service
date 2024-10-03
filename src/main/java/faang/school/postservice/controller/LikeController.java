@@ -1,11 +1,14 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.like.LikeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,4 +37,14 @@ public class LikeController {
     public void unlikeComment(@RequestBody @Valid LikeDto likeDto) {
         likeService.unlikeComment(likeDto);
     }
+    @GetMapping("/post/{postId}")
+    public List<UserDto> getUsersByPostId(@PathVariable long postId) {
+        return likeService.getUsersLikedPost(postId);
+    }
+
+    @GetMapping("/comment/{commentId}")
+    public List<UserDto> getUsersByCommentId(@PathVariable long commentId) {
+        return likeService.getUsersLikedComment(commentId);
+    }
+
 }
