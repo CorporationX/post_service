@@ -10,10 +10,14 @@ import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +26,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
+    private final YandexSpeller yandexSpeller;
 
     @Transactional
     public Post createDraftPost(Post post) {
@@ -79,6 +84,11 @@ public class PostService {
         return postRepository.findPublishedByProjectId(projectId);
     }
 
+    @Transactional(readOnly = true)
+    public void correctNonPublishedPosts() {
+        List<Post> draftPosts = postRepository.findReadyToPublish();
+    }
+
     private void validateAuthorOrProject(Post post) {
         if (Objects.nonNull(post.getAuthorId()) && Objects.nonNull(post.getProjectId())) {
             throw new DataValidationException("The post can't be made by both a user and a project at the same time.");
@@ -122,5 +132,7 @@ public class PostService {
         post.setDeleted(true);
         post.setPublished(false);
     }
+
+
 }
 
