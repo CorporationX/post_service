@@ -76,42 +76,47 @@ public class S3ServiceImpl implements S3Service {
 
         BufferedImage bufferedImage = ImageProcessingUtils.convertToBufferedImage(file);
         BufferedImage resizedBufferedImage = ImageProcessingUtils.resizeBufferedImage(bufferedImage, rule);
-        ByteArrayOutputStream bytesFromResizedImage = ImageProcessingUtils.getByteArrayOutputStream(resizedBufferedImage, contentType);
 
-        long fileSize = bytesFromResizedImage.size();
-        InputStream input = new ByteArrayInputStream(bytesFromResizedImage.toByteArray());
-        byte[] content = input.readAllBytes();
+        try (ByteArrayOutputStream bytesFromResizedImage = ImageProcessingUtils.getByteArrayOutputStream(resizedBufferedImage, contentType);
+             InputStream input = new ByteArrayInputStream(bytesFromResizedImage.toByteArray())) {
 
-        return ImageData.builder()
-                .fileSize(fileSize)
-                .contentType(contentType)
-                .originalFilename(originalFilename)
-                .content(content)
-                .build();
+            long fileSize = bytesFromResizedImage.size();
+            byte[] content = input.readAllBytes();
+
+            return ImageData.builder()
+                    .fileSize(fileSize)
+                    .contentType(contentType)
+                    .originalFilename(originalFilename)
+                    .content(content)
+                    .build();
+        }
     }
 
     private ImageData retrieveImageData(MultipartFile file) throws IOException {
         long fileSize = file.getSize();
         String contentType = file.getContentType();
         String originalFilename = file.getOriginalFilename();
-        InputStream input = file.getInputStream();
-        byte[] content = input.readAllBytes();
 
-        return ImageData.builder()
-                .fileSize(fileSize)
-                .contentType(contentType)
-                .originalFilename(originalFilename)
-                .content(content)
-                .build();
+        try (InputStream input = file.getInputStream()) {
+            byte[] content = input.readAllBytes();
+            return ImageData.builder()
+                    .fileSize(fileSize)
+                    .contentType(contentType)
+                    .originalFilename(originalFilename)
+                    .content(content)
+                    .build();
+        }
     }
 
-    private void saveImageToS3(ImageData imageData, String key) {
+    private void saveImageToS3(ImageData imageData, String key) throws IOException {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(imageData.getFileSize());
         objectMetadata.setContentType(imageData.getContentType());
 
-        PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, new ByteArrayInputStream(imageData.getContent()), objectMetadata);
-        s3Client.putObject(putObjectRequest);
+        try (ByteArrayInputStream input = new ByteArrayInputStream(imageData.getContent())) {
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, input, objectMetadata);
+            s3Client.putObject(putObjectRequest);
+        }
     }
 
     private String generateKey(String folder, String fileName) {
