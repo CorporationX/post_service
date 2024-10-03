@@ -12,10 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,8 +32,7 @@ public class PostController {
 
     @Operation(summary = "Creating new Post")
     @PostMapping
-    public PostDto createPost(@Valid
-                              @RequestBody PostCreationRequest request) {
+    public PostDto createPost(@Valid @ModelAttribute PostCreationRequest request) {
         return postService.create(request);
     }
 
@@ -47,7 +46,8 @@ public class PostController {
     @Operation(summary = "Updating the content")
     @PutMapping("/{postId}")
     public PostDto updatePost(@Positive
-                              @PathVariable Long postId, @Valid @RequestBody PostUpdatingRequest request) {
+                              @PathVariable Long postId,
+                              @Valid @ModelAttribute PostUpdatingRequest request) {
         return postService.update(postId, request);
     }
 

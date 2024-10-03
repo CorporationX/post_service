@@ -4,9 +4,12 @@ import faang.school.postservice.validation.OnlyPostCreator;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 @OnlyPostCreator
@@ -21,6 +24,9 @@ public record PostCreationRequest(
         String content,
 
         @Future(message = "Must contain a date that has not yet arrived")
-        LocalDateTime scheduledAt
+        LocalDateTime scheduledAt,
+
+        @Size(max = 10, message = "Can't add more than 10 resources to post")
+        List<MultipartFile> filesToAdd
 ) {
 }

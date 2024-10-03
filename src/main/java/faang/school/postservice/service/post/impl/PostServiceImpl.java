@@ -10,17 +10,20 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.post.PostCreator;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.post.impl.filter.PostFilter;
 import faang.school.postservice.service.post.impl.filter.PublishedPostFilter;
 import faang.school.postservice.service.post.impl.filter.UnPublishedPostFilter;
+import faang.school.postservice.service.resource.ResourceService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -33,10 +36,12 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final ResourceService resourceService;
     private final UserServiceClient userClient;
     private final ProjectServiceClient projectClient;
 
     @Override
+    @Transactional
     public PostDto create(PostCreationRequest request) {
         Post post = postMapper.toPostFromCreationRequest(request);
         if (request.authorId() != null) {
@@ -52,6 +57,10 @@ public class PostServiceImpl implements PostService {
             }
         }
         postRepository.save(post);
+        if (request.filesToAdd() != null) {
+            var resources = resourceService.addResourcesToPost(request.filesToAdd(), post);
+            post.setResources(resources);
+        }
         log.info("Created post: {}", post.getId());
         return postMapper.toPostDto(post);
     }
@@ -70,9 +79,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public PostDto update(Long id, PostUpdatingRequest request) {
         Post post = getPost(id);
         post.setContent(request.content());
+        updatePostResources(post, request);
         postRepository.save(post);
         log.info("Updated post: {}", post.getId());
         return postMapper.toPostDto(post);
@@ -82,6 +93,9 @@ public class PostServiceImpl implements PostService {
     public PostDto remove(Long id) {
         Post post = getPost(id);
         post.setDeleted(true);
+        deleteResourcesFromPost(post.getResources().stream()
+                .map(Resource::getId)
+                .toList(), post);
         postRepository.save(post);
         log.info("Removed post: {}", post.getId());
         return postMapper.toPostDto(post);
@@ -127,5 +141,45 @@ public class PostServiceImpl implements PostService {
     private Post getPost(Long id) {
         return postRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id " + id + " not found"));
+    }
+
+    private void updatePostResources(Post post, PostUpdatingRequest request) {
+        checkResourcesCountAfterUpdate(post, request);
+        addResourcesToPost(request.filesToAdd(), post);
+        if (request.filesToDeleteIds() != null) {
+            deleteResourcesFromPost(request.filesToDeleteIds(), post);
+        }
+    }
+
+    private void deleteResourcesFromPost(List<Long> filesToDeleteIds, Post post) {
+        if (filesToDeleteIds != null) {
+            checkResourcesToDeleteCount(post, filesToDeleteIds);
+            resourceService.deleteResourcesFromPost(filesToDeleteIds, post);
+        }
+    }
+
+    private void addResourcesToPost(List<MultipartFile> filesToAdd, Post post) {
+        if (filesToAdd != null) {
+            resourceService.addResourcesToPost(filesToAdd, post);
+        }
+    }
+
+    private void checkResourcesToDeleteCount(Post post, List<Long> filesToDeleteIds) {
+        if (filesToDeleteIds.size() > post.getResources().size()) {
+            throw new IllegalArgumentException("Can't delete more resources than exist in post with id %d"
+                    .formatted(post.getId()));
+        }
+    }
+
+    private void checkResourcesCountAfterUpdate(
+            Post post, PostUpdatingRequest request) {
+        int resourceToDeleteCount = request.filesToDeleteIds() == null ? 0 : request.filesToDeleteIds().size();
+        int resourceToAddCount = request.filesToAdd() == null ? 0 : request.filesToAdd().size();
+        int resourcesCountAfterUpdate =
+                post.getResources().size() - resourceToDeleteCount + resourceToAddCount;
+        if (resourcesCountAfterUpdate > 10) {
+            throw new IllegalArgumentException("Can't add more than 10 resources to post with id %d"
+                    .formatted(post.getId()));
+        }
     }
 }
