@@ -72,7 +72,7 @@ public class KafkaPostListener implements KafkaEventListener<PostKafkaEvent> {
             executorService.shutdown();
             try {
                 if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
-                    log.warn("Executor did not terminate in the specified time");
+                    log.warn("Executor did not terminate in the specified time.");
                     executorService.shutdownNow();
                 }
             } catch (InterruptedException e) {
