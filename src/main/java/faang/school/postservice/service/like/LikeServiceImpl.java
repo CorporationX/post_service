@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,7 +47,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     public void unlikePost(LikeDto likeDto) {
-        Post post =  validateAndGetPost(likeDto);
+        Post post = validateAndGetPost(likeDto);
         likeRepository.deleteByPostIdAndUserId(post.getId(), likeDto.getUserId());
     }
 
@@ -87,7 +88,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     private void validateLikeToPostAndCommentForComment(LikeDto likeDto) {
-        List<Long> postLikes =  postRepository
+        List<Long> postLikes = postRepository
                 .findById(likeDto.getPostId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post with %s id not found", likeDto.getPostId())))
                 .getLikes()
@@ -153,25 +154,23 @@ public class LikeServiceImpl implements LikeService {
                 throw new IllegalArgumentException("Comment already liked!");
             }
         }
-
-    private final LikeRepository likeRepository;
-    private final UserServiceClient userServiceClient;
+    }
 
     @Override
-    public List<UserDto> getUsersLikedPost(long postId) {
+    public List<UserDto> getUsersLikedPost (long postId){
         List<Like> likes = likeRepository.findByPostId(postId);
 
         return dividingListIntoGroups(likes);
     }
 
     @Override
-    public List<UserDto> getUsersLikedComment(long commentId) {
+    public List<UserDto> getUsersLikedComment (long commentId){
         List<Like> likes = likeRepository.findByCommentId(commentId);
 
         return dividingListIntoGroups(likes);
     }
 
-    private List<UserDto> dividingListIntoGroups(List<Like> likes) {
+    private List<UserDto> dividingListIntoGroups (List<Like> likes) {
         List<Long> userIds = likes.stream()
                 .map(Like::getUserId)
                 .toList();
@@ -189,5 +188,4 @@ public class LikeServiceImpl implements LikeService {
                 .flatMap(List::stream)
                 .toList();
     }
-
 }
