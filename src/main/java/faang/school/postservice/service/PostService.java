@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
+    private final ExecutorService executorService;
 
     @Transactional
     public Post createDraftPost(Post post) {
@@ -38,6 +40,27 @@ public class PostService {
         }
         publish(existingPost);
         return postRepository.save(existingPost);
+    }
+
+    @Transactional
+    public void publishScheduledPosts() {
+        List<Post> posts = postRepository.findReadyToPublish();
+
+        int batchSize = 1000;
+
+        for (int i = 0; i < posts.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, posts.size());
+            List<Post> sendPosts = posts.subList(i, end);
+
+            executorService.submit(() -> {
+                List<Post> newPost = sendPosts.stream()
+                        .peek(post -> {
+                            post.setPublished(true);
+                            post.setPublishedAt(LocalDateTime.now());
+                        }).toList();
+                postRepository.saveAll(newPost);
+            });
+        }
     }
 
     @Transactional

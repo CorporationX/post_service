@@ -8,21 +8,30 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,6 +49,9 @@ public class PostServiceTest {
 
     @Mock
     private UserContext userContext;
+
+    @Mock
+    private ExecutorService executorService;
 
     @InjectMocks
     PostService postService;
@@ -187,5 +199,28 @@ public class PostServiceTest {
         assertFalse(result.isEmpty());
         assertEquals(1L, result.get(0).getProjectId());
         verify(postRepository, times(1)).findPublishedByProjectId(post.getProjectId());
+    }
+
+    @Test
+    public void testPublishScheduledPost() {
+        Post post1 = new Post();
+        post1.setScheduledAt(LocalDateTime.now());
+        post1.setPublished(false);
+        Post post2 = new Post();
+        post2.setPublishedAt(LocalDateTime.now());
+        post2.setPublished(false);
+
+        List<Post> mockPosts = List.of(post1, post2);
+
+        when(postRepository.findReadyToPublish()).thenReturn(mockPosts);
+
+        doAnswer(invocation -> {
+            Runnable task = invocation.getArgument(0);
+            task.run();
+            return null;
+        }).when(executorService).submit(any(Runnable.class));
+
+        postService.publishScheduledPosts();
+        verify(postRepository, times(1)).saveAll(mockPosts);
     }
 }
