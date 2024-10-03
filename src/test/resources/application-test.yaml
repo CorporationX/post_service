@@ -10,3 +10,11 @@ spring:
       ddl-auto: create-drop
   liquibase:
     enabled: false
+
+post:
+  verify:
+    retry:
+      max-attempts: 3
+      delay: 0
+    scheduler:
+      cron: "* * * * * ?" # every second
