@@ -1,8 +1,7 @@
 package faang.school.postservice.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.properties.RedisProperties;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
