@@ -21,20 +21,37 @@ spring:
     redis:
       port: 6379
       host: localhost
+      lock-registry:
+        key: registry-key
+        ttl-millis: 10000
+        try-lock-millis: 2000
       cache:
         post:
           ttl-hours: 24
         user:
           ttl-hours: 24
+        news-feed:
+          ttl-hours: 24
+          prefix: NewsFeed
 
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
+      enable-auto-commit: false
       group-id:
         post: post
     topic:
       post:
         published: post-published-topic
+
+  async:
+    executor:
+      core-pool-size: 5
+      max-pool-size: 10
+      queue-capacity: 500
+
+news-feed:
+  max-size: 500
 
 server:
   port: 8081

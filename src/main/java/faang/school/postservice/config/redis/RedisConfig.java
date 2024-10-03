@@ -10,6 +10,10 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.convert.KeyspaceConfiguration;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.data.redis.serializer.GenericToStringSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.integration.redis.util.RedisLockRegistry;
+import org.springframework.lang.NonNull;
 
 @Configuration
 @EnableRedisRepositories(keyspaceConfiguration = RedisConfig.MyKeyspaceConfiguration.class)
@@ -26,6 +30,12 @@ public class RedisConfig {
     @Value("${spring.data.redis.cache.user.ttl-hours}")
     private long userTtlHours;
 
+    @Value("${spring.data.redis.lock-registry.key}")
+    private String registryKey;
+
+    @Value("${spring.data.redis.lock-registry.ttl-millis}")
+    private long lockTtlMillis;
+
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
@@ -33,20 +43,35 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
+    public RedisTemplate<String, Object> objectRedisTemplate() {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());
         return template;
     }
 
+    @Bean
+    public RedisTemplate<String, Long> longRedisTemplate() {
+        RedisTemplate<String, Long> template = new RedisTemplate<>();
+        template.setConnectionFactory(jedisConnectionFactory());
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericToStringSerializer<>(Long.class));
+        template.setEnableTransactionSupport(true);
+        return template;
+    }
+
+    @Bean
+    public RedisLockRegistry redisLockRegistry(JedisConnectionFactory factory) {
+        return new RedisLockRegistry(factory, registryKey, lockTtlMillis);
+    }
+
     public class MyKeyspaceConfiguration extends KeyspaceConfiguration {
         @Override
-        public boolean hasSettingsFor(Class<?> type) {
+        public boolean hasSettingsFor(@NonNull Class<?> type) {
             return true;
         }
 
         @Override
-        public KeyspaceSettings getKeyspaceSettings(Class<?> type) {
+        public @NonNull KeyspaceSettings getKeyspaceSettings(@NonNull Class<?> type) {
             long secondsInHour = 3600L;
 
             KeyspaceSettings keyspacePostSettings = new KeyspaceSettings(PostRedis.class, "Post");
