@@ -21,8 +21,7 @@ public class HeatRecommendationFeed {
     @Value("${feed.recommendation-size}")
     private int recommendationSize;
 
-    //@Scheduled(cron = "${feed.recommendation-cron}")
-    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(cron = "${feed.recommendation-cron}")
     public void heatRecommendationFeed() {
         Pageable pageable = PageRequest.of(0, recommendationSize);
         List<Long> recommendation = postRepository.findTopPostIdsByLikes(pageable);
