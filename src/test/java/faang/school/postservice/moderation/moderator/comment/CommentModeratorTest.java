@@ -29,26 +29,24 @@ class CommentModeratorTest {
     CommentRepository commentRepository;
     @Mock
     ModerationDictionary moderationDictionary;
-    private int batchSize;
 
-        @Test
-        @Async("moderatorPool")
-        @Scheduled(cron = "0 0 8 * * *")
-        void verifyCommentsByDateTest() throws IOException {
-            batchSize = 100;
-            LocalDateTime verifiedDate = LocalDateTime.now();
-            Comment comment1 = new Comment();
-            Comment comment2 = new Comment();
-            comment2.setVerifiedDate(verifiedDate);
-            comment1.setVerifiedDate(verifiedDate);
-            List<Comment> listOfComments = List.of(comment1, comment2);
-            when(commentRepository.findCommentsByVerifiedDate(verifiedDate)).thenReturn(listOfComments);
+    @Test
+    @Scheduled(cron = "0 0 8 * * *")
+    void verifyCommentsByDateTest() throws IOException {
+        int batchSize = 100;
+        LocalDateTime verifiedDate = LocalDateTime.now();
+        Comment comment1 = new Comment();
+        Comment comment2 = new Comment();
+        comment2.setVerifiedDate(verifiedDate);
+        comment1.setVerifiedDate(verifiedDate);
+        List<Comment> listOfComments = List.of(comment1, comment2);
+        when(commentRepository.findCommentsByVerifiedDate(verifiedDate)).thenReturn(listOfComments);
 
-            commentModerator.verifyCommentsByDate(verifiedDate);
+        commentModerator.verifyCommentsByDate(verifiedDate);
 
-            verify(moderationDictionary, times(2)).verifyComment(comment1);
-            verify(moderationDictionary, times(2)).verifyComment(comment2);
+        verify(moderationDictionary, times(2)).verifyComment(comment1);
+        verify(moderationDictionary, times(2)).verifyComment(comment2);
 
 
-        }
+    }
 }

@@ -52,3 +52,7 @@ payment-service:
 
   comment_moderation:
     chunk_size: 100
+
+moderation:
+  file:
+    path: "classpath:forbidden-words.txt"
