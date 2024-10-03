@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.TreeSet;
 
 @RestController
 @RequestMapping("/feed")
@@ -21,13 +20,13 @@ public class FeedController {
 
     @GetMapping("/{userId}")
     public ResponseEntity<List<PostFeedDto>> getNewsFeed(@PathVariable("userId") long userId,
-                                                         @RequestParam(value = "postId", required = false) Long postId){
+                                                         @RequestParam(value = "postId", required = false) Long postId) {
         return ResponseEntity.status(HttpStatus.OK).body(feedService.getNewsFeed(postId, userId));
     }
 
     @PostMapping("/heat")
-    public ResponseEntity<Void> heatCashFeed(){
-        heaterCashFeed.get();
-
+    public ResponseEntity<Void> heatCashFeed() {
+        heaterCashFeed.feedHeat();
+        return ResponseEntity.ok().build();
     }
 }

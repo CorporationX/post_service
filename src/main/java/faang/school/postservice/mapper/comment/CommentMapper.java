@@ -7,6 +7,8 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 
 import java.util.List;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import faang.school.postservice.model.redis.CommentRedis;
 import faang.school.postservice.service.post.PostService;
@@ -39,8 +41,17 @@ public interface CommentMapper {
     @Mapping(source = "id", target = "commentId")
     @Mapping(source = "post.id", target = "postId")
     CommentEvent toEvent(Comment comment);
+    CommentRedis commentToCommentRedis(Comment comment);
 
     CommentRedis toCommentRedis(CommentKafkaEvent comment);
 
     CommentKafkaEvent toCommentKafkaEvent(CommentDto commentDto);
+
+    @Named("mapComments")
+    default TreeSet<CommentRedis> mapComments(List<Comment> comments){
+        return comments.stream()
+                .map(this::commentToCommentRedis)
+                .limit(3)
+                .collect(Collectors.toCollection(TreeSet::new));
+    }
 }

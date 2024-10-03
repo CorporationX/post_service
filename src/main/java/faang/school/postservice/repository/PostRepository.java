@@ -1,5 +1,6 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.dto.post.PostForFeedHeater;
 import faang.school.postservice.model.Post;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -26,4 +27,12 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = true AND p.deleted = false ORDER BY p.publishedAt DESC")
     List<Post> findNewPostsForHeat(Pageable pageable);
+
+    @Query("""
+            SELECT new faang.school.postservice.dto.post.PostForFeedHeater(p.id, p.authorId)
+            FROM Post p
+            WHERE p.published = true
+            AND p.deleted = false
+            """)
+    List<PostForFeedHeater> findAllPublishedPostsForFeedHeater();
 }

@@ -36,6 +36,8 @@ public class RedisFeedRepository {
         String key = "feed:" + followerId;
         try {
             FeedRedis feedRedis = (FeedRedis) redisTemplate.opsForValue().get(key);
+//            FeedRedis feedRedis = (FeedRedis) redisTemplate.opsForZSet().range(key, 0, redisTemplate.opsForZSet().count(key, Double.MIN_VALUE, Double.MAX_VALUE));
+//            FeedRedis feedRedis = (FeedRedis) redisTemplate.opsForZSet().range(key, 0, -1);
             return Optional.ofNullable(feedRedis);
         } catch (RedisConnectionFailureException | JedisConnectionException e) {
             log.error("Failed to fetch feed for follower with ID: {} from Redis", followerId, e);
