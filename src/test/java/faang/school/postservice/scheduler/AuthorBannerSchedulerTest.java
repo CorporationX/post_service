@@ -17,7 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AuthorBannerTest {
+class AuthorBannerSchedulerTest {
 
     @Mock
     private PostService postService;
@@ -26,13 +26,13 @@ class AuthorBannerTest {
     private RedisTemplate<String, List<Long>> redisTemplate;
 
     @InjectMocks
-    private AuthorBanner authorBanner;
+    private AuthorBannerScheduler authorBannerScheduler;
 
     private final String channel = "channel";
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(authorBanner, "channel", channel);
+        ReflectionTestUtils.setField(authorBannerScheduler, "channel", channel);
     }
 
     @Test
@@ -40,7 +40,7 @@ class AuthorBannerTest {
         List<Long> violatorIds = List.of(1L, 2L, 3L);
         when(postService.getAuthorsWithMoreFiveUnverifiedPosts()).thenReturn(violatorIds);
 
-        authorBanner.banUser();
+        authorBannerScheduler.banUser();
 
         verify(postService).getAuthorsWithMoreFiveUnverifiedPosts();
         verify(redisTemplate).convertAndSend(channel, violatorIds);
@@ -50,7 +50,7 @@ class AuthorBannerTest {
     void testBanUserWithEmptyList() {
         when(postService.getAuthorsWithMoreFiveUnverifiedPosts()).thenReturn(Collections.emptyList());
 
-        authorBanner.banUser();
+        authorBannerScheduler.banUser();
 
         verify(postService).getAuthorsWithMoreFiveUnverifiedPosts();
         verify(redisTemplate).convertAndSend(channel, Collections.emptyList());

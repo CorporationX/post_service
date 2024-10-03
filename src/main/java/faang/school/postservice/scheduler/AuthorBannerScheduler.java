@@ -13,7 +13,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AuthorBanner {
+public class AuthorBannerScheduler {
 
     private final RedisTemplate<String, List<Long>> redisTemplate;
     private final PostService postService;

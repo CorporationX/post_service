@@ -2,7 +2,7 @@ package faang.school.postservice.scheduler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.config.RedisProperties;
+import faang.school.postservice.properties.RedisProperties;
 import faang.school.postservice.config.RedisTestConfig;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.AfterEach;
@@ -35,10 +35,10 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @Import({RedisTestConfig.class})
-class AuthorBannerIntegrationTest {
+class AuthorBannerSchedulerIntegrationTest {
 
     @Autowired
-    private AuthorBanner authorBanner;
+    private AuthorBannerScheduler authorBannerScheduler;
 
     @MockBean
     private PostService postService;
@@ -95,7 +95,7 @@ class AuthorBannerIntegrationTest {
             }
         }, new ChannelTopic(redisProperties.getChannels().get("user-service")));
 
-        authorBanner.banUser();
+        authorBannerScheduler.banUser();
         boolean messageReceived = latch.await(30, TimeUnit.SECONDS);
 
         assertTrue(messageReceived);
