@@ -102,6 +102,24 @@ class AlbumServiceTest {
     }
 
     @Test
+    void testGetAlbum_Success_Visibility_ALL_USERS() {
+        Album expected = new Album();
+        expected.setVisibility(ALL_USERS);
+        expected.setChosenUserIds(List.of(1L, 2L, 3L));
+
+        when(checker.findByIdWithPosts(ALBUM_ID)).thenReturn(expected);
+        when(userServiceClient.getOnlyActiveUsersFromList(eq(List.of(1L, 2L, 3L)))).thenReturn(List.of(2L));
+
+        album = albumService.getAlbum(USER_ID, ALBUM_ID);
+
+        verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
+        verify(checker, Mockito.times(1)).findByIdWithPosts(ALBUM_ID);
+        assertEquals(1, album.getChosenUserIds().size());
+        assertEquals(2L, album.getChosenUserIds().get(0));
+        assertEquals(expected, album);
+    }
+
+    @Test
     void testUpdateAlbum() {
         String newTitle = "New title";
         String newDescription = "New description";
@@ -313,6 +331,7 @@ class AlbumServiceTest {
     private Album forUpdateAlbumTest(String newTitle, String newDescription) {
         album = buildAlbum(ALBUM_ID, TITLE, DESCRIPTION, USER_ID);
         when(checker.findByIdWithPosts(ALBUM_ID)).thenReturn(album);
+        when(albumRepository.save(any(Album.class))).thenReturn(album);
 
         albumService.updateAlbum(USER_ID, ALBUM_ID, newTitle, newDescription);
 

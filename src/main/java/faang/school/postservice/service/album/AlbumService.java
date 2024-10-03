@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static faang.school.postservice.model.album.AlbumVisibility.ALL_USERS;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALREADY_FAVORITE;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.NOT_FAVORITE;
 
@@ -44,7 +45,9 @@ public class AlbumService {
     @Transactional(readOnly = true)
     public Album getAlbum(long userId, long albumId) {
         checker.checkUserExists(userId);
-        return checker.findByIdWithPosts(albumId);
+        Album foundAlbum = checker.findByIdWithPosts(albumId);
+        actualizeChosenUserIds(foundAlbum);
+        return foundAlbum;
     }
 
     @Transactional
@@ -57,8 +60,10 @@ public class AlbumService {
         if (description != null && !description.isBlank()) {
             album.setDescription(description);
         }
+        Album updatedAlbum = albumRepository.save(album);
+        actualizeChosenUserIds(updatedAlbum);
         log.info("Album with id {} updated", albumId);
-        return albumRepository.save(album);
+        return updatedAlbum;
     }
 
     @Transactional
@@ -138,6 +143,14 @@ public class AlbumService {
         Stream<Album> allAlbums = albumRepository.findAll().stream();
         Stream<Album> visibleAlbums = allAlbums.filter(isVisibleForUser(userId));
         return findAlbumsByStreamAndFilters(visibleAlbums, filters);
+    }
+
+    private void actualizeChosenUserIds(Album album) {
+        if (album.getVisibility() == ALL_USERS) {
+            List<Long> chosenUserIds = album.getChosenUserIds();
+            List<Long> onlyActiveChosenUserIds = userServiceClient.getOnlyActiveUsersFromList(chosenUserIds);
+            album.setChosenUserIds(onlyActiveChosenUserIds);
+        }
     }
 
     public Album getAlbumAfterChecks(long userId, long albumId) {

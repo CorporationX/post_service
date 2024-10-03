@@ -21,6 +21,7 @@ public class BuilderForAlbumsTests {
                 .posts(posts)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .visibility(ALL_USERS)
                 .build();
     }
 
@@ -28,6 +29,7 @@ public class BuilderForAlbumsTests {
         return Album.builder()
                 .title(title)
                 .description(description)
+                .visibility(ALL_USERS)
                 .build();
     }
 
@@ -35,6 +37,7 @@ public class BuilderForAlbumsTests {
         return Album.builder()
                 .id(albumId)
                 .authorId(authorId)
+                .visibility(ALL_USERS)
                 .build();
     }
 
@@ -44,6 +47,7 @@ public class BuilderForAlbumsTests {
                 .title(title)
                 .authorId(authorId)
                 .posts(posts)
+                .visibility(ALL_USERS)
                 .build();
     }
 
@@ -61,6 +65,7 @@ public class BuilderForAlbumsTests {
                 .id(albumId)
                 .title(title)
                 .createdAt(LocalDateTime.now().minusDays(getRandomLong(fromMinusDays, toMinusDays)))
+                .visibility(ALL_USERS)
                 .build();
     }
 
@@ -70,12 +75,14 @@ public class BuilderForAlbumsTests {
                 .title(title)
                 .description(description)
                 .authorId(authorId)
+                .visibility(ALL_USERS)
                 .build();
     }
 
     public static Album buildAlbum(long authorId) {
         return Album.builder()
                 .authorId(authorId)
+                .visibility(ALL_USERS)
                 .build();
     }
 

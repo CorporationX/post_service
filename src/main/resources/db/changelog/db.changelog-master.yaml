@@ -7,7 +7,3 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003_resource.sql
   - include:
       file: db/changelog/changeset/post_V004__add_columns_to_table_album.sql
-  - include:
-      file: db/changelog/changeset/post_V005__add_trigger_check_user_active.sql
-  - include:
-      file: db/changelog/changeset/post_V006__add_trigger_user_became_inactive.sql
