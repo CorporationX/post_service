@@ -8,12 +8,15 @@ import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,10 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
+    private final ContentModerationService contentModerationService;
+
+    @Value("${post.moderation.batch.size}")
+    private int batchSize;
 
     @Transactional
     public Post createDraftPost(Post post) {
@@ -77,6 +84,25 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<Post> getProjectPublishedPosts(long projectId) {
         return postRepository.findPublishedByProjectId(projectId);
+    }
+
+    public void moderationOfPost() {
+        List<Post> unverifiedOrOldVerifiedPosts = postRepository.findUnverifiedOrOldVerifiedPosts(LocalDateTime.now().minusHours(24));
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        for (int i = 0; i < unverifiedOrOldVerifiedPosts.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, unverifiedOrOldVerifiedPosts.size());
+            List<Post> batch = unverifiedOrOldVerifiedPosts.subList(i, end);
+
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                for (Post post : batch) {
+                    contentModerationService.checkContentAndModerate(post);
+                }
+            });
+            futures.add(future);
+        }
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
     private void validateAuthorOrProject(Post post) {

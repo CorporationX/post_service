@@ -6,6 +6,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.ContentModerationService;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +43,9 @@ public class PostServiceTest {
     @Mock
     private UserContext userContext;
 
+    @Mock
+    private ContentModerationService contentModerationService;
+
     @InjectMocks
     PostService postService;
 
@@ -48,7 +53,11 @@ public class PostServiceTest {
     private Post post;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
+        java.lang.reflect.Field batchSizeField = PostService.class.getDeclaredField("batchSize");
+        batchSizeField.setAccessible(true);
+        batchSizeField.set(postService, 2);
+
         post = new Post();
         post.setId(1L);
         post.setAuthorId(1L);
@@ -187,5 +196,22 @@ public class PostServiceTest {
         assertFalse(result.isEmpty());
         assertEquals(1L, result.get(0).getProjectId());
         verify(postRepository, times(1)).findPublishedByProjectId(post.getProjectId());
+    }
+
+    @Test
+    public void testModerationOfPost() {
+        List<Post> posts = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            Post post = new Post();
+            post.setId((long) i);
+            post.setContent("Sample content " + i);
+            posts.add(post);
+        }
+
+        when(postRepository.findUnverifiedOrOldVerifiedPosts(any(LocalDateTime.class))).thenReturn(posts);
+
+        postService.moderationOfPost();
+
+        verify(contentModerationService, times(5)).checkContentAndModerate(any(Post.class));
     }
 }

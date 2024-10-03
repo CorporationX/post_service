@@ -4,8 +4,10 @@ import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -35,4 +37,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = true AND p.deleted = false AND p.projectId = :projectId ORDER BY p.publishedAt DESC")
     List<Post> findPublishedByProjectId(long projectId);
+
+    @Query("SELECT p FROM Post p WHERE p.verified = false OR p.verifiedAt <= :time")
+    List<Post> findUnverifiedOrOldVerifiedPosts(@Param("time") LocalDateTime time);
 }

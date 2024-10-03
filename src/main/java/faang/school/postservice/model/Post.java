@@ -81,4 +81,12 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "verified", nullable = false)
+    private boolean verified;
+
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
 }
