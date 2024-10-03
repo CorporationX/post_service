@@ -36,16 +36,13 @@ public class LikeServiceImpl implements LikeService{
                 .map(Like::getUserId)
                 .toList();
 
-        List<List<Long>> subLists = new ArrayList<>();
         List<List<UserDto>> results = new ArrayList<>();
 
         for (int i = 0; i < userIds.size(); i += 100) {
-            subLists.add(userIds.subList(i, Math.min(i + 100, userIds.size())));
+            List<Long> sublist = userIds.subList(i, Math.min(i + 100, userIds.size()));
 
-            for (List<Long> subList : subLists) {
-                List<UserDto> result = userServiceClient.getUsersByIds(subList);
-                results.add(result);
-            }
+            List<UserDto> result = userServiceClient.getUsersByIds(sublist);
+            results.add(result);
         }
 
         return results.stream()
