@@ -41,6 +41,10 @@ public class Album {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Enumerated
+    @Column(name = "visibility", nullable = false)
+    private AlbumVisibility visibility;
+
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")

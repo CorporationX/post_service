@@ -4,6 +4,8 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V002__ad.sql
   - include:
+      file: db/changelog/changeset/post_V003_ad_visibility_to_albom.sql
+  - include:
       file: db/changelog/changeset/post_V003_resource.sql
   - include:
       file: db/changelog/changeset/post_V004__hashtag.sql
