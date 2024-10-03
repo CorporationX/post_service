@@ -3,6 +3,7 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
@@ -51,5 +52,10 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void delete(Long id) {
         commentRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Comment> getUnverifiedComments() {
+        return commentRepository.findAllByVerifiedFalse();
     }
 }

@@ -1,19 +1,26 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.event.BanEvent;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.RedisMessagePublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +30,11 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final HashtagService hashtagService;
     private final PostValidator postValidator;
+    private final CommentService commentService;
+    private final RedisMessagePublisher publisher;
+
+    @Value("${post.comments.ban-limit}")
+    private int badCommentsLimit;
 
     @Override
     @Transactional
@@ -144,13 +156,25 @@ public class PostServiceImpl implements PostService {
         return posts;
     }
 
-    private Post getPostFromRepository(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
-    }
-
     @Override
     public List<PostDto> getPostsByHashtag(String hashtag) {
         return hashtagService.findPostsByHashtag(hashtag);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void moderateUserBehaviour() {
+        List<Comment> unverifiedComments = commentService.getUnverifiedComments();
+
+        unverifiedComments.stream()
+                .collect(Collectors.groupingBy(Comment::getAuthorId, Collectors.counting()))
+                .entrySet().stream()
+                .filter(pair -> pair.getValue() > badCommentsLimit)
+                .forEach(user -> publisher.publish(new BanEvent(user.getKey())));
+    }
+
+    private Post getPostFromRepository(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
     }
 }
