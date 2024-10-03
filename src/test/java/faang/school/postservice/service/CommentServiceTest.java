@@ -31,12 +31,12 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
-    private final long postId = 1L;
-    private final String content = "test";
-    private final long authorId = 1L;
-    private final LocalDateTime createdAt = LocalDateTime.of(2024, 9, 21, 11, 34, 54);
-    private final LocalDateTime updatedAt = LocalDateTime.of(2024, 9, 24, 11, 30, 23);
-    private final long commentId = 1L;
+    private static final long POST_ID = 1L;
+    private static final String CONTENT = "test";
+    private static final long AUTHOR_ID = 1L;
+    private static final LocalDateTime CREATED_AT = LocalDateTime.of(2024, 9, 21, 11, 34, 54);
+    private static final LocalDateTime UPDATED_AT = LocalDateTime.of(2024, 9, 24, 11, 30, 23);
+    private static final long COMMENT_ID = 1L;
 
     private CreateCommentRequest createCommentRequest;
     private Comment commentForDto;
@@ -75,88 +75,43 @@ class CommentServiceTest {
     @BeforeEach
     void init() {
 
-        post = mock(Post.class);
+        post = new Post();
         userDto = mock(UserDto.class);
 
         createCommentRequest = CreateCommentRequest.builder()
-                .content(content)
-                .authorId(authorId)
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
                 .build();
 
         updateCommentRequest = UpdateCommentRequest.builder()
-                .content(content)
-                .authorId(authorId)
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
                 .build();
 
-        commentForDto = Comment.builder()
-                .content(content)
-                .authorId(authorId)
-                .build();
+        commentForDto = initializingComment(CONTENT, AUTHOR_ID);
 
-        commentForDB = Comment.builder()
-                .id(1L)
-                .content(content)
-                .authorId(authorId)
-                .post(post)
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
-                .build();
+        commentForDB = initializingComment(COMMENT_ID, CONTENT, AUTHOR_ID, post, CREATED_AT, UPDATED_AT);
 
-        comment = Comment.builder()
-                .id(1L)
-                .content(content)
-                .authorId(authorId)
-                .post(post)
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
-                .build();
-
-        comment1 = Comment.builder()
-                .id(2L)
-                .content(content)
-                .authorId(2L)
-                .post(post)
-                .createdAt(LocalDateTime.of(2024, 3, 3, 5, 7, 23))
-                .updatedAt(LocalDateTime.of(2025, 9, 24, 11, 30, 23))
-                .build();
-
-        comment2 = Comment.builder()
-                .id(3L)
-                .content(content)
-                .authorId(3L)
-                .post(post)
-                .createdAt(LocalDateTime.of(2024, 10, 24, 11, 43, 43))
-                .updatedAt(LocalDateTime.of(2024, 11, 13, 16, 12, 32))
-                .build();
+        comment = initializingComment(COMMENT_ID, CONTENT, AUTHOR_ID, post, CREATED_AT, UPDATED_AT);
+        comment1 = initializingComment(2L, CONTENT, 2L, post,
+                LocalDateTime.of(2024, 3, 3, 5, 7, 23),
+                LocalDateTime.of(2025, 9, 24, 11, 30, 23));
+        comment2 = initializingComment(3L, CONTENT, 3L, post,
+                LocalDateTime.of(2024, 10, 24, 11, 43, 43),
+                LocalDateTime.of(2024, 11, 13, 16, 12, 32));
 
         comments = new ArrayList<>();
         comments.add(comment);
         comments.add(comment1);
         comments.add(comment2);
 
-        commentDto = CommentDto.builder()
-                .id(1L)
-                .content(content)
-                .authorId(authorId)
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
-                .build();
-
-        commentDto1 = CommentDto.builder()
-                .id(2L)
-                .content(content)
-                .authorId(2L)
-                .createdAt(LocalDateTime.of(2024, 3, 3, 5, 7, 23))
-                .updatedAt(LocalDateTime.of(2025, 9, 24, 11, 30, 23))
-                .build();
-
-        commentDto2 = CommentDto.builder()
-                .id(3L)
-                .content(content)
-                .authorId(3L)
-                .createdAt(LocalDateTime.of(2024, 10, 24, 11, 43, 43))
-                .updatedAt(LocalDateTime.of(2024, 11, 13, 11, 12, 32))
-                .build();
+        commentDto = initializingCommentDto(COMMENT_ID, CONTENT, AUTHOR_ID, CREATED_AT, UPDATED_AT);
+        commentDto1 = initializingCommentDto(2L, CONTENT, 2L,
+                LocalDateTime.of(2024, 3, 3, 5, 7, 23),
+                LocalDateTime.of(2025, 9, 24, 11, 30, 23));
+        commentDto2 = initializingCommentDto(3L, CONTENT, 3L,
+                LocalDateTime.of(2024, 10, 24, 11, 43, 43),
+                LocalDateTime.of(2024, 11, 13, 11, 12, 32));
     }
 
     @Nested
@@ -166,19 +121,19 @@ class CommentServiceTest {
         void testSuccessfulCompletionCreateComment() {
             when(userServiceClient.getUser(createCommentRequest.getAuthorId())).thenReturn(userDto);
             when(commentMapper.toComment(createCommentRequest)).thenReturn(commentForDto);
-            when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+            when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
             when(commentRepository.save(commentForDto)).thenReturn(commentForDB);
             when(commentMapper.toCommentDto(commentForDB)).thenReturn(commentDto);
 
-            CommentDto result = commentService.createComment(postId, createCommentRequest);
+            CommentDto result = commentService.createComment(POST_ID, createCommentRequest);
 
             verify(userServiceClient).getUser(createCommentRequest.getAuthorId());
             verify(commentMapper).toComment(createCommentRequest);
-            verify(postRepository).findById(postId);
-            assertNotNull(commentForDto.getPost());
+            verify(postRepository).findById(POST_ID);
             verify(commentRepository).save(commentForDto);
             verify(commentMapper).toCommentDto(commentForDB);
 
+            assertNotNull(commentForDto.getPost());
             assertEquals(result.getId(), commentForDB.getId());
             assertEquals(result.getContent(), commentForDB.getContent());
             assertEquals(result.getAuthorId(), commentForDB.getAuthorId());
@@ -189,19 +144,19 @@ class CommentServiceTest {
         @Test
         @DisplayName("successful comment update")
         void testSuccessfulCompletionUpdateComment() {
-            when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+            when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
             doNothing().when(commentValidator).checkingForCompliance(comment, updateCommentRequest);
             when(commentMapper.toComment(updateCommentRequest)).thenReturn(commentForDto);
-            when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+            when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
             when(commentRepository.save(commentForDto)).thenReturn(commentForDB);
             when(commentMapper.toCommentDto(commentForDB)).thenReturn(commentDto);
 
-            CommentDto result = commentService.updateComment(postId, 1L, updateCommentRequest);
+            CommentDto result = commentService.updateComment(POST_ID, 1L, updateCommentRequest);
 
-            verify(commentRepository).findById(commentId);
+            verify(commentRepository).findById(COMMENT_ID);
             verify(commentValidator).checkingForCompliance(comment, updateCommentRequest);
             verify(commentMapper).toComment(updateCommentRequest);
-            verify(postRepository).findById(postId);
+            verify(postRepository).findById(POST_ID);
             assertNotNull(commentForDto.getPost());
             verify(commentRepository).save(commentForDto);
             verify(commentMapper).toCommentDto(commentForDB);
@@ -216,12 +171,12 @@ class CommentServiceTest {
         @Test
         @DisplayName("successful receipt of the list of comments")
         void testSuccessfulCompletionGetAllComments() {
-            when(commentRepository.findAllByPostId(postId)).thenReturn(comments);
+            when(commentRepository.findAllByPostId(POST_ID)).thenReturn(comments);
             when(commentMapper.toCommentDto(comment)).thenReturn(commentDto);
             when(commentMapper.toCommentDto(comment1)).thenReturn(commentDto1);
             when(commentMapper.toCommentDto(comment2)).thenReturn(commentDto2);
 
-            List<CommentDto> result = commentService.getAllComments(postId);
+            List<CommentDto> result = commentService.getAllComments(POST_ID);
 
             CommentDto commentDtoWithMinDateTime = result.stream()
                     .min((dto1, dto2) -> dto1.getCreatedAt().compareTo(dto2.getCreatedAt()))
@@ -238,11 +193,10 @@ class CommentServiceTest {
         @Test
         @DisplayName("successful deletion of a comment")
         void testSuccessfulCompletionDeleteComment() {
-            doNothing().when(commentRepository).deleteById(commentId);
+            doNothing().when(commentRepository).deleteById(COMMENT_ID);
 
-            commentService.deleteComment(commentId);
+            assertDoesNotThrow(() -> commentService.deleteComment(COMMENT_ID));
         }
-
     }
 
     @Nested
@@ -252,15 +206,15 @@ class CommentServiceTest {
         void testCreateCommentWhenUserServiceClientReturnException() {
             when(userServiceClient.getUser(createCommentRequest.getAuthorId())).thenThrow(FeignException.class);
 
-            assertThrows(FeignException.class, () -> commentService.createComment(postId, createCommentRequest));
+            assertThrows(FeignException.class, () -> commentService.createComment(POST_ID, createCommentRequest));
         }
 
         @Test
         @DisplayName("successfully throwing an exception when userServiceClient return exception")
         void testCreateCommentWhenPostRepositoryReturnException() {
-            when(postRepository.findById(postId)).thenThrow(EntityNotFoundException.class);
+            when(postRepository.findById(POST_ID)).thenThrow(EntityNotFoundException.class);
 
-            assertThrows(EntityNotFoundException.class, () -> commentService.createComment(postId, createCommentRequest));
+            assertThrows(EntityNotFoundException.class, () -> commentService.createComment(POST_ID, createCommentRequest));
         }
 
         @Test
@@ -268,24 +222,55 @@ class CommentServiceTest {
         void testUpdateCommentWhenCommentRepositoryReturnException() {
             when(commentRepository.findById(1L)).thenThrow(DataValidationException.class);
 
-            assertThrows(DataValidationException.class, () -> commentService.updateComment(postId, 1L, updateCommentRequest));
+            assertThrows(DataValidationException.class, () -> commentService.updateComment(POST_ID, 1L, updateCommentRequest));
         }
 
         @Test
         @DisplayName("successfully throwing an exception when userServiceClient return exception")
         void testUpdateCommentWhenPostRepositoryReturnException() {
             when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-            when(postRepository.findById(postId)).thenThrow(EntityNotFoundException.class);
+            when(postRepository.findById(POST_ID)).thenThrow(EntityNotFoundException.class);
 
-            assertThrows(EntityNotFoundException.class, () -> commentService.updateComment(postId, 1L, updateCommentRequest));
+            assertThrows(EntityNotFoundException.class, () -> commentService.updateComment(POST_ID, 1L, updateCommentRequest));
         }
 
         @Test
         @DisplayName("successfully throwing an exception when List of comments is Empty")
         void testGetAllCommentsWhenListIsEmpty() {
-            when(commentRepository.findAllByPostId(postId)).thenReturn(Collections.emptyList());
+            when(commentRepository.findAllByPostId(POST_ID)).thenReturn(Collections.emptyList());
 
-            assertThrows(NoSuchElementException.class, () -> commentService.getAllComments(postId));
+            assertThrows(NoSuchElementException.class, () -> commentService.getAllComments(POST_ID));
         }
     }
+
+    private Comment initializingComment(long commentId, String content, long authorId, Post post,
+                                        LocalDateTime createdAt, LocalDateTime updateAt) {
+        return Comment.builder()
+                .id(commentId)
+                .content(content)
+                .authorId(authorId)
+                .post(post)
+                .createdAt(createdAt)
+                .updatedAt(updateAt)
+                .build();
+    }
+
+    private Comment initializingComment(String content, long authorId) {
+        return Comment.builder()
+                .content(content)
+                .authorId(authorId)
+                .build();
+    }
+
+    private CommentDto initializingCommentDto(long commentDtoId, String content,
+                                              long authorId, LocalDateTime createAt, LocalDateTime updateAt) {
+        return CommentDto.builder()
+                .id(commentDtoId)
+                .content(content)
+                .authorId(authorId)
+                .createdAt(createAt)
+                .updatedAt(updateAt)
+                .build();
+    }
+
 }

@@ -13,8 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,6 +58,7 @@ class CommentValidatorTest {
         commentValidator.checkingForCompliance(comment, updateCommentRequest);
 
         assertEquals(comment.getAuthorId(), updateCommentRequest.getAuthorId());
+        assertDoesNotThrow(() -> commentValidator.checkingForCompliance(comment, updateCommentRequest));
     }
 
     @Test

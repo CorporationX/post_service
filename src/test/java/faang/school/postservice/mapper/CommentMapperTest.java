@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(MockitoExtension.class)
 class CommentMapperTest {
@@ -34,8 +35,15 @@ class CommentMapperTest {
 
         Comment comment = commentMapper.toComment(createCommentRequest);
 
+        System.out.println(comment);
+
         assertEquals(comment.getAuthorId(), createCommentRequest.getAuthorId());
         assertEquals(comment.getContent(), createCommentRequest.getContent());
+        assertEquals(comment.getId(), 0);
+        assertNull(comment.getPost());
+        assertNull(comment.getCreatedAt());
+        assertNull(comment.getUpdatedAt());
+
     }
 
     @Test
@@ -51,6 +59,10 @@ class CommentMapperTest {
 
         assertEquals(comment.getAuthorId(), updateCommentRequest.getAuthorId());
         assertEquals(comment.getContent(), updateCommentRequest.getContent());
+        assertEquals(comment.getId(), 0);
+        assertNull(comment.getPost());
+        assertNull(comment.getCreatedAt());
+        assertNull(comment.getUpdatedAt());
     }
 
     @Test
