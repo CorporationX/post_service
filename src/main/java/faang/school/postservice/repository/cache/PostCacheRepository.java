@@ -3,8 +3,19 @@ package faang.school.postservice.repository.cache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.post.UnexistentPostException;
+import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.validator.post.PostCacheValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -24,7 +35,15 @@ public class PostCacheRepository {
     private static final String VIEW_SUFFIX = ":views";
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+
     private final ObjectMapper objectMapper;
+    private final PostMapper postMapper;
+    private final CommentMapper commentMapper;
+
+    private final PostCacheValidator postCacheValidator;
 
     @Value("${cache.post-ttl-seconds}")
     private long timeToLive;
@@ -38,10 +57,15 @@ public class PostCacheRepository {
                 .set(key, post, timeToLive, TimeUnit.SECONDS);
     }
 
-    public Optional<PostDto> getPost(long postId) {
+    public PostDto getPost(long postId) {
         String key = CACHE_PREFIX + postId;
         Object value = redisTemplate.opsForValue().get(key);
-        return Optional.ofNullable(objectMapper.convertValue(value, PostDto.class));
+
+        if(value != null) {
+            return objectMapper.convertValue(value, PostDto.class);
+        }
+
+        return findPost(postId);
     }
 
     public void addComment(long postId, CommentDto comment) {
@@ -61,7 +85,12 @@ public class PostCacheRepository {
     public List<CommentDto> getComments(long postId) {
         String key = CACHE_PREFIX + postId + COMMENT_SUFFIX;
         List<Object> range = redisTemplate.opsForList().range(key, 0, -1);
-        return deserializeComments(range);
+
+        if(!postCacheValidator.validateComments(range, maxComments)) {
+            return deserializeComments(range);
+        }
+
+        return findComments(postId);
     }
 
     public void incrementLike(long postId) {
@@ -78,7 +107,12 @@ public class PostCacheRepository {
     public Long getLikes(long postId) {
         String key = CACHE_PREFIX + postId + LIKE_SUFFIX;
         Object value = redisTemplate.opsForValue().get(key);
-        return objectMapper.convertValue(value, Long.class);
+
+        if(value != null) {
+            return objectMapper.convertValue(value, Long.class);
+        }
+
+        return findLikes(postId);
     }
 
     public void incrementView(long postId) {
@@ -95,7 +129,12 @@ public class PostCacheRepository {
     public Long getViews(long postId) {
         String key = CACHE_PREFIX + postId + VIEW_SUFFIX;
         Object value = redisTemplate.opsForValue().get(key);
-        return objectMapper.convertValue(value, Long.class);
+
+        if(value != null) {
+            return objectMapper.convertValue(value, Long.class);
+        }
+
+        return findViews(postId);
     }
 
     private List<CommentDto> deserializeComments(List<Object> serializedComments) {
@@ -108,5 +147,42 @@ public class PostCacheRepository {
                     }
                 })
                 .collect(Collectors.toList());
+    }
+
+    private PostDto findPost(long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(() ->
+                new UnexistentPostException(postId));
+
+        PostDto postDto = postMapper.toDto(post);
+        save(postDto.getId(), postDto);
+        return postDto;
+    }
+
+    private List<CommentDto> findComments(long postId) {
+        Pageable commentPageable = PageRequest.of(0, maxComments);
+        List<Comment> comments = commentRepository
+                .findByPostIdWithLikesOrderByCreatedAtDesc(postId, commentPageable);
+
+        return comments.stream()
+                .map(comment -> {
+                    CommentDto commentDto = commentMapper.toDto(comment);
+
+                    addComment(postId, commentDto);
+
+                    return commentDto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private long findLikes(long postId) {
+        long likes = getPost(postId).getLikesCount();
+        setLike(postId, likes);
+        return likes;
+    }
+
+    private long findViews(long postId) {
+        long views = getPost(postId).getViews();
+        setViews(postId, views);
+        return views;
     }
 }

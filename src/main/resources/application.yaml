@@ -69,7 +69,7 @@ resource:
 
 comment:
   verify:
-    cron: "*/10 * * * * *" # every 10 minutes
+    cron: "* */10 * * * *" # every 10 minutes
   batchSize: 100
   thread-pool-size: 4
   word-split-regex: "(?<=\\p{L})(?=\\p{Punct})|(?<=\\p{Punct})(?=\\p{L})|(?<=\\p{L})(?=\\p{L}\\b)|\\s+"
@@ -121,6 +121,9 @@ cache:
 
 feed:
   max-size: 500
+  batch-size: 20
+  recommendation-size: 100
+  recommendation-cron: "0 0 * * * *" # every hour
 
 #springdoc:
 #  api-docs:

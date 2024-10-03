@@ -31,4 +31,10 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Modifying
     @Query("UPDATE Post p SET p.views = p.views + 1 WHERE p.id = :postId")
     void incrementViewsByPostId(long postId);
+
+    @Query("SELECT p.id FROM Post p " +
+            "LEFT JOIN p.likes l " +
+            "GROUP BY p.id " +
+            "ORDER BY COUNT(l) DESC")
+    List<Long> findTopPostIdsByLikes(Pageable pageable);
 }
