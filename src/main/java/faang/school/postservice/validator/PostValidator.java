@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClientMock;
 import faang.school.postservice.client.UserServiceClientMock;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.VerificationPostStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,10 @@ public class PostValidator {
 
     public void validateCreatePost(Post post) {
         checkInputAuthorOrProject(post);
+
+        if (post.getVerificationStatus() == null) {
+            post.setVerificationStatus(VerificationPostStatus.UNVERIFIED);
+        }
 
         if (post.getAuthorId() != null) {
             checkUserExists(post.getAuthorId());
