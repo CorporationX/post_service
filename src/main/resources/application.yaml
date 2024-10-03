@@ -41,6 +41,10 @@ post:
       cron: "@midnight" # every day at midnight
     threads-count: 20
     max-list-size: 50
+  commenter-banner:
+    scheduler:
+      cron: "@midnight" # every day at midnight
+
 
 springdoc:
   swagger-ui:

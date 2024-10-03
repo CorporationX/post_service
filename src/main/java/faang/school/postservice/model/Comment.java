@@ -36,6 +36,8 @@ public class Comment implements Likeable {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
+    private boolean verified;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")

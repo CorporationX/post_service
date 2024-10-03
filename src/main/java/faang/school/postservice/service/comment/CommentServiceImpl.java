@@ -2,14 +2,19 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -51,5 +56,23 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void delete(Long id) {
         commentRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Comment> collectUnverifiedComments() {
+        return commentRepository.findAll().stream()
+                .filter((comment) -> !comment.isVerified())
+                .toList();
+    }
+
+    @Override
+    public List<UserDto> groupUnverifiedCommentAuthors() {
+        Map<Integer, PostDto> authorAndPostsGroup = new HashMap<>();
+
+    }
+
+    @Override
+    public void publishUserBanEventToRedis(Long userId) {
+
     }
 }
