@@ -50,6 +50,5 @@ payment-service:
   host: localhost
   port: 9080
 
-  comment:
-    moderation:
-      batch-size: 100
+  comment_moderation:
+    chunk_size: 100
