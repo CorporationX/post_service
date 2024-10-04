@@ -10,14 +10,17 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.tools.YandexSpeller;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
@@ -85,25 +88,21 @@ public class PostService {
     @Transactional
     public void correctAllDraftPosts() {
         List<Post> draftPosts = postRepository.findAllDrafts();
-        List<Post> updatedPost = draftPosts.stream()
-                .map(post -> {
-                    String text = post.getContent();
-                    List<SpellCheckerDto> checkers = yandexSpeller.checkText(text);
+        List<Post> updatedPost = new ArrayList<>();
 
-                    if (checkers.isEmpty()) {
-                        return null;
-                    }
+        draftPosts.forEach(post -> {
+            String text = post.getContent();
+            List<SpellCheckerDto> checkers = yandexSpeller.checkText(text);
+            if (!checkers.isEmpty()) {
+                String correctedText = yandexSpeller.correctText(text, checkers);
+                post.setContent(correctedText);
+                updatedPost.add(post);
+            }
+        });
 
-                    String correctedText = yandexSpeller.correctText(text, checkers);
-                    post.setContent(correctedText);
-                    return post;
-                })
-                .filter(Objects::isNull)
-                .toList();
-        if (!updatedPost.isEmpty()) {
-            postRepository.saveAll(updatedPost);
-        }
+        postRepository.saveAll(updatedPost);
     }
+
 
     private void validateAuthorOrProject(Post post) {
         if (Objects.nonNull(post.getAuthorId()) && Objects.nonNull(post.getProjectId())) {

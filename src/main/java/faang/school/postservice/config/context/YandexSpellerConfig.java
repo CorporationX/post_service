@@ -12,16 +12,9 @@ import org.springframework.web.client.RestTemplate;
 public class YandexSpellerConfig {
     @Value("${post.spell-corrector.url}")
     private String url;
-    @Autowired
-    private RestTemplate restTemplate;
 
     @Bean
     public YandexSpeller yandexSpeller() {
-        return new YandexSpeller(url, restTemplate);
-    }
-
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
+        return new YandexSpeller(url, new RestTemplate());
     }
 }
