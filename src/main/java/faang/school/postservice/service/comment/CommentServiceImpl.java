@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -66,13 +67,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<UserDto> groupUnverifiedCommentAuthors() {
-        Map<Integer, PostDto> authorAndPostsGroup = new HashMap<>();
-
-    }
-
-    @Override
-    public void publishUserBanEventToRedis(Long userId) {
-
+    public Map<Long, Long> groupUnverifiedCommentAuthors(List<Comment> unverifiedComments) {
+        return unverifiedComments.stream()
+                .collect(Collectors.groupingBy(Comment::getAuthorId, Collectors.counting()));
     }
 }

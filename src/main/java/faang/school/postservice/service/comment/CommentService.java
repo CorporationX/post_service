@@ -6,6 +6,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CommentService {
 
@@ -17,9 +18,7 @@ public interface CommentService {
 
     List<Comment> collectUnverifiedComments();
 
-    List<UserDto> groupUnverifiedCommentAuthors();
-
-    void publishUserBanEventToRedis(Long userId);
+    Map<Long, Long> groupUnverifiedCommentAuthors(List<Comment> unverifiedComments);
 
     void delete(Long id);
 }

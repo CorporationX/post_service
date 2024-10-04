@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -28,18 +29,23 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, List<PostDto>> redisTemplate(JedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, List<PostDto>> template = new RedisTemplate<>();
+    public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
 
-        // Используем StringRedisSerializer для ключей
+        // Using StringRedisSerializer for keys
         template.setKeySerializer(new StringRedisSerializer());
 
 
-        // Настраиваем сериализаторы для значений
+        // Setting up serializers for values
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
 
         return template;
+    }
+
+    @Bean
+    public ChannelTopic channelTopic() {
+        return new ChannelTopic("asdf");
     }
 }
