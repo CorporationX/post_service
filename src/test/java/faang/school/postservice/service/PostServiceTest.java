@@ -68,7 +68,7 @@ class PostServiceTest {
         postDto.setId(1L);
         postDto.setContent("Test post DTO");
 
-        ReflectionTestUtils.setField(postService, "correcterQueueCapacity", 100);
+        ReflectionTestUtils.setField(postService, "correcterBatchSize", 100);
     }
 
     @Test

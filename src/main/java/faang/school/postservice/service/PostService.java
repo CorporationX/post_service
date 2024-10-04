@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostService {
 
-    @Value("${spell-checker.queue-capacity}")
-    private int correcterQueueCapacity;
+    @Value("${spell-checker.batch-size}")
+    private int correcterBatchSize;
 
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
@@ -160,7 +160,7 @@ public class PostService {
         List<Post> unpublishedPosts = postRepository.findReadyToPublish();
 
         if (!unpublishedPosts.isEmpty()) {
-            int batchSize = correcterQueueCapacity;
+            int batchSize = correcterBatchSize;
             List<List<Post>> batches = splitIntoBatches(unpublishedPosts, batchSize);
 
             List<CompletableFuture<Void>> futures = batches.stream()

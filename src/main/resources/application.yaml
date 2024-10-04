@@ -41,6 +41,10 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  executor:
+    core-pool-size: 8
+    max-pool-size: 16
+    queue-capacity: 32
 
 user-service:
   host: localhost
@@ -60,4 +64,4 @@ spell-checker:
     language-detection: /detect
   scheduler:
     cron: "0 0 3 * * *" # каждый день в 3 часа ночи
-  queue-capacity: 100
+  batch-size: 100

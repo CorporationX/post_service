@@ -3,25 +3,29 @@ package faang.school.postservice.config.async;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
 
 @Configuration
-@EnableAsync
-public class SpellCheckAsyncConfig {
+public class PostOperationsAsyncConfig {
 
-    @Value("${spell-checker.queue-capacity}")
+    @Value("${post.executor.core-pool-size}")
+    private int corePoolSize;
+
+    @Value("${post.executor.max-pool-size}")
+    private int maxPoolSize;
+
+    @Value("${post.executor.queue-capacity}")
     private int correcterQueueCapacity;
 
-    @Bean(name = "spellCheckAsyncExecutor")
+    @Bean(name = "postOperationsAsyncExecutor")
     public Executor spellCheckAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(4);
-        executor.setMaxPoolSize(8);
+        executor.setCorePoolSize(corePoolSize);
+        executor.setMaxPoolSize(maxPoolSize);
         executor.setQueueCapacity(correcterQueueCapacity);
-        executor.setThreadNamePrefix("SpellCheckAsyncExecutor-");
+        executor.setThreadNamePrefix("PostOperationsAsyncExecutor-");
         executor.initialize();
         return executor;
     }

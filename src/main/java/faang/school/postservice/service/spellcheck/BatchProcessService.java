@@ -18,7 +18,7 @@ public class BatchProcessService {
     private final SpellCheckService spellCheckService;
     private final PostRepository postRepository;
 
-    @Async("spellCheckAsyncExecutor")
+    @Async("postOperationsAsyncExecutor")
     public CompletableFuture<Void> processBatch(List<Post> postsBatch) {
 
         postsBatch.forEach(post -> {
