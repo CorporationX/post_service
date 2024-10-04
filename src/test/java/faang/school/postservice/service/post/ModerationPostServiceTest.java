@@ -1,99 +1,102 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.config.TestAsyncConfig;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationPostStatus;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-@ExtendWith(SpringExtension.class)
-@Import(TestAsyncConfig.class)
-public class ModerationPostServiceTest {
+@ExtendWith(MockitoExtension.class)
+class ModerationPostServiceTest {
     @Mock
     private PostRepository postRepository;
     @Mock
-    private ModerationDictionary moderationDictionary;
+    private ModerationAsyncService moderationAsyncService;
 
     @InjectMocks
     private ModerationPostService moderationPostService;
 
-    private static final int SUBLIST_SIZE = 10;
-    private static final String CLEAN_POST_CONTENT = "This is a clean post";
-    private static final String FORBIDDEN_POST_CONTENT = "This post contains a forbidden word";
-
-    private Post post1;
-    private Post post2;
     private List<Post> posts;
+    private Post postOne;
+    private Post postTwo;
 
     @BeforeEach
-    public void setUp() throws Exception {
-        Field field = ModerationPostService.class.getDeclaredField("sublistSize");
-        field.setAccessible(true);
-        field.set(moderationPostService, SUBLIST_SIZE);
+    void setUp() throws NoSuchFieldException, IllegalAccessException {
+        postOne = Post.builder()
+                .content("This is post content with badword.")
+                .authorId(1L)
+                .projectId(1L)
+                .published(true)
+                .publishedAt(LocalDateTime.now())
+                .scheduledAt(LocalDateTime.now().plusDays(1))
+                .deleted(false)
+                .verificationStatus(VerificationPostStatus.UNVERIFIED)
+                .build();
 
-        post1 = new Post();
-        post1.setContent(CLEAN_POST_CONTENT);
-        post1.setVerificationStatus(VerificationPostStatus.UNVERIFIED);
+        postTwo = Post.builder()
+                .content("Content.")
+                .authorId(2L)
+                .projectId(1L)
+                .published(true)
+                .publishedAt(LocalDateTime.now())
+                .scheduledAt(LocalDateTime.now().plusDays(1))
+                .deleted(false)
+                .verificationStatus(VerificationPostStatus.UNVERIFIED)
+                .build();
 
-        post2 = new Post();
-        post2.setContent(FORBIDDEN_POST_CONTENT);
-        post2.setVerificationStatus(VerificationPostStatus.UNVERIFIED);
+        posts = new ArrayList<>();
+        posts.add(postOne);
+        posts.add(postTwo);
 
-        posts = Arrays.asList(post1, post2);
-
-        when(moderationDictionary.containsForbiddenWord(CLEAN_POST_CONTENT)).thenReturn(false);
-        when(moderationDictionary.containsForbiddenWord(FORBIDDEN_POST_CONTENT)).thenReturn(true);
+        Field sublistSizeField = ModerationPostService.class.getDeclaredField("sublistSize");
+        sublistSizeField.setAccessible(true);
+        sublistSizeField.set(moderationPostService, 2);
     }
 
     @Test
-    public void testModeratePostsSublist() {
-        moderationPostService.moderatePostsSublist(posts);
-
-        assertEquals(VerificationPostStatus.VERIFIED, post1.getVerificationStatus());
-        assertEquals(VerificationPostStatus.REJECTED, post2.getVerificationStatus());
-        assertNotNull(post1.getVerifiedDate());
-        assertNotNull(post2.getVerifiedDate());
-
-        verify(postRepository, times(1)).saveAll(posts);
-    }
-
-    @Test
-    public void testModerateUnverifiedPosts() throws InterruptedException {
+    void testModeratePostsSublist() {
         when(postRepository.findUnverifiedPosts()).thenReturn(posts);
 
         moderationPostService.moderateUnverifiedPosts();
 
-        Thread.sleep(1000);
+        verify(moderationAsyncService, times(1)).moderatePostsSublistAsync(posts);
+    }
 
-        assertEquals(VerificationPostStatus.VERIFIED, post1.getVerificationStatus());
-        assertEquals(VerificationPostStatus.REJECTED, post2.getVerificationStatus());
-        assertNotNull(post1.getVerifiedDate());
-        assertNotNull(post2.getVerifiedDate());
+    @Test
+    void testModerateUnverifiedPosts() {
+        Post postThree = Post.builder()
+                .content("Another unverified post.")
+                .authorId(3L)
+                .projectId(1L)
+                .published(true)
+                .publishedAt(LocalDateTime.now())
+                .scheduledAt(LocalDateTime.now().plusDays(1))
+                .deleted(false)
+                .verificationStatus(VerificationPostStatus.UNVERIFIED)
+                .build();
 
-        ArgumentCaptor<List<Post>> captor = ArgumentCaptor.forClass(List.class);
-        verify(postRepository, times(1)).saveAll(captor.capture());
+        List<Post> unverifiedPosts = Arrays.asList(postOne, postTwo, postThree);
 
-        List<Post> savedPosts = captor.getValue();
+        when(postRepository.findUnverifiedPosts()).thenReturn(unverifiedPosts);
 
-        assertTrue(savedPosts.containsAll(posts));
+        moderationPostService.moderateUnverifiedPosts();
+
+        verify(moderationAsyncService, times(2)).moderatePostsSublistAsync(anyList());
     }
 }
