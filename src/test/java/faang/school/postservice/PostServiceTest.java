@@ -6,6 +6,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.scheduler.post.moderation.AhoCorasickContentChecker;
 import faang.school.postservice.service.ContentModerationService;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,19 +15,27 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.Field;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,12 +53,14 @@ public class PostServiceTest {
 
     @Mock
     private UserContext userContext;
+    @Mock
+    private AhoCorasickContentChecker contentChecker;
 
     @Mock
     private ContentModerationService contentModerationService;
 
     @Mock
-    private ExecutorService executorService;
+    private ExecutorService postModerationThreadPool;
 
     @InjectMocks
     PostService postService;
@@ -201,18 +212,31 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testModerationOfPost() {
-        List<Post> unverifiedPosts = new ArrayList<>();
-        unverifiedPosts.add(post);
+    public void testModerationOfPostWithBatchProcessing() {
+        // Set a batch size for testing
+        int batchSize = 2;
+        ReflectionTestUtils.setField(postService, "batchSize", batchSize);
 
-        when(postRepository.findUnverifiedOrOldVerifiedPosts(any(LocalDateTime.class))).thenReturn(unverifiedPosts);
+        ExecutorService testExecutor = Executors.newFixedThreadPool(2);
+        ReflectionTestUtils.setField(postService, "postModerationThreadPool", testExecutor);
+
+        List<Post> postsToModerate = new ArrayList<>();
+        for (long i = 1; i <= 5; i++) {
+            Post post = new Post();
+            post.setId(i);
+            post.setContent("Test content " + i);
+            postsToModerate.add(post);
+        }
+
+        when(postRepository.findUnverifiedOrOldVerifiedPosts(any(LocalDateTime.class))).thenReturn(postsToModerate);
         when(contentModerationService.checkContentAndModerate(any(Post.class))).thenReturn(CompletableFuture.completedFuture(null));
 
         postService.moderationOfPost();
 
+        verify(contentModerationService, times(postsToModerate.size())).checkContentAndModerate(any(Post.class));
+
         verify(postRepository, times(1)).findUnverifiedOrOldVerifiedPosts(any(LocalDateTime.class));
-        verify(contentModerationService, times(1)).checkContentAndModerate(post);
+
+        testExecutor.shutdown();
     }
-
-
 }
