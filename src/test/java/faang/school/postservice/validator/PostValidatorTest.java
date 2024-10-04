@@ -1,7 +1,6 @@
 package faang.school.postservice.validator;
 
 import faang.school.postservice.client.ProjectServiceClientMock;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.exception.ValidationException;
@@ -33,7 +32,16 @@ public class PostValidatorTest {
     @InjectMocks
     private PostValidator postValidator;
     @Mock
+    private MultipartFile image;
+    @Mock
     private UserValidator userValidator;
+    @InjectMocks
+    private PostValidator postValidator;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(postValidator, "imagesMaxNumber", IMAGES_MAX_NUMBER);
+    }
 
     @BeforeEach
     void setUp() {
@@ -79,6 +87,7 @@ public class PostValidatorTest {
         Post createPost = Post.builder()
                 .authorId(authorId)
                 .build();
+        doThrow(UserNotFoundException.class).when(userValidator).validateUserExists(createPost.getAuthorId());
         doThrow(new UserNotFoundException("User with ID " + authorId + " not found.")).when(userValidator).validateUserExists(authorId);
 
         assertThrows(UserNotFoundException.class, () -> postValidator.validateCreatePost(createPost));
