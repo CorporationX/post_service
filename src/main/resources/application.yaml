@@ -9,7 +9,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -39,6 +39,15 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderation:
+    scheduler:
+      cron: "0 0/10 * 1/1 * ?" # every day at 00:00 "0 0 0 * * ?"
+    dictionary:
+      file-path: "src/main/resources/moderation/dictionary.txt"
+    threads:
+      count: 5
+    sublist:
+      length: 10
 
 user-service:
   host: localhost
