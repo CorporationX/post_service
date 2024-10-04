@@ -24,7 +24,7 @@ public class HashtagServiceImpl implements HashtagService {
 
     private static final long DAYS_TO_LIVE_IN_REDIS = 1;
     private final HashtagRepository hashtagRepository;
-    private final RedisTemplate<String, List<PostDto>> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final PostMapper postMapper;
 
     @Override
@@ -66,7 +66,7 @@ public class HashtagServiceImpl implements HashtagService {
         if (!hashtagsToDelete.isEmpty()) {
             hashtagsToDelete.forEach(hashtag -> {
                 if (Boolean.TRUE.equals(redisTemplate.hasKey(hashtag))) {
-                    List<PostDto> cachedPosts = redisTemplate.opsForValue().get(hashtag);
+                    List<PostDto> cachedPosts = (List<PostDto>) redisTemplate.opsForValue().get(hashtag);
 
                     if (cachedPosts != null) {
                         cachedPosts.removeIf(cachePost -> cachePost.id() == post.getId());
@@ -88,7 +88,7 @@ public class HashtagServiceImpl implements HashtagService {
     public List<PostDto> findPostsByHashtag(String hashtag) {
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(hashtag))) {
-            return redisTemplate.opsForValue().get(hashtag);
+            return (List<PostDto>) redisTemplate.opsForValue().get(hashtag);
         }
 
         List<Post> posts = hashtagRepository
