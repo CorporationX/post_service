@@ -1,5 +1,6 @@
 package faang.school.postservice.model.redis;
 
+import faang.school.postservice.dto.Post.PostInfoDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,21 +8,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.TimeToLive;
 
-import java.io.Serializable;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-@RedisHash(value = "feed")
+@RedisHash(value = "post")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Feed implements Serializable {
-    @Value(value = "${news-feed.feed.posts_size}")
-    private int maxAmount;
+public class RedisPost {
     @Id
-    private int userId;
-    private LinkedHashSet<Long> postsIds = new LinkedHashSet<>(maxAmount);
+    private Long id;
+    private PostInfoDto postInfoDto;
+    @TimeToLive (unit = TimeUnit.DAYS)
+    private Long timeToLive;
     @Version
     private int version;
 }

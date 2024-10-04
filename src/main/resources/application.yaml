@@ -28,6 +28,16 @@ spring:
           name: post_comment_channel
         post_view_channel: post_view_channel
         like_topic: like_topic
+      cache:
+        post_topic:
+          name: post
+          ttl: 1
+        user_topic:
+          name: user
+          ttl: 1
+        feed_topic:
+          name: feed
+
   kafka:
     bootstrap-servers: localhost:9092
 

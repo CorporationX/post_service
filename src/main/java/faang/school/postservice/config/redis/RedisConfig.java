@@ -1,10 +1,9 @@
 package faang.school.postservice.config.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.events.Event;
-import faang.school.postservice.model.redis.Post;
-import faang.school.postservice.model.redis.User;
+import faang.school.postservice.model.redis.RedisPost;
+import faang.school.postservice.model.redis.RedisUser;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -17,10 +16,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPoolConfig;
-
-import java.util.List;
-import java.util.TreeSet;
 
 @Configuration
 public class RedisConfig {
@@ -77,8 +72,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<Long, User> userRedisTemplate(JedisConnectionFactory jedisConnectionFactory, ObjectMapper objectMapper) {
-        RedisTemplate<Long, User> redisFeedTemplate = new RedisTemplate<>();
+    public RedisTemplate<Long, RedisUser> userRedisTemplate(JedisConnectionFactory jedisConnectionFactory, ObjectMapper objectMapper) {
+        RedisTemplate<Long, RedisUser> redisFeedTemplate = new RedisTemplate<>();
         redisFeedTemplate.setConnectionFactory(jedisConnectionFactory);
         redisFeedTemplate.setKeySerializer(RedisSerializer.string());
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
@@ -87,8 +82,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<Long, Post> postRedisTemplate(JedisConnectionFactory jedisConnectionFactory, ObjectMapper objectMapper) {
-        RedisTemplate<Long, Post> redisFeedTemplate = new RedisTemplate<>();
+    public RedisTemplate<Long, RedisPost> postRedisTemplate(JedisConnectionFactory jedisConnectionFactory, ObjectMapper objectMapper) {
+        RedisTemplate<Long, RedisPost> redisFeedTemplate = new RedisTemplate<>();
         redisFeedTemplate.setConnectionFactory(jedisConnectionFactory);
         redisFeedTemplate.setKeySerializer(RedisSerializer.string());
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);

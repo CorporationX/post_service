@@ -3,17 +3,20 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.Post.PostDto;
+import faang.school.postservice.dto.comment.LastCommentDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataDoesNotExistException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.publishers.PostViewPublisher;
 import faang.school.postservice.publishers.kafka.PostEventKafkaPublisher;
 import faang.school.postservice.publishers.kafka.PostViewEventKafkaPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.redis.PostCacheService;
+import faang.school.postservice.service.redis.UserCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +43,7 @@ public class PostService {
     private final PostCacheService postCacheService;
     private final PostEventKafkaPublisher postEventKafkaPublisher;
     private final PostViewEventKafkaPublisher postViewEventKafkaPublisher;
+    private final UserCacheService userCacheService;
 
     @Transactional(readOnly = true)
     public Post getById(long id) {
@@ -65,8 +70,10 @@ public class PostService {
                 post.get().setPublishedAt(LocalDateTime.now());
                 log.info("Post with id = {} has been published successfully", draftId);
                 postRepository.save(post.get());
-                log.info("Post with id = {} has been published to kafka successfully", draftId);
+                postCacheService.addPost(post.get());
+                userCacheService.addUser(post.get().getAuthorId());
                 postEventKafkaPublisher.publish(post.get());
+                log.info("Post with id = {} has been published to kafka successfully", draftId);
             }
             return postMapper.toDto(post.get());
         } else {

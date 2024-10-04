@@ -13,6 +13,7 @@ import faang.school.postservice.publishers.CommentEventPublisher;
 import faang.school.postservice.publishers.kafka.CommentEventKafkaPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.redis.UserCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class CommentService {
     private final PostService postService;
     private final CommentEventPublisher commentEventPublisher;
     private final CommentEventKafkaPublisher commentEventKafkaPublisher;
+    private final UserCacheService userCacheService;
 
     public CommentDto createComment(CreateCommentDto createCommentDto) {
         checkUserService.checkUserExistence(createCommentDto);
@@ -42,7 +44,10 @@ public class CommentService {
         comment = commentRepository.save(comment);
         log.info("Comment with ID = {} was created", comment.getId());
         commentEventPublisher.publish(comment);
+        log.info("Comment event about creation publication of comment with ID = {} was published to Redis", comment.getId());
         commentEventKafkaPublisher.publish(comment);
+        log.info("Comment {} was sent to Kafka", comment.getId());
+        userCacheService.addUser(comment.getAuthorId());
         return commentMapper.toDto(comment);
     }
 

@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class LastCommentDto {
+    private Long authorId;
     private String comment;
     private String author;
     private LocalDateTime createdAt;

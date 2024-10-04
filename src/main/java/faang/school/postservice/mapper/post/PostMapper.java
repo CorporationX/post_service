@@ -2,9 +2,13 @@ package faang.school.postservice.mapper.post;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.Post.PostDto;
+import faang.school.postservice.dto.comment.LastCommentDto;
 import faang.school.postservice.events.PostEvent;
 import faang.school.postservice.events.PostViewEvent;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.RedisPost;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.mapstruct.Mapper;
@@ -14,12 +18,15 @@ import org.mapstruct.ReportingPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class PostMapper {
     @Autowired
     protected UserContext userContext;
+
     @Mapping(source = "likes", target = "likes", ignore = true)
     public abstract Post toEntity(PostDto dto);
 
@@ -42,5 +49,30 @@ public abstract class PostMapper {
             return 0L;
         }
         return (long) list.size();
+    }
+
+    @Mapping(source = "content", target = "postInfoDto.postContent")
+    @Mapping(source = "likes", target = "postInfoDto.likes", qualifiedByName = "mapLikes")
+    @Mapping(source = "updatedAt", target = "postInfoDto.updatedAt")
+    @Mapping(source = "authorId", target = "postInfoDto.dto.id")
+    @Mapping(source = "comments", target = "postInfoDto.comments", qualifiedByName = "mapComments")
+    public abstract RedisPost toRedisEntity(Post post);
+
+    @Named("mapComments")
+    LinkedHashSet<LastCommentDto> mapComments(List<Comment> comments) {
+        if (comments == null || comments.isEmpty()) {
+            return new LinkedHashSet<>();
+        }
+        return comments.stream().map(this::mapComment)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    @Mapping(source = "content", target = "comment")
+    @Mapping(source = "updatedAt", target = "createdAt")
+    public abstract LastCommentDto mapComment(Comment comment);
+
+    @Named("mapLikes")
+    long mapLikes(List<Like> likes) {
+        return likes != null ? likes.size() : 0L;
     }
 }
