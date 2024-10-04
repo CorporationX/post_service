@@ -3,9 +3,10 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.S3.delete.DeleteFileS3ServiceImpl;
-import faang.school.postservice.service.S3.upload.UploadFilesS3ServiceImpl;
+import faang.school.postservice.service.S3.DeleteFileS3Service;
+import faang.school.postservice.service.S3.UploadFilesS3Service;
 import faang.school.postservice.service.resource.ResourceService;
+import faang.school.postservice.validator.postImages.PostImageValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,13 @@ import java.util.List;
 public class PostImagesService {
 
     private final ResourceService resourceService;
-    private final ImageValidator imageValidator;
+    private final ChangerDimension changerDimension;
     private final PostService postService;
-    private final DeleteFileS3ServiceImpl deleteImageS3Service;
-    private final UploadFilesS3ServiceImpl uploadImagesS3Service;
+    private final DeleteFileS3Service deleteImageS3Service;
+    private final UploadFilesS3Service uploadImagesS3Service;
     private final PostRepository postRepository;
+    private final PostImageValidator postImageValidator;
+
 
     public void uploadPostImages(Long id, List<MultipartFile> images) {
         Post post = postService.findById(id);
@@ -53,18 +56,12 @@ public class PostImagesService {
 
     public void deleteImage(Long id) {
         Resource resource = resourceService.findById(id);
-        deleteImageS3Service.deleteFile(resource.getKey());
-    }
-
-    private void checkListCapacity(List<MultipartFile> list) {
-        if (list.size() > 10) {
-            throw new RuntimeException("PostImageService. Amount images more 10");
-        }
+        deleteImageS3Service.deleteFile(resource.getName());
     }
 
     private void validateImages(List<MultipartFile> images) {
-        checkListCapacity(images);
-        images.forEach(imageValidator::checkImageSizeExceeded);
-        images.forEach(imageValidator::changeFileDimension);
+        postImageValidator.checkListCapacity(images);
+        images.forEach(postImageValidator::checkImageSizeExceeded);
+        images.forEach(changerDimension::changeFileDimension);
     }
 }

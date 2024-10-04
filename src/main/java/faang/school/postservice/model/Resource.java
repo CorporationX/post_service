@@ -10,9 +10,15 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import lombok.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Getter
@@ -32,7 +38,7 @@ public class Resource {
     private String key;
 
     @Column(name = "size")
-    private long size;
+    private BigInteger size;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

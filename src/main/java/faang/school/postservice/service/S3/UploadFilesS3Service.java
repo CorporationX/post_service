@@ -1,4 +1,4 @@
-package faang.school.postservice.service.S3.upload;
+package faang.school.postservice.service.S3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +22,7 @@ import java.util.concurrent.Future;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UploadFilesS3ServiceImpl implements UploadService {
+public class UploadFilesS3Service {
 
     private final AmazonS3 s3Client;
 
@@ -74,18 +75,19 @@ public class UploadFilesS3ServiceImpl implements UploadService {
             log.error("Error uploading images to Object Storage. Reason:", e);
         }
 
+     return setResources(files);
+    }
+
+    private List<Resource> setResources (List<MultipartFile> files) {
         List<Resource> resources = new ArrayList<>();
         for (MultipartFile file : files) {
             var resource = new Resource();
-            resource.setSize(file.getSize());
+            resource.setSize(BigInteger.valueOf(file.getSize()));
             resource.setType(file.getContentType());
             resource.setName(file.getName());
             resources.add(resource);
             return resources;
-        }
-
-     return resources;
-
+        } return resources;
     }
 
     private String generateUniqueName() {

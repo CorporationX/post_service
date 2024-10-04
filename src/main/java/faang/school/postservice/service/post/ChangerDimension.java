@@ -1,10 +1,7 @@
 package faang.school.postservice.service.post;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.imgscalr.Scalr;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -14,20 +11,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class ImageValidator {
+@Component
+public class ChangerDimension {
 
-    private static final long MAX_FILE_SIZE = 5242816;
     private static final int MAX_IMAGE_HEIGHT = 1080;
     private static final int MAX_FILE_WIDTH = 566;
-
-    protected void checkImageSizeExceeded(MultipartFile image) {
-        if (image.getSize() > MAX_FILE_SIZE) {
-            throw new MaxUploadSizeExceededException(MAX_FILE_SIZE);
-        }
-    }
 
     protected void changeFileDimension(MultipartFile image) {
         List<byte[]> images = new ArrayList<>();
@@ -47,7 +35,7 @@ public class ImageValidator {
             return stream.toByteArray();
 
         } catch (IOException e) {
-            throw new RuntimeException("Image validator. Filed to changed file size", e.getCause());
+            throw new RuntimeException("ChangerDimension. Filed to changed file size", e.getCause());
         }
     }
 }

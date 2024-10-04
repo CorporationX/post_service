@@ -14,13 +14,13 @@ public class ResourceController {
 
     private final PostImagesService postImagesService;
 
-    @PostMapping("/{id}/add")
+    @PostMapping("/{id}")
     public void addImages(@PathVariable Long id,
                           @RequestPart("images") List<MultipartFile> images) {
         postImagesService.uploadPostImages(id, images);
     }
 
-    @PatchMapping("/{id}/update")
+    @PatchMapping("/{id}")
     public void updateImages(@PathVariable Long id,
                              @RequestPart("images") List<MultipartFile> images) {
         postImagesService.updatePostImages(id, images);

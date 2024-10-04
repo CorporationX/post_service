@@ -17,6 +17,6 @@ public class PostService {
     public Post findById(Long id) {
         Optional<Post> post = postRepository.findById(id);
         return post.orElseThrow(
-                ()-> new EntityNotFoundException("Post service. Post not found. id: {}" + id));
+                ()-> new EntityNotFoundException("Post service. Post not found. id: " + id));
     }
 }

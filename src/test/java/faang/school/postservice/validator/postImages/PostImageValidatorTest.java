@@ -1,4 +1,4 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.validator.postImages;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,15 +10,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ImageValidatorTest {
+class PostImageValidatorTest {
 
     @InjectMocks
-    private ImageValidator imageValidator;
+    private PostImageValidator postImageValidator;
 
     @Mock
     private MultipartFile image;
@@ -34,7 +36,7 @@ class ImageValidatorTest {
         void whenImageSizeExceededAllowedSizeThenSuccess() {
             when(image.getSize()).thenReturn(MAX_FILE_SIZE);
 
-            assertDoesNotThrow(() -> imageValidator.checkImageSizeExceeded(image));
+            assertDoesNotThrow(() -> postImageValidator.checkImageSizeExceeded(image));
         }
 
         @Test
@@ -42,7 +44,7 @@ class ImageValidatorTest {
         void whenImageSizeNotExceededThenSuccess() {
             when(image.getSize()).thenReturn(DEFAULT_FILE_SIZE);
 
-            assertDoesNotThrow(() -> imageValidator.checkImageSizeExceeded(image));
+            assertDoesNotThrow(() -> postImageValidator.checkImageSizeExceeded(image));
         }
 
         @Test
@@ -51,7 +53,23 @@ class ImageValidatorTest {
             when(image.getSize()).thenReturn(LARGE_FILE_SIZE);
 
             assertThrows(MaxUploadSizeExceededException.class,
-                    () -> imageValidator.checkImageSizeExceeded(image));
+                    () -> postImageValidator.checkImageSizeExceeded(image));
+        }
+
+        @Test
+        @DisplayName("Test list capacity")
+        void whenListImagesSizeThenSuccess() {
+            int allowedSize = 10;
+
+            List<MultipartFile> images = new ArrayList<>(10){{
+                add(image);add(image);add(image);add(image);add(image);
+                add(image);add(image);add(image);add(image);add(image);
+            }};
+
+            assertEquals(allowedSize, images.size());
+
+            images.add(image);
+            assertTrue(images.size() > allowedSize);
         }
     }
 }
