@@ -7,6 +7,7 @@ import faang.school.postservice.exception.comment.CommentException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderator.comment.CommentModerator;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -14,8 +15,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
+    private final CommentModerator commentModerator;
 
     @Override
     public CommentDto addComment(CommentDto commentDto) {
@@ -66,5 +70,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteComment(long commentId) {
         commentRepository.deleteById(commentId);
+    }
+
+    @Override
+    public void verifyCommentsByDate(LocalDateTime verifiedDate)  {
+        commentModerator.verifyCommentsByDate(verifiedDate);
     }
 }

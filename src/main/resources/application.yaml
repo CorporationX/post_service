@@ -49,3 +49,10 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+  comment_moderation:
+    chunk_size: 100
+
+moderation:
+  file:
+    path: "classpath:forbidden-words.txt"

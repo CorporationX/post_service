@@ -6,6 +6,7 @@ import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderator.comment.CommentModerator;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
@@ -45,6 +46,9 @@ class CommentServiceImplTest {
     @Mock
     private CommentMapperImpl commentMapper;
 
+    @Mock
+    private CommentModerator commentModerator;
+
     @InjectMocks
     private CommentServiceImpl commentService;
 
@@ -53,6 +57,7 @@ class CommentServiceImplTest {
     private long postId;
     private Post post;
     private Comment mockComment;
+    private LocalDateTime verifiedDate;
 
     private CommentDto commentDto;
     private UpdateCommentDto updateCommentDto;
@@ -62,6 +67,8 @@ class CommentServiceImplTest {
         authorId = 1L;
         postId = 1L;
         commentId = 1L;
+
+        verifiedDate = LocalDateTime.now();
 
         post = Post.builder()
                 .id(postId)
@@ -75,7 +82,7 @@ class CommentServiceImplTest {
                 .postId(postId)
                 .build();
 
-         mockComment = Comment.builder()
+        mockComment = Comment.builder()
                 .id(commentId)
                 .content("Старое содержимое")
                 .authorId(authorId)
@@ -148,5 +155,13 @@ class CommentServiceImplTest {
         assertEquals(commentDto, result);
         verify(commentRepository).getByPostIdOrderByCreatedAtDesc(postId);
         verify(commentMapper).toDto(comments);
+    }
+
+    @Test
+    public void verifyCommentsByDate() {
+        LocalDateTime verifiedDate = LocalDateTime.now();
+        commentModerator.verifyCommentsByDate(verifiedDate);
+
+        verify(commentModerator,times(1)).verifyCommentsByDate(verifiedDate);
     }
 }

@@ -1,6 +1,7 @@
 package faang.school.postservice.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,4 +46,13 @@ public class Comment {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verified-date")
+    private LocalDateTime verifiedDate;
+
+    @Column(name = "is_verified", columnDefinition = "boolean default false")
+    @NotNull
+    private boolean verified;
 }

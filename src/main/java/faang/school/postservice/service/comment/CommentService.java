@@ -3,6 +3,7 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CommentService {
@@ -14,4 +15,6 @@ public interface CommentService {
     List<CommentDto> getCommentsByPostId(long postId);
 
     void deleteComment(long id);
+
+    void verifyCommentsByDate(LocalDateTime verifiedDate);
 }

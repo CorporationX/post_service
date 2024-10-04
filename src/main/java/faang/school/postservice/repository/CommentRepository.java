@@ -21,4 +21,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId ORDER BY c.createdAt DESC")
     List<Comment> getByPostIdOrderByCreatedAtDesc(long postId);
+
+    @Query("SELECT c FROM Comment c WHERE c.verifiedDate = :verifiedDate")
+    List<Comment> findCommentsByVerifiedDate(LocalDateTime verifiedDate);
 }
