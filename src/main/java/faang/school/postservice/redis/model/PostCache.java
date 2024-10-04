@@ -2,16 +2,17 @@ package faang.school.postservice.redis.model;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import jakarta.persistence.Id;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.List;
 
 @RedisHash(value = "post", timeToLive = 86400)
 @Data
+@Builder
 public class PostCache implements Serializable {
     @Value("spring.data.redis.post-cache.comments-in-post:3")
     private int maxCommentsQuantity;
@@ -22,12 +23,12 @@ public class PostCache implements Serializable {
     private Long authorId;
     private Integer likes;
     private Integer views;
-    private Deque<CommentDto> comments = new ArrayDeque<>(maxCommentsQuantity);
+    private final List<CommentDto> comments;
 
     public void addComment(CommentDto commentDto) {
         if (comments.size() == maxCommentsQuantity) {
-            comments.removeLast();
+            comments.remove(comments.size() - 1);
         }
-        comments.addFirst(commentDto);
+        comments.add(0, commentDto);
     }
 }

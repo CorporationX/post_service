@@ -17,11 +17,11 @@ public class CommentEventsConsumer {
     @KafkaListener(topics = "${spring.kafka.topic-name.comments:comments}")
     void listener(CommentEvent event, Acknowledgment acknowledgment){
         try {
-            postCacheService.cacheCommentForPost(event.postId(), event.commentId());
+            postCacheService.cacheCommentForPost(event.postId(), event.commentDto());
             acknowledgment.acknowledge();
-            log.info("Comment with id:{} is successfully added to post.", event.commentId());
+            log.info("Comment with id:{} is successfully added to post.", event.commentDto().getId());
         } catch (Exception e) {
-            log.error("Comment with id:{} is not added to post.", event.commentId());
+            log.error("Comment with id:{} is not added to post.", event.commentDto().getId());
             throw e;
         }
     }

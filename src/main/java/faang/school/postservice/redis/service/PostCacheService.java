@@ -1,5 +1,6 @@
 package faang.school.postservice.redis.service;
 
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.redis.mapper.PostCacheMapper;
 import faang.school.postservice.redis.model.PostCache;
@@ -13,8 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.StreamSupport;
-
-import static java.lang.System.currentTimeMillis;
 
 @Service
 @Slf4j
@@ -65,31 +64,17 @@ public class PostCacheService {
         }
     }
 
-    public void cacheCommentForPost(Long postId, Long commentId){
-        if (postCacheRepository.existsById(postId)){
-            addCommentToCache(postId, commentId);
-        } else {
-            var postDto = postService.getPost(postId);
-            savePostCache(postDto);
+    public void cacheCommentForPost(Long postId, CommentDto commentDto){
+        var postCache = postCacheRepository.findById(postId)
+                .orElseGet(() -> {
+                    var postDto = postService.getPost(postId);
+                    savePostCache(postDto);
+                    return null;
+                });
+
+        if (postCache != null) {
+            postCache.addComment(commentDto);
         }
-    }
-
-    private void addCommentToCache(Long postId, Long commentId){
-        var cacheKey = generateCachePostKey(postId);
-        redisTemplate.opsForZSet().add(cacheKey, commentId, currentTimeMillis());
-
-        mangedCacheSize(cacheKey);
-    }
-
-    private void mangedCacheSize(String cacheKey) {
-        var setSize = redisTemplate.opsForZSet().zCard(cacheKey);
-        if (setSize != null && setSize > commentsInPostQuantity) {
-            redisTemplate.opsForZSet().removeRange(cacheKey, 0, setSize - commentsInPostQuantity);
-        }
-    }
-
-    public boolean existsById(Long postId){
-        return postCacheRepository.existsById(postId);
     }
 
     private String generateCachePostKey(Long postId) {

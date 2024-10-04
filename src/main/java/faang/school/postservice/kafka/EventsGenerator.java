@@ -44,7 +44,7 @@ public class EventsGenerator {
 
     public void generateAndSendCommentEventToKafka(CommentDto commentDto){
         var event = CommentEvent.builder()
-                .commentId(commentDto.getId())
+                .commentDto(commentDto)
                 .content(commentDto.getContent())
                 .postId(commentDto.getPostId())
                 .authorId(commentDto.getAuthorId())
