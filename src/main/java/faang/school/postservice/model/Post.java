@@ -85,7 +85,7 @@ public class Post {
     private LocalDateTime updatedAt;
 
     @Column(name = "verified")
-    private boolean verified;
+    private Boolean verified;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_date")

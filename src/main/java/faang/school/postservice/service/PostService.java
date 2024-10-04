@@ -10,17 +10,22 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.util.moderation.ModerationDictionary;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +37,10 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
     private final NewPostPublisher newPostPublisher;
+    private final ModerationDictionary moderationDictionary;
+
+    @Value("${post.moderation.batch-size}")
+    private int moderationBatchSize;
 
     public PostDto createPost(PostDto postDto) {
         if (postDto.getAuthorType() == AuthorType.USER) {
@@ -145,5 +154,33 @@ public class PostService {
     @Transactional
     public Post updatePostInternal(Post post){
         return postRepository.save(post);
+    }
+
+    public List<List<Post>> FindAndSplitUnverifiedPosts() {
+        List<Post> unverifiedPosts = postRepository.findAllByVerifiedDateIsNull();
+
+        return splitIntoBatches(unverifiedPosts, moderationBatchSize);
+    }
+
+    @Async("postOperationsAsyncExecutor")
+    @Transactional
+    public CompletableFuture<Void> verifyPostsForSwearWords(List<Post> unverifiedPostsBatch) {
+        return CompletableFuture.runAsync(() -> {
+            unverifiedPostsBatch.forEach(post -> {
+                boolean hasImproperContent = moderationDictionary.containsSwearWords(post.getContent());
+                post.setVerified(!hasImproperContent);
+                post.setVerifiedDate(LocalDateTime.now());
+            });
+
+            postRepository.saveAll(unverifiedPostsBatch);
+        });
+    }
+
+    private <T> List<List<T>> splitIntoBatches(List<T> list, int batchSize) {
+        List<List<T>> batches = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += batchSize) {
+            batches.add(list.subList(i, Math.min(i + batchSize, list.size())));
+        }
+        return batches;
     }
 }
