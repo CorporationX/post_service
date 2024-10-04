@@ -1,13 +1,12 @@
 package faang.school.postservice.scheduler;
 
-import faang.school.postservice.config.redis.RedisProperties;
+import faang.school.postservice.publisher.UserBanMessagePublisher;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.List;
 
@@ -18,11 +17,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AuthorBannerTest {
     @Mock
-    private RedisTemplate<String, Object> redisTemplate;
-    @Mock
-    private RedisProperties redisProperties;
-    @Mock
     private PostService postService;
+    @Mock
+    private UserBanMessagePublisher redisMessagePublisher;
     @InjectMocks
     private AuthorBanner authorBanner;
 
@@ -32,9 +29,9 @@ class AuthorBannerTest {
 
         when(postService.getAuthorsWithExcessVerifiedFalsePosts()).thenReturn(banAuthorsIds);
 
-        authorBanner.banAuthors();
+        authorBanner.sendBanAuthorsIdsToPublisher();
 
         verify(postService, atLeastOnce()).getAuthorsWithExcessVerifiedFalsePosts();
-        verify(redisTemplate, atLeastOnce()).convertAndSend(redisProperties.getUserBanChannelName(), banAuthorsIds);
+        verify(redisMessagePublisher, atLeastOnce()).publish(banAuthorsIds.toString());
     }
 }

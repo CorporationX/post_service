@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -16,10 +14,8 @@ public class RedisConfig {
     private final RedisProperties redisProperties;
 
     @Bean
-    public JedisConnectionFactory redisConnectionFactory() {
-        var config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
-
-        return new JedisConnectionFactory(config);
+    public RedisConnectionFactory redisConnectionFactory() {
+        return new LettuceConnectionFactory(redisProperties.getHost(), redisProperties.getPort());
     }
 
     @Bean
@@ -31,10 +27,5 @@ public class RedisConfig {
         redisTemplate.setValueSerializer(new StringRedisSerializer());
 
         return redisTemplate;
-    }
-
-    @Bean
-    public ChannelTopic banUserTopic() {
-        return new ChannelTopic(redisProperties.getUserBanChannelName());
     }
 }
