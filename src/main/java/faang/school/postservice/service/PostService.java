@@ -79,6 +79,10 @@ public class PostService {
         return postRepository.findPublishedByProjectId(projectId);
     }
 
+    public List<Long> getAuthorsWithExcessVerifiedFalsePosts() {
+        return postRepository.findAuthorsWithExcessVerifiedFalsePosts();
+    }
+
     private void validateAuthorOrProject(Post post) {
         if (Objects.nonNull(post.getAuthorId()) && Objects.nonNull(post.getProjectId())) {
             throw new DataValidationException("The post can't be made by both a user and a project at the same time.");
