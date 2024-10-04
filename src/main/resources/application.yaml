@@ -25,6 +25,9 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  config:
+    import: text-gears-api.yaml
+
   servlet:
     multipart:
       enabled: true
@@ -46,6 +49,9 @@ services:
     bucketName: corpbucket
     region: eu-central-1
     isMocked: false
+  grammar-checker:
+    url: https://api.textgears.com/
+    apiKey: ${apiKey}
 
 post:
   publisher:
