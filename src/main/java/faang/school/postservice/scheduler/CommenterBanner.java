@@ -1,5 +1,6 @@
 package faang.school.postservice.scheduler;
 
+import faang.school.postservice.publisher.UserIdsPublisher;
 import faang.school.postservice.service.comment.CommentServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,6 +14,7 @@ import java.util.Map;
 public class CommenterBanner {
 
     private final CommentServiceImpl commentService;
+    private final UserIdsPublisher userIdsPublisher;
 
     private final int unverifiedCommentsLimit = 5;
 
@@ -27,6 +29,6 @@ public class CommenterBanner {
                 .map((Map.Entry::getKey))
                 .toList();
 
-
+        userIdsPublisher.publish(usersToBan);
     }
 }
