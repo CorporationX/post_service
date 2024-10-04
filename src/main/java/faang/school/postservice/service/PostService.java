@@ -3,21 +3,19 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.post.SpellCheckerDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.tools.YandexSpeller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 @Service
 @RequiredArgsConstructor
@@ -84,9 +82,27 @@ public class PostService {
         return postRepository.findPublishedByProjectId(projectId);
     }
 
-    @Transactional(readOnly = true)
-    public void correctNonPublishedPosts() {
-        List<Post> draftPosts = postRepository.findReadyToPublish();
+    @Transactional
+    public void correctAllDraftPosts() {
+        List<Post> draftPosts = postRepository.findAllDrafts();
+        List<Post> updatedPost = draftPosts.stream()
+                .map(post -> {
+                    String text = post.getContent();
+                    List<SpellCheckerDto> checkers = yandexSpeller.checkText(text);
+
+                    if (checkers.isEmpty()) {
+                        return null;
+                    }
+
+                    String correctedText = yandexSpeller.correctText(text, checkers);
+                    post.setContent(correctedText);
+                    return post;
+                })
+                .filter(Objects::isNull)
+                .toList();
+        if (!updatedPost.isEmpty()) {
+            postRepository.saveAll(updatedPost);
+        }
     }
 
     private void validateAuthorOrProject(Post post) {
