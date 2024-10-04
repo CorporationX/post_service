@@ -3,6 +3,7 @@ package faang.school.postservice.moderator.comment;
 import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.comment.CommentService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 
 
 @Component
-public class CommentModerator {
+public  class CommentModerator  {
     @Value("${comment_moderation.chunk_size}")
     private int batchSize;
     CommentRepository commentRepository;
@@ -21,7 +22,7 @@ public class CommentModerator {
 
 
     @Scheduled(cron = "0 0 8 * * *")
-    public void verifyCommentsByDate(LocalDateTime verifiedDate) throws IOException {
+    public void verifyCommentsByDate(LocalDateTime verifiedDate) {
         commentRepository.findCommentsByVerifiedDate(verifiedDate)
                 .stream()
                 .filter(comment -> !comment.isVerified())

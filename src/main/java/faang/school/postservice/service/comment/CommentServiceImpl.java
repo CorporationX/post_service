@@ -73,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void verifyCommentsByDate(LocalDateTime verifiedDate) throws IOException, ExecutionException, InterruptedException {
+    public void verifyCommentsByDate(LocalDateTime verifiedDate)  {
         commentModerator.verifyCommentsByDate(verifiedDate);
     }
 }

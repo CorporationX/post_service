@@ -3,7 +3,6 @@ package faang.school.postservice.dictionary;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
