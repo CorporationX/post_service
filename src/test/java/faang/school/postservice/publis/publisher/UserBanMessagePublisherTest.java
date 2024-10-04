@@ -1,4 +1,4 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.publis.publisher;
 
 import faang.school.postservice.config.redis.RedisProperties;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,6 @@
 package faang.school.postservice.scheduler;
 
-import faang.school.postservice.publisher.UserBanMessagePublisher;
+import faang.school.postservice.publis.publisher.UserBanMessagePublisher;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
