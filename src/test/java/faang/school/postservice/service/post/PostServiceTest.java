@@ -3,7 +3,6 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.RedisMessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,8 +37,6 @@ public class PostServiceTest {
     private PostRepository postRepository;
     @Mock
     private PostValidator postValidator;
-    @Mock
-    private RedisMessagePublisher redisMessagePublisher;
 
     @InjectMocks
     private PostService postService;
@@ -300,14 +297,11 @@ public class PostServiceTest {
         addPostsToList(20, 7, 4);
         addPostsToList(27, 7, 5);
         when(postRepository.findAllByVerificationStatus(REJECTED)).thenReturn(posts);
+        List<Long> expected = List.of(1L, 2L, 3L, 4L, 5L);
 
-        postService.publishingUsersForBan();
+        List<Long> result = postService.findUserIdsForBan();
 
-        verify(redisMessagePublisher, times(1)).publish(String.valueOf(1));
-        verify(redisMessagePublisher, times(1)).publish(String.valueOf(2));
-        verify(redisMessagePublisher, times(1)).publish(String.valueOf(3));
-        verify(redisMessagePublisher, times(1)).publish(String.valueOf(4));
-        verify(redisMessagePublisher, times(1)).publish(String.valueOf(5));
+        assertEquals(expected, result);
     }
 
     @Test
@@ -318,14 +312,11 @@ public class PostServiceTest {
         addPostsToList(19, 5, 4);
         addPostsToList(25, 6, 5);
         when(postRepository.findAllByVerificationStatus(REJECTED)).thenReturn(posts);
+        List<Long> expected = List.of(1L, 2L, 5L);
 
-        postService.publishingUsersForBan();
+        List<Long> result = postService.findUserIdsForBan();
 
-        verify(redisMessagePublisher, times(1)).publish(String.valueOf(1));
-        verify(redisMessagePublisher, times(1)).publish(String.valueOf(2));
-        verify(redisMessagePublisher, times(0)).publish(String.valueOf(3));
-        verify(redisMessagePublisher, times(0)).publish(String.valueOf(4));
-        verify(redisMessagePublisher, times(1)).publish(String.valueOf(5));
+        assertEquals(expected, result);
     }
 
     private void addPostsToList(long from, int quantity, long userId) {

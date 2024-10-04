@@ -3,7 +3,6 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.RedisMessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +25,6 @@ import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
 public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
-    private final RedisMessagePublisher redisMessagePublisher;
     private static final int MAX_REJECTED_POSTS = 5;
 
     @Transactional
@@ -104,13 +102,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public void publishingUsersForBan() {
-        List<Long> userIdsForBan = findUserIdsForBan();
-        userIdsForBan
-                .forEach(id -> redisMessagePublisher.publish(String.valueOf(id)));
-    }
-
-    private List<Long> findUserIdsForBan() {
+    public List<Long> findUserIdsForBan() {
         List<Post> rejectedPosts = postRepository.findAllByVerificationStatus(REJECTED);
         Map<Long, List<Long>> postsByAuthorId = rejectedPosts.stream()
                 .collect(Collectors.groupingBy(
