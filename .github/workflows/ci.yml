@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - chimera-master-stream6
+      - chimera-master-stream6-BJS2-27040
 
 jobs:
   build:
