@@ -1,8 +1,9 @@
 package faang.school.postservice.scheduler;
 
-import faang.school.postservice.publisher.UserIdsPublisher;
+import faang.school.postservice.service.user.UserIdsPublisher;
 import faang.school.postservice.service.comment.CommentServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CommenterBanner {
 
     private final CommentServiceImpl commentService;
@@ -29,6 +31,8 @@ public class CommenterBanner {
                 .map((Map.Entry::getKey))
                 .toList();
 
+
+        log.info("Publishing User IDs to ban: {}", usersToBan);
         userIdsPublisher.publish(usersToBan);
     }
 }

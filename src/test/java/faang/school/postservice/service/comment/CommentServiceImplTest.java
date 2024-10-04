@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,6 +45,10 @@ class CommentServiceImplTest {
     private CommentResponseDto commentResponseDto;
     private Comment comment;
 
+    private Comment verifiedComment;
+    private Comment unverifiedComment1;
+    private Comment unverifiedComment2;
+
     @BeforeEach
     void setUp() {
         post = Post.builder()
@@ -68,6 +73,28 @@ class CommentServiceImplTest {
                 .content("This is a comment")
                 .post(post)
                 .authorId(1L)
+                .build();
+
+
+        verifiedComment = Comment.builder()
+                .id(1L)
+                .content("This is a verified comment")
+                .authorId(1L)
+                .verified(true)
+                .build();
+
+        unverifiedComment1 = Comment.builder()
+                .id(2L)
+                .content("This is an unverified comment")
+                .authorId(1L)
+                .verified(false)
+                .build();
+
+        unverifiedComment2 = Comment.builder()
+                .id(3L)
+                .content("This is another unverified comment")
+                .authorId(2L)
+                .verified(false)
                 .build();
     }
 
@@ -122,5 +149,33 @@ class CommentServiceImplTest {
         commentService.delete(1L);
         // then
         verify(commentRepository).deleteById(1L);
+    }
+
+    @Test
+    void collectUnverifiedComments_shouldReturnOnlyUnverifiedComments() {
+        // Given
+        List<Comment> allComments = List.of(verifiedComment, unverifiedComment1, unverifiedComment2);
+        when(commentRepository.findAll()).thenReturn(allComments);
+
+        // When
+        List<Comment> result = commentService.collectUnverifiedComments();
+
+        // Then
+        assertThat(result).hasSize(2);
+        assertThat(result).contains(unverifiedComment1, unverifiedComment2);
+    }
+
+    @Test
+    void groupUnverifiedCommentAuthors_shouldGroupByAuthorId() {
+        // Given
+        List<Comment> unverifiedComments = List.of(unverifiedComment1, unverifiedComment2, unverifiedComment1);
+
+        // When
+        Map<Long, Long> result = commentService.groupUnverifiedCommentAuthors(unverifiedComments);
+
+        // Then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(1L)).isEqualTo(2L); // Author 1L has 2 unverified comments
+        assertThat(result.get(2L)).isEqualTo(1L); // Author 2L has 1 unverified comment
     }
 }
