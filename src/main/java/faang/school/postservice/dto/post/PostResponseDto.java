@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,4 +26,5 @@ public class PostResponseDto {
     private LocalDateTime updatedAt;
     private VerificationPostStatus verificationStatus;
     private LocalDateTime verifiedDate;
+    private List<Long> resourceIds;
 }
