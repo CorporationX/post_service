@@ -213,7 +213,6 @@ public class PostServiceTest {
 
     @Test
     public void testModerationOfPostWithBatchProcessing() {
-        // Set a batch size for testing
         int batchSize = 2;
         ReflectionTestUtils.setField(postService, "batchSize", batchSize);
 
@@ -221,7 +220,7 @@ public class PostServiceTest {
         ReflectionTestUtils.setField(postService, "postModerationThreadPool", testExecutor);
 
         List<Post> postsToModerate = new ArrayList<>();
-        for (long i = 1; i <= 5; i++) {
+        for (long i = 1; i <= 10; i++) {
             Post post = new Post();
             post.setId(i);
             post.setContent("Test content " + i);
