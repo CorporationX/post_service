@@ -1,7 +1,6 @@
 package faang.school.postservice.validator;
 
 import faang.school.postservice.client.ProjectServiceClientMock;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.model.Post;
 import lombok.AllArgsConstructor;

@@ -6,12 +6,10 @@ import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.post.PostService;
-import feign.FeignException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,9 +18,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentValidatorTest {
-
-    @Mock
-    private UserServiceClient userServiceClient;
     @Mock
     private PostService postService;
     @Mock

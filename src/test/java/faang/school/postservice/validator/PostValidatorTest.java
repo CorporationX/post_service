@@ -3,7 +3,6 @@ package faang.school.postservice.validator;
 import faang.school.postservice.client.ProjectServiceClientMock;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.model.Post;
@@ -27,8 +26,6 @@ public class PostValidatorTest {
 
     @Mock
     private ResourceRepository resourceRepository;
-    @Mock
-    private UserServiceClient userServiceClient;
     @Mock
     private ProjectServiceClientMock projectServiceClient;
     @Mock

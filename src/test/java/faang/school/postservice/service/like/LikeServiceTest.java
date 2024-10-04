@@ -51,11 +51,10 @@ public class LikeServiceTest {
     private Long postId;
     private Long commentId;
     private Long userId;
-    private Long likeId;
 
     @BeforeEach
     public void setUp() {
-        likeId = 1L;
+        long likeId = 1L;
         postId = 7L;
         commentId = 5L;
         userId = 2L;

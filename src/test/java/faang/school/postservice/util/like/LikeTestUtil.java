@@ -25,16 +25,4 @@ public class LikeTestUtil {
                 .comment(comment)
                 .build();
     }
-
-    public static List<Like> getPostLikes(int number, Post post) {
-        return LongStream.rangeClosed(1, number)
-                .mapToObj(i -> getPostLike(i, i, post))
-                .toList();
-    }
-
-    public static List<Like> getCommentLikes(int number, Comment comment) {
-        return LongStream.rangeClosed(1, number)
-                .mapToObj(i -> getCommentLike(i, i, comment))
-                .toList();
-    }
 }

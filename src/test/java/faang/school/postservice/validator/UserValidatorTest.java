@@ -2,21 +2,14 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.ExternalServiceException;
 import faang.school.postservice.exception.UserNotFoundException;
 import feign.FeignException;
-import feign.Request;
-import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-
-import java.nio.charset.Charset;
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
