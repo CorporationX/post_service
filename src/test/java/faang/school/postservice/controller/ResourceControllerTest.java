@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,11 +36,11 @@ class ResourceControllerTest {
 
     @Test
     void testDownloadResource() {
-        InputStream inputStream = mock(InputStream.class);
+        ResponseEntity<byte[]> responseEntity = mock(ResponseEntity.class);
 
-        when(resourceService.downloadResource(id)).thenReturn(inputStream);
+        when(resourceService.downloadResource(id)).thenReturn(responseEntity);
 
-        assertDoesNotThrow(() -> resourceController.downloadResource(id));
+        assertDoesNotThrow(() -> resourceController.downloadImageResource(id));
     }
 
     @Test

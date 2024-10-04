@@ -1,6 +1,7 @@
 package faang.school.postservice.service.resource;
 
-import faang.school.postservice.exception.FileUploadException;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import faang.school.postservice.exception.FileException;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -90,12 +92,12 @@ class ResourceServiceImplTest {
 
         MultipartFile multipartFile = prepareMultipartFileImage();
 
-        assertThrows(FileUploadException.class, () -> resourceService.addResource(post.getId(), multipartFile));
+        assertThrows(FileException.class, () -> resourceService.addResource(post.getId(), multipartFile));
     }
 
     @Test
     void testDeleteResource() {
-        when(resourceRepository.getById(resource.getId())).thenReturn(resource);
+        when(resourceRepository.findById(resource.getId())).thenReturn(Optional.of(resource));
 
         resourceService.deleteResource(resource.getId());
 
@@ -106,7 +108,11 @@ class ResourceServiceImplTest {
 
     @Test
     void testDownloadResource() {
-        when(resourceRepository.getById(resource.getId())).thenReturn(resource);
+        byte[] bytes = "test".getBytes();
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+
+        when(resourceRepository.findById(resource.getId())).thenReturn(Optional.of(resource));
+        when(s3Service.downloadFile(anyString())).thenReturn(byteArrayInputStream);
 
         resourceService.downloadResource(resource.getId());
 

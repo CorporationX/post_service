@@ -6,10 +6,8 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import faang.school.postservice.model.Resource;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,10 +17,9 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(value = "services.s3.isMocked", havingValue = "false")
+@Slf4j
 public class S3ServiceImpl implements S3Service {
 
-    private static final Logger log = LoggerFactory.getLogger(S3ServiceImpl.class);
     private final AmazonS3 s3Client;
 
     @Value("${services.s3.bucketName}")
@@ -41,7 +38,6 @@ public class S3ServiceImpl implements S3Service {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, file.getInputStream(), objectMetadata);
             s3Client.putObject(putObjectRequest);
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
 

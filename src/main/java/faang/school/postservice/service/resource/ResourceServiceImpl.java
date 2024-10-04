@@ -1,7 +1,7 @@
 package faang.school.postservice.service.resource;
 
 import faang.school.postservice.dto.resource.ResourceDto;
-import faang.school.postservice.exception.FileUploadException;
+import faang.school.postservice.exception.FileException;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -10,6 +10,10 @@ import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,15 +44,15 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public ResourceDto addResource(Long post_id, MultipartFile file) {
-        Post post = postRepository.findById(post_id).get();
+    public ResourceDto addResource(Long postId, MultipartFile file) {
+        Post post = postRepository.findById(postId).get();
 
         int postImageCount = post.getResources().size();
         checkImageCount(postImageCount);
         checkFileSize(file);
         MultipartFile correctedFile = correctImageResolution(file);
 
-        String folder = post_id.toString();
+        String folder = postId.toString();
 
         Resource resource = s3Service.uploadFile(correctedFile, folder);
         resource.setPost(post);
@@ -62,8 +66,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void deleteResource(Long resource_id) {
-        Resource resource = resourceRepository.getById(resource_id);
+    public void deleteResource(Long resourceId) {
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow();
         Post post = resource.getPost();
 
         post.getResources().remove(resource);
@@ -73,21 +78,33 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public InputStream downloadResource(Long resource_id) {
-        String key = resourceRepository.getById(resource_id).getKey();
+    public ResponseEntity<byte[]> downloadResource(Long resourceId) {
+        String key = resourceRepository.findById(resourceId)
+                .orElseThrow()
+                .getKey();
 
-        return s3Service.downloadFile(key);
+        try (InputStream inputStream = s3Service.downloadFile(key)) {
+            byte[] imageBytes = inputStream.readAllBytes();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     private void checkImageCount(int postImageCount) {
         if (!(postImageCount + 1 <= IMAGES_IN_POST_LIMIT)) {
-            throw new FileUploadException("only " + IMAGES_IN_POST_LIMIT + " images allowed");
+            throw new FileException("only " + IMAGES_IN_POST_LIMIT + " images allowed");
         }
     }
 
     private void checkFileSize(MultipartFile file) {
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new FileUploadException("only " + MAX_FILE_SIZE + " file size allowed");
+            throw new FileException("only " + MAX_FILE_SIZE + " file size allowed");
         }
     }
 
@@ -123,16 +140,15 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     private MultipartFile convertBufferedImageToMultipartFile(BufferedImage image, String originalFilename, String contentType) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();) {
             ImageIO.write(image, "jpg", baos);
             baos.flush();
-        } catch (IOException e) {
-            log.error("Failed to convert image", e);
-            throw new RuntimeException("Failed to convert image", e);
-        }
 
-        byte[] imageBytes = baos.toByteArray();
-        return new MockMultipartFile(originalFilename, originalFilename, contentType, imageBytes);
+            byte[] imageBytes = baos.toByteArray();
+
+            return new MockMultipartFile(originalFilename, originalFilename, contentType, imageBytes);
+        } catch (IOException e) {
+            throw new FileException("Failed to convert image");
+        }
     }
 }

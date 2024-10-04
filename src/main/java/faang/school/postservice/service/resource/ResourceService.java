@@ -1,14 +1,13 @@
 package faang.school.postservice.service.resource;
 
 import faang.school.postservice.dto.resource.ResourceDto;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
-
 public interface ResourceService {
-    ResourceDto addResource(Long post_id, MultipartFile file);
+    ResourceDto addResource(Long postId, MultipartFile file);
 
-    void deleteResource(Long resource_id);
+    void deleteResource(Long resourceId);
 
-    InputStream downloadResource(Long resource_id);
+    ResponseEntity<byte[]> downloadResource(Long resourceId);
 }

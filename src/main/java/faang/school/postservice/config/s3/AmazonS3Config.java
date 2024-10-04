@@ -1,4 +1,4 @@
-package faang.school.postservice.config.AmazonS3Config;
+package faang.school.postservice.config.s3;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -28,5 +28,4 @@ public class AmazonS3Config {
             .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
                 .build();
     }
-
 }
