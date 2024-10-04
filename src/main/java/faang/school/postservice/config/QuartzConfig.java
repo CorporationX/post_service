@@ -6,6 +6,7 @@ import org.quartz.JobDetail;
 import org.quartz.SimpleScheduleBuilder;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -13,6 +14,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableScheduling
 public class QuartzConfig {
+    @Value("${quartz.job.interval-seconds}")
+    private int intervalInSeconds;
+
     @Bean
     public JobDetail moderationJobDetail() {
         return JobBuilder.newJob(ModerationJob.class)
@@ -24,7 +28,7 @@ public class QuartzConfig {
     @Bean
     public Trigger moderationJobTrigger() {
         SimpleScheduleBuilder scheduleBuilder = SimpleScheduleBuilder.simpleSchedule()
-                .withIntervalInSeconds(30)
+                .withIntervalInSeconds(intervalInSeconds)
                 .repeatForever();
 
         return TriggerBuilder.newTrigger()

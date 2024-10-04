@@ -65,6 +65,17 @@ payment-service:
 
 moderation:
   sublist-size: 10
+
+async:
+  executor:
+    core-pool-size: 10
+    max-pool-size: 50
+    queue-capacity: 100
+    thread-name-prefix: AsyncModeration-
+
+quartz:
+  job:
+    interval-seconds: 30
   
 springdoc:
   api-docs:
