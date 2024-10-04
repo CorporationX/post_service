@@ -3,13 +3,19 @@ package faang.school.postservice;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.post.SpellCheckerDto;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.tools.YandexSpeller;
+import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -40,6 +46,9 @@ public class PostServiceTest {
 
     @Mock
     private UserContext userContext;
+
+    @Mock
+    private YandexSpeller yandexSpeller;
 
     @InjectMocks
     PostService postService;
@@ -187,5 +196,38 @@ public class PostServiceTest {
         assertFalse(result.isEmpty());
         assertEquals(1L, result.get(0).getProjectId());
         verify(postRepository, times(1)).findPublishedByProjectId(post.getProjectId());
+    }
+
+    @Captor
+    ArgumentCaptor<List<Post>> captor;
+
+    @Test
+    public void testCorrectAllDraftPosts_Success() {
+        Post post = Post.builder()
+                .content("Helo world")
+                .build();
+
+        Post expectedPost = Post.builder()
+                .content("Hello world")
+                .build();
+
+        SpellCheckerDto spellCheckerDto = SpellCheckerDto.builder()
+                .pos(0)
+                .len(4)
+                .s(List.of("Hello"))
+                .build();
+
+        when(postRepository.findAllDrafts()).thenReturn(List.of(post));
+        when(yandexSpeller.checkText(post.getContent())).thenReturn(List.of(spellCheckerDto));
+        when(yandexSpeller.correctText(post.getContent(), List.of(spellCheckerDto))).thenReturn(expectedPost.getContent());
+
+        postService.correctAllDraftPosts();
+
+        verify(postRepository).saveAll(captor.capture());
+
+        List<Post> updatedPosts = captor.getValue();
+        Assertions.assertThat(updatedPosts.get(0))
+                .usingRecursiveComparison()
+                .isEqualTo(expectedPost);
     }
 }
