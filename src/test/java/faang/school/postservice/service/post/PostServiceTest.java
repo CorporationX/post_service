@@ -13,6 +13,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.post.PostCreator;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.impl.PostServiceImpl;
+import faang.school.postservice.service.resource.ResourceService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +38,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class PostServiceTest {
+class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
@@ -50,6 +51,9 @@ public class PostServiceTest {
 
     @Mock
     private ProjectServiceClient projectClient;
+
+    @Mock
+    private ResourceService resourceService;
 
     @InjectMocks
     private PostServiceImpl postService;
@@ -183,6 +187,7 @@ public class PostServiceTest {
     public void testUpdatePostSuccess() {
         when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.of(post));
         when(postRepository.save(post)).thenReturn(post);
+        post.setResources(new ArrayList<>());
 
         postDto = postService.update(0L, updatingRequest);
 
@@ -203,6 +208,7 @@ public class PostServiceTest {
     public void testRemovePostSuccess() {
         when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.of(post));
         when(postRepository.save(post)).thenReturn(post);
+        post.setResources(new ArrayList<>());
 
         postDto = postService.remove(0L);
 

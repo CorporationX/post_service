@@ -69,6 +69,7 @@ comment:
 
 resource:
   max-size: 5242880
+  max-count: 10
   image:
     max-rectangle-width: 1080
     max-rectangle-height: 566

@@ -34,7 +34,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public List<Resource> addResourcesToPost(List<MultipartFile> files, Post post) {
         checkFilesSizes(files);
-        var images = files.stream()
+        List<byte[]> images = files.stream()
                 .map(imageProcessor::processImage)
                 .toList();
         List<Resource> resources = new ArrayList<>();
@@ -54,9 +54,9 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public void deleteResourcesFromPost(List<Long> resourcesIds, Post post) {
-        var resourcesToDelete = resourceRepository.findAllById(resourcesIds);
+        List<Resource> resourcesToDelete = resourceRepository.findAllById(resourcesIds);
         if (resourcesToDelete.size() != resourcesIds.size()) {
-            var notFoundedIds = resourcesIds.stream()
+            List<String> notFoundedIds = resourcesIds.stream()
                     .filter(id -> resourcesToDelete.stream()
                             .map(Resource::getId)
                             .noneMatch(existingId -> existingId.equals(id)))
@@ -71,7 +71,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     private void checkFilesSizes(List<MultipartFile> files) {
-        var sizeExceededMessages = files.stream()
+        List<String> sizeExceededMessages = files.stream()
                 .filter(file -> file.getSize() > maxFileSize)
                 .map(file -> "File %s is too big. Max size is %dMB"
                         .formatted(file.getName(), maxFileSize / BYTES_PER_MB))
