@@ -1,20 +1,25 @@
-package faang.school.postservice.dto.redis;
+package faang.school.postservice.model.chache;
 
-import faang.school.postservice.dto.post.PostDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
+
+
+
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-@RedisHash("CachePost")
-public class CachePost {
+@NoArgsConstructor
+@AllArgsConstructor
+@RedisHash("UserCache")
+public class UserCache {
+    @Id
     private long id;
-    private PostDto postDto;
+    private String name;
+
     @TimeToLive
-    private long ttl;
+    private Long ttl;
 }
