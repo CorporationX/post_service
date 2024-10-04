@@ -1,7 +1,7 @@
 package faang.school.postservice.config;
 
 
-import faang.school.postservice.service.HashtagListener;
+import faang.school.postservice.redis.listener.HashtagListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -31,6 +31,7 @@ class RedisConfigTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        redisConfig.hashtagsTopic = "hashtags";
     }
 
     @Test
@@ -46,7 +47,7 @@ class RedisConfigTest {
     void testHashtagTopic() {
         ChannelTopic channelTopic = redisConfig.hashtagTopic();
         assertNotNull(channelTopic);
-        assertEquals("${port.hashtags}", channelTopic.getTopic());
+        assertEquals("hashtags", channelTopic.getTopic());
     }
 
     @Test

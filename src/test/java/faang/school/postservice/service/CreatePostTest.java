@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
@@ -8,6 +9,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.enums.AuthorType;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.publisher.NewPostPublisher;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +63,7 @@ public class CreatePostTest {
     }
 
     @Test
-    void shouldCreatePostWithUserAsAuthor() {
+    void shouldCreatePostWithUserAsAuthor() throws JsonProcessingException {
         UserDto userDto = new UserDto();
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
 
@@ -85,7 +87,7 @@ public class CreatePostTest {
     }
 
     @Test
-    void shouldCreatePostWithProjectAsAuthor() {
+    void shouldCreatePostWithProjectAsAuthor() throws JsonProcessingException {
         ProjectDto projectDto = new ProjectDto();
         when(projectServiceClient.getProject(1L)).thenReturn(projectDto);
 
