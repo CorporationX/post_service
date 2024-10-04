@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -46,18 +48,18 @@ public class PostServiceTest {
     @Mock
     private ContentModerationService contentModerationService;
 
+    @Mock
+    private ExecutorService executorService;
+
     @InjectMocks
     PostService postService;
 
 
     private Post post;
 
+
     @BeforeEach
     public void setUp() throws Exception {
-        java.lang.reflect.Field batchSizeField = PostService.class.getDeclaredField("batchSize");
-        batchSizeField.setAccessible(true);
-        batchSizeField.set(postService, 2);
-
         post = new Post();
         post.setId(1L);
         post.setAuthorId(1L);
@@ -200,18 +202,17 @@ public class PostServiceTest {
 
     @Test
     public void testModerationOfPost() {
-        List<Post> posts = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            Post post = new Post();
-            post.setId((long) i);
-            post.setContent("Sample content " + i);
-            posts.add(post);
-        }
+        List<Post> unverifiedPosts = new ArrayList<>();
+        unverifiedPosts.add(post);
 
-        when(postRepository.findUnverifiedOrOldVerifiedPosts(any(LocalDateTime.class))).thenReturn(posts);
+        when(postRepository.findUnverifiedOrOldVerifiedPosts(any(LocalDateTime.class))).thenReturn(unverifiedPosts);
+        when(contentModerationService.checkContentAndModerate(any(Post.class))).thenReturn(CompletableFuture.completedFuture(null));
 
         postService.moderationOfPost();
 
-        verify(contentModerationService, times(5)).checkContentAndModerate(any(Post.class));
+        verify(postRepository, times(1)).findUnverifiedOrOldVerifiedPosts(any(LocalDateTime.class));
+        verify(contentModerationService, times(1)).checkContentAndModerate(post);
     }
+
+
 }
