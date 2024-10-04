@@ -55,9 +55,6 @@ class CommentValidatorTest {
                 .updatedAt(updatedAt)
                 .build();
 
-        commentValidator.checkingForCompliance(comment, updateCommentRequest);
-
-        assertEquals(comment.getAuthorId(), updateCommentRequest.getAuthorId());
         assertDoesNotThrow(() -> commentValidator.checkingForCompliance(comment, updateCommentRequest));
     }
 

@@ -7,8 +7,6 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Set;
 
@@ -47,20 +45,4 @@ class UpdateCommentRequestTest {
         Set<ConstraintViolation<UpdateCommentRequest>> violations = validator.validate(updateCommentRequest);
         assertTrue(violations.isEmpty());
     }
-
-/*   не понимаю почему не работает, можешь подсказать что не так делаю?
-
- @ParameterizedTest
-    @ValueSource(strings = {"", "null"})
-    @DisplayName("test")
-    void test(String content) {
-
-        UpdateCommentRequest updateCommentRequest = UpdateCommentRequest.builder()
-                .content(content)
-                .authorId(1L)
-                .build();
-
-        Set<ConstraintViolation<UpdateCommentRequest>> violations = validator.validate(updateCommentRequest);
-        assertFalse(violations.isEmpty());
-    }*/
 }

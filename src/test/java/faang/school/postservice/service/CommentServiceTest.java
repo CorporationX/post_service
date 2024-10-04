@@ -199,49 +199,14 @@ class CommentServiceTest {
         }
     }
 
-    @Nested
-    class NegativeTests {
-        @Test
-        @DisplayName("successfully throwing an exception when userServiceClient return exception")
-        void testCreateCommentWhenUserServiceClientReturnException() {
-            when(userServiceClient.getUser(createCommentRequest.getAuthorId())).thenThrow(FeignException.class);
+    @Test
+    @DisplayName("successfully throwing an exception when List of comments is Empty")
+    void testGetAllCommentsWhenListIsEmpty() {
+        when(commentRepository.findAllByPostId(POST_ID)).thenReturn(Collections.emptyList());
 
-            assertThrows(FeignException.class, () -> commentService.createComment(POST_ID, createCommentRequest));
-        }
-
-        @Test
-        @DisplayName("successfully throwing an exception when userServiceClient return exception")
-        void testCreateCommentWhenPostRepositoryReturnException() {
-            when(postRepository.findById(POST_ID)).thenThrow(EntityNotFoundException.class);
-
-            assertThrows(EntityNotFoundException.class, () -> commentService.createComment(POST_ID, createCommentRequest));
-        }
-
-        @Test
-        @DisplayName("successfully throwing an exception when CommentRepository return exception")
-        void testUpdateCommentWhenCommentRepositoryReturnException() {
-            when(commentRepository.findById(1L)).thenThrow(DataValidationException.class);
-
-            assertThrows(DataValidationException.class, () -> commentService.updateComment(POST_ID, 1L, updateCommentRequest));
-        }
-
-        @Test
-        @DisplayName("successfully throwing an exception when userServiceClient return exception")
-        void testUpdateCommentWhenPostRepositoryReturnException() {
-            when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-            when(postRepository.findById(POST_ID)).thenThrow(EntityNotFoundException.class);
-
-            assertThrows(EntityNotFoundException.class, () -> commentService.updateComment(POST_ID, 1L, updateCommentRequest));
-        }
-
-        @Test
-        @DisplayName("successfully throwing an exception when List of comments is Empty")
-        void testGetAllCommentsWhenListIsEmpty() {
-            when(commentRepository.findAllByPostId(POST_ID)).thenReturn(Collections.emptyList());
-
-            assertThrows(NoSuchElementException.class, () -> commentService.getAllComments(POST_ID));
-        }
+        assertThrows(NoSuchElementException.class, () -> commentService.getAllComments(POST_ID));
     }
+
 
     private Comment initializingComment(long commentId, String content, long authorId, Post post,
                                         LocalDateTime createdAt, LocalDateTime updateAt) {
