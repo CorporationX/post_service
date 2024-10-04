@@ -9,6 +9,7 @@ import faang.school.postservice.model.Resource;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
     @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "mapResourcesToResourceIds")
+    @Mapping(target = "likes", expression = "java(post.getLikes() != null ? post.getLikes().size() : 0)")
     PostResponseDto toDto(Post post);
 
     Post toEntity(CreatePostRequestDto dto);
@@ -25,7 +27,11 @@ public interface PostMapper {
 
     Post toEntity(FilterPostRequestDto dto);
 
-    List<PostResponseDto> toDtos(List<Post> posts);
+    default List<PostResponseDto> listEntitiesToListDto(List<Post> posts) {
+        return posts.stream()
+                .map(this::toDto)
+                .toList();
+    }
 
     @Named("mapResourcesToResourceIds")
     default List<Long> mapResourcesToResourceIds(List<Resource> resources) {

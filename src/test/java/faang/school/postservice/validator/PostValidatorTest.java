@@ -1,28 +1,22 @@
 package faang.school.postservice.validator;
 
 import faang.school.postservice.client.ProjectServiceClientMock;
-import faang.school.postservice.client.UserServiceClientMock;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
-import faang.school.postservice.repository.ResourceRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
@@ -34,13 +28,15 @@ public class PostValidatorTest {
     @Mock
     private ResourceRepository resourceRepository;
     @Mock
-    private UserServiceClientMock userServiceClient;
+    private UserServiceClient userServiceClient;
     @Mock
     private ProjectServiceClientMock projectServiceClient;
     @Mock
     private MultipartFile image;
     @InjectMocks
     private PostValidator postValidator;
+    @Mock
+    private UserValidator userValidator;
 
     @BeforeEach
     void setUp() {
@@ -73,24 +69,24 @@ public class PostValidatorTest {
                 .authorId(1L)
                 .build();
 
-        when(userServiceClient
-                .getUser(createPost.getAuthorId()))
-                .thenReturn(new UserDto(createPost.getAuthorId(), null, null));
+        doNothing().when(userValidator).validateUserExists(createPost.getAuthorId());
 
-        postValidator.validateCreatePost(createPost);
+        assertDoesNotThrow(() -> postValidator.validateCreatePost(createPost));
 
-        verify(userServiceClient).getUser(createPost.getAuthorId());
+        verify(userValidator).validateUserExists(createPost.getAuthorId());
     }
 
     @Test
     void testValidateCreateInputAuthorFailed() {
+        long authorId = 1L;
         Post createPost = Post.builder()
-                .authorId(1L)
+                .authorId(authorId)
                 .build();
+        doThrow(new UserNotFoundException("User with ID " + authorId + " not found.")).when(userValidator).validateUserExists(authorId);
 
-        assertThrows(ValidationException.class, () -> postValidator.validateCreatePost(createPost));
+        assertThrows(UserNotFoundException.class, () -> postValidator.validateCreatePost(createPost));
 
-        verify(userServiceClient).getUser(createPost.getAuthorId());
+        verify(userValidator).validateUserExists(createPost.getAuthorId());
     }
 
     @Test
