@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class ModerationScheduler {
     private final PostService postService;
 
-    @Scheduled(cron = "${post.moderation.cron}")
+    @Scheduled(cron = "${post.moderation.scheduler.cron}")
     public void runModeration() {
         postService.moderationOfPost();
     }
