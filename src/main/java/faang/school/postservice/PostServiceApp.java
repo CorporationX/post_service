@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableConfigurationProperties
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
 public class PostServiceApp {
     public static void main(String[] args) {
