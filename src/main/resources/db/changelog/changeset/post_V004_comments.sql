@@ -1,0 +1,3 @@
+ALTER TABLE comment
+  ADD COLUMN verified    BOOLEAN   DEFAULT FALSE,
+  ADD COLUMN verified_at TIMESTAMP;
