@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CommentRedis {
     private Long postId;
-    private Long authorId;
+    private UserRedis author;
     private String content;
     private LocalDateTime createdAt;
 }

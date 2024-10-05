@@ -52,6 +52,7 @@ spring:
 
 news-feed:
   max-size: 500
+  batch-size: 20
 
 server:
   port: 8081

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 public class PostDto {
     private Long id;
-    @NotBlank(message = "Content is not empty")
+    @NotBlank
     private String content;
     private Long authorId;
     private Long projectId;
@@ -24,5 +24,5 @@ public class PostDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean deleted;
-    private Long likesCount;
+    private long likesCount;
 }

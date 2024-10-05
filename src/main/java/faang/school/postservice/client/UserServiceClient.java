@@ -16,7 +16,7 @@ public interface UserServiceClient {
     @GetMapping("/api/user/{userId}")
     UserDto getUser(@PathVariable long userId);
 
-    @GetMapping("/api/user/list")
+    @GetMapping("/api/user")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 
     @PutMapping("/api/user/{userId}/deactivate")
