@@ -73,6 +73,9 @@ class CommentServiceTest {
     @Mock
     private CommentSearcher commentSearcher;
 
+    @Mock
+    private RedisMessagePublisher redisMessagePublisher;
+
     private SortingStrategyAppliersMap sortingStrategyAppliersMap;
 
     @BeforeEach
@@ -86,7 +89,8 @@ class CommentServiceTest {
                 userContext,
                 commentMapper,
                 sortingStrategyAppliersMap,
-                commentSearcher);
+                commentSearcher,
+                redisMessagePublisher);
         post = initPost(POST_ID, true, false);
         author = initAuthor(AUTHOR_ID);
     }

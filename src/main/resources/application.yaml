@@ -49,6 +49,7 @@ comment:
     max-pool-size: 20
     queue-capacity: 100
     thread-name-prefix: "verify-task-executor-"
+  user-ban-cron: "0 0/1 * 1/1 * ?" # every minute "0 0 * * * ?" # every day at 00:00
 
 user-service:
   host: localhost

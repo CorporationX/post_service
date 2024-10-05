@@ -39,6 +39,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final SortingStrategyAppliersMap sortingStrategiesAppliers;
     private final CommentSearcher commentSearcher;
+    private final RedisMessagePublisher redisMessagePublisher;
 
     @Override
     public CommentDto createComment(Long postId, CommentDto commentDto) {
@@ -106,6 +107,13 @@ public class CommentServiceImpl implements CommentService {
         });
         commentRepository.saveAll(comments);
         log.info("Verified comments: {}", comments.size());
+    }
+
+    @Override
+    public void findUsersToBan() {
+        List<Long> usersIds = commentRepository.findUsersToBan();
+        log.info("Found {} users to Ban", usersIds.size());
+        usersIds.forEach(redisMessagePublisher::publishUserToBan);
     }
 
     private Post getPost(Long postId) {

@@ -17,4 +17,11 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
 
     @Query("SELECT c FROM Comment c WHERE c.verified = false and (c.verifiedDate is null or c.verifiedDate >= :startDate)")
     List<Comment> findUnverifiedComments(@Param("startDate") LocalDateTime startDate);
+
+    @Query("SELECT c.authorId " +
+            "FROM Comment c " +
+            "WHERE c.verified = false and c.verifiedDate IS NOT NULL " +
+            "GROUP BY c.authorId " +
+            "HAVING COUNT(c.id) > 5")
+    List<Long> findUsersToBan();
 }
