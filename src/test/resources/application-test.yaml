@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;AUTO_SERVER_PORT=9009
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+  liquibase:
+    enabled: false
+
+post:
+  correct:
+    content:
+      retry:
+        max-attempts: 3
+        delay: 500
+
+text-gears:
+  baseUrl: http://localhost:8080
+  correct: /correct
+  api-key: XeTQOgdEpbP7B94C
