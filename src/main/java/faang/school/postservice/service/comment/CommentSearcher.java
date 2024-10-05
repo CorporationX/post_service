@@ -45,6 +45,7 @@ public class CommentSearcher {
                 indexWriter.addDocument(document);
             }
             indexWriter.commit();
+            log.info("Finished indexing moderation dictionary");
         } catch (IOException e) {
             throw new IndexSearcherException("Error to initializing lucene index", e);
         }
