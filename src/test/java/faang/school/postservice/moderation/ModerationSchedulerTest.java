@@ -19,10 +19,10 @@ class ModerationSchedulerTest {
     private PostService postService;
 
     @Test
-    @DisplayName("Успешный вызов метода moderationContent")
-    public void whenModerationContentSuccess() {
-        moderationScheduler.moderationContent();
+    @DisplayName("Успешный вызов метода moderateContent")
+    public void whenModerateContentThenSuccess() {
+        moderationScheduler.moderateContent();
 
-        verify(postService).moderationPostContent();
+        verify(postService).moderatePostsContent();
     }
 }

@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 @Configuration
 public class AppConfig {
 
-    @Value("${post.moderation.threads.count}")
+    @Value("${post.executor.threads.count}")
     private int threadCount;
 
     @Bean

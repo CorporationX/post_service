@@ -33,6 +33,9 @@ logging:
     root: info
 
 post:
+  executor:
+    threads:
+      count: 5
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
@@ -44,8 +47,6 @@ post:
       cron: "0 0/10 * 1/1 * ?" # every day at 00:00 "0 0 0 * * ?"
     dictionary:
       file-path: "src/main/resources/moderation/dictionary.txt"
-    threads:
-      count: 5
     sublist:
       length: 10
 

@@ -1,51 +1,27 @@
 package faang.school.postservice.moderation;
 
-import faang.school.postservice.model.Post;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class ModerationDictionary {
 
-    private final List<String> dictionary;
+    private final Dictionary dictionary;
 
-    @Value("${post.moderation.dictionary.file-path}")
-    private String filePath;
+    public Map<Long, Boolean> searchSwearWords(Map<Long, String> unverifiedContent) {
+        Map<Long, Boolean> map = new HashMap<>();
 
-    @Autowired
-    public ModerationDictionary(List<String> dictionary) {
-        this.dictionary = dictionary;
-    }
+        unverifiedContent.forEach((key, value) -> {
+            boolean containsSwearWord = dictionary.getDictionary().stream()
+                    .anyMatch(value::contains);
 
-    @PostConstruct
-    private void createDictionary() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                dictionary.add(line.toLowerCase().trim());
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException("Failed to read file", ex.getCause());
-        }
-    }
-
-    public List<Post> searchSwearWords(List<Post> unverifiedPost) {
-        unverifiedPost.forEach(post -> {
-            boolean containsSwearWord = dictionary.stream()
-                    .anyMatch(word -> post.getContent().contains(word));
-
-            post.setVerified(!containsSwearWord);
-            post.setVerifiedDate(LocalDateTime.now());
+            map.put(key, !containsSwearWord);
         });
 
-        return unverifiedPost;
+        return map;
     }
 }

@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -24,17 +27,26 @@ public class PostService {
     private final ExecutorService executor;
 
     @Async("executor")
-    public void moderationPostContent() {
-        List<Post> unverifiedPost = postRepository.findReadyToVerified();
+    public void moderatePostsContent() {
+        List<Post> unverifiedPosts = postRepository.findReadyToVerified();
 
-        for (int i = 0; i < unverifiedPost.size(); i += sublistLength) {
-            List<Post> subList = unverifiedPost.subList(i, Math.min(unverifiedPost.size(), i + sublistLength));
+        for (int i = 0; i < unverifiedPosts.size(); i += sublistLength) {
+            List<Post> subList = unverifiedPosts.subList(i, Math.min(unverifiedPosts.size(), i + sublistLength));
 
-            CompletableFuture<List<Post>> verifiedPosts =
-                    CompletableFuture.supplyAsync(() -> moderationDictionary.searchSwearWords(subList), executor);
+            Map<Long, String> postsContent = new HashMap<>();
+            subList.forEach(post -> postsContent.put(post.getId(), post.getContent()));
 
-            verifiedPosts
-                    .thenAccept(posts -> posts.forEach(postRepository::save));
+            CompletableFuture<Map<Long, Boolean>> verifiedPosts =
+                    CompletableFuture.supplyAsync(() -> moderationDictionary.searchSwearWords(postsContent), executor);
+
+            verifiedPosts.thenAccept(map -> {
+                subList.forEach(post -> {
+                    post.setVerified(map.get(post.getId()));
+                    post.setVerifiedDate(LocalDateTime.now());
+
+                    postRepository.save(post);
+                });
+            });
         }
     }
 }

@@ -6,10 +6,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,39 +20,31 @@ class ModerationDictionaryTest {
 
     @InjectMocks
     private ModerationDictionary moderationDictionary;
+    @Mock
+    private Dictionary dictionary;
 
-    private List<String> dictionary;
-    private static final String WORD = "слово";
-    private static final String BAD_WORD = "баг";
+    private static final String SWEAR_WORD = "bug";
+    private static final long ID_ONE = 1L;
+    private static final long ID_TWO = 2L;
+    private static final String CONTENT = "content";
+    private static final String SWEAR_CONTENT = "bug";
 
-    private List<Post> unverifiedPosts;
-    private Post first;
-    private Post second;
-
+    private Map<Long, String> unverifiedContent;
 
     @BeforeEach
     public void init() {
-        first = Post.builder()
-                .content(WORD)
-                .build();
-        second = Post.builder()
-                .content(BAD_WORD)
-                .build();
-
-        unverifiedPosts = Arrays.asList(first, second);
-        dictionary = List.of(BAD_WORD);
+        unverifiedContent = Map.of(ID_ONE, CONTENT, ID_TWO, SWEAR_CONTENT);
+        dictionary = new Dictionary(Set.of(SWEAR_WORD));
         moderationDictionary = new ModerationDictionary(dictionary);
     }
 
     @Test
-    @DisplayName("Успешная верификация постов")
-    public void whenSwearWordThenVerifiedSuccess() {
-        List<Post> result = moderationDictionary.searchSwearWords(unverifiedPosts);
+    @DisplayName("Успешная верификация контента")
+    public void whenSearchSwearWordsThenVerifiedSuccess() {
+        Map<Long, Boolean> result = moderationDictionary.searchSwearWords(unverifiedContent);
 
-        assertEquals(1, dictionary.size());
-        assertEquals(BAD_WORD, dictionary.get(0));
         assertEquals(2, result.size());
-        assertTrue(result.get(0).getVerified());
-        assertFalse(result.get(1).getVerified());
+        assertTrue(result.get(ID_ONE));
+        assertFalse(result.get(ID_TWO));
     }
 }
