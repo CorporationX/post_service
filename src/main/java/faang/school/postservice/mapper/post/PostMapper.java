@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.ProgressPost;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -15,4 +16,6 @@ public interface PostMapper{
     PostDto toDto(Post post);
 
     List<PostDto> toDto(List<Post> posts);
+
+    List<Post> toEntity(List<ProgressPost> progressPosts);
 }
