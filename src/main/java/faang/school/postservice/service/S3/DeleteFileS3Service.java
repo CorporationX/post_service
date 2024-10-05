@@ -22,6 +22,7 @@ public class DeleteFileS3Service {
             s3Client.deleteObject(bucketName, key);
         } catch (SdkClientException e) {
             log.error("Delete Service. Delete file: {} to bucket: {}", key, bucketName);
+            throw new RuntimeException(e.getCause());
         }
     }
 }

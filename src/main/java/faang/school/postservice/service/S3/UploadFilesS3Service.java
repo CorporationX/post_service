@@ -73,12 +73,13 @@ public class UploadFilesS3Service {
             executorService.shutdown();
         } catch (AmazonS3Exception e) {
             log.error("Error uploading images to Object Storage. Reason:", e);
+            throw new RuntimeException(e.getMessage());
         }
 
-     return setResources(files);
+        return mapToResources(files);
     }
 
-    private List<Resource> setResources (List<MultipartFile> files) {
+    private List<Resource> mapToResources(List<MultipartFile> files) {
         List<Resource> resources = new ArrayList<>();
         for (MultipartFile file : files) {
             var resource = new Resource();
@@ -87,7 +88,8 @@ public class UploadFilesS3Service {
             resource.setName(file.getName());
             resources.add(resource);
             return resources;
-        } return resources;
+        }
+        return resources;
     }
 
     private String generateUniqueName() {

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class ChangerDimension {
+public class DimensionChanger {
 
     private static final int MAX_IMAGE_HEIGHT = 1080;
     private static final int MAX_FILE_WIDTH = 566;

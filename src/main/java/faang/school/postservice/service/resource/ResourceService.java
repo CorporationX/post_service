@@ -15,9 +15,13 @@ public class ResourceService {
     private final ResourceRepository resourceRepository;
 
     public Resource findById(Long id) {
-      Optional<Resource> resource = resourceRepository.findById(id);
+        Optional<Resource> resource = resourceRepository.findById(id);
         return resource.orElseThrow(
                 () -> new EntityNotFoundException("Resource service. Resource not found. id: " + id));
+    }
+
+    public void deleteResource(Long id) {
+        resourceRepository.deleteById(id);
     }
 }
 

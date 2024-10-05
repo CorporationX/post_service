@@ -50,7 +50,7 @@ class PostImagesServiceTest {
     private PostImageValidator postImageValidator;
 
     @Mock
-    private ChangerDimension changerDimension;
+    private DimensionChanger dimensionChanger;
 
     @Mock
     private PostRepository postRepository;
@@ -69,7 +69,7 @@ class PostImagesServiceTest {
     @BeforeEach
     public void init() {
 
-        images = new ArrayList<>(10){{
+        images = new ArrayList<>(10) {{
             add(image);
             add(image);
         }};
@@ -144,6 +144,6 @@ class PostImagesServiceTest {
 
         verify(resourceService).findById(ID);
         verify(deleteImageS3Service).deleteFile("UUID");
+        verify(resourceService).deleteResource(ID);
     }
-
 }

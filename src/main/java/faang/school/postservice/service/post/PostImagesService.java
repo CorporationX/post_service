@@ -20,7 +20,7 @@ import java.util.List;
 public class PostImagesService {
 
     private final ResourceService resourceService;
-    private final ChangerDimension changerDimension;
+    private final DimensionChanger dimensionChanger;
     private final PostService postService;
     private final DeleteFileS3Service deleteImageS3Service;
     private final UploadFilesS3Service uploadImagesS3Service;
@@ -28,8 +28,8 @@ public class PostImagesService {
     private final PostImageValidator postImageValidator;
 
 
-    public void uploadPostImages(Long id, List<MultipartFile> images) {
-        Post post = postService.findById(id);
+    public void uploadPostImages(Long postId, List<MultipartFile> images) {
+        Post post = postService.findById(postId);
 
         validateImages(images);
 
@@ -40,8 +40,8 @@ public class PostImagesService {
         postRepository.save(post);
     }
 
-    public void updatePostImages(Long id, List<MultipartFile> images) {
-        Post post = postService.findById(id);
+    public void updatePostImages(Long postId, List<MultipartFile> images) {
+        Post post = postService.findById(postId);
         List<Resource> postResources = post.getResources();
 
         validateImages(images);
@@ -54,14 +54,17 @@ public class PostImagesService {
         postRepository.save(post);
     }
 
-    public void deleteImage(Long id) {
-        Resource resource = resourceService.findById(id);
+    public void deleteImage(Long resourceId) {
+        Resource resource = resourceService.findById(resourceId);
+
         deleteImageS3Service.deleteFile(resource.getName());
+
+        resourceService.deleteResource(resourceId);
     }
 
     private void validateImages(List<MultipartFile> images) {
         postImageValidator.checkListCapacity(images);
         images.forEach(postImageValidator::checkImageSizeExceeded);
-        images.forEach(changerDimension::changeFileDimension);
+        images.forEach(dimensionChanger::changeFileDimension);
     }
 }
