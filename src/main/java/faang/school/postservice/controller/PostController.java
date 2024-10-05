@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -44,7 +45,7 @@ public class PostController {
     }
 
     @Operation(summary = "Updating the content")
-    @PutMapping("/{postId}")
+    @PatchMapping("/{postId}")
     public PostDto updatePost(@Positive
                               @PathVariable Long postId,
                               @Valid @ModelAttribute PostUpdatingRequest request) {

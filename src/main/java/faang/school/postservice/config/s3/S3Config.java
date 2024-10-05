@@ -9,10 +9,11 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 @Getter
-@Component
+@Configuration
 @RequiredArgsConstructor
 public class S3Config {
     private final S3Params s3Params;

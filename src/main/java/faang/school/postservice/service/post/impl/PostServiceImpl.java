@@ -177,7 +177,7 @@ public class PostServiceImpl implements PostService {
         int resourceToAddCount = request.filesToAdd() == null ? 0 : request.filesToAdd().size();
         int resourcesCountAfterUpdate =
                 post.getResources().size() - resourceToDeleteCount + resourceToAddCount;
-        if (resourcesCountAfterUpdate > 10) {
+        if (resourcesCountAfterUpdate > maxFilesCount) {
             throw new IllegalArgumentException("Can't add more than 10 resources to post with id %d"
                     .formatted(post.getId()));
         }

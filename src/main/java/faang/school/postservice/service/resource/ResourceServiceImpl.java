@@ -38,15 +38,16 @@ public class ResourceServiceImpl implements ResourceService {
                 .map(imageProcessor::processImage)
                 .toList();
         List<Resource> resources = new ArrayList<>();
-        for (int i = 0; i < files.size(); i++) {
-            MultipartFile file = files.get(i);
+        files.forEach(file -> {
             String fileKey = generateFileKey(post.getId(), file.getOriginalFilename());
 
             resources.add(initResource(
                     fileKey, file.getSize(), file.getOriginalFilename(), file.getContentType(), post));
-            s3Service.uploadFile(images.get(i), file.getContentType(), fileKey);
-        }
+        });
         resourceRepository.saveAll(resources);
+        for (int i = 0; i < files.size(); i++) {
+            s3Service.uploadFile(images.get(i), files.get(i).getContentType(), resources.get(i).getKey());
+        }
         log.info("Added {} resources to post with id {}", files.size(), post.getId());
         return resources;
     }
