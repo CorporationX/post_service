@@ -20,7 +20,7 @@ public class LikeController {
         return likeService.getAllUsersByPostId(id);
     }
 
-    @GetMapping("/comments/{id}}/likes")
+    @GetMapping("/comments/{id}/likes")
     public List<UserDto> getAllUsersByComment(@PathVariable Long id) {
         return likeService.getAllUsersByCommentId(id);
     }
