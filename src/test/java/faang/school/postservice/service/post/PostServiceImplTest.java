@@ -1,10 +1,14 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.event.BanEvent;
 import faang.school.postservice.mapper.post.PostMapperImpl;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.publisher.RedisMessagePublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.comment.CommentServiceImpl;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import faang.school.postservice.service.hashtag.HashtagService;
@@ -15,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,6 +54,12 @@ public class PostServiceImplTest {
     @Mock
     private HashtagService hashtagService;
 
+    @Mock
+    private CommentServiceImpl commentService;
+
+    @Mock
+    private RedisMessagePublisher publisher;
+
     private PostDto examplePostDto;
     private Post examplePost;
     private LocalDateTime timeInstance;
@@ -74,6 +85,8 @@ public class PostServiceImplTest {
                 .createdAt(timeInstance)
                 .title("Title")
                 .build();
+
+        ReflectionTestUtils.setField(postService, "badCommentsLimit", 1);
     }
 
     @Test
@@ -298,5 +311,23 @@ public class PostServiceImplTest {
         List<PostDto> posts = postService.getPostsByHashtag("a");
 
         assertEquals(2, posts.size());
+    }
+
+    @Test
+    void testModerateUserBehaviour() {
+        Comment comment = Comment.builder()
+                .authorId(1)
+                .verified(false)
+                .build();
+        Comment comment2 = Comment.builder()
+                .authorId(1)
+                .verified(false)
+                .build();
+
+        when(commentService.getUnverifiedComments()).thenReturn(List.of(comment, comment2));
+
+        postService.moderateUserBehaviour();
+
+        verify(publisher).publish(any(BanEvent.class));
     }
 }

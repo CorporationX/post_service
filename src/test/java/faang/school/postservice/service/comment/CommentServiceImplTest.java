@@ -68,6 +68,7 @@ class CommentServiceImplTest {
                 .content("This is a comment")
                 .post(post)
                 .authorId(1L)
+                .verified(false)
                 .build();
     }
 
@@ -122,5 +123,12 @@ class CommentServiceImplTest {
         commentService.delete(1L);
         // then
         verify(commentRepository).deleteById(1L);
+    }
+
+    @Test
+    void testGetUnverifiedComments(){
+        commentService.getUnverifiedComments();
+
+        verify(commentRepository).findAllByVerifiedFalse();
     }
 }
