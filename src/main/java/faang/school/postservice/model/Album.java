@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -29,8 +31,18 @@ public class Album {
     @Column(name = "description", nullable = false, length = 4096)
     private String description;
 
-    @Column(name = "author_id", nullable = false)
-    private long authorId;
+    @Getter
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "visibility", nullable = false)
+    private Visibility visibility;
+
+    public enum Visibility {
+        PUBLIC,
+        SUBSCRIBERS,
+        SELECTED_USERS,
+        AUTHOR
+    }
 
     @ManyToMany
     @JoinTable(name = "post_album", joinColumns = @JoinColumn(name = "album_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
@@ -46,6 +58,11 @@ public class Album {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Getter
+    @Setter
+    @Column(name = "author_id", nullable = false)
+    private Long authorId;
+
     public void addPost(Post post) {
         posts.add(post);
     }
@@ -53,4 +70,5 @@ public class Album {
     public void removePost(long postId) {
         posts.removeIf(post -> post.getId() == postId);
     }
+
 }

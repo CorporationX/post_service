@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class ProjectDto {
     private long id;
-    @NotBlank
+    @NotBlank(message = "Title should not be blank")
     @Size(min = 2, max = 128)
     private String title;
 }
