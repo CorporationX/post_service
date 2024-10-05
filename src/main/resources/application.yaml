@@ -39,6 +39,15 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  spelling-corrector:
+    scheduler:
+      cron: "0 0 0 * * *"
+    client:
+      textgears:
+        host: https://api.textgears.com
+        auth-token: secret-key
+      yandex:
+        url: https://speller.yandex.net/services/spellservice.json/checkText
 
 user-service:
   host: localhost

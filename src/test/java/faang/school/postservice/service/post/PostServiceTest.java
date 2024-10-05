@@ -2,6 +2,8 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
+import faang.school.postservice.exception.spelling_corrector.DontRepeatableServiceException;
+import faang.school.postservice.exception.spelling_corrector.RepeatableServiceException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
@@ -35,6 +37,8 @@ public class PostServiceTest {
     private PostRepository postRepository;
     @Mock
     private PostValidator postValidator;
+    @Mock
+    private SpellingCorrectionService spellingCorrectionService;
     @InjectMocks
     private PostService postService;
 
@@ -283,5 +287,40 @@ public class PostServiceTest {
 
         verify(postRepository).findByProjectId(filterPost.getProjectId());
         verify(postRepository, times(0)).findByAuthorId(anyLong());
+    }
+
+    @Test
+    void testCorrectPosts() {
+        List<Post> posts = List.of(findedPost);
+        String correctedContent = findedPost.getContent() + " Corrected";
+
+        when(spellingCorrectionService.getCorrectedContent(findedPost.getContent()))
+                .thenReturn(correctedContent);
+
+        postService.correctPosts(posts);
+
+        verify(postRepository).saveAll(posts);
+    }
+
+    @Test
+    void testCorrectPostsRepeatableException() {
+        List<Post> posts = List.of(findedPost);
+        when(spellingCorrectionService.getCorrectedContent(findedPost.getContent()))
+                .thenThrow(RepeatableServiceException.class);
+
+        postService.correctPosts(posts);
+
+        verify(postRepository).saveAll(posts);
+    }
+
+    @Test
+    void testCorrectPostsDontRepeatableException() {
+        List<Post> posts = List.of(findedPost);
+        when(spellingCorrectionService.getCorrectedContent(findedPost.getContent()))
+                .thenThrow(DontRepeatableServiceException.class);
+
+        postService.correctPosts(posts);
+
+        verify(postRepository).saveAll(posts);
     }
 }

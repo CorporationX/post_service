@@ -2,10 +2,13 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
+import faang.school.postservice.exception.spelling_corrector.DontRepeatableServiceException;
+import faang.school.postservice.exception.spelling_corrector.RepeatableServiceException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,11 +17,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
+    private final SpellingCorrectionService spellingCorrectionService;
 
     @Transactional
     public Post create(Post post) {
@@ -92,6 +97,22 @@ public class PostService {
                 .toList();
 
         return posts;
+    }
+
+    public void correctPosts(List<Post> draftPosts) {
+        draftPosts.forEach(post -> {
+            try {
+                String correctedContent = spellingCorrectionService.getCorrectedContent(post.getContent());
+                post.setContent(correctedContent);
+                post.setUpdatedAt(LocalDateTime.now());
+            } catch (RepeatableServiceException exception) {
+                log.error("Контент поста {} не прошёл авто корректировку, после переотправок", post.getId());
+            } catch (DontRepeatableServiceException exception) {
+                log.error("Контент поста {} не прошёл авто корректировку из-за ошибки сервиса", post.getId());
+            }
+        });
+
+        postRepository.saveAll(draftPosts);
     }
 
     private Stream<Post> applyFiltersAndSorted(List<Post> posts, Post filterPost) {
