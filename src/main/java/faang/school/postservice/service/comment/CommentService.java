@@ -16,9 +16,7 @@ public interface CommentService {
 
     List<CommentResponseDto> findAll(Long postId);
 
-    List<Comment> collectUnverifiedComments();
-
-    Map<Long, Long> groupUnverifiedCommentAuthors(List<Comment> unverifiedComments);
+    void commentersBanCheck(int unverifiedCommentsLimit);
 
     void delete(Long id);
 }

@@ -1,5 +1,6 @@
 package faang.school.postservice.service.user;
 
+import faang.school.postservice.publisher.UserIdsPublisher;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 

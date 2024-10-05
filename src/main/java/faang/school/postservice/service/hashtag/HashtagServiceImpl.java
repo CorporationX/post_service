@@ -106,7 +106,7 @@ public class HashtagServiceImpl implements HashtagService {
     }
 
     @Transactional(readOnly = true)
-    public List<Hashtag> processHashtags(Post post) {
+    private List<Hashtag> processHashtags(Post post) {
         List<String> foundHashtags = findHashtags(post.getContent());
 
         return foundHashtags.stream()

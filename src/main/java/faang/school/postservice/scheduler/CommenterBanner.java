@@ -1,38 +1,26 @@
 package faang.school.postservice.scheduler;
 
-import faang.school.postservice.service.user.UserIdsPublisher;
-import faang.school.postservice.service.comment.CommentServiceImpl;
+import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.publisher.UserIdsPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class CommenterBanner {
 
-    private final CommentServiceImpl commentService;
-    private final UserIdsPublisher userIdsPublisher;
+    private final CommentService commentService;
 
-    private final int unverifiedCommentsLimit = 5;
+    @Value("${post.commenter-banner.unverified-comments-limit}")
+    private int unverifiedCommentsLimit;
 
-    @Scheduled(cron = "@midnight")
+    @Scheduled(cron = "${post.commenter-banner.scheduler.cron}")
     public void scheduleCommentersBanCheck() {
-        Map<Long, Long> unverifiedCommentAuthorsAndComments = commentService.groupUnverifiedCommentAuthors(
-                commentService.collectUnverifiedComments()
-        );
-
-        List<Long> usersToBan = unverifiedCommentAuthorsAndComments.entrySet().stream()
-                .filter((longLongEntry -> longLongEntry.getValue() >= unverifiedCommentsLimit))
-                .map((Map.Entry::getKey))
-                .toList();
-
-
-        log.info("Publishing User IDs to ban: {}", usersToBan);
-        userIdsPublisher.publish(usersToBan);
+        commentService.commentersBanCheck(unverifiedCommentsLimit);
     }
 }

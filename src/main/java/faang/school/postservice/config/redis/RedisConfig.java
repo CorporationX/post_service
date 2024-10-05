@@ -19,8 +19,12 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
     private String host;
+
     @Value("${spring.data.redis.port}")
     private int port;
+
+    @Value("${post.redis-config.topic-name}")
+    private String topicName;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -34,11 +38,8 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
 
-        // Using StringRedisSerializer for keys
         template.setKeySerializer(new StringRedisSerializer());
-
-
-        // Setting up serializers for values
+        
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
 
@@ -47,6 +48,6 @@ public class RedisConfig {
 
     @Bean
     public ChannelTopic channelTopic() {
-        return new ChannelTopic("ban-commenters-by-id");
+        return new ChannelTopic(topicName);
     }
 }

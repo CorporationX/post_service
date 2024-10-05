@@ -1,7 +1,7 @@
 package faang.school.postservice.scheduler;
 
 import faang.school.postservice.service.comment.CommentServiceImpl;
-import faang.school.postservice.service.user.UserIdsPublisher;
+import faang.school.postservice.publisher.UserIdsPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

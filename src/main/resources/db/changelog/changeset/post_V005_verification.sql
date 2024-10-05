@@ -1,0 +1,3 @@
+ALTER TABLE comment ADD COLUMN verified BOOLEAN;
+
+ALTER TABLE comment ADD COLUMN verified_date TIMESTAMP;

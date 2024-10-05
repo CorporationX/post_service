@@ -44,6 +44,9 @@ post:
   commenter-banner:
     scheduler:
       cron: "@midnight" # every day at midnight
+    unverified-comments-limit: 5
+  redis-config:
+    topic-name: "user_ban"
 
 
 springdoc:

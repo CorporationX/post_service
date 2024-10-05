@@ -28,5 +28,4 @@ public interface PostService {
     List<PostDto> getAllPublishedPostsByAuthorId(Long userId);
 
     List<PostDto> getAllPublishedPostsByProjectId(Long projectId);
-
 }
