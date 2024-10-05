@@ -9,12 +9,14 @@ import faang.school.postservice.dto.event.kafka.PostCreatedEvent;
 import faang.school.postservice.dto.event.kafka.PostViewEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.chache.PostCache;
 import faang.school.postservice.model.chache.UserCache;
+import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.producer.KafkaProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.cache.PostCacheRepository;
@@ -59,6 +61,7 @@ public class PostService {
     private final KafkaProducer kafkaProducer;
     private final UserServiceClient userServiceClient;
     private final PostCacheRepository postCacheRepository;
+    private final UserCacheRepository userCacheRepository;
 
 
 
@@ -67,6 +70,9 @@ public class PostService {
 
     @Value("${spring.post.cache.ttl}")
     private long postTtl;
+
+    @Value("${spring.user.cache.ttl}")
+    private long userTtl;
 
     @Async(value = "threadPool")
     @Transactional
@@ -98,11 +104,18 @@ public class PostService {
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
         List<Long> followersIds = userServiceClient.getFollowerIds(userContext.getUserId());
+        UserDto author = userServiceClient.getUser(post.getAuthorId());
+        userCacheRepository.save(UserCache.builder()
+                .id(author.getId())
+                .name(author.getUsername())
+                .ttl(userTtl)
+                .build());
         PostCreatedEvent newPostEvent = PostCreatedEvent.builder()
                 .postId(post.getId())
                 .authorId(post.getAuthorId())
                 .followersId(followersIds)
                 .build();
+        kafkaProducer.sendEvent(newPostEvent);
         return postDtoForReturns;
     }
 
@@ -141,7 +154,6 @@ public class PostService {
                 .content(post.getContent())
                 .ttl(postTtl)
                 .build());
-
         return postMapper.toDto(post);
     }
 
