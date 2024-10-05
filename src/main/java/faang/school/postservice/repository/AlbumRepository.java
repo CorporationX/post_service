@@ -3,14 +3,14 @@ package faang.school.postservice.repository;
 import faang.school.postservice.model.Album;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
-public interface AlbumRepository extends CrudRepository<Album, Long> {
+public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     boolean existsByTitleAndAuthorId(String title, long authorId);
 
