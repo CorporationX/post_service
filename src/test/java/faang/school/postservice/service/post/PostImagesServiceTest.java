@@ -143,7 +143,7 @@ class PostImagesServiceTest {
         postImagesService.deleteImage(ID);
 
         verify(resourceService).findById(ID);
-        verify(deleteImageS3Service).deleteFile("UUID");
         verify(resourceService).deleteResource(ID);
+        verify(deleteImageS3Service).deleteFile("UUID");
     }
 }

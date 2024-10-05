@@ -10,6 +10,7 @@ import faang.school.postservice.validator.postImages.PostImageValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -54,12 +55,13 @@ public class PostImagesService {
         postRepository.save(post);
     }
 
+    @Transactional
     public void deleteImage(Long resourceId) {
         Resource resource = resourceService.findById(resourceId);
 
-        deleteImageS3Service.deleteFile(resource.getName());
-
         resourceService.deleteResource(resourceId);
+
+        deleteImageS3Service.deleteFile(resource.getName());
     }
 
     private void validateImages(List<MultipartFile> images) {

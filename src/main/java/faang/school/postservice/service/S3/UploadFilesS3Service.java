@@ -91,8 +91,8 @@ public class UploadFilesS3Service {
             resource.setType(file.getContentType());
             resource.setName(file.getName());
             resources.add(resource);
-            return resources;
         }
+
         return resources;
     }
 
