@@ -43,6 +43,8 @@ spring:
     topic:
       post:
         published: post-published-topic
+      like:
+        added: like-added-topic
 
   async:
     executor:

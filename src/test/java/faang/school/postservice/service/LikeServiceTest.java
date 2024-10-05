@@ -2,13 +2,11 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.dto.event.LikeEvent;
-import faang.school.postservice.mapper.LikeEventMapper;
+import faang.school.postservice.kafka.Producer;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-//import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +22,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,8 +38,8 @@ class LikeServiceTest {
     private LikeDto dto;
     private Like like;
 
-//    @Mock
-//    private LikeEventPublisher likeEventPublisher;
+    @Mock
+    private Producer kafkaProducer;
     @Mock
     private PostRepository postRepository;
     @Mock
@@ -51,8 +48,6 @@ class LikeServiceTest {
     private LikeRepository likeRepository;
     @Mock
     private LikeMapper mapper;
-    @Mock
-    private LikeEventMapper likeEventMapper;
     @InjectMocks
     private LikeService service;
 
@@ -118,8 +113,6 @@ class LikeServiceTest {
         when(postRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(post));
         when(mapper.toEntity(Mockito.any())).thenReturn(like);
         when(likeRepository.save(Mockito.any())).thenReturn(like);
-        when(likeEventMapper.toEntity(Mockito.any())).thenReturn(new LikeEvent());
-//        doNothing().when(likeEventPublisher).publish(Mockito.any());
         service.addPostLike(VALID_ID_IN_DB, dto);
         //Assert
         Mockito.verify(mapper).toDto(like);

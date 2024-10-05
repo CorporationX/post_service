@@ -1,5 +1,6 @@
 package faang.school.postservice.kafka;
 
+import faang.school.postservice.dto.event.LikeAddedEvent;
 import faang.school.postservice.dto.event.PostPublishedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,11 @@ public class Producer {
 
     public void send(String topic, PostPublishedEvent event) {
         log.info("Sending postPublishedEvent: {} to topic: {}", event, topic);
+        kafkaTemplate.send(topic, event);
+    }
+
+    public void send(String topic, LikeAddedEvent event) {
+        log.info("Sending likeAddedEvent: {} to topic: {}", event, topic);
         kafkaTemplate.send(topic, event);
     }
 }
