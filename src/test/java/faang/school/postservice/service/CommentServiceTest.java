@@ -1,9 +1,11 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentAchievementEvent;
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentAchievementMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -14,6 +16,7 @@ import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
 import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.cache.UserCacheRepository;
 import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,9 +55,12 @@ public class CommentServiceTest {
     private CommentAchievementEventPublisher commentAchievementEventPublisher;
     @Mock
     private CommentAchievementMapper commentAchievementMapper;
-
     @Mock
     private KafkaProducer kafkaProducer;
+    @Mock
+    private UserCacheRepository userCacheRepository;
+    @Mock
+    private UserServiceClient userServiceClient;
 
     private long commentId;
     private long postId;
@@ -63,6 +69,8 @@ public class CommentServiceTest {
     private CommentDto commentDto;
     private CommentDto updatedCommentDto;
     private Post post;
+
+    private UserDto user;
     private CommentAchievementEvent commentAchievementEvent;
 
     @BeforeEach
@@ -71,6 +79,13 @@ public class CommentServiceTest {
         userId = 2L;
         postId = 4L;
         String content = "content";
+        String userName = "Ilon Mask";
+
+        user = UserDto.builder()
+                .id(userId)
+                .username(userName)
+                .build();
+
         post = Post.builder()
                 .id(postId)
                 .authorId(2L).build();
@@ -115,6 +130,8 @@ public class CommentServiceTest {
 
     @Test
     void createCommentTest() {
+        when(userContext.getUserId()).thenReturn(userId);
+        when(userServiceClient.getUser(userId)).thenReturn(user);
         when(commentMapper.dtoToEntity(commentDto)).thenReturn(comment);
         when(commentRepository.save(comment)).thenReturn(comment);
         when(postRepository.findById(commentDto.getPostId())).thenReturn(Optional.of(post));
@@ -126,9 +143,12 @@ public class CommentServiceTest {
                 .postAuthorId(post.getAuthorId())
                 .commentId(comment.getId())
                 .build();
+        verify(userContext,times(1)).getUserId();
+        verify(userServiceClient,times(1)).getUser(userId);
         verify(commentRepository).save(comment);
         verify(commentAchievementEventPublisher).publish(commentAchievementEvent);
-        verify(kafkaProducer,times(1)).sendEvent(any());
+        verify(userCacheRepository,times(1)).save(any());
+        verify(kafkaProducer, times(1)).sendEvent(any());
         assertNotNull(result);
         assertEquals(commentDto, result);
     }

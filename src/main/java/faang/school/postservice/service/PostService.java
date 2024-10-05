@@ -9,15 +9,17 @@ import faang.school.postservice.dto.event.kafka.PostCreatedEvent;
 import faang.school.postservice.dto.event.kafka.PostViewEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.hash.PostHash;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.chache.PostCache;
+import faang.school.postservice.model.chache.UserCache;
 import faang.school.postservice.producer.KafkaProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
-import faang.school.postservice.repository.PostCacheRepository;
+import faang.school.postservice.repository.cache.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.cache.UserCacheRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
 import feign.FeignException;
@@ -57,6 +59,8 @@ public class PostService {
     private final KafkaProducer kafkaProducer;
     private final UserServiceClient userServiceClient;
     private final PostCacheRepository postCacheRepository;
+
+
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
@@ -99,7 +103,6 @@ public class PostService {
                 .authorId(post.getAuthorId())
                 .followersId(followersIds)
                 .build();
-        kafkaProducer.sendEvent(newPostEvent);
         return postDtoForReturns;
     }
 
@@ -128,11 +131,13 @@ public class PostService {
 
         post = postRepository.save(post);
 
-        postCacheRepository.save(PostHash.builder()
+        postCacheRepository.save(PostCache.builder()
                 .postId(post.getId())
                 .authorId(post.getAuthorId())
                 .projectId(post.getProjectId())
                 .publishedAt(post.getPublishedAt())
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
                 .content(post.getContent())
                 .ttl(postTtl)
                 .build());
@@ -278,7 +283,6 @@ public class PostService {
                 .hashtagNames(hashtagNames)
                 .build()).getHashtags();
         log.info("Hashtags request was completed successfully");
-
         return hashtags;
     }
 }

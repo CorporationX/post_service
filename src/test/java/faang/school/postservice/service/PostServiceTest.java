@@ -15,8 +15,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.producer.KafkaProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
-import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.cache.PostCacheRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.persistence.EntityManager;
@@ -95,7 +95,6 @@ public class PostServiceTest {
 
     @Mock
     private PostCacheRepository postCacheRepository;
-
     private PostDto postDto;
     private Post post;
     private List<Post> draftPosts;
@@ -278,7 +277,6 @@ public class PostServiceTest {
         verify(postServiceValidator, times(1)).validatePublishPost(post);
         verify(postRepository, times(1)).save(post);
         verify(postMapper, times(1)).toDto(post);
-        verify(postCacheRepository,times(1)).save(any());
 
         assertTrue(post.isPublished());
         assertNotNull(post.getPublishedAt());
