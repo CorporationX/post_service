@@ -48,6 +48,19 @@ post:
         auth-token: secret-key
       yandex:
         url: https://speller.yandex.net/services/spellservice.json/checkText
+  images:
+    max-to-upload: 10
+    max-size: 5242880
+    bucket:
+      name-prefix: posts/post_
+
+client:
+  s3:
+    minio:
+      url: http://127.0.0.1:9000
+      username: user
+      password: password
+      bucketName: corpbucket
 
 user-service:
   host: localhost
@@ -58,3 +71,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+springdoc:
+  api-docs:
+    path: /api-docs

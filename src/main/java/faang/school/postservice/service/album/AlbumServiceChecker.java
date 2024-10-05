@@ -3,7 +3,8 @@ package faang.school.postservice.service.album;
 import faang.school.postservice.client.UserServiceClientMock;
 import faang.school.postservice.exception.BadRequestException;
 import faang.school.postservice.exception.UserNotFoundException;
-import faang.school.postservice.model.Album;
+import faang.school.postservice.model.album.Album;
+import faang.school.postservice.model.album.AlbumVisibility;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import static faang.school.postservice.model.album.AlbumVisibility.CHOSEN_USERS;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALBUM_NOT_EXISTS;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.TITLE_NOT_UNIQUE;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.USER_IS_NOT_CREATOR;
@@ -66,6 +68,15 @@ public class AlbumServiceChecker {
         if (favoritesAlbums.contains(album) == isContains) {
             log.error(exceptionMassage);
             throw new BadRequestException(exceptionMassage);
+        }
+    }
+
+    public void validateAlbumVisibility(AlbumVisibility albumVisibility, List<Long> chosenUserIds) {
+        if (albumVisibility == CHOSEN_USERS && chosenUserIds == null) {
+            throw new BadRequestException("You have to add users when CHOSEN_USERS visibility");
+        }
+        if (albumVisibility != CHOSEN_USERS && chosenUserIds != null) {
+            throw new BadRequestException("You cannot add users to not CHOSEN_USERS visibility");
         }
     }
 }

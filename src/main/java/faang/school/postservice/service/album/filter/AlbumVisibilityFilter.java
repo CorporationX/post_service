@@ -7,14 +7,14 @@ import org.springframework.stereotype.Component;
 import java.util.stream.Stream;
 
 @Component
-public class AlbumCreatedFromFilter implements AlbumFilter {
+public class AlbumVisibilityFilter implements AlbumFilter {
     @Override
     public boolean isApplicable(AlbumFilterDto filter) {
-        return filter.getCreatedFrom() != null;
+        return filter.getVisibility() != null;
     }
 
     @Override
     public Stream<Album> apply(Stream<Album> albumStream, AlbumFilterDto filter) {
-        return albumStream.filter(album -> album.getCreatedAt().isAfter(filter.getCreatedFrom()));
+        return albumStream.filter(album -> album.getVisibility() == filter.getVisibility());
     }
 }
