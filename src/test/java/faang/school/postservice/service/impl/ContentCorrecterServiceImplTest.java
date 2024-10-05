@@ -1,16 +1,19 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.TextGearsClient;
+import faang.school.postservice.dto.post.ProgressPost;
 import faang.school.postservice.dto.text.gears.TextGearsResponse;
 import faang.school.postservice.exception.TextGearsException;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.TextGearsValidatorImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Collections;
@@ -18,7 +21,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,6 +43,9 @@ class ContentCorrecterServiceImplTest {
     @MockBean
     private TextGearsValidatorImpl textGearsValidator;
 
+    @SpyBean
+    private PostMapper postMapper;
+
     @Autowired
     private ContentCorrecterServiceImpl contentCorrecterService;
 
@@ -48,9 +53,14 @@ class ContentCorrecterServiceImplTest {
     private int maxAttempts;
 
     private final String originalContent = "content";
-    private final String errorMessage = "Error message";
-    private final Post post = Post.builder().content(originalContent).build();
-    private final List<Post> posts = List.of(post);
+    private ProgressPost post;
+    private List<ProgressPost> posts;
+
+    @BeforeEach
+    void setUp() {
+        post = new ProgressPost(1L, originalContent);
+        posts = List.of(post);
+    }
 
     @Test
     void testCorrectAllPosts_NoPosts() {
@@ -77,11 +87,13 @@ class ContentCorrecterServiceImplTest {
 
         verify(correcterTextClient).correctText(originalContent);
         verify(textGearsValidator).isCorrectResponse(response);
-        verify(postRepository).saveAll(posts);
+        verify(postMapper).toEntity(posts);
+        verify(postRepository).saveAll(anyList());
     }
 
     @Test
     void testCorrectContent_RetriesOnException() {
+        String errorMessage = "Error message";
         TextGearsResponse response = TextGearsResponse.builder()
                 .response(new TextGearsResponse.Response(originalContent))
                 .build();
@@ -92,7 +104,8 @@ class ContentCorrecterServiceImplTest {
         assertDoesNotThrow(() -> contentCorrecterService.correctAllPosts());
 
         verify(correcterTextClient, times(maxAttempts)).correctText(originalContent);
-        verify(postRepository).saveAll(posts);
+        verify(postMapper).toEntity(posts);
+        verify(postRepository).saveAll(anyList());
         assertEquals(originalContent, post.getContent());
     }
 }
