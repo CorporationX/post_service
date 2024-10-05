@@ -2,10 +2,11 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
+import faang.school.postservice.event.BanEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.publisher.UserIdsPublisher;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
-    private final UserIdsPublisher userIdsPublisher;
+    private final RedisBanMessagePublisher userIdsPublisher;
 
     @Override
     @Transactional
@@ -65,12 +66,12 @@ public class CommentServiceImpl implements CommentService {
         Map<Long, Long> unverifiedAuthorsAndCommentsCount = commentRepository.findAllUnverifiedComments().stream()
                 .collect(Collectors.groupingBy(Comment::getAuthorId, Collectors.counting()));
 
-        List<Long> usersToBan = unverifiedAuthorsAndCommentsCount.entrySet().stream()
+        unverifiedAuthorsAndCommentsCount.entrySet().stream()
                 .filter((longLongEntry -> longLongEntry.getValue() >= unverifiedCommentsLimit))
                 .map((Map.Entry::getKey))
-                .toList();
-
-        log.info("Publishing User IDs to ban: {}", usersToBan);
-        userIdsPublisher.publish(usersToBan);
+                .forEach((id) -> {
+                    log.info("Publishing User ID to ban: {}", id);
+                    userIdsPublisher.publish(new BanEvent(id));
+                });
     }
 }

@@ -10,4 +10,4 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V004_addcolumn.sql
   - include:
-      file: db/changelog/changeset/post_V005_verification.sql
+      file: db/changelog/changeset/post_V006_comments_verification.sql

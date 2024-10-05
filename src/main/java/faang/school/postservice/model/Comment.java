@@ -37,12 +37,10 @@ public class Comment implements Likeable {
     private Post post;
 
     @Column(name = "verified")
-    private boolean verified;
+    private Boolean verified;
 
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_date")
-    private LocalDateTime verified_date;
+    private LocalDateTime verifiedDate;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

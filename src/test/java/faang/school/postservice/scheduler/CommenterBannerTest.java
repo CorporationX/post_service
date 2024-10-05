@@ -1,7 +1,7 @@
 package faang.school.postservice.scheduler;
 
 import faang.school.postservice.service.comment.CommentServiceImpl;
-import faang.school.postservice.publisher.UserIdsPublisher;
+import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +20,7 @@ public class CommenterBannerTest {
     private CommentServiceImpl commentService;
 
     @Mock
-    private UserIdsPublisher userIdsPublisher;
+    private RedisBanMessagePublisher userIdsPublisher;
 
     @InjectMocks
     private CommenterBanner commenterBanner;

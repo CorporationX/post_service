@@ -1,7 +1,6 @@
 package faang.school.postservice.scheduler;
 
 import faang.school.postservice.service.comment.CommentService;
-import faang.school.postservice.publisher.UserIdsPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

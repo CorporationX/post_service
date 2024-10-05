@@ -1,6 +1,6 @@
 package faang.school.postservice.service.user;
 
-import faang.school.postservice.publisher.UserIdsPublisher;
+import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -23,7 +23,7 @@ public class UserIdsPublisherTest {
     private ChannelTopic channelTopic;
 
     @InjectMocks
-    private UserIdsPublisher userIdsPublisher;
+    private RedisBanMessagePublisher userIdsPublisher;
 
     @Test
     public void testPublish() {
