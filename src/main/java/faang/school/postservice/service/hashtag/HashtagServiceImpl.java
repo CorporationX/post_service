@@ -69,7 +69,7 @@ public class HashtagServiceImpl implements HashtagService {
                     List<PostDto> cachedPosts = (List<PostDto>) redisTemplate.opsForValue().get(hashtag);
 
                     if (cachedPosts != null) {
-                        cachedPosts.removeIf(cachePost -> cachePost.id() == post.getId());
+                        cachedPosts.removeIf(cachePost -> cachePost.getId() == post.getId());
 
                         if (cachedPosts.isEmpty()) {
                             redisTemplate.delete(hashtag);
@@ -97,7 +97,7 @@ public class HashtagServiceImpl implements HashtagService {
                 .orElseGet(ArrayList::new);
 
         List<PostDto> postsDto = postMapper.toDto(posts);
-        postsDto.sort(Comparator.comparing(PostDto::publishedAt).reversed());
+        postsDto.sort(Comparator.comparing(PostDto::getPublishedAt).reversed());
 
         redisTemplate.opsForValue().set(hashtag, postsDto);
         redisTemplate.expire(hashtag, DAYS_TO_LIVE_IN_REDIS, TimeUnit.DAYS);
@@ -106,7 +106,7 @@ public class HashtagServiceImpl implements HashtagService {
     }
 
     @Transactional(readOnly = true)
-    private List<Hashtag> processHashtags(Post post) {
+    List<Hashtag> processHashtags(Post post) {
         List<String> foundHashtags = findHashtags(post.getContent());
 
         return foundHashtags.stream()

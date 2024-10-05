@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.exception.DataValidationException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -14,22 +15,32 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class PostValidator {
 
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
-    private final UserContext userContext;
+
+    public void validatePost(PostDto postDto) {
+        Long authorId = postDto.getAuthorId(), projectId = postDto.getProjectId();
+        log.info("authorId: {}, projectId: {}", authorId, projectId);
+
+        if ((authorId == null && projectId == null) || (authorId != null && projectId != null)) {
+            log.warn("PostDto is not valid");
+            throw new DataValidationException("Either an author or a project is required");
+        }
+    }
 
     public void createDraftPostValidator(PostDto postDto) {
-        boolean userExists = postDto.authorId() != null;
-        boolean projectExists = postDto.projectId() != null;
+        boolean userExists = postDto.getAuthorId() != null;
+        boolean projectExists = postDto.getProjectId() != null;
 
         validateSingleCreator(userExists, projectExists);
 
         if (userExists) {
-            validateUserExists(postDto.authorId());
+            validateUserExists(postDto.getAuthorId());
         } else {
-            validateProjectExists(postDto.projectId());
+            validateProjectExists(postDto.getProjectId());
         }
     }
 
@@ -40,8 +51,8 @@ public class PostValidator {
     }
 
     public void updatePostValidator(Post post, PostDto postDto) {
-        boolean isUserChanged = !Objects.equals(post.getAuthorId(), postDto.authorId());
-        boolean isProjectChanged = !Objects.equals(post.getProjectId(), postDto.projectId());
+        boolean isUserChanged = !Objects.equals(post.getAuthorId(), postDto.getAuthorId());
+        boolean isProjectChanged = !Objects.equals(post.getProjectId(), postDto.getProjectId());
 
         if (post.getAuthorId() != null && isUserChanged) {
             throw new DataValidationException("Post author cannot be changed");

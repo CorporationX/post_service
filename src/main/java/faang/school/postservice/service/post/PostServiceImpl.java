@@ -25,6 +25,35 @@ public class PostServiceImpl implements PostService {
     private final PostValidator postValidator;
 
     @Override
+    public void updateContentPost(String newContent, long id) {
+        postRepository.updateContentByPostId(id, newContent);
+    }
+
+    @Override
+    public List<PostDto> getDraftPostsByUserId(long id) {
+        List<Post> posts = postRepository.findByAuthorIdAndUnpublished(id);
+        return postMapper.toDto(posts);
+    }
+
+    @Override
+    public List<PostDto> getDraftPostsByProjectId(long id) {
+        List<Post> posts = postRepository.findByProjectIdAndUnpublished(id);
+        return postMapper.toDto(posts);
+    }
+
+    @Override
+    public List<PostDto> getPublishedPostsByUserId(long id) {
+        List<Post> posts = postRepository.findByAuthorIdAndPublished(id);
+        return postMapper.toDto(posts);
+    }
+
+    @Override
+    public List<PostDto> getPublishedPostsByProjectId(long id) {
+        List<Post> posts = postRepository.findByProjectIdAndPublished(id);
+        return postMapper.toDto(posts);
+    }
+
+    @Override
     @Transactional
     public PostDto createDraftPost(PostDto postDto) {
         postValidator.createDraftPostValidator(postDto);
@@ -38,7 +67,7 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     public PostDto publishPost(PostDto postDto) {
-        Post post = getPostFromRepository(postDto.id());
+        Post post = getPostFromRepository(postDto.getId());
 
         postValidator.publishPostValidator(post);
 
@@ -54,12 +83,12 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto updatePost(PostDto postDto) {
-        Post post = getPostFromRepository(postDto.id());
+        Post post = getPostFromRepository(postDto.getId());
 
         postValidator.updatePostValidator(post, postDto);
 
-        post.setTitle(postDto.title());
-        post.setContent(postDto.content());
+        post.setTitle(postDto.getTitle());
+        post.setContent(postDto.getContent());
 
         postRepository.save(post);
         hashtagService.updateHashtags(post);

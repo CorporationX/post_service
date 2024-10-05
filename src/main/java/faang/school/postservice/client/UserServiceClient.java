@@ -2,16 +2,22 @@ package faang.school.postservice.client;
 
 import faang.school.postservice.dto.user.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}")
+@FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}/api/v1")
 public interface UserServiceClient {
 
-    @GetMapping("/api/v1/users/{userId}")
+    @GetMapping("/users/{userId}")
     UserDto getUser(@PathVariable long userId);
 
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
+    @GetMapping("/user/{id}/exists")
+    boolean existsUserById(@PathVariable long id);
 }

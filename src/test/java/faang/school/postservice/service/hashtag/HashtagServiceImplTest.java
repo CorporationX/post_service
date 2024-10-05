@@ -101,6 +101,6 @@ public class HashtagServiceImplTest {
         List<PostDto> posts = hashtagService.findPostsByHashtag("asd");
 
         assertEquals(2, posts.size());
-        assertEquals(2L, posts.get(0).id());
+        assertEquals(2L, posts.get(0).getId());
     }
 }

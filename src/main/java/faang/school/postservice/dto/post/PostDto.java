@@ -8,44 +8,45 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
+import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.LocalDateTime;
 
 @Builder
 @Jacksonized
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record PostDto(
+public class PostDto{
         @Positive
-        Long id,
+        Long id;
         @Positive
-        Long authorId,
+        Long authorId;
         @Positive
-        Long projectId,
-        boolean deleted,
+        Long projectId;
+        boolean deleted;
 
         @NotBlank(message = "Content can not be null or empty")
         @Max(4096)
-        String content,
-        boolean published,
+        String content;
+        boolean published;
 
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
-        LocalDateTime publishedAt,
+        LocalDateTime publishedAt;
 
         @NotBlank(message = "Title can not be null or empty")
         @Max(150)
-        String title,
+        String title;
 
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
-        LocalDateTime createdAt,
+        LocalDateTime createdAt;
 
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
-        LocalDateTime updatedAt
-) {
+        LocalDateTime updatedAt;
 }

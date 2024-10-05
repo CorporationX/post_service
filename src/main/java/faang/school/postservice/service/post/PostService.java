@@ -12,11 +12,21 @@ public interface PostService {
 
     PostDto publishPost(PostDto postDto);
 
+    void updateContentPost(String newContent, long id);
+
     PostDto updatePost(PostDto postDto);
 
     PostDto softDeletePost(Long postId);
 
     PostDto getPost(Long id);
+
+    List<PostDto> getDraftPostsByUserId(long id);
+
+    List<PostDto> getDraftPostsByProjectId(long id);
+
+    List<PostDto> getPublishedPostsByUserId(long id);
+
+    List<PostDto> getPublishedPostsByProjectId(long id);
 
     List<PostDto> getAllDraftsByAuthorId(Long userId);
 
