@@ -1,6 +1,7 @@
 package faang.school.postservice.config.context.comment;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -10,27 +11,19 @@ import java.util.concurrent.Executor;
 
 @EnableAsync
 @Configuration
+@RequiredArgsConstructor
+@ConfigurationPropertiesScan
 public class TaskExecutorConfig {
 
-    @Value("${comment.verify-task-executor.core-pool-size}")
-    private int corePoolSize;
-
-    @Value("${comment.verify-task-executor.max-pool-size}")
-    private int maxPoolSize;
-
-    @Value("${comment.verify-task-executor.queue-capacity}")
-    private int queueCapacity;
-
-    @Value("${comment.verify-task-executor.thread-name-prefix}")
-    private String threadNamePrefix;
+    private final TaskExecutorParams taskExecutorParams;
 
     @Bean
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(corePoolSize);
-        executor.setMaxPoolSize(maxPoolSize);
-        executor.setQueueCapacity(queueCapacity);
-        executor.setThreadNamePrefix(threadNamePrefix);
+        executor.setCorePoolSize(taskExecutorParams.getCorePoolSize());
+        executor.setMaxPoolSize(taskExecutorParams.getMaxPoolSize());
+        executor.setQueueCapacity(taskExecutorParams.getQueueCapacity());
+        executor.setThreadNamePrefix(taskExecutorParams.getThreadNamePrefix());
         executor.initialize();
         return executor;
     }

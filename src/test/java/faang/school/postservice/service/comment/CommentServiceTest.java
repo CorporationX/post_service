@@ -71,7 +71,7 @@ class CommentServiceTest {
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
     @Mock
-    private ModerationDictionary moderationDictionary;
+    private CommentSearcher commentSearcher;
 
     private SortingStrategyAppliersMap sortingStrategyAppliersMap;
 
@@ -86,7 +86,7 @@ class CommentServiceTest {
                 userContext,
                 commentMapper,
                 sortingStrategyAppliersMap,
-                moderationDictionary);
+                commentSearcher);
         post = initPost(POST_ID, true, false);
         author = initAuthor(AUTHOR_ID);
     }

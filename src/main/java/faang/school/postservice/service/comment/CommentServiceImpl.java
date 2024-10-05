@@ -38,7 +38,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserContext userContext;
     private final CommentMapper commentMapper;
     private final SortingStrategyAppliersMap sortingStrategiesAppliers;
-    private final ModerationDictionary moderationDictionary;
+    private final CommentSearcher commentSearcher;
 
     @Override
     public CommentDto createComment(Long postId, CommentDto commentDto) {
@@ -101,7 +101,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void verifyComments(List<Comment> comments) {
         comments.forEach(comment -> {
-            comment.setVerified(moderationDictionary.isAcceptableComment(comment));
+            comment.setVerified(commentSearcher.isAcceptableComment(comment));
             comment.setVerifiedDate(LocalDateTime.now());
         });
         commentRepository.saveAll(comments);
