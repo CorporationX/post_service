@@ -156,7 +156,7 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    public List<List<Post>> FindAndSplitUnverifiedPosts() {
+    public List<List<Post>> findAndSplitUnverifiedPosts() {
         List<Post> unverifiedPosts = postRepository.findAllByVerifiedDateIsNull();
 
         return splitIntoBatches(unverifiedPosts, moderationBatchSize);

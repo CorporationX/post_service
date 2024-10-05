@@ -5,7 +5,9 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.util.moderation.ModerationDictionary;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -13,20 +15,24 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 
 class PostServiceTest {
 
@@ -35,6 +41,9 @@ class PostServiceTest {
 
     @Mock
     private PostMapper postMapper;
+
+    @Mock
+    ModerationDictionary moderationDictionary;
 
     @InjectMocks
     private PostService postService;
@@ -53,6 +62,8 @@ class PostServiceTest {
         postDto = new PostDto();
         postDto.setId(1L);
         postDto.setContent("Test post DTO");
+
+        ReflectionTestUtils.setField(postService, "moderationBatchSize", 2);
     }
 
     @Test
@@ -141,5 +152,61 @@ class PostServiceTest {
         assertEquals(postDto.getPublishedAt(), result.get(0).getPublishedAt());
         verify(postRepository, times(1)).findByProjectIdWithLikes(projectId);
         verify(postMapper, times(1)).toPostDto(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("Should return split list of unverified posts")
+    void testFindAndSplitUnverifiedPosts_Success() {
+        List<Post> unverifiedPosts = List.of(
+                Post.builder().id(1L).build(),
+                Post.builder().id(2L).build(),
+                Post.builder().id(3L).build()
+        );
+
+        when(postRepository.findAllByVerifiedDateIsNull()).thenReturn(unverifiedPosts);
+
+        List<List<Post>> result = postService.findAndSplitUnverifiedPosts();
+
+        assertEquals(2, result.size());
+        assertEquals(2, result.get(0).size());
+        assertEquals(1, result.get(1).size());
+
+        verify(postRepository, times(1)).findAllByVerifiedDateIsNull();
+    }
+
+    @Test
+    @DisplayName("Should return empty list when no unverified posts are found")
+    void testFindAndSplitUnverifiedPosts_NoPostsFound() {
+        when(postRepository.findAllByVerifiedDateIsNull()).thenReturn(Collections.emptyList());
+
+        List<List<Post>> result = postService.findAndSplitUnverifiedPosts();
+
+        assertTrue(result.isEmpty(), "Expected an empty list of unverified posts");
+
+        verify(postRepository, times(1)).findAllByVerifiedDateIsNull();
+    }
+
+    @Test
+    @DisplayName("Should verify posts for swear words")
+    void testVerifyPostsForSwearWords_Success() {
+        List<Post> unverifiedPostsBatch = List.of(
+                Post.builder().id(1L).content("This is clean content")
+                        .verified(null).verifiedDate(null).build(),
+                Post.builder().id(2L).content("This is bad content")
+                        .verified(null).verifiedDate(null).build()
+        );
+
+        when(moderationDictionary.containsSwearWords("This is clean content")).thenReturn(true);
+        when(moderationDictionary.containsSwearWords("This is bad content")).thenReturn(false);
+
+        CompletableFuture<Void> future = postService.verifyPostsForSwearWords(unverifiedPostsBatch);
+        future.join();
+
+        assertFalse(unverifiedPostsBatch.get(0).getVerified());
+        assertNotNull(unverifiedPostsBatch.get(0).getVerifiedDate());
+        assertTrue(unverifiedPostsBatch.get(1).getVerified());
+        assertNotNull(unverifiedPostsBatch.get(1).getVerifiedDate());
+
+        verify(postRepository, times(1)).saveAll(unverifiedPostsBatch);
     }
 }

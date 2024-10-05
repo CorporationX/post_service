@@ -22,18 +22,18 @@ public class ModerationScheduler {
     @Scheduled(cron = "${post.moderation.scheduler.cron}")
     public void verifyPosts() {
         String currentTime;
-        List<List<Post>> unverifiedPosts = postService.FindAndSplitUnverifiedPosts();
+        List<List<Post>> unverifiedPosts = postService.findAndSplitUnverifiedPosts();
 
         if (!unverifiedPosts.isEmpty()) {
             currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            log.info("Starting verification process for {} batches at {}", unverifiedPosts.size(), currentTime);
+            log.info("Starting post moderation process for {} batches at {}", unverifiedPosts.size(), currentTime);
 
             List<CompletableFuture<Void>> futures = unverifiedPosts.stream()
                     .map(postService::verifyPostsForSwearWords)
                     .toList();
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-            log.info("Completed verification process for all batches.");
+            log.info("Completed moderation process for all post batches.");
         } else {
             currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             log.info("No unverified posts found at {}", currentTime);
