@@ -5,9 +5,13 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.redis.mapper.AuthorCacheMapper;
 import faang.school.postservice.redis.repository.AuthorCacheRedisRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static java.util.concurrent.CompletableFuture.*;
 
 @Service
 @RequiredArgsConstructor
@@ -16,9 +20,10 @@ public class AuthorCacheService {
     private final AuthorCacheMapper authorCacheMapper;
     private final UserServiceClient userServiceClient;
 
-    public void saveAllAuthorsInCache(List<UserDto> allUsers){
+    @Async
+    public CompletableFuture<Void> saveAllAuthorsInCache(List<UserDto> allUsers){
         if (allUsers == null || allUsers.isEmpty()) {
-            return;
+            return completedFuture(null);
         }
 
         var authorCaches = allUsers.stream()
@@ -26,8 +31,9 @@ public class AuthorCacheService {
                 .toList();
 
         if (!authorCaches.isEmpty()) {
-            repository.saveAll(authorCaches);
+            return runAsync(() -> repository.saveAll(authorCaches));
         }
+        return completedFuture(null);
     }
 
     public void saveAuthorCache(Long postAuthorId){

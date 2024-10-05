@@ -4,7 +4,6 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.redis.mapper.AuthorCacheMapper;
 import faang.school.postservice.redis.model.AuthorCache;
-import faang.school.postservice.redis.model.PostCache;
 import faang.school.postservice.redis.repository.AuthorCacheRedisRepository;
 import faang.school.postservice.util.TestDataFactory;
 import org.junit.jupiter.api.Test;
@@ -12,6 +11,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.concurrent.ExecutionException;
 
 import static faang.school.postservice.util.TestDataFactory.POST_AUTHOR_ID;
 import static org.mockito.Mockito.any;
@@ -30,7 +31,7 @@ class AuthorCacheServiceTest {
     @Mock
     private UserServiceClient userServiceClient;
     @Test
-    void givenUsersWhenSaveAllAuthorsInCacheThenAllUsersSavedInCache() {
+    void givenUsersWhenSaveAllAuthorsInCacheThenAllUsersSavedInCache() throws ExecutionException, InterruptedException {
         var allUsers = TestDataFactory.createUserDtoList();
 
         var authorCacheList = allUsers.stream()
@@ -41,7 +42,7 @@ class AuthorCacheServiceTest {
                     .thenAnswer(invocation -> new AuthorCache());
 
         // when - action
-        authorCacheService.saveAllAuthorsInCache(allUsers);
+        authorCacheService.saveAllAuthorsInCache(allUsers).get();
 
         // then - verify the output
         verify(authorCacheMapper, times(allUsers.size())).toAuthorCache(any(UserDto.class));
@@ -62,6 +63,5 @@ class AuthorCacheServiceTest {
         // then - verify the output
         verify(authorCacheMapper, times(1)).toAuthorCache(userDto);
         verify(repository, times(1)).save(authorCache);
-
     }
 }

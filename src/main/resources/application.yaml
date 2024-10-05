@@ -88,3 +88,11 @@ cron-expression: 00 50 17 ? * *
 
 like-service:
   batch-size: 100
+
+  app:
+    async:
+      hash_generator:
+        core_pool_size: 5
+        max_pool_size: 10
+        queue_capacity: 500
+        thread_name_prefix: "AsyncExecutor-"

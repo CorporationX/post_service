@@ -9,7 +9,10 @@ import faang.school.postservice.kafka.events.PostViewEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +29,7 @@ public class KafkaEventProducer {
     private String heatTopic;
 
     private final KafkaTemplate<Long, Object> kafkaTemplate;
-    //TODO need check if topics are correct
+
     public void sendPostFollowersEvent(PostFollowersEvent event) {
         kafkaTemplate.send(postTopic, event);
     }
@@ -43,11 +46,23 @@ public class KafkaEventProducer {
         kafkaTemplate.send(likeTopic, event);
     }
 
-    public void sendFeedHeatEvent(FeedDto event) {
-        kafkaTemplate.send(heatTopic, event);
+    @Async
+    public CompletableFuture<Void> sendFeedHeatEvent(FeedDto event) {
+        try {
+            kafkaTemplate.send(heatTopic, event).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send feed heat event", e);
+        }
+        return CompletableFuture.completedFuture(null);
     }
 
-    public void sendPostHeatEvent(PostDto event) {
-        kafkaTemplate.send(heatTopic, event);
+    @Async
+    public CompletableFuture<Void> sendPostHeatEvent(PostDto event) {
+        try {
+            kafkaTemplate.send(heatTopic, event).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send post heat event", e);
+        }
+        return CompletableFuture.completedFuture(null);
     }
 }

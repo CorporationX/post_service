@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
 @RestController
@@ -28,7 +29,7 @@ public class FeedController {
     }
 
     @GetMapping("/heat")
-    public void cacheHeat(){
-        feedHeatService.sendHeatEvents();
+    public CompletableFuture<Void> cacheHeat(){
+        return feedHeatService.sendHeatEvents();
     }
 }

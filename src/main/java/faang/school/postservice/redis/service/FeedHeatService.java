@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static java.util.concurrent.CompletableFuture.*;
 
 @Service
 @RequiredArgsConstructor
@@ -22,38 +25,50 @@ public class FeedHeatService {
     private final KafkaEventProducer kafkaEventProducer;
     private final AuthorCacheService authorCacheService;
     private final UserServiceClient userServiceClient;
-
     private final PostService postService;
-    //TODO need several threads
-    public void sendHeatEvents(){
 
+    public CompletableFuture<Void> sendHeatEvents(){
         var allUsers = userServiceClient.getAllUsers();
-        authorCacheService.saveAllAuthorsInCache(allUsers);
+        var savedAllAuthorsInCache = authorCacheService.saveAllAuthorsInCache(allUsers);
 
         var feedEvents = generateFeedsForAllUserFollowers(allUsers);
-        feedEvents
-                .forEach(kafkaEventProducer::sendFeedHeatEvent);
+        var feedEventFutures = sendFeedHeatEvents(feedEvents);
+
 
         var postEvents = generatePostEvents(feedEvents);
-        postEvents
-                .forEach(kafkaEventProducer::sendPostHeatEvent);
+        var postEventFutures = sendPostHeatEvents(postEvents);
+
+        return allOf(savedAllAuthorsInCache, feedEventFutures, postEventFutures);
+    }
+
+    private CompletableFuture<Void> sendPostHeatEvents(List<PostDto> postEvents) {
+        var postEventFutures = postEvents.stream()
+                .map(kafkaEventProducer::sendPostHeatEvent)
+                .toArray(CompletableFuture[]::new);
+        return allOf(postEventFutures);
+    }
+
+    private CompletableFuture<Void> sendFeedHeatEvents(List<FeedDto> feedEvents) {
+        var feedEventFutures = feedEvents.stream()
+                .map(kafkaEventProducer::sendFeedHeatEvent)
+                .toArray(CompletableFuture[]::new);
+        return allOf(feedEventFutures);
     }
 
     private List<FeedDto> generateFeedsForAllUserFollowers(List<UserDto> allUsersInOurSystem) {
         List<FeedDto> feeds = new ArrayList<>();
 
-        for (UserDto user : allUsersInOurSystem) {
-            var followerId = user.getId();
-            var userBloggers = userServiceClient.getUsersByIds(user.getFollowees());
+        for (UserDto follower : allUsersInOurSystem) {
+            var followerId = follower.getId();
+            var bloggers = userServiceClient.getUsersByIds(follower.getFollowees());
 
-            var allPostsOfUserBloggers = userBloggers.stream()
+            var allBloggersPosts = bloggers.stream()
                     .flatMap(blogger -> blogger.getPosts().stream())
                     .limit(maxPostsInHeatFeed)
                     .toList();
 
-            feeds.add(new FeedDto(followerId, allPostsOfUserBloggers));
+            feeds.add(new FeedDto(followerId, allBloggersPosts));
         }
-
         return feeds;
     }
 
