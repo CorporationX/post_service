@@ -63,4 +63,10 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Post> findByProjectIdAndPublished(long projectId);
 
     List<Post> findByPublishedTrueAndDeletedFalse();
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post
+            WHERE published = false AND deleted = false
+            """)
+    List<Post> findNotPublishedAndNotDeletedPosts();
 }

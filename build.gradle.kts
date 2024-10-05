@@ -1,7 +1,7 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.0.6"
-    id("io.spring.dependency-management") version "1.1.0"
+    id("org.springframework.boot") version "3.2.10"
+    id("io.spring.dependency-management") version "1.1.6"
     id("jacoco")
 }
 
@@ -22,9 +22,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.1.3")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+    /**
+     * Spring
+     */
+    implementation("org.springframework.retry:spring-retry:2.0.9")
+    implementation("org.springframework.cloud:spring-cloud-contract-wiremock:4.1.4")
 
     /**
      * Database
@@ -32,11 +37,11 @@ dependencies {
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
+    testImplementation("com.h2database:h2:2.3.232")
 
     /**
      * Utils & Logging
      */
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
     implementation("org.slf4j:slf4j-api:2.0.5")
     implementation("ch.qos.logback:logback-classic:1.4.6")
     implementation("org.projectlombok:lombok:1.18.26")
@@ -56,14 +61,11 @@ dependencies {
      * Tests
      */
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-
-    /**
-     * Jacoco
-     */
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+//    testImplementation("org.wiremock:wiremock-jetty12:3.9.1")
 
 
     /**
