@@ -46,12 +46,15 @@ post:
 user-service:
   host: localhost
   port: 8080
+  requiredHeaders: x-user-id
 project-service:
   host: localhost
   port: 8082
+  requiredHeaders: x-user-id
 payment-service:
   host: localhost
   port: 9080
+  requiredHeaders: x-user-id
 
 moderate:
   comments:

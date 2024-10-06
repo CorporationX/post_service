@@ -13,7 +13,9 @@ public class OffensiveDictionaryScheduler {
 
     private final OffensiveDictionaryService offensiveDictionaryService;
 
-    @Scheduled(cron = "${dictionary.offensive.remote.scheduler.cron}")
+    @Scheduled(initialDelayString = "${moderate.comments.initialDelay}",
+            fixedDelayString = "${moderate.comments.fixedDelay}")
+    //@Scheduled(cron = "${dictionary.offensive.remote.scheduler.cron}")
     public void updateOffensiveDictionary() {
         log.info("updateOffensiveDictionary() - start.");
         offensiveDictionaryService.updateOffensiveDictionary();
