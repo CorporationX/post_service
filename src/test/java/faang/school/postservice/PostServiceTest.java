@@ -10,7 +10,6 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.tools.YandexSpeller;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

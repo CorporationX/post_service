@@ -23,7 +23,9 @@ public class YandexSpeller {
 
     @Retryable(
             retryFor = RestClientException.class,
-            backoff = @Backoff(delay = 2000)
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000),
+            recover = "recoverCheckText"
     )
     public List<SpellCheckerDto> checkText(String text) {
         String requestUrl = addParamToUrl("text", text, url);
