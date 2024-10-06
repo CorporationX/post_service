@@ -23,7 +23,7 @@ public class AsyncConfig {
     @Value("${async.executor.thread-name-prefix}")
     private String threadNamePrefix;
 
-    @Bean
+    @Bean("asyncTaskExecutor")
     public Executor asyncTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(corePoolSize);
