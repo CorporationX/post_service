@@ -2,6 +2,7 @@ package faang.school.postservice.service.post.impl;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.request.PostCreationRequest;
 import faang.school.postservice.dto.post.request.PostUpdatingRequest;
@@ -11,7 +12,6 @@ import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.post.PostCreator;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.post.impl.filter.PostFilter;
@@ -20,11 +20,14 @@ import faang.school.postservice.service.post.impl.filter.UnPublishedPostFilter;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -35,6 +38,9 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userClient;
     private final ProjectServiceClient projectClient;
+    private final ModerationDictionary moderationDictionary;
+    @Value("${post.moderator.count-posts-in-thread}")
+    private int countPostsInThread;
 
     @Override
     public PostDto create(PostCreationRequest request) {
@@ -103,6 +109,38 @@ public class PostServiceImpl implements PostService {
         log.debug("Found {} posts by {} with id {} with published - {}",
                 posts.size(), creator, creatorId, publishedStatus);
         return postMapper.toPostDtoList(posts);
+    }
+
+    @Override
+    public void moderatePosts() {
+        List<Post> posts = postRepository.findNotVerified();
+        if (posts.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < posts.size(); i += countPostsInThread) {
+            int end = Math.min(i + countPostsInThread, posts.size());
+            verifyPosts(posts.subList(i, end));
+        }
+    }
+
+    @Override
+    @Async("postServicePool")
+    public void verifyPosts(List<Post> posts) {
+        Set<String> banWords = moderationDictionary.getForbiddenWords();
+        for (Post post : posts) {
+            boolean containsBanWord = banWords.stream()
+                    .anyMatch(banWord -> post.getContent().toLowerCase().contains(banWord));
+            if (containsBanWord) {
+                post.setVerified(false);
+                log.warn("Post '{}' contains forbidden words. It will not be verified.", post.getId());
+            } else {
+                post.setVerified(true);
+                post.setVerifiedDate(LocalDateTime.now());
+                log.info("Post '{}' has been successfully verified. Verification date: {}",
+                        post.getId(), post.getVerifiedDate());
+            }
+            postRepository.save(post);
+        }
     }
 
     private List<Post> getPostsByCreatorId(Long creatorId, PostCreator creator) {

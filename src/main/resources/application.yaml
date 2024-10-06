@@ -39,6 +39,13 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderator:
+    count-posts-in-thread: "100"
+    scheduler:
+      cron: "0 0 * * *"
+      dictionary:
+        file: "classpath:moderation-dictionary.txt"
+
 
 user-service:
   host: localhost
