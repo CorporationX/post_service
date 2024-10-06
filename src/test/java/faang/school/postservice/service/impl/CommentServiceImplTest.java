@@ -1,4 +1,4 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
@@ -8,6 +8,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.comment.CommentServiceImpl;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
