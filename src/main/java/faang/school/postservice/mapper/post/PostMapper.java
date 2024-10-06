@@ -15,10 +15,13 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
+    @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "mapResourcesToResourceIds")
+    PostResponseDto toDto(Post post);
 
     Post toEntity(CreatePostRequestDto dto);
 
@@ -26,13 +29,25 @@ public interface PostMapper {
 
     Post toEntity(FilterPostRequestDto dto);
 
-    PostResponseDto toDto(Post post);
+    List<PostResponseDto> toDtos(List<Post> posts);
+
+    @Named("mapResourcesToResourceIds")
+    default List<Long> mapResourcesToResourceIds(List<Resource> resources) {
+        if (resources == null) {
+            return new ArrayList<>();
+        }
+        return resources.stream()
+                .map(Resource::getId)
+                .toList();
+    }
+
+//    PostResponseDto toDto(Post post);
 
     List<PostResponseDto> listEntitiesToListDto(List<Post> posts);
 
     PostResponseDto toDto(PostCacheDto postCacheDto);
 
-    List<PostResponseDto> toDtos(List<PostCacheDto> postCacheDtos);
+//    List<PostResponseDto> toDtos(List<PostCacheDto> postCacheDtos);
 
     @Mapping(source = "likes", target = "likesIds", qualifiedByName = "mapLikes")
     @Mapping(source = "comments", target = "commentIds", qualifiedByName = "mapComments")

@@ -39,6 +39,19 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  images:
+    max-to-upload: 10
+    max-size: 5242880
+    bucket:
+      name-prefix: posts/post_
+
+client:
+  s3:
+    minio:
+      url: http://127.0.0.1:9000
+      username: user
+      password: password
+      bucketName: corpbucket
 
 user-service:
   host: localhost

@@ -1,11 +1,13 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.service.aws.s3.S3Service;
+import faang.school.postservice.utils.ImageRestrictionRule;
 import faang.school.postservice.service.post.cache.PostCacheOperations;
 import faang.school.postservice.service.post.cache.PostCacheService;
 import faang.school.postservice.service.post.hash.tag.PostHashTagParser;
@@ -17,24 +19,36 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static faang.school.postservice.utils.ImageRestrictionRule.POST_IMAGES;
 import static faang.school.postservice.util.post.PostCacheFabric.buildPost;
 import static faang.school.postservice.util.post.PostCacheFabric.buildPostCacheDtosForMapping;
 import static faang.school.postservice.util.post.PostCacheFabric.buildPostsForMapping;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -42,6 +56,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
+    private static final String BUCKET_NAME_PREFIX = "posts/post_";
+
     private static final long FIRST_POST_ID = 1L;
     private static final long FIRST_AUTHOR_ID = 1L;
     private static final long SECOND_AUTHOR_ID = 2L;
@@ -59,6 +75,16 @@ public class PostServiceTest {
 
     @Mock
     private PostValidator postValidator;
+    @Mock
+    private ResourceRepository resourceRepository;
+    @Mock
+    private S3Service s3Service;
+    @Mock
+    private MultipartFile image1;
+    @Mock
+    private MultipartFile image2;
+    @Mock
+    private InputStream inputStream;
 
     @Mock
     private PostHashTagParser postHashTagParser;
@@ -85,6 +111,35 @@ public class PostServiceTest {
 
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(postService, "bucketNamePrefix", BUCKET_NAME_PREFIX);
+
+
+        postForCreate = Post.builder()
+                .content("Some Content")
+                .authorId(1L)
+                .build();
+
+        postForUpdate = Post.builder()
+                .id(1L)
+                .content("Updated Content")
+                .authorId(2L)
+                .build();
+
+        findedPost = Post.builder()
+                .id(1L)
+                .content("Some Content")
+                .authorId(1L)
+                .build();
+
+        authorPosts.add(Post.builder()
+                .id(1L)
+                .content("Content 1")
+                .deleted(false)
+                .published(false)
+                .authorId(1L)
+                .createdAt(LocalDateTime.of(2024, 9, 17, 0, 0))
+                .publishedAt(LocalDateTime.of(2024, 9, 17, 0, 0))
+                .build());
         ReflectionTestUtils.setField(postService, "numberOfTopInCache", NUMBER_OF_TOP_IN_CASH);
 
         postForCreate = buildPost(FIRST_POST_ID, DEFAULT_CONTENT);
@@ -309,6 +364,123 @@ public class PostServiceTest {
 
         verify(postRepository).findByProjectId(filterPost.getProjectId());
         verify(postRepository, times(0)).findByAuthorId(anyLong());
+    }
+
+    @Test
+    void testUploadImages_Exception_ValidationException() {
+        Long postId = 1L;
+        List<MultipartFile> images = List.of(image1, image2);
+
+        doThrow(new ValidationException(""))
+                .when(postValidator)
+                .validateImagesToUpload(postId, images);
+
+        assertThrows(ValidationException.class, () -> {
+            postService.uploadImages(postId, images);
+        });
+    }
+
+    @Test
+    void testUploadImages_Exception_PostNotFound() {
+        Long postId = 1L;
+        List<MultipartFile> images = List.of(image1, image2);
+
+        when(postRepository.findByIdAndNotDeleted(postId)).thenReturn(Optional.empty());
+
+        assertThrows(PostNotFoundException.class, () -> {
+            postService.uploadImages(postId, images);
+        });
+    }
+
+    @Test
+    void testUploadImages_Exception_S3ServiceException() throws IOException {
+        Long postId = 1L;
+        List<MultipartFile> images = List.of(image1, image2);
+        Post existedPost = new Post();
+
+        when(postRepository.findByIdAndNotDeleted(postId)).thenReturn(Optional.of(existedPost));
+        doThrow(new IOException())
+                .when(s3Service)
+                .uploadFile(image1, "posts/post_1", POST_IMAGES);
+
+        assertThrows(UploadImageToPostException.class, () -> {
+            postService.uploadImages(postId, images);
+        });
+    }
+
+    @Test
+    void testUploadImages_Success() throws IOException {
+        Long postId = 1L;
+        List<MultipartFile> images = List.of(image1, image2);
+        List<Resource> existedImages = List.of(new Resource(), new Resource());
+        Post existedPost = new Post();
+        Resource savedResource = new Resource();
+
+        when(postRepository.findByIdAndNotDeleted(postId)).thenReturn(Optional.of(existedPost));
+        when(s3Service.uploadFile(any(MultipartFile.class), anyString(), any(ImageRestrictionRule.class))).thenReturn(savedResource);
+        when(resourceRepository.saveAll(anyList())).thenReturn(List.of(savedResource));
+
+        assertDoesNotThrow(() -> postService.uploadImages(postId, images));
+    }
+
+    @Test
+    void testDownloadImage_Exception_S3ServiceException() {
+        Resource resource = new Resource();
+        resource.setKey("key");
+
+        doThrow(new SdkClientException(""))
+                .when(s3Service)
+                .downloadFile(eq(resource.getKey()));
+
+        assertThrows(DownloadImageFromPostException.class, () -> {
+            postService.downloadImage(resource);
+        });
+    }
+
+    @Test
+    void testDownloadImage_Success() throws IOException {
+        Resource resource = new Resource();
+        resource.setKey("resourceKey");
+
+        when(s3Service.downloadFile(eq(resource.getKey()))).thenReturn(inputStream);
+
+        org.springframework.core.io.Resource result = postService.downloadImage(resource);
+
+        assertNotNull(result);
+        assertTrue(result instanceof InputStreamResource);
+    }
+
+    @Test
+    void testDeleteImagesFromPost_Exception_S3ServiceException() {
+        List<Long> resourceIds = List.of(1L, 2L);
+        Post post = Post.builder().id(1L).build();
+        List<Resource> existedImages = List.of(
+                Resource.builder().id(1L).key("key1").post(post).build(),
+                Resource.builder().id(2L).key("key1").post(post).build());
+
+        when(resourceRepository.findAllByIdIn(eq(resourceIds))).thenReturn(existedImages);
+        doThrow(new SdkClientException(""))
+                .when(s3Service)
+                .deleteFiles(anyList());
+
+        assertThrows(SdkClientException.class, () -> {
+            postService.deleteImagesFromPost(resourceIds);
+        });
+    }
+
+    @Test
+    void testDeleteImagesFromPost_Success() {
+        List<Long> resourceIds = List.of(1L, 2L);
+        Post post = Post.builder().id(1L).build();
+        List<Resource> existedImages = List.of(
+                Resource.builder().id(1L).key("key1").post(post).build(),
+                Resource.builder().id(2L).key("key1").post(post).build());
+
+        when(resourceRepository.findAllByIdIn(eq(resourceIds))).thenReturn(existedImages);
+        doNothing().when(s3Service).deleteFiles(anyList());
+        doNothing().when(resourceRepository).deleteAll(existedImages);
+
+        postService.deleteImagesFromPost(resourceIds);
     }
 
     private void fulledAuthorAndProjectLists() {
