@@ -4,6 +4,10 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.mapper.ResourceMapper;
+import faang.school.postservice.model.ResourceEntity;
+import faang.school.postservice.service.resource.ResourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,11 +29,14 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
     private final PostMapper postMapper;
+    private final ResourceService resourceService;
+    private final ResourceMapper resourceMapper;
 
     @PostMapping("/draft")
     public PostDto createDraftPost(@RequestBody PostDto postDto) {
         Post post = postMapper.toEntity(postDto);
         Post createdPost = postService.createDraftPost(post);
+
 
         return postMapper.toDto(createdPost);
     }
@@ -79,4 +87,24 @@ public class PostController {
         List<Post> publishedPosts = postService.getProjectPublishedPosts(projectId);
         return postMapper.toDto(publishedPosts);
     }
+
+    @PutMapping("{post-id}/files")
+    public ResourceDto addFileToPost(@PathVariable("post-id") Long postId,
+                                     @RequestParam MultipartFile file) {
+        ResourceEntity resourceEntity = resourceService.addFileToPost(file, postId);
+        return resourceMapper.toResourceDto(resourceEntity);
+    }
+
+    @PutMapping("/files/update")
+    public ResourceDto updateFileInPost(@RequestParam MultipartFile file,
+                                        @RequestParam("resource-id") Long resourceId) {
+        ResourceEntity updatedResourceEntity = resourceService.updateFileInPost(file, resourceId);
+        return resourceMapper.toResourceDto(updatedResourceEntity);
+    }
+
+    @PutMapping("/files/remove")
+    public void removeFileInPost(@RequestParam("resource-id") Long resourceId) {
+        resourceService.removeFileInPost(resourceId);
+    }
+
 }
