@@ -16,6 +16,7 @@ import faang.school.postservice.service.comment.sort.SortingStrategyAppliersMap;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +39,10 @@ public class CommentServiceImpl implements CommentService {
     private final UserContext userContext;
     private final CommentMapper commentMapper;
     private final SortingStrategyAppliersMap sortingStrategiesAppliers;
-    private final CommentSearcher commentSearcher;
+    private final CommentChecker commentChecker;
+
+    @Value("${comment.constants.verification-days-limit}")
+    private int verificationDaysLimit;
 
     @Override
     public CommentDto createComment(Long postId, CommentDto commentDto) {
@@ -93,15 +97,15 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<Comment> getUnverifiedComments() {
-        LocalDateTime lastMonth = LocalDateTime.now().minusMonths(1);
-        return commentRepository.findUnverifiedComments(lastMonth);
+        LocalDateTime startDate = LocalDateTime.now().minusDays(verificationDaysLimit);
+        return commentRepository.findUnverifiedComments(startDate);
     }
 
     @Async("taskExecutor")
     @Override
     public void verifyComments(List<Comment> comments) {
         comments.forEach(comment -> {
-            comment.setVerified(commentSearcher.isAcceptableComment(comment));
+            comment.setVerified(commentChecker.isAcceptableComment(comment));
             comment.setVerifiedDate(LocalDateTime.now());
         });
         commentRepository.saveAll(comments);

@@ -3,7 +3,6 @@ package faang.school.postservice.service.comment;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.exception.comment.FileReadException;
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,14 +15,10 @@ import java.util.Set;
 @Component
 public class ModerationDictionary {
 
-    private Set<String> obsceneWords;
+    private final Set<String> obsceneWords;
 
-    @Value("${comment.obscene-words-resource}")
-    private String obsceneWordsResource;
-
-    @PostConstruct
-    public void init() {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public ModerationDictionary(@Value("${comment.obscene-words-resource}") String obsceneWordsResource,
+                                ObjectMapper objectMapper) {
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(obsceneWordsResource)) {
             obsceneWords = objectMapper.readValue(inputStream, new TypeReference<>() {
             });

@@ -15,19 +15,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class CommentSearcherTest {
+public class CommentCheckerTest {
 
-    private CommentSearcher commentSearcher;
+    private CommentChecker commentChecker;
 
     @Mock
     private ModerationDictionary moderationDictionary;
 
     @BeforeEach
     public void setUp() {
-        commentSearcher = new CommentSearcher(moderationDictionary);
         Set<String> obsceneWords = Set.of("word1", "word2", "word3");
         when(moderationDictionary.getObsceneWords()).thenReturn(obsceneWords);
-        commentSearcher.init();
+        commentChecker = new CommentChecker(moderationDictionary);
+        //commentChecker.init(moderationDictionary);
     }
 
     @Test
@@ -39,7 +39,7 @@ public class CommentSearcherTest {
                 .content("Some text with bad word1")
                 .build();
 
-        assertFalse(commentSearcher.isAcceptableComment(comment));
+        assertFalse(commentChecker.isAcceptableComment(comment));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class CommentSearcherTest {
                 .content("Some text")
                 .build();
 
-        assertTrue(commentSearcher.isAcceptableComment(comment));
+        assertTrue(commentChecker.isAcceptableComment(comment));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class CommentSearcherTest {
                 .content("Some text with bad wor*1")
                 .build();
 
-        assertFalse(commentSearcher.isAcceptableComment(comment));
+        assertFalse(commentChecker.isAcceptableComment(comment));
     }
 
     @Test
@@ -75,6 +75,6 @@ public class CommentSearcherTest {
                 .content("Some text with bad wo**3")
                 .build();
 
-        assertFalse(commentSearcher.isAcceptableComment(comment));
+        assertFalse(commentChecker.isAcceptableComment(comment));
     }
 }
