@@ -6,6 +6,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.HashtagService;
+import faang.school.postservice.service.post.async.PostServiceAsync;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.ListUtils;
@@ -28,6 +29,7 @@ public class PostServiceImpl implements PostService {
     private final HashtagService hashtagService;
     private final PostValidator postValidator;
     private final ModerationDictionary dictionary;
+    private final PostServiceAsync postServiceAsync;
 
     @Value("${posts.batch-size}")
     private int batchSize;
@@ -163,19 +165,7 @@ public class PostServiceImpl implements PostService {
         List<Post> unverifiedPosts = postRepository.findAllByVerifiedDateIsNull();
         List<List<Post>> batches = ListUtils.partition(unverifiedPosts, batchSize);
 
-        batches.forEach(this::moderatePostsByBatches);
-    }
-
-    @Async("fixedThreadPools")
-    public void moderatePostsByBatches(List<Post> posts) {
-        posts.forEach(post -> {
-            boolean badWordsExist = dictionary.containsBadWords(post.getContent());
-
-            post.setVerified(!badWordsExist);
-            post.setVerifiedDate(LocalDateTime.now());
-        });
-
-        postRepository.saveAll(posts);
+        batches.forEach(postServiceAsync::moderatePostsByBatches);
     }
 
     private Post getPostFromRepository(Long postId) {

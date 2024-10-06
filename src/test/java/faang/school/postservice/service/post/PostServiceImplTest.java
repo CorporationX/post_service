@@ -5,6 +5,7 @@ import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.async.PostServiceAsyncImpl;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import faang.school.postservice.service.hashtag.HashtagService;
@@ -51,6 +52,9 @@ public class PostServiceImplTest {
 
     @Mock
     private ModerationDictionary dictionary;
+
+    @Mock
+    private PostServiceAsyncImpl postServiceAsync;
 
     private PostDto examplePostDto;
     private Post examplePost;
@@ -313,14 +317,9 @@ public class PostServiceImplTest {
         List<Post> posts = List.of(examplePost, badPost);
 
         when(postRepository.findAllByVerifiedDateIsNull()).thenReturn(posts);
-        when(dictionary.containsBadWords(posts.get(1).getContent())).thenReturn(true);
-        when(dictionary.containsBadWords(posts.get(0).getContent())).thenReturn(false);
 
         postService.moderatePosts();
 
-        assertEquals(false, posts.get(1).getVerified());
-        assertEquals(true, posts.get(0).getVerified());
-
-        verify(postRepository, times(2)).saveAll(any());
+        verify(postServiceAsync, times(2)).moderatePostsByBatches(any());
     }
 }
