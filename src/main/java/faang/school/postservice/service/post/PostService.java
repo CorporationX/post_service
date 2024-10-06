@@ -8,7 +8,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.cache.PostCacheOperations;
 import faang.school.postservice.service.post.cache.PostCacheService;
-import faang.school.postservice.service.post.hash.tag.PostHashTagService;
+import faang.school.postservice.service.post.hash.tag.PostHashTagParser;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostValidator postValidator;
-    private final PostHashTagService postHashTagService;
+    private final PostHashTagParser postHashTagParser;
     private final PostCacheService postCacheService;
     private final PostMapper postMapper;
     private final PostCacheOperations postCacheOperations;
@@ -44,7 +44,7 @@ public class PostService {
         post.setPublished(false);
         post.setDeleted(false);
         post.setCreatedAt(LocalDateTime.now());
-        postHashTagService.updateHashTags(post);
+        postHashTagParser.updateHashTags(post);
 
         return postRepository.save(post);
     }
@@ -57,7 +57,7 @@ public class PostService {
 
         post.setContent(updatePost.getContent());
         post.setUpdatedAt(LocalDateTime.now());
-        postHashTagService.updateHashTags(post);
+        postHashTagParser.updateHashTags(post);
 
         if (!post.isDeleted() && post.isPublished()) {
             postCacheService.executeUpdatePostProcess(postMapper.toPostCacheDto(post), primalTags);
@@ -74,7 +74,7 @@ public class PostService {
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        postHashTagService.updateHashTags(post);
+        postHashTagParser.updateHashTags(post);
         postCacheService.executeNewPostProcess(postMapper.toPostCacheDto(post));
 
         return postRepository.save(post);
@@ -97,14 +97,14 @@ public class PostService {
         List<PostCacheDto> postDtos = postCacheService.findInRangeByHashTag(hashTag, start, end);
 
         if (postDtos.isEmpty() && postCacheOperations.isRedisConnected()) {
-            String jsonTag = postHashTagService.convertTagToJson(hashTag);
+            String jsonTag = postHashTagParser.convertTagToJson(hashTag);
             List<Post> posts = postRepository.findTopByHashTagByDate(jsonTag, numberOfTopInCache);
             List<PostCacheDto> postDtosByTop = postMapper.mapToPostCacheDtos(posts);
             postCacheService.addListOfPostsToCache(postDtosByTop, hashTag);
             postDtos = postDtosByTop.subList(0, Math.min(postDtosByTop.size(), end));
         }
         else if (postDtos.isEmpty()) {
-            String jsonTag = postHashTagService.convertTagToJson(hashTag);
+            String jsonTag = postHashTagParser.convertTagToJson(hashTag);
             List<Post> posts = postRepository.findInRangeByHashTagByDate(jsonTag, start, end);
             postDtos = postMapper.mapToPostCacheDtos(posts);
         }

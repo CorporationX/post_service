@@ -14,7 +14,7 @@ class PostHashTagServiceTest {
     private static final String HASH_TAG = "java";
     private static final String HASH_TAG_JSON = "[\"java\"]";
 
-    private final PostHashTagService postHashTagService = new PostHashTagService();
+    private final PostHashTagParser postHashTagParser = new PostHashTagParser();
 
     private final String defaultPostContent = "Test post content #java #sql#redis";
     private final List<String> defaultHashTags = List.of("java", "sql", "redis");
@@ -25,7 +25,7 @@ class PostHashTagServiceTest {
     void testUpdateHashTagsSuccessful() {
         Post post = buildPost(defaultPostContent, new ArrayList<>());
         Post postExpected = buildPost(defaultPostContent, defaultHashTags);
-        postHashTagService.updateHashTags(post);
+        postHashTagParser.updateHashTags(post);
 
         assertThat(post)
                 .usingRecursiveComparison()
@@ -35,21 +35,21 @@ class PostHashTagServiceTest {
     @Test
     @DisplayName("Given primal and updated hash-tags and return new hash-tags")
     void testGetNewHashTagsSuccessful() {
-        assertThat(postHashTagService.getNewHashTags(defaultHashTags, defaultUpdatedHashTags))
+        assertThat(postHashTagParser.getNewHashTags(defaultHashTags, defaultUpdatedHashTags))
                 .isEqualTo(List.of(defaultUpdatedHashTags.get(defaultUpdatedHashTags.size() - 1)));
     }
 
     @Test
     @DisplayName("Given primal and updated hash-tags and return deleted hash-tags")
     void testGetDeletedHashTagsSuccessful() {
-        assertThat(postHashTagService.getDeletedHashTags(defaultHashTags, defaultUpdatedHashTags))
+        assertThat(postHashTagParser.getDeletedHashTags(defaultHashTags, defaultUpdatedHashTags))
                 .isEqualTo(List.of(defaultHashTags.get(0)));
     }
 
     @Test
     @DisplayName("Given hash-tag as simple string and return hash-tag like json")
     void testConvertTagToJson() {
-        assertThat(postHashTagService.convertTagToJson(HASH_TAG))
+        assertThat(postHashTagParser.convertTagToJson(HASH_TAG))
                 .isEqualTo(HASH_TAG_JSON);
     }
 }

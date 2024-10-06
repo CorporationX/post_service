@@ -4,6 +4,8 @@ import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.Set;
 public class PostCacheService {
     private final PostCacheOperations postCacheOperations;
 
+    @Transactional(propagation = Propagation.MANDATORY)
     public void executeNewPostProcess(PostCacheDto post) {
         log.info("New post process, post with id: {}", post.getId());
         List<String> newTags = post.getHashTags();
@@ -23,6 +26,7 @@ public class PostCacheService {
         }
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
     public void executeDeletePostProcess(PostCacheDto post, List<String> primalTags) {
         log.info("Delete post in cache process, post with id: {}", post.getId());
         if (!primalTags.isEmpty()) {
@@ -30,6 +34,7 @@ public class PostCacheService {
         }
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
     public void executeUpdatePostProcess(PostCacheDto post, List<String> primalTags) {
         log.info("Update post in cache process, post with id: {}", post.getId());
         List<String> updTags = post.getHashTags();

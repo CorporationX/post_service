@@ -2,7 +2,7 @@ package faang.school.postservice.service.post.cache;
 
 
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
-import faang.school.postservice.service.post.hash.tag.PostHashTagService;
+import faang.school.postservice.service.post.hash.tag.PostHashTagParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class PostCacheOperationsTest {
     private static final LocalDateTime PUBLISHED_AT = LocalDateTime.of(2000, 1, 1, 1, 1);
 
     @Spy
-    private PostHashTagService postHashTagService;
+    private PostHashTagParser postHashTagParser;
 
     @Mock
     private PostCacheOperationsTries postCacheOperationsTries;

@@ -1,7 +1,7 @@
 package faang.school.postservice.service.post.cache;
 
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
-import faang.school.postservice.service.post.hash.tag.PostHashTagService;
+import faang.school.postservice.service.post.hash.tag.PostHashTagParser;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +13,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ public class PostCacheOperations {
     @Value("${app.post.cache.post_id_prefix}")
     private String postIdPrefix;
 
-    private final PostHashTagService postHashTagService;
+    private final PostHashTagParser postHashTagParser;
     private final PostCacheOperationsTries postCacheOperationsTries;
     private final RedisTemplate<String, PostCacheDto> redisTemplatePost;
     private final ZSetOperations<String, String> zSetOperations;
@@ -67,6 +69,7 @@ public class PostCacheOperations {
         }
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
     public void addPostToCache(PostCacheDto post, List<String> newTags) {
         log.info("Add post to cache, post with id: {}", post.getId());
         String postId = postIdPrefix + post.getId();
@@ -79,6 +82,7 @@ public class PostCacheOperations {
         }
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
     public void deletePostOfCache(PostCacheDto post, List<String> primalTags) {
         log.info("Delete post of cache, post with id: {}", post.getId());
         String postId = postIdPrefix + post.getId();
@@ -91,14 +95,15 @@ public class PostCacheOperations {
         }
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
     public void updatePostOfCache(PostCacheDto post, List<String> primalTags, List<String> updTags) {
         log.info("Update post of cache, post with id: {}", post.getId());
         String postId = postIdPrefix + post.getId();
         long timestamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
 
         List<String> updTagsOfPostInCache = filterByTagsInCache(updTags);
-        List<String> delTags = postHashTagService.getDeletedHashTags(primalTags, updTags);
-        List<String> newTags = postHashTagService.getNewHashTags(primalTags, updTags);
+        List<String> delTags = postHashTagParser.getDeletedHashTags(primalTags, updTags);
+        List<String> newTags = postHashTagParser.getNewHashTags(primalTags, updTags);
         delTags = filterByTagsInCache(delTags);
         newTags = filterByTagsInCache(newTags);
 

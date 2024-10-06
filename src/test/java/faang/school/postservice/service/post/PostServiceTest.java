@@ -8,7 +8,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.cache.PostCacheOperations;
 import faang.school.postservice.service.post.cache.PostCacheService;
-import faang.school.postservice.service.post.hash.tag.PostHashTagService;
+import faang.school.postservice.service.post.hash.tag.PostHashTagParser;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -61,7 +61,7 @@ public class PostServiceTest {
     private PostValidator postValidator;
 
     @Mock
-    private PostHashTagService postHashTagService;
+    private PostHashTagParser postHashTagParser;
 
     @Mock
     private PostCacheService postCacheService;
@@ -106,7 +106,7 @@ public class PostServiceTest {
         assertNotNull(result.getCreatedAt());
 
         verify(postRepository).save(postForCreate);
-        verify(postHashTagService).updateHashTags(postForCreate);
+        verify(postHashTagParser).updateHashTags(postForCreate);
     }
 
     @Test
@@ -119,7 +119,7 @@ public class PostServiceTest {
         assertNotNull(result.getUpdatedAt());
 
         verify(postRepository).save(any(Post.class));
-        verify(postHashTagService).updateHashTags(findedPost);
+        verify(postHashTagParser).updateHashTags(findedPost);
     }
 
     @Test
@@ -139,7 +139,7 @@ public class PostServiceTest {
         assertTrue(result.isPublished());
         assertNotNull(result.getPublishedAt());
 
-        verify(postHashTagService).updateHashTags(findedPost);
+        verify(postHashTagParser).updateHashTags(findedPost);
         verify(postCacheService).executeNewPostProcess(any(PostCacheDto.class));
     }
 
@@ -163,7 +163,7 @@ public class PostServiceTest {
         List<Post> posts = buildPostsForMapping();
         when(postCacheService.findInRangeByHashTag(HASH_TAG, START_RANGE, END_RANGE)).thenReturn(new ArrayList<>());
         when(postCacheOperations.isRedisConnected()).thenReturn(true);
-        when(postHashTagService.convertTagToJson(HASH_TAG)).thenReturn(HASH_TAG_JSON);
+        when(postHashTagParser.convertTagToJson(HASH_TAG)).thenReturn(HASH_TAG_JSON);
         when(postRepository.findTopByHashTagByDate(HASH_TAG_JSON, NUMBER_OF_TOP_IN_CASH)).thenReturn(posts);
         when(postMapper.mapToPostCacheDtos(posts)).thenReturn(postCacheDtos);
 
@@ -180,7 +180,7 @@ public class PostServiceTest {
         List<Post> posts = buildPostsForMapping();
         when(postCacheService.findInRangeByHashTag(HASH_TAG, START_RANGE, END_RANGE)).thenReturn(new ArrayList<>());
         when(postCacheOperations.isRedisConnected()).thenReturn(false);
-        when(postHashTagService.convertTagToJson(HASH_TAG)).thenReturn(HASH_TAG_JSON);
+        when(postHashTagParser.convertTagToJson(HASH_TAG)).thenReturn(HASH_TAG_JSON);
         when(postRepository.findInRangeByHashTagByDate(HASH_TAG_JSON, START_RANGE, END_RANGE)).thenReturn(posts);
         when(postMapper.mapToPostCacheDtos(posts)).thenReturn(postCacheDtos);
 

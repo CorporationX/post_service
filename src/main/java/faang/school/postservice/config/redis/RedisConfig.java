@@ -1,7 +1,5 @@
 package faang.school.postservice.config.redis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,8 +10,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
+@EnableTransactionManagement
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
@@ -34,12 +34,13 @@ public class RedisConfig {
         template.setConnectionFactory(jedisConnectionFactory);
 
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(/*objectMapper*/);
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
 
         template.setKeySerializer(stringRedisSerializer);
         template.setValueSerializer(serializer);
         template.setHashKeySerializer(stringRedisSerializer);
         template.setHashValueSerializer(serializer);
+        template.setEnableTransactionSupport(true);
         return template;
     }
 
@@ -53,6 +54,7 @@ public class RedisConfig {
         template.setValueSerializer(serializer);
         template.setHashKeySerializer(new StringRedisSerializer());
         template.setHashValueSerializer(serializer);
+        template.setEnableTransactionSupport(true);
         return template;
     }
 
@@ -71,6 +73,7 @@ public class RedisConfig {
         template.setValueSerializer(serializer);
         template.setHashKeySerializer(new StringRedisSerializer());
         template.setHashValueSerializer(serializer);
+        template.setEnableTransactionSupport(true);
         return template;
     }
 }

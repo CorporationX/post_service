@@ -1,6 +1,5 @@
 package faang.school.postservice.repository;
 
-import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.model.Post;
 import feign.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,7 +28,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findReadyToPublish();
 
     @Query(nativeQuery = true, value = """
-            SELECT * FROM post 
+            SELECT * FROM post
             WHERE hash_tags @> CAST(:hashTag AS jsonb)
             """)
     List<Post> findAllByHashTag(@Param("hashTag") String hashTag);

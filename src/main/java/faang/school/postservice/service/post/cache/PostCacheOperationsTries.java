@@ -12,6 +12,8 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,6 +38,7 @@ public class PostCacheOperationsTries {
                     multiplierExpression = "${app.post.cache.retryable.save_keys.multiplier}"
             )
     )
+    @Transactional(propagation = Propagation.MANDATORY)
     public List<Object> tryToSaveChangesOfPost(PostCacheDto post, String postId, long timestamp, List<String> newTags,
                                                List<String> delTags, boolean toDeletePost) {
         redisTemplatePost.multi();

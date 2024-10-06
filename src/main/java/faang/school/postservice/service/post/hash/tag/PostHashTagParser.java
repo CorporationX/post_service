@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PostHashTagService {
+public class PostHashTagParser {
     private static final String HASH_TAG_PATTERN = "#(\\w++)";
     private static final String JSON_PREFIX = "[\"";
     private static final String JSON_POSTFIX = "\"]";
