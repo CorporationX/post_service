@@ -89,8 +89,7 @@ class CommentServiceTest {
                 userContext,
                 commentMapper,
                 sortingStrategyAppliersMap,
-                commentChecker);
-                commentSearcher,
+                commentChecker,
                 redisMessagePublisher);
         post = initPost(POST_ID, true, false);
         author = initAuthor(AUTHOR_ID);
@@ -391,6 +390,14 @@ class CommentServiceTest {
         commentService.verifyComments(comments);
 
         verify(commentRepository).saveAll(comments);
+    }
+
+    @Test
+    @DisplayName("Getting users to ban")
+    public void testGettingUsersToBan() {
+        commentService.findUsersToBan();
+
+        verify(commentRepository).findUsersToBan();
     }
 
     CommentDto initCommentDto(Long id, Long authorId, String content, LocalDateTime updateAt) {

@@ -40,11 +40,10 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final SortingStrategyAppliersMap sortingStrategiesAppliers;
     private final CommentChecker commentChecker;
+    private final RedisMessagePublisher redisMessagePublisher;
 
     @Value("${comment.constants.verification-days-limit}")
     private int verificationDaysLimit;
-    private final CommentSearcher commentSearcher;
-    private final RedisMessagePublisher redisMessagePublisher;
 
     @Override
     public CommentDto createComment(Long postId, CommentDto commentDto) {
