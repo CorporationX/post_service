@@ -34,7 +34,7 @@ public class Resource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "key", nullable = false, length = 50)
+    @Column(name = "key", nullable = false, length = 200)
     private String key;
 
     @Column(name = "size")
@@ -48,7 +48,7 @@ public class Resource {
     @Column(name = "name", length = 150)
     private String name;
 
-    @Column(name = "type", length = 50)
+    @Column(name = "type", length = 200)
     private String type;
 
     @ManyToOne

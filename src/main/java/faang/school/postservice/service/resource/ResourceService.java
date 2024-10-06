@@ -6,6 +6,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,6 +23,14 @@ public class ResourceService {
 
     public void deleteResource(Long id) {
         resourceRepository.deleteById(id);
+    }
+
+    public void saveResources(List<Resource> resources) {
+        resourceRepository.saveAll(resources);
+    }
+
+    public void deleteResources(List<Resource> resources) {
+      resources.forEach(resourceRepository::delete);
     }
 }
 

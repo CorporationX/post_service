@@ -3,8 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.S3.DeleteFileS3Service;
-import faang.school.postservice.service.S3.UploadFilesS3Service;
+import faang.school.postservice.service.S3.S3Service;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validator.postImages.PostImageValidator;
 import lombok.RequiredArgsConstructor;
@@ -23,23 +22,22 @@ public class PostImagesService {
     private final ResourceService resourceService;
     private final DimensionChanger dimensionChanger;
     private final PostService postService;
-    private final DeleteFileS3Service deleteImageS3Service;
-    private final UploadFilesS3Service uploadImagesS3Service;
+    private final S3Service S3Service;
     private final PostRepository postRepository;
     private final PostImageValidator postImageValidator;
-
 
     public void uploadPostImages(Long postId, List<MultipartFile> images) {
         Post post = postService.findById(postId);
 
         validateImages(images);
 
-        List<Resource> resources = uploadImagesS3Service.uploadFiles(images);
+        List<Resource> resources = S3Service.uploadFiles(images, postId);
 
-        post.getResources().addAll(resources);
+        resourceService.saveResources(resources);
 
         postRepository.save(post);
     }
+
 
     public void updatePostImages(Long postId, List<MultipartFile> images) {
         Post post = postService.findById(postId);
@@ -47,10 +45,11 @@ public class PostImagesService {
 
         validateImages(images);
 
-        List<Resource> resources = uploadImagesS3Service.uploadFiles(images);
+        List<Resource> resources = S3Service.uploadFiles(images, postId);
 
-        post.getResources().removeAll(postResources);
-        post.getResources().addAll(resources);
+        resourceService.deleteResources(postResources);
+
+        resourceService.saveResources(resources);
 
         postRepository.save(post);
     }
@@ -61,7 +60,7 @@ public class PostImagesService {
 
         resourceService.deleteResource(resourceId);
 
-        deleteImageS3Service.deleteFile(resource.getName());
+        S3Service.deleteFile(resource.getName());
     }
 
     private void validateImages(List<MultipartFile> images) {

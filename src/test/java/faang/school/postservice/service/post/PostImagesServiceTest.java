@@ -3,8 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.S3.DeleteFileS3Service;
-import faang.school.postservice.service.S3.UploadFilesS3Service;
+import faang.school.postservice.service.S3.S3Service;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validator.postImages.PostImageValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,8 +19,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,16 +32,10 @@ class PostImagesServiceTest {
     private ResourceService resourceService;
 
     @Mock
-    private PostImageValidator imageValidator;
-
-    @Mock
     private PostService postService;
 
     @Mock
-    private DeleteFileS3Service deleteImageS3Service;
-
-    @Mock
-    private UploadFilesS3Service uploadImagesS3Service;
+    private S3Service S3Service;
 
     @Mock
     private PostImageValidator postImageValidator;
@@ -98,7 +89,6 @@ class PostImagesServiceTest {
             add(resourceDB);
         }};
 
-
         post = Post.builder()
                 .id(ID)
                 .resources(new ArrayList<>())
@@ -109,28 +99,29 @@ class PostImagesServiceTest {
     @DisplayName("Successful uploading of images")
     void whenUploadPostImagesThenSuccess() {
         when(postService.findById(ID)).thenReturn(post);
-        when(uploadImagesS3Service.uploadFiles(images)).thenReturn(resources);
+        when(S3Service.uploadFiles(images, ID)).thenReturn(resources);
 
         postImagesService.uploadPostImages(ID, images);
 
         verify(postService).findById(ID);
-        assertEquals(resources, post.getResources());
+        verify(resourceService).saveResources(resources);
         verify(postRepository).save(post);
     }
 
     @Test
     @DisplayName("Successful uploading of images")
     void whenUpdatePostImagesThenSuccess() {
+        post.setResources(resourcesDB);
+
         when(postService.findById(ID)).thenReturn(post);
-        when(uploadImagesS3Service.uploadFiles(images)).thenReturn(resources);
+        when(S3Service.uploadFiles(images, ID)).thenReturn(resources);
 
-        postImagesService.uploadPostImages(ID, images);
+        postImagesService.updatePostImages(ID, images);
 
-        resourcesDB = post.getResources();
+
         verify(postService).findById(ID);
-        assertTrue(post.getResources().removeAll(resourcesDB));
-        assertTrue(post.getResources().addAll(resources));
-        assertEquals(resources, post.getResources());
+        verify(resourceService).deleteResources(resourcesDB);
+        verify(resourceService).saveResources(resources);
         verify(postRepository).save(post);
     }
 
@@ -144,6 +135,6 @@ class PostImagesServiceTest {
 
         verify(resourceService).findById(ID);
         verify(resourceService).deleteResource(ID);
-        verify(deleteImageS3Service).deleteFile("UUID");
+        verify(S3Service).deleteFile("UUID");
     }
 }
