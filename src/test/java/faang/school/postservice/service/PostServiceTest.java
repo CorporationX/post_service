@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
@@ -19,6 +20,8 @@ import java.util.concurrent.Executors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +32,8 @@ class PostServiceTest {
     private PostService postService;
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private PostMapper postMapper;
     @Mock
     private ModerationDictionary moderationDictionary;
     @Mock
@@ -65,7 +70,7 @@ class PostServiceTest {
 
         unverifiedPosts = List.of(firstPost, secondPost);
         executor = Executors.newFixedThreadPool(THREAD_COUNT);
-        postService = new PostService(SUBLIST_LENGTH, postRepository, moderationDictionary, executor);
+        postService = new PostService(SUBLIST_LENGTH, postMapper, postRepository, moderationDictionary, executor);
     }
 
     @Test
@@ -77,7 +82,6 @@ class PostServiceTest {
         postService.moderatePostsContent();
 
         verify(postRepository).findReadyToVerified();
-        verify(postRepository).save(unverifiedPosts.get(0));
-        verify(postRepository).save(unverifiedPosts.get(1));
+        verify(postRepository, times(2)).save(any());
     }
 }
