@@ -49,6 +49,9 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  user_ban:
+    scheduler:
+      cron: "00 01 06 * * *"
 
 user-service:
   host: localhost
@@ -60,7 +63,3 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
-
-schedule:
-  user_ban:
-    ban_interval: "0 1 6 * * *"

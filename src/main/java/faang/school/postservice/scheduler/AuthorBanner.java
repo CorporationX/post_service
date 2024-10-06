@@ -16,7 +16,7 @@ public class AuthorBanner {
     private final UserBanMessagePublisher userBanMessagePublisher;
     private final PostService postService;
 
-    @Scheduled(cron = "${schedule.user_ban.ban_interval}")
+    @Scheduled(cron = "${post.user_ban.scheduler.cron}")
     public void sendBanAuthorsIdsToPublisher() {
         List<Long> banAuthorsIds = postService.getAuthorsWithExcessVerifiedFalsePosts();
         userBanMessagePublisher.publish(banAuthorsIds.toString());
