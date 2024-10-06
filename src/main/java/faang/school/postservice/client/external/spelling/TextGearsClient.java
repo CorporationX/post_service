@@ -9,6 +9,7 @@ import faang.school.postservice.exception.spelling_corrector.RepeatableServiceEx
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -32,7 +33,9 @@ public class TextGearsClient {
     @Value("${post.spelling-corrector.client.textgears.host}")
     private String serviceHost;
 
-    @Retryable(retryFor = {RepeatableServiceException.class}, backoff = @Backoff(delay = 2000, multiplier = 2))
+    @Retryable(retryFor = {RepeatableServiceException.class}, backoff = @Backoff(
+            delayExpression = "#{${post.spelling-corrector.retry.delay}}",
+            multiplierExpression = "#{${post.spelling-corrector.retry.multiplier}}"))
     public String correctText(String text) {
         String url = serviceHost + CORRECTOR_ENDPOINT;
         URI uri = makeUri(text, url);
@@ -45,7 +48,9 @@ public class TextGearsClient {
         return response.getResponse().getCorrected();
     }
 
-    @Retryable(retryFor = {RepeatableServiceException.class}, backoff = @Backoff(delay = 2000, multiplier = 2))
+    @Retryable(retryFor = {RepeatableServiceException.class}, backoff = @Backoff(
+            delayExpression = "#{${post.spelling-corrector.retry.delay}}",
+            multiplierExpression = "#{${post.spelling-corrector.retry.multiplier}}"))
     public TextGearsLang detectLang(String text) {
         String url = serviceHost + LANG_DETECTOR_ENDPOINT;
         URI uri = makeUri(text, url);
@@ -54,9 +59,7 @@ public class TextGearsClient {
                 uri, TextGearsLangDetectResponse.class);
         TextGearsLangDetectResponse response = checkAndGetResponse(responseEntity);
 
-        TextGearsLang lang = TextGearsLang.fromString(response.getResponse().getLanguage());
-
-        return lang;
+        return TextGearsLang.fromString(response.getResponse().getLanguage());
     }
 
     private URI makeUri(String text, String url) {
@@ -72,20 +75,20 @@ public class TextGearsClient {
         int statusCode = responseEntity.getStatusCode().value();
         T response = responseEntity.getBody();
 
-        if (statusCode > 500) {
+        if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR.value()) {
             log.error("Ошибка при получении корректировки от TextGears {}", responseEntity);
 
             throw new RepeatableServiceException();
         }
 
         if (response == null) {
-            log.warn("От сервиса {} пришёл пустой ответ", serviceHost);
+            log.warn("От сервиса TextGears пришёл пустой ответ");
 
             throw new RepeatableServiceException();
         }
 
         if (!response.isStatus()) {
-            log.error("Сервис корректировки вернул ошибку {}", responseEntity);
+            log.error("Сервис корректировки TextGears вернул ошибку {}", responseEntity);
 
             throw new DontRepeatableServiceException();
         }

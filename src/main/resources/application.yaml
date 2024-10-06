@@ -41,7 +41,10 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   spelling-corrector:
     scheduler:
-      cron: "0 0 0 * * *"
+      cron: "0 0 0 * * *" # каждый день в 00:00:00
+    retry:
+      delay: 2000
+      multiplier: 2
     client:
       textgears:
         host: https://api.textgears.com

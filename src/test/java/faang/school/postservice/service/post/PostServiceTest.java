@@ -47,7 +47,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -76,7 +76,7 @@ public class PostServiceTest {
 
     private Post postForCreate;
     private Post postForUpdate;
-    private Post findedPost;
+    private Post foundPost;
     private List<Post> authorPosts = new ArrayList<>();
     private List<Post> projectPosts = new ArrayList<>();
 
@@ -96,7 +96,7 @@ public class PostServiceTest {
                 .authorId(2L)
                 .build();
 
-        findedPost = Post.builder()
+        foundPost = Post.builder()
                 .id(1L)
                 .content("Some Content")
                 .authorId(1L)
@@ -161,7 +161,7 @@ public class PostServiceTest {
     void testSuccessUpdate() {
         when(postRepository
                 .findByIdAndNotDeleted(postForUpdate.getId()))
-                .thenReturn(Optional.ofNullable(findedPost));
+                .thenReturn(Optional.ofNullable(foundPost));
 
         Post result = postService.update(postForUpdate);
 
@@ -176,9 +176,9 @@ public class PostServiceTest {
     void testSuccessPublishPost() {
         when(postRepository
                 .findByIdAndNotDeleted(postForUpdate.getId()))
-                .thenReturn(Optional.ofNullable(findedPost));
+                .thenReturn(Optional.ofNullable(foundPost));
 
-        Post result = postService.publish(findedPost.getId());
+        Post result = postService.publish(foundPost.getId());
 
         verify(postRepository).save(any(Post.class));
 
@@ -188,22 +188,22 @@ public class PostServiceTest {
 
     @Test
     void testFailedPublishPost() {
-        findedPost.setPublished(true);
+        foundPost.setPublished(true);
         when(postRepository
                 .findByIdAndNotDeleted(postForUpdate.getId()))
-                .thenReturn(Optional.ofNullable(findedPost));
+                .thenReturn(Optional.ofNullable(foundPost));
 
-        assertThrows(PostPublishedException.class, () -> postService.publish(findedPost.getId()));
-        verify(postRepository, times(0)).save(any(Post.class));
+        assertThrows(PostPublishedException.class, () -> postService.publish(foundPost.getId()));
+        verify(postRepository, never()).save(any(Post.class));
     }
 
     @Test
     void testSuccessDelete() {
         when(postRepository
                 .findByIdAndNotDeleted(1L))
-                .thenReturn(Optional.ofNullable(findedPost));
+                .thenReturn(Optional.ofNullable(foundPost));
 
-        postService.delete(findedPost.getId());
+        postService.delete(foundPost.getId());
 
         verify(postRepository).save(any(Post.class));
     }
@@ -211,24 +211,24 @@ public class PostServiceTest {
     @Test
     void testFindPostById() {
         when(postRepository
-                .findByIdAndNotDeleted(findedPost.getId()))
-                .thenReturn(Optional.ofNullable(findedPost));
+                .findByIdAndNotDeleted(foundPost.getId()))
+                .thenReturn(Optional.ofNullable(foundPost));
 
-        Post result = postService.findPostById(findedPost.getId());
+        Post result = postService.findPostById(foundPost.getId());
 
-        verify(postRepository).findByIdAndNotDeleted(findedPost.getId());
-        assertEquals(result, findedPost);
+        verify(postRepository).findByIdAndNotDeleted(foundPost.getId());
+        assertEquals(result, foundPost);
     }
 
     @Test
     void testFindPostByIdNotFound() {
         when(postRepository
-                .findByIdAndNotDeleted(findedPost.getId()))
+                .findByIdAndNotDeleted(foundPost.getId()))
                 .thenReturn(Optional.empty());
 
-        assertThrows(PostNotFoundException.class, () -> postService.findPostById(findedPost.getId()));
+        assertThrows(PostNotFoundException.class, () -> postService.findPostById(foundPost.getId()));
 
-        verify(postRepository).findByIdAndNotDeleted(findedPost.getId());
+        verify(postRepository).findByIdAndNotDeleted(foundPost.getId());
     }
 
     @Test
@@ -251,7 +251,7 @@ public class PostServiceTest {
         assertEquals(result.get(0), authorPosts.get(1));
 
         verify(postRepository).findByAuthorId(filterPost.getAuthorId());
-        verify(postRepository, times(0)).findByProjectId(anyLong());
+        verify(postRepository, never()).findByProjectId(anyLong());
     }
 
     @Test
@@ -275,7 +275,7 @@ public class PostServiceTest {
         assertFalse(result.get(0).isPublished());
 
         verify(postRepository).findByAuthorId(filterPost.getAuthorId());
-        verify(postRepository, times(0)).findByProjectId(anyLong());
+        verify(postRepository, never()).findByProjectId(anyLong());
     }
 
     @Test
@@ -299,7 +299,7 @@ public class PostServiceTest {
         assertEquals(result.get(1), projectPosts.get(0));
 
         verify(postRepository).findByProjectId(filterPost.getProjectId());
-        verify(postRepository, times(0)).findByAuthorId(anyLong());
+        verify(postRepository, never()).findByAuthorId(anyLong());
     }
 
     @Test
@@ -321,15 +321,15 @@ public class PostServiceTest {
         assertEquals(result.size(), 0);
 
         verify(postRepository).findByProjectId(filterPost.getProjectId());
-        verify(postRepository, times(0)).findByAuthorId(anyLong());
+        verify(postRepository, never()).findByAuthorId(anyLong());
     }
 
     @Test
     void testCorrectPosts() {
-        List<Post> posts = List.of(findedPost);
-        String correctedContent = findedPost.getContent() + " Corrected";
+        List<Post> posts = List.of(foundPost);
+        String correctedContent = foundPost.getContent() + " Corrected";
 
-        when(spellingCorrectionService.getCorrectedContent(findedPost.getContent()))
+        when(spellingCorrectionService.getCorrectedContent(foundPost.getContent()))
                 .thenReturn(correctedContent);
 
         postService.correctPosts(posts);
@@ -339,8 +339,8 @@ public class PostServiceTest {
 
     @Test
     void testCorrectPostsRepeatableException() {
-        List<Post> posts = List.of(findedPost);
-        when(spellingCorrectionService.getCorrectedContent(findedPost.getContent()))
+        List<Post> posts = List.of(foundPost);
+        when(spellingCorrectionService.getCorrectedContent(foundPost.getContent()))
                 .thenThrow(RepeatableServiceException.class);
 
         postService.correctPosts(posts);
@@ -350,8 +350,8 @@ public class PostServiceTest {
 
     @Test
     void testCorrectPostsDontRepeatableException() {
-        List<Post> posts = List.of(findedPost);
-        when(spellingCorrectionService.getCorrectedContent(findedPost.getContent()))
+        List<Post> posts = List.of(foundPost);
+        when(spellingCorrectionService.getCorrectedContent(foundPost.getContent()))
                 .thenThrow(DontRepeatableServiceException.class);
 
         postService.correctPosts(posts);

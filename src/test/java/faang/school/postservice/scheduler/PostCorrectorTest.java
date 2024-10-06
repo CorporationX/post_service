@@ -25,10 +25,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class PostCorrectorTest {
     private final static int BATCH_SIZE = 1000;
+
     @Mock
     private PostService postService;
+
     @Mock
     private PostRepository postRepository;
+
     @InjectMocks
     private PostCorrecter postCorrecter;
 

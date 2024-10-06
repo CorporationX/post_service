@@ -18,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostCorrecter {
     private final static int BATCH_SIZE = 1000;
+
     private final PostService postService;
     private final PostRepository postRepository;
 
@@ -27,10 +28,7 @@ public class PostCorrecter {
         List<Post> draftPosts;
 
         do {
-            Pageable pageable = PageRequest.of(
-                    offset,
-                    BATCH_SIZE,
-                    Sort.by("id").ascending());
+            Pageable pageable = PageRequest.of(offset, BATCH_SIZE, Sort.by("id").ascending());
             draftPosts = postRepository.findDraftsPaginate(pageable);
 
             try {

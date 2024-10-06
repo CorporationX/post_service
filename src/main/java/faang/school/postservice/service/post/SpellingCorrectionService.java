@@ -6,6 +6,8 @@ import faang.school.postservice.client.external.spelling.YandexSpellerClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import static faang.school.postservice.dto.spelling_corrector.text_gears.TextGearsLang.RU;
+
 @Service
 @RequiredArgsConstructor
 public class SpellingCorrectionService {
@@ -15,7 +17,7 @@ public class SpellingCorrectionService {
     public String getCorrectedContent(String content) {
         TextGearsLang lang = textGearsClient.detectLang(content);
 
-        if (lang.equals(TextGearsLang.RU)) {
+        if (lang == RU) {
             return yandexSpellerClient.correctText(content);
         }
 

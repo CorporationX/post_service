@@ -6,6 +6,7 @@ import faang.school.postservice.exception.spelling_corrector.RepeatableServiceEx
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -25,17 +26,13 @@ public class YandexSpellerClient {
     @Value("${post.spelling-corrector.client.yandex.url}")
     private String serviceUrl;
 
-    @Retryable(retryFor = {RepeatableServiceException.class}, backoff = @Backoff(delay = 2000, multiplier = 2))
+    @Retryable(retryFor = {RepeatableServiceException.class}, backoff = @Backoff(
+            delayExpression = "#{${post.spelling-corrector.retry.delay}}",
+            multiplierExpression = "#{${post.spelling-corrector.retry.multiplier}}"))
     public String correctText(String text) {
-        URI uri = UriComponentsBuilder.fromHttpUrl(serviceUrl)
-                .queryParam("text", text)
-                .build()
-                .encode()
-                .toUri();
-
         try {
             ResponseEntity<YandexSpellerCorrectResponse[]> responseEntity = restTemplate
-                    .getForEntity(uri, YandexSpellerCorrectResponse[].class);
+                    .getForEntity(makeUri(text), YandexSpellerCorrectResponse[].class);
 
             YandexSpellerCorrectResponse[] response = responseEntity.getBody();
 
@@ -49,11 +46,11 @@ public class YandexSpellerClient {
 
             log.error("Ошибка {} при получении корректировки от YandexSpeller", statusCode, exception);
 
-            if (statusCode >= 400 && statusCode < 500) {
+            if (statusCode >= HttpStatus.BAD_REQUEST.value() && statusCode < HttpStatus.INTERNAL_SERVER_ERROR.value()) {
                 throw new DontRepeatableServiceException();
             }
 
-            if (statusCode >= 500) {
+            if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR.value()) {
                 throw new RepeatableServiceException();
             }
         }
@@ -77,5 +74,13 @@ public class YandexSpellerClient {
         correctText.append(textPost.substring(lastPos));
 
         return correctText.toString();
+    }
+
+    private URI makeUri(String text) {
+        return UriComponentsBuilder.fromHttpUrl(serviceUrl)
+                .queryParam("text", text)
+                .build()
+                .encode()
+                .toUri();
     }
 }
