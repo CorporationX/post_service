@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -51,10 +52,9 @@ public class S3Service {
             putFileToBucket(files);
 
             executorService.shutdown();
-        } catch (AmazonS3Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("ERROR uploading images to Object Storage. Reason:", e);
         }
-
         return mapToResources(files, postId);
     }
 
@@ -70,18 +70,7 @@ public class S3Service {
         List<Future<String>> futures = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            Future<String> future = executorService.submit(() -> {
-                String fileName = generateUniqueName();
-                var metadata = new ObjectMetadata();
-                metadata.setContentLength(file.getSize());
-                metadata.setContentType(file.getContentType());
-
-                s3Client.putObject(bucketName, fileName, file.getInputStream(), metadata);
-                log.info("Upload Service. Added file: {} to bucket: {}", fileName, bucketName);
-
-                return s3Client.getUrl(bucketName, fileName).toExternalForm();
-            });
-
+            Future<String> future = executorService.submit(() -> putObjectsToS3(file));
             futures.add(future);
         }
 
@@ -93,6 +82,21 @@ public class S3Service {
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException("One of the thread ended with exception. Reason: ", e);
             }
+        }
+    }
+
+    private String putObjectsToS3(MultipartFile file) {
+        try {
+            String fileName = generateUniqueName();
+            var metadata = new ObjectMetadata();
+            metadata.setContentLength(file.getSize());
+            metadata.setContentType(file.getContentType());
+
+            s3Client.putObject(bucketName, fileName, file.getInputStream(), metadata);
+            log.info("Upload Service. Added file: {} to bucket: {}", fileName, bucketName);
+            return s3Client.getUrl(bucketName, fileName).toExternalForm();
+        } catch (Exception e) {
+            throw new RuntimeException("ERROR upload file");
         }
     }
 
