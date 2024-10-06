@@ -43,6 +43,8 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.772")
+    implementation("net.coobird:thumbnailator:0.4.20")
 
     /**
      * Test containers
@@ -62,6 +64,14 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+
+    /**
+     * S3 SDK
+     */
+    implementation("software.amazon.awssdk:s3:2.27.24")
+    implementation("software.amazon.awssdk:auth:2.27.24")
+    implementation("software.amazon.awssdk:regions:2.27.24")
+    implementation("net.coobird:thumbnailator:0.4.20")
 }
 
 /**
@@ -73,6 +83,10 @@ val jacocoInclude = listOf(
     "**/validator/**",
     "**/mapper/**",
     "**/filter/**",
+)
+
+val jacocoExclude = listOf(
+    "**/faang/school/postservice/service/s3/**"
 )
 
 jacoco {
@@ -103,6 +117,7 @@ tasks.jacocoTestReport {
     classDirectories.setFrom(
         sourceSets.main.get().output.asFileTree.matching {
             include(jacocoInclude)
+            exclude(jacocoExclude)
         }
     )
 }
@@ -124,6 +139,7 @@ tasks.jacocoTestCoverageVerification {
     classDirectories.setFrom(
         sourceSets.main.get().output.asFileTree.matching {
             include(jacocoInclude)
+            exclude(jacocoExclude)
         }
     )
 }
