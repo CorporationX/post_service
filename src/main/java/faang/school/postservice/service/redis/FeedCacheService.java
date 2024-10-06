@@ -9,7 +9,9 @@ import faang.school.postservice.dto.comment.LastCommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.dto.user.UserInfoDto;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.RedisFeed;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.FeedRepository;
 import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +20,12 @@ import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +38,8 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 @Slf4j
 public class FeedCacheService {
-
+    @Value(value = "${news-feed.feed.posts_size}")
+    private int maxFeedAmount;
     @Value(value = "${news-feed.feed.amount}")
     private int amount;
     @Value(value = "${news-feed.cache.suffix.feed}")
@@ -52,6 +58,7 @@ public class FeedCacheService {
     private final RedisTemplate<String, Long> feedRedisTemplate;
     private final PostRepository postRepository;
     private final RedissonClient redissonClient;
+    private final FeedRepository feedRepository;
 
     public TreeSet<FeedDto> getFeedDtoResponse(Set<Long> postIds) {
         TreeSet<FeedDto> feed = new TreeSet<>(Comparator.comparing(f -> f.getPostInfo().getUpdatedAt()));
@@ -60,46 +67,6 @@ public class FeedCacheService {
         });
         return feed;
     }
-
-    //    public UserInfoDto getUserInfo(Long userId) {
-//        int attempts = 0;
-//        String userKey = userSuffix + ":" + userId;
-//        RMapCache<Long, UserInfoDto> cache = redissonClient.getMapCache(userSuffix);
-//        RLock lock = redissonClient.getLock(userKey);
-//        while (attempts < maxAttempts) {
-//            attempts++;
-//            try {
-//                if (lock.tryLock(1, 5, TimeUnit.SECONDS)) {
-//                    try {
-//                        UserInfoDto userInfoDto = cache.get(userId);
-//                        if (userInfoDto != null) {
-//                            lock.unlock();
-//                            return userInfoDto;
-//                        }
-//                        User user = userService.findUserById(userId);
-//                        if (user != null) {
-//                            cache.put(userId, new UserInfoDto(user.getUsername()));
-//                            lock.unlock();
-//                            return new UserInfoDto(user.getUsername());
-//                        } else {
-//                            return null;
-//                        }
-//                    } finally {
-//                        lock.unlock();
-//                    }
-//                }
-//
-//            } catch (Exception e){
-//                log.error("error within getting user info because it is locked", e);
-//            } try {
-//                TimeUnit.MILLISECONDS.sleep(500);
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//        log.error("haven't managed to get user info after {} attempts", maxAttempts);
-//        return null;
-//    }
 
     public UserInfoDto getUserInfo(long userId) {
         Supplier<UserInfoDto> dataSupplier = () -> {
@@ -120,7 +87,7 @@ public class FeedCacheService {
                 UserDto postAuthor = userServiceClient.getUser(post.get().getAuthorId());
                 postInfoDto.setDto(new UserInfoDto(postAuthor.getId(), postAuthor.getUsername()));
                 postInfoDto.setComments(getLastComments(postId));
-                return new PostInfoDto();
+                return postInfoDto;
             } else {
                 return null;
             }
@@ -217,5 +184,24 @@ public class FeedCacheService {
 
     private List<Long> getPostsIdsFromDBForUser(Long userId, int postId, int amount) {
         return postRepository.findPosts(userId, postId, amount);
+    }
+
+    @Async
+    public void addPost(Long userId, Long postId){
+        RedisFeed redisFeed = feedRepository.findById(userId).orElse(new RedisFeed(maxFeedAmount,userId, new LinkedHashSet<>(),0));
+        LinkedHashSet<Long> postsIdList = redisFeed.getPostsIds();
+        if (postsIdList.size()==maxFeedAmount) {
+            ArrayList<Long> list = new ArrayList<>(postsIdList);
+            postsIdList.remove(list.get(list.size()-1));
+            Set<Long> tempPostsIds = new LinkedHashSet<>();
+            tempPostsIds.add(postId);
+            tempPostsIds.addAll(postsIdList);
+            postsIdList.clear();
+            postsIdList.addAll(tempPostsIds);
+        } else {
+            postsIdList.add(postId);
+        }
+        redisFeed.setPostsIds(postsIdList);
+        feedRepository.save(redisFeed);
     }
 }

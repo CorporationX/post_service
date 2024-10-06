@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -45,22 +46,19 @@ public class KafkaConsumer {
     private final ObjectMapper objectMapper;
     private final FeedCacheService feedCacheService;
     private final PostCacheService postCacheService;
-    private Map<String, Consumer<Object>> actions = new HashMap<>();
-    private Map<Class<? extends Event>, Consumer<Event>> eventActions = new HashMap<>();
+    private Acknowledgment acknowledgment;
+//    private Map<String, Consumer<Object>> actions = new HashMap<>();
+    private Map<Class<?>, Consumer<Object>> eventActions = new HashMap<>();
 
     @PostConstruct
     public void init() {
-        actions.put(postTopic, this::updatePost);
-        actions.put(postViewTopic, this::updateFeed);
-        actions.put(likeTopic, this::updatePost);
-        actions.put(commentTopic, this::updatePost);
         eventActions.put(PostEvent.class, this::handlePostEvent);
         eventActions.put(PostViewEvent.class, this::handlePostViewEvent);
         eventActions.put(LikeEvent.class, this::handleLikeEvent);
         eventActions.put(CommentEvent.class, this::handleCommentEvent);
     }
 
-    public void consume(ConsumerRecord<String, Object> record) {
+    public void consume(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
         String topic = record.topic();
         log.info("received message: {} from topic {}", record.value(), topic);
 
@@ -70,7 +68,7 @@ public class KafkaConsumer {
             Class<?> c = Class.forName(header);
             Object deserializedMessage = convertToClass(message, c);
             log.info("got message {}", deserializedMessage);
-            handleEvent(topic, deserializedMessage);
+            handleEvent(c, deserializedMessage, acknowledgment);
         } catch (Exception e) {
             log.error("Error processing message from topic {}: {}", topic, e.getMessage(), e);
             throw new RuntimeException("Failed to process Kafka message", e);
@@ -91,29 +89,27 @@ public class KafkaConsumer {
         return new String(record.headers().lastHeader(headerKey).value());
     }
 
-    private void handleEvent(String key, Object message) {
-        Consumer<Object> action = actions.get(key);
+    private void handleEvent(Class<?> clazz, Object message, Acknowledgment acknowledgment) {
+        Consumer<Object> action = eventActions.get(clazz);
         if (action != null) {
-            action.accept(message);
+
+            try {
+                action.accept(message);
+                log.info("processed message {}", message);
+                acknowledgment.acknowledge();
+            } catch (Exception e) {
+                log.error("Error processing event {}", message, e);
+            }
         } else {
-            log.error("did not managed to find action for key {}", key);
-            throw new IllegalArgumentException("No action found for key " + key);
+            log.error("did not managed to find action for class {}", clazz.getName());
+            throw new IllegalArgumentException("No action found for key " + clazz.getName());
         }
-    }
-
-    private void updateFeed(Object message) {
-        log.info("updating feed");
-        feedCacheService.updateFeed(message);
-    }
-
-    private void updatePost(Object message) {
-        log.info("updating post");
-        postCacheService.updatePost(message);
     }
 
     private void handlePostEvent(Object message) {
         log.info("handling post event");
-
+        PostEvent event = objectMapper.convertValue(message, PostEvent.class);
+        event.getPostFollowersIds().forEach(userId->feedCacheService.addPost(userId,event.getPostId()));
     }
     private void handlePostViewEvent(Object message) {
         log.info("updating post view");

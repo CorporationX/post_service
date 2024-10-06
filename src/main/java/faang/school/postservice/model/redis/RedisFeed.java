@@ -19,7 +19,7 @@ public class RedisFeed implements Serializable {
     @Value(value = "${news-feed.feed.posts_size}")
     private int maxAmount;
     @Id
-    private int userId;
+    private Long userId;
     private LinkedHashSet<Long> postsIds = new LinkedHashSet<>(maxAmount);
     @Version
     private int version;
