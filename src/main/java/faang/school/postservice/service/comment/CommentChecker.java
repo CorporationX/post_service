@@ -2,8 +2,6 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.exception.comment.IndexSearcherException;
 import faang.school.postservice.model.Comment;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -26,16 +24,13 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
-public class CommentSearcher {
+public class CommentChecker {
 
-    private final ModerationDictionary moderationDictionary;
-    private ByteBuffersDirectory buffersDirectory;
+    private final ByteBuffersDirectory buffersDirectory;
 
-    @PostConstruct
-    public void init() {
-        buffersDirectory = new ByteBuffersDirectory();
+    public CommentChecker(ModerationDictionary moderationDictionary) {
+        this.buffersDirectory = new ByteBuffersDirectory();
         IndexWriterConfig config = new IndexWriterConfig(new StandardAnalyzer());
         try {
             IndexWriter indexWriter = new IndexWriter(buffersDirectory, config);
@@ -53,8 +48,7 @@ public class CommentSearcher {
 
     public boolean isAcceptableComment(Comment comment) {
         Set<String> tokenizer = tokenizeComment(comment);
-        try {
-            DirectoryReader reader = DirectoryReader.open(buffersDirectory);
+        try (DirectoryReader reader = DirectoryReader.open(buffersDirectory)) {
             IndexSearcher searcher = new IndexSearcher(reader);
             for (String word : tokenizer) {
                 Query query = new FuzzyQuery(new Term("word", word), 2);
@@ -63,7 +57,6 @@ public class CommentSearcher {
                     return false;
                 }
             }
-            reader.close();
         } catch (IOException e) {
             throw new IndexSearcherException(String.format("Error while searching bad words in comment " +
                     "with id %d", comment.getId()), e);

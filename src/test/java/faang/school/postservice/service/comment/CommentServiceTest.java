@@ -71,7 +71,7 @@ class CommentServiceTest {
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
     @Mock
-    private CommentSearcher commentSearcher;
+    private CommentChecker commentChecker;
 
     @Mock
     private RedisMessagePublisher redisMessagePublisher;
@@ -89,6 +89,7 @@ class CommentServiceTest {
                 userContext,
                 commentMapper,
                 sortingStrategyAppliersMap,
+                commentChecker);
                 commentSearcher,
                 redisMessagePublisher);
         post = initPost(POST_ID, true, false);
