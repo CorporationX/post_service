@@ -25,7 +25,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
-    private final RedisBanMessagePublisher userIdsPublisher;
+    private final RedisBanMessagePublisher redisBanMessagePublisher;
 
     @Override
     @Transactional
@@ -71,7 +71,7 @@ public class CommentServiceImpl implements CommentService {
                 .map((Map.Entry::getKey))
                 .forEach((id) -> {
                     log.info("Publishing User ID to ban: {}", id);
-                    userIdsPublisher.publish(new BanEvent(id));
+                    redisBanMessagePublisher.publish(new BanEvent(id));
                 });
     }
 }

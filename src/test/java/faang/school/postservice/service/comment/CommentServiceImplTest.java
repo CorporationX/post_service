@@ -2,9 +2,11 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
+import faang.school.postservice.event.BanEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,9 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceImplTest {
@@ -36,6 +36,9 @@ class CommentServiceImplTest {
 
     @Mock
     private CommentValidator commentValidator;
+
+    @Mock
+    private RedisBanMessagePublisher redisBanMessagePublisher;
 
     @InjectMocks
     private CommentServiceImpl commentService;
@@ -152,30 +155,24 @@ class CommentServiceImplTest {
     }
 
     @Test
-    void collectUnverifiedComments_shouldReturnOnlyUnverifiedComments() {
-        // Given
-        List<Comment> allComments = List.of(verifiedComment, unverifiedComment1, unverifiedComment2);
-        when(commentRepository.findAll()).thenReturn(allComments);
+    void testCommentersBanCheck() {
+        // Arrange
+        Comment comment1 = new Comment();
+        comment1.setAuthorId(1L);
 
-        // When
-        List<Comment> result = commentService.collectUnverifiedComments();
+        Comment comment2 = new Comment();
+        comment2.setAuthorId(1L);
 
-        // Then
-        assertThat(result).hasSize(2);
-        assertThat(result).contains(unverifiedComment1, unverifiedComment2);
-    }
+        Comment comment3 = new Comment();
+        comment3.setAuthorId(2L);
 
-    @Test
-    void groupUnverifiedCommentAuthors_shouldGroupByAuthorId() {
-        // Given
-        List<Comment> unverifiedComments = List.of(unverifiedComment1, unverifiedComment2, unverifiedComment1);
+        when(commentRepository.findAllUnverifiedComments()).thenReturn(List.of(comment1, comment2, comment3));
 
-        // When
-        Map<Long, Long> result = commentService.groupUnverifiedCommentAuthors(unverifiedComments);
+        // Act
+        commentService.commentersBanCheck(2);
 
-        // Then
-        assertThat(result).hasSize(2);
-        assertThat(result.get(1L)).isEqualTo(2L); // Author 1L has 2 unverified comments
-        assertThat(result.get(2L)).isEqualTo(1L); // Author 2L has 1 unverified comment
+        // Assert
+        verify(redisBanMessagePublisher, times(1)).publish(new BanEvent(1L));
+        verify(redisBanMessagePublisher, never()).publish(new BanEvent(2L));
     }
 }

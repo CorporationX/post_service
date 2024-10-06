@@ -1,15 +1,13 @@
 package faang.school.postservice.scheduler;
 
 import faang.school.postservice.service.comment.CommentServiceImpl;
-import faang.school.postservice.publisher.RedisBanMessagePublisher;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Map;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.mockito.Mockito.*;
 
@@ -19,56 +17,21 @@ public class CommenterBannerTest {
     @Mock
     private CommentServiceImpl commentService;
 
-    @Mock
-    private RedisBanMessagePublisher userIdsPublisher;
-
     @InjectMocks
     private CommenterBanner commenterBanner;
 
-    @Test
-    public void testScheduleCommentersBanCheck_noUsersToBan() {
-        // Given
-        Map<Long, Long> unverifiedCommentAuthorsAndComments = Map.of(1L, 2L, 2L, 3L);
-        when(commentService.groupUnverifiedCommentAuthors(anyList())).thenReturn(unverifiedCommentAuthorsAndComments);
-        when(commentService.collectUnverifiedComments()).thenReturn(List.of());
-
-        // When
-        commenterBanner.scheduleCommentersBanCheck();
-
-        // Then
-        verify(commentService, times(1)).collectUnverifiedComments();
-        verify(commentService, times(1)).groupUnverifiedCommentAuthors(anyList());
-        verify(userIdsPublisher, times(1)).publish(List.of());
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(commenterBanner, "unverifiedCommentsLimit", 5);
     }
 
     @Test
-    public void testScheduleCommentersBanCheck_usersToBan() {
-        // Given
-        Map<Long, Long> unverifiedCommentAuthorsAndComments = Map.of(1L, 6L, 2L, 4L, 3L, 7L);
-        when(commentService.groupUnverifiedCommentAuthors(anyList())).thenReturn(unverifiedCommentAuthorsAndComments);
-        when(commentService.collectUnverifiedComments()).thenReturn(List.of());
-
-        // When
+    public void testScheduleCommentersBanCheck() {
+        // Act
         commenterBanner.scheduleCommentersBanCheck();
 
-        // Then
-        verify(commentService, times(1)).collectUnverifiedComments();
-        verify(commentService, times(1)).groupUnverifiedCommentAuthors(anyList());
-        verify(userIdsPublisher, times(1)).publish(List.of(1L, 3L));
+        // Assert
+        verify(commentService, times(1)).commentersBanCheck(5);
     }
 
-    @Test
-    public void testScheduleCommentersBanCheck_noUnverifiedComments() {
-        // Given
-        when(commentService.collectUnverifiedComments()).thenReturn(List.of());
-        when(commentService.groupUnverifiedCommentAuthors(anyList())).thenReturn(Map.of());
-
-        // When
-        commenterBanner.scheduleCommentersBanCheck();
-
-        // Then
-        verify(commentService, times(1)).collectUnverifiedComments();
-        verify(commentService, times(1)).groupUnverifiedCommentAuthors(anyList());
-        verify(userIdsPublisher, times(1)).publish(List.of());
-    }
 }
