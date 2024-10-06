@@ -51,6 +51,12 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
 
     /**
+     *  Apache Lucene
+     * */
+    implementation("org.apache.lucene:lucene-core:9.11.1")
+    implementation("org.apache.lucene:lucene-queryparser:9.11.1")
+
+    /**
      * Test containers
      */
     implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))

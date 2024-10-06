@@ -70,6 +70,9 @@ class CommentServiceTest {
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
+    @Mock
+    private CommentChecker commentChecker;
+
     private SortingStrategyAppliersMap sortingStrategyAppliersMap;
 
     @BeforeEach
@@ -82,7 +85,8 @@ class CommentServiceTest {
                 userServiceClient,
                 userContext,
                 commentMapper,
-                sortingStrategyAppliersMap);
+                sortingStrategyAppliersMap,
+                commentChecker);
         post = initPost(POST_ID, true, false);
         author = initAuthor(AUTHOR_ID);
     }
@@ -356,6 +360,32 @@ class CommentServiceTest {
                 () -> commentService.deleteComment(2L, COMMENT_ID));
         assertEquals(expectedMessage, ex.getMessage());
         verify(commentRepository).findById(COMMENT_ID);
+    }
+
+    @Test
+    @DisplayName("Success returning unverified comments")
+    public void testGettingUnverifiedComments() {
+        List<Comment> comments = List.of(initComment(COMMENT_ID, AUTHOR_ID, post, "test", INITIAL_TIME),
+                initComment(2L, AUTHOR_ID, post, "test", INITIAL_TIME),
+                initComment(3L, AUTHOR_ID, post, "test", INITIAL_TIME));
+        when(commentRepository.findUnverifiedComments(any())).thenReturn(comments);
+
+        List<Comment> unverifiedComments = commentService.getUnverifiedComments();
+
+        assertEquals(3, unverifiedComments.size());
+        assertEquals(3L, unverifiedComments.get(2).getId());
+    }
+
+    @Test
+    @DisplayName("Success saving verified comments")
+    public void testSavingVerifiedComments() {
+        List<Comment> comments = List.of(initComment(COMMENT_ID, AUTHOR_ID, post, "test", INITIAL_TIME),
+                initComment(2L, AUTHOR_ID, post, "test", INITIAL_TIME),
+                initComment(3L, AUTHOR_ID, post, "test", INITIAL_TIME));
+
+        commentService.verifyComments(comments);
+
+        verify(commentRepository).saveAll(comments);
     }
 
     CommentDto initCommentDto(Long id, Long authorId, String content, LocalDateTime updateAt) {

@@ -40,6 +40,18 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
+comment:
+  obscene-words-resource: obscene_words_resource/obscene-words.json
+  verify-cron: "0 0 * * * ?" # every day at 00:00
+  verify-batch: 10
+  verify-task-executor:
+    core-pool-size: 10
+    max-pool-size: 20
+    queue-capacity: 100
+    thread-name-prefix: "verify-task-executor-"
+  constants:
+    verification-days-limit: 30
+
 user-service:
   host: localhost
   port: 8080
