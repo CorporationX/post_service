@@ -91,7 +91,7 @@ public class PostService {
         return postRepository.findPublishedByProjectId(projectId);
     }
 
-    public void moderationOfPost() {
+    public void moderatePosts() {
         List<Post> unverifiedOrOldVerifiedPosts = postRepository.findUnverifiedOrOldVerifiedPosts(LocalDateTime.now().minusHours(24));
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
