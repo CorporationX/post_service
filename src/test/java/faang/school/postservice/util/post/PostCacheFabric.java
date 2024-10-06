@@ -1,7 +1,7 @@
 package faang.school.postservice.util.post;
 
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
-import faang.school.postservice.model.Album;
+import faang.school.postservice.model.album.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;

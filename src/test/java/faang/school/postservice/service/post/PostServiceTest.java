@@ -1,9 +1,15 @@
 package faang.school.postservice.service.post;
 
+import com.amazonaws.SdkClientException;
+import faang.school.postservice.dto.post.serializable.PostCacheDto;
+import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
+import faang.school.postservice.exception.post.image.DownloadImageFromPostException;
+import faang.school.postservice.exception.post.image.UploadImageToPostException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.aws.s3.S3Service;
@@ -75,14 +81,19 @@ public class PostServiceTest {
 
     @Mock
     private PostValidator postValidator;
+
     @Mock
     private ResourceRepository resourceRepository;
+
     @Mock
     private S3Service s3Service;
+
     @Mock
     private MultipartFile image1;
+
     @Mock
     private MultipartFile image2;
+
     @Mock
     private InputStream inputStream;
 
@@ -131,15 +142,6 @@ public class PostServiceTest {
                 .authorId(1L)
                 .build();
 
-        authorPosts.add(Post.builder()
-                .id(1L)
-                .content("Content 1")
-                .deleted(false)
-                .published(false)
-                .authorId(1L)
-                .createdAt(LocalDateTime.of(2024, 9, 17, 0, 0))
-                .publishedAt(LocalDateTime.of(2024, 9, 17, 0, 0))
-                .build());
         ReflectionTestUtils.setField(postService, "numberOfTopInCache", NUMBER_OF_TOP_IN_CASH);
 
         postForCreate = buildPost(FIRST_POST_ID, DEFAULT_CONTENT);

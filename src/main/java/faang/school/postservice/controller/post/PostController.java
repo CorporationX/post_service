@@ -110,6 +110,6 @@ public class PostController {
                                                   @RequestParam(name = "start") int start,
                                                   @RequestParam(name = "end") int end) {
         List<PostCacheDto> postCacheDtos = postService.findInRangeByHashTag(hashTag, start, end);
-        return mapper.toDtos(postCacheDtos);
+        return mapper.postCacheDtoToPostResponseDto(postCacheDtos);
     }
 }

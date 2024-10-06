@@ -5,6 +5,7 @@ import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.model.album.Album;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
