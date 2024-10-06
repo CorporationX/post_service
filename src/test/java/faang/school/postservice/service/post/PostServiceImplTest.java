@@ -50,6 +50,9 @@ public class PostServiceImplTest {
     @Mock
     private HashtagService hashtagService;
 
+    @Mock
+    private PostServiceAsync postServiceAsync;
+
     private PostDto examplePostDto;
     private Post examplePost;
     private LocalDateTime timeInstance;
@@ -309,12 +312,6 @@ public class PostServiceImplTest {
         postService.publishScheduledPosts(1000);
 
         verify(postRepository).findReadyToPublish();
-        verify(postRepository).updatePostsAsPublished(anyList(), any(LocalDateTime.class));
-    }
-
-    @Test
-    void publishScheduledPostsAsyncInBatch() {
-        postService.publishScheduledPostsAsyncInBatch(List.of(examplePost));
-        verify(postRepository).updatePostsAsPublished(anyList(), any(LocalDateTime.class));
+        verify(postServiceAsync).publishScheduledPostsAsyncInBatch(anyList());
     }
 }

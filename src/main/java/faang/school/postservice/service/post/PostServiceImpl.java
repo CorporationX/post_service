@@ -8,7 +8,6 @@ import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.ListUtils;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +25,7 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final HashtagService hashtagService;
     private final PostValidator postValidator;
+    private final PostServiceAsync postServiceAsync;
 
     @Override
     @Transactional
@@ -157,19 +157,10 @@ public class PostServiceImpl implements PostService {
         return hashtagService.findPostsByHashtag(hashtag);
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void publishScheduledPosts(int batchSize) {
         var readyToPublishPosts = postRepository.findReadyToPublish();
-        ListUtils.partition(readyToPublishPosts, batchSize).forEach(this::publishScheduledPostsAsyncInBatch);
-    }
-
-    @Async("postsFixedThreadPool")
-    public void publishScheduledPostsAsyncInBatch(List<Post> posts) {
-        var postIds = posts.stream()
-                .map(Post::getId)
-                .toList();
-
-        postRepository.updatePostsAsPublished(postIds, LocalDateTime.now());
+        ListUtils.partition(readyToPublishPosts, batchSize).forEach(postServiceAsync::publishScheduledPostsAsyncInBatch);
     }
 }
