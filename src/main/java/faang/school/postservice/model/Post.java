@@ -56,7 +56,7 @@ public class Post {
     private Ad ad;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Resource> resources;
+    private List<ResourceEntity> resourceEntities;
 
     @Column(name = "published", nullable = false)
     private boolean published;

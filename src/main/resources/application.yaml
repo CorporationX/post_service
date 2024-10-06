@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: classpath:application-minio.yaml
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -25,6 +28,11 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
 server:
   port: 8081
 
@@ -45,16 +53,15 @@ post:
       batch:
         size: 100
 
-
-
 user-service:
   host: localhost
   port: 8080
   path: user-service
+
 project-service:
   host: localhost
   port: 8082
+
 payment-service:
   host: localhost
   port: 9080
-
