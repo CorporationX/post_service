@@ -1,8 +1,7 @@
-package faang.school.postservice.config.context;
+package faang.school.postservice.config;
 
 
 import faang.school.postservice.service.tools.YandexSpeller;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -23,12 +23,11 @@ public class YandexSpeller {
 
     @Retryable(
             retryFor = RestClientException.class,
-            maxAttempts = 3,
             backoff = @Backoff(delay = 2000),
             recover = "recoverCheckText"
     )
     public List<SpellCheckerDto> checkText(String text) {
-        String requestUrl = addParamToUrl("text", text, url);
+        String requestUrl = addParamToUrl(url, "text", text);
         SpellCheckerDto[] response = restTemplate.getForObject(requestUrl, SpellCheckerDto[].class);
         return Arrays.asList(Objects.requireNonNull(response));
     }
@@ -54,7 +53,7 @@ public class YandexSpeller {
         return correctedText.toString();
     }
 
-    private String addParamToUrl(String param, String value, String url) {
+    private String addParamToUrl(String url, String param, String value) {
         if (!url.contains("?")) {
             url += "?";
         } else {
