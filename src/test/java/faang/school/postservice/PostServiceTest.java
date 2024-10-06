@@ -6,6 +6,8 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.scheduler.post.moderation.AhoCorasickContentChecker;
+import faang.school.postservice.service.ContentModerationService;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,15 +15,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -40,6 +48,14 @@ public class PostServiceTest {
 
     @Mock
     private UserContext userContext;
+    @Mock
+    private AhoCorasickContentChecker contentChecker;
+
+    @Mock
+    private ContentModerationService contentModerationService;
+
+    @Mock
+    private ExecutorService postModerationThreadPool;
 
     @InjectMocks
     PostService postService;
@@ -47,8 +63,9 @@ public class PostServiceTest {
 
     private Post post;
 
+
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         post = new Post();
         post.setId(1L);
         post.setAuthorId(1L);
@@ -187,5 +204,33 @@ public class PostServiceTest {
         assertFalse(result.isEmpty());
         assertEquals(1L, result.get(0).getProjectId());
         verify(postRepository, times(1)).findPublishedByProjectId(post.getProjectId());
+    }
+
+    @Test
+    public void testModerationOfPostWithBatchProcessing() {
+        int batchSize = 2;
+        ReflectionTestUtils.setField(postService, "batchSize", batchSize);
+
+        ExecutorService testExecutor = Executors.newFixedThreadPool(2);
+        ReflectionTestUtils.setField(postService, "postModerationThreadPool", testExecutor);
+
+        List<Post> postsToModerate = new ArrayList<>();
+        for (long i = 1; i <= 10; i++) {
+            Post post = new Post();
+            post.setId(i);
+            post.setContent("Test content " + i);
+            postsToModerate.add(post);
+        }
+
+        when(postRepository.findUnverifiedOrOldVerifiedPosts(any(LocalDateTime.class))).thenReturn(postsToModerate);
+        when(contentModerationService.checkContentAndModerate(any(Post.class))).thenReturn(CompletableFuture.completedFuture(null));
+
+        postService.moderatePosts();
+
+        verify(contentModerationService, times(postsToModerate.size())).checkContentAndModerate(any(Post.class));
+
+        verify(postRepository, times(1)).findUnverifiedOrOldVerifiedPosts(any(LocalDateTime.class));
+
+        testExecutor.shutdown();
     }
 }

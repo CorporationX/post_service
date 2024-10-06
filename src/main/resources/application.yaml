@@ -27,11 +27,11 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
-
 
 server:
   port: 8081
@@ -47,14 +47,21 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderation:
+    scheduler:
+      cron: "0 0 0 * * ?" # Once a day at midnight
+      batch:
+        size: 100
 
 user-service:
   host: localhost
   port: 8080
   path: user-service
+
 project-service:
   host: localhost
   port: 8082
+
 payment-service:
   host: localhost
   port: 9080
