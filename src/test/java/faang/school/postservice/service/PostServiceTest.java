@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +39,7 @@ class PostServiceTest {
     private static final String CONTENT = "content";
     private static final String SWEAR_CONTENT = "bug";
     private static final int THREAD_COUNT = 5;
+    private static final long SUBLIST_LENGTH = 10L;
 
     private Map<Long, String> unverifiedContent;
     private Map<Long, Boolean> verifiedContent;
@@ -61,20 +65,19 @@ class PostServiceTest {
 
         unverifiedPosts = List.of(firstPost, secondPost);
         executor = Executors.newFixedThreadPool(THREAD_COUNT);
-        postService = new PostService(postRepository, moderationDictionary, executor);
+        postService = new PostService(SUBLIST_LENGTH, postRepository, moderationDictionary, executor);
     }
 
-    //TODO не могу осилить этот тест! Видимо после вызова moderatePostsContent() потоки до бесконечности крутятся
-//    @Test
-//    @DisplayName("Успешный вызов метода moderationPostContent")
-//    public void whenModeratePostsContentThenSuccess() {
-//        when(postRepository.findReadyToVerified()).thenReturn(unverifiedPosts);
-//        when(moderationDictionary.searchSwearWords(unverifiedContent)).thenReturn(verifiedContent);
-//
-//        postService.moderatePostsContent();
-//
-//        verify(postRepository).findReadyToVerified();
-//        verify(postRepository).save(unverifiedPosts.get(0));
-//        verify(postRepository).save(unverifiedPosts.get(1));
-//    }
+    @Test
+    @DisplayName("Успешный вызов метода moderationPostContent")
+    public void whenModeratePostsContentThenSuccess() {
+        when(postRepository.findReadyToVerified()).thenReturn(unverifiedPosts);
+        when(moderationDictionary.searchSwearWords(unverifiedContent)).thenReturn(verifiedContent);
+
+        postService.moderatePostsContent();
+
+        verify(postRepository).findReadyToVerified();
+        verify(postRepository).save(unverifiedPosts.get(0));
+        verify(postRepository).save(unverifiedPosts.get(1));
+    }
 }

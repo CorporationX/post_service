@@ -8,9 +8,7 @@ CREATE TABLE post (
     scheduled_at timestamptz,
     deleted boolean DEFAULT false NOT NULL,
     created_at timestamptz DEFAULT current_timestamp,
-    updated_at timestamptz DEFAULT current_timestamp,
-    verified boolean,
-    verified_date timestamptz
+    updated_at timestamptz DEFAULT current_timestamp
 );
 
 CREATE TABLE comment (
