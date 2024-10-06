@@ -1,5 +1,4 @@
 spring:
-
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -26,18 +25,8 @@ spring:
         calculations_channel:
           name: calculations_channel
 
-  servlet:
-    multipart:
-      max-file-size: 5MB
-
-imageDimension:
-  custom:
-    max-image-height: 1080
-    max-image-weight: 566
-
 server:
   port: 8081
-
 
 logging:
   level:
