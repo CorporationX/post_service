@@ -5,6 +5,7 @@ import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtag.HashtagService;
+import faang.school.postservice.service.post.async.PostServiceAsyncImpl;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,7 +52,7 @@ public class PostServiceImplTest {
     private HashtagService hashtagService;
 
     @Mock
-    private PostServiceAsync postServiceAsync;
+    private PostServiceAsyncImpl postServiceAsyncImpl;
 
     private PostDto examplePostDto;
     private Post examplePost;
@@ -312,6 +313,6 @@ public class PostServiceImplTest {
         postService.publishScheduledPosts(1000);
 
         verify(postRepository).findReadyToPublish();
-        verify(postServiceAsync).publishScheduledPostsAsyncInBatch(anyList());
+        verify(postServiceAsyncImpl).publishScheduledPostsAsyncInBatch(anyList());
     }
 }

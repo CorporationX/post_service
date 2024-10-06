@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.async.PostServiceAsyncImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,17 +18,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 
 @ExtendWith(MockitoExtension.class)
-class PostServiceAsyncTest {
+class PostServiceAsyncImplTest {
     @Mock
     private PostRepository postRepository;
 
     @InjectMocks
-    private PostServiceAsync postServiceAsync;
+    private PostServiceAsyncImpl postServiceAsyncImpl;
 
     @Test
     @DisplayName("Publish Scheduled Posts Async")
     void testPublishScheduledPostsAsyncInBatch() {
-        postServiceAsync.publishScheduledPostsAsyncInBatch(List.of(new Post()));
+        postServiceAsyncImpl.publishScheduledPostsAsyncInBatch(List.of(new Post()));
         Mockito.verify(postRepository).updatePostsAsPublished(anyList(), any(LocalDateTime.class));
     }
 }

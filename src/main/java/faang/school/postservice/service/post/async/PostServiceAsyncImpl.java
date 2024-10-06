@@ -1,4 +1,4 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.service.post.async;
 
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class PostServiceAsync {
+public class PostServiceAsyncImpl implements PostServiceAsync {
     private final PostRepository postRepository;
 
     @Async("fixedThreadPool")
