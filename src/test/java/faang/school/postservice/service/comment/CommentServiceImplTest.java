@@ -7,6 +7,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.comment.async.CommentServiceAsyncImpl;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -42,6 +42,9 @@ class CommentServiceImplTest {
 
     @Mock
     private ModerationDictionary dictionary;
+
+    @Mock
+    private CommentServiceAsyncImpl commentServiceAsync;
 
     @InjectMocks
     private CommentServiceImpl commentService;
@@ -145,14 +148,9 @@ class CommentServiceImplTest {
         List<Comment> comments = List.of(comment, badComment);
 
         when(commentRepository.findAllByVerifiedDateIsNull()).thenReturn(comments);
-        when(dictionary.containsBadWords(comments.get(0).getContent())).thenReturn(false);
-        when(dictionary.containsBadWords(comments.get(1).getContent())).thenReturn(true);
 
         commentService.moderateComments();
 
-        assertEquals(true, comments.get(0).getVerified());
-        assertEquals(false, comments.get(1).getVerified());
-
-        verify(commentRepository, times(2)).saveAll(any());
+        verify(commentServiceAsync, times(2)).moderateCommentsByBatches(any());
     }
 }

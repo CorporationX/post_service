@@ -4,17 +4,15 @@ import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.comment.async.CommentServiceAsync;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -24,7 +22,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
-    private final ModerationDictionary dictionary;
+    private final CommentServiceAsync commentServiceAsync;
 
     @Value("${comments.batch-size}")
     private int batchSize;
@@ -64,22 +62,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void moderateComments() {
         List<Comment> unverifiedPosts = commentRepository.findAllByVerifiedDateIsNull();
         List<List<Comment>> batches = ListUtils.partition(unverifiedPosts, batchSize);
 
-        batches.forEach(this::moderateCommentsByBatches);
-    }
-
-    @Async("fixedThreadPool")
-    public void moderateCommentsByBatches(List<Comment> comments) {
-        comments.forEach(comment -> {
-            boolean badWordsExist = dictionary.containsBadWords(comment.getContent());
-
-            comment.setVerified(!badWordsExist);
-            comment.setVerifiedDate(LocalDateTime.now());
-        });
-
-        commentRepository.saveAll(comments);
+        batches.forEach(commentServiceAsync::moderateCommentsByBatches);
     }
 }
