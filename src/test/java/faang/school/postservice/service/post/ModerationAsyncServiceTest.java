@@ -58,7 +58,6 @@ class ModerationAsyncServiceTest {
 
         moderationAsyncService.moderatePostsSublistAsync(posts);
 
-        // Ждем завершения асинхронного вызова
         boolean completed = latch.await(5, TimeUnit.SECONDS);
         assertTrue(completed, "Асинхронный метод не завершился в течение ожидаемого времени.");
 

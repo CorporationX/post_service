@@ -12,7 +12,7 @@ import java.util.List;
 public class ModerationAsyncService {
     private final ModerationProcessingService moderationProcessingService;
 
-    @Async
+    @Async("asyncTaskExecutor")
     public void moderatePostsSublistAsync(List<Post> posts) {
         moderationProcessingService.moderatePostsSublist(posts);
     }
