@@ -31,7 +31,7 @@ public class ModerationPostService {
         List<List<Post>> sublists = splitListIntoSublists(unverifiedPosts, sublistSize);
         log.info("Разделение на подгруппы для модерации, размер каждой группы: {}", sublistSize);
 
-        sublists.parallelStream().forEach(sublist -> moderationAsyncService.moderatePostsSublistAsync(sublist));
+        sublists.forEach(moderationAsyncService::moderatePostsSublistAsync);
     }
 
     private List<List<Post>> splitListIntoSublists(List<Post> posts, int sublistSize) {
