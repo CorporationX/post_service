@@ -28,8 +28,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, List<PostDto>> redisTemplate(JedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, List<PostDto>> template = new RedisTemplate<>();
+    public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
 
         // Используем StringRedisSerializer для ключей

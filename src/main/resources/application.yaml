@@ -38,7 +38,9 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "@midnight" # every day at midnight
+    threads-count: 20
+    max-list-size: 50
   correcter:
     retry:
       max-attempts: 3
@@ -57,7 +59,7 @@ text-gears:
 
 springdoc:
   swagger-ui:
-    url: /api.yaml
+    url: /swagger/api.yaml
 
 user-service:
   host: localhost
