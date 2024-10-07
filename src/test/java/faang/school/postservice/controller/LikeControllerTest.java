@@ -23,6 +23,7 @@ public class LikeControllerTest {
 
     @InjectMocks
     private LikeController likeController;
+
     @Mock
     private LikeService likeService;
 

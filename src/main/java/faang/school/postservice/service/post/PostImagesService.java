@@ -26,7 +26,6 @@ public class PostImagesService {
     private final PostRepository postRepository;
     private final PostImageValidator postImageValidator;
 
-    @Transactional
     public void uploadPostImages(Long postId, List<MultipartFile> images) {
         Post post = postService.findById(postId);
 
@@ -39,7 +38,6 @@ public class PostImagesService {
         postRepository.save(post);
     }
 
-    @Transactional
     public void updatePostImages(Long postId, List<MultipartFile> images) {
         Post post = postService.findById(postId);
         List<Resource> postResources = post.getResources();
