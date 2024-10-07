@@ -17,11 +17,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -82,6 +78,6 @@ class PostServiceTest {
         postService.moderatePostsContent();
 
         verify(postRepository).findReadyToVerified();
-        verify(postRepository, times(2)).save(any());
+        verify(postRepository).saveAll(anyList());
     }
 }

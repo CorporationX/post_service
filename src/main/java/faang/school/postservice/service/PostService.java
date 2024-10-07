@@ -70,10 +70,10 @@ public class PostService {
                 subList.forEach(post -> {
                     post.setVerified(map.get(post.getId()));
                     post.setVerifiedDate(LocalDateTime.now());
-
-                    postRepository.save(post);
                 });
             });
+
+            postRepository.saveAll(subList);
         }
     }
 }

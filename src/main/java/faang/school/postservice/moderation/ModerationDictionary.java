@@ -13,15 +13,15 @@ public class ModerationDictionary {
     private final Dictionary dictionary;
 
     public Map<Long, Boolean> searchSwearWords(Map<Long, String> unverifiedContent) {
-        Map<Long, Boolean> map = new HashMap<>();
+        Map<Long, Boolean> verifiedContent = new HashMap<>();
 
         unverifiedContent.forEach((key, value) -> {
             boolean containsSwearWord = dictionary.getDictionary().stream()
                     .anyMatch(value::contains);
 
-            map.put(key, !containsSwearWord);
+            verifiedContent.put(key, !containsSwearWord);
         });
 
-        return map;
+        return verifiedContent;
     }
 }

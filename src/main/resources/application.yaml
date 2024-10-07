@@ -46,7 +46,7 @@ post:
       cron: "0 0/1 * 1/1 * ?" # every minute
   moderation:
     scheduler:
-      cron: "0 0 * * *" # every day at 00:00
+      cron: "0 0 * * * ?" # every day at 00:00
     dictionary:
       file-path: "src/main/resources/moderation/dictionary.txt"
     sublist:
