@@ -2,9 +2,7 @@ package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.topic.CommentEventTopic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +17,7 @@ public class CommentEventPublisher implements MessagePublisher {
     private final CommentEventTopic topic;
 
     @Override
-    public void publish(Object message)  {
+    public void publish(Object message) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         try {
