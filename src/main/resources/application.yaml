@@ -43,7 +43,7 @@ post:
     max-list-size: 50
   commenter-banner:
     scheduler:
-      cron: "@midnight" # every day at midnight
+      cron: "0 0/1 * 1/1 * ?" # every day at midnight
     unverified-comments-limit: 5
   redis-config:
     topic-name: "user_ban"

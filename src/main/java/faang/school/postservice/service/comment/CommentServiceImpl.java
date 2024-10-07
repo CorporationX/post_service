@@ -63,7 +63,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void commentersBanCheck(int unverifiedCommentsLimit) {
-        Map<Long, Long> unverifiedAuthorsAndCommentsCount = commentRepository.findAllUnverifiedComments().stream()
+        Map<Long, Long> unverifiedAuthorsAndCommentsCount = commentRepository.findAllByVerifiedFalse().stream()
                 .collect(Collectors.groupingBy(Comment::getAuthorId, Collectors.counting()));
 
         unverifiedAuthorsAndCommentsCount.entrySet().stream()

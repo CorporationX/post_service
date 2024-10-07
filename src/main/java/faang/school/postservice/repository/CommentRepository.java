@@ -14,6 +14,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId")
     List<Comment> findAllByPostId(long postId);
 
-    @Query("SELECT c FROM Comment c WHERE c.verified = false")
-    List<Comment> findAllUnverifiedComments();
+    List<Comment> findAllByVerifiedFalse();
 }

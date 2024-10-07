@@ -166,7 +166,7 @@ class CommentServiceImplTest {
         Comment comment3 = new Comment();
         comment3.setAuthorId(2L);
 
-        when(commentRepository.findAllUnverifiedComments()).thenReturn(List.of(comment1, comment2, comment3));
+        when(commentRepository.findAllByVerifiedFalse()).thenReturn(List.of(comment1, comment2, comment3));
 
         // Act
         commentService.commentersBanCheck(2);
