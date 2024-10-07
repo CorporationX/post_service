@@ -41,8 +41,7 @@ public class PostCacheOperations {
         try {
             return zSetOperations.reverseRange(tag, start, end);
         } catch (RedisConnectionFailureException exception) {
-            log.error("Find ids by hash tag {} in cache failure {}: {}", tag, exception.getClass(),
-                    exception.getMessage());
+            log.error("Find ids by hash tag {} in cache failure {}:", tag, exception.getClass(), exception);
             return new HashSet<>();
         }
     }
@@ -51,8 +50,7 @@ public class PostCacheOperations {
         try {
             return redisTemplatePost.opsForValue().multiGet(ids);
         } catch (RedisConnectionFailureException exception) {
-            log.error("Find all post in cache by ids {} failure {}: {}", ids.toString(), exception.getClass(),
-                    exception.getMessage());
+            log.error("Find all post in cache by ids {} failure {}:", ids.toString(), exception.getClass(), exception);
             return new ArrayList<>();
         }
     }
@@ -119,7 +117,7 @@ public class PostCacheOperations {
             String pingResponse = Objects.requireNonNull(redisTemplatePost.getConnectionFactory()).getConnection().ping();
             return PONG.equals(pingResponse);
         } catch (RedisConnectionFailureException exception) {
-            log.error("{} : {}", exception.getClass(), exception.getMessage());
+            log.error("Redis connection failure:", exception);
             return false;
         }
     }
@@ -148,7 +146,7 @@ public class PostCacheOperations {
         try {
             return postCacheOperationsTries.tryFilterByTagsInCache(tags, null);
         } catch (RedisConnectionFailureException exception) {
-            log.error("Compare with tags in cache failure {}: {}", exception.getClass(), exception.getMessage());
+            log.error("Compare with tags in cache failure {}:", exception.getClass(), exception);
             return new ArrayList<>();
         }
     }
@@ -157,7 +155,7 @@ public class PostCacheOperations {
         try {
             return postCacheOperationsTries.tryFilterByTagsInCache(tags, tagToFind);
         } catch (RedisConnectionFailureException exception) {
-            log.error("Compare with tags in cache failure by tag {}: {}", exception.getClass(), exception.getMessage());
+            log.error("Compare with tags in cache failure by tag {}:", exception.getClass(), exception);
             return new ArrayList<>();
         }
     }
@@ -166,7 +164,7 @@ public class PostCacheOperations {
         try {
             return Boolean.TRUE.equals(redisTemplatePost.hasKey(postId));
         } catch (RedisConnectionFailureException exception) {
-            log.error("Check for post is in cache {}: {}", exception.getClass(), exception.getMessage());
+            log.error("Check for post is in cache {}:", exception.getClass(), exception);
             return false;
         }
     }

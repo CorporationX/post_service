@@ -75,10 +75,13 @@ public class PostService {
         post.setUpdatedAt(LocalDateTime.now());
         postHashTagParser.updateHashTags(post);
 
+        postRepository.save(post);
+
         if (!post.isDeleted() && post.isPublished()) {
             postCacheService.executeUpdatePostProcess(postMapper.toPostCacheDto(post), primalTags);
         }
-        return postRepository.save(post);
+        // TODO: Создать два бина, в первом транзакция для сохранения в postgres второй созадет транзакцию для сохранения в редис
+        return post;
     }
 
     @Transactional
