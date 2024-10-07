@@ -1,7 +1,16 @@
 package faang.school.postservice.dto.comment;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-public record CommentEvent(long commentId, long authorId, long postId, LocalDateTime date) {
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+@Data
+@AllArgsConstructor
+public class CommentEvent implements Serializable {
+    private long commentId;
+    private long authorId;
+    private long postId;
+    private LocalDateTime date;
 }
