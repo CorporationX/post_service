@@ -18,7 +18,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Component
 public class OffensiveWordsDictionary {
 
-    private static final Set<String> offensiveDictionary = new CopyOnWriteArraySet<>();
+    private final Set<String> offensiveDictionary = new CopyOnWriteArraySet<>();
 
     @Value("${dictionary.offensive.initial}")
     private String dictionaryLocation;
@@ -37,11 +37,11 @@ public class OffensiveWordsDictionary {
         }
     }
 
-    public static boolean isWordContainsInDictionary(String word) {
+    public boolean isWordContainsInDictionary(String word) {
         return offensiveDictionary.contains(word);
     }
 
-    public static void addWordsInDictionary(List<String> newWords) {
+    public void addWordsToDictionary(List<String> newWords) {
         offensiveDictionary.addAll(newWords);
     }
 }

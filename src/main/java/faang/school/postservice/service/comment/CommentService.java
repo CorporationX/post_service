@@ -18,10 +18,13 @@ public class CommentService {
         return commentRepository.findByVerifiedAtIsNull();
     }
 
-    public void verify(Comment comment, boolean isVerified) {
+    public void setVerifyToComment(Comment comment, boolean isVerified) {
         comment.setVerified(isVerified);
         comment.setVerifiedAt(LocalDateTime.now());
-        saveComment(comment);
+    }
+
+    public void saveComments(List<Comment> comments) {
+        commentRepository.saveAll(comments);
     }
 
     public void saveComment(Comment comment) {

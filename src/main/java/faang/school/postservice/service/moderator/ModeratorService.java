@@ -3,7 +3,7 @@ package faang.school.postservice.service.moderator;
 import faang.school.postservice.config.dictionary.OffensiveWordsDictionary;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.comment.CommentService;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -13,16 +13,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 @Service
+@RequiredArgsConstructor
 public class ModeratorService {
 
     private final CommentService commentService;
     private final ExecutorService executorService;
-
-    public ModeratorService(CommentService commentService,
-                            @Qualifier("cachedExecutor") ExecutorService executorService) {
-        this.commentService = commentService;
-        this.executorService = executorService;
-    }
+    private final OffensiveWordsDictionary offensiveWordsDictionary;
 
     @Async("cachedExecutor")
     public CompletableFuture<Void> moderateCommentsContent() {
@@ -34,15 +30,17 @@ public class ModeratorService {
 
                 if (content != null && !content.isBlank()) {
                     boolean noOffensiveContent = !containsOffensiveContent(content);
-                    commentService.verify(comment, noOffensiveContent);
+                    commentService.setVerifyToComment(comment, noOffensiveContent);
                 }
             }));
+
+            commentService.saveComments(comments);
         }, executorService);
     }
 
     private boolean containsOffensiveContent(String content) {
         return Arrays.stream(content.toLowerCase().split("[\n\t.,; ]"))
                 .parallel()
-                .anyMatch(OffensiveWordsDictionary::isWordContainsInDictionary);
+                .anyMatch(offensiveWordsDictionary::isWordContainsInDictionary);
     }
 }

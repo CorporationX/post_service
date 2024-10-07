@@ -11,8 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,14 +39,21 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("Method should update comment and save it")
-    void whenCallVerifyThanUpdateCommentAndSave() {
+    void whenCallSetVerifyToCommentThanUpdateCommentAndSave() {
         Comment comment = new Comment();
 
-        commentService.verify(comment, Boolean.TRUE);
+        commentService.setVerifyToComment(comment, Boolean.TRUE);
 
         assertTrue(comment.isVerified());
         assertNotNull(comment.getVerifiedAt());
-        verify(commentRepository).save(comment);
+    }
+
+    @Test
+    @DisplayName("Method should save list comments")
+    void whenCallSaveCommentsThanSaveComments() {
+        commentService.saveComments(any());
+
+        verify(commentRepository).saveAll(any());
     }
 
     @Test
