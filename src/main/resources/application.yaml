@@ -49,8 +49,10 @@ logging:
 
 post:
   publisher:
+    butch-size: 1000
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
