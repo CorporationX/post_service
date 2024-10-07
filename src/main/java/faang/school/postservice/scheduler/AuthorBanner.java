@@ -19,7 +19,7 @@ public class AuthorBanner {
     private final PostService postService;
     private final RedisProperties redisProperties;
 
-    @Scheduled(/*cron = "${post.ban-user.scheduler.cron}"*/ fixedDelay = 10000)
+    @Scheduled(cron = "${post.ban-user.scheduler.cron}")
     public void banUser() {
         List<Long> violatorIds = postService.getAuthorsWithMoreFiveUnverifiedPosts();
         String channel = redisProperties.getChannels().get("user-service");
