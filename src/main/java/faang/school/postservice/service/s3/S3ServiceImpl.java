@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import faang.school.postservice.dto.resource.ResourceObjectResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,10 @@ public class S3ServiceImpl implements S3Service {
     private String bucketName;
 
     @Override
-    public void uploadFile(byte[] fileContent, String contentType, String fileKey) {
+    public void uploadFile(byte[] fileContent, @NonNull String contentType, @NonNull String fileKey) {
+        if (fileContent.length == 0) {
+            throw new IllegalArgumentException("File content is empty with key %s".formatted(fileKey));
+        }
         ObjectMetadata objectMetadata = getObjectMetadata(contentType, fileContent.length);
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, fileKey,
                 new ByteArrayInputStream(fileContent),
@@ -34,13 +38,13 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public void deleteFile(String fileKey) {
+    public void deleteFile(@NonNull String fileKey) {
         s3Client.deleteObject(bucketName, fileKey);
         log.info("File with key {} deleted", fileKey);
     }
 
     @Override
-    public ResourceObjectResponse downloadFile(String fileKey) {
+    public ResourceObjectResponse downloadFile(@NonNull String fileKey) {
         S3Object s3Object = s3Client.getObject(bucketName, fileKey);
         log.info("Download file with key {} from s3", fileKey);
         return ResourceObjectResponse.builder()

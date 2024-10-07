@@ -9,5 +9,5 @@ import java.util.List;
 public interface ResourceService {
     List<Resource> addResourcesToPost(List<MultipartFile> files, Post post);
 
-    void deleteResourcesFromPost(List<Long> resourcesIds, Post post);
+    void deleteResourcesFromPost(List<Long> resourcesIds, Long postId);
 }

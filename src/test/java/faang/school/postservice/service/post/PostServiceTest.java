@@ -10,6 +10,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.post.PostCreator;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.impl.PostServiceImpl;
@@ -24,21 +25,26 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
+    private static final int MAX_SIZE_COUNT = 10;
 
     @Mock
     private PostRepository postRepository;
@@ -80,6 +86,7 @@ class PostServiceTest {
                 .content("Test")
                 .build();
         updatingRequest = PostUpdatingRequest.builder().content("Test2").build();
+        postService.setMaxFilesCount(MAX_SIZE_COUNT);
     }
 
     @Test
@@ -139,6 +146,49 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("Create post with files success")
+    public void testCreatePostWithFilesSuccess() {
+        List<MultipartFile> filesToAdd = List.of(initFile("test.jpeg",
+                "image/jpeg", new byte[1024]));
+        List<Resource> resources = List.of(initResource(1L, "testKey", "test.jpeg",
+                1024, "image/jpeg"));
+        post = Post.builder()
+                .id(0L)
+                .authorId(null)
+                .content("Test")
+                .projectId(1L)
+                .build();
+        creationRequest = PostCreationRequest.builder()
+                .authorId(null)
+                .projectId(1L)
+                .content("Test")
+                .filesToAdd(filesToAdd)
+                .build();
+        when(projectClient.getProject(1L)).thenReturn(new ProjectDto());
+        when(resourceService.addResourcesToPost(filesToAdd, post)).thenReturn(resources);
+
+        postService.create(creationRequest);
+
+        verify(postRepository).save(any());
+        verify(resourceService).addResourcesToPost(any(), any());
+        assertEquals(postDto.id(), post.getId());
+    }
+
+    @Test
+    @DisplayName("Create post with too many files")
+    public void testCreatePostWithTooManyFiles() {
+        List<MultipartFile> filesToAdd = initFiles(MAX_SIZE_COUNT + 1);
+        creationRequest = PostCreationRequest.builder()
+                .authorId(null)
+                .projectId(1L)
+                .content("Test")
+                .filesToAdd(filesToAdd)
+                .build();
+
+        assertThrows(IllegalArgumentException.class, () -> postService.create(creationRequest));
+    }
+
+    @Test
     @DisplayName("Publish a post that was not found")
     public void testPublishPostWithNotExistId() {
         when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.empty());
@@ -193,6 +243,135 @@ class PostServiceTest {
 
         verify(postRepository).save(post);
         assertEquals(postDto.content(), updatingRequest.content());
+    }
+
+    @Test
+    @DisplayName("Update a post with files to delete success")
+    public void testUpdatePostWithFilesToDeleteSuccess() {
+        List<Resource> resources = List.of(
+                initResource(1L, "testKey", "test.jpeg", 1024, "image/jpeg"),
+                initResource(2L, "testKey", "test.jpeg", 1024, "image/jpeg"));
+        List<Long> filesToDeleteIds = List.of(1L);
+        post.setResources(resources);
+        PostUpdatingRequest request = PostUpdatingRequest.builder()
+                .content("new content")
+                .filesToDeleteIds(filesToDeleteIds)
+                .build();
+        when(postRepository.findByIdAndDeletedFalse(post.getId())).thenReturn(Optional.of(post));
+
+        postService.update(post.getId(), request);
+
+        verify(resourceService).deleteResourcesFromPost(filesToDeleteIds, post.getId());
+        verify(postRepository).save(post);
+    }
+
+    @Test
+    @DisplayName("Update post with files to add success")
+    public void testUpdatePostWithFilesToAddSuccess() {
+        List<MultipartFile> filesToAdd = List.of(
+                initFile("test.jpeg", "image/jpeg", new byte[1024]));
+        PostUpdatingRequest request = PostUpdatingRequest.builder()
+                .content("new content")
+                .filesToAdd(filesToAdd)
+                .build();
+        post.setResources(new ArrayList<>());
+        when(postRepository.findByIdAndDeletedFalse(post.getId())).thenReturn(Optional.of(post));
+
+        postService.update(post.getId(), request);
+
+        verify(resourceService).addResourcesToPost(filesToAdd, post);
+        verify(postRepository).save(post);
+    }
+
+    @Test
+    @DisplayName("Update post with files to add and delete success")
+    public void testUpdatePostWithFilesToAddAndDeleteSuccess() {
+        List<Resource> resources = List.of(
+                initResource(1L, "testKey", "test.jpeg", 1024, "image/jpeg"),
+                initResource(2L, "testKey", "test.jpeg", 1024, "image/jpeg"));
+        List<Long> filesToDeleteIds = List.of(1L);
+        List<MultipartFile> filesToAdd = List.of(
+                initFile("test.jpeg", "image/jpeg", new byte[1024]));
+        PostUpdatingRequest request = PostUpdatingRequest.builder()
+                .content("new content")
+                .filesToDeleteIds(filesToDeleteIds)
+                .filesToAdd(filesToAdd)
+                .build();
+        post.setResources(resources);
+        when(postRepository.findByIdAndDeletedFalse(post.getId())).thenReturn(Optional.of(post));
+
+        postService.update(post.getId(), request);
+
+        verify(resourceService).deleteResourcesFromPost(filesToDeleteIds, post.getId());
+        verify(resourceService).addResourcesToPost(filesToAdd, post);
+        verify(postRepository).save(post);
+    }
+
+    @Test
+    @DisplayName("Update a post with too many files to delete")
+    public void testUpdatePostWithTooManyFilesToDelete() {
+        List<Long> filesToDeleteIds = List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L);
+        PostUpdatingRequest request = PostUpdatingRequest.builder()
+                .content("new content")
+                .filesToDeleteIds(filesToDeleteIds)
+                .build();
+        post.setResources(new ArrayList<>());
+        when(postRepository.findByIdAndDeletedFalse(post.getId())).thenReturn(Optional.of(post));
+
+        assertThrows(IllegalArgumentException.class, () -> postService.update(post.getId(), request));
+    }
+
+    @Test
+    @DisplayName("Update a post with delete more files than post has")
+    public void testUpdatePostWithDeleteMoreFilesThanPostHas() {
+        List<Resource> resources = List.of(
+                initResource(1L, "testKey", "test.jpeg", 1024, "image/jpeg"),
+                initResource(2L, "testKey", "test.jpeg", 1024, "image/jpeg"));
+        List<Long> filesToDeleteIds = List.of(1L, 2L, 3L);
+        post.setResources(resources);
+        PostUpdatingRequest request = PostUpdatingRequest.builder()
+                .content("new content")
+                .filesToDeleteIds(filesToDeleteIds)
+                .build();
+        when(postRepository.findByIdAndDeletedFalse(post.getId())).thenReturn(Optional.of(post));
+
+        assertThrows(IllegalArgumentException.class, () -> postService.update(post.getId(), request));
+    }
+
+    @Test
+    @DisplayName("Update a post with add and delete files but exceeded max files count")
+    public void testUpdatePostWithAddAndDeleteFilesButExceededMaxFilesCount() {
+        List<Resource> resources = List.of(
+                initResource(1L, "testKey", "test.jpeg", 1024, "image/jpeg"),
+                initResource(2L, "testKey", "test.jpeg", 1024, "image/jpeg"),
+                initResource(3L, "testKey", "test.jpeg", 1024, "image/jpeg"),
+                initResource(4L, "testKey", "test.jpeg", 1024, "image/jpeg"));
+        List<MultipartFile> filesToAdd = initFiles(MAX_SIZE_COUNT);
+        List<Long> filesToDeleteIds = List.of(1L);
+        post.setResources(resources);
+        PostUpdatingRequest request = PostUpdatingRequest.builder()
+                .content("new content")
+                .filesToDeleteIds(filesToDeleteIds)
+                .filesToAdd(filesToAdd)
+                .build();
+        post.setResources(resources);
+        when(postRepository.findByIdAndDeletedFalse(post.getId())).thenReturn(Optional.of(post));
+
+        assertThrows(IllegalArgumentException.class, () -> postService.update(post.getId(), request));
+    }
+
+    @Test
+    @DisplayName("Update a post with too many files to add")
+    public void testUpdatePostWithTooManyFilesToAdd() {
+        List<MultipartFile> filesToAdd = initFiles(MAX_SIZE_COUNT + 1);
+        PostUpdatingRequest request = PostUpdatingRequest.builder()
+                .content("new content")
+                .filesToAdd(filesToAdd)
+                .build();
+        post.setResources(new ArrayList<>());
+        when(postRepository.findByIdAndDeletedFalse(post.getId())).thenReturn(Optional.of(post));
+
+        assertThrows(IllegalArgumentException.class, () -> postService.update(post.getId(), request));
     }
 
     @Test
@@ -397,5 +576,26 @@ class PostServiceTest {
         assertEquals(3, postDtos.size());
         assertEquals(1L, postDtos.get(0).id());
         assertEquals(2L, postDtos.get(2).id());
+    }
+
+    private MultipartFile initFile(String fileName, String contentType, byte[] content) {
+        return new MockMultipartFile("test", fileName, contentType, content);
+    }
+
+    private Resource initResource(Long id, String fileKey, String fileName, long size, String contentType) {
+        return Resource.builder()
+                .id(id)
+                .key(fileKey)
+                .size(size)
+                .name(fileName)
+                .type(contentType)
+                .build();
+    }
+
+    private List<MultipartFile> initFiles(int size) {
+        return IntStream.range(0, size)
+                .boxed()
+                .map(i -> initFile("file" + i, "text/plain", new byte[15]))
+                .toList();
     }
 }

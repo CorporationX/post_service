@@ -48,6 +48,9 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto create(PostCreationRequest request) {
+        if (request.filesToAdd() != null) {
+            validateFilesListSize(request.filesToAdd());
+        }
         Post post = postMapper.toPostFromCreationRequest(request);
         if (request.authorId() != null) {
             UserDto userDto = userClient.getUser(request.authorId());
@@ -63,8 +66,8 @@ public class PostServiceImpl implements PostService {
         }
         postRepository.save(post);
         if (request.filesToAdd() != null) {
-            validateFilesListSize(request.filesToAdd());
             List<Resource> resources = resourceService.addResourcesToPost(request.filesToAdd(), post);
+            resources.forEach(resource -> resource.setPost(post));
             post.setResources(resources);
         }
         log.info("Created post: {}", post.getId());
@@ -93,7 +96,7 @@ public class PostServiceImpl implements PostService {
         if (request.filesToDeleteIds() != null) {
             validateFilesListSize(request.filesToDeleteIds());
             checkResourcesToDeleteCount(post, request.filesToDeleteIds());
-            resourceService.deleteResourcesFromPost(request.filesToDeleteIds(), post);
+            resourceService.deleteResourcesFromPost(request.filesToDeleteIds(), post.getId());
         }
         if (request.filesToAdd() != null) {
             validateFilesListSize(request.filesToAdd());
@@ -110,7 +113,7 @@ public class PostServiceImpl implements PostService {
         post.setDeleted(true);
         resourceService.deleteResourcesFromPost(post.getResources().stream()
                 .map(Resource::getId)
-                .toList(), post);
+                .toList(), post.getId());
         postRepository.save(post);
         log.info("Removed post: {}", post.getId());
         return postMapper.toPostDto(post);

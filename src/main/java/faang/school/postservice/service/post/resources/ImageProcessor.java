@@ -2,8 +2,8 @@ package faang.school.postservice.service.post.resources;
 
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.FileOperationException;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @Setter
 @Component
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class ImageProcessor {
 
     @Value("${resource.image.max-rectangle-width}")
@@ -40,7 +40,7 @@ public class ImageProcessor {
 
     private BufferedImage getBufferedImage(MultipartFile file) {
         try {
-            return Optional.of(ImageIO.read(file.getInputStream())).orElseThrow(() ->
+            return Optional.ofNullable(ImageIO.read(file.getInputStream())).orElseThrow(() ->
                     new DataValidationException("Could not read image"));
         } catch (IOException e) {
             throw new FileOperationException(e);

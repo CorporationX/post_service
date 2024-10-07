@@ -6,6 +6,7 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.resources.ImageProcessor;
 import faang.school.postservice.service.s3.S3Service;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -25,14 +26,15 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Setter
     @Value("${resource.max-size}")
-    private int maxFileSize;
+    private long maxFileSize;
 
     private final ResourceRepository resourceRepository;
     private final S3Service s3Service;
     private final ImageProcessor imageProcessor;
 
     @Override
-    public List<Resource> addResourcesToPost(List<MultipartFile> files, Post post) {
+    @Transactional
+    public List<Resource> addResourcesToPost(@NonNull List<MultipartFile> files, @NonNull Post post) {
         checkFilesSizes(files);
         List<byte[]> images = files.stream()
                 .map(imageProcessor::processImage)
@@ -54,8 +56,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void deleteResourcesFromPost(List<Long> resourcesIds, Post post) {
+    public void deleteResourcesFromPost(@NonNull List<Long> resourcesIds, @NonNull Long postId) {
         List<Resource> resourcesToDelete = resourceRepository.findAllById(resourcesIds);
+        checkIfResourcesBelongToPost(resourcesToDelete, postId);
         if (resourcesToDelete.size() != resourcesIds.size()) {
             List<String> notFoundedIds = resourcesIds.stream()
                     .filter(id -> resourcesToDelete.stream()
@@ -68,14 +71,14 @@ public class ResourceServiceImpl implements ResourceService {
         }
         resourceRepository.deleteAll(resourcesToDelete);
         resourcesToDelete.forEach(resource -> s3Service.deleteFile(resource.getKey()));
-        log.info("Deleted {} resources from post with id {}", resourcesIds.size(), post.getId());
+        log.info("Deleted {} resources from post with id {}", resourcesIds.size(), postId);
     }
 
     private void checkFilesSizes(List<MultipartFile> files) {
         List<String> sizeExceededMessages = files.stream()
                 .filter(file -> file.getSize() > maxFileSize)
                 .map(file -> "File %s is too big. Max size is %dMB"
-                        .formatted(file.getName(), maxFileSize / BYTES_PER_MB))
+                        .formatted(file.getOriginalFilename(), maxFileSize / BYTES_PER_MB))
                 .toList();
         if (sizeExceededMessages.size() > 0) {
             throw new DataValidationException(String.join("\n", sizeExceededMessages));
@@ -94,5 +97,13 @@ public class ResourceServiceImpl implements ResourceService {
                 .type(type)
                 .post(post)
                 .build();
+    }
+
+    private void checkIfResourcesBelongToPost(List<Resource> resources, Long postId) {
+        if (resources.stream()
+                .anyMatch(resource -> resource.getPost().getId() != postId)) {
+            throw new DataValidationException("Some of resources do not belong to post with id %d"
+                    .formatted(postId));
+        }
     }
 }
