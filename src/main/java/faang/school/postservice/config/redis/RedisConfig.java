@@ -1,6 +1,5 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.redis;
 
-import faang.school.postservice.properties.RedisProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

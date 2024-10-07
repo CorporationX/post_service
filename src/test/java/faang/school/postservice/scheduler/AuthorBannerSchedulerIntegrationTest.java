@@ -2,7 +2,7 @@ package faang.school.postservice.scheduler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.properties.RedisProperties;
+import faang.school.postservice.config.redis.RedisProperties;
 import faang.school.postservice.config.RedisTestConfig;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.AfterEach;

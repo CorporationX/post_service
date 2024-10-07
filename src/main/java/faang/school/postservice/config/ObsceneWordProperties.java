@@ -1,4 +1,4 @@
-package faang.school.postservice.properties;
+package faang.school.postservice.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

@@ -1,7 +1,7 @@
 package faang.school.postservice.util;
 
 import faang.school.postservice.model.Post;
-import faang.school.postservice.properties.ObsceneWordProperties;
+import faang.school.postservice.config.ObsceneWordProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
