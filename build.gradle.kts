@@ -56,6 +56,15 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
 
     /**
+     * OpenAPI & swagger dependencies
+     *   http://localhost:8081/swagger-ui/index.html - swagger ui
+     *   http://localhost:8081/v3/api-docs - docs in JSON format
+     */
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.3")
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.15")
+    implementation("io.springfox:springfox-boot-starter:3.0.0")
+
+    /**
      * Test containers
      */
     implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))
