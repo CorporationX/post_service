@@ -1,17 +1,19 @@
 package faang.school.postservice.scheduler;
 
+import faang.school.postservice.config.RedisProperties;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,14 +27,20 @@ class AuthorBannerTest {
     @Mock
     private RedisTemplate<String, List<Long>> redisTemplate;
 
+    @Spy
+    private RedisProperties redisProperties;
+
     @InjectMocks
     private AuthorBanner authorBanner;
 
-    private final String channel = "channel";
+    private final String channelName = "channel";
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(authorBanner, "channel", channel);
+        Map<String, String> channels = Map.of(
+                "user-service", channelName
+        );
+        redisProperties.setChannels(channels);
     }
 
     @Test
@@ -43,7 +51,7 @@ class AuthorBannerTest {
         authorBanner.banUser();
 
         verify(postService).getAuthorsWithMoreFiveUnverifiedPosts();
-        verify(redisTemplate).convertAndSend(channel, violatorIds);
+        verify(redisTemplate).convertAndSend(channelName, violatorIds);
     }
 
     @Test
@@ -53,6 +61,6 @@ class AuthorBannerTest {
         authorBanner.banUser();
 
         verify(postService).getAuthorsWithMoreFiveUnverifiedPosts();
-        verify(redisTemplate).convertAndSend(channel, Collections.emptyList());
+        verify(redisTemplate).convertAndSend(channelName, Collections.emptyList());
     }
 }
