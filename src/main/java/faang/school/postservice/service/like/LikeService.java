@@ -4,10 +4,12 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.publishable.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.like.KafkaLikeEvent;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.like.LikeServiceProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -32,6 +34,7 @@ public class LikeService {
     private final LikeValidator likeValidator;
     private final UserServiceClient userServiceClient;
     private final LikeEventPublisher eventPublisher;
+    private final List<LikeServiceProducer> producers;
     @Value("${like.userBatchSize}")
     private int userBatchSize;
   
@@ -48,6 +51,10 @@ public class LikeService {
         Like like = likeMapper.toEntity(likeDto);
         like.setPost(post);
         likeRepository.save(like);
+
+        for(var producer: producers) {
+            producer.send(like);
+        }
 
         LikeEvent event = new LikeEvent(like.getUserId(), post.getAuthorId(), post.getId());
         eventPublisher.publish(event);

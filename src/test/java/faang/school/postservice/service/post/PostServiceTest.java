@@ -8,6 +8,7 @@ import faang.school.postservice.event.post.PostEvent;
 import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.mapper.post.*;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.PostServiceProducer;
 import faang.school.postservice.producer.post.PostProducer;
 import faang.school.postservice.producer.user.UserCacheProducer;
 import faang.school.postservice.repository.PostRepository;
@@ -34,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -63,13 +65,10 @@ public class PostServiceTest {
     private PostProducer postProducer;
 
     @Mock
-    private UserServiceClient userServiceClient;
-
-    @Mock
     private PostCacheRepository postCacheRepository;
 
     @Mock
-    private UserCacheProducer userCacheProducer;
+    private List<PostServiceProducer> producers;
 
     @InjectMocks
     private PostService postService;
@@ -510,7 +509,8 @@ public class PostServiceTest {
     @Test
     @DisplayName("Test publish post")
     void testPublishPost() {
-        when(userServiceClient.getFollowerIds(anyLong())).thenReturn(List.of());
+        PostServiceProducer mockProducer = mock(PostServiceProducer.class);
+        when(producers.iterator()).thenReturn(Collections.singletonList(mockProducer).iterator());
 
         when(postRepository.findById(
                 TestData.storedPostWithTextFile.getId()

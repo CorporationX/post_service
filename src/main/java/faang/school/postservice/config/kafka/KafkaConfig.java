@@ -24,10 +24,19 @@ public class KafkaConfig {
     private String hostPort;
 
     @Value("${kafka.topic.posts-topic.name}")
-
     private String postTopicName;
+
     @Value("${kafka.topic.user-cache-topic.name}")
     private String userCacheTopicName;
+
+    @Value("${kafka.topic.comments-topic.name}")
+    private String commentsTopicName;
+
+    @Value("${kafka.topic.likes-topic.name}")
+    private String likesTopicName;
+
+    @Value("${kafka.topic.views-topic.name}")
+    private String viewsTopicName;
 
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
@@ -62,5 +71,20 @@ public class KafkaConfig {
     @Bean
     public NewTopic userCacheTopic() {
         return new NewTopic(userCacheTopicName, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic commentsTopic() {
+        return new NewTopic(commentsTopicName, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic likesTopic() {
+        return new NewTopic(likesTopicName, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic viewsTopic() {
+        return new NewTopic(viewsTopicName, 1, (short) 1);
     }
 }

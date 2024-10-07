@@ -6,6 +6,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.util.List;
 @Data
 @Builder(toBuilder = true)
 @AllArgsConstructor
+@NoArgsConstructor
 public class PostDto {
     private Long id;
     private Long authorId;
@@ -33,4 +35,5 @@ public class PostDto {
     private LocalDateTime createdAt;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime updatedAt;
+    private long views;
 }
