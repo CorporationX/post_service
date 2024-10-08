@@ -9,7 +9,8 @@ import faang.school.postservice.exception.spelling_corrector.RepeatableServiceEx
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
+
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -38,7 +39,7 @@ public class TextGearsClient {
             multiplierExpression = "#{${post.spelling-corrector.retry.multiplier}}"))
     public String correctText(String text) {
         String url = serviceHost + CORRECTOR_ENDPOINT;
-        URI uri = makeUri(text, url);
+        URI uri = makeUri(url, text);
 
         ResponseEntity<TextGearsCorrectResponse> responseEntity = restTemplate.getForEntity(
                 uri, TextGearsCorrectResponse.class);
@@ -53,7 +54,7 @@ public class TextGearsClient {
             multiplierExpression = "#{${post.spelling-corrector.retry.multiplier}}"))
     public TextGearsLang detectLang(String text) {
         String url = serviceHost + LANG_DETECTOR_ENDPOINT;
-        URI uri = makeUri(text, url);
+        URI uri = makeUri(url, text);
 
         ResponseEntity<TextGearsLangDetectResponse> responseEntity = restTemplate.getForEntity(
                 uri, TextGearsLangDetectResponse.class);
@@ -62,7 +63,7 @@ public class TextGearsClient {
         return TextGearsLang.fromString(response.getResponse().getLanguage());
     }
 
-    private URI makeUri(String text, String url) {
+    private URI makeUri(String url, String text) {
         return UriComponentsBuilder.fromHttpUrl(url)
                 .queryParam("text", text)
                 .queryParam("key", authToken)
@@ -75,7 +76,7 @@ public class TextGearsClient {
         int statusCode = responseEntity.getStatusCode().value();
         T response = responseEntity.getBody();
 
-        if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+        if (statusCode >= INTERNAL_SERVER_ERROR.value()) {
             log.error("Ошибка при получении корректировки от TextGears {}", responseEntity);
 
             throw new RepeatableServiceException();

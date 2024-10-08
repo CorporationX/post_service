@@ -6,7 +6,9 @@ import faang.school.postservice.exception.spelling_corrector.RepeatableServiceEx
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
+
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -46,11 +48,11 @@ public class YandexSpellerClient {
 
             log.error("Ошибка {} при получении корректировки от YandexSpeller", statusCode, exception);
 
-            if (statusCode >= HttpStatus.BAD_REQUEST.value() && statusCode < HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+            if (statusCode >= BAD_REQUEST.value() && statusCode < INTERNAL_SERVER_ERROR.value()) {
                 throw new DontRepeatableServiceException();
             }
 
-            if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+            if (statusCode >= INTERNAL_SERVER_ERROR.value()) {
                 throw new RepeatableServiceException();
             }
         }
