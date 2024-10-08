@@ -3,6 +3,7 @@ package faang.school.postservice.service.comment.async;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.impl.comment.async.CommentServiceAsyncImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

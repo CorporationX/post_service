@@ -1,4 +1,4 @@
-package faang.school.postservice.service.comment.async;
+package faang.school.postservice.service;
 
 import faang.school.postservice.model.Comment;
 

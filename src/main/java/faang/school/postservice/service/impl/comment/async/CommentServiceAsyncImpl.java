@@ -1,8 +1,9 @@
-package faang.school.postservice.service.comment.async;
+package faang.school.postservice.service.impl.comment.async;
 
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.CommentServiceAsync;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class CommentServiceAsyncImpl implements CommentServiceAsync{
+public class CommentServiceAsyncImpl implements CommentServiceAsync {
 
     private final ModerationDictionary dictionary;
     private final CommentRepository commentRepository;
