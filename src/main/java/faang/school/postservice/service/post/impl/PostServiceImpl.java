@@ -20,6 +20,7 @@ import faang.school.postservice.service.post.impl.filter.UnPublishedPostFilter;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -114,13 +115,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public void moderatePosts() {
         List<Post> posts = postRepository.findNotVerified();
-        if (posts.isEmpty()) {
-            return;
-        }
-        for (int i = 0; i < posts.size(); i += countPostsInThread) {
-            int end = Math.min(i + countPostsInThread, posts.size());
-            verifyPosts(posts.subList(i, end));
-        }
+        ListUtils.partition(posts, countPostsInThread).forEach(this::verifyPosts);
     }
 
     @Override
