@@ -37,6 +37,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
+    @Override
     @Transactional
     public PostDto publishPost(PostDto postDto) {
         Post post = getPostFromRepository(postDto.id());
@@ -68,6 +69,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     @Transactional
     public PostDto softDeletePost(Long postId) {
         Post post = getPostFromRepository(postId);
@@ -78,6 +80,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
+    @Override
     @Transactional
     public PostDto getPost(Long id) {
         Post post = getPostFromRepository(id);
@@ -85,6 +88,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     @Transactional
     public List<PostDto> getAllDraftsByAuthorId(Long userId) {
         postValidator.validateIfAuthorExists(userId);
@@ -100,6 +104,7 @@ public class PostServiceImpl implements PostService {
         return posts;
     }
 
+    @Override
     @Transactional
     public List<PostDto> getAllDraftsByProjectId(Long projectId) {
         postValidator.validateIfProjectExists(projectId);
@@ -115,6 +120,7 @@ public class PostServiceImpl implements PostService {
         return posts;
     }
 
+    @Override
     @Transactional
     public List<PostDto> getAllPublishedPostsByAuthorId(Long userId) {
         postValidator.validateIfAuthorExists(userId);
@@ -130,6 +136,7 @@ public class PostServiceImpl implements PostService {
         return posts;
     }
 
+    @Override
     @Transactional
     public List<PostDto> getAllPublishedPostsByProjectId(Long projectId) {
         postValidator.validateIfProjectExists(projectId);

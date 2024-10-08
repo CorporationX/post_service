@@ -106,6 +106,7 @@ public class HashtagServiceImpl implements HashtagService {
         return postsDto;
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<Hashtag> processHashtags(Post post) {
         List<String> foundHashtags = findHashtags(post.getContent());
