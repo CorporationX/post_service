@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -33,7 +34,7 @@ public class ModeratorService {
 
                 if (content != null && !content.isBlank()) {
                     boolean noOffensiveContent = !containsOffensiveContent(content);
-                    commentService.setVerifyToComment(comment, noOffensiveContent);
+                    setVerifyToComment(comment, noOffensiveContent);
                 }
             }));
 
@@ -46,5 +47,10 @@ public class ModeratorService {
         return Arrays.stream(content.toLowerCase().split("[\n\t.,; ]"))
                 .parallel()
                 .anyMatch(offensiveWordsDictionary::isWordContainsInDictionary);
+    }
+
+    public void setVerifyToComment(Comment comment, boolean isVerified) {
+        comment.setVerified(isVerified);
+        comment.setVerifiedAt(LocalDateTime.now());
     }
 }

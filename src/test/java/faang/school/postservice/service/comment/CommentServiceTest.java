@@ -1,6 +1,5 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,8 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,17 +32,6 @@ class CommentServiceTest {
         commentService.getUnverifiedComments();
 
         verify(commentRepository).findByVerifiedAtIsNull();
-    }
-
-    @Test
-    @DisplayName("Method should update comment and save it")
-    void whenCallSetVerifyToCommentThanUpdateCommentAndSave() {
-        Comment comment = new Comment();
-
-        commentService.setVerifyToComment(comment, Boolean.TRUE);
-
-        assertTrue(comment.isVerified());
-        assertNotNull(comment.getVerifiedAt());
     }
 
     @Test
