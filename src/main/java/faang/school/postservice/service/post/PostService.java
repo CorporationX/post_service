@@ -1,13 +1,14 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.annotations.SendPostViewEventToAnalytics;
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
-import faang.school.postservice.exception.spelling_corrector.DontRepeatableServiceException;
-import faang.school.postservice.exception.spelling_corrector.RepeatableServiceException;
 import faang.school.postservice.exception.post.image.DownloadImageFromPostException;
 import faang.school.postservice.exception.post.image.UploadImageToPostException;
+import faang.school.postservice.exception.spelling_corrector.DontRepeatableServiceException;
+import faang.school.postservice.exception.spelling_corrector.RepeatableServiceException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -143,6 +144,13 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
+    @SendPostViewEventToAnalytics()
+    public Post get(Long postId) {
+        return findPostById(postId);
+    }
+
+    @Transactional(readOnly = true)
+    @SendPostViewEventToAnalytics()
     public List<Post> searchByAuthor(Post filterPost) {
         List<Post> posts = postRepository.findByAuthorId(filterPost.getAuthorId());
         posts = applyFiltersAndSorted(posts, filterPost)
@@ -152,6 +160,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
+    @SendPostViewEventToAnalytics()
     public List<Post> searchByProject(Post filterPost) {
         List<Post> posts = postRepository.findByProjectId(filterPost.getProjectId());
         posts = applyFiltersAndSorted(posts, filterPost)

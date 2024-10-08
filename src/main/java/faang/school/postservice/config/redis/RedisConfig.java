@@ -1,6 +1,7 @@
 package faang.school.postservice.config.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +39,12 @@ public class RedisConfig {
     public RedisTemplate<String, String> stringValueRedisTemplate(JedisConnectionFactory connectionFactory,
                                                                   ObjectMapper javaTimeModuleObjectMapper) {
         return buildRedisTemplate(connectionFactory, String.class, javaTimeModuleObjectMapper);
+    }
+
+    @Bean
+    public RedisTemplate<String, PostViewEvent> postViewEventRedisTemplate(JedisConnectionFactory jedisConnectionFactory,
+                                                                           ObjectMapper objectMapper) {
+        return buildRedisTemplate(jedisConnectionFactory, PostViewEvent.class, objectMapper);
     }
 
     @Bean

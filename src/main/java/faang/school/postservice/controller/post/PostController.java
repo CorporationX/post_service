@@ -67,6 +67,12 @@ public class PostController {
         postService.delete(postId);
     }
 
+    @GetMapping("/{postId}")
+    public PostResponseDto getPost(@PathVariable Long postId) {
+        Post post = postService.get(postId);
+        return mapper.toDto(post);
+    }
+
     @GetMapping("/search/{authorId}/author")
     public List<PostResponseDto> searchPostsByAuthor(@PathVariable Long authorId, FilterPostRequestDto requestDto) {
         Post post = mapper.toEntity(requestDto);
