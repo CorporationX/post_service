@@ -28,10 +28,6 @@ spring:
 server:
   port: 8081
 
-logging:
-  level:
-    root: info
-
 post:
   publisher:
     scheduler:
