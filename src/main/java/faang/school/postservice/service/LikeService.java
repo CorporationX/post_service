@@ -1,12 +1,16 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.like.LikeEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.publisher.like.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +37,8 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final LikeMapper likeMapper;
     private final LikeValidator likeValidator;
+    private final LikeEventPublisher likeEventPublisher;
+    private final UserContext userContext;
 
     public List<UserDto> getAllUsersByPostId(long id) {
         return getUsersBatched(getUsersIdsByLikes(getUsersIdsByPostId(id)));
@@ -89,8 +95,21 @@ public class LikeService {
             
             like.setComment(comment);
         }
-        
+        like.setUserId(userContext.getUserId());
         likeRepository.save(like);
+
+        if(like.getPost() != null){
+            LikeEventDto likeEventDto = LikeEventDto.builder()
+                    .postId(like.getPost().getId())
+                    .authorId(like.getPost().getAuthorId())
+                    .likerId(userContext.getUserId())
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            likeEventPublisher.publish(likeEventDto);
+        }
+        //todo likeEvent publish
+        //todo if present postId , like.getPost().getAuthorId(), userContext.getUser(), localDateTime.now()
+
         return likeMapper.toResponseDto(like);
     }
 
