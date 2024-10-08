@@ -1,4 +1,4 @@
-CREATE TABLE post_ad (
+CREATE TABLE IF NOT EXISTS  post_ad (
     id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY UNIQUE,
     post_id bigint NOT NULL,
     buyer_id bigint NOT NULL,
