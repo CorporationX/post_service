@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
-@RequestMapping("/api/post/{postId}")
+@RequestMapping("/post/{postId}")
 @RequiredArgsConstructor
 public class LikeController {
     private static final long MIN_ID = 0L;

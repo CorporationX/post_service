@@ -28,17 +28,19 @@ spring:
       cache:
         post:
           ttl-hours: 24
+          prefix: "Post:"
+          field:
+            likes: likesCount
         user:
           ttl-hours: 24
         news-feed:
-          prefix: NewsFeed
+          prefix: "NewsFeed:"
 
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
       enable-auto-commit: false
-      group-id:
-        post: post
+      group-id: group1
     topic:
       post:
         published: post-published-topic

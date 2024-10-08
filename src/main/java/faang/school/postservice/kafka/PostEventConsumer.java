@@ -29,7 +29,7 @@ public class PostEventConsumer {
     private long tryLockMillis;
 
     @Async
-    @KafkaListener(topics = "${spring.kafka.topic.post.published}", groupId = "${spring.kafka.consumer.group-id.post}")
+    @KafkaListener(topics = "${spring.kafka.topic.post.published}", groupId = "${spring.kafka.consumer.group-id}")
     public void listener(PostPublishedEvent event, Acknowledgment ack) {
         log.info("Received postPublishedEvent [{}]", event.toString());
         Long postId = event.getPostId();
@@ -40,7 +40,7 @@ public class PostEventConsumer {
     }
 
     private void addPostWithLocking(Long followerId, Long postId) {
-        String key = newsFeedPrefix + ":" + followerId;
+        String key = newsFeedPrefix + followerId;
         log.info("Adding post by id {} to {}", postId, key);
         Lock lock = redisLockRegistry.obtain(key);
         try {

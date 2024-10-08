@@ -37,7 +37,7 @@ public class LikeService {
         }
         Like like = mapper.toEntity(dto);
         like.setPost(post);
-        kafkaProducer.send(likeAddedTopic, new LikeAddedEvent(postId, dto.getUserId()));
+        kafkaProducer.send(likeAddedTopic, new LikeAddedEvent(postId));
         return mapper.toDto(likeRepository.save(like));
     }
 

@@ -42,7 +42,7 @@ public class NewsFeedService {
 
     public List<PostRedis> getNewsFeed(Long userId, Long lastPostId) {
         log.info("Getting news feed for user {}", userId);
-        String key = newsFeedPrefix + ":" + userId;
+        String key = newsFeedPrefix + userId;
         List<Long> postIds = newsFeedRedisRepository.getSortedPostIds(key);
         if (postIds.isEmpty()) {
             return getPostsFromDB(userId, lastPostId, batchSize);
