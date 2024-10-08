@@ -26,13 +26,13 @@ public class QuartzConfig {
     }
 
     @Bean
-    public Trigger moderationJobTrigger() {
+    public Trigger moderationJobTrigger(JobDetail moderationJobDetail) {
         SimpleScheduleBuilder scheduleBuilder = SimpleScheduleBuilder.simpleSchedule()
                 .withIntervalInSeconds(intervalInSeconds)
                 .repeatForever();
 
         return TriggerBuilder.newTrigger()
-                .forJob(moderationJobDetail())
+                .forJob(moderationJobDetail)
                 .withIdentity("moderationTrigger")
                 .withSchedule(scheduleBuilder)
                 .build();

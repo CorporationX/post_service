@@ -65,13 +65,8 @@ payment-service:
 
 moderation:
   sublist-size: 10
-
-async:
-  executor:
-    core-pool-size: 10
-    max-pool-size: 50
-    queue-capacity: 100
-    thread-name-prefix: AsyncModeration-
+  thread-pool-size: 5
+  await-termination-seconds: 20
 
 quartz:
   job:

@@ -1,13 +1,14 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.VerificationPostStatus;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -16,25 +17,31 @@ import java.util.stream.IntStream;
 @Service
 @RequiredArgsConstructor
 public class ModerationPostService {
-
     private final PostRepository postRepository;
-    private final ModerationAsyncService moderationAsyncService;
-
-    @Value("${moderation.sublist-size}")
-    private int sublistSize;
+    private final ModerationDictionary moderationDictionary;
 
     @Transactional
-    public void moderateUnverifiedPosts() {
-        List<Post> unverifiedPosts = postRepository.findUnverifiedPosts();
-        log.info("Найдено непроверенных постов: {}", unverifiedPosts.size());
+    public void moderatePostsSublist(List<Post> posts) {
+        List<Post> updatedPosts = posts.stream().map(post -> {
+            if (moderationDictionary.containsForbiddenWord(post.getContent())) {
+                post.setVerificationStatus(VerificationPostStatus.REJECTED);
+            } else {
+                post.setVerificationStatus(VerificationPostStatus.VERIFIED);
+            }
+            post.setVerifiedDate(LocalDateTime.now());
+            return post;
+        }).collect(Collectors.toList());
 
-        List<List<Post>> sublists = splitListIntoSublists(unverifiedPosts, sublistSize);
-        log.info("Разделение на подгруппы для модерации, размер каждой группы: {}", sublistSize);
-
-        sublists.forEach(moderationAsyncService::moderatePostsSublistAsync);
+        postRepository.saveAll(updatedPosts);
+        log.info("Saved {} posts", updatedPosts.size());
     }
 
-    private List<List<Post>> splitListIntoSublists(List<Post> posts, int sublistSize) {
+    @Transactional(readOnly = true)
+    public List<Post> findUnverifiedPosts() {
+        return postRepository.findByVerificationStatus(VerificationPostStatus.UNVERIFIED);
+    }
+
+    public List<List<Post>> splitListIntoSublists(List<Post> posts, int sublistSize) {
         if (sublistSize <= 0) {
             throw new IllegalArgumentException("Sublist size must be greater than zero.");
         }

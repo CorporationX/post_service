@@ -1,17 +1,15 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.exception.post.ForbiddenWordsFileNotFoundException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.exception.post.ForbiddenWordsLoadingException;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 @Service
@@ -20,17 +18,12 @@ public class ModerationDictionary {
 
     @PostConstruct
     public void loadForbiddenWords() {
-        try (InputStream inputStream = getClass().getResourceAsStream("/forbidden-words.txt");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-
-            if (inputStream == null) {
-                throw new ForbiddenWordsFileNotFoundException();
-            }
-
-            forbiddenWords = reader.lines()
-                    .map(String::toLowerCase)
-                    .collect(Collectors.toSet());
-
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            forbiddenWords = new HashSet<>(objectMapper.readValue(
+                    new ClassPathResource("forbidden-words.json").getInputStream(),
+                    Set.class
+            ));
         } catch (IOException e) {
             throw new ForbiddenWordsLoadingException();
         }

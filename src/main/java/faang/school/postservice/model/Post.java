@@ -91,7 +91,7 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "verification_status", nullable = false)
-    private VerificationPostStatus verificationStatus = VerificationPostStatus.UNVERIFIED;
+    private VerificationPostStatus verificationStatus;
 
     @Column(name = "verified_date")
     private LocalDateTime verifiedDate;
