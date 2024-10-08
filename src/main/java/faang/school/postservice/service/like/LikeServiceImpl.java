@@ -5,7 +5,6 @@ import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.kafka.EventsGenerator;
-import faang.school.postservice.kafka.producer.KafkaEventProducer;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
@@ -38,7 +37,6 @@ import static java.lang.Math.min;
 public class LikeServiceImpl implements LikeService {
     @Value("${like-service.batch-size}")
     private int batchSize;
-//TOdo max 4-5 dependencies
     private final LikeValidator likeValidator;
     private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;

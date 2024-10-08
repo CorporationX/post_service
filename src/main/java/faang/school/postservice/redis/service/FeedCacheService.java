@@ -9,9 +9,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
-import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.emptyList;
 
 @Service
@@ -29,8 +30,8 @@ public class FeedCacheService {
     private final PostCacheService postCacheService;
     private final PostCacheMapper postCacheMapper;
 
-    public void addPostIdToAuthorFollowers(Long postId, List<Long> followerIds) {
-        followerIds.forEach(followerId -> addPostIdToFollowerFeed(postId, followerId));
+    public void addPostIdToAuthorFollowers(Long postId, List<Long> followerIds, LocalDateTime publishedAt) {
+        followerIds.forEach(followerId -> addPostIdToFollowerFeed(postId, followerId, publishedAt));
     }
 
     public List<PostDto> getFeedByUserId(Long userId, Long postId){
@@ -43,10 +44,10 @@ public class FeedCacheService {
 
     public void saveUserFeedHeat(FeedDto feedDto){
         var feedCacheKey = generateFeedCacheKey(feedDto.followerId());
-        var score = currentTimeMillis();
 
-        for (Long postId: feedDto.posts()){
-            redisTemplate.opsForZSet().add(feedCacheKey, postId, score++);
+        for (PostDto post: feedDto.posts()){
+            var score = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
+            redisTemplate.opsForZSet().add(feedCacheKey, post, score);
         }
     }
 
@@ -77,10 +78,11 @@ public class FeedCacheService {
                 .toList();
     }
 
-    private void addPostIdToFollowerFeed(Long postId, Long followerId){
+    private void addPostIdToFollowerFeed(Long postId, Long followerId, LocalDateTime publishedAt){
         var feedCacheKey = generateFeedCacheKey(followerId);
+        var score = publishedAt.toInstant(ZoneOffset.UTC).toEpochMilli();
 
-        redisTemplate.opsForZSet().add(feedCacheKey, postId, currentTimeMillis());
+        redisTemplate.opsForZSet().add(feedCacheKey, postId, score);
 
         var setSize = redisTemplate.opsForZSet().zCard(feedCacheKey);
         if (setSize != null && setSize > maxFeedSize) {

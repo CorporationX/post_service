@@ -6,30 +6,38 @@ import faang.school.postservice.redis.service.FeedCacheService;
 import faang.school.postservice.redis.service.FeedHeatService;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
+@Slf4j
 public class FeedController {
     private final FeedCacheService feedCacheService;
     private final FeedHeatService feedHeatService;
     private final UserContext userContext;
 
     @GetMapping("/feed")
-    public List<PostDto> getUserFeed(@Nullable @RequestParam("postId") Long postId){
+    public ResponseEntity<List<PostDto>> getUserFeed(@Nullable @RequestParam("postId") Long postId) {
         var userId = userContext.getUserId();
-        return feedCacheService.getFeedByUserId(postId, userId);
+        List<PostDto> userFeed = feedCacheService.getFeedByUserId(postId, userId);
+
+        if (userFeed.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(userFeed);
     }
 
     @GetMapping("/heat")
-    public CompletableFuture<Void> cacheHeat(){
-        return feedHeatService.sendHeatEvents();
+    public void sendHeatEventsAsync() {
+        feedHeatService.sendHeatEvents();
     }
 }

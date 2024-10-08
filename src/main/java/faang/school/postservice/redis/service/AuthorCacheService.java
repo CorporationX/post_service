@@ -19,8 +19,7 @@ public class AuthorCacheService {
     private final AuthorCacheRedisRepository repository;
     private final AuthorCacheMapper authorCacheMapper;
     private final UserServiceClient userServiceClient;
-
-    @Async
+    
     public CompletableFuture<Void> saveAllAuthorsInCache(List<UserDto> allUsers){
         if (allUsers == null || allUsers.isEmpty()) {
             return completedFuture(null);

@@ -56,6 +56,9 @@ spring:
       posts: "posts"
       heat-posts: "heat_posts"
       heat-feed: "heat_feed"
+    topics:
+      partitions: 1
+      replicas: 1
 
 server:
   port: 8081

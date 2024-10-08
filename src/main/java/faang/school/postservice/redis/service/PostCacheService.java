@@ -26,6 +26,9 @@ public class PostCacheService {
     private int commentsInPostQuantity;
     @Value("{spring.data.redis.post-cache.key-prefix}")
     private String postCacheKeyPrefix;
+    @Value("spring.data.redis.post-cache.comments-in-post:3")
+    private int maxCommentsQuantity;
+
     @Qualifier("redisCacheTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
     private final PostCacheRepository postCacheRepository;
@@ -49,11 +52,6 @@ public class PostCacheService {
         }
     }
 
-    private void incrementConcurrentPostViews(Long postId) {
-        redisTemplate.opsForHash()
-                .increment(generateCachePostKey(postId), postCacheViewsField, 1);
-    }
-
     public void incrementConcurrentPostLikes(Long postId) {
         if (postCacheRepository.existsById(postId)){
             redisTemplate.opsForHash()
@@ -64,16 +62,34 @@ public class PostCacheService {
         }
     }
 
-    public void cacheCommentForPost(Long postId, CommentDto commentDto){
+    public void addCommentToCachedPost(Long postId, CommentDto commentDto) {
         var postCache = postCacheRepository.findById(postId)
-                .orElseGet(() -> {
-                    var postDto = postService.getPost(postId);
-                    savePostCache(postDto);
-                    return null;
-                });
+                .orElseGet(() -> createAndCachePost(postId));
 
         if (postCache != null) {
-            postCache.addComment(commentDto);
+            addComment(postCache, commentDto);
+        }
+    }
+
+    private void incrementConcurrentPostViews(Long postId) {
+        redisTemplate.opsForHash()
+                .increment(generateCachePostKey(postId), postCacheViewsField, 1);
+    }
+
+    private PostCache createAndCachePost(Long postId) {
+        var postDto = postService.getPost(postId);
+        return savePostCache(postDto);
+    }
+
+    public void addComment(PostCache postCache, CommentDto commentDto) {
+        var comments = postCache.getComments();
+        ensureCapacity(comments);
+        comments.add(0, commentDto);
+    }
+
+    private void ensureCapacity(List<CommentDto> comments) {
+        if (comments.size() == maxCommentsQuantity) {
+            comments.remove(comments.size() - 1);
         }
     }
 
@@ -87,8 +103,8 @@ public class PostCacheService {
                 .toList();
     }
 
-    public void savePostCache(PostDto postDto) {
+    public PostCache savePostCache(PostDto postDto) {
         var postCache = postCacheMapper.toPostCache(postDto);
-        postCacheRepository.save(postCache);
+        return postCacheRepository.save(postCache);
     }
 }

@@ -21,6 +21,5 @@ class PostCacheMapperTest {
         // then - verify the output
         assertThat(actualResult).usingRecursiveComparison()
                 .isEqualTo(expectedResult);
-
     }
 }

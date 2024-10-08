@@ -17,14 +17,20 @@ public class KafkaTopicConfig {
     private String bootstrapServers;
     @Value("${spring.kafka.topic-name.likes:likes}")
     private String likesTopic;
-    @Value("${spring.kafka.topic-name.post-views-topic}")
+    @Value("${spring.kafka.topic-name.post-views-topic:post_views}")
     private String postViewsTopic;
-    @Value("${spring.kafka.topic-name.comments}")
+    @Value("${spring.kafka.topic-name.comments:comments}")
     private String commentsTopic;
-    @Value("${spring.kafka.topic-name.posts}")
+    @Value("${spring.kafka.topic-name.posts:posts}")
     private String postsTopic;
-    @Value("${spring.kafka.topic-name.heat-posts}")
+    @Value("${spring.kafka.topic-name.heat-posts:heat_posts}")
     private String heatPostsTopic;
+    @Value("${spring.kafka.topic-name.heat-feed:heat_feed}")
+    private String heatFeedsTopic;
+    @Value("${spring.kafka.topics.partitions}")
+    private int partitionCount;
+    @Value("${spring.kafka.topics.replicas}")
+    private int replicaCount;
 
     @Bean
     public KafkaAdmin admin() {
@@ -36,16 +42,16 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic likesTopic(){
         return TopicBuilder.name(likesTopic)
-                .partitions(1)
-                .replicas(1)
+                .partitions(partitionCount)
+                .replicas(replicaCount)
                 .compact()
                 .build();
     }
     @Bean
     public NewTopic postViewsTopic(){
         return TopicBuilder.name(postViewsTopic)
-                .partitions(1)
-                .replicas(1)
+                .partitions(partitionCount)
+                .replicas(replicaCount)
                 .compact()
                 .build();
     }
@@ -53,8 +59,8 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic commentsTopic(){
         return TopicBuilder.name(commentsTopic)
-                .partitions(1)
-                .replicas(1)
+                .partitions(partitionCount)
+                .replicas(replicaCount)
                 .compact()
                 .build();
     }
@@ -62,17 +68,25 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic postTopic(){
         return TopicBuilder.name(postsTopic)
-                .partitions(1)
-                .replicas(1)
+                .partitions(partitionCount)
+                .replicas(replicaCount)
                 .compact()
                 .build();
     }
 
     @Bean
-    public NewTopic feedsTopic(){
+    public NewTopic heatPostsTopic(){
         return TopicBuilder.name(heatPostsTopic)
-                .partitions(1)
-                .replicas(1)
+                .partitions(partitionCount)
+                .replicas(replicaCount)
+                .compact()
+                .build();
+    }
+
+    public NewTopic heatFeedsTopic(){
+        return TopicBuilder.name(heatFeedsTopic)
+                .partitions(partitionCount)
+                .replicas(replicaCount)
                 .compact()
                 .build();
     }

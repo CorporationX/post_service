@@ -47,21 +47,13 @@ public class PostService {
         var savedPost = postRepository.save(post);
         var postDto = postMapper.toDto(savedPost);
 
+        authorCacheService.saveAuthorCache(postDto.getAuthorId());
         postCacheService.savePostCache(postDto);
         eventsGenerator.generateAndSendPostFollowersEvent(postDto);
 
-        authorCacheService.saveAuthorCache(postDto.getAuthorId());
-
         return postDto;
     }
-    //TODO SORT PRIVATE METHODS!
 
-
-    private void validatePostPublishing(Post post) {
-        if (post.isPublished()) {
-            throw new IllegalArgumentException("Post is already published");
-        }
-    }
 
     public PostDto updatePost(final long postId, final PostDto postDto) {
         Post newPost = postMapper.toEntity(postDto);
@@ -91,6 +83,12 @@ public class PostService {
         return postDto;
     }
 
+    public List<PostDto> getPostsByIds(List<Long> postIds) {
+        return postRepository.findAllById(postIds).stream()
+                .map(postMapper::toDto)
+                .toList();
+    }
+
     public List<PostDto> getFilteredPosts(final Long authorId, final Long projectId, final Boolean isPostPublished) {
         List<Post> result = new ArrayList<>();
         boolean isPublished = isPostPublished;
@@ -106,13 +104,13 @@ public class PostService {
                 .toList();
     }
 
-    private Post getPostByIdOrFail(long postId) {
-        return postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+    private void validatePostPublishing(Post post) {
+        if (post.isPublished()) {
+            throw new IllegalArgumentException("Post is already published");
+        }
     }
 
-    public List<PostDto> getPostsByIds(List<Long> postIds) {
-        return postRepository.findAllById(postIds).stream()
-                .map(postMapper::toDto)
-                .toList();
+    private Post getPostByIdOrFail(long postId) {
+        return postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
     }
 }

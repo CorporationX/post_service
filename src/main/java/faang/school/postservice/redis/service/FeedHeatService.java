@@ -10,11 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-import static java.util.concurrent.CompletableFuture.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,59 +23,48 @@ public class FeedHeatService {
     private final UserServiceClient userServiceClient;
     private final PostService postService;
 
-    public CompletableFuture<Void> sendHeatEvents(){
+    public void sendHeatEvents(){
         var allUsers = userServiceClient.getAllUsers();
-        var savedAllAuthorsInCache = authorCacheService.saveAllAuthorsInCache(allUsers);
+        authorCacheService.saveAllAuthorsInCache(allUsers);
 
         var feedEvents = generateFeedsForAllUserFollowers(allUsers);
-        var feedEventFutures = sendFeedHeatEvents(feedEvents);
+        sendFeedHeatEvents(feedEvents);
 
 
         var postEvents = generatePostEvents(feedEvents);
-        var postEventFutures = sendPostHeatEvents(postEvents);
-
-        return allOf(savedAllAuthorsInCache, feedEventFutures, postEventFutures);
+        sendPostHeatEvents(postEvents);
     }
 
-    private CompletableFuture<Void> sendPostHeatEvents(List<PostDto> postEvents) {
-        var postEventFutures = postEvents.stream()
-                .map(kafkaEventProducer::sendPostHeatEvent)
-                .toArray(CompletableFuture[]::new);
-        return allOf(postEventFutures);
+    private void sendPostHeatEvents(List<PostDto> postEvents) {
+        postEvents.forEach(kafkaEventProducer::sendPostHeatEvent);
     }
 
-    private CompletableFuture<Void> sendFeedHeatEvents(List<FeedDto> feedEvents) {
-        var feedEventFutures = feedEvents.stream()
-                .map(kafkaEventProducer::sendFeedHeatEvent)
-                .toArray(CompletableFuture[]::new);
-        return allOf(feedEventFutures);
+    private void sendFeedHeatEvents(List<FeedDto> feedEvents) {
+       feedEvents.forEach(kafkaEventProducer::sendFeedHeatEvent);
     }
 
     private List<FeedDto> generateFeedsForAllUserFollowers(List<UserDto> allUsersInOurSystem) {
-        List<FeedDto> feeds = new ArrayList<>();
+        return allUsersInOurSystem.parallelStream()
+                .map(follower -> {
+                    var followerId = follower.getId();
+                    var bloggers = userServiceClient.getUsersByIds(follower.getFollowees());
 
-        for (UserDto follower : allUsersInOurSystem) {
-            var followerId = follower.getId();
-            var bloggers = userServiceClient.getUsersByIds(follower.getFollowees());
+                    var allBloggersPostIds = bloggers.stream()
+                            .flatMap(blogger -> blogger.getPosts().stream())
+                            .limit(maxPostsInHeatFeed)
+                            .toList();
 
-            var allBloggersPosts = bloggers.stream()
-                    .flatMap(blogger -> blogger.getPosts().stream())
-                    .limit(maxPostsInHeatFeed)
-                    .toList();
+                    var allBloggersPosts = postService.getPostsByIds(allBloggersPostIds);
 
-            feeds.add(new FeedDto(followerId, allBloggersPosts));
-        }
-        return feeds;
+                    return new FeedDto(followerId, allBloggersPosts);
+                })
+                .toList();
     }
 
     private List<PostDto> generatePostEvents(List<FeedDto> feedDtos){
-        var postIds = feedDtos.stream()
+        return feedDtos.stream()
                 .flatMap(feedDto -> feedDto.posts().stream())
                 .distinct()
-                .toList();
-
-        return postService.getPostsByIds(postIds)
-                .stream()
                 .toList();
     }
 }

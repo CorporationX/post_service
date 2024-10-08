@@ -17,7 +17,7 @@ public class PostEventsConsumer {
     @KafkaListener(topics = "${spring.kafka.topic-name.posts:posts}")
     void listener(PostFollowersEvent event, Acknowledgment acknowledgment){
         try {
-            feedCacheService.addPostIdToAuthorFollowers(event.postId(), event.followersIds());
+            feedCacheService.addPostIdToAuthorFollowers(event.postId(), event.followersIds(), event.publishedAt());
             acknowledgment.acknowledge();
         } catch (Exception e) {
             log.error("Post with id:{} is not added to followers feeds.", event.postId());

@@ -22,6 +22,7 @@ public class EventsGenerator {
         var event = PostFollowersEvent.builder()
                 .authorId(postDto.getAuthorId())
                 .followersIds(author.getFollowers())
+                .publishedAt(postDto.getPublishedAt())
                 .build();
 
         kafkaEventProducer.sendPostFollowersEvent(event);

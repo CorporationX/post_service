@@ -8,6 +8,7 @@ import faang.school.postservice.redis.model.PostCache;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.lang.Long.MAX_VALUE;
 import static java.util.List.of;
@@ -58,13 +59,15 @@ public final class TestDataFactory {
 
     public static PostCache createPostCache(){
         var comment = createComment();
+        var comments = new CopyOnWriteArrayList<CommentDto>();
+        comments.add(comment);
         return PostCache.builder()
                 .id(123L)
                 .content("Content")
                 .authorId(12L)
                 .likes(8)
                 .views(100)
-                .comments(of(comment))
+                .comments(comments)
                 .build();
     }
 
