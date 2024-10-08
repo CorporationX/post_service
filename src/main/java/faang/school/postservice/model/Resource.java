@@ -30,7 +30,7 @@ public class Resource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "key", nullable = false, length = 50)
+    @Column(name = "resource_key", nullable = false, length = 50)
     private String key;
 
     @Column(name = "size")
