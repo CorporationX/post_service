@@ -2,12 +2,15 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.kafka.Producer;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.UserRedis;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.UserRedisRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,14 +37,16 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
     private final Producer kafkaProducer;
+    private final UserRedisRepository userRedisRepository;
 
     @Value("${spring.kafka.topic.comment.added}")
     private String commentAddedTopic;
 
     public CommentDto addComment(Long postId, CommentDto dto) {
         Post post = getPost(postId);
+        UserDto userDto;
         try {
-            userServiceClient.getUser(dto.getAuthorId());
+            userDto = userServiceClient.getUser(dto.getAuthorId());
         } catch (FeignException e) {
             throw new RuntimeException(MESSAGE_USER_LEFT_COMMENT_NOT_EXIST);
         }
@@ -50,6 +55,7 @@ public class CommentService {
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
         log.info("comment with id:{} created.", savedComment.getId());
+        saveUserToCache(userDto);
         kafkaProducer.send(commentAddedTopic, mapper.toCommentEvent(savedComment));
         return mapper.toDto(savedComment);
     }
@@ -72,6 +78,13 @@ public class CommentService {
         Comment commentForDelete = getCommentForDelete(commentId, post.getComments());
         commentRepository.delete(commentForDelete);
         return mapper.toDto(commentForDelete);
+    }
+
+    private void saveUserToCache(UserDto userDto) {
+        if (!userRedisRepository.existsById(userDto.getId())) {
+            userRedisRepository.save(new UserRedis(userDto.getId(), userDto.getUsername()));
+            log.info("User by id {} saved to cache", userDto.getId());
+        }
     }
 
     private List<CommentDto> getListCommentDto(List<Comment> comments) {

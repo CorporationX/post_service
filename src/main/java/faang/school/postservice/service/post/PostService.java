@@ -120,7 +120,7 @@ public class PostService {
 
     private void saveToCache(Post post, UserDto userDto) {
         postRedisRepository.save(mapper.toRedis(post));
-        if (!userRedisRepository.existsById(post.getAuthorId())) {
+        if (!userRedisRepository.existsById(userDto.getId())) {
             userRedisRepository.save(new UserRedis(userDto.getId(), userDto.getUsername()));
         }
     }
