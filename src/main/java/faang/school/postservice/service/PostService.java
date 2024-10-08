@@ -6,6 +6,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -18,26 +19,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
+    @Value("${post.moderation.sublist.length}")
     private Long sublistLength;
 
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final ModerationDictionary moderationDictionary;
     private final ExecutorService executor;
-
-    public PostService(@Value("${post.moderation.sublist.length}") Long sublistLength,
-                       PostMapper postMapper,
-                       PostRepository postRepository,
-                       ModerationDictionary moderationDictionary,
-                       ExecutorService executor) {
-        this.sublistLength = sublistLength;
-        this.postRepository = postRepository;
-        this.postMapper = postMapper;
-        this.moderationDictionary = moderationDictionary;
-        this.executor = executor;
-    }
 
     public List<PostResponseDto> getPostsByAuthorWithLikes(long authorId) {
         List<Post> posts = postRepository.findByAuthorIdWithLikes(authorId);

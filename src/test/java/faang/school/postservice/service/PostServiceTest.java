@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,6 +53,7 @@ class PostServiceTest {
 
     @BeforeEach
     public void init() {
+        ReflectionTestUtils.setField(postService, "sublistLength", SUBLIST_LENGTH);
         unverifiedContent = Map.of(ID_ONE, CONTENT, ID_TWO, SWEAR_CONTENT);
         verifiedContent = Map.of(ID_ONE, true, ID_TWO, false);
 
@@ -66,14 +69,13 @@ class PostServiceTest {
 
         unverifiedPosts = List.of(firstPost, secondPost);
         executor = Executors.newFixedThreadPool(THREAD_COUNT);
-        postService = new PostService(SUBLIST_LENGTH, postMapper, postRepository, moderationDictionary, executor);
     }
 
     @Test
     @DisplayName("Успешный вызов метода moderationPostContent")
     public void whenModeratePostsContentThenSuccess() {
         when(postRepository.findReadyToVerified()).thenReturn(unverifiedPosts);
-        when(moderationDictionary.searchSwearWords(unverifiedContent)).thenReturn(verifiedContent);
+        lenient().when(moderationDictionary.searchSwearWords(unverifiedContent)).thenReturn(verifiedContent);
 
         postService.moderatePostsContent();
 
