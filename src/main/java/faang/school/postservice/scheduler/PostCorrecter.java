@@ -1,4 +1,4 @@
-package faang.school.postservice.service.spellcheck;
+package faang.school.postservice.scheduler;
 
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;

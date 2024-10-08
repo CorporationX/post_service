@@ -1,7 +1,9 @@
-package faang.school.postservice.service.spellcheck;
+package faang.school.postservice.service.impl;
 
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.BatchProcessService;
+import faang.school.postservice.service.SpellCheckService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -11,13 +13,14 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
-public class BatchProcessService {
+public class BatchProcessServiceImpl implements BatchProcessService {
     private final String AUTOCORRECTION_WARNING = "\n[Automatic correction of spelling and grammatical errors " +
             "has been applied to the post text. Please review the text before publishing!]";
 
     private final SpellCheckService spellCheckService;
     private final PostRepository postRepository;
 
+    @Override
     @Async("postOperationsAsyncExecutor")
     public CompletableFuture<Void> processBatch(List<Post> postsBatch) {
 

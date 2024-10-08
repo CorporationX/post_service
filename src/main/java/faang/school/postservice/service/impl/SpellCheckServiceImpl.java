@@ -1,8 +1,9 @@
-package faang.school.postservice.service.spellcheck;
+package faang.school.postservice.service.impl;
 
-import faang.school.postservice.dto.correcter.LanguageDetectionResponse;
-import faang.school.postservice.dto.correcter.SpellCheckResponse;
-import faang.school.postservice.dto.correcter.TextGearsResponse;
+import faang.school.postservice.model.dto.correcter.LanguageDetectionResponse;
+import faang.school.postservice.model.dto.correcter.SpellCheckResponse;
+import faang.school.postservice.model.dto.correcter.TextGearsResponse;
+import faang.school.postservice.service.SpellCheckService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,7 +25,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public class SpellCheckService {
+public class SpellCheckServiceImpl implements SpellCheckService {
 
     @Value("${spell-checker.api.host}")
     private String host;
@@ -40,6 +41,7 @@ public class SpellCheckService {
 
     private final RestTemplate restTemplate;
 
+    @Override
     @Retryable(
             retryFor = {RestClientException.class},
             maxAttempts = 5,
@@ -75,6 +77,7 @@ public class SpellCheckService {
         }
     }
 
+    @Override
     @Retryable(
             retryFor = {RestClientException.class},
             maxAttempts = 5,
