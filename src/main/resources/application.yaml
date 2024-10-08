@@ -46,6 +46,8 @@ spring:
         published: post-published-topic
       like:
         added: like-added-topic
+      comment:
+        added: comment-added-topic
 
   async:
     executor:

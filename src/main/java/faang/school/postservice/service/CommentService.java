@@ -1,19 +1,17 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CommentDto;
-import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.kafka.Producer;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-//import faang.school.postservice.service.publisher.PublicationService;
-//import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -35,9 +33,12 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
-//    private final PublicationService<CommentEventPublisher, CommentEvent> publishService;
+    private final Producer kafkaProducer;
 
-    public CommentDto addComment(Long postId, CommentDto dto) throws JsonProcessingException {
+    @Value("${spring.kafka.topic.comment.added}")
+    private String commentAddedTopic;
+
+    public CommentDto addComment(Long postId, CommentDto dto) {
         Post post = getPost(postId);
         try {
             userServiceClient.getUser(dto.getAuthorId());
@@ -49,7 +50,7 @@ public class CommentService {
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
         log.info("comment with id:{} created.", savedComment.getId());
-//        publishService.publishEvent(mapper.toCommentEvent(savedComment));
+        kafkaProducer.send(commentAddedTopic, mapper.toCommentEvent(savedComment));
         return mapper.toDto(savedComment);
     }
 
