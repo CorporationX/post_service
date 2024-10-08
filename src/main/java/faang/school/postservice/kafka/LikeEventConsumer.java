@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,6 +20,7 @@ public class LikeEventConsumer {
     @Value("${spring.data.redis.cache.post.field.likes}")
     private String likesField;
 
+    @Async
     @KafkaListener(topics = "${spring.kafka.topic.like.added}", groupId = "${spring.kafka.consumer.group-id}")
     public void listener(LikeAddedEvent event, Acknowledgment ack) {
         log.info("Received likeAddedEvent [{}]", event.toString());

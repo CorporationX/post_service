@@ -49,8 +49,8 @@ spring:
 
   async:
     executor:
-      core-pool-size: 5
-      max-pool-size: 10
+      core-pool-size: 50
+      max-pool-size: 100
       queue-capacity: 500
 
 news-feed:
