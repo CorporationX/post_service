@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
@@ -23,16 +26,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException exception, WebRequest request) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+        body.put("status", BAD_REQUEST.value());
+        body.put("error", BAD_REQUEST.getReasonPhrase());
         body.put("message", exception.getMessage());
         body.put("path", request.getDescription(false).substring(4));
 
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(body, BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(BAD_REQUEST)
     public ErrorResponse handleValidationException(MethodArgumentNotValidException ex) {
         log.error("Method argument exception occurred: {}", ex.getMessage());
 
@@ -45,8 +48,20 @@ public class GlobalExceptionHandler {
 
         return ErrorResponse.builder()
                 .message(errors.toString())
-                .status(HttpStatus.BAD_REQUEST.value())
+                .status(BAD_REQUEST.value())
                 .error("Validation Failed")
+                .build();
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleGeneralException(Exception ex) {
+        log.error("An unexpected error occurred: {}", ex.getMessage());
+
+        return ErrorResponse.builder()
+                .message("An unexpected error occurred. Please try again later.")
+                .status(INTERNAL_SERVER_ERROR.value())
+                .error("Internal Server Error")
                 .build();
     }
 }

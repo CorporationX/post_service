@@ -1,9 +1,11 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.kafka.EventsGenerator;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.service.AuthorCacheService;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.error.CommentServiceErrors;
@@ -20,6 +22,8 @@ public class CommentService {
     private final CommentRepository repository;
     private final PostRepository postRepository;
     private final CommentMapper mapper;
+    private final EventsGenerator eventsGenerator;
+    private final AuthorCacheService authorCacheService;
 
     public CommentDto addComment(Long postId, CommentDto commentDto) {
         if (commentDto.getContent() == null || commentDto.getContent().isBlank()) {
@@ -36,10 +40,14 @@ public class CommentService {
         post.getComments().add(saveComment);
         post.setUpdatedAt(LocalDateTime.now());
         postRepository.save(post);
+        var savedCommentDto = mapper.toDto(saveComment);
 
-        return mapper.toDto(saveComment);
+        eventsGenerator.generateAndSendCommentEventToKafka(savedCommentDto);
+        authorCacheService.saveAuthorCache(savedCommentDto.getAuthorId());
+
+        return savedCommentDto;
+
     }
-
 
     public CommentDto updateComment(Long postId, CommentDto commentDto) {
         getPost(postId);

@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.kafka.EventsGenerator;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
@@ -31,9 +32,11 @@ import static java.lang.Math.min;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Setter
+@RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
+    @Value("${like-service.batch-size}")
+    private int batchSize;
     private final LikeValidator likeValidator;
     private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;
@@ -44,8 +47,7 @@ public class LikeServiceImpl implements LikeService {
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
 
-    @Value("${like-service.batch-size}")
-    private int batchSize;
+    private final EventsGenerator eventsGenerator;
 
     @Override
     @Transactional
@@ -93,6 +95,9 @@ public class LikeServiceImpl implements LikeService {
                 like.getId(),
                 postId,
                 userId);
+
+        eventsGenerator.generateAndSendLikeEvent(postMapper.toDto(post));
+
         return likeMapper.toDto(like);
     }
 

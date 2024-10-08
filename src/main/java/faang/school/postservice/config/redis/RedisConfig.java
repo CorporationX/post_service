@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.redis;
 
 import faang.school.postservice.listener.LikeEventListener;
 import org.springframework.beans.factory.annotation.Value;

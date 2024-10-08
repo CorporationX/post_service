@@ -21,11 +21,44 @@ spring:
     redis:
       port: 6379
       host: localhost
+      time-to-live: 86400
       channels:
          like_post_channel:
           name: like_channel
          comment_channel:
            name: comment_channel
+      feed-cache:
+        size: 500
+        key-prefix: "feed:"
+        batch_size: 20
+      post-cache:
+        key-prefix: "post:"
+        likes: "likes"
+        comments: "comments"
+        views: "view"
+        comments-in-post: 3
+      heat:
+        max-posts-in-feed: 500
+
+  kafka:
+    consumer:
+      enable-auto-commit: false
+    producer:
+      acks: 1
+      retries: 10
+    listener:
+      ack-mode: manual
+    bootstrap_servers: "localhost:9092"
+    topic-name:
+      likes: "likes"
+      post-views: "post_views"
+      comments: "comments"
+      posts: "posts"
+      heat-posts: "heat_posts"
+      heat-feed: "heat_feed"
+    topics:
+      partitions: 1
+      replicas: 1
 
 server:
   port: 8081
@@ -58,3 +91,11 @@ cron-expression: 00 50 17 ? * *
 
 like-service:
   batch-size: 100
+
+  app:
+    async:
+      hash_generator:
+        core_pool_size: 5
+        max_pool_size: 10
+        queue_capacity: 500
+        thread_name_prefix: "AsyncExecutor-"

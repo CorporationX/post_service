@@ -18,7 +18,11 @@ public class PostMock {
     public static final String newContent = "newContent";
 
     public static UserDto generateUserDto() {
-        return new UserDto(userId, "username", "email@test.com");
+        return UserDto.builder()
+                .id(userId)
+                .username("username")
+                .email("email@test.com")
+                .build();
     }
 
     public static ProjectDto generateProjectDto() {
