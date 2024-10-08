@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class PostPublishedEvent {
+public class PostPublishedEvent extends Event {
     private Long postId;
     private List<Long> followerIds;
 }

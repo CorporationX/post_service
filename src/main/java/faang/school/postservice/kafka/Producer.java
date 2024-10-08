@@ -1,7 +1,6 @@
 package faang.school.postservice.kafka;
 
-import faang.school.postservice.dto.event.LikeAddedEvent;
-import faang.school.postservice.dto.event.PostPublishedEvent;
+import faang.school.postservice.dto.event.Event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -13,13 +12,8 @@ import org.springframework.stereotype.Component;
 public class Producer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void send(String topic, PostPublishedEvent event) {
-        log.info("Sending postPublishedEvent: {} to topic: {}", event, topic);
-        kafkaTemplate.send(topic, event);
-    }
-
-    public void send(String topic, LikeAddedEvent event) {
-        log.info("Sending likeAddedEvent: {} to topic: {}", event, topic);
+    public void send(String topic, Event event) {
+        log.info("Sending event: {} to topic: {}", event, topic);
         kafkaTemplate.send(topic, event);
     }
 }

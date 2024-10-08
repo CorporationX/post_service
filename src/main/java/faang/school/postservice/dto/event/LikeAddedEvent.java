@@ -1,11 +1,11 @@
 package faang.school.postservice.dto.event;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 @AllArgsConstructor
-public class LikeAddedEvent {
+public class LikeAddedEvent extends Event {
     private Long postId;
     private Long authorId;
 }

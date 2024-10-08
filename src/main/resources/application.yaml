@@ -31,7 +31,6 @@ spring:
         user:
           ttl-hours: 24
         news-feed:
-          ttl-hours: 24
           prefix: NewsFeed
 
   kafka:

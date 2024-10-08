@@ -2,14 +2,14 @@ package faang.school.postservice.dto.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CommentEvent {
+public class CommentEvent extends Event {
     private Long id;
     private String content;
     private Long authorId;
