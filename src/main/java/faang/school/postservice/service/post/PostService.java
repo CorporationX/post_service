@@ -1,5 +1,7 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.annotations.SendPostViewEventToAnalytics;
+import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
@@ -97,20 +99,26 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
+    @SendPostViewEventToAnalytics()
+    public Post get(Long postId) {
+        return findPostById(postId);
+    }
+
+    @Transactional(readOnly = true)
+    @SendPostViewEventToAnalytics()
     public List<Post> searchByAuthor(Post filterPost) {
         List<Post> posts = postRepository.findByAuthorId(filterPost.getAuthorId());
         posts = applyFiltersAndSorted(posts, filterPost)
                 .toList();
-
         return posts;
     }
 
     @Transactional(readOnly = true)
+    @SendPostViewEventToAnalytics()
     public List<Post> searchByProject(Post filterPost) {
         List<Post> posts = postRepository.findByProjectId(filterPost.getProjectId());
         posts = applyFiltersAndSorted(posts, filterPost)
                 .toList();
-
         return posts;
     }
 
