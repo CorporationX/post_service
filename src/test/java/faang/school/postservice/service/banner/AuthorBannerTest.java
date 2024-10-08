@@ -11,6 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,5 +36,12 @@ class AuthorBannerTest {
         userIds.forEach(userId ->
                 verify(redisMessagePublisher, Mockito.times(1))
                         .publish(String.valueOf(userId)));
+    }
+
+    @Test
+    void testPublishingUsersForBan_emptyUserList() {
+        when(postService.findUserIdsForBan()).thenReturn(List.of());
+        authorBanner.publishingUsersForBan();
+        verify(redisMessagePublisher, never()).publish(anyString());
     }
 }

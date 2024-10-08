@@ -13,8 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
@@ -25,7 +23,6 @@ import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
 public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
-    private static final int MAX_REJECTED_POSTS = 5;
 
     @Transactional
     public Post create(Post post) {
@@ -103,17 +100,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<Long> findUserIdsForBan() {
-        List<Post> rejectedPosts = postRepository.findAllByVerificationStatus(REJECTED);
-        Map<Long, List<Long>> postsByAuthorId = rejectedPosts.stream()
-                .collect(Collectors.groupingBy(
-                        Post::getAuthorId,
-                        Collectors.mapping(Post::getId, Collectors.toList())));
-        return postsByAuthorId.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().size() > MAX_REJECTED_POSTS)
-                .map(Map.Entry::getKey)
-                .peek(id -> log.info("User with id {} found for banned", id))
-                .toList();
+        return postRepository.findAllUsersBorBan(REJECTED);
     }
 
     private Stream<Post> applyFiltersAndSorted(List<Post> posts, Post filterPost) {

@@ -5,6 +5,7 @@ import faang.school.postservice.exception.post.PostPublishedException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +17,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.LongStream;
 
 import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
 import static org.junit.Assert.assertThrows;
@@ -41,7 +41,6 @@ public class PostServiceTest {
     @InjectMocks
     private PostService postService;
 
-    private final List<Post> posts = new ArrayList<>();
     private Post postForCreate;
     private Post postForUpdate;
     private Post findedPost;
@@ -290,42 +289,27 @@ public class PostServiceTest {
     }
 
     @Test
-    void testPublishingUsersForBanWhenAllUsersHasMoreThan5RejectedPosts() {
-        addPostsToList(1, 6, 1);
-        addPostsToList(7, 6, 2);
-        addPostsToList(13, 6, 3);
-        addPostsToList(20, 7, 4);
-        addPostsToList(27, 7, 5);
-        when(postRepository.findAllByVerificationStatus(REJECTED)).thenReturn(posts);
-        List<Long> expected = List.of(1L, 2L, 3L, 4L, 5L);
-
+    void testFindUserIdsForBan_emptyResult() {
+        when(postRepository.findAllUsersBorBan(REJECTED)).thenReturn(List.of());
         List<Long> result = postService.findUserIdsForBan();
-
-        assertEquals(expected, result);
+        assertEquals(0, result.size());
+        verify(postRepository, times(1)).findAllUsersBorBan(REJECTED);
     }
 
     @Test
-    void testPublishingUsersForBanWhenSomeUsersHasMoreThan5RejectedPosts() {
-        addPostsToList(1, 6, 1);
-        addPostsToList(7, 6, 2);
-        addPostsToList(13, 5, 3);
-        addPostsToList(19, 5, 4);
-        addPostsToList(25, 6, 5);
-        when(postRepository.findAllByVerificationStatus(REJECTED)).thenReturn(posts);
-        List<Long> expected = List.of(1L, 2L, 5L);
-
+    void testFindUserIdsForBan_nonEmptyResult() {
+        List<Long> expectedUserIds = List.of(1L, 2L, 3L);
+        when(postRepository.findAllUsersBorBan(REJECTED)).thenReturn(expectedUserIds);
         List<Long> result = postService.findUserIdsForBan();
-
-        assertEquals(expected, result);
+        assertEquals(expectedUserIds, result);
+        verify(postRepository, times(1)).findAllUsersBorBan(REJECTED);
     }
 
-    private void addPostsToList(long from, int quantity, long userId) {
-        LongStream.rangeClosed(from, from + quantity - 1)
-                .mapToObj(id -> Post.builder()
-                        .id(id)
-                        .authorId(userId)
-                        .verificationStatus(REJECTED)
-                        .build())
-                .forEach(posts::add);
+    @Test
+    void testFindUserIdsForBan_nullResult(){
+        when(postRepository.findAllUsersBorBan(REJECTED)).thenReturn(null);
+        List<Long> result = postService.findUserIdsForBan();
+        Assertions.assertNull(result);
+        verify(postRepository, times(1)).findAllUsersBorBan(REJECTED);
     }
 }

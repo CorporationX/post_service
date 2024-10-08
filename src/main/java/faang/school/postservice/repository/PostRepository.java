@@ -28,5 +28,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
-    List<Post> findAllByVerificationStatus(VerificationPostStatus status);
+    @Query("SELECT p.authorId FROM Post p WHERE p.verificationStatus = :status GROUP BY p.authorId HAVING COUNT(*) > 5")
+    List<Long> findAllUsersBorBan(VerificationPostStatus status);
 }
