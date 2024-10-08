@@ -35,7 +35,7 @@ class PostImagesServiceTest {
     private PostService postService;
 
     @Mock
-    private S3Service S3Service;
+    private S3Service s3Service;
 
     @Mock
     private PostImageValidator postImageValidator;
@@ -99,7 +99,7 @@ class PostImagesServiceTest {
     @DisplayName("Successful uploading of images")
     void whenUploadPostImagesThenSuccess() {
         when(postService.findById(ID)).thenReturn(post);
-        when(S3Service.uploadFiles(images, ID)).thenReturn(resources);
+        when(s3Service.uploadFiles(images, ID)).thenReturn(resources);
 
         postImagesService.uploadPostImages(ID, images);
 
@@ -114,7 +114,7 @@ class PostImagesServiceTest {
         post.setResources(resourcesDB);
 
         when(postService.findById(ID)).thenReturn(post);
-        when(S3Service.uploadFiles(images, ID)).thenReturn(resources);
+        when(s3Service.uploadFiles(images, ID)).thenReturn(resources);
 
         postImagesService.updatePostImages(ID, images);
 
@@ -135,6 +135,6 @@ class PostImagesServiceTest {
 
         verify(resourceService).findById(ID);
         verify(resourceService).deleteResource(ID);
-        verify(S3Service).deleteFile("UUID");
+        verify(s3Service).deleteFile("UUID");
     }
 }

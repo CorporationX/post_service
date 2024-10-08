@@ -4,6 +4,7 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import faang.school.postservice.exception.FileS3Exception;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,17 +44,15 @@ public class S3Service {
      * @param files Список файлов
      * @return Список ссылок на загруженные файлы
      * @throws AmazonS3Exception Если возникает проблема при обращении к хранилищу S3
-     * @throws RuntimeException  Если во время выполнения одного из потоков произойдёт ошибка
+     * @throws FileS3Exception  Если во время выполнения одного из потоков произойдёт ошибка
      */
     public List<Resource> uploadFiles(List<MultipartFile> files, Long postId) {
         try {
-            executorService = Executors.newFixedThreadPool(10);
-
+            Executors.newFixedThreadPool(10);
             putFileToBucket(files);
-
-            executorService.shutdown();
-        } catch (Exception e) {
-            throw new RuntimeException("ERROR uploading images to Object Storage. Reason:", e);
+        } catch (AmazonS3Exception e) {
+            log.error("ERROR uploading images to Object Storage. Reason:", e);
+            throw new FileS3Exception("ERROR uploading images to Object Storage. Reason:");
         }
         return mapToResources(files, postId);
     }
@@ -61,7 +61,8 @@ public class S3Service {
         try {
             s3Client.deleteObject(bucketName, key);
         } catch (SdkClientException e) {
-            throw new RuntimeException("ERROR S3 Service. Failed to delete a file  Reason:", e);
+            log.error("ERROR S3 Service. Failed to delete a file  Reason:", e);
+            throw new FileS3Exception("ERROR S3 Service. Failed to delete a file.");
         }
     }
 
@@ -79,7 +80,7 @@ public class S3Service {
                 String url = future.get();
                 urls.add(url);
             } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException("One of the thread ended with exception. Reason: ", e);
+                throw new FileS3Exception("One of the thread ended with exception.");
             }
         }
     }
@@ -94,8 +95,9 @@ public class S3Service {
             s3Client.putObject(bucketName, fileName, file.getInputStream(), metadata);
             log.info("Upload Service. Added file: {} to bucket: {}", fileName, bucketName);
             return s3Client.getUrl(bucketName, fileName).toExternalForm();
-        } catch (Exception e) {
-            throw new RuntimeException("ERROR upload file");
+        } catch (IOException e) {
+            log.error("ERROR Upload Service. Error upload file to bucket: {}", bucketName, e);
+            throw new FileS3Exception("ERROR Upload Service. Error upload file to bucket");
         }
     }
 
