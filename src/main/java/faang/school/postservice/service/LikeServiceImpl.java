@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -9,6 +10,8 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.event.LikeEvent;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -16,10 +19,12 @@ import feign.FeignException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +39,14 @@ public class LikeServiceImpl implements LikeService {
     private final LikeRepository likeRepository;
     private final UserServiceClient client;
     private final UserServiceClient userServiceClient;
+
+    @Autowired
+    private LikeEventPublisher likeEventPublisher;
+
+    @Override
+    public void publish(LikeEvent likeEvent) throws JsonProcessingException {
+        likeEventPublisher.publish(likeEvent);
+    }
 
     @Override
     public void addLikeToPost(@Valid LikeDto likeDto, long postId) {

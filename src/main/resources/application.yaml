@@ -24,7 +24,13 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-
+  spring:
+    data:
+      redis:
+        host: localhost
+        port: 6379
+        channel:
+          like-event: like-event-channel
 server:
   port: 8081
 
