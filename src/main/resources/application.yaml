@@ -70,6 +70,25 @@ spring:
 
   post:
     max-image-quantity: 10
+    cache:
+      ttl: 86400
+  user:
+    cache:
+      ttl: 86400
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      partitions: 1
+      replication-factor: 1
+      posts:
+        name: posts
+      comments:
+        name: comments
+      post-views:
+        name: post-views
+      like:
+        name: likes
 
 server:
   port: 8081

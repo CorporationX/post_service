@@ -2,16 +2,26 @@ package faang.school.postservice.service;
 
 
 import faang.school.postservice.client.HashtagServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostEvent;
+import faang.school.postservice.dto.event.kafka.PostCreatedEvent;
+import faang.school.postservice.dto.event.kafka.PostViewEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.chache.PostCache;
+import faang.school.postservice.model.chache.UserCache;
+import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
+import faang.school.postservice.repository.cache.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.cache.UserCacheRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
 import faang.school.postservice.validator.PostServiceValidator;
 import feign.FeignException;
@@ -48,9 +58,21 @@ public class PostService {
     private final PostContextMapper context;
     private final PostEventPublisher postEventPublisher;
     private final UserContext userContext;
+    private final KafkaProducer kafkaProducer;
+    private final UserServiceClient userServiceClient;
+    private final PostCacheRepository postCacheRepository;
+    private final UserCacheRepository userCacheRepository;
+
+
 
     @Value("${spring.data.hashtag-cache.size.post-cache-size}")
     private int postCacheSize;
+
+    @Value("${spring.post.cache.ttl}")
+    private long postTtl;
+
+    @Value("${spring.user.cache.ttl}")
+    private long userTtl;
 
     @Async(value = "threadPool")
     @Transactional
@@ -81,6 +103,19 @@ public class PostService {
         sendToRedisPublisher(userContext.getUserId(), post.getId());
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
+        List<Long> followersIds = userServiceClient.getFollowerIds(userContext.getUserId());
+        UserDto author = userServiceClient.getUser(post.getAuthorId());
+        userCacheRepository.save(UserCache.builder()
+                .id(author.getId())
+                .name(author.getUsername())
+                .ttl(userTtl)
+                .build());
+        PostCreatedEvent newPostEvent = PostCreatedEvent.builder()
+                .postId(post.getId())
+                .authorId(post.getAuthorId())
+                .followersId(followersIds)
+                .build();
+        kafkaProducer.sendEvent(newPostEvent);
         return postDtoForReturns;
     }
 
@@ -99,6 +134,7 @@ public class PostService {
         return postDtoForReturns;
     }
 
+    @Async(value = "threadPool")
     @Transactional
     public PostDto publishPost(PostDto postDto) {
         Post post = getPostById(postDto.getId());
@@ -107,6 +143,17 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
+
+        postCacheRepository.save(PostCache.builder()
+                .postId(post.getId())
+                .authorId(post.getAuthorId())
+                .projectId(post.getProjectId())
+                .publishedAt(post.getPublishedAt())
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .content(post.getContent())
+                .ttl(postTtl)
+                .build());
         return postMapper.toDto(post);
     }
 
@@ -125,7 +172,11 @@ public class PostService {
     }
 
     public PostDto getPostDtoById(Long postId) {
-        return postMapper.toDto(getPostById(postId));
+        Post post = getPostById(postId);
+        kafkaProducer.sendEvent(PostViewEvent.builder()
+                .userId(userContext.getUserId())
+                .postId(post.getId()));
+        return postMapper.toDto(post);
     }
 
     public List<PostDto> getAllDraftPostsByUserId(Long userId) {
@@ -244,7 +295,6 @@ public class PostService {
                 .hashtagNames(hashtagNames)
                 .build()).getHashtags();
         log.info("Hashtags request was completed successfully");
-
         return hashtags;
     }
 }
