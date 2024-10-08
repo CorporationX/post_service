@@ -1,4 +1,4 @@
-package faang.school.postservice.service.like;
+package faang.school.postservice.service;
 
 import faang.school.postservice.dto.like.LikeDto;
 

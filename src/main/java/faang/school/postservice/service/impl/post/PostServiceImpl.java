@@ -1,11 +1,12 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.service.impl.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.hashtag.HashtagService;
-import faang.school.postservice.service.post.async.PostServiceAsync;
+import faang.school.postservice.service.HashtagService;
+import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.PostServiceAsync;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.ListUtils;
@@ -159,9 +160,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional
     public void publishScheduledPosts(int batchSize) {
-        System.out.println(Thread.currentThread().getName().toUpperCase());
         var readyToPublishPosts = postRepository.findReadyToPublish();
         ListUtils.partition(readyToPublishPosts, batchSize).forEach(postServiceAsync::publishScheduledPostsAsyncInBatch);
     }
