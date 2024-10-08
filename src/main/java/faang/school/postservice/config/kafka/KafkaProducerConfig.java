@@ -16,48 +16,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class KafkaConfig {
+public class KafkaProducerConfig {
 
     @Value(value = "${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
-    @Value("${spring.kafka.topic.posts.name}")
-    private String topicPostName;
-    @Value("${spring.kafka.topic.comments.name}")
-    private String topicCommentName;
-    @Value("${spring.kafka.topic.post-views.name}")
-    private String topicPostViewsName;
-    @Value("${spring.kafka.topic.like.name}")
-    private String topicLikeName;
-    @Value("${spring.kafka.topic.partitions}")
-    private int partitions;
-    @Value("${spring.kafka.topic.replication-factor}")
-    private short replications;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> configs = new HashMap<>();
         configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         return new KafkaAdmin(configs);
-    }
-
-    @Bean
-    public NewTopic postsTopic() {
-        return new NewTopic(topicPostName, partitions, replications);
-    }
-
-    @Bean
-    public NewTopic commentsTopic() {
-        return new NewTopic(topicCommentName, partitions, replications);
-    }
-
-    @Bean
-    public NewTopic postViewsTopic(){
-        return new NewTopic(topicPostViewsName, partitions, replications);
-    }
-
-    @Bean
-    public NewTopic likeTopic(){
-        return new NewTopic(topicLikeName, partitions,replications);
     }
 
     @Bean
