@@ -17,7 +17,7 @@ public class ContentModeratorScheduler {
             fixedDelayString = "${moderate.comments.fixedDelay}")
     public void moderateComments() {
         log.info("moderateComments() - start");
-        moderatorService.moderateCommentsContent().join();
+        moderatorService.moderateCommentsContent();
         log.info("moderateComments() - finish");
     }
 }

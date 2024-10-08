@@ -52,7 +52,7 @@ public class OffensiveDictionaryService {
             backoff = @Backoff(delayExpression = "${dictionary.offensive.update.retry.maxDelay}"))
     private void updateEnglishOffensiveWords() {
         log.info("Trying to update English offensive words");
-        ResponseEntity<byte[]> enWords = dictionaryClient.getEndWords();
+        ResponseEntity<byte[]> enWords = dictionaryClient.getEngWords();
 
         if (enWords.getBody() != null) {
             offensiveWordsDictionary.addWordsToDictionary(convertResponseByteArrayToWords(enWords));

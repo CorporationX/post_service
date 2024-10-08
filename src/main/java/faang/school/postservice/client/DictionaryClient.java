@@ -11,5 +11,5 @@ public interface DictionaryClient {
     ResponseEntity<byte[]> getRuWords();
 
     @GetMapping("/en")
-    ResponseEntity<byte[]> getEndWords();
+    ResponseEntity<byte[]> getEngWords();
 }

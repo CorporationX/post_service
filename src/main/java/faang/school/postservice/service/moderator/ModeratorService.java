@@ -4,6 +4,7 @@ import faang.school.postservice.config.dictionary.OffensiveWordsDictionary;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ModeratorService {
@@ -23,6 +25,7 @@ public class ModeratorService {
     @Async("cachedExecutor")
     public CompletableFuture<Void> moderateCommentsContent() {
         return CompletableFuture.runAsync(() -> {
+            log.info("moderateCommentsContent() - start");
             List<Comment> comments = commentService.getUnverifiedComments();
 
             comments.forEach(comment -> executorService.execute(() -> {
@@ -35,6 +38,7 @@ public class ModeratorService {
             }));
 
             commentService.saveComments(comments);
+            log.info("moderateCommentsContent() - finish");
         }, executorService);
     }
 
