@@ -8,22 +8,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
 public class NewsFeedRedisRepository {
-    private final RedisTemplate<String, Long> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public void addPostId(String key, Long postId) {
         redisTemplate.opsForZSet().add(key, postId, -postId);
     }
 
     public List<Long> getSortedPostIds(String key) {
-        Set<Long> postIds = redisTemplate.opsForZSet().range(key, 0, -1);
+        Set<Object> postIds = redisTemplate.opsForZSet().range(key, 0, -1);
         if (postIds == null) {
             return new ArrayList<>();
         }
-        return List.copyOf(postIds);
+        return postIds.stream()
+                .map(postId -> ((Number) postId).longValue())
+                .collect(Collectors.toList());
     }
 
     public void removePostId(String key, Long postId) {
@@ -34,7 +37,7 @@ public class NewsFeedRedisRepository {
         Objects.requireNonNull(redisTemplate.opsForZSet().range(key, -1, -1))
                 .stream()
                 .findFirst()
-                .ifPresent(postId -> removePostId(key, postId));
+                .ifPresent(postId -> removePostId(key, (Long) postId));
     }
 
     public Long getSize(String key) {
