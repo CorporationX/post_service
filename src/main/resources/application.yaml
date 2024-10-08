@@ -42,6 +42,12 @@ post:
   ban-user:
     scheduler:
       cron: "0 0 2 * * *" # every day
+  verify:
+    retry:
+      max-attempts: 3
+      delay: 5000
+    scheduler:
+      cron: "0 0 2 * * *" # every day
 
 user-service:
   host: localhost
@@ -52,3 +58,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+censorship:
+  words:
+    - 1C
+    - Динамическая типизация
+    - Многопоточность

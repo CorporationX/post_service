@@ -1,6 +1,6 @@
 package faang.school.postservice.scheduler;
 
-import faang.school.postservice.config.RedisProperties;
+import faang.school.postservice.config.redis.RedisProperties;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ class AuthorBannerTest {
     private RedisProperties redisProperties;
 
     @InjectMocks
-    private AuthorBanner authorBanner;
+    private AuthorBannerScheduler authorBanner;
 
     private final String channelName = "channel";
 

@@ -1,6 +1,6 @@
 package faang.school.postservice.scheduler;
 
-import faang.school.postservice.config.RedisProperties;
+import faang.school.postservice.config.redis.RedisProperties;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AuthorBanner {
+public class AuthorBannerScheduler {
 
     private final RedisTemplate<String, List<Long>> redisTemplate;
     private final PostService postService;

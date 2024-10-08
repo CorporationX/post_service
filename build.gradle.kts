@@ -25,6 +25,10 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+    /**
+    * Spring
+    */
+    implementation("org.springframework.retry:spring-retry:2.0.9")
 
     /**
      * Database
