@@ -27,11 +27,13 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        user_ban_channel:
+          name: user_ban
+
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
-
 
 server:
   port: 8081
@@ -47,6 +49,9 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  user_ban:
+    scheduler:
+      cron: "00 01 06 * * *"
 
 user-service:
   host: localhost
