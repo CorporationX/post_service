@@ -1,7 +1,11 @@
 package faang.school.postservice.service.like;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.redis.LikeEventPublisher;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -30,8 +34,11 @@ public class LikeServiceImpl implements LikeService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
+    private final LikeEventPublisher likeEventPublisher;
+    private final ObjectMapper objectMapper;
 
     public LikeDto likePost(LikeDto likeDto) {
+        System.out.println(likeDto.getPostId());
         Post post = postRepository.findById(likeDto.getPostId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post with %s id not found", likeDto.getPostId())));
         startValidationForPost(likeDto);
@@ -42,7 +49,19 @@ public class LikeServiceImpl implements LikeService {
         like.setCreatedAt(LocalDateTime.now());
 
         likeRepository.save(like);
-        log.info("The like was added to the database to {}post", likeDto.getPostId());
+        log.info("The like was added to the database to {} post", likeDto.getPostId());
+
+        LikeEvent likeEvent = new LikeEvent();
+        likeEvent.setPostId(likeDto.getPostId());
+        likeEvent.setUserId(likeDto.getUserId());
+        likeEvent.setCreatedAt(likeDto.getCreatedAt());
+        try {
+            String json = objectMapper.writeValueAsString(likeEvent);
+            likeEventPublisher.publish(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
         return likeMapper.toDto(like);
     }
 

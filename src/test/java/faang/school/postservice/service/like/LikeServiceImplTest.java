@@ -53,6 +53,11 @@ class LikeServiceImplTest {
     Post post = new Post();
     Comment comment = new Comment();
     Like like = new Like();
+    Like like1 = Like.builder()
+            .id(1L)
+            .userId(1L)
+            .build();
+    List<Like> likes = List.of(like1);
 
     @BeforeEach
     void setUp() {
@@ -113,5 +118,25 @@ class LikeServiceImplTest {
     void testUnlikeComment() {
         likeRepository.deleteByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId());
         verify(likeRepository).deleteByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId());
+    }
+
+    @Test
+    public void testGetUsersByPostId() {
+        when(likeRepository.findByPostId(1L)).thenReturn(likes);
+
+        likeService.getUsersLikedPost(1L);
+
+        verify(likeRepository).findByPostId(1L);
+        verify(userServiceClient).getUsersByIds(List.of(1L));
+    }
+
+    @Test
+    public void testGetUsersByCommentId() {
+        when(likeRepository.findByCommentId(1L)).thenReturn(likes);
+
+        likeService.getUsersLikedComment(1L);
+
+        verify(likeRepository).findByCommentId(1L);
+        verify(userServiceClient).getUsersByIds(List.of(1L));
     }
 }
