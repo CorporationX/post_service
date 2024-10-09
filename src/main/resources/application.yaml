@@ -66,7 +66,6 @@ payment-service:
 moderation:
   sublist-size: 10
   thread-pool-size: 5
-  await-termination-seconds: 20
 
 quartz:
   job:

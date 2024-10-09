@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,8 +24,7 @@ public class ModerationJob implements Job {
     @Value("${moderation.thread-pool-size}")
     private int threadPoolSize;
 
-    @Value("${moderation.await-termination-seconds}")
-    private int awaitTerminationSeconds;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(threadPoolSize);
 
     @Override
     public void execute(JobExecutionContext context) {
@@ -38,25 +36,9 @@ public class ModerationJob implements Job {
         List<List<Post>> sublists = moderationService.splitListIntoSublists(unverifiedPosts, sublistSize);
         log.info("Split posts into {} sublists", sublists.size());
 
-        ExecutorService executorService = Executors.newFixedThreadPool(threadPoolSize);
-
-        try {
-            for (List<Post> sublist : sublists) {
-                executorService.submit(() -> moderationService.moderatePostsSublist(sublist));
-            }
-        } finally {
-            executorService.shutdown();
-            try {
-                if (!executorService.awaitTermination(awaitTerminationSeconds, TimeUnit.SECONDS)) {
-                    log.warn("Executor service did not terminate in the specified time.");
-                    List<Runnable> droppedTasks = executorService.shutdownNow();
-                    log.warn("Dropped {} tasks", droppedTasks.size());
-                }
-            } catch (InterruptedException e) {
-                executorService.shutdownNow();
-                Thread.currentThread().interrupt();
-            }
-        }
+        sublists.forEach(sublist ->
+                executorService.submit(() -> moderationService.moderatePostsSublist(sublist))
+        );
         log.info("Post moderation job completed.");
     }
 }
