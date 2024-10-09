@@ -18,6 +18,10 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
 
+    public List<Post> getAllPostsNotPublished() {
+        return postRepository.findReadyToPublish();
+    }
+
     public Post findById(Long postId) {
         Optional<Post> post = postRepository.findById(postId);
         return post.orElseThrow(

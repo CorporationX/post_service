@@ -19,7 +19,6 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -87,7 +86,7 @@ public class S3Service {
 
     private String putObjectsToS3(MultipartFile file) {
         try {
-            String fileName = generateUniqueName();
+            String fileName = file.getName();
             var metadata = new ObjectMetadata();
             metadata.setContentLength(file.getSize());
             metadata.setContentType(file.getContentType());
@@ -115,10 +114,5 @@ public class S3Service {
             resources.add(resource);
         }
         return resources;
-    }
-
-    private String generateUniqueName() {
-        UUID uuid = UUID.randomUUID();
-        return uuid.toString();
     }
 }

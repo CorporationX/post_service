@@ -11,4 +11,5 @@ public interface PostMapper {
     // Маппинг из Post в PostResponseDto с использованием поля likeCount
     @Mapping(target = "likeCount", source = "likeCount")
     PostResponseDto toResponseDto(Post post, int likeCount);
+
 }

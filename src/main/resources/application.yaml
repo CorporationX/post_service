@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        public_post:
+          name: public_post
 
 server:
   port: 8081
@@ -39,6 +41,7 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+
 
 user-service:
   host: localhost
@@ -64,3 +67,4 @@ executor:
   corePoolSize: 1
   maximumPoolSize: 10
   keepAliveTime: 60
+
