@@ -3,6 +3,7 @@ package faang.school.postservice.service.impl.like;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -98,6 +99,7 @@ public class LikeServiceImpl implements LikeService {
 
     private long getUserId() {
         long userId = userContext.getUserId();
-        return userServiceClient.getUser(userId).id();
+        UserDto userDto = userServiceClient.getUser(userId);
+        return userDto.id();
     }
 }

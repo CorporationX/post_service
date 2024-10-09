@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LikeEventPublisherImpl implements LikeEventPublisher {
     private final RedisTemplate<String, Object> redisTemplate;
-    @Value("${spring.data.redis.topic.like}")
+    @Value("${spring.data.redis.channel.like}")
     private String likeTopic;
 
     @Override
