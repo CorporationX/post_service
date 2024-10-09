@@ -1,4 +1,4 @@
-package faang.school.postservice.service.like;
+package faang.school.postservice.service.impl.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -11,6 +11,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.impl.like.publisher.LikeEventPublisher;
 import faang.school.postservice.validator.like.LikeValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,10 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceImplTest {
@@ -40,6 +38,8 @@ class LikeServiceImplTest {
     private UserServiceClient userServiceClient;
     @Mock
     private UserContext userContext;
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
     @InjectMocks
     private LikeServiceImpl likeService;
 

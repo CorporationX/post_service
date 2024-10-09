@@ -1,4 +1,4 @@
-package faang.school.postservice.service.like;
+package faang.school.postservice.service.impl.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -10,6 +10,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.LikeService;
+import faang.school.postservice.service.impl.like.publisher.LikeEventPublisher;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeValidator likeValidator;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
-
+    private final LikeEventPublisher likeEventPublisher;
 
     @Override
     @Transactional
@@ -69,6 +71,7 @@ public class LikeServiceImpl implements LikeService {
         log.info("Creating a like for a post with ID {}", postId);
 
         Like saveLike = saveLikePost(post, userId);
+        likeEventPublisher.publisher(likeMapper.toLikeEventDto(saveLike));
 
         log.info("Created a like with ID {} from a user with ID {} to a post with ID {}",
                 saveLike.getId(),

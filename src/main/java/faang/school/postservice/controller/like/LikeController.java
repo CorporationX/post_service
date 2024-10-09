@@ -1,7 +1,7 @@
 package faang.school.postservice.controller.like;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.service.like.LikeService;
+import faang.school.postservice.service.LikeService;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 public class LikeController {
     private final LikeService likeService;
-
 
     @PostMapping("/commentId/{commentId}")
     public LikeDto createLikeComment(@PathVariable @Positive Long commentId) {

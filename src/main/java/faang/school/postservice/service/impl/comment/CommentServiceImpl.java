@@ -1,9 +1,10 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.service.impl.comment;
 
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.CommentService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

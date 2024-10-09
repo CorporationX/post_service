@@ -1,10 +1,11 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.service.impl.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.hashtag.HashtagService;
+import faang.school.postservice.service.HashtagService;
+import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

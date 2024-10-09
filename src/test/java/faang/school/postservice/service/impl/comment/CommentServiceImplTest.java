@@ -1,4 +1,4 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.service.impl.comment;
 
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;

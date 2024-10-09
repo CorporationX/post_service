@@ -1,6 +1,7 @@
 package faang.school.postservice.config.redis;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.service.impl.like.publisher.LikeEventPublisher;
+import faang.school.postservice.service.impl.like.publisher.LikeEventPublisherImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,8 +10,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-
-import java.util.List;
 
 @Configuration
 public class RedisConfig {
@@ -41,5 +40,10 @@ public class RedisConfig {
         template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
 
         return template;
+    }
+
+    @Bean
+    public LikeEventPublisher publisherLike (RedisTemplate<String, Object> redisTemplate) {
+      return new LikeEventPublisherImpl(redisTemplate);
     }
 }

@@ -1,10 +1,11 @@
-package faang.school.postservice.service.hashtag;
+package faang.school.postservice.service.impl.hashtag;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.hashtag.HashtagRepository;
+import faang.school.postservice.service.HashtagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
