@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 public record PostDto(
@@ -17,6 +18,7 @@ public record PostDto(
         @JsonInclude(JsonInclude.Include.NON_NULL)
         LocalDateTime scheduledAt,
         boolean deleted,
-        long likes
+        long likes,
+        List<String> resources
 ) {
 }

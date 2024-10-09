@@ -1,10 +1,12 @@
 package faang.school.postservice.service.s3;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import faang.school.postservice.dto.resource.ResourceObjectResponse;
+import faang.school.postservice.exception.FileOperationException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -45,13 +47,17 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public ResourceObjectResponse downloadFile(@NonNull String fileKey) {
-        S3Object s3Object = s3Client.getObject(bucketName, fileKey);
-        log.info("Download file with key {} from s3", fileKey);
-        return ResourceObjectResponse.builder()
-                .content(s3Object.getObjectContent())
-                .contentType(s3Object.getObjectMetadata().getContentType())
-                .contentLength(s3Object.getObjectMetadata().getContentLength())
-                .build();
+        try {
+            S3Object s3Object = s3Client.getObject(bucketName, fileKey);
+            log.info("Download file with key {} from s3", fileKey);
+            return ResourceObjectResponse.builder()
+                    .content(s3Object.getObjectContent())
+                    .contentType(s3Object.getObjectMetadata().getContentType())
+                    .contentLength(s3Object.getObjectMetadata().getContentLength())
+                    .build();
+        } catch (SdkClientException e) {
+            throw new FileOperationException(e);
+        }
     }
 
     private ObjectMetadata getObjectMetadata(String contentType, long contentLength) {

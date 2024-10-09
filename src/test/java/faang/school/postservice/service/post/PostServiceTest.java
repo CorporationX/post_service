@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.request.PostCreationRequest;
 import faang.school.postservice.dto.post.request.PostUpdatingRequest;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.resource.ResourceObjectResponse;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
@@ -28,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -576,6 +578,41 @@ class PostServiceTest {
         assertEquals(3, postDtos.size());
         assertEquals(1L, postDtos.get(0).id());
         assertEquals(2L, postDtos.get(2).id());
+    }
+
+    @Test
+    @DisplayName("Getting resources by post id")
+    public void testGettingResourcesByPostId() {
+        Resource resource = initResource(1L, "file1", "file1.txt", 15, "text/jpeg");
+        post.setResources(List.of(resource));
+        ResourceObjectResponse responseObject = ResourceObjectResponse.builder()
+                .contentType("text/jpeg")
+                .contentLength(15)
+                .content(new ByteArrayInputStream(new byte[15]))
+                .build();
+        when(postRepository.findByIdAndDeletedFalse(post.getId())).thenReturn(Optional.of(post));
+        when(resourceService.getDownloadedResourceById(1L)).thenReturn(responseObject);
+
+        List<ResourceObjectResponse> result = postService.getResourcesByPostId(post.getId());
+
+        assertEquals(List.of(responseObject), result);
+    }
+
+    @Test
+    @DisplayName("Getting empty resources by post id")
+    public void testGettingEmptyResourcesByPostId() {
+        post.setResources(List.of());
+        when(postRepository.findByIdAndDeletedFalse(post.getId())).thenReturn(Optional.of(post));
+
+        List<ResourceObjectResponse> result = postService.getResourcesByPostId(post.getId());
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Getting resources from non-existing post")
+    public void testGettingResourcesFromNonExistingPost() {
+        assertThrows(EntityNotFoundException.class, () -> postService.getResourcesByPostId(1L));
     }
 
     private MultipartFile initFile(String fileName, String contentType, byte[] content) {

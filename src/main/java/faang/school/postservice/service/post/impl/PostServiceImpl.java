@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.request.PostCreationRequest;
 import faang.school.postservice.dto.post.request.PostUpdatingRequest;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.resource.ResourceObjectResponse;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
@@ -42,7 +43,7 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectClient;
 
     @Setter
-    @Value("${resources.max-count}")
+    @Value("${resource.max-count}")
     private int maxFilesCount;
 
     @Override
@@ -137,6 +138,16 @@ public class PostServiceImpl implements PostService {
         return postMapper.toPostDtoList(posts);
     }
 
+    @Override
+    public List<ResourceObjectResponse> getResourcesByPostId(Long id) {
+        Post post = getPost(id);
+        List<ResourceObjectResponse> files = post.getResources().stream()
+                .map(resource -> resourceService.getDownloadedResourceById(resource.getId()))
+                .toList();
+        log.debug("Found {} resources for post with id {}", files.size(), id);
+        return files;
+    }
+
     private List<Post> getPostsByCreatorId(Long creatorId, PostCreator creator) {
         return switch (creator) {
             case AUTHOR -> postRepository.findByAuthorId(creatorId);
@@ -181,8 +192,8 @@ public class PostServiceImpl implements PostService {
         int resourcesCountAfterUpdate =
                 post.getResources().size() - resourceToDeleteCount + resourceToAddCount;
         if (resourcesCountAfterUpdate > maxFilesCount) {
-            throw new IllegalArgumentException("Can't add more than 10 resources to post with id %d"
-                    .formatted(post.getId()));
+            throw new IllegalArgumentException("Can't add more than %d resources to post with id %d"
+                    .formatted(maxFilesCount, post.getId()));
         }
     }
 }

@@ -3,12 +3,14 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.request.PostCreationRequest;
 import faang.school.postservice.dto.post.request.PostUpdatingRequest;
+import faang.school.postservice.dto.resource.ResourceObjectResponse;
 import faang.school.postservice.model.post.PostCreator;
 import faang.school.postservice.service.post.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -72,5 +75,20 @@ public class PostController {
                                            @RequestParam PostCreator creator,
                                            @RequestParam Boolean publishStatus) {
         return postService.getPostsByCreatorAndPublishedStatus(creatorId, creator, publishStatus);
+    }
+
+    @GetMapping("/{postId}/resources")
+    public ResponseEntity<List<byte[]>> getPostResourcesById(@Positive @PathVariable Long postId) {
+        List<ResourceObjectResponse> files = postService.getResourcesByPostId(postId);
+        return ResponseEntity.ok()
+                .body(files.stream()
+                        .map(file -> {
+                            try {
+                                return file.content().readAllBytes();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .toList());
     }
 }

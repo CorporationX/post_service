@@ -1,10 +1,12 @@
 package faang.school.postservice.service.s3;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import faang.school.postservice.dto.resource.ResourceObjectResponse;
+import faang.school.postservice.exception.FileOperationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -117,6 +119,14 @@ class S3ServiceImplTest {
     void s3ServiceTest_downloadFileWithoutFileKey() {
         assertThrows(NullPointerException.class, () -> s3Service.downloadFile(null));
         verify(s3Client, times(0)).getObject(any());
+    }
+
+    @Test
+    @DisplayName("Download file with error from S3")
+    void s3ServiceTest_downloadFileWithError() {
+        when(s3Client.getObject(any(String.class), any(String.class))).thenThrow(SdkClientException.class);
+
+        assertThrows(FileOperationException.class, () -> s3Service.downloadFile(FILE_KEY));
     }
 
     private ResourceObjectResponse initResourceObjectResponse(InputStream content, String contentType,

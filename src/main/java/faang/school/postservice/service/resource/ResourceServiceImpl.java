@@ -1,11 +1,13 @@
 package faang.school.postservice.service.resource;
 
+import faang.school.postservice.dto.resource.ResourceObjectResponse;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.resources.ImageProcessor;
 import faang.school.postservice.service.s3.S3Service;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -72,6 +74,13 @@ public class ResourceServiceImpl implements ResourceService {
         resourceRepository.deleteAll(resourcesToDelete);
         resourcesToDelete.forEach(resource -> s3Service.deleteFile(resource.getKey()));
         log.info("Deleted {} resources from post with id {}", resourcesIds.size(), postId);
+    }
+
+    @Override
+    public ResourceObjectResponse getDownloadedResourceById(Long id) {
+        Resource resource = resourceRepository.findById(id).orElseThrow(() ->
+                new EntityNotFoundException("Resource with id %d not found".formatted(id)));
+        return s3Service.downloadFile(resource.getKey());
     }
 
     private void checkFilesSizes(List<MultipartFile> files) {

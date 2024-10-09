@@ -1,11 +1,13 @@
 package faang.school.postservice.service.resource;
 
+import faang.school.postservice.dto.resource.ResourceObjectResponse;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.post.resources.ImageProcessor;
 import faang.school.postservice.service.s3.S3Service;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,9 +18,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -176,6 +180,30 @@ class ResourceServiceTest {
                         () -> resourceService.deleteResourcesFromPost(null, post.getId())),
                 () -> assertThrows(NullPointerException.class,
                         () -> resourceService.deleteResourcesFromPost(new ArrayList<>(), null)));
+    }
+
+    @Test
+    @DisplayName("Get resource by id")
+    void resourceServiceTest_getResourceById() {
+        Resource resource = initResource(1L, post);
+        resource.setKey("test");
+        ResourceObjectResponse responseObject = ResourceObjectResponse.builder()
+                .content(new ByteArrayInputStream(new byte[1024]))
+                .contentLength(1024)
+                .contentType("image/jpeg")
+                .build();
+        when(resourceRepository.findById(1L)).thenReturn(Optional.of(resource));
+        when(s3Service.downloadFile(resource.getKey())).thenReturn(responseObject);
+
+        ResourceObjectResponse result = resourceService.getDownloadedResourceById(1L);
+
+        assertEquals(responseObject, result);
+    }
+
+    @Test
+    @DisplayName("Get non-existing resource by id")
+    void resourceServiceTest_getResourceByIdWithNonExistingId() {
+        assertThrows(EntityNotFoundException.class, () -> resourceService.getDownloadedResourceById(1L));
     }
 
     private MultipartFile initFile(String fileName, String contentType, byte[] content) {
