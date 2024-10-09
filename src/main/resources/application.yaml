@@ -31,6 +31,8 @@ spring:
           prefix: "Post:"
           field:
             likes: likesCount
+          comments:
+            max-size: 3
         user:
           ttl-hours: 24
         news-feed:
@@ -65,14 +67,6 @@ server:
 logging:
   level:
     root: info
-
-post:
-  publisher:
-    scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
-  ad-remover:
-    scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
 
 user-service:
   host: localhost

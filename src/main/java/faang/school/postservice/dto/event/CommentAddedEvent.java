@@ -12,7 +12,7 @@ import lombok.ToString;
 @Builder
 @ToString
 public class CommentAddedEvent extends Event {
-    private Long id;
+    private Long commentId;
     private String content;
     private Long authorId;
     private Long postId;

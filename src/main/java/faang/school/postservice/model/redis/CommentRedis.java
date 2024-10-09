@@ -3,13 +3,16 @@ package faang.school.postservice.model.redis;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 @AllArgsConstructor
-public class CommentRedis {
-    private Long postId;
-    private UserRedis author;
+public class CommentRedis implements Comparable<CommentRedis> {
+    private Long id;
     private String content;
-    private LocalDateTime createdAt;
+    private UserRedis author;
+    private Long postId;
+
+    @Override
+    public int compareTo(CommentRedis other) {
+        return other.id.compareTo(this.id);
+    }
 }

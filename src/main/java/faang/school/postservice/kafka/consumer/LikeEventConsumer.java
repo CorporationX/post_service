@@ -1,4 +1,4 @@
-package faang.school.postservice.kafka;
+package faang.school.postservice.kafka.consumer;
 
 import faang.school.postservice.dto.event.LikeAddedEvent;
 import lombok.RequiredArgsConstructor;

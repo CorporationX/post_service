@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface UserServiceClient {
     UserDto getUser(@PathVariable long userId);
 
     @GetMapping("/api/user")
-    List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+    List<UserDto> getUsersByIds(@RequestParam List<Long> ids);
 
     @PutMapping("/api/user/{userId}/deactivate")
     UserDto deactivatesUserProfile(@PathVariable Long userId);
