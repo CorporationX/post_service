@@ -3,7 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -131,7 +131,7 @@ public class PostServiceTest {
 
     @Test
     public void testUpdatePost() {
-        UpdatePostDto updateData = UpdatePostDto
+        PostUpdateDto updateData = PostUpdateDto
                 .builder()
                 .content("New Post data")
                 .build();
@@ -143,7 +143,7 @@ public class PostServiceTest {
 
     @Test
     public void testUpdatePostThrowsNotFoundError() {
-        UpdatePostDto updateData = UpdatePostDto
+        PostUpdateDto updateData = PostUpdateDto
                 .builder()
                 .content("New Post data")
                 .build();

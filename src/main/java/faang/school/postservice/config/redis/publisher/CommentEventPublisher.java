@@ -1,4 +1,4 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.config.redis.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.comment.CommentEvent;

@@ -1,5 +1,9 @@
 package faang.school.postservice.config.redis;
 
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.async.RedisAsyncCommands;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +40,25 @@ public class RedisConfig {
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
         return redisTemplate;
+    }
+
+    @Bean
+    public RedisClient redisClient() {
+        RedisURI redisURI = RedisURI.builder()
+                .withHost(host)
+                .withPort(port)
+                .build();
+        return RedisClient.create(redisURI);
+    }
+
+    @Bean
+    public StatefulRedisConnection<String, String> connection(RedisClient redisClient) {
+        return redisClient.connect();
+    }
+
+    @Bean
+    public RedisAsyncCommands<String, String> redisCommands(StatefulRedisConnection<String, String> connection) {
+        return connection.async();
     }
 
     @Bean

@@ -30,6 +30,22 @@ spring:
           name: follower_channel
         like_channel:
           name: like_channel
+      ttl:
+        post: 86400
+        comment: 86400
+        user: 86400
+      fields:
+        like: likes
+        view: views
+  kafka:
+    bootstrap-servers: localhost:9092
+    ack: all
+    producer:
+      buffer-memory: 33554432
+      batch-size: 16384
+    consumer:
+      group-id: postService
+      retry: 3
 
   task:
     execution:
@@ -48,6 +64,8 @@ server:
 logging:
   level:
     root: info
+  pattern:
+    level:
 
 post:
   publisher:

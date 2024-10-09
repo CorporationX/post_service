@@ -1,12 +1,18 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +27,7 @@ public class PostController {
     public List<PostDto> getDraftsByUser(@PathVariable Long id) {
         return postService.getDraftsByUser(id);
     }
+
     @GetMapping("/drafts/project/{id}")
     public List<PostDto> getDraftsByProject(@PathVariable Long id) {
         return postService.getDraftsByProject(id);
@@ -44,19 +51,21 @@ public class PostController {
     @PostMapping("/create")
     public PostDto createDraft(@RequestBody PostDto postDto) {
         if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
+            return postService.createDraft(postDto);
+        } else {
             throw new DataValidationException("Invalid post! ProjectId or authorId is null!");
         }
-        return postService.createDraft(postDto);
+
     }
 
-    @GetMapping("/publish/{postId}")
+    @PostMapping("/publish/{postId}")
     public PostDto publishDraft(@PathVariable Long postId) {
         return postService.publishDraft(postId);
     }
 
     @PostMapping("/update/{id}")
-    public PostDto updatePost(@PathVariable Long id, @RequestBody UpdatePostDto updatePostDto) {
-        return postService.updatePost(id, updatePostDto);
+    public PostDto updatePost(@PathVariable Long id, @RequestBody PostUpdateDto postUpdateDto) {
+        return postService.updatePost(id, postUpdateDto);
     }
 
     @DeleteMapping("/delete/{id}")

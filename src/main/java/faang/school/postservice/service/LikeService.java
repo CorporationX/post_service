@@ -1,12 +1,13 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.config.kafka.producer.KafkaLikeProducer;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeMessagePublisher;
+import faang.school.postservice.config.redis.publisher.LikeMessagePublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class LikeService {
     private final LikeValidator likeValidator;
     private final LikeMapper likeMapper;
     private final LikeMessagePublisher likeMessagePublisher;
+    private final KafkaLikeProducer kafkaLikeProducer;
 
     @Transactional
     public LikeDto likePost(Long postId, Long userId) {
@@ -35,6 +37,7 @@ public class LikeService {
                 .userId(userId)
                 .build());
         sendLikeNotification(like);
+        sendMessage(like);
         return likeMapper.toDto(like);
     }
 
@@ -51,6 +54,7 @@ public class LikeService {
                 .comment(comment)
                 .userId(userId)
                 .build());
+        sendMessage(like);
         return likeMapper.toDto(like);
     }
 
@@ -66,5 +70,9 @@ public class LikeService {
                 .likeAuthorId(like.getUserId())
                 .build();
         likeMessagePublisher.publish(likeEvent);
+    }
+
+    private void sendMessage(Like like){
+        kafkaLikeProducer.sendMessage(likeMapper.toDto(like));
     }
 }

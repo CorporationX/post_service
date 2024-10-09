@@ -6,7 +6,7 @@ import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.config.redis.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import feign.FeignException;
 import static org.junit.jupiter.api.Assertions.assertThrows;
