@@ -14,12 +14,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,8 +31,6 @@ class PostServiceTest {
     private PostMapper postMapper;
     @Mock
     private ModerationDictionary moderationDictionary;
-    @Mock
-    private ExecutorService executor;
 
     private static final long ID_ONE = 1L;
     private static final long ID_TWO = 2L;
@@ -44,18 +39,17 @@ class PostServiceTest {
     private static final int THREAD_COUNT = 5;
     private static final long SUBLIST_LENGTH = 10L;
 
-    private Map<Long, String> unverifiedContent;
-    private Map<Long, Boolean> verifiedContent;
-
     private Post firstPost;
     private Post secondPost;
+    private Post verifiedFirstPost;
+    private Post verifiedSecondPost;
     private List<Post> unverifiedPosts;
+    private List<Post> verifiedPosts;
 
     @BeforeEach
     public void init() {
         ReflectionTestUtils.setField(postService, "sublistLength", SUBLIST_LENGTH);
-        unverifiedContent = Map.of(ID_ONE, CONTENT, ID_TWO, SWEAR_CONTENT);
-        verifiedContent = Map.of(ID_ONE, true, ID_TWO, false);
+        ReflectionTestUtils.setField(postService, "executor", Executors.newFixedThreadPool(THREAD_COUNT));
 
         firstPost = Post.builder()
                 .id(ID_ONE)
@@ -67,19 +61,33 @@ class PostServiceTest {
                 .content(SWEAR_CONTENT)
                 .build();
 
+        verifiedFirstPost = Post.builder()
+                .id(ID_ONE)
+                .content(CONTENT)
+                .verified(true)
+                .build();
+
+        verifiedSecondPost = Post.builder()
+                .id(ID_TWO)
+                .content(SWEAR_CONTENT)
+                .verified(false)
+                .build();
+
         unverifiedPosts = List.of(firstPost, secondPost);
-        executor = Executors.newFixedThreadPool(THREAD_COUNT);
+        verifiedPosts = List.of(verifiedFirstPost, verifiedSecondPost);
     }
 
     @Test
     @DisplayName("Успешный вызов метода moderationPostContent")
     public void whenModeratePostsContentThenSuccess() {
         when(postRepository.findReadyToVerified()).thenReturn(unverifiedPosts);
-        lenient().when(moderationDictionary.searchSwearWords(unverifiedContent)).thenReturn(verifiedContent);
+        when(moderationDictionary.searchSwearWords(unverifiedPosts)).thenReturn(verifiedPosts);
+        when(postRepository.saveAll(verifiedPosts)).thenReturn(verifiedPosts);
 
         postService.moderatePostsContent();
 
         verify(postRepository).findReadyToVerified();
+        verify(moderationDictionary).searchSwearWords(unverifiedPosts);
         verify(postRepository).saveAll(anyList());
     }
 }

@@ -1,10 +1,11 @@
 package faang.school.postservice.moderation;
 
+import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -12,16 +13,15 @@ public class ModerationDictionary {
 
     private final Dictionary dictionary;
 
-    public Map<Long, Boolean> searchSwearWords(Map<Long, String> unverifiedContent) {
-        Map<Long, Boolean> verifiedContent = new HashMap<>();
-
-        unverifiedContent.forEach((key, value) -> {
+    public List<Post> searchSwearWords(List<Post> unverifiedPosts) {
+        unverifiedPosts.forEach(post -> {
             boolean containsSwearWord = dictionary.getDictionary().stream()
-                    .anyMatch(value::contains);
+                    .anyMatch(word -> post.getContent().contains(word));
 
-            verifiedContent.put(key, !containsSwearWord);
+            post.setVerified(!containsSwearWord);
+            post.setVerifiedDate(LocalDateTime.now());
         });
 
-        return verifiedContent;
+        return unverifiedPosts;
     }
 }

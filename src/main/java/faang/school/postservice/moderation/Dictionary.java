@@ -1,6 +1,5 @@
 package faang.school.postservice.moderation;
 
-import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,13 +13,13 @@ import java.util.Set;
 @Component
 public class Dictionary {
 
-    private final Set<String> dictionary;
+    private Set<String> dictionary;
 
-    @Value("${post.moderation.dictionary.file-path}")
     private String filePath;
 
-    @PostConstruct
-    private void initDictionary() {
+    public Dictionary(@Value("${post.moderation.dictionary.file-path}") String filePath, Set<String> dictionary) {
+        this.filePath = filePath;
+
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
