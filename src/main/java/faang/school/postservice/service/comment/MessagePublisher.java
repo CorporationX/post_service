@@ -1,5 +1,5 @@
 package faang.school.postservice.service.comment;
 
 public interface MessagePublisher {
-    void publishUserToBan(Long userId);
+    void publish(Long userId);
 }

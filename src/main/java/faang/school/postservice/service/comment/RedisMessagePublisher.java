@@ -15,7 +15,7 @@ public class RedisMessagePublisher implements MessagePublisher {
     private final ChannelTopic topic;
 
     @Override
-    public void publishUserToBan(Long userId) {
+    public void publish(Long userId) {
         redisTemplate.convertAndSend(topic.getTopic(), userId);
         log.info("publishUserToBan: userId = {}", userId);
     }

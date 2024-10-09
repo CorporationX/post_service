@@ -1,14 +1,20 @@
 package faang.school.postservice.config.context.comment;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
+import org.springframework.retry.annotation.EnableRetry;
 
 @Configuration
+@EnableRetry
 public class RedisConfig {
+
+    @Value("${redis.topic.user-ban}")
+    private String userBanTopicName;
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
@@ -25,6 +31,6 @@ public class RedisConfig {
 
     @Bean(value = "channelTopic")
     public ChannelTopic channelTopic() {
-        return new ChannelTopic("user_ban");
+        return new ChannelTopic(userBanTopicName);
     }
 }

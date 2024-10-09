@@ -39,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -395,9 +396,9 @@ class CommentServiceTest {
     @Test
     @DisplayName("Getting users to ban")
     public void testGettingUsersToBan() {
-        commentService.findUsersToBan();
+        commentService.publishBanUserEvent();
 
-        verify(commentRepository).findUsersToBan();
+        verify(commentRepository).findUserIdsToBan(anyInt());
     }
 
     CommentDto initCommentDto(Long id, Long authorId, String content, LocalDateTime updateAt) {

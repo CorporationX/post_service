@@ -19,5 +19,5 @@ public interface CommentService {
 
     void verifyComments(List<Comment> comments);
 
-    void findUsersToBan();
+    void publishBanUserEvent();
 }

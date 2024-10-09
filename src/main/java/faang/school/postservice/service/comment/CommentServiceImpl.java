@@ -40,10 +40,13 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final SortingStrategyAppliersMap sortingStrategiesAppliers;
     private final CommentChecker commentChecker;
-    private final RedisMessagePublisher redisMessagePublisher;
+    private final MessagePublisher messagePublisher;
 
     @Value("${comment.constants.verification-days-limit}")
     private int verificationDaysLimit;
+
+    @Value("${comment.user-ban-comment-limit}")
+    private int banCommentLimit;
 
     @Override
     public CommentDto createComment(Long postId, CommentDto commentDto) {
@@ -114,10 +117,10 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void findUsersToBan() {
-        List<Long> usersIds = commentRepository.findUsersToBan();
+    public void publishBanUserEvent() {
+        List<Long> usersIds = commentRepository.findUserIdsToBan(banCommentLimit);
         log.info("Found {} users to Ban", usersIds.size());
-        usersIds.forEach(redisMessagePublisher::publishUserToBan);
+        usersIds.forEach(messagePublisher::publish);
     }
 
     private Post getPost(Long postId) {
