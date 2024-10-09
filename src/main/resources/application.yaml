@@ -11,14 +11,13 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
-    enabled: true
 
   data:
     redis:
@@ -72,3 +71,17 @@ dictionary:
       retry:
         maxAttempts: 2
         maxDelay: 1000
+services:
+  s3:
+    endpoint: http://127.0.0.1:9000
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+    connectionTimeout: 50_000
+    socketTimeout: 50_000
+
+executor:
+  capacity: 10
+  corePoolSize: 1
+  maximumPoolSize: 10
+  keepAliveTime: 60
