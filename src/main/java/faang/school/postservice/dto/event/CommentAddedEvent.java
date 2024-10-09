@@ -11,7 +11,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Builder
 @ToString
-public class CommentEvent extends Event {
+public class CommentAddedEvent extends Event {
     private Long id;
     private String content;
     private Long authorId;

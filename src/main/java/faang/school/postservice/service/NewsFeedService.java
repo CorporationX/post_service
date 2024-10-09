@@ -8,11 +8,12 @@ import faang.school.postservice.model.redis.PostRedis;
 import faang.school.postservice.model.redis.UserRedis;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.NewsFeedRedisRepository;
-import faang.school.postservice.repository.redis.PostRedisRepository;
-import faang.school.postservice.repository.redis.UserRedisRepository;
+import faang.school.postservice.service.redis.PostRedisService;
+import faang.school.postservice.service.redis.UserRedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,8 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Service
 @Slf4j
@@ -30,15 +32,20 @@ import java.util.stream.StreamSupport;
 public class NewsFeedService {
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
-    private final PostRedisRepository postRedisRepository;
-    private final UserRedisRepository userRedisRepository;
+    private final PostRedisService postRedisService;
+    private final UserRedisService userRedisService;
     private final NewsFeedRedisRepository newsFeedRedisRepository;
+    private final RedisLockRegistry redisLockRegistry;
     private final PostMapper postMapper;
 
     @Value("${news-feed.batch-size}")
     private int batchSize;
+    @Value("${news-feed.max-size}")
+    private long maxNewsFeedSize;
     @Value("${spring.data.redis.cache.news-feed.prefix}")
     private String newsFeedPrefix;
+    @Value("${spring.data.redis.lock-registry.try-lock-millis}")
+    private long tryLockMillis;
 
     public List<PostRedis> getNewsFeed(Long userId, Long lastPostId) {
         log.info("Getting news feed for user {}", userId);
@@ -48,7 +55,7 @@ public class NewsFeedService {
             return getPostsFromDB(userId, lastPostId, batchSize);
         }
         List<Long> resultPostIds = getResultPostIds(lastPostId, postIds);
-        List<PostRedis> result = getPostsFromRedis(resultPostIds);
+        List<PostRedis> result = postRedisService.getAllByIds(resultPostIds);
         if (result.size() < resultPostIds.size()) {
             result = addExpiredPostsAndGet(resultPostIds, result);
         }
@@ -57,6 +64,36 @@ public class NewsFeedService {
         }
         setAuthors(result);
         return result;
+    }
+
+    public void addPostConcurrent(Long followerId, Long postId) {
+        String key = newsFeedPrefix + followerId;
+        log.info("Adding post by id {} to {}", postId, key);
+        Lock lock = redisLockRegistry.obtain(key);
+        try {
+            if (lock.tryLock(tryLockMillis, TimeUnit.MILLISECONDS)) {
+                log.info("Key {} locked", key);
+                try {
+                    addPostToNewsFeed(key, postId);
+                } finally {
+                    lock.unlock();
+                    log.info("Key {} unlocked", key);
+                }
+            } else {
+                log.info("Failed to acquire lock for {}", key);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void addPostToNewsFeed(String key, Long postId) {
+        newsFeedRedisRepository.addPostId(key, postId);
+
+        while (newsFeedRedisRepository.getSize(key) > maxNewsFeedSize) {
+            log.info("Removing excess post from {}", key);
+            newsFeedRedisRepository.removeLastPostId(key);
+        }
     }
 
     private List<PostRedis> getPostsFromDB(Long userId, Long lastPostId, int postsCount) {
@@ -83,12 +120,6 @@ public class NewsFeedService {
         int startIndex = list.indexOf(lastPostId) + 1;
         int endIndex = Math.min(startIndex + batchSize, list.size());
         return list.subList(startIndex, endIndex);
-    }
-
-    private List<PostRedis> getPostsFromRedis(List<Long> resultPostIds) {
-        Iterable<PostRedis> postsRedisIterable = postRedisRepository.findAllById(resultPostIds);
-        return StreamSupport.stream(postsRedisIterable.spliterator(), false)
-                .collect(Collectors.toList());
     }
 
     private List<PostRedis> addExpiredPostsAndGet(List<Long> redisPostIds, List<PostRedis> result) {
@@ -118,17 +149,12 @@ public class NewsFeedService {
         Set<Long> userIds = posts.stream()
                 .map(post -> post.getAuthor().getId())
                 .collect(Collectors.toSet());
-        Map<Long, UserRedis> usersRedis = getUsersFromRedis(userIds);
+        Map<Long, UserRedis> usersRedis = userRedisService.getAllByIds(userIds).stream()
+                .collect(Collectors.toMap(UserRedis::getId, user -> user));
         if (usersRedis.size() < userIds.size()) {
             addExpiredAuthors(usersRedis, userIds);
         }
         posts.forEach(post -> post.setAuthor(usersRedis.get(post.getAuthor().getId())));
-    }
-
-    private Map<Long, UserRedis> getUsersFromRedis(Set<Long> userIds) {
-        Iterable<UserRedis> userRedisIterable = userRedisRepository.findAllById(userIds);
-        return StreamSupport.stream(userRedisIterable.spliterator(), false)
-                .collect(Collectors.toMap(UserRedis::getId, user -> user));
     }
 
     private void addExpiredAuthors(Map<Long, UserRedis> usersRedis, Set<Long> userIds) {

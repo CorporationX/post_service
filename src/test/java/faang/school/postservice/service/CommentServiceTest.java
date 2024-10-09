@@ -1,9 +1,8 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CommentDto;
-import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.event.CommentAddedEvent;
 import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -131,7 +130,7 @@ class CommentServiceTest {
     }
 
     @Test
-    public void testVerifyServiceAddComment() throws JsonProcessingException {
+    public void testVerifyServiceAddComment() {
         // Arrange
         when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
         when(mapper.toEntity(dto)).thenReturn(comment);
@@ -143,7 +142,7 @@ class CommentServiceTest {
     }
 
     @Test
-    public void testVerifyPublishCommentEvent() throws JsonProcessingException {
+    public void testVerifyPublishCommentEvent() {
         long postId = 1L;
         Post post = Post.builder()
                 .id(postId)
@@ -160,7 +159,7 @@ class CommentServiceTest {
                 .content(commentDto.getContent())
                 .build();
         when(commentRepository.save(Mockito.any())).thenReturn(commentEntity);
-        CommentEvent commentEvent = mapper.toCommentEvent(commentEntity);
+        CommentAddedEvent commentEvent = mapper.toCommentEvent(commentEntity);
         CommentDto expDto = mapper.toDto(commentEntity);
         //Act
         CommentDto actualDto = service.addComment(postId, commentDto);

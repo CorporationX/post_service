@@ -10,11 +10,9 @@ import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.kafka.Producer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.redis.PostRedis;
-import faang.school.postservice.model.redis.UserRedis;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.redis.PostRedisRepository;
-import faang.school.postservice.repository.redis.UserRedisRepository;
+import faang.school.postservice.service.redis.PostRedisService;
+import faang.school.postservice.service.redis.UserRedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -31,8 +28,8 @@ import java.util.stream.StreamSupport;
 @Slf4j
 public class PostService {
     private final PostRepository postRepository;
-    private final PostRedisRepository postRedisRepository;
-    private final UserRedisRepository userRedisRepository;
+    private final PostRedisService postRedisService;
+    private final UserRedisService userRedisService;
     private final UserServiceClient userServiceClient;
     private final PostValidator validator;
     private final PostMapper mapper;
@@ -62,7 +59,8 @@ public class PostService {
         Post publishedPost = postRepository.save(entity);
 
         UserDto userDto = userServiceClient.getUser(publishedPost.getAuthorId());
-        saveToCache(publishedPost, userDto);
+        postRedisService.save(publishedPost);
+        userRedisService.save(userDto);
         sendPostPublishedEvent(publishedPost, userDto);
         log.info("Published post by id {}", postId);
 
@@ -77,7 +75,7 @@ public class PostService {
         entity.setContent(dto.getContent());
 
         Post updatedEntity = postRepository.save(entity);
-        updateInCacheIfExists(updatedEntity);
+        postRedisService.updateIfExists(updatedEntity);
         log.info("Updated post by id {}", updatedEntity.getId());
 
         return mapper.toDto(updatedEntity);
@@ -92,7 +90,7 @@ public class PostService {
         entity.setDeleted(true);
 
         Post deletedEntity = postRepository.save(entity);
-        deleteFromCacheIfExists(postId);
+        postRedisService.deleteIfExists(postId);
         log.info("Deleted post by id {}", deletedEntity.getId());
 
         return mapper.toDto(deletedEntity);
@@ -118,32 +116,9 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post by id %s not found", postId)));
     }
 
-    private void saveToCache(Post post, UserDto userDto) {
-        postRedisRepository.save(mapper.toRedis(post));
-        if (!userRedisRepository.existsById(userDto.getId())) {
-            userRedisRepository.save(new UserRedis(userDto.getId(), userDto.getUsername()));
-        }
-    }
 
     private void sendPostPublishedEvent(Post post, UserDto userDto) {
         PostPublishedEvent event = new PostPublishedEvent(post.getId(), userDto.getFollowersIds());
         kafkaProducer.send(postPublishedTopic, event);
-    }
-
-    private void updateInCacheIfExists(Post updatedEntity) {
-        if (updatedEntity.isPublished()) {
-            Optional<PostRedis> old = postRedisRepository.findById(updatedEntity.getId());
-            if (old.isPresent()) {
-                PostRedis postRedis = old.get();
-                postRedis.setContent(updatedEntity.getContent());
-                postRedisRepository.save(mapper.toRedis(updatedEntity));
-            }
-        }
-    }
-
-    private void deleteFromCacheIfExists(Long postId) {
-        if (postRedisRepository.existsById(postId)) {
-            postRedisRepository.deleteById(postId);
-        }
     }
 }
