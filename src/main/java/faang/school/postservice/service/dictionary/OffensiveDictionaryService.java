@@ -28,10 +28,13 @@ public class OffensiveDictionaryService {
     private final ExecutorService executorService;
     private final OffensiveWordsDictionary offensiveWordsDictionary;
 
-    @Async("cachedExecutor")
-    public void updateOffensiveDictionary() {
-        CompletableFuture.runAsync(this::updateRussianOffensiveWords, executorService);
-        CompletableFuture.runAsync(this::updateEnglishOffensiveWords, executorService);
+    @Async
+    public CompletableFuture<Void> updateOffensiveDictionary() {
+        CompletableFuture<Void> rusFuture = CompletableFuture.runAsync(this::updateRussianOffensiveWords,
+                executorService);
+        CompletableFuture<Void> engFuture = CompletableFuture.runAsync(this::updateEnglishOffensiveWords,
+                executorService);
+        return CompletableFuture.allOf(rusFuture, engFuture);
     }
 
     @Retryable(retryFor = FeignException.class,

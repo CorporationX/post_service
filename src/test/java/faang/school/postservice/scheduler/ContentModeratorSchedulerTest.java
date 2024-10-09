@@ -25,9 +25,9 @@ class ContentModeratorSchedulerTest {
     @Test
     @DisplayName("Should call moderate comments content method")
     void whenInitThenShouldCallModerateCommentsContent() {
-        when(moderatorService.moderateCommentsContent())
+        /*when(moderatorService.moderateCommentsContent())
                 .thenReturn(CompletableFuture.completedFuture(null));
-
+*/
         contentModeratorScheduler.moderateComments();
 
         verify(moderatorService).moderateCommentsContent();

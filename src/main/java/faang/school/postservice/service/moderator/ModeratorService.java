@@ -5,13 +5,11 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 @Slf4j
@@ -23,24 +21,21 @@ public class ModeratorService {
     private final ExecutorService executorService;
     private final OffensiveWordsDictionary offensiveWordsDictionary;
 
-    @Async("cachedExecutor")
-    public CompletableFuture<Void> moderateCommentsContent() {
-        return CompletableFuture.runAsync(() -> {
-            log.info("moderateCommentsContent() - start");
-            List<Comment> comments = commentService.getUnverifiedComments();
+    public void moderateCommentsContent() {
+        log.info("moderateCommentsContent() - start");
+        List<Comment> comments = commentService.getUnverifiedComments();
 
-            comments.forEach(comment -> executorService.execute(() -> {
-                String content = comment.getContent();
+        comments.forEach(comment -> executorService.execute(() -> {
+            String content = comment.getContent();
 
-                if (content != null && !content.isBlank()) {
-                    boolean noOffensiveContent = !containsOffensiveContent(content);
-                    setVerifyToComment(comment, noOffensiveContent);
-                }
-            }));
+            if (content != null && !content.isBlank()) {
+                boolean noOffensiveContent = !containsOffensiveContent(content);
+                setVerifyToComment(comment, noOffensiveContent);
+            }
+        }));
 
-            commentService.saveComments(comments);
-            log.info("moderateCommentsContent() - finish");
-        }, executorService);
+        commentService.saveComments(comments);
+        log.info("moderateCommentsContent() - finish");
     }
 
     private boolean containsOffensiveContent(String content) {
