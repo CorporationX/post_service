@@ -1,6 +1,7 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.model.Post;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
@@ -24,7 +25,12 @@ public class ModerationJob implements Job {
     @Value("${moderation.thread-pool-size}")
     private int threadPoolSize;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(threadPoolSize);
+    private ExecutorService executorService;
+
+    @PostConstruct
+    public void init() {
+        executorService = Executors.newFixedThreadPool(threadPoolSize);
+    }
 
     @Override
     public void execute(JobExecutionContext context) {

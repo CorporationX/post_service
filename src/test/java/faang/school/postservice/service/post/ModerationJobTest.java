@@ -11,6 +11,9 @@ import org.quartz.JobExecutionContext;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
@@ -39,13 +42,11 @@ public class ModerationJobTest {
         threadPoolSizeField.setAccessible(true);
         threadPoolSizeField.set(moderationJob, 2);
 
-        Field awaitTerminationSecondsField = ModerationJob.class.getDeclaredField("awaitTerminationSeconds");
-        awaitTerminationSecondsField.setAccessible(true);
-        awaitTerminationSecondsField.set(moderationJob, 5);
+        moderationJob.init();
     }
 
     @Test
-    void testExecute()  {
+    void testExecute() throws Exception {
         List<Post> unverifiedPosts = Arrays.asList(new Post(), new Post(), new Post(), new Post(), new Post());
         when(moderationService.findUnverifiedPosts()).thenReturn(unverifiedPosts);
 
@@ -57,6 +58,15 @@ public class ModerationJobTest {
         when(moderationService.splitListIntoSublists(eq(unverifiedPosts), eq(2))).thenReturn(sublists);
 
         moderationJob.execute(jobExecutionContext);
+
+        Field executorServiceField = ModerationJob.class.getDeclaredField("executorService");
+        executorServiceField.setAccessible(true);
+        ExecutorService executorService = (ExecutorService) executorServiceField.get(moderationJob);
+
+        executorService.shutdown();
+        if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+            executorService.shutdownNow();
+        }
 
         verify(moderationService, times(1)).findUnverifiedPosts();
         verify(moderationService, times(1)).splitListIntoSublists(eq(unverifiedPosts), eq(2));
