@@ -1,8 +1,6 @@
 package faang.school.postservice.config;
 
-import faang.school.postservice.publisher.MessagePublisher;
-import faang.school.postservice.publisher.RedisLikeEventPublisher;
-import faang.school.postservice.publisher.RedisMessagePublisher;
+import faang.school.postservice.listener.LikeEventListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +8,8 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -21,7 +21,7 @@ public class RedisConfiguration {
     @Value("${redis.port}")
     private int redisPort;
 
-    @Value("spring.data.redis.channel.like-event")
+    @Value("spring.data.redis.channels.like-event")
     private String likeEventTopic;
 
     @Bean
@@ -37,23 +37,18 @@ public class RedisConfiguration {
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
-    } // тимплейт
+    }
+    @Bean
+    public MessageListenerAdapter messageListenerAdapter() {
+        return new MessageListenerAdapter(new LikeEventListener());
+    }
 
     @Bean
-    MessagePublisher messagePublisher() {
-        RedisTemplate<String, Object> template = redisTemplate();
-        return new RedisMessagePublisher(template, topic());
-    } // паблишер
-
-    @Bean
-    RedisLikeEventPublisher likeEventPublisher() {
-        return new RedisLikeEventPublisher(redisTemplate(), likeEventTopic());
-    } // паблишер
-
-
-    @Bean
-    ChannelTopic topic() {
-        return new ChannelTopic("messageQueue");
+    public RedisMessageListenerContainer redisMessageListenerContainer() {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(jedisConnectionFactory());
+        container.addMessageListener(messageListenerAdapter(), likeEventTopic());
+        return container;
     }
 
     @Bean

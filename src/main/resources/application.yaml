@@ -29,7 +29,7 @@ spring:
       redis:
         host: localhost
         port: 6379
-        channel:
+        channels:
           like-event: like-event-channel
 server:
   port: 8081
