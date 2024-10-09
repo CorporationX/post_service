@@ -1,7 +1,8 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.like;
 
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.service.LikeService;
+
+import faang.school.postservice.service.like.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
