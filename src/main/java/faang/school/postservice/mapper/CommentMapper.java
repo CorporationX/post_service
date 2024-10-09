@@ -12,6 +12,7 @@ import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
+import java.util.TreeSet;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
@@ -28,6 +29,12 @@ public interface CommentMapper {
     @Mapping(source = "commentId", target = "id")
     @Mapping(source = "authorId", target = "author", qualifiedByName = "authorIdToAuthor")
     CommentRedis toRedis(CommentAddedEvent event);
+
+    @Mapping(source = "post.id", target = "postId")
+    @Mapping(source = "authorId", target = "author", qualifiedByName = "authorIdToAuthor")
+    CommentRedis toRedis(Comment comment);
+
+    TreeSet<CommentRedis> toRedis(List<Comment> comments);
 
     @Named("likesToLikesId")
     default List<Long> likesToLikesId(List<Like> likes) {

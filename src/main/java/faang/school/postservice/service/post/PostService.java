@@ -10,6 +10,7 @@ import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.kafka.Producer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.PostRedis;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.redis.PostRedisService;
 import faang.school.postservice.service.redis.UserRedisService;
@@ -100,11 +101,23 @@ public class PostService {
         return mapper.toDto(getEntityFromDB(postId));
     }
 
+    public List<PostRedis> findAllById(List<Long> redisPostIds) {
+        return mapper.toRedis(postRepository.findAllById(redisPostIds));
+    }
+
+    public List<PostRedis> findByAuthors(List<Long> authorsId, int postsCount) {
+        return mapper.toRedis(postRepository.findByAuthors(authorsId, postsCount));
+    }
+
+    public List<PostRedis> findByAuthorsBeforeId(List<Long> authorIds, Long lastPostId, int postsCount) {
+        return mapper.toRedis(postRepository.findByAuthorsBeforeId(authorIds, lastPostId, postsCount));
+    }
+
     public List<PostDto> getFilteredPosts(PostFilterDto filters) {
         List<PostFilter> actualPostFilters = postFilters.stream()
                 .filter(f -> f.isApplicable(filters)).toList();
 
-        return StreamSupport.stream(postRepository.findAll().spliterator(), false)
+        return postRepository.findAll().stream()
                 .filter(post -> actualPostFilters.stream()
                         .allMatch(filter -> filter.test(post, filters)))
                 .map(mapper::toDto)

@@ -7,6 +7,7 @@ import faang.school.postservice.kafka.Producer;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.CommentRedis;
 import faang.school.postservice.model.redis.UserRedis;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 
 @Service
 @RequiredArgsConstructor
@@ -78,6 +80,10 @@ public class CommentService {
         Comment commentForDelete = getCommentForDelete(commentId, post.getComments());
         commentRepository.delete(commentForDelete);
         return mapper.toDto(commentForDelete);
+    }
+
+    public TreeSet<CommentRedis> findLastByPostId(int count, Long postId) {
+        return mapper.toRedis(commentRepository.findLastByPostId(count, postId));
     }
 
     private void saveUserToCache(UserDto userDto) {
