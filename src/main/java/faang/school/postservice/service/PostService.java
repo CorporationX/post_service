@@ -11,6 +11,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -39,6 +42,10 @@ public class PostService {
     private final PostMapper postMapper;
     private final NewPostPublisher newPostPublisher;
     private final BatchProcessService batchProcessService;
+    private final ExecutorService schedulingThreadPoolExecutor;
+
+    @Value("${post.publisher.butch-size}")
+    private int batchSize;
 
     public PostDto createPost(PostDto postDto) {
         if (postDto.getAuthorType() == AuthorType.USER) {
@@ -139,7 +146,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostDto> getAllPostsByHashtagId(String content, Pageable pageable){
+    public Page<PostDto> getAllPostsByHashtagId(String content, Pageable pageable) {
         return postRepository.findByHashtagsContent(content, pageable).map(postMapper::toPostDto);
     }
 
@@ -150,8 +157,35 @@ public class PostService {
     }
 
     @Transactional
-    public Post updatePostInternal(Post post){
+    public Post updatePostInternal(Post post) {
         return postRepository.save(post);
+    }
+
+    private final PostBatchService postBatchService;
+
+    public List<CompletableFuture<Void>> publishScheduledPosts() {
+        List<Post> readyToPublish = postRepository.findReadyToPublish();
+        log.info("{} posts were found for scheduled publishing", readyToPublish.size());
+        List<List<Post>> postBatches = partitionList(readyToPublish);
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (List<Post> postBatch : postBatches) {
+            postBatch.forEach(post -> {
+                post.setPublished(true);
+                post.setPublishedAt(LocalDateTime.now());
+                log.info("Post with id '{}' prepared for scheduled publishing", post.getId());
+            });
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> postBatchService.savePostBatch(postBatch), schedulingThreadPoolExecutor);
+            futures.add(future);
+        }
+        return futures;
+    }
+
+    private List<List<Post>> partitionList(List<Post> list) {
+        List<List<Post>> partitions = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += batchSize) {
+            partitions.add(list.subList(i, Math.min(i + batchSize, list.size())));
+        }
+        return partitions;
     }
 
     @Transactional
