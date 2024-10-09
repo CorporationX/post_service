@@ -166,7 +166,7 @@ public class PostService {
     public List<CompletableFuture<Void>> publishScheduledPosts() {
         List<Post> readyToPublish = postRepository.findReadyToPublish();
         log.info("{} posts were found for scheduled publishing", readyToPublish.size());
-        List<List<Post>> postBatches = partitionList(readyToPublish);
+        List<List<Post>> postBatches = partitionList(readyToPublish, batchSize);
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         for (List<Post> postBatch : postBatches) {
             postBatch.forEach(post -> {
@@ -180,7 +180,7 @@ public class PostService {
         return futures;
     }
 
-    private List<List<Post>> partitionList(List<Post> list) {
+    private List<List<Post>> partitionList(List<Post> list, int batchSize) {
         List<List<Post>> partitions = new ArrayList<>();
         for (int i = 0; i < list.size(); i += batchSize) {
             partitions.add(list.subList(i, Math.min(i + batchSize, list.size())));
@@ -194,7 +194,7 @@ public class PostService {
 
         if (!unpublishedPosts.isEmpty()) {
             int batchSize = correcterBatchSize;
-            List<List<Post>> batches = splitIntoBatches(unpublishedPosts, batchSize);
+            List<List<Post>> batches = partitionList(unpublishedPosts, batchSize);
 
             List<CompletableFuture<Void>> futures = batches.stream()
                     .map(batchProcessService::processBatch)
@@ -202,13 +202,5 @@ public class PostService {
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         }
-    }
-
-    private <T> List<List<T>> splitIntoBatches(List<T> list, int batchSize) {
-        List<List<T>> batches = new ArrayList<>();
-        for (int i = 0; i < list.size(); i += batchSize) {
-            batches.add(list.subList(i, Math.min(i + batchSize, list.size())));
-        }
-        return batches;
     }
 }
