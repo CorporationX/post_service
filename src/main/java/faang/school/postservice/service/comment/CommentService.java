@@ -3,8 +3,10 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.comment.CommentEventMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publis.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommentServiceHandler commentServiceHandler;
+    private final CommentEventPublisher commentEventPublisher;
+    private final CommentEventMapper commentEventMapper;
 
     @Transactional
     public Comment createComment(Comment comment) {
@@ -31,7 +35,10 @@ public class CommentService {
 
         comment.setAuthorId(user.getId());
         post.getComments().add(comment);
-        return commentRepository.save(comment);
+
+        Comment savedComment = commentRepository.save(comment);
+        publishCommentEventToNotificationService(savedComment, post);
+        return savedComment;
     }
 
     @Transactional
@@ -66,5 +73,10 @@ public class CommentService {
     private Comment getCommentById(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Comment with ID: " + commentId + " not found."));
+    }
+
+    private void publishCommentEventToNotificationService(Comment savedComment, Post post) {
+        String commentEventToString = commentEventMapper.toEvent(savedComment, post).toString();
+        commentEventPublisher.publish(commentEventToString);
     }
 }
