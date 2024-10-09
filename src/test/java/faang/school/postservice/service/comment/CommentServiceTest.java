@@ -1,10 +1,13 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.comment.CommentEventMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publis.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.test_data.TestDataComment;
@@ -36,6 +39,10 @@ class CommentServiceTest {
     private PostRepository postRepository;
     @Mock
     private CommentServiceHandler commentServiceHandler;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
+    @Mock
+    private CommentEventMapper commentEventMapper;
     @InjectMocks
     private CommentService commentService;
 
@@ -43,7 +50,7 @@ class CommentServiceTest {
     private UserDto userDto;
     private Comment comment;
     private Comment comment2;
-
+    private CommentEventDto commentEventDto;
 
     @BeforeEach
     void setUp() {
@@ -53,6 +60,7 @@ class CommentServiceTest {
         comment = testDataComment.getComment1();
         comment2 = testDataComment.getComment2();
         userDto = testDataComment.getUserDto();
+        commentEventDto = testDataComment.getCommentEventDto();
     }
 
     @Nested
@@ -62,6 +70,7 @@ class CommentServiceTest {
             when(userServiceClient.getUser(userDto.getId())).thenReturn(userDto);
             when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
             when(commentRepository.save(comment)).thenReturn(comment);
+            when(commentEventMapper.toEvent(comment, post)).thenReturn(commentEventDto);
 
             Comment createdComment = commentService.createComment(comment);
             assertNotNull(createdComment);
@@ -71,6 +80,7 @@ class CommentServiceTest {
             verify(userServiceClient, atLeastOnce()).getUser(userDto.getId());
             verify(commentServiceHandler, atLeastOnce()).userExistValidation(userDto.getId());
             verify(commentRepository, atLeastOnce()).save(comment);
+            verify(commentEventPublisher, atLeastOnce()).publish(commentEventDto.toString());
         }
 
         @Test
