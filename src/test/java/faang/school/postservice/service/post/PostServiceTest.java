@@ -16,10 +16,13 @@ import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -67,6 +70,8 @@ public class PostServiceTest {
     private MultipartFile image2;
     @Mock
     private InputStream inputStream;
+    @Captor
+    private ArgumentCaptor<List<Post>> listCaptor;
     @InjectMocks
     private PostService postService;
 
@@ -75,10 +80,12 @@ public class PostServiceTest {
     private Post findedPost;
     private List<Post> authorPosts = new ArrayList<>();
     private List<Post> projectPosts = new ArrayList<>();
+    private List<Post> readyToPublishPosts = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(postService, "bucketNamePrefix", BUCKET_NAME_PREFIX);
+//        ReflectionTestUtils.setField(postService, "subListSize", SUB_LIST_SIZE);
 
 
         postForCreate = Post.builder()
@@ -137,6 +144,11 @@ public class PostServiceTest {
                 .createdAt(LocalDateTime.of(2024, 9, 14, 0, 0))
                 .publishedAt(LocalDateTime.of(2024, 9, 14, 0, 0))
                 .build());
+
+        Post readyToPublishPost1 = Post.builder().id(1).published(false).build();
+        Post readyToPublishPost2 = Post.builder().id(2).published(false).build();
+        readyToPublishPosts.add(readyToPublishPost1);
+        readyToPublishPosts.add(readyToPublishPost2);
     }
 
     @Test
@@ -435,5 +447,24 @@ public class PostServiceTest {
         doNothing().when(resourceRepository).deleteAll(existedImages);
 
         postService.deleteImagesFromPost(resourceIds);
+    }
+
+    @Test
+    void testGetAllReadyToPublishPosts() {
+        when(postRepository.findReadyToPublish()).thenReturn(readyToPublishPosts);
+
+        var result = postService.getAllReadyToPublishPosts();
+
+        verify(postRepository).findReadyToPublish();
+        assertEquals(readyToPublishPosts, result);
+    }
+
+    @Test
+    void testProcessSubList() {
+        postService.processSubList(readyToPublishPosts);
+
+        verify(postRepository).saveAll(listCaptor.capture());
+        assertTrue(listCaptor.getValue().get(0).isPublished());
+        assertTrue(listCaptor.getValue().get(1).isPublished());
     }
 }
