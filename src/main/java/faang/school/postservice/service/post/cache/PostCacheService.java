@@ -93,7 +93,8 @@ public class PostCacheService {
     public boolean isRedisConnected() {
         try {
             log.info("Redis connection check");
-            String pingResponse = Objects.requireNonNull(redisTemplatePost.getConnectionFactory()).getConnection().ping();
+            String pingResponse =
+                    Objects.requireNonNull(redisTemplatePost.getConnectionFactory()).getConnection().ping();
             return PONG.equals(pingResponse);
         } catch (RedisConnectionFailureException exception) {
             log.error("Redis connection failure:", exception);
