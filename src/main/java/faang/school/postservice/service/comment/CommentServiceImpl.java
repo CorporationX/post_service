@@ -44,10 +44,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Value("${comment.constants.verification-days-limit}")
     private int verificationDaysLimit;
-
-    @Value("${comment.user-ban-comment-limit}")
-    private int banCommentLimit;
-
+    
     @Override
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         Post post = getPost(postId);
@@ -117,7 +114,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void publishBanUserEvent() {
+    public void banUsersWithObsceneCommentsMoreThan(int banCommentLimit) {
         List<Long> usersIds = commentRepository.findUserIdsToBan(banCommentLimit);
         log.info("Found {} users to Ban", usersIds.size());
         usersIds.forEach(messagePublisher::publish);

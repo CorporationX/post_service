@@ -396,7 +396,7 @@ class CommentServiceTest {
     @Test
     @DisplayName("Getting users to ban")
     public void testGettingUsersToBan() {
-        commentService.publishBanUserEvent();
+        commentService.banUsersWithObsceneCommentsMoreThan(anyInt());
 
         verify(commentRepository).findUserIdsToBan(anyInt());
     }

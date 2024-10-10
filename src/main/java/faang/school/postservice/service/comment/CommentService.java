@@ -19,5 +19,5 @@ public interface CommentService {
 
     void verifyComments(List<Comment> comments);
 
-    void publishBanUserEvent();
+    void banUsersWithObsceneCommentsMoreThan(int banCommentLimit);
 }
