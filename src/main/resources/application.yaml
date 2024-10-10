@@ -35,6 +35,19 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  spelling-corrector:
+    scheduler:
+      cron: "0 0 0 * * *" # каждый день в 00:00:00
+    retry:
+      delay: 2000
+      multiplier: 2
+    client:
+      textgears:
+        correct-endpoint: https://api.textgears.com/correct
+        lang-detector-endpoint: https://api.textgears.com/detect
+        auth-token: secret-key
+      yandex:
+        url: https://speller.yandex.net/services/spellservice.json/checkText
   images:
     max-to-upload: 10
     max-size: 5242880
