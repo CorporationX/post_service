@@ -16,7 +16,6 @@ import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +48,7 @@ public class NewsFeedService {
     @Value("${spring.data.redis.cache.post.comments.max-size}")
     private int commentsMaxSize;
 
-    public List<PostRedis> getNewsFeed(Long userId, Long lastPostId) {
+    public TreeSet<PostRedis> getNewsFeed(Long userId, Long lastPostId) {
         log.info("Getting news feed for user {}", userId);
         String key = newsFeedPrefix + userId;
         List<Long> postIds = newsFeedRedisRepository.getSortedPostIds(key);
@@ -57,9 +56,9 @@ public class NewsFeedService {
             return getPostsFromDB(userId, lastPostId, batchSize);
         }
         List<Long> resultPostIds = getResultPostIds(lastPostId, postIds);
-        List<PostRedis> result = postRedisService.getAllByIds(resultPostIds);
+        TreeSet<PostRedis> result = new TreeSet<>(postRedisService.getAllByIds(resultPostIds));
         if (result.size() < resultPostIds.size()) {
-            result = addExpiredPostsAndGet(resultPostIds, result);
+            addExpiredPostsAndGet(resultPostIds, result);
         }
         if (result.size() < batchSize) {
             getExtraPostsFromDB(userId, result);
@@ -98,7 +97,7 @@ public class NewsFeedService {
         }
     }
 
-    private List<PostRedis> getPostsFromDB(Long userId, Long lastPostId, int postsCount) {
+    private TreeSet<PostRedis> getPostsFromDB(Long userId, Long lastPostId, int postsCount) {
         log.info("Getting posts from DB");
         List<Long> followeeIds = userServiceClient.getUser(userId).getFolloweesIds();
         List<PostRedis> posts;
@@ -108,10 +107,10 @@ public class NewsFeedService {
             posts = postService.findByAuthorsBeforeId(followeeIds, lastPostId, postsCount);
         }
         if (posts.isEmpty()) {
-            return new ArrayList<>();
+            return new TreeSet<>();
         }
         setComments(posts);
-        return posts;
+        return new TreeSet<>(posts);
     }
 
     private void setComments(List<PostRedis> posts) {
@@ -136,10 +135,8 @@ public class NewsFeedService {
         return list.subList(startIndex, endIndex);
     }
 
-    private List<PostRedis> addExpiredPostsAndGet(List<Long> redisPostIds, List<PostRedis> result) {
+    private void addExpiredPostsAndGet(List<Long> redisPostIds, TreeSet<PostRedis> result) {
         log.info("Adding posts, that were not found in cache");
-        Set<PostRedis> postsSet = new TreeSet<>(Comparator.comparing(PostRedis::getId).reversed());
-        postsSet.addAll(result);
 
         List<Long> resultIds = result.stream()
                 .map(PostRedis::getId)
@@ -148,18 +145,17 @@ public class NewsFeedService {
 
         List<PostRedis> postsRedis = postService.findAllById(redisPostIds);
         setComments(postsRedis);
-        postsSet.addAll(postsRedis);
-        return new ArrayList<>(postsSet);
+        result.addAll(postsRedis);
     }
 
-    private void getExtraPostsFromDB(Long userId, List<PostRedis> result) {
+    private void getExtraPostsFromDB(Long userId, TreeSet<PostRedis> result) {
         log.info("Getting extra posts from DB for user {} because feed size is {}", userId, result.size());
-        Long lastPostId = result.get(result.size() - 1).getId();
+        Long lastPostId = result.last().getId();
         int postsCount = batchSize - result.size();
         result.addAll(getPostsFromDB(userId, lastPostId, postsCount));
     }
 
-    private void setAuthors(List<PostRedis> posts) {
+    private void setAuthors(TreeSet<PostRedis> posts) {
         log.info("Setting authors to posts");
         Set<Long> userIds = findUserIds(posts);
 
@@ -171,7 +167,7 @@ public class NewsFeedService {
         setPostsAndCommentsAuthors(posts, usersRedis);
     }
 
-    private Set<Long> findUserIds(List<PostRedis> posts) {
+    private Set<Long> findUserIds(TreeSet<PostRedis> posts) {
         Set<Long> userIds = new HashSet<>();
         posts.forEach(post -> {
             userIds.add(post.getAuthor().getId());
@@ -183,7 +179,7 @@ public class NewsFeedService {
         return userIds;
     }
 
-    private void setPostsAndCommentsAuthors(List<PostRedis> posts, Map<Long, UserRedis> usersRedis) {
+    private void setPostsAndCommentsAuthors(TreeSet<PostRedis> posts, Map<Long, UserRedis> usersRedis) {
         posts.forEach(post -> {
             post.setAuthor(usersRedis.get(post.getAuthor().getId()));
             TreeSet<CommentRedis> comments = post.getComments();

@@ -12,7 +12,7 @@ import java.util.TreeSet;
 @Data
 @AllArgsConstructor
 @RedisHash("Post")
-public class PostRedis implements Serializable {
+public class PostRedis implements Serializable, Comparable<PostRedis> {
     @Id
     private Long id;
     private String content;
@@ -20,4 +20,9 @@ public class PostRedis implements Serializable {
     private TreeSet<CommentRedis> comments;
     private LocalDateTime publishedAt;
     private long likesCount;
+
+    @Override
+    public int compareTo(PostRedis other) {
+        return other.id.compareTo(this.id);
+    }
 }

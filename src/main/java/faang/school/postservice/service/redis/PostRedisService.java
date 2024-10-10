@@ -100,6 +100,7 @@ public class PostRedisService {
         }
         comments.add(comment);
         while (comments.size() > commentsMaxSize) {
+            log.info("Removing excess comment from post by id {}", comment.getPostId());
             comments.pollLast();
         }
         postRedis.setComments(comments);
