@@ -2,8 +2,8 @@ package faang.school.postservice.mapper.album;
 
 import faang.school.postservice.dto.album.AlbumResponseDto;
 import faang.school.postservice.dto.album.CreateAlbumDto;
-import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.album.Album;
 import faang.school.postservice.util.album.BuilderForAlbumsTests;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ class AlbumMapperTest {
 
         assertThat(album)
                 .usingRecursiveComparison()
-                .ignoringFields("posts")
+                .ignoringFields("posts", "chosenUsers")
                 .isEqualTo(albumResponseDto);
         assertEquals(postIds, albumResponseDto.getPostIds());
     }
@@ -57,6 +57,7 @@ class AlbumMapperTest {
 
         assertThat(createAlbumDto)
                 .usingRecursiveComparison()
+                .ignoringFields("chosenUserIds")
                 .isEqualTo(album);
     }
 }

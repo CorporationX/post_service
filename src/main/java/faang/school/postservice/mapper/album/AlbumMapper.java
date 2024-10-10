@@ -2,8 +2,8 @@ package faang.school.postservice.mapper.album;
 
 import faang.school.postservice.dto.album.AlbumResponseDto;
 import faang.school.postservice.dto.album.CreateAlbumDto;
-import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.album.Album;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;

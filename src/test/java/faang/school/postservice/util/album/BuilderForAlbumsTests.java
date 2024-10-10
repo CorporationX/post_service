@@ -1,11 +1,13 @@
 package faang.school.postservice.util.album;
 
-import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.album.Album;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+
+import static faang.school.postservice.model.album.AlbumVisibility.ALL_USERS;
 
 public class BuilderForAlbumsTests {
     private static final Random random = new Random();
@@ -19,6 +21,7 @@ public class BuilderForAlbumsTests {
                 .posts(posts)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .visibility(ALL_USERS)
                 .build();
     }
 
@@ -26,6 +29,7 @@ public class BuilderForAlbumsTests {
         return Album.builder()
                 .title(title)
                 .description(description)
+                .visibility(ALL_USERS)
                 .build();
     }
 
@@ -33,6 +37,7 @@ public class BuilderForAlbumsTests {
         return Album.builder()
                 .id(albumId)
                 .authorId(authorId)
+                .visibility(ALL_USERS)
                 .build();
     }
 
@@ -42,6 +47,7 @@ public class BuilderForAlbumsTests {
                 .title(title)
                 .authorId(authorId)
                 .posts(posts)
+                .visibility(ALL_USERS)
                 .build();
     }
 
@@ -50,6 +56,7 @@ public class BuilderForAlbumsTests {
                 .id(albumId)
                 .authorId(authorId)
                 .createdAt(LocalDateTime.now().minusDays(getRandomLong(fromMinusDays, toMinusDays)))
+                .visibility(ALL_USERS)
                 .build();
     }
 
@@ -58,6 +65,7 @@ public class BuilderForAlbumsTests {
                 .id(albumId)
                 .title(title)
                 .createdAt(LocalDateTime.now().minusDays(getRandomLong(fromMinusDays, toMinusDays)))
+                .visibility(ALL_USERS)
                 .build();
     }
 
@@ -67,12 +75,14 @@ public class BuilderForAlbumsTests {
                 .title(title)
                 .description(description)
                 .authorId(authorId)
+                .visibility(ALL_USERS)
                 .build();
     }
 
     public static Album buildAlbum(long authorId) {
         return Album.builder()
                 .authorId(authorId)
+                .visibility(ALL_USERS)
                 .build();
     }
 

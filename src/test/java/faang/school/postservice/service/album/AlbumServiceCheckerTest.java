@@ -2,7 +2,7 @@ package faang.school.postservice.service.album;
 
 import faang.school.postservice.client.UserServiceClientMock;
 import faang.school.postservice.exception.BadRequestException;
-import faang.school.postservice.model.Album;
+import faang.school.postservice.model.album.Album;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.Test;
@@ -12,9 +12,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static faang.school.postservice.model.album.AlbumVisibility.ALL_USERS;
+import static faang.school.postservice.model.album.AlbumVisibility.CHOSEN_USERS;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALBUM_NOT_EXISTS;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.ALREADY_FAVORITE;
 import static faang.school.postservice.service.album.error_messages.AlbumErrorMessages.NOT_FAVORITE;
@@ -136,5 +139,21 @@ class AlbumServiceCheckerTest {
         RuntimeException exception = assertThrows(BadRequestException.class,
                 () -> checker.checkFavoritesAlbumsContainsAlbum(USER_ID, album, exceptionMessage, isContains));
         assertEquals(exceptionMessage, exception.getMessage());
+    }
+
+    @Test
+    void testValidateAlbumVisibility_CHOSEN_USERS() {
+        List<Long> chosenUserIds = null;
+        assertThrows(BadRequestException.class, () ->
+                checker.validateAlbumVisibility(CHOSEN_USERS, chosenUserIds)
+        );
+    }
+
+    @Test
+    void testValidateAlbumVisibility_NOT_CHOSEN_USERS() {
+        List<Long> chosenUserIds = new ArrayList<>();
+        assertThrows(BadRequestException.class, () ->
+                checker.validateAlbumVisibility(ALL_USERS, chosenUserIds)
+        );
     }
 }

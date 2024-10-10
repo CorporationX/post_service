@@ -1,0 +1,177 @@
+{
+	"info": {
+		"_postman_id": "a3855db3-3eb5-4b6c-a6e6-69d4cf2cbf62",
+		"name": "post_service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4829985"
+	},
+	"item": [
+		{
+			"name": "Update Album visibility",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": 5,\r\n  \"visibility\": \"CHOSEN_USERS\",\r\n  \"chosenUserIds\": [3]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/albums/update-visibility",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"albums",
+						"update-visibility"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all Albums",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": null,\r\n  \"description\": null,\r\n  \"authorId\": null,\r\n  \"createdFrom\": null,\r\n  \"createdTo\": null,\r\n  \"updatedFrom\": null,\r\n  \"updatedTo\": null,\r\n  \"visibility\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/albums/get-all-albums",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"albums",
+						"get-all-albums"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Album by id",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/albums/5",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"albums",
+						"5"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Album CHOSEN_USERS",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"Sample Title 1\",\r\n  \"description\": \"Sample description\",\r\n  \"visibility\": \"CHOSEN_USERS\",\r\n  \"chosenUserIds\": [1, 2, 3]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/albums",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"albums"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Album ALL USERS",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"Sample Title\",\r\n  \"description\": \"Sample description\",\r\n  \"visibility\": \"ALL_USERS\",\r\n  \"chosenUserIds\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/albums",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"albums"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
