@@ -1,10 +1,10 @@
-package faang.school.postservice.service.redis;
+package faang.school.postservice.cache.service;
 
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.redis.CommentRedis;
-import faang.school.postservice.model.redis.PostRedis;
-import faang.school.postservice.repository.redis.PostRedisRepository;
+import faang.school.postservice.cache.model.CommentRedis;
+import faang.school.postservice.cache.model.PostRedis;
+import faang.school.postservice.cache.repository.PostRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

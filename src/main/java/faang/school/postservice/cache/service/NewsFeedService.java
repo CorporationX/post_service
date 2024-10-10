@@ -1,14 +1,13 @@
-package faang.school.postservice.service;
+package faang.school.postservice.cache.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.UserDto;
-import faang.school.postservice.model.redis.CommentRedis;
-import faang.school.postservice.model.redis.PostRedis;
-import faang.school.postservice.model.redis.UserRedis;
-import faang.school.postservice.repository.redis.NewsFeedRedisRepository;
+import faang.school.postservice.cache.model.CommentRedis;
+import faang.school.postservice.cache.model.PostRedis;
+import faang.school.postservice.cache.model.UserRedis;
+import faang.school.postservice.cache.repository.NewsFeedRedisRepository;
+import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.service.redis.PostRedisService;
-import faang.school.postservice.service.redis.UserRedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

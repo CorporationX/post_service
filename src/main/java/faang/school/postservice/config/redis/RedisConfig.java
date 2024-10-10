@@ -1,7 +1,7 @@
 package faang.school.postservice.config.redis;
 
-import faang.school.postservice.model.redis.PostRedis;
-import faang.school.postservice.model.redis.UserRedis;
+import faang.school.postservice.cache.model.PostRedis;
+import faang.school.postservice.cache.model.UserRedis;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

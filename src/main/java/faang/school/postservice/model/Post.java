@@ -1,6 +1,5 @@
 package faang.school.postservice.model;
 
-import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

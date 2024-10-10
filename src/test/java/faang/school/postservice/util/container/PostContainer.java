@@ -7,7 +7,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.model.Ad;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

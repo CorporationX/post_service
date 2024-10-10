@@ -1,8 +1,8 @@
-package faang.school.postservice.service.redis;
+package faang.school.postservice.cache.service;
 
 import faang.school.postservice.dto.UserDto;
-import faang.school.postservice.model.redis.UserRedis;
-import faang.school.postservice.repository.redis.UserRedisRepository;
+import faang.school.postservice.cache.model.UserRedis;
+import faang.school.postservice.cache.repository.UserRedisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -2,8 +2,8 @@ package faang.school.postservice.kafka.consumer;
 
 import faang.school.postservice.dto.event.post.PostPublishedEvent;
 import faang.school.postservice.dto.event.post.PostViewedEvent;
-import faang.school.postservice.service.NewsFeedService;
-import faang.school.postservice.service.redis.PostRedisService;
+import faang.school.postservice.cache.service.NewsFeedService;
+import faang.school.postservice.cache.service.PostRedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
