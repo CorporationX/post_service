@@ -36,6 +36,7 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   spelling-corrector:
+    batch-size: 1000
     scheduler:
       cron: "0 0 0 * * *" # каждый день в 00:00:00
     retry:
@@ -71,6 +72,14 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+moderation:
+  sublist-size: 10
+  thread-pool-size: 5
+
+quartz:
+  job:
+    interval-seconds: 30
 
 app:
   post:

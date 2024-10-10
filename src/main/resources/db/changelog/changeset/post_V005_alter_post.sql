@@ -1,0 +1,5 @@
+ALTER TABLE post
+    ADD COLUMN verification_status VARCHAR(50) NOT NULL DEFAULT 'UNVERIFIED';
+
+ALTER TABLE post
+    ADD COLUMN verified_date TIMESTAMPTZ;
