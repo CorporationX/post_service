@@ -21,8 +21,8 @@ public class PostCorrecter {
     private final PostService postService;
     private final PostRepository postRepository;
 
-    @Value("${post.spelling-corrector.batch-size}")
-    private int batchSize;
+//    @Value("${post.spelling-corrector.batch-size}")
+    private int batchSize = 10;
 
     @Scheduled(cron = "${post.spelling-corrector.scheduler.cron}")
     public void startCheckAISpellingPosts() {

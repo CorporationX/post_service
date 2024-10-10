@@ -36,7 +36,6 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   spelling-corrector:
-    batch-size: 1000
     scheduler:
       cron: "0 0 0 * * *" # каждый день в 00:00:00
     retry:
