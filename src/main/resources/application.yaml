@@ -77,14 +77,6 @@ app:
     cache:
       post_id_prefix: "post:"
       number_of_top_in_cache: 10
-      retryable:
-        save_keys:
-          max_attempts: 3
-          delay: 100
-          multiplier: 2
-        compare_tags:
-          max_attempts: 3
-          delay: 50
   async-config:
     post-cache-service:
       core_pool_size: 10
