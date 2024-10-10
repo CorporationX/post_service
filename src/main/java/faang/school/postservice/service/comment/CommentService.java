@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentEventMapper;
@@ -76,7 +77,7 @@ public class CommentService {
     }
 
     private void publishCommentEventToNotificationService(Comment savedComment, Post post) {
-        String commentEventToString = commentEventMapper.toEvent(savedComment, post).toString();
-        commentEventPublisher.publish(commentEventToString);
+        CommentEventDto commentEventDto = commentEventMapper.toEvent(savedComment, post);
+        commentEventPublisher.publish(commentEventDto);
     }
 }

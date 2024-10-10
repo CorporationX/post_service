@@ -80,7 +80,7 @@ class CommentServiceTest {
             verify(userServiceClient, atLeastOnce()).getUser(userDto.getId());
             verify(commentServiceHandler, atLeastOnce()).userExistValidation(userDto.getId());
             verify(commentRepository, atLeastOnce()).save(comment);
-            verify(commentEventPublisher, atLeastOnce()).publish(commentEventDto.toString());
+            verify(commentEventPublisher, atLeastOnce()).publish(commentEventDto);
         }
 
         @Test
