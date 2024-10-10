@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003_resource.sql
   - include:
       file: db/changelog/changeset/post_V004_create_hashtag.sql
+  - include:
+      file: db/changelog/changeset/post_V_005_BJS2-27264_add_spellcheck_completed_to_post.sql

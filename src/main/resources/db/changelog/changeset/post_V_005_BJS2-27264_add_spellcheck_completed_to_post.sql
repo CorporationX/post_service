@@ -1,0 +1,1 @@
+ALTER TABLE post ADD COLUMN spell_check_completed BOOLEAN DEFAULT FALSE NOT NULL;
