@@ -1,12 +1,16 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.filter.PostFilterDto;
+import faang.school.postservice.dto.post.KafkaPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +28,9 @@ public class PostService {
     private final PostMapper mapper;
     private final PostDataPreparer preparer;
     private final List<PostFilter> postFilters;
+    private final KafkaPostProducer kafkaPostProducer;
+    private final UserServiceClient userClient;
+    private final RedisPostRepository redisPostRepository;
 
     public PostDto create(PostDto postDto) {
         validator.validateBeforeCreate(postDto);
@@ -32,6 +39,10 @@ public class PostService {
         postEntity = preparer.prepareForCreate(postDto, postEntity);
 
         Post createdEntity = postRepository.save(postEntity);
+        KafkaPostDto kafkaDto = mapper.toKafkaDto(createdEntity);
+        kafkaDto.setSubscribers(userClient.getUser(createdEntity.getAuthorId()).getMenteesIds());
+        redisPostRepository.save(mapper.toRedisPost(createdEntity));
+        kafkaPostProducer.publish(kafkaDto);
         log.info("Created a post: {}", createdEntity);
 
         return mapper.toDto(createdEntity);

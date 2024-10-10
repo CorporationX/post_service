@@ -1,11 +1,13 @@
 package faang.school.postservice.mapper.post;
 
+import faang.school.postservice.dto.post.KafkaPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.redis.RedisPost;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -26,6 +28,16 @@ public interface PostMapper {
     PostDto toDto(Post entity);
 
     Post toEntity(PostDto dto);
+
+    KafkaPostDto toKafkaDto(Post entity);
+
+    @Mapping(source = "likes", target = "likeIds", qualifiedByName = "mapLikes")
+    @Mapping(source = "comments", target = "commentIds", qualifiedByName = "mapComments")
+    @Mapping(source = "albums", target = "albumIds", qualifiedByName = "mapAlbums")
+    @Mapping(source = "ad.id", target = "adId")
+    @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "mapResources")
+    @Mapping(target = "numLikes", expression = "java(mapLikesToNumLikes(entity.getLikes()))")
+    RedisPost toRedisPost(Post entity);
 
     @Named("mapLikes")
     default List<Long> mapLikesToLikeIds(List<Like> likes) {
