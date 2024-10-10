@@ -5,8 +5,10 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.Builder;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 @OnlyPostCreator
@@ -21,6 +23,8 @@ public record PostCreationRequest(
         String content,
 
         @Future(message = "Must contain a date that has not yet arrived")
-        LocalDateTime scheduledAt
+        LocalDateTime scheduledAt,
+
+        List<MultipartFile> filesToAdd
 ) {
 }

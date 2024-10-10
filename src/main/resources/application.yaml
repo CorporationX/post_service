@@ -25,12 +25,27 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
 server:
   port: 8081
 
 logging:
   level:
     root: info
+
+services:
+  s3:
+    endpoint: http://127.0.0.1:9000
+    accessKey: test
+    secretKey: testtest
+    bucketName: corpbucket
+    region: eu-central-1
+    isMocked: false
 
 post:
   publisher:
@@ -53,6 +68,14 @@ comment:
   user-ban-comment-limit: 5
   constants:
     verification-days-limit: 30
+
+resource:
+  max-size: 5242880
+  max-count: 10
+  image:
+    max-rectangle-width: 1080
+    max-rectangle-height: 566
+    max-square-dimension: 1080
 
 redis:
   topic:
