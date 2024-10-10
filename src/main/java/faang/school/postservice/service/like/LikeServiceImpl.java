@@ -18,6 +18,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,11 +39,10 @@ public class LikeServiceImpl implements LikeService {
     private final ObjectMapper objectMapper;
 
     public LikeDto likePost(LikeDto likeDto) {
-        System.out.println(likeDto.getPostId());
         Post post = postRepository.findById(likeDto.getPostId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post with %s id not found", likeDto.getPostId())));
         startValidationForPost(likeDto);
-        log.info("The like was verified with the {}post id", likeDto.getPostId());
+        log.info("The like was verified with the {} post id", likeDto.getPostId());
 
         Like like = likeMapper.toEntity(likeDto);
         like.setPost(post);
@@ -65,6 +65,7 @@ public class LikeServiceImpl implements LikeService {
         return likeMapper.toDto(like);
     }
 
+    @Transactional
     public void unlikePost(LikeDto likeDto) {
         Post post = validateAndGetPost(likeDto);
         likeRepository.deleteByPostIdAndUserId(post.getId(), likeDto.getUserId());
