@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 @Slf4j
@@ -25,14 +26,27 @@ public class ModeratorService {
         log.info("moderateCommentsContent() - start");
         List<Comment> comments = commentService.getUnverifiedComments();
 
-        comments.forEach(comment -> executorService.execute(() -> {
-            String content = comment.getContent();
+        CountDownLatch latch = new CountDownLatch(comments.size());
 
-            if (content != null && !content.isBlank()) {
-                boolean noOffensiveContent = !containsOffensiveContent(content);
-                setVerifyToComment(comment, noOffensiveContent);
+        comments.forEach(comment -> executorService.execute(() -> {
+            try {
+                String content = comment.getContent();
+
+                if (content != null && !content.isBlank()) {
+                    boolean noOffensiveContent = !containsOffensiveContent(content);
+                    setVerifyToComment(comment, noOffensiveContent);
+                }
+            } finally {
+                latch.countDown();
             }
         }));
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Thread interrupted", e);
+        }
 
         commentService.saveComments(comments);
         log.info("moderateCommentsContent() - finish");

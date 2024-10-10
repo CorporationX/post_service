@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ModeratorServiceTest {
 
-    private static final int TWO_TIMES_USED = 4;
+    private static final int FOUR_TIMES_USED = 4;
 
     @Mock
     private CommentService commentService;
@@ -43,7 +43,7 @@ class ModeratorServiceTest {
 
     }
 
-/*
+
     @Test
     @DisplayName("When no offensive words then update comment and save")
     void whenNoOffensiveWordsThenUpdateAndSaveComments() {
@@ -64,15 +64,15 @@ class ModeratorServiceTest {
         moderatorService.moderateCommentsContent();
 
         verify(commentService).getUnverifiedComments();
-        // verify(offensiveWordsDictionary, times(TWO_TIMES_USED)).isWordContainsInDictionary(anyString());
+         verify(offensiveWordsDictionary, times(FOUR_TIMES_USED)).isWordContainsInDictionary(anyString());
         verify(commentService).saveComments(anyList());
 
         assertEquals(Boolean.TRUE, comment.isVerified());
         assertEquals(Boolean.TRUE, comment1.isVerified());
     }
-*/
 
-/*    @Test
+
+   @Test
     @DisplayName("When offensive words contains then update comment and save")
     void whenOffensiveWordsThenUpdateAndSaveComments() {
         comment = Comment.builder()
@@ -92,10 +92,10 @@ class ModeratorServiceTest {
         moderatorService.moderateCommentsContent();
 
         verify(commentService).getUnverifiedComments();
-        //  verify(offensiveWordsDictionary, times(TWO_TIMES_USED)).isWordContainsInDictionary(anyString());
+        verify(offensiveWordsDictionary, times(FOUR_TIMES_USED)).isWordContainsInDictionary(anyString());
         verify(commentService).saveComments(anyList());
 
         assertEquals(Boolean.FALSE, comment.isVerified());
         assertEquals(Boolean.FALSE, comment1.isVerified());
-    }*/
+    }
 }
