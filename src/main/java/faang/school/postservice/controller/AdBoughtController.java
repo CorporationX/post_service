@@ -21,12 +21,11 @@ https://faang-school.atlassian.net/jira/software/c/projects/BJS2/boards/60?assig
 @RequiredArgsConstructor
 public class AdBoughtController {
     private final AdBoughtEventPublisher publisher;
-    private final UserContext userContext;
 
     @GetMapping()
     public void getAlbumById() {
+        System.out.println(111);
         Random random = new Random();
-        userContext.setUserId(4L);
         AdBoughtEvent adBoughtEvent = new AdBoughtEvent();
         adBoughtEvent.setReceivedAt(LocalDateTime.now());
         adBoughtEvent.setAmount(random.nextLong(1000L, 10000L));
@@ -34,5 +33,6 @@ public class AdBoughtController {
         adBoughtEvent.setPostId(random.nextLong(1L, 1000L));
         adBoughtEvent.setUserId(random.nextLong(1L, 11L));
         publisher.publish(adBoughtEvent);
+        System.out.println(222);
     }
 }

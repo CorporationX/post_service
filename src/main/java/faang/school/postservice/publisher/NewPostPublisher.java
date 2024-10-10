@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.MessagePublisher;
 import lombok.RequiredArgsConstructor;
-import org.mapstruct.Qualifier;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ public class NewPostPublisher implements MessagePublisher<PostDto> {
     private final ObjectMapper objectMapper;
 
     public NewPostPublisher(RedisTemplate<String, Object> redisTemplate,
-                            @Qualifier("newPostPublisher") ChannelTopic topic, ObjectMapper objectMapper) {
+                            @Qualifier("hashtagTopic") ChannelTopic topic, ObjectMapper objectMapper) {
         this.redisTemplate = redisTemplate;
         this.topic = topic;
         this.objectMapper = objectMapper;
