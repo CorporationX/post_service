@@ -1,12 +1,16 @@
 package faang.school.postservice.dto.event.post;
 
 import faang.school.postservice.dto.event.Event;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class PostViewedEvent extends Event {
-    private final Long postId;
-    private final Long currentViews;
+    private Long postId;
+    private Long currentViews;
 }

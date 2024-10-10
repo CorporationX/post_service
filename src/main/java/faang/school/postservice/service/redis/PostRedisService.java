@@ -92,6 +92,37 @@ public class PostRedisService {
         }
     }
 
+    public void updateViewsConcurrent(Long postId, Long views) {
+        String key = postPrefix + postId;
+        if (!existsById(postId)) {
+            log.info("{} not found in cache", key);
+            return;
+        }
+        log.info("Updating views for {}", key);
+        Lock lock = redisLockRegistry.obtain(key);
+        try {
+            if (lock.tryLock(tryLockMillis, TimeUnit.MILLISECONDS)) {
+                log.info("Key {} locked for updating views", key);
+                try {
+                    updateViews(postId, views);
+                } finally {
+                    lock.unlock();
+                    log.info("Key {} unlocked after updating views", key);
+                }
+            } else {
+                log.warn("Failed to acquire lock for {}", key);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void updateViews(Long postId, Long views) {
+        PostRedis post = findById(postId);
+        post.setViews(views);
+        postRedisRepository.save(post);
+    }
+
     private void addComment(CommentRedis comment) {
         PostRedis postRedis = findById(comment.getPostId());
         TreeSet<CommentRedis> comments = postRedis.getComments();

@@ -2,7 +2,6 @@ package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -39,7 +38,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             LIMIT :postsCount""")
     List<Post> findByAuthors(List<Long> authorIds, int postsCount);
 
-    @Modifying
     @Query(nativeQuery = true, value = """
             UPDATE post
             SET views = views + :incValue
