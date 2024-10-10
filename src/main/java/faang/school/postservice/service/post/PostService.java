@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -201,5 +202,22 @@ public class PostService {
 
         resourceRepository.deleteAll(resources);
         log.info("Images successfully deleted");
+    }
+
+    @Transactional(readOnly = true)
+    public List<Post> getAllReadyToPublishPosts() {
+        return postRepository.findReadyToPublish();
+    }
+
+    @Async("postExecutorPool")
+    @Transactional
+    public void processSubList(List<Post> subList) {
+        subList.forEach(
+                post -> {
+                    post.setPublished(true);
+                    post.setPublishedAt(LocalDateTime.now());
+                }
+        );
+        postRepository.saveAll(subList);
     }
 }
