@@ -1,6 +1,6 @@
 package faang.school.postservice.kafka.consumer;
 
-import faang.school.postservice.dto.event.comment.CommentAddedEvent;
+import faang.school.postservice.kafka.event.comment.CommentAddedEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.cache.service.PostRedisService;
 import lombok.RequiredArgsConstructor;

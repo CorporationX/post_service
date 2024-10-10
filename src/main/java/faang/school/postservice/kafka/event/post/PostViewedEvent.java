@@ -1,6 +1,6 @@
-package faang.school.postservice.dto.event.post;
+package faang.school.postservice.kafka.event.post;
 
-import faang.school.postservice.dto.event.Event;
+import faang.school.postservice.kafka.event.Event;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

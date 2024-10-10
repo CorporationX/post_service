@@ -1,6 +1,6 @@
-package faang.school.postservice.kafka;
+package faang.school.postservice.kafka.producer;
 
-import faang.school.postservice.dto.event.Event;
+import faang.school.postservice.kafka.event.Event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

@@ -1,6 +1,6 @@
 package faang.school.postservice.kafka.consumer;
 
-import faang.school.postservice.dto.event.like.LikeAddedEvent;
+import faang.school.postservice.kafka.event.like.LikeAddedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

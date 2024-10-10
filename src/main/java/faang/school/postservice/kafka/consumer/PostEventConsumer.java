@@ -1,7 +1,7 @@
 package faang.school.postservice.kafka.consumer;
 
-import faang.school.postservice.dto.event.post.PostPublishedEvent;
-import faang.school.postservice.dto.event.post.PostViewedEvent;
+import faang.school.postservice.kafka.event.post.PostPublishedEvent;
+import faang.school.postservice.kafka.event.post.PostViewedEvent;
 import faang.school.postservice.cache.service.NewsFeedService;
 import faang.school.postservice.cache.service.PostRedisService;
 import lombok.RequiredArgsConstructor;

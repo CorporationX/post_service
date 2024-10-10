@@ -1,6 +1,6 @@
-package faang.school.postservice.dto.event.post;
+package faang.school.postservice.kafka.event.heater;
 
-import faang.school.postservice.dto.event.Event;
+import faang.school.postservice.kafka.event.Event;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,11 +8,10 @@ import lombok.ToString;
 
 import java.util.List;
 
-@Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 @ToString
-public class PostPublishedEvent extends Event {
-    private Long postId;
+public class HeaterEvent extends Event {
     private List<Long> followerIds;
 }

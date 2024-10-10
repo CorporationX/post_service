@@ -51,6 +51,7 @@ spring:
         added: like-added-topic
       comment:
         added: comment-added-topic
+      heater: heater-topic
 
   async:
     executor:
@@ -61,6 +62,8 @@ spring:
 news-feed:
   max-size: 500
   batch-size: 20
+  heater:
+    batch-size: 3
 
 server:
   port: 8081
