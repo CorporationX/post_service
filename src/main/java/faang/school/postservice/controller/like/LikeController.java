@@ -1,6 +1,6 @@
 package faang.school.postservice.controller.like;
 
-import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.model.dto.like.LikeDto;
 import faang.school.postservice.service.like.LikeService;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/v1/like")
+@RequestMapping("/api/v1/likes")
 @RequiredArgsConstructor
 @Validated
 public class LikeController {

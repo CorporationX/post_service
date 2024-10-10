@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.payment;
+package faang.school.postservice.model.dto.payment;
 
 import java.math.BigDecimal;
 public record PaymentResponse(

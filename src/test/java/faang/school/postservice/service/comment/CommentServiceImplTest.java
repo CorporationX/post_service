@@ -1,7 +1,7 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.comment.CommentRequestDto;
-import faang.school.postservice.dto.comment.CommentResponseDto;
+import faang.school.postservice.model.dto.comment.CommentRequestDto;
+import faang.school.postservice.model.dto.comment.CommentResponseDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;

@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.comment;
+package faang.school.postservice.model.dto.comment;
 
 import jakarta.validation.constraints.*;
 import lombok.Builder;

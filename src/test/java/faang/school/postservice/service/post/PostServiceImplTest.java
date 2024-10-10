@@ -1,16 +1,14 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import faang.school.postservice.service.hashtag.HashtagService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -99,7 +97,7 @@ public class PostServiceImplTest {
         when(postRepository.save(any(Post.class))).thenReturn(examplePost);
 
         // Act
-        PostDto result = postService.publishPost(examplePostDto);
+        postService.publishPost(examplePostDto);
 
         // Assert
         assertTrue(examplePost.isPublished());

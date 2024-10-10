@@ -1,8 +1,8 @@
 package faang.school.postservice.controller.comment;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.comment.CommentRequestDto;
-import faang.school.postservice.dto.comment.CommentResponseDto;
+import faang.school.postservice.model.dto.comment.CommentRequestDto;
+import faang.school.postservice.model.dto.comment.CommentResponseDto;
 import faang.school.postservice.service.comment.CommentService;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;

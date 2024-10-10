@@ -1,12 +1,9 @@
 package faang.school.postservice.controller.post;
 
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
