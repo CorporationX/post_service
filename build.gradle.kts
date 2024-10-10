@@ -87,11 +87,13 @@ dependencies {
 }
 
 val jacocoInclude = listOf(
-    "**/controller/**",
-    "**/service/**",
-    "**/validator/**",
-    "**/mapper/**",
-    "**/filter/**",
+        "**/controller/**",
+        "**/service/**",
+        "**/validator/**",
+        "**/mapper/**",
+        "**/filter/**",
+        "**/api/**",
+        "**/scheduler/**"
 )
 
 jacoco {
@@ -110,13 +112,13 @@ tasks.jacocoTestReport {
         html.outputLocation.set(file("${buildDir}/reports/jacoco/html"))
     }
     classDirectories.setFrom(
-        files(
-            classDirectories.files.map {
-                fileTree(it) {
-                    include(jacocoInclude)
-                }
-            }
-        )
+            files(
+                    classDirectories.files.map {
+                        fileTree(it) {
+                            include(jacocoInclude)
+                        }
+                    }
+            )
     )
 }
 
@@ -125,9 +127,9 @@ tasks.jacocoTestCoverageVerification {
         rule {
             element = "CLASS"
             classDirectories.setFrom(
-                sourceSets.main.get().output.asFileTree.matching {
-                    include(jacocoInclude)
-                }
+                    sourceSets.main.get().output.asFileTree.matching {
+                        include(jacocoInclude)
+                    }
             )
             enabled = true
             limit {

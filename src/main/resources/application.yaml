@@ -52,6 +52,18 @@ services:
   grammar-checker:
     url: https://api.textgears.com
     apiKey: ${apiKey}
+    dialects:
+      "en": "en-US"
+      "fr": "fr-FR"
+      "de": "de-DE"
+      "pt": "pt-PT"
+      "it": "it-IT"
+      "ru": "ru-RU"
+      "ar": "ar-AR"
+      "es": "es-ES"
+      "ja": "ja-JP"
+      "zh": "zh-CN"
+      "el": "el-GR"
 
 post:
   publisher:
@@ -63,6 +75,9 @@ post:
   grammar-checker:
     scheduler:
       cron: "0 0 0 * * ?" # every day
+    attempts: 3
+    delay: 1000
+    multiplier: 2
 
 comment:
   obscene-words-resource: obscene_words_resource/obscene-words.json

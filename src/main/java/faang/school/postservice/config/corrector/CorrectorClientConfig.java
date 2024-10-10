@@ -13,7 +13,7 @@ public class CorrectorClientConfig {
     private final CorrectorClientParams params;
 
     @Bean
-    public WebClient getCorrectorClient() {
+    public WebClient correctorWebClient() {
         return WebClient.builder()
                 .defaultHeader("Authorization", "Basic " + params.getApiKey())
                 .baseUrl(params.getUrl())
