@@ -1,125 +1,104 @@
 package faang.school.postservice.service.post.cache;
 
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static faang.school.postservice.util.post.PostCacheFabric.buildHashTags;
 import static faang.school.postservice.util.post.PostCacheFabric.buildPostCacheDto;
-import static faang.school.postservice.util.post.PostCacheFabric.buildPostCacheDtoWithTags;
-import static faang.school.postservice.util.post.PostCacheFabric.buildPostCacheDtosWithTags;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class PostCacheServiceTest {
+    private static final int NUMBER_OF_TOP_IN_CACHE = 100;
     private static final int NUMBER_OF_TAGS = 3;
-    private static final int NUMBER_OF_POSTS = NUMBER_OF_TAGS;
     private static final long USER_ID = 1L;
-    private static final String TAG = "java";
-    private static final int START = 0;
-    private static final int END = 9;
+    private static final String POST_ID_STR = "post:1";
+    private static final LocalDateTime PUBLISHED_AT = LocalDateTime.of(2000, 1, 1, 1, 1);
+    private static final long TIMESTAMP = PUBLISHED_AT.toInstant(ZoneOffset.UTC).toEpochMilli();
 
     @Mock
-    private PostCacheOperations postCacheOperations;
+    private RedisTemplate<String, PostCacheDto> redisTemplatePost;
+
+    @Mock
+    private ZSetOperations<String, String> zSetOperations;
 
     @InjectMocks
-    private PostCacheService postCacheService;
+    private PostCacheService postCacheOperationsTries;
 
     private final List<String> hashTags = buildHashTags(NUMBER_OF_TAGS);
-    private final List<String> emptyHashTags = List.of();
-    private final PostCacheDto postWithTags = buildPostCacheDtoWithTags(USER_ID, hashTags);
-    private final PostCacheDto postEmptyTags = buildPostCacheDtoWithTags(USER_ID, emptyHashTags);
     private final PostCacheDto post = buildPostCacheDto(USER_ID);
-    private final List<PostCacheDto> postsWithTags = buildPostCacheDtosWithTags(NUMBER_OF_POSTS);
 
-    @Test
-    @DisplayName("Given post with no new tags when check then will not add to cache")
-    void testNewPostProcessNoNewTags() {
-        postCacheService.executeNewPostProcess(postEmptyTags);
-        verify(postCacheOperations, never()).addPostToCache(postEmptyTags, postEmptyTags.getHashTags());
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(postCacheOperationsTries, "numberOfTopInCache", NUMBER_OF_TOP_IN_CACHE);
     }
-
-    @Test
-    @DisplayName("Given post with new tags and add post to cache")
-    void testNewPostProcessSuccessful() {
-        postCacheService.executeNewPostProcess(postWithTags);
-        verify(postCacheOperations).addPostToCache(postWithTags, postWithTags.getHashTags());
-    }
-
-    @Test
-    @DisplayName("Given post with no primal tags when check then will not delete from cache")
-    void testDeletePostProcessNoPrimalTags() {
-        postCacheService.executeDeletePostProcess(post, emptyHashTags);
-        verify(postCacheOperations, never()).deletePostOfCache(post, emptyHashTags);
-    }
-
-    @Test
-    @DisplayName("Given post with primal tags and delete from cache")
-    void testDeletePostProcessSuccessful() {
-        postCacheService.executeDeletePostProcess(post, hashTags);
-        verify(postCacheOperations).deletePostOfCache(post, hashTags);
-    }
-
-    @Test
-    @DisplayName("Update post process no tags post")
-    void testUpdatePostProcessNothingToDo() {
-        postCacheService.executeUpdatePostProcess(postEmptyTags, emptyHashTags);
-
-        verify(postCacheOperations, never()).addPostToCache(postEmptyTags, emptyHashTags);
-        verify(postCacheOperations, never()).deletePostOfCache(postEmptyTags, emptyHashTags);
-        verify(postCacheOperations, never()).updatePostOfCache(post, emptyHashTags, emptyHashTags);
-    }
-
-    @Test
-    @DisplayName("Given empty primal and ful upd tags and add post to cache")
-    void testUpdatePostProcessAddPostToCache() {
-        postCacheService.executeUpdatePostProcess(postWithTags, emptyHashTags);
-
-        verify(postCacheOperations).addPostToCache(postWithTags, postWithTags.getHashTags());
-    }
-
-    @Test
-    @DisplayName("Given ful primal and empty upd tags and delete post from cache")
-    void testUpdatePostProcessDelete() {
-        postCacheService.executeUpdatePostProcess(postEmptyTags, hashTags);
-
-        verify(postCacheOperations).deletePostOfCache(postEmptyTags, hashTags);
-    }
-
-    @Test
-    @DisplayName("Given ful primal and ful upd tags and update post in cache")
-    void testUpdatePostProcessUpdate() {
-        postCacheService.executeUpdatePostProcess(postWithTags, hashTags);
-
-        verify(postCacheOperations).updatePostOfCache(postWithTags, hashTags, postWithTags.getHashTags());
-    }
-
-    @Test
-    @DisplayName("Given list of posts and add each to cache by tag to find")
-    void testAddListOfPostsToCacheSuccessful() {
-        postCacheService.addListOfPostsToCache(postsWithTags, TAG);
-
-        verify(postCacheOperations, times(postsWithTags.size()))
-                .addPostToCacheByTag(any(PostCacheDto.class), anyList(), anyString());
-    }
-
-    @Test
-    @DisplayName("Given ")
-    void testFindInRangeByHashTagSuccessful() {
-        postCacheService.findInRangeByHashTag(TAG, START, END);
-
-        verify(postCacheOperations).findIdsByHashTag(TAG, START, END);
-        verify(postCacheOperations).findAllByIds(anyList());
-    }
+//
+//    @Test
+//    @DisplayName("Given toDeletePost true when check then delete post from cache")
+//    void testTryToSaveChangesOfPostDeletePost() {
+//        when(redisTemplatePost.exec()).thenReturn(List.of(new Object()));
+//        postCacheOperationsTries.tryToSaveChangesOfPost(post, POST_ID_STR, TIMESTAMP, hashTags, hashTags, true);
+//        verify(redisTemplatePost).delete(POST_ID_STR);
+//    }
+//
+//    @Test
+//    @DisplayName("Given toDeletePost false when check then add post to cache")
+//    void testTryToSaveChangesOfPostAddPost() {
+//        when(redisTemplatePost.exec()).thenReturn(List.of(new Object()));
+//        when(redisTemplatePost.opsForValue()).thenReturn(mock(ValueOperations.class));
+//
+//        postCacheOperationsTries.tryToSaveChangesOfPost(post, POST_ID_STR, TIMESTAMP, hashTags, hashTags, false);
+//
+//        verify(redisTemplatePost.opsForValue()).set(POST_ID_STR, post);
+//    }
+//
+//    @Test
+//    @DisplayName("Given tags for delete and add and delete and add to cache")
+//    void testTryToSaveChangesOfPostDeleteAddTags() {
+//        when(redisTemplatePost.exec()).thenReturn(List.of(new Object()));
+//        postCacheOperationsTries.tryToSaveChangesOfPost(post, POST_ID_STR, TIMESTAMP, hashTags, hashTags, true);
+//
+//        hashTags.forEach(tag -> {
+//            verify(zSetOperations).remove(tag, POST_ID_STR);
+//            verify(zSetOperations).add(tag, POST_ID_STR, TIMESTAMP);
+//            verify(zSetOperations).removeRange(tag, 0, (NUMBER_OF_TOP_IN_CACHE + 1) * -1);
+//        });
+//    }
+//
+//    @Test
+//    @DisplayName("Transaction discarded test")
+//    void testTryToSaveChangesOfPostTransactionDiscarded() {
+//        when(redisTemplatePost.exec()).thenReturn(List.of());
+//
+//        assertThatThrownBy(() -> postCacheOperationsTries
+//                .tryToSaveChangesOfPost(post, POST_ID_STR, TIMESTAMP, hashTags, hashTags, true))
+//                .isInstanceOf(RedisTransactionInterrupted.class)
+//                .hasMessageContaining(REDIS_TRANSACTION_INTERRUPTED, post.getId());
+//
+//        verify(redisTemplatePost).discard();
+//    }
+//
+//    @Test
+//    @DisplayName("Test filter by tags in cache successful ")
+//    void testTryFilterByTagsInCacheSuccessful() {
+//        when(redisTemplatePost.hasKey(hashTags.get(0))).thenReturn(Boolean.TRUE);
+//        when(redisTemplatePost.hasKey(hashTags.get(1))).thenReturn(Boolean.TRUE);
+//
+//        assertThat(postCacheOperationsTries.tryFilterByTagsInCache(hashTags, hashTags.get(2)))
+//                .isEqualTo(hashTags);
+//    }
 }

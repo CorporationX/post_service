@@ -12,7 +12,7 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.aws.s3.S3Service;
-import faang.school.postservice.service.post.cache.PostCacheOperations;
+import faang.school.postservice.service.post.cache.PostCacheProcessExecutor;
 import faang.school.postservice.service.post.cache.PostCacheService;
 import faang.school.postservice.service.post.hash.tag.PostHashTagParser;
 import faang.school.postservice.validator.PostValidator;
@@ -48,9 +48,9 @@ public class PostService {
     private final S3Service s3Service;
     private final ResourceRepository resourceRepository;
     private final PostHashTagParser postHashTagParser;
-    private final PostCacheService postCacheService;
+    private final PostCacheProcessExecutor postCacheProcessExecutor;
     private final PostMapper postMapper;
-    private final PostCacheOperations postCacheOperations;
+    private final PostCacheService postCacheService;
 
     @Transactional
     public Post create(Post post) {
@@ -66,6 +66,25 @@ public class PostService {
     }
 
     @Transactional
+    public Post publish(Long id) {
+        log.info("Publish post with id: {}", id);
+        Post post = findPostById(id);
+
+        if (post.isPublished()) {
+            throw new PostPublishedException(id);
+        }
+
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+        postHashTagParser.updateHashTags(post);
+        postRepository.save(post);
+
+        postCacheProcessExecutor.executeNewPostProcess(postMapper.toPostCacheDto(post));
+
+        return post;
+    }
+
+    @Transactional
     public Post update(Post updatePost) {
         log.info("Update post with id: {}", updatePost.getId());
         Post post = findPostById(updatePost.getId());
@@ -78,27 +97,9 @@ public class PostService {
         postRepository.save(post);
 
         if (!post.isDeleted() && post.isPublished()) {
-            postCacheService.executeUpdatePostProcess(postMapper.toPostCacheDto(post), primalTags);
+            postCacheProcessExecutor.executeUpdatePostProcess(postMapper.toPostCacheDto(post), primalTags);
         }
-        // TODO: Создать два бина, в первом транзакция для сохранения в postgres второй созадет транзакцию для сохранения в редис
         return post;
-    }
-
-    @Transactional
-    public Post publish(Long id) {
-        log.info("Publish post with id: {}", id);
-        Post post = findPostById(id);
-
-        if (post.isPublished()) {
-            throw new PostPublishedException(id);
-        }
-
-        post.setPublished(true);
-        post.setPublishedAt(LocalDateTime.now());
-        postHashTagParser.updateHashTags(post);
-        postCacheService.executeNewPostProcess(postMapper.toPostCacheDto(post));
-
-        return postRepository.save(post);
     }
 
     @Transactional
@@ -108,7 +109,7 @@ public class PostService {
 
         post.setDeleted(true);
         post.setUpdatedAt(LocalDateTime.now());
-        postCacheService.executeDeletePostProcess(postMapper.toPostCacheDto(post), post.getHashTags());
+        postCacheProcessExecutor.executeDeletePostProcess(postMapper.toPostCacheDto(post), post.getHashTags());
 
         postRepository.save(post);
     }
@@ -117,14 +118,14 @@ public class PostService {
     public List<PostCacheDto> findInRangeByHashTag(String hashTag, int start, int end) {
         List<PostCacheDto> postDtos = postCacheService.findInRangeByHashTag(hashTag, start, end);
 
-        if (postDtos.isEmpty() && postCacheOperations.isRedisConnected()) {
+        if (postDtos.isEmpty() && postCacheService.isRedisConnected()) {
             String jsonTag = postHashTagParser.convertTagToJson(hashTag);
             List<Post> posts = postRepository.findTopByHashTagByDate(jsonTag, numberOfTopInCache);
             List<PostCacheDto> postDtosByTop = postMapper.mapToPostCacheDtos(posts);
-            postCacheService.addListOfPostsToCache(postDtosByTop, hashTag);
-            postDtos = postDtosByTop.subList(0, Math.min(postDtosByTop.size(), end));
-        }
-        else if (postDtos.isEmpty()) {
+            postDtos = postDtosByTop.subList(start, Math.min(postDtosByTop.size(), end));
+
+            postCacheProcessExecutor.executeAddListOfPostsToCache(postDtosByTop, hashTag);
+        } else if (postDtos.isEmpty()) {
             String jsonTag = postHashTagParser.convertTagToJson(hashTag);
             List<Post> posts = postRepository.findInRangeByHashTagByDate(jsonTag, start, end);
             postDtos = postMapper.mapToPostCacheDtos(posts);
