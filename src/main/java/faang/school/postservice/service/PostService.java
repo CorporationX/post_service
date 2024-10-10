@@ -49,6 +49,7 @@ public class PostService {
     public Post updatePost(Long id, String content) {
         Post existingPost = postRepository.findById(id).orElseThrow(() -> new PostRequirementsException("Post not found"));
         updateContent(existingPost, content);
+        existingPost.setSpellCheck(false);
         return postRepository.save(existingPost);
     }
 
