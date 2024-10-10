@@ -51,6 +51,13 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  user_ban:
+    scheduler:
+      cron: "00 01 06 * * *"
+  spell-corrector:
+    scheduler:
+      cron: "0 0/1 * 1/1 * ?" # every minute
+    url: "https://speller.yandex.net/services/spellservice.json/checkText"
 
 user-service:
   host: localhost

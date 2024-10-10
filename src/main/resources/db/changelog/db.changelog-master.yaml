@@ -15,3 +15,7 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V007_change_name_users_with_access.sql
   - include:
       file: db/changelog/changeset/post_V008_change_album_visibility_to_uppercase.sql
+  - include:
+      file: db/changelog/changeset/post_V009_add_ai_spell_check_status.sql
+  - include:
+      file: db/changelog/changeset/post_V010_add_column_verified_to_table_post.sql
