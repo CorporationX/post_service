@@ -61,3 +61,8 @@ payment-service:
 springdoc:
   api-docs:
     path: /api-docs
+
+redis:
+  banner:
+    schedule: "0 0 0 * * ?"
+    topic: "user_ban"

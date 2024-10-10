@@ -13,6 +13,7 @@ import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.aws.s3.S3Service;
 import faang.school.postservice.utils.ImageRestrictionRule;
 import faang.school.postservice.validator.PostValidator;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static faang.school.postservice.utils.ImageRestrictionRule.POST_IMAGES;
+import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -318,6 +320,31 @@ public class PostServiceTest {
 
         verify(postRepository).findByProjectId(filterPost.getProjectId());
         verify(postRepository, times(0)).findByAuthorId(anyLong());
+    }
+
+    @Test
+    void testFindUserIdsForBan_emptyResult() {
+        when(postRepository.findAllUsersBorBan(REJECTED)).thenReturn(List.of());
+        List<Long> result = postService.findUserIdsForBan();
+        assertEquals(0, result.size());
+        verify(postRepository, times(1)).findAllUsersBorBan(REJECTED);
+    }
+
+    @Test
+    void testFindUserIdsForBan_nonEmptyResult() {
+        List<Long> expectedUserIds = List.of(1L, 2L, 3L);
+        when(postRepository.findAllUsersBorBan(REJECTED)).thenReturn(expectedUserIds);
+        List<Long> result = postService.findUserIdsForBan();
+        assertEquals(expectedUserIds, result);
+        verify(postRepository, times(1)).findAllUsersBorBan(REJECTED);
+    }
+
+    @Test
+    void testFindUserIdsForBan_nullResult(){
+        when(postRepository.findAllUsersBorBan(REJECTED)).thenReturn(null);
+        List<Long> result = postService.findUserIdsForBan();
+        Assertions.assertNull(result);
+        verify(postRepository, times(1)).findAllUsersBorBan(REJECTED);
     }
 
     @Test

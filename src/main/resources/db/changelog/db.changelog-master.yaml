@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003_resource.sql
   - include:
       file: db/changelog/changeset/post_V004__add_columns_to_table_album.sql
+  - include:
+      file: db/changelog/changeset/post_V004_alter_post.sql
