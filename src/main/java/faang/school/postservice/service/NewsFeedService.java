@@ -74,22 +74,22 @@ public class NewsFeedService {
         Lock lock = redisLockRegistry.obtain(key);
         try {
             if (lock.tryLock(tryLockMillis, TimeUnit.MILLISECONDS)) {
-                log.info("Key {} locked", key);
+                log.info("Key {} locked for adding post by id {}", key, postId);
                 try {
-                    addPostToNewsFeed(key, postId);
+                    addPost(key, postId);
                 } finally {
                     lock.unlock();
-                    log.info("Key {} unlocked", key);
+                    log.info("Key {} unlocked after adding post by id {}", key, postId);
                 }
             } else {
-                log.info("Failed to acquire lock for {}", key);
+                log.warn("Failed to acquire lock for {}", key);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
-    private void addPostToNewsFeed(String key, Long postId) {
+    private void addPost(String key, Long postId) {
         newsFeedRedisRepository.addPostId(key, postId);
 
         while (newsFeedRedisRepository.getSize(key) > maxNewsFeedSize) {

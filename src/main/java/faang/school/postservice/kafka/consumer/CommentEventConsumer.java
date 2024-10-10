@@ -21,7 +21,7 @@ public class CommentEventConsumer {
     @KafkaListener(topics = "${spring.kafka.topic.comment.added}", groupId = "${spring.kafka.consumer.group-id}")
     public void listener(CommentAddedEvent event, Acknowledgment ack) {
         log.info("Received {}", event.toString());
-        postRedisService.addComment(commentMapper.toRedis(event));
+        postRedisService.addCommentConcurrent(commentMapper.toRedis(event));
         ack.acknowledge();
     }
 }
