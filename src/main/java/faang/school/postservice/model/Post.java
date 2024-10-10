@@ -81,4 +81,7 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "ai_spell_check")
+    private boolean spellCheck;
 }

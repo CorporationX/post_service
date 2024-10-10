@@ -87,8 +87,7 @@ public class PostService {
 
     @Transactional
     public void correctAllDraftPosts() {
-        List<Post> draftPosts = postRepository.findAllDrafts();
-        List<Post> updatedPost = new ArrayList<>();
+        List<Post> draftPosts = postRepository.findAllDraftsWithoutSpellCheck();
 
         draftPosts.forEach(post -> {
             String text = post.getContent();
@@ -96,11 +95,11 @@ public class PostService {
             if (!checkers.isEmpty()) {
                 String correctedText = yandexSpeller.correctText(text, checkers);
                 post.setContent(correctedText);
-                updatedPost.add(post);
             }
+            post.setSpellCheck(true);
         });
 
-        postRepository.saveAll(updatedPost);
+        postRepository.saveAll(draftPosts);
     }
 
 

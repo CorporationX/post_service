@@ -14,6 +14,11 @@ public class YandexSpellerConfig {
 
     @Bean
     public YandexSpeller yandexSpeller() {
-        return new YandexSpeller(url, new RestTemplate());
+        return new YandexSpeller(url, restTemplate());
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }

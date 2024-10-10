@@ -1,16 +1,18 @@
 package faang.school.postservice.dto.post;
 
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
 
 @Getter
 @Setter
-@Builder
+@NoArgsConstructor
 public class SpellCheckerDto {
     private int pos;
     private int len;
-    private List<String> s;
+    @JsonProperty("s")
+    private List<String> spellErrors;
 }

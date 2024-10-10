@@ -9,12 +9,10 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.tools.YandexSpeller;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,11 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -197,36 +199,45 @@ public class PostServiceTest {
         verify(postRepository, times(1)).findPublishedByProjectId(post.getProjectId());
     }
 
-    @Captor
-    ArgumentCaptor<List<Post>> captor;
-
     @Test
-    public void testCorrectAllDraftPosts_Success() {
-        Post post = Post.builder()
-                .content("Helo world")
-                .build();
+    public void testCorrectAllDraftPosts_CorrectText() {
+        String wordWithError = "Helo world";
+        String wordWithoutError = "Hello world";
 
-        Post expectedPost = Post.builder()
-                .content("Hello world")
-                .build();
+        List<Post> draftPosts = new ArrayList<>();
+        Post post = new Post();
+        post.setContent(wordWithError);
+        draftPosts.add(post);
 
-        SpellCheckerDto spellCheckerDto = SpellCheckerDto.builder()
-                .pos(0)
-                .len(4)
-                .s(List.of("Hello"))
-                .build();
-
-        when(postRepository.findAllDrafts()).thenReturn(List.of(post));
-        when(yandexSpeller.checkText(post.getContent())).thenReturn(List.of(spellCheckerDto));
-        when(yandexSpeller.correctText(post.getContent(), List.of(spellCheckerDto))).thenReturn(expectedPost.getContent());
+        List<SpellCheckerDto> checkers = new ArrayList<>();
+        checkers.add(new SpellCheckerDto());
+        when(postRepository.findAllDraftsWithoutSpellCheck()).thenReturn(draftPosts);
+        when(yandexSpeller.checkText(wordWithError)).thenReturn(checkers);
+        when(yandexSpeller.correctText(anyString(), anyList())).thenReturn(wordWithoutError);
 
         postService.correctAllDraftPosts();
 
-        verify(postRepository).saveAll(captor.capture());
+        assertEquals(wordWithoutError, post.getContent());
+        assertTrue(post.isSpellCheck());
+        verify(postRepository, times(1)).saveAll(draftPosts);
+    }
 
-        List<Post> updatedPosts = captor.getValue();
-        Assertions.assertThat(updatedPosts.get(0))
-                .usingRecursiveComparison()
-                .isEqualTo(expectedPost);
+    @Test
+    public void testCorrectAllDraftPosts_NoCorrections() {
+        String wordWithoutError = "Hello world";
+
+        List<Post> draftPosts = new ArrayList<>();
+        Post post = new Post();
+        post.setContent(wordWithoutError);
+        draftPosts.add(post);
+
+        when(postRepository.findAllDraftsWithoutSpellCheck()).thenReturn(draftPosts);
+        when(yandexSpeller.checkText(wordWithoutError)).thenReturn(new ArrayList<>());
+
+        postService.correctAllDraftPosts();
+
+        assertEquals(wordWithoutError, post.getContent());
+        assertTrue(post.isSpellCheck());
+        verify(postRepository, times(1)).saveAll(draftPosts);
     }
 }

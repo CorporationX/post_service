@@ -9,6 +9,7 @@ import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,8 +24,7 @@ public class YandexSpeller {
 
     @Retryable(
             retryFor = RestClientException.class,
-            backoff = @Backoff(delay = 2000),
-            recover = "recoverCheckText"
+            backoff = @Backoff(delay = 2000)
     )
     public List<SpellCheckerDto> checkText(String text) {
         String requestUrl = addParamToUrl(url, "text", text);
@@ -45,7 +45,7 @@ public class YandexSpeller {
         checkers.forEach(spellChecker -> {
             int position = spellChecker.getPos();
             int length = spellChecker.getLen();
-            String correctedWord = spellChecker.getS().get(0);
+            String correctedWord = spellChecker.getSpellErrors().get(0);
 
             correctedText.replace(position, position + length, correctedWord);
         });
@@ -54,11 +54,9 @@ public class YandexSpeller {
     }
 
     private String addParamToUrl(String url, String param, String value) {
-        if (!url.contains("?")) {
-            url += "?";
-        } else {
-            url += "&";
-        }
-        return url + param + "=" + value;
+        return UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam(param, value)
+                .build()
+                .toUriString();
     }
 }
