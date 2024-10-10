@@ -83,4 +83,8 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "spell_check_completed", nullable = false)
+    @Builder.Default
+    private boolean spellCheckCompleted = false;
 }

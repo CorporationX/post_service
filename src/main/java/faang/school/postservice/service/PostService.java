@@ -33,11 +33,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostService {
 
+    @Value("${spell-checker.batch-size}")
+    private int correcterBatchSize;
+
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostMapper postMapper;
     private final NewPostPublisher newPostPublisher;
+    private final BatchProcessService batchProcessService;
     private final ExecutorService schedulingThreadPoolExecutor;
 
     @Value("${post.publisher.butch-size}")
@@ -162,7 +166,7 @@ public class PostService {
     public List<CompletableFuture<Void>> publishScheduledPosts() {
         List<Post> readyToPublish = postRepository.findReadyToPublish();
         log.info("{} posts were found for scheduled publishing", readyToPublish.size());
-        List<List<Post>> postBatches = partitionList(readyToPublish);
+        List<List<Post>> postBatches = partitionList(readyToPublish, batchSize);
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         for (List<Post> postBatch : postBatches) {
             postBatch.forEach(post -> {
@@ -176,11 +180,27 @@ public class PostService {
         return futures;
     }
 
-    private List<List<Post>> partitionList(List<Post> list) {
+    private List<List<Post>> partitionList(List<Post> list, int batchSize) {
         List<List<Post>> partitions = new ArrayList<>();
         for (int i = 0; i < list.size(); i += batchSize) {
             partitions.add(list.subList(i, Math.min(i + batchSize, list.size())));
         }
         return partitions;
+    }
+
+    @Transactional
+    public void correctSpellingInUnpublishedPosts() {
+        List<Post> unpublishedPosts = postRepository.findReadyToPublish();
+
+        if (!unpublishedPosts.isEmpty()) {
+            int batchSize = correcterBatchSize;
+            List<List<Post>> batches = partitionList(unpublishedPosts, batchSize);
+
+            List<CompletableFuture<Void>> futures = batches.stream()
+                    .map(batchProcessService::processBatch)
+                    .toList();
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        }
     }
 }

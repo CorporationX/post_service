@@ -59,6 +59,10 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   max-images-per-post: 10
+  executor:
+    core-pool-size: 8
+    max-pool-size: 16
+    queue-capacity: 32
 
 resources:
   file:
@@ -73,6 +77,7 @@ resources:
       cron: "0 0 2 * * ?" # каждый день в 2 часа ночи
     retention-period: 1M # настройка периода: M - месяц, D - день
 
+
 user-service:
   host: localhost
   port: 8080
@@ -82,3 +87,13 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+spell-checker:
+  api:
+    host: https://api.textgears.com
+    key: 18ZFDi6vjqn0XCYm
+    autocorrect: /correct
+    language-detection: /detect
+  scheduler:
+    cron: "0 0 3 * * *" # каждый день в 3 часа ночи
+  batch-size: 100
