@@ -71,6 +71,15 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+moderation:
+  sublist-size: 10
+  thread-pool-size: 5
+
+quartz:
+  job:
+    interval-seconds: 30
+  
 springdoc:
   api-docs:
     path: /api-docs

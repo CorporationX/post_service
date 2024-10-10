@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.post;
 
+import faang.school.postservice.model.VerificationPostStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,5 +24,7 @@ public class PostResponseDto {
     private LocalDateTime scheduledAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private VerificationPostStatus verificationStatus;
+    private LocalDateTime verifiedDate;
     private List<Long> resourceIds;
 }

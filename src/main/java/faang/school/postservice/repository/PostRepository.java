@@ -29,6 +29,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    List<Post> findByVerificationStatus(VerificationPostStatus status);
+  
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND (p.scheduledAt IS NULL OR p.updatedAt > p.scheduledAt)")
     List<Post> findDraftsPaginate(Pageable pageable);
 
