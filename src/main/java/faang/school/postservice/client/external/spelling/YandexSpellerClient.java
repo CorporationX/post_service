@@ -22,7 +22,7 @@ import java.net.URI;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class YandexSpellerClient {
+public class YandexSpellerClient implements SpellingClient {
     private final RestTemplate checkSpellerClient;
 
     @Value("${post.spelling-corrector.client.yandex.url}")
@@ -31,6 +31,7 @@ public class YandexSpellerClient {
     @Retryable(retryFor = {RepeatableServiceException.class}, backoff = @Backoff(
             delayExpression = "#{${post.spelling-corrector.retry.delay}}",
             multiplierExpression = "#{${post.spelling-corrector.retry.multiplier}}"))
+    @Override
     public String correctText(String text) {
         try {
             ResponseEntity<YandexSpellerCorrectResponse[]> responseEntity = checkSpellerClient

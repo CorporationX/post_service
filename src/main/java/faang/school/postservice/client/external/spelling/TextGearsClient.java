@@ -23,7 +23,7 @@ import java.net.URI;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class TextGearsClient {
+public class TextGearsClient implements SpellingClient {
     private final RestTemplate checkSpellerClient;
 
     @Value("${post.spelling-corrector.client.textgears.auth-token}")
@@ -41,6 +41,7 @@ public class TextGearsClient {
     @Retryable(retryFor = {RepeatableServiceException.class}, backoff = @Backoff(
             delayExpression = "#{${post.spelling-corrector.retry.delay}}",
             multiplierExpression = "#{${post.spelling-corrector.retry.multiplier}}"))
+    @Override
     public String correctText(String text) {
         URI uri = makeUri(correctorEndpoint, text);
 
