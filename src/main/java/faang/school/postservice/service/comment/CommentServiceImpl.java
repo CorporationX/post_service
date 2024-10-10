@@ -40,10 +40,11 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final SortingStrategyAppliersMap sortingStrategiesAppliers;
     private final CommentChecker commentChecker;
+    private final MessagePublisher messagePublisher;
 
     @Value("${comment.constants.verification-days-limit}")
     private int verificationDaysLimit;
-
+    
     @Override
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         Post post = getPost(postId);
@@ -110,6 +111,13 @@ public class CommentServiceImpl implements CommentService {
         });
         commentRepository.saveAll(comments);
         log.info("Verified comments: {}", comments.size());
+    }
+
+    @Override
+    public void banUsersWithObsceneCommentsMoreThan(int banCommentLimit) {
+        List<Long> usersIds = commentRepository.findUserIdsToBan(banCommentLimit);
+        log.info("Found {} users to Ban", usersIds.size());
+        usersIds.forEach(messagePublisher::publish);
     }
 
     private Post getPost(Long postId) {

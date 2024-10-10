@@ -39,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -73,6 +74,9 @@ class CommentServiceTest {
     @Mock
     private CommentChecker commentChecker;
 
+    @Mock
+    private RedisMessagePublisher redisMessagePublisher;
+
     private SortingStrategyAppliersMap sortingStrategyAppliersMap;
 
     @BeforeEach
@@ -86,7 +90,8 @@ class CommentServiceTest {
                 userContext,
                 commentMapper,
                 sortingStrategyAppliersMap,
-                commentChecker);
+                commentChecker,
+                redisMessagePublisher);
         post = initPost(POST_ID, true, false);
         author = initAuthor(AUTHOR_ID);
     }
@@ -386,6 +391,14 @@ class CommentServiceTest {
         commentService.verifyComments(comments);
 
         verify(commentRepository).saveAll(comments);
+    }
+
+    @Test
+    @DisplayName("Getting users to ban")
+    public void testGettingUsersToBan() {
+        commentService.banUsersWithObsceneCommentsMoreThan(anyInt());
+
+        verify(commentRepository).findUserIdsToBan(anyInt());
     }
 
     CommentDto initCommentDto(Long id, Long authorId, String content, LocalDateTime updateAt) {

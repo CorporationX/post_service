@@ -64,6 +64,8 @@ comment:
     max-pool-size: 20
     queue-capacity: 100
     thread-name-prefix: "verify-task-executor-"
+  user-ban-cron: "0 0 * * * ?" # every day at 00:00
+  user-ban-comment-limit: 5
   constants:
     verification-days-limit: 30
 
@@ -74,6 +76,10 @@ resource:
     max-rectangle-width: 1080
     max-rectangle-height: 566
     max-square-dimension: 1080
+
+redis:
+  topic:
+    user-ban: user_ban
 
 user-service:
   host: localhost
