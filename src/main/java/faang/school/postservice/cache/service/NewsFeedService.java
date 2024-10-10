@@ -7,7 +7,7 @@ import faang.school.postservice.cache.repository.NewsFeedRedisRepository;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.service.CommentService;
-import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

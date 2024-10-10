@@ -10,6 +10,7 @@ import faang.school.postservice.exception.post.PostWithoutAuthorException;
 import faang.school.postservice.exception.post.PostWithTwoAuthorsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.util.container.PostContainer;
+import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

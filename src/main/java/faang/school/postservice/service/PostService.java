@@ -1,4 +1,4 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
@@ -15,6 +15,7 @@ import faang.school.postservice.cache.model.PostRedis;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.cache.service.PostRedisService;
 import faang.school.postservice.cache.service.UserRedisService;
+import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

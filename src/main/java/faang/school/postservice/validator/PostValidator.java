@@ -1,4 +1,4 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.validator;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
