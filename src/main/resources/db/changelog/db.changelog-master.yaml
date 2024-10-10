@@ -7,3 +7,7 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003_resource.sql
   - include:
       file: db/changelog/changeset/post_V004__visibility.sql
+  - include:
+      file: db/changelog/changeset/post_V005_add_verified_column.sql
+  - include:
+      file: db/changelog/changeset/post_V006_add_verified_date_column.sql

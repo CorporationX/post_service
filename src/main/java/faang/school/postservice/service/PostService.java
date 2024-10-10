@@ -23,4 +23,6 @@ public interface PostService {
     List<PostDto> getPublishedPostsByUserId(long id);
 
     List<PostDto> getPublishedPostsByProjectId(long id);
+
+    List<Long> getAuthorsWithMoreFiveUnverifiedPosts();
 }

@@ -207,4 +207,14 @@ class PostServiceImplTest {
         verify(postMapper).toDto(posts);
         assertEquals(postDtos, result);
     }
+
+    @Test
+    void getAuthorsWithMoreFiveUnverifiedPosts() {
+        List<Long> violatorIds = List.of(1L, 2L, 3L);
+        when(postRepository.findAuthorsWithMoreThanFiveUnverifiedPosts()).thenReturn(violatorIds);
+
+        List<Long> result = postService.getAuthorsWithMoreFiveUnverifiedPosts();
+
+        assertEquals(violatorIds, result);
+    }
 }

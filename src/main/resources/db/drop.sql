@@ -1,8 +1,6 @@
-DROP TABLE post_album;
-DROP TABLE likes;
-DROP TABLE comment;
-DROP TABLE post;
-DROP TABLE favorite_albums;
-DROP INDEX album_author_title_idx;
-DROP TABLE album;
-DROP TABLE post_resource;
+DROP TABLE IF EXISTS post CASCADE;
+DROP TABLE IF EXISTS comment CASCADE;
+DROP TABLE IF EXISTS likes CASCADE;
+DROP TABLE IF EXISTS album CASCADE;
+DROP TABLE IF EXISTS post_album CASCADE;
+DROP TABLE IF EXISTS favorite_albums CASCADE;

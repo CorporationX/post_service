@@ -22,8 +22,8 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
+        calculations-channel: calculations_channel
+        user-service: ban_user_channel
       topics:
         comment_event_topic: commentEventQueue
 
@@ -41,6 +41,15 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  ban-user:
+    scheduler:
+      cron: "0 0 2 * * *" # every day
+  verify:
+    retry:
+      max-attempts: 3
+      delay: 5000
+    scheduler:
+      cron: "0 0 2 * * *" # every day
 
 user-service:
   host: localhost
@@ -51,3 +60,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+censorship:
+  words:
+    - 1C
+    - Динамическая типизация
+    - Многопоточность
