@@ -1,20 +1,17 @@
 package faang.school.postservice.cache.service;
 
-import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.cache.model.CommentRedis;
 import faang.school.postservice.cache.model.PostRedis;
 import faang.school.postservice.cache.repository.PostRedisRepository;
+import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -24,12 +21,10 @@ import java.util.stream.StreamSupport;
 public class PostRedisService {
     private final PostRedisRepository postRedisRepository;
     private final PostMapper postMapper;
-    private final RedisLockRegistry redisLockRegistry;
+    private final RedisConcurrentExecutor concurrentExecutor;
 
     @Value("${spring.data.redis.cache.post.comments.max-size}")
     private int commentsMaxSize;
-    @Value("${spring.data.redis.lock-registry.try-lock-millis}")
-    private long tryLockMillis;
     @Value("${spring.data.redis.cache.post.prefix}")
     private String postPrefix;
 
@@ -68,53 +63,22 @@ public class PostRedisService {
     }
 
     public void addCommentConcurrent(CommentRedis comment) {
-        String key = postPrefix + comment.getPostId();
-        if (!existsById(comment.getPostId())) {
-            log.info("{} not found in cache", key);
-            return;
-        }
-        log.info("Adding comment by id {} to {}", comment.getId(), key);
-        Lock lock = redisLockRegistry.obtain(key);
-        try {
-            if (lock.tryLock(tryLockMillis, TimeUnit.MILLISECONDS)) {
-                log.info("Key {} locked for adding comment by id {}", key, comment.getId());
-                try {
-                    addComment(comment);
-                } finally {
-                    lock.unlock();
-                    log.info("Key {} unlocked after adding comment by id {}", key, comment.getId());
-                }
-            } else {
-                log.warn("Failed to acquire lock for {}", key);
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    public void updateViewsConcurrent(Long postId, Long views) {
-        String key = postPrefix + postId;
+        Long postId = comment.getPostId();
+        String key = generateKey(postId);
         if (!existsById(postId)) {
             log.info("{} not found in cache", key);
             return;
         }
-        log.info("Updating views for {}", key);
-        Lock lock = redisLockRegistry.obtain(key);
-        try {
-            if (lock.tryLock(tryLockMillis, TimeUnit.MILLISECONDS)) {
-                log.info("Key {} locked for updating views", key);
-                try {
-                    updateViews(postId, views);
-                } finally {
-                    lock.unlock();
-                    log.info("Key {} unlocked after updating views", key);
-                }
-            } else {
-                log.warn("Failed to acquire lock for {}", key);
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        concurrentExecutor.execute(key, () -> addComment(comment), "adding comment by id " + comment.getId());
+    }
+
+    public void updateViewsConcurrent(Long postId, Long views) {
+        String key = generateKey(postId);
+        if (!existsById(postId)) {
+            log.info("{} not found in cache", key);
+            return;
         }
+        concurrentExecutor.execute(key, () -> updateViews(postId, views), "updating views");
     }
 
     private void updateViews(Long postId, Long views) {
@@ -136,5 +100,9 @@ public class PostRedisService {
         }
         postRedis.setComments(comments);
         postRedisRepository.save(postRedis);
+    }
+
+    private String generateKey(Long postId) {
+        return postPrefix + postId;
     }
 }
