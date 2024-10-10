@@ -28,6 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
 import static faang.school.postservice.utils.ImageRestrictionRule.POST_IMAGES;
 
 @Slf4j
@@ -115,6 +116,11 @@ public class PostService {
                 .toList();
 
         return posts;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> findUserIdsForBan() {
+        return postRepository.findAllUsersBorBan(REJECTED);
     }
 
     public void correctPosts(List<Post> draftPosts) {
