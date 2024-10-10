@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,13 +27,11 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
-
 import static faang.school.postservice.utils.ImageRestrictionRule.POST_IMAGES;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class PostService {
     @Value("${post.images.bucket.name-prefix}")
     private String bucketNamePrefix;
