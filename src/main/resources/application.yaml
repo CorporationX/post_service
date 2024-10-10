@@ -48,6 +48,21 @@ post:
   redis-config:
     topic-name: "user_ban"
 
+  correcter:
+    retry:
+      max-attempts: 3
+      delay: 5000
+      multiplier: 2
+    scheduler:
+      cron: "@midnight"
+    thread-pool-size: 4
+    posts-batch-size: 100
+
+text-gears:
+  base-url: https://api.textgears.com
+  path-segment: /correct
+  api-key: LwbbSarifE2noQhc
+  language-code: en-US
 
 springdoc:
   swagger-ui:
