@@ -96,11 +96,12 @@ public class PostMapperTest {
         LocalDateTime createdAt = publishedAt.minusDays(1);
         LocalDateTime updatedAt = publishedAt.plusMinutes(5);
         Long likesCount = (long) likeIds.size();
+        long views = 0;
 
         Optional<Post> postOptional = Optional.of(new Post(postId, content, authorId, projectId, likes, comments,
-                albums, ad, resources, published, publishedAt, scheduledAt, deleted, createdAt, updatedAt));
+                albums, ad, resources, published, publishedAt, scheduledAt, deleted, createdAt, updatedAt, views));
         Optional<PostDto> dtoOptional = Optional.of(new PostDto(postId, content, authorId, projectId, published,
-                publishedAt, scheduledAt, createdAt, updatedAt, deleted, likesCount));
+                publishedAt, scheduledAt, createdAt, updatedAt, deleted, likesCount, views));
 
         return List.of(postOptional, dtoOptional);
     }
