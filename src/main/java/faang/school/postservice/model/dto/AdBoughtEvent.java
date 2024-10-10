@@ -15,6 +15,6 @@ public class AdBoughtEvent {
     private Long postId;
     private Long userId;
     private Long amount;
-    private Long advDuration;
-    private LocalDateTime date;
+    private Integer advDuration;
+    private LocalDateTime receivedAt;
 }
