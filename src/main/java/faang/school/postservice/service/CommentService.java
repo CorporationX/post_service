@@ -11,7 +11,7 @@ import faang.school.postservice.model.redis.CommentRedis;
 import faang.school.postservice.model.redis.UserRedis;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.redis.UserRedisRepository;
+import faang.school.postservice.service.redis.UserRedisService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +39,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
     private final Producer kafkaProducer;
-    private final UserRedisRepository userRedisRepository;
+    private final UserRedisService userRedisService;
 
     @Value("${spring.kafka.topic.comment.added}")
     private String commentAddedTopic;
@@ -87,8 +87,8 @@ public class CommentService {
     }
 
     private void saveUserToCache(UserDto userDto) {
-        if (!userRedisRepository.existsById(userDto.getId())) {
-            userRedisRepository.save(new UserRedis(userDto.getId(), userDto.getUsername()));
+        if (!userRedisService.existsById(userDto.getId())) {
+            userRedisService.save(new UserRedis(userDto.getId(), userDto.getUsername()));
             log.info("User by id {} saved to cache", userDto.getId());
         }
     }

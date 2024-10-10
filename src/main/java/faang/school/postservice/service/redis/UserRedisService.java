@@ -20,10 +20,18 @@ public class UserRedisService {
                 .toList();
     }
 
+    public void save(UserRedis userRedis) {
+        userRedisRepository.save(userRedis);
+    }
+
     public void save(UserDto userDto) {
         if (!userRedisRepository.existsById(userDto.getId())) {
             UserRedis userRedis = new UserRedis(userDto.getId(), userDto.getUsername());
-            userRedisRepository.save(userRedis);
+            save(userRedis);
         }
+    }
+
+    public boolean existsById(Long id) {
+        return userRedisRepository.existsById(id);
     }
 }
