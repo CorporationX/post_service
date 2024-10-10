@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -103,6 +102,10 @@ public class PostService {
     }
 
 
+    public List<Long> getAuthorsWithExcessVerifiedFalsePosts() {
+        return postRepository.findAuthorsWithExcessVerifiedFalsePosts();
+    }
+
     private void validateAuthorOrProject(Post post) {
         if (Objects.nonNull(post.getAuthorId()) && Objects.nonNull(post.getProjectId())) {
             throw new DataValidationException("The post can't be made by both a user and a project at the same time.");
@@ -146,7 +149,5 @@ public class PostService {
         post.setDeleted(true);
         post.setPublished(false);
     }
-
-
 }
 
