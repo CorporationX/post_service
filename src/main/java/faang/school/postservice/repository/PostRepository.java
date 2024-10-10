@@ -29,4 +29,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByHashtagId(Long hashtagId);
 
     Page<Post> findByHashtagsContent(String content, Pageable pageable);
+
+    @Query(nativeQuery = true, value = "SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM post_album WHERE album_id = :albumId AND post_id = :postId")
+    boolean existsInAlbum(long albumId, long postId);
 }
