@@ -24,9 +24,7 @@ import java.net.URI;
 @Component
 @RequiredArgsConstructor
 public class TextGearsClient {
-    private final static String CORRECTOR_ENDPOINT = "/correct";
-    private final static String LANG_DETECTOR_ENDPOINT = "/detect";
-    private final RestTemplate restTemplate;
+    private final RestTemplate checkSpellerClient;
 
     @Value("${post.spelling-corrector.client.textgears.auth-token}")
     private String authToken;
@@ -34,14 +32,19 @@ public class TextGearsClient {
     @Value("${post.spelling-corrector.client.textgears.host}")
     private String serviceHost;
 
+    @Value("${post.spelling-corrector.client.textgears.correct-endpoint}")
+    private String correctorEndpoint;
+
+    @Value("${post.spelling-corrector.client.textgears.lang-detector-endpoint}")
+    private String langDetectorEndpoint;
+
     @Retryable(retryFor = {RepeatableServiceException.class}, backoff = @Backoff(
             delayExpression = "#{${post.spelling-corrector.retry.delay}}",
             multiplierExpression = "#{${post.spelling-corrector.retry.multiplier}}"))
     public String correctText(String text) {
-        String url = serviceHost + CORRECTOR_ENDPOINT;
-        URI uri = makeUri(url, text);
+        URI uri = makeUri(correctorEndpoint, text);
 
-        ResponseEntity<TextGearsCorrectResponse> responseEntity = restTemplate.getForEntity(
+        ResponseEntity<TextGearsCorrectResponse> responseEntity = checkSpellerClient.getForEntity(
                 uri, TextGearsCorrectResponse.class);
 
         TextGearsCorrectResponse response = checkAndGetResponse(responseEntity);
@@ -53,10 +56,9 @@ public class TextGearsClient {
             delayExpression = "#{${post.spelling-corrector.retry.delay}}",
             multiplierExpression = "#{${post.spelling-corrector.retry.multiplier}}"))
     public TextGearsLang detectLang(String text) {
-        String url = serviceHost + LANG_DETECTOR_ENDPOINT;
-        URI uri = makeUri(url, text);
+        URI uri = makeUri(langDetectorEndpoint, text);
 
-        ResponseEntity<TextGearsLangDetectResponse> responseEntity = restTemplate.getForEntity(
+        ResponseEntity<TextGearsLangDetectResponse> responseEntity = checkSpellerClient.getForEntity(
                 uri, TextGearsLangDetectResponse.class);
         TextGearsLangDetectResponse response = checkAndGetResponse(responseEntity);
 
@@ -78,19 +80,16 @@ public class TextGearsClient {
 
         if (statusCode >= INTERNAL_SERVER_ERROR.value()) {
             log.error("Ошибка при получении корректировки от TextGears {}", responseEntity);
-
             throw new RepeatableServiceException();
         }
 
         if (response == null) {
             log.warn("От сервиса TextGears пришёл пустой ответ");
-
             throw new RepeatableServiceException();
         }
 
         if (!response.isStatus()) {
             log.error("Сервис корректировки TextGears вернул ошибку {}", responseEntity);
-
             throw new DontRepeatableServiceException();
         }
 

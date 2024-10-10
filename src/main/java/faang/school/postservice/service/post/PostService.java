@@ -121,12 +121,17 @@ public class PostService {
         draftPosts.forEach(post -> {
             try {
                 String correctedContent = spellingCorrectionService.getCorrectedContent(post.getContent());
+
+                LocalDateTime currentTime = LocalDateTime.now();
                 post.setContent(correctedContent);
-                post.setUpdatedAt(LocalDateTime.now());
+                post.setUpdatedAt(currentTime);
+                post.setScheduledAt(currentTime);
             } catch (RepeatableServiceException exception) {
                 log.error("Контент поста {} не прошёл авто корректировку, после переотправок", post.getId());
             } catch (DontRepeatableServiceException exception) {
                 log.error("Контент поста {} не прошёл авто корректировку из-за ошибки сервиса", post.getId());
+            } finally {
+                postRepository.saveAll(draftPosts);
             }
         });
 

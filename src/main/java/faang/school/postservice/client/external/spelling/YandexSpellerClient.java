@@ -23,7 +23,7 @@ import java.net.URI;
 @Component
 @RequiredArgsConstructor
 public class YandexSpellerClient {
-    private final RestTemplate restTemplate;
+    private final RestTemplate checkSpellerClient;
 
     @Value("${post.spelling-corrector.client.yandex.url}")
     private String serviceUrl;
@@ -33,7 +33,7 @@ public class YandexSpellerClient {
             multiplierExpression = "#{${post.spelling-corrector.retry.multiplier}}"))
     public String correctText(String text) {
         try {
-            ResponseEntity<YandexSpellerCorrectResponse[]> responseEntity = restTemplate
+            ResponseEntity<YandexSpellerCorrectResponse[]> responseEntity = checkSpellerClient
                     .getForEntity(makeUri(text), YandexSpellerCorrectResponse[].class);
 
             YandexSpellerCorrectResponse[] response = responseEntity.getBody();

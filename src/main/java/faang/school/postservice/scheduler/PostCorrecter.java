@@ -5,6 +5,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,10 +18,11 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class PostCorrecter {
-    private final static int BATCH_SIZE = 1000;
-
     private final PostService postService;
     private final PostRepository postRepository;
+
+    @Value("${post.spelling-corrector.batch-size}")
+    private int batchSize;
 
     @Scheduled(cron = "${post.spelling-corrector.scheduler.cron}")
     public void startCheckAISpellingPosts() {
@@ -28,7 +30,7 @@ public class PostCorrecter {
         List<Post> draftPosts;
 
         do {
-            Pageable pageable = PageRequest.of(offset, BATCH_SIZE, Sort.by("id").ascending());
+            Pageable pageable = PageRequest.of(offset, batchSize, Sort.by("id").ascending());
             draftPosts = postRepository.findDraftsPaginate(pageable);
 
             try {

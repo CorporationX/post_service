@@ -47,7 +47,8 @@ post:
       multiplier: 2
     client:
       textgears:
-        host: https://api.textgears.com
+        correct-endpoint: https://api.textgears.com/correct
+        lang-detector-endpoint: https://api.textgears.com/detect
         auth-token: secret-key
       yandex:
         url: https://speller.yandex.net/services/spellservice.json/checkText

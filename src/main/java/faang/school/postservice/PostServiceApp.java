@@ -19,9 +19,4 @@ public class PostServiceApp {
                 .bannerMode(Banner.Mode.OFF)
                 .run(args);
     }
-
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
 }
