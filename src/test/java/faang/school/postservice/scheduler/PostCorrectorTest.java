@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,11 @@ public class PostCorrectorTest {
     private List<Post> posts = new ArrayList<>();
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
+        Field batchSizeField = PostCorrecter.class.getDeclaredField("batchSize");
+        batchSizeField.setAccessible(true);
+        batchSizeField.set(postCorrecter, BATCH_SIZE);
+
         posts.add(Post.builder()
                 .id(1L)
                 .content("Content 1")
