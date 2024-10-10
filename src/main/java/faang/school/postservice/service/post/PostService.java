@@ -4,6 +4,8 @@ import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
+import faang.school.postservice.exception.spelling_corrector.DontRepeatableServiceException;
+import faang.school.postservice.exception.spelling_corrector.RepeatableServiceException;
 import faang.school.postservice.exception.post.image.DownloadImageFromPostException;
 import faang.school.postservice.exception.post.image.UploadImageToPostException;
 import faang.school.postservice.mapper.post.PostMapper;
@@ -31,6 +33,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
 import static faang.school.postservice.utils.ImageRestrictionRule.POST_IMAGES;
 
 @Slf4j
@@ -45,6 +48,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostValidator postValidator;
+    private final SpellingCorrectionService spellingCorrectionService;
     private final S3Service s3Service;
     private final ResourceRepository resourceRepository;
     private final PostHashTagParser postHashTagParser;
@@ -154,6 +158,30 @@ public class PostService {
                 .toList();
 
         return posts;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> findUserIdsForBan() {
+        return postRepository.findAllUsersBorBan(REJECTED);
+    }
+
+    public void correctPosts(List<Post> draftPosts) {
+        draftPosts.forEach(post -> {
+            try {
+                String correctedContent = spellingCorrectionService.getCorrectedContent(post.getContent());
+
+                LocalDateTime currentTime = LocalDateTime.now();
+                post.setContent(correctedContent);
+                post.setUpdatedAt(currentTime);
+                post.setScheduledAt(currentTime);
+            } catch (RepeatableServiceException exception) {
+                log.error("Контент поста {} не прошёл авто корректировку, после переотправок", post.getId());
+            } catch (DontRepeatableServiceException exception) {
+                log.error("Контент поста {} не прошёл авто корректировку из-за ошибки сервиса", post.getId());
+            }
+        });
+
+        postRepository.saveAll(draftPosts);
     }
 
     private Stream<Post> applyFiltersAndSorted(List<Post> posts, Post filterPost) {
