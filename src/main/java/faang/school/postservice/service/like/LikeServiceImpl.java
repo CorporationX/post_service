@@ -3,7 +3,7 @@ package faang.school.postservice.service.like;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.redis.LikeEventPublisher;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
@@ -51,16 +51,7 @@ public class LikeServiceImpl implements LikeService {
         likeRepository.save(like);
         log.info("The like was added to the database to {} post", likeDto.getPostId());
 
-        LikeEvent likeEvent = new LikeEvent();
-        likeEvent.setPostId(likeDto.getPostId());
-        likeEvent.setUserId(likeDto.getUserId());
-        likeEvent.setCreatedAt(likeDto.getCreatedAt());
-        try {
-            String json = objectMapper.writeValueAsString(likeEvent);
-            likeEventPublisher.publish(json);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        publishLikeEvent(likeDto);
 
         return likeMapper.toDto(like);
     }
@@ -207,5 +198,19 @@ public class LikeServiceImpl implements LikeService {
         return results.stream()
                 .flatMap(List::stream)
                 .toList();
+    }
+
+    public void publishLikeEvent(LikeDto likeDto) {
+        LikeEvent likeEvent = new LikeEvent();
+        likeEvent.setPostId(likeDto.getPostId());
+        likeEvent.setUserId(likeDto.getUserId());
+        likeEvent.setCreatedAt(likeDto.getCreatedAt());
+
+        try {
+            String json = objectMapper.writeValueAsString(likeEvent);
+            likeEventPublisher.publish(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

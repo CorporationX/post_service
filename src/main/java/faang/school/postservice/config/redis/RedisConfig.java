@@ -1,6 +1,7 @@
 package faang.school.postservice.config.redis;
 
 import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,14 +14,14 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     @Value("${redis.pubsub.topic:like-event}")
-    private String topic;
+    private String likeEventTopic;
     @Bean
     public ChannelTopic likeEventTopic() {
-        return new ChannelTopic(topic);
+        return new ChannelTopic(likeEventTopic);
     }
 
     @Bean
-    public RedisTemplate<String, LikeEvent> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, LikeEvent> likeEventRedisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, LikeEvent> template = new RedisTemplate<String, LikeEvent>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
@@ -32,7 +33,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public LikeEventPublisher redisPublisher(RedisTemplate<String, LikeEvent> redisTemplate, ChannelTopic likeEventTopic) {
+    public LikeEventPublisher likeEventRedisPublisher(RedisTemplate<String, LikeEvent> redisTemplate, ChannelTopic likeEventTopic) {
         return new LikeEventPublisher(redisTemplate, likeEventTopic);
     }
 
