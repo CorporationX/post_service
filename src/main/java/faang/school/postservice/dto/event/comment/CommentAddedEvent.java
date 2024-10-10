@@ -1,5 +1,6 @@
-package faang.school.postservice.dto.event;
+package faang.school.postservice.dto.event.comment;
 
+import faang.school.postservice.dto.event.Event;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

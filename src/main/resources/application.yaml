@@ -46,6 +46,7 @@ spring:
     topic:
       post:
         published: post-published-topic
+        viewed: post-viewed-topic
       like:
         added: like-added-topic
       comment:

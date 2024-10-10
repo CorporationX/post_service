@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.dto.event.LikeAddedEvent;
+import faang.school.postservice.dto.event.like.LikeAddedEvent;
 import faang.school.postservice.kafka.Producer;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;

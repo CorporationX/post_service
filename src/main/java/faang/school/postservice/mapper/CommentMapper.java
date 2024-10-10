@@ -1,7 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.CommentDto;
-import faang.school.postservice.dto.event.CommentAddedEvent;
+import faang.school.postservice.dto.event.comment.CommentAddedEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.redis.CommentRedis;

@@ -20,6 +20,7 @@ public class PostRedis implements Serializable, Comparable<PostRedis> {
     private TreeSet<CommentRedis> comments;
     private LocalDateTime publishedAt;
     private long likesCount;
+    private long views;
 
     @Override
     public int compareTo(PostRedis other) {

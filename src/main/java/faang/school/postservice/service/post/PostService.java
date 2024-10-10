@@ -3,7 +3,8 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.UserDto;
-import faang.school.postservice.dto.event.PostPublishedEvent;
+import faang.school.postservice.dto.event.post.PostPublishedEvent;
+import faang.school.postservice.dto.event.post.PostViewedEvent;
 import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.filter.post.PostFilter;
@@ -37,6 +38,8 @@ public class PostService {
     private final Producer kafkaProducer;
     @Value("${spring.kafka.topic.post.published}")
     private String postPublishedTopic;
+    @Value("${spring.kafka.topic.post.viewed}")
+    private String postViewedTopic;
 
     public PostDto create(PostDto dto) {
         validator.validateBeforeCreate(dto);
@@ -96,8 +99,12 @@ public class PostService {
         return mapper.toDto(deletedEntity);
     }
 
-    public PostDto getPost(Long postId) {
-        return mapper.toDto(getEntityFromDB(postId));
+    @Transactional
+    public PostDto getPost(Long id) {
+        Post post = getEntityFromDB(id);
+        long views = postRepository.incrementAndGetViewsById(id, 1);
+        kafkaProducer.send(postViewedTopic, new PostViewedEvent(id, views));
+        return mapper.toDto(post);
     }
 
     public List<PostRedis> findAllById(List<Long> redisPostIds) {
