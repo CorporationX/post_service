@@ -1,9 +1,11 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.service.impl.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.service.post.async.PostServiceAsync;
 import faang.school.postservice.validator.post.PostValidator;
@@ -46,6 +48,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
+    @Override
     @Transactional
     public PostDto publishPost(PostDto postDto) {
         Post post = getPostFromRepository(postDto.id());
@@ -77,6 +80,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     @Transactional
     public PostDto softDeletePost(Long postId) {
         Post post = getPostFromRepository(postId);
@@ -87,6 +91,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
+    @Override
     @Transactional
     public PostDto getPost(Long id) {
         Post post = getPostFromRepository(id);
@@ -94,6 +99,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     @Transactional
     public List<PostDto> getAllDraftsByAuthorId(Long userId) {
         postValidator.validateIfAuthorExists(userId);
@@ -109,6 +115,7 @@ public class PostServiceImpl implements PostService {
         return posts;
     }
 
+    @Override
     @Transactional
     public List<PostDto> getAllDraftsByProjectId(Long projectId) {
         postValidator.validateIfProjectExists(projectId);
@@ -124,6 +131,7 @@ public class PostServiceImpl implements PostService {
         return posts;
     }
 
+    @Override
     @Transactional
     public List<PostDto> getAllPublishedPostsByAuthorId(Long userId) {
         postValidator.validateIfAuthorExists(userId);
@@ -139,6 +147,7 @@ public class PostServiceImpl implements PostService {
         return posts;
     }
 
+    @Override
     @Transactional
     public List<PostDto> getAllPublishedPostsByProjectId(Long projectId) {
         postValidator.validateIfProjectExists(projectId);
@@ -152,6 +161,11 @@ public class PostServiceImpl implements PostService {
                 .toList();
 
         return posts;
+    }
+
+    private Post getPostFromRepository(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
     }
 
     @Override

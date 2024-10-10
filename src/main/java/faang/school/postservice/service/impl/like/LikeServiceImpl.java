@@ -1,4 +1,4 @@
-package faang.school.postservice.service.like;
+package faang.school.postservice.service.impl.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -10,6 +10,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.LikeService;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
