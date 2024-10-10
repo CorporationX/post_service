@@ -9,9 +9,7 @@ import faang.school.postservice.dto.comment.LastCommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.dto.user.UserInfoDto;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.redis.RedisFeed;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.redis.FeedRepository;
 import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,19 +17,19 @@ import org.redisson.api.RLock;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 @Service
@@ -58,13 +56,11 @@ public class FeedCacheService {
     private final RedisTemplate<String, Long> feedRedisTemplate;
     private final PostRepository postRepository;
     private final RedissonClient redissonClient;
-    private final FeedRepository feedRepository;
+    private final RedisTransactionsService redisTransactionsService;
 
     public TreeSet<FeedDto> getFeedDtoResponse(Set<Long> postIds) {
         TreeSet<FeedDto> feed = new TreeSet<>(Comparator.comparing(f -> f.getPostInfo().getUpdatedAt()));
-        postIds.forEach(id -> {
-            feed.add(new FeedDto(getUserInfo(id), getPostInfo(id)));
-        });
+        postIds.forEach(id -> feed.add(new FeedDto(getUserInfo(id), getPostInfo(id))));
         return feed;
     }
 
@@ -168,7 +164,7 @@ public class FeedCacheService {
     private Set<Long> getPostsForUser(Long userId, int amount) {
 
         Set<Long> postsIds = feedRedisTemplate.opsForZSet().range(feedSuffix + ":" + userId, 0, amount);
-        if (postsIds.isEmpty() || postsIds.size() < amount) {
+        if (postsIds != null && (postsIds.isEmpty() || postsIds.size() < amount)) {
             postsIds.addAll(getPostsIdsFromDBForUser(userId, postsIds.size(), amount - postsIds.size()));
         }
         return postsIds;
@@ -176,7 +172,7 @@ public class FeedCacheService {
 
     private Set<Long> getPostsForUserFromPostId(Long userId, Long postId, int amount) {
         Set<Long> postsIds = feedRedisTemplate.opsForZSet().range(feedSuffix + ":" + userId, postId - 1, postId + amount - 1);
-        if (postsIds.isEmpty() || postsIds.size() < amount) {
+        if (postsIds != null && (postsIds.isEmpty() || postsIds.size() < amount)) {
             postsIds.addAll(getPostsIdsFromDBForUser(userId, (int) (postId + postsIds.size()), amount - postsIds.size()));
         }
         return postsIds;
@@ -187,21 +183,13 @@ public class FeedCacheService {
     }
 
     @Async
-    public void addPost(Long userId, Long postId){
-        RedisFeed redisFeed = feedRepository.findById(userId).orElse(new RedisFeed(maxFeedAmount,userId, new LinkedHashSet<>(),0));
-        LinkedHashSet<Long> postsIdList = redisFeed.getPostsIds();
-        if (postsIdList.size()==maxFeedAmount) {
-            ArrayList<Long> list = new ArrayList<>(postsIdList);
-            postsIdList.remove(list.get(list.size()-1));
-            Set<Long> tempPostsIds = new LinkedHashSet<>();
-            tempPostsIds.add(postId);
-            tempPostsIds.addAll(postsIdList);
-            postsIdList.clear();
-            postsIdList.addAll(tempPostsIds);
-        } else {
-            postsIdList.add(postId);
-        }
-        redisFeed.setPostsIds(postsIdList);
-        feedRepository.save(redisFeed);
+    public void addPost(Long userId, Long postId) {
+        String userKey = postSuffix + ":" + userId;
+        BiConsumer<RedisOperations<String, Long>, String> addPost = (operations, key) -> {
+            operations.opsForList().leftPush(key, postId);
+            operations.opsForList().trim(key, 0, maxFeedAmount - 1);
+        };
+        redisTransactionsService.implementOperation(userKey, postId, maxAttempts, addPost);
+        log.info("post {} was added to feed", postId);
     }
 }

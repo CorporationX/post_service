@@ -1,13 +1,15 @@
 package faang.school.postservice.listeners;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.comment.LastCommentDto;
 import faang.school.postservice.events.CommentEvent;
-import faang.school.postservice.events.Event;
 import faang.school.postservice.events.LikeEvent;
 import faang.school.postservice.events.PostEvent;
 import faang.school.postservice.events.PostViewEvent;
+import faang.school.postservice.model.redis.RedisUser;
 import faang.school.postservice.service.redis.FeedCacheService;
 import faang.school.postservice.service.redis.PostCacheService;
+import faang.school.postservice.service.redis.UserCacheService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,44 +22,34 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-//@KafkaListener(topics = {"${kafka.topics.like_event},${kafka.topics.comment_event},${kafka.topics.post_event},${kafka.topics.post_view_event}"})
-@KafkaListener(topics = {"#{'${kafka.topics.like_event}'.split(',')}",
-        "#{'${kafka.topics.comment_event}'.split(',')}",
-        "#{'${kafka.topics.post_event}'.split(',')}",
-        "#{'${kafka.topics.post_view_event}'.split(',')}"})
 public class KafkaConsumer {
+    private final UserCacheService userCacheService;
     @Value("${kafka.header_class_key}")
     private String headerKey;
-
-    @Value("${kafka.topics.post_event}")
-    private String postTopic;
-    @Value("${kafka.topics.post_view_event}")
-    private String postViewTopic;
-    @Value("${kafka.topics.like_event}")
-    private String likeTopic;
-    @Value("${kafka.topics.comment_event}")
-    private String commentTopic;
 
     private final ObjectMapper objectMapper;
     private final FeedCacheService feedCacheService;
     private final PostCacheService postCacheService;
-    private Acknowledgment acknowledgment;
-//    private Map<String, Consumer<Object>> actions = new HashMap<>();
     private Map<Class<?>, Consumer<Object>> eventActions = new HashMap<>();
 
     @PostConstruct
     public void init() {
+        log.info("Initializing Kafka Consumer");
         eventActions.put(PostEvent.class, this::handlePostEvent);
         eventActions.put(PostViewEvent.class, this::handlePostViewEvent);
         eventActions.put(LikeEvent.class, this::handleLikeEvent);
         eventActions.put(CommentEvent.class, this::handleCommentEvent);
+        log.info("Finished initialization of Kafka Consumer");
     }
 
+    @KafkaListener(topics = {"#{'${kafka.topics.like_event}'.split(',')}",
+            "#{'${kafka.topics.comment_event}'.split(',')}",
+            "#{'${kafka.topics.post_event}'.split(',')}",
+            "#{'${kafka.topics.post_view_event}'.split(',')}"}, groupId = "kafka_consumer_group")
     public void consume(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
         String topic = record.topic();
         log.info("received message: {} from topic {}", record.value(), topic);
@@ -95,8 +87,10 @@ public class KafkaConsumer {
 
             try {
                 action.accept(message);
-                log.info("processed message {}", message);
+                log.info("action accepted {}", message);
                 acknowledgment.acknowledge();
+
+                log.info("processed message {} finished:", message);
             } catch (Exception e) {
                 log.error("Error processing event {}", message, e);
             }
@@ -109,15 +103,26 @@ public class KafkaConsumer {
     private void handlePostEvent(Object message) {
         log.info("handling post event");
         PostEvent event = objectMapper.convertValue(message, PostEvent.class);
-        event.getPostFollowersIds().forEach(userId->feedCacheService.addPost(userId,event.getPostId()));
+        event.getPostFollowersIds().forEach(userId -> feedCacheService.addPost(userId, event.getPostId()));
     }
+
     private void handlePostViewEvent(Object message) {
         log.info("updating post view");
+        PostViewEvent event = objectMapper.convertValue(message, PostViewEvent.class);
+        postCacheService.incrementPostView(event.getPostId());
     }
+
     private void handleLikeEvent(Object message) {
         log.info("updating like event");
+        LikeEvent event = objectMapper.convertValue(message, LikeEvent.class);
+        postCacheService.incrementLike(event.getPostId());
     }
+
     private void handleCommentEvent(Object message) {
         log.info("updating comment event");
+        CommentEvent event = objectMapper.convertValue(message, CommentEvent.class);
+        RedisUser redisUser = userCacheService.findUserById(event.getAuthorId());
+        LastCommentDto lastCommentDto = new LastCommentDto(event.getAuthorId(), event.getCommentContent(), redisUser.getUserInfo().getUsername(), event.getSendAt());
+        postCacheService.addCommentToPost(event.getPostId(), lastCommentDto);
     }
 }

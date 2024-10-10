@@ -1,13 +1,13 @@
 package faang.school.postservice.config.kafka;
 
 
-import com.fasterxml.jackson.databind.ser.std.StringSerializer;
 import faang.school.postservice.events.CommentEvent;
 import faang.school.postservice.events.LikeEvent;
 import faang.school.postservice.events.PostEvent;
 import faang.school.postservice.events.PostViewEvent;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

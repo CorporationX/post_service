@@ -20,7 +20,7 @@ public interface UserServiceClient {
     @GetMapping("/users")
     List<UserDto> getAllUsers();
 
-    @GetMapping("/users/{userId}/subscriptions")
+    @PostMapping("/users/{userId}/subscriptions")
     List<UserDto> getFollowers(@PathVariable("userId") @Positive long followeeId, @RequestBody(required = false) UserFilterDto filter);
 
     @PostMapping("/users")

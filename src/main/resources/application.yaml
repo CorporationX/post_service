@@ -84,10 +84,12 @@ news-feed:
 kafka:
   address: localhost:9092
   topics:
-    partitions: 3
+    partitions: 1
     replications: 1
     like_event: like
     comment_event: comment
     post_event: post
     post_view_event: post_view
   header_class_key: type
+  groups:
+    kafka_consumer_group: kafka-consumer-group
