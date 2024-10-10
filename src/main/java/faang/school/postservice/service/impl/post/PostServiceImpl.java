@@ -6,7 +6,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.HashtagService;
-import faang.school.postservice.service.hashtag.HashtagService;
 import faang.school.postservice.service.post.async.PostServiceAsync;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
@@ -161,11 +160,6 @@ public class PostServiceImpl implements PostService {
                 .toList();
 
         return posts;
-    }
-
-    private Post getPostFromRepository(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
     }
 
     @Override
