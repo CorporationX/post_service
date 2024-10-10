@@ -23,8 +23,15 @@ public class RedisConfig {
     private String host;
     @Value("${spring.data.redis.port}")
     private int port;
+
+    public interface MessagePublisher<T> {
+        void publish(T redisEvent);
+    }
+
     @Value("${spring.data.redis.channels.post_view_channel.name}")
     String postViewTopic;
+    @Value("${spring.data.redis.channels.ad_bought_channel.name}")
+    String adBoughtChannel;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -62,5 +69,10 @@ public class RedisConfig {
 
     public ChannelTopic viewProfileTopic() {
         return new ChannelTopic(postViewTopic);
+    }
+
+    @Bean
+    ChannelTopic adBoughtTopic() {
+        return new ChannelTopic(adBoughtChannel);
     }
 }
