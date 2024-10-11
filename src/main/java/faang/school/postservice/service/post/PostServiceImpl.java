@@ -203,7 +203,7 @@ public class PostServiceImpl implements PostService {
 
     private void generateAndSendPostEventToKafka(Post post){
         UserDto author = userServiceClient.getUser(post.getAuthorId());
-        var event = PostEvent.builder()
+        PostEvent event = PostEvent.builder()
                 .authorId(post.getAuthorId())
                 .followersIds(author.getFollowers())
                 .publishedAt(post.getPublishedAt())
@@ -213,7 +213,7 @@ public class PostServiceImpl implements PostService {
     }
 
     private void generateAndSendPostViewEventToKafka(Post postDto){
-        var event = PostViewEvent.builder()
+        PostViewEvent event = PostViewEvent.builder()
                 .postId(postDto.getId())
                 .build();
         postViewProducer.produce(event);
