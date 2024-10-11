@@ -61,7 +61,7 @@ public class PostServiceAsyncImpl implements PostServiceAsync {
     }
 
     @Override
-    @Async("fixedThreadPools")
+    @Async("fixedThreadPool")
     public void moderatePostsByBatches(List<Post> posts) {
         posts.forEach(post -> {
             boolean badWordsExist = dictionary.containsBadWords(post.getContent());
