@@ -36,37 +36,15 @@ public class RedisConfig {
     @Bean
     public RedisTemplate<String, Object> objectRedisTemplate(JedisConnectionFactory connectionFactory,
                                                              StringRedisSerializer stringRedisSerializer) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-
         Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
-
-        template.setKeySerializer(stringRedisSerializer);
-        template.setValueSerializer(serializer);
-        template.setHashKeySerializer(stringRedisSerializer);
-        template.setHashValueSerializer(serializer);
-
-        template.setEnableTransactionSupport(true);
-
-        return template;
+        return buildRedisTemplate(connectionFactory, stringRedisSerializer, serializer);
     }
 
     @Bean
     public RedisTemplate<String, String> redisTemplate(JedisConnectionFactory connectionFactory,
                                                        StringRedisSerializer stringRedisSerializer) {
-        RedisTemplate<String, String> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-
         Jackson2JsonRedisSerializer<String> serializer = new Jackson2JsonRedisSerializer<>(String.class);
-
-        template.setKeySerializer(stringRedisSerializer);
-        template.setValueSerializer(serializer);
-        template.setHashKeySerializer(stringRedisSerializer);
-        template.setHashValueSerializer(serializer);
-
-        template.setEnableTransactionSupport(true);
-
-        return template;
+        return buildRedisTemplate(connectionFactory, stringRedisSerializer, serializer);
     }
 
     @Bean
@@ -77,10 +55,15 @@ public class RedisConfig {
     @Bean
     public RedisTemplate<String, PostCacheDto> postCacheDtoRedisTemplate(JedisConnectionFactory connectionFactory,
                                                                          StringRedisSerializer stringRedisSerializer) {
-        RedisTemplate<String, PostCacheDto> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-
         Jackson2JsonRedisSerializer<PostCacheDto> serializer = new Jackson2JsonRedisSerializer<>(PostCacheDto.class);
+        return buildRedisTemplate(connectionFactory, stringRedisSerializer, serializer);
+    }
+
+    private <T> RedisTemplate<String, T> buildRedisTemplate(JedisConnectionFactory connectionFactory,
+                                                            StringRedisSerializer stringRedisSerializer,
+                                                            Jackson2JsonRedisSerializer<T> serializer) {
+        RedisTemplate<String, T> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
 
         template.setKeySerializer(stringRedisSerializer);
         template.setValueSerializer(serializer);

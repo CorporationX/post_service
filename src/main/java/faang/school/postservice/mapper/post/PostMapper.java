@@ -5,11 +5,11 @@ import faang.school.postservice.dto.post.FilterPostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
-import faang.school.postservice.model.album.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.album.Album;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -40,8 +40,6 @@ public interface PostMapper {
                 .map(Resource::getId)
                 .toList();
     }
-
-//    PostResponseDto toDto(Post post);
 
     List<PostResponseDto> listEntitiesToListDto(List<Post> posts);
 
