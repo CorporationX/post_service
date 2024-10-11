@@ -24,7 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-
+        user-ban:
+          name: user_ban
 server:
   port: 8081
 
@@ -36,6 +37,7 @@ post:
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+    batch-size: 1000
   ad-remover:
     scheduler:
       cron: "@midnight" # every day at midnight
@@ -45,8 +47,6 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every day at midnight
     unverified-comments-limit: 5
-  redis-config:
-    topic-name: "user_ban"
 
   correcter:
     retry:
@@ -55,7 +55,6 @@ post:
       multiplier: 2
     scheduler:
       cron: "@midnight"
-    thread-pool-size: 4
     posts-batch-size: 100
 
 text-gears:
@@ -79,3 +78,7 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+thread-pool:
+  fixed:
+    size: 8
