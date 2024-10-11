@@ -55,7 +55,6 @@ post:
       multiplier: 2
     scheduler:
       cron: "@midnight"
-    thread-pool-size: 4
     posts-batch-size: 100
 
 text-gears:
@@ -82,4 +81,4 @@ payment-service:
 
 thread-pool:
   fixed:
-    size: 5
+    size: 8
