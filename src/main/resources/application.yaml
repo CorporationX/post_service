@@ -43,6 +43,9 @@ post:
       cron: "@midnight" # every day at midnight
     threads-count: 20
     max-list-size: 50
+  comments:
+    scheduler:
+      cron: "0 30 0 * * *" # every day at 00:30
   commenter-banner:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every day at midnight
@@ -83,6 +86,9 @@ payment-service:
 
 moderation:
   file-path: src/main/resources/badWords.txt
+
+comments:
+  batch-size: 100
 
 posts:
   batch-size: 100

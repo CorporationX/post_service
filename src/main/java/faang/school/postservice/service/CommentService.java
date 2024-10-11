@@ -19,4 +19,6 @@ public interface CommentService {
     void commentersBanCheck(int unverifiedCommentsLimit);
 
     void delete(Long id);
+
+    void moderateComments();
 }
