@@ -7,4 +7,6 @@ import java.util.List;
 public interface PostServiceAsync {
 
     void publishScheduledPostsAsyncInBatch(List<Post> posts);
+
+    void correctUnpublishedPostsByBatches(List<Post> posts);
 }
