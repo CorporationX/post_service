@@ -2,9 +2,11 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
+import faang.school.postservice.event.BanEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.impl.comment.CommentServiceImpl;
@@ -47,6 +49,9 @@ class CommentServiceImplTest {
     @Mock
     private CommentServiceAsyncImpl commentServiceAsync;
 
+    @Mock
+    private RedisBanMessagePublisher redisBanMessagePublisher;
+
     @InjectMocks
     private CommentServiceImpl commentService;
 
@@ -54,6 +59,10 @@ class CommentServiceImplTest {
     private CommentRequestDto commentRequestDto;
     private CommentResponseDto commentResponseDto;
     private Comment comment;
+
+    private Comment verifiedComment;
+    private Comment unverifiedComment1;
+    private Comment unverifiedComment2;
 
     @BeforeEach
     void setUp() {
@@ -81,6 +90,28 @@ class CommentServiceImplTest {
                 .authorId(1L)
                 .verified(null)
                 .verifiedDate(null)
+                .build();
+
+
+        verifiedComment = Comment.builder()
+                .id(1L)
+                .content("This is a verified comment")
+                .authorId(1L)
+                .verified(true)
+                .build();
+
+        unverifiedComment1 = Comment.builder()
+                .id(2L)
+                .content("This is an unverified comment")
+                .authorId(1L)
+                .verified(false)
+                .build();
+
+        unverifiedComment2 = Comment.builder()
+                .id(3L)
+                .content("This is another unverified comment")
+                .authorId(2L)
+                .verified(false)
                 .build();
 
         ReflectionTestUtils.setField(commentService, "batchSize", 1);
@@ -137,6 +168,28 @@ class CommentServiceImplTest {
         commentService.delete(1L);
         // then
         verify(commentRepository).deleteById(1L);
+    }
+
+    @Test
+    void testCommentersBanCheck() {
+        // Arrange
+        Comment comment1 = new Comment();
+        comment1.setAuthorId(1L);
+
+        Comment comment2 = new Comment();
+        comment2.setAuthorId(1L);
+
+        Comment comment3 = new Comment();
+        comment3.setAuthorId(2L);
+
+        when(commentRepository.findAllByVerifiedFalse()).thenReturn(List.of(comment1, comment2, comment3));
+
+        // Act
+        commentService.commentersBanCheck(2);
+
+        // Assert
+        verify(redisBanMessagePublisher, times(1)).publish(new BanEvent(1L));
+        verify(redisBanMessagePublisher, never()).publish(new BanEvent(2L));
     }
 
     @Test

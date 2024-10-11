@@ -24,7 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-
+        user-ban:
+          name: user_ban
 server:
   port: 8081
 
@@ -36,16 +37,40 @@ post:
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+    batch-size: 1000
   ad-remover:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "@midnight" # every day at midnight
+    threads-count: 20
+    max-list-size: 50
   comments:
     scheduler:
       cron: "0 30 0 * * *" # every day at 00:30
+  commenter-banner:
+    scheduler:
+      cron: "0 0/1 * 1/1 * ?" # every day at midnight
+    unverified-comments-limit: 5
+  moderation:
+    scheduler:
+      cron: "0 0 0 * * *" # every day at midnight
+  correcter:
+    retry:
+      max-attempts: 3
+      delay: 5000
+      multiplier: 2
+    scheduler:
+      cron: "@midnight"
+    posts-batch-size: 100
+
+text-gears:
+  base-url: https://api.textgears.com
+  path-segment: /correct
+  api-key: LwbbSarifE2noQhc
+  language-code: en-US
 
 springdoc:
   swagger-ui:
-    url: /api.yaml
+    url: /swagger/api.yaml
 
 user-service:
   host: localhost
@@ -64,6 +89,12 @@ moderation:
 
 comments:
   batch-size: 100
+
+posts:
+  batch-size: 100
+
+premium:
+  pool-size: 3
 
 thread-pool:
   fixed:

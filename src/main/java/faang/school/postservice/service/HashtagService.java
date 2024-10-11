@@ -1,6 +1,7 @@
-package faang.school.postservice.service.hashtag;
+package faang.school.postservice.service;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 
 import java.util.List;
@@ -11,4 +12,6 @@ public interface HashtagService {
     List<PostDto> findPostsByHashtag(String hashtag);
 
     void updateHashtags(Post post);
+
+    List<Hashtag> processHashtags(Post post);
 }

@@ -5,6 +5,7 @@ import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.hashtag.HashtagRepository;
+import faang.school.postservice.service.impl.hashtag.HashtagServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;

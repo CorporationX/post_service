@@ -3,18 +3,21 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.impl.post.PostServiceImpl;
+import faang.school.postservice.service.HashtagService;
+import faang.school.postservice.service.impl.post.async.PostServiceAsyncImpl;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
-import faang.school.postservice.service.hashtag.HashtagService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,14 +25,16 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceImplTest {
@@ -48,6 +53,12 @@ public class PostServiceImplTest {
 
     @Mock
     private HashtagService hashtagService;
+
+    @Mock
+    private ModerationDictionary dictionary;
+
+    @Mock
+    private PostServiceAsyncImpl postServiceAsync;
 
     private PostDto examplePostDto;
     private Post examplePost;
@@ -73,7 +84,11 @@ public class PostServiceImplTest {
                 .publishedAt(timeInstance)
                 .createdAt(timeInstance)
                 .title("Title")
+                .verified(null)
+                .verifiedDate(null)
                 .build();
+
+        ReflectionTestUtils.setField(postService, "batchSize", 1);
     }
 
     @Test
@@ -298,5 +313,28 @@ public class PostServiceImplTest {
         List<PostDto> posts = postService.getPostsByHashtag("a");
 
         assertEquals(2, posts.size());
+    }
+
+    @Test
+    @DisplayName("Publish Scheduled Posts Test")
+    void testPublishScheduledPosts() {
+        doReturn(List.of(examplePost)).when(postRepository).findReadyToPublish();
+
+        postService.publishScheduledPosts(1000);
+
+        verify(postRepository).findReadyToPublish();
+        verify(postServiceAsync).publishScheduledPostsAsyncInBatch(anyList());
+    }
+
+    @Test
+    void testModeratePosts(){
+        Post badPost = Post.builder().content("here is bad word babushka").verified(null).verifiedDate(null).build();
+        List<Post> posts = List.of(examplePost, badPost);
+
+        when(postRepository.findAllByVerifiedDateIsNull()).thenReturn(posts);
+
+        postService.moderatePosts();
+
+        verify(postServiceAsync, times(2)).moderatePostsByBatches(any());
     }
 }
