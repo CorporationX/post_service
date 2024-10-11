@@ -103,19 +103,6 @@ public class PostService {
         sendToRedisPublisher(userContext.getUserId(), post.getId());
         PostDto postDtoForReturns = postMapper.toDto(post);
         elasticsearchService.indexPost(postDtoForReturns);
-        List<Long> followersIds = userServiceClient.getFollowerIds(userContext.getUserId());
-        UserDto author = userServiceClient.getUser(post.getAuthorId());
-        userCacheRepository.save(UserCache.builder()
-                .id(author.getId())
-                .name(author.getUsername())
-                .ttl(userTtl)
-                .build());
-        PostCreatedEvent newPostEvent = PostCreatedEvent.builder()
-                .postId(post.getId())
-                .authorId(post.getAuthorId())
-                .followersId(followersIds)
-                .build();
-        kafkaProducer.sendEvent(newPostEvent);
         return postDtoForReturns;
     }
 
@@ -154,6 +141,21 @@ public class PostService {
                 .content(post.getContent())
                 .ttl(postTtl)
                 .build());
+
+        List<Long> followersIds = userServiceClient.getFollowerIds(userContext.getUserId());
+        UserDto author = userServiceClient.getUser(post.getAuthorId());
+        userCacheRepository.save(UserCache.builder()
+                .id(author.getId())
+                .name(author.getUsername())
+                .ttl(userTtl)
+                .build());
+
+        PostCreatedEvent newPostEvent = PostCreatedEvent.builder()
+                .postId(post.getId())
+                .authorId(post.getAuthorId())
+                .followersId(followersIds)
+                .build();
+        kafkaProducer.sendEvent(newPostEvent);
         return postMapper.toDto(post);
     }
 
