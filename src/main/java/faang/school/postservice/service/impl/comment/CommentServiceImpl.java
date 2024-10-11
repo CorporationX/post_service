@@ -3,8 +3,10 @@ package faang.school.postservice.service.impl.comment;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.event.BanEvent;
+import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.CommentService;
@@ -27,6 +29,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
     private final RedisBanMessagePublisher redisBanMessagePublisher;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Override
     @Transactional
@@ -36,7 +39,18 @@ public class CommentServiceImpl implements CommentService {
         var comment = commentMapper.toEntity(dto);
         comment.setAuthorId(userId);
         comment.setPost(post);
-        return commentMapper.toResponseDto(commentRepository.save(comment));
+
+        var savedComment = commentMapper.toResponseDto(commentRepository.save(comment));
+        var commentEvent = CommentEvent.builder()
+                .commentAuthorId(userId)
+                .postAuthorId(post.getAuthorId())
+                .postId(savedComment.postId())
+                .content(savedComment.content())
+                .commentId(savedComment.id())
+                .build();
+
+        commentEventPublisher.publish(commentEvent);
+        return savedComment;
     }
 
     @Override

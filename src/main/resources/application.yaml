@@ -26,6 +26,8 @@ spring:
           name: calculations_channel
         user-ban:
           name: user_ban
+        comment-receiving:
+          name: comment-receiving-topic
 server:
   port: 8081
 
