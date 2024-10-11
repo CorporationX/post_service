@@ -4,11 +4,9 @@ import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,10 +40,5 @@ public class LikeController {
     public ResponseEntity<String> deleteLikePost(@PathVariable @Positive long postId) {
         likeService.deleteLikePost(postId);
         return ResponseEntity.ok("Post with id " + postId + " was deleted successfully.");
-    }
-
-    @GetMapping(value = "/api.yaml", produces = "application/vnd.oai.openapi")
-    public ClassPathResource getOpenApiYaml() {
-        return new ClassPathResource("swagger/api.yaml");
     }
 }

@@ -25,7 +25,7 @@ public class HashtagServiceImpl implements HashtagService {
 
     private static final long DAYS_TO_LIVE_IN_REDIS = 1;
     private final HashtagRepository hashtagRepository;
-    private final RedisTemplate<String, List<PostDto>> redisTemplate;
+    private final RedisTemplate<String, List<PostDto>> redisHashtagTemplate;
     private final PostMapper postMapper;
 
     @Override
@@ -66,17 +66,17 @@ public class HashtagServiceImpl implements HashtagService {
     private void updateCacheRedis(Post post, List<String> hashtagsToDelete) {
         if (!hashtagsToDelete.isEmpty()) {
             hashtagsToDelete.forEach(hashtag -> {
-                if (Boolean.TRUE.equals(redisTemplate.hasKey(hashtag))) {
-                    List<PostDto> cachedPosts = redisTemplate.opsForValue().get(hashtag);
+                if (Boolean.TRUE.equals(redisHashtagTemplate.hasKey(hashtag))) {
+                    List<PostDto> cachedPosts = (List<PostDto>) redisHashtagTemplate.opsForValue().get(hashtag);
 
                     if (cachedPosts != null) {
                         cachedPosts.removeIf(cachePost -> cachePost.id() == post.getId());
 
                         if (cachedPosts.isEmpty()) {
-                            redisTemplate.delete(hashtag);
+                            redisHashtagTemplate.delete(hashtag);
                         } else {
-                            redisTemplate.opsForValue().set(hashtag, cachedPosts);
-                            redisTemplate.expire(hashtag, DAYS_TO_LIVE_IN_REDIS, TimeUnit.DAYS);
+                            redisHashtagTemplate.opsForValue().set(hashtag, cachedPosts);
+                            redisHashtagTemplate.expire(hashtag, DAYS_TO_LIVE_IN_REDIS, TimeUnit.DAYS);
                         }
                     }
                 }
@@ -88,8 +88,8 @@ public class HashtagServiceImpl implements HashtagService {
     @Transactional(readOnly = true)
     public List<PostDto> findPostsByHashtag(String hashtag) {
 
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(hashtag))) {
-            return redisTemplate.opsForValue().get(hashtag);
+        if (Boolean.TRUE.equals(redisHashtagTemplate.hasKey(hashtag))) {
+            return (List<PostDto>) redisHashtagTemplate.opsForValue().get(hashtag);
         }
 
         List<Post> posts = hashtagRepository
@@ -100,14 +100,15 @@ public class HashtagServiceImpl implements HashtagService {
         List<PostDto> postsDto = postMapper.toDto(posts);
         postsDto.sort(Comparator.comparing(PostDto::publishedAt).reversed());
 
-        redisTemplate.opsForValue().set(hashtag, postsDto);
-        redisTemplate.expire(hashtag, DAYS_TO_LIVE_IN_REDIS, TimeUnit.DAYS);
+        redisHashtagTemplate.opsForValue().set(hashtag, postsDto);
+        redisHashtagTemplate.expire(hashtag, DAYS_TO_LIVE_IN_REDIS, TimeUnit.DAYS);
 
         return postsDto;
     }
 
+    @Override
     @Transactional(readOnly = true)
-    private List<Hashtag> processHashtags(Post post) {
+    public List<Hashtag> processHashtags(Post post) {
         List<String> foundHashtags = findHashtags(post.getContent());
 
         return foundHashtags.stream()

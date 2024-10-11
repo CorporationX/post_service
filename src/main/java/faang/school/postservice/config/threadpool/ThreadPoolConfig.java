@@ -14,7 +14,7 @@ public class ThreadPoolConfig {
     private int fixedPoolSize;
 
     @Bean
-    public ExecutorService fixedThreadPools() {
+    public ExecutorService fixedThreadPool() {
         return Executors.newFixedThreadPool(fixedPoolSize);
     }
 }
