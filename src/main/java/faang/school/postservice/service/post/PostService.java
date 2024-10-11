@@ -22,10 +22,14 @@ public class PostService {
         return postRepository.findReadyToPublish();
     }
 
+    public void savePostBySchedule(List<Post> posts) {
+        postRepository.saveAll(posts);
+    }
+
     public Post findById(Long postId) {
         Optional<Post> post = postRepository.findById(postId);
         return post.orElseThrow(
-                ()-> new EntityNotFoundException("Post service. Post not found. id: " + postId));
+                () -> new EntityNotFoundException("Post service. Post not found. id: " + postId));
     }
 
     public List<PostResponseDto> getPostsByAuthorWithLikes(long authorId) {
