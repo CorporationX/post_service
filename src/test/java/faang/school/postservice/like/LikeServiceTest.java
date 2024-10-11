@@ -11,7 +11,6 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.like.LikeService;
@@ -28,19 +27,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 
-import static faang.school.postservice.util.TestDataFactory.ID;
-import static faang.school.postservice.util.TestDataFactory.INVALID_ID;
-import static faang.school.postservice.util.TestDataFactory.getUserDtoList;
+import static faang.school.postservice.util.TestDataFactory.*;
 import static java.util.Collections.emptyList;
 import static java.util.List.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceImplTest {
@@ -51,8 +44,6 @@ class LikeServiceImplTest {
     private LikeRepository likeRepository;
     @Mock
     private LikeMapper likeMapper;
-    @Mock
-    private LikeEventPublisher likePublisher;
     @Mock
     private PostService postService;
     @Mock
@@ -169,7 +160,6 @@ class LikeServiceImplTest {
     }
 
 
-
     @Test
     void givenPostIdWhenFindUsersByPostIdThenReturnUsers() {
         // given - precondition
@@ -222,6 +212,7 @@ class LikeServiceImplTest {
         assertThat(actualResult).usingRecursiveFieldByFieldElementComparator()
                 .containsAnyElementsOf(userDtoList);
     }
+
     @Test
     void givenInvalidCommentIdWhenFindUsersByPostIdThenThrowException() {
         // given - precondition

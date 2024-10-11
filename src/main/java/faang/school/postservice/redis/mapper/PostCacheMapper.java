@@ -9,6 +9,4 @@ import org.mapstruct.ReportingPolicy;
 public interface PostCacheMapper {
 
     PostCache toPostCache(PostDto postDto);
-
-    PostDto toDto(PostCache postCache);
 }

@@ -6,7 +6,6 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.validator.PostServiceValidator;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,8 +42,6 @@ public class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
-    @Mock
-    private PostServiceValidator<PostDto> validator;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 

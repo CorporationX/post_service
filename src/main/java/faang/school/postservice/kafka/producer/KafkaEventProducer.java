@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class KafkaEventProducer<T> {
+public class KafkaEventProducer {
 
     @Value("${spring.data.kafka.topics.like_topic}")
     private String likeTopic;

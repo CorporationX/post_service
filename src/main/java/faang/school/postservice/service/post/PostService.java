@@ -3,12 +3,10 @@ package faang.school.postservice.service.post;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.kafka.producer.KafkaEventProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.redis.service.PostCacheService;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,13 +20,10 @@ public class PostService {
 
     private final PostMapper postMapper;
     private final PostRepository postRepository;
-    private final PostServiceValidator<PostDto> validator;
-    private final KafkaEventProducer kafkaEventProducer;
     private final UserServiceClient userServiceClient;
     private final PostCacheService postCacheService;
 
     public PostDto createPost(final PostDto postDto) {
-        validator.validate(postDto);
         Post post = postMapper.toEntity(postDto);
         return postMapper.toDto(postRepository.save(post));
     }
