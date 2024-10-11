@@ -45,4 +45,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             RETURNING views
             """)
     long incrementAndGetViewsById(long id, int incValue);
+
+    @Query(nativeQuery = true, value = """
+            SELECT p.id FROM post p
+            WHERE p.author_id IN (
+                SELECT s.followee_id FROM subscription s
+                WHERE s.follower_id = :followerId
+            )
+            ORDER BY p.id DESC
+            LIMIT :batchSize
+            """)
+    List<Long> findPostIdsByFollowerId(Long followerId, int batchSize);
+
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.id IN (:ids)")
+    List<Post> findAllByIdsWithLikes(Iterable<Long> ids);
 }

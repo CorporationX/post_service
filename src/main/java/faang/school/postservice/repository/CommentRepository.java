@@ -17,7 +17,18 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             SELECT * FROM comment
             WHERE post_id = :postId
             ORDER BY id DESC
-            LIMIT :count
+            LIMIT :batchSize
             """)
-    List<Comment> findLastByPostId(int count, long postId);
+    List<Comment> findLastBatchByPostId(int batchSize, long postId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT c.* FROM comment c
+            WHERE c.id IN (SELECT c1.id
+                           FROM comment c1
+                           WHERE c1.post_id = c.post_id
+                           ORDER BY c1.id DESC
+                           LIMIT :batchSize)
+            AND post_id IN (:postIds)
+            """)
+    List<Comment> findLastBatchByPostIds(int batchSize, List<Long> postIds);
 }

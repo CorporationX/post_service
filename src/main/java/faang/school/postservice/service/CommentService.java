@@ -8,7 +8,6 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.cache.model.CommentRedis;
-import faang.school.postservice.cache.model.UserRedis;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.cache.service.UserRedisService;
@@ -82,15 +81,16 @@ public class CommentService {
         return mapper.toDto(commentForDelete);
     }
 
-    public TreeSet<CommentRedis> findLastByPostId(int count, Long postId) {
-        return mapper.toRedis(commentRepository.findLastByPostId(count, postId));
+    public TreeSet<CommentRedis> findLastBatchByPostId(int batchSize, Long postId) {
+        return mapper.toRedisTreeSet(commentRepository.findLastBatchByPostId(batchSize, postId));
+    }
+
+    public List<CommentRedis> findLastBatchByPostIds(int batchSize, List<Long> postIds) {
+        return mapper.toRedis(commentRepository.findLastBatchByPostIds(batchSize, postIds));
     }
 
     private void saveUserToCache(UserDto userDto) {
-        if (!userRedisService.existsById(userDto.getId())) {
-            userRedisService.save(new UserRedis(userDto.getId(), userDto.getUsername()));
-            log.info("User by id {} saved to cache", userDto.getId());
-        }
+        userRedisService.save(userDto);
     }
 
     private List<CommentDto> getListCommentDto(List<Comment> comments) {

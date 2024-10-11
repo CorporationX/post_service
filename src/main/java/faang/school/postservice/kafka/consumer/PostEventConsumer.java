@@ -20,7 +20,7 @@ public class PostEventConsumer {
 
     @Async
     @KafkaListener(topics = "${spring.kafka.topic.post.published}", groupId = "${spring.kafka.consumer.group-id}")
-    public void listener(PostPublishedEvent event, Acknowledgment ack) {
+    public void consume(PostPublishedEvent event, Acknowledgment ack) {
         log.info("Received {}", event.toString());
         Long postId = event.getPostId();
         for (Long followerId : event.getFollowerIds()) {
@@ -31,7 +31,7 @@ public class PostEventConsumer {
 
     @Async
     @KafkaListener(topics = "${spring.kafka.topic.post.viewed}", groupId = "${spring.kafka.consumer.group-id}")
-    public void listener(PostViewedEvent event, Acknowledgment ack) {
+    public void consume(PostViewedEvent event, Acknowledgment ack) {
         log.info("Received {}", event.toString());
         postRedisService.updateViewsConcurrent(event.getPostId(), event.getCurrentViews());
         ack.acknowledge();

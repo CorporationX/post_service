@@ -51,7 +51,10 @@ spring:
         added: like-added-topic
       comment:
         added: comment-added-topic
-      heater: heater-topic
+      heater:
+        users: heater-users-topic
+        news-feeds: heater-news-feed-topic
+        posts: heater-posts-topic
 
   async:
     executor:

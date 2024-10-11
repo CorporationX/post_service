@@ -1,10 +1,13 @@
 package faang.school.postservice.cache.repository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -17,6 +20,12 @@ public class NewsFeedRedisRepository {
 
     public void addPostId(String key, Long postId) {
         redisTemplate.opsForZSet().add(key, postId, -postId);
+    }
+
+    public void addAll(String key, List<Long> postIds) {
+        Set<ZSetOperations.TypedTuple<Object>> tuples = new HashSet<>();
+        postIds.forEach(postId -> tuples.add(new DefaultTypedTuple<>(postId, (double) -postId)));
+        redisTemplate.opsForZSet().add(key, tuples);
     }
 
     public List<Long> getSortedPostIds(String key) {

@@ -38,6 +38,10 @@ public class PostRedisService {
         postRedisRepository.save(postMapper.toRedis(post));
     }
 
+    public void saveAll(Iterable<PostRedis> posts) {
+        postRedisRepository.saveAll(posts);
+    }
+
     public void updateIfExists(Post updatedPost) {
         if (updatedPost.isPublished()) {
             if (existsById(updatedPost.getId())) {

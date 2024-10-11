@@ -2,7 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.cache.model.PostRedis;
 import faang.school.postservice.cache.service.NewsFeedService;
-import faang.school.postservice.service.NewsFeedHeater;
+import faang.school.postservice.cache.service.NewsFeedHeater;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;

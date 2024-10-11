@@ -1,6 +1,7 @@
 package faang.school.postservice.cache.service;
 
 import faang.school.postservice.cache.model.CommentRedis;
+import faang.school.postservice.cache.model.NewsFeedRedis;
 import faang.school.postservice.cache.model.PostRedis;
 import faang.school.postservice.cache.model.UserRedis;
 import faang.school.postservice.cache.repository.NewsFeedRedisRepository;
@@ -36,7 +37,7 @@ public class NewsFeedService {
     @Value("${news-feed.batch-size}")
     private int batchSize;
     @Value("${news-feed.max-size}")
-    private long maxNewsFeedSize;
+    private int newsFeedMaxSize;
     @Value("${spring.data.redis.cache.news-feed.prefix}")
     private String newsFeedPrefix;
     @Value("${spring.data.redis.cache.post.comments.max-size}")
@@ -55,7 +56,7 @@ public class NewsFeedService {
             addExpiredPostsAndGet(resultPostIds, result);
         }
         if (result.size() < batchSize) {
-            getExtraPostsFromDB(userId, result);
+            addExtraPostsFromDB(userId, result);
         }
         setAuthors(result);
         return result;
@@ -66,10 +67,17 @@ public class NewsFeedService {
         concurrentExecutor.execute(key, () -> addPost(key, postId), "adding post by id " + postId);
     }
 
+    public void saveAllNewsFeeds(List<NewsFeedRedis> newsFeeds) {
+        newsFeeds.forEach(newsFeed -> {
+            String key = generateKey(newsFeed.getFollowerId());
+            newsFeedRedisRepository.addAll(key, newsFeed.getPostIds());
+        });
+    }
+
     private void addPost(String key, Long postId) {
         newsFeedRedisRepository.addPostId(key, postId);
 
-        while (newsFeedRedisRepository.getSize(key) > maxNewsFeedSize) {
+        while (newsFeedRedisRepository.getSize(key) > newsFeedMaxSize) {
             log.info("Removing excess post from {}", key);
             newsFeedRedisRepository.removeLastPostId(key);
         }
@@ -94,7 +102,7 @@ public class NewsFeedService {
     private void setComments(List<PostRedis> posts) {
         log.info("Setting comments for posts");
         posts.forEach(post -> {
-            TreeSet<CommentRedis> comments = commentService.findLastByPostId(commentsMaxSize, post.getId());
+            TreeSet<CommentRedis> comments = commentService.findLastBatchByPostId(commentsMaxSize, post.getId());
             post.setComments(comments);
         });
     }
@@ -121,12 +129,12 @@ public class NewsFeedService {
                 .toList();
         redisPostIds.removeAll(resultIds);
 
-        List<PostRedis> postsRedis = postService.findAllById(redisPostIds);
+        List<PostRedis> postsRedis = postService.findAllByIdsWithLikes(redisPostIds);
         setComments(postsRedis);
         result.addAll(postsRedis);
     }
 
-    private void getExtraPostsFromDB(Long userId, TreeSet<PostRedis> result) {
+    private void addExtraPostsFromDB(Long userId, TreeSet<PostRedis> result) {
         log.info("Getting extra posts from DB for user {} because feed size is {}", userId, result.size());
         Long lastPostId = result.last().getId();
         int postsCount = batchSize - result.size();

@@ -22,7 +22,7 @@ public class LikeEventConsumer {
 
     @Async
     @KafkaListener(topics = "${spring.kafka.topic.like.added}", groupId = "${spring.kafka.consumer.group-id}")
-    public void listener(LikeAddedEvent event, Acknowledgment ack) {
+    public void consume(LikeAddedEvent event, Acknowledgment ack) {
         log.info("Received likeAddedEvent [{}]", event.toString());
         String key = postPrefix + event.getPostId();
         boolean isInCache = Boolean.TRUE.equals(redisTemplate.hasKey(key));

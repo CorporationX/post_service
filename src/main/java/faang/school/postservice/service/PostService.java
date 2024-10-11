@@ -108,12 +108,12 @@ public class PostService {
         return mapper.toDto(post);
     }
 
-    public List<PostRedis> findAllById(List<Long> redisPostIds) {
-        return mapper.toRedis(postRepository.findAllById(redisPostIds));
+    public List<PostRedis> findAllByIdsWithLikes(List<Long> ids) {
+        return mapper.toRedis(postRepository.findAllByIdsWithLikes(ids));
     }
 
-    public List<PostRedis> findByAuthors(List<Long> authorsId, int postsCount) {
-        return mapper.toRedis(postRepository.findByAuthors(authorsId, postsCount));
+    public List<PostRedis> findByAuthors(List<Long> authorIds, int postsCount) {
+        return mapper.toRedis(postRepository.findByAuthors(authorIds, postsCount));
     }
 
     public List<PostRedis> findByAuthorsBeforeId(List<Long> authorIds, Long lastPostId, int postsCount) {
@@ -129,6 +129,10 @@ public class PostService {
                         .allMatch(filter -> filter.test(post, filters)))
                 .map(mapper::toDto)
                 .toList();
+    }
+
+    public List<Long> findPostIdsByFollowerId(Long followerId, int batchSize) {
+        return postRepository.findPostIdsByFollowerId(followerId, batchSize);
     }
 
     private Post getEntityFromDB(Long postId) {

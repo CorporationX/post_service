@@ -1,5 +1,6 @@
 package faang.school.postservice.kafka.event.heater;
 
+import faang.school.postservice.cache.model.UserRedis;
 import faang.school.postservice.kafka.event.Event;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @ToString
-public class HeaterEvent extends Event {
-    private List<Long> followerIds;
+public class HeaterUsersEvent extends Event {
+    private List<UserRedis> users;
 }

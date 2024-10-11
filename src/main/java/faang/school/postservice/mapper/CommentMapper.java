@@ -34,7 +34,9 @@ public interface CommentMapper {
     @Mapping(source = "authorId", target = "author", qualifiedByName = "authorIdToAuthor")
     CommentRedis toRedis(Comment comment);
 
-    TreeSet<CommentRedis> toRedis(List<Comment> comments);
+    TreeSet<CommentRedis> toRedisTreeSet(List<Comment> comments);
+
+    List<CommentRedis> toRedis(List<Comment> comments);
 
     @Named("likesToLikesId")
     default List<Long> likesToLikesId(List<Like> likes) {
