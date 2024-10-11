@@ -63,7 +63,7 @@ public class PostService {
     public PostDto publishPost(Long draftId) {
         Optional<Post> post = postRepository.findById(draftId);
         if (post.isPresent()) {
-            if (post.get().isPublished()){
+            if (post.get().isPublished()) {
                 log.info("The Post was already published at {}", post.get().getPublishedAt());
             } else {
                 post.get().setPublished(true);
@@ -177,5 +177,9 @@ public class PostService {
             } else result = true;
         }
         return result;
+    }
+
+    public List<Post> getUserPosts(Long userId, int amount) {
+        return postRepository.findPostsEntity(userId, 0, amount);
     }
 }

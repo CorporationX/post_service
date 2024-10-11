@@ -68,5 +68,12 @@ public class UserCacheService {
         userCacheRepository.save(user);
     }
 
+    public void loadAndSaveAllUsers(){
+        log.info("Loading all users from database");
+        List<UserDto> allUsers = userServiceClient.getAllUsers();
+        List<RedisUser> redisUsers = allUsers.stream().map(userMapper::toRedisEntity).toList();
+        userCacheRepository.saveAll(redisUsers);
+        log.info("All users from database were saved successfully to the User cache");
+    }
 
 }

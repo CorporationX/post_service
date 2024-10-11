@@ -3,6 +3,8 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.FeedDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.service.redis.PostCacheService;
+import faang.school.postservice.service.redis.UserCacheService;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,8 @@ public class FeedHeater {
     private String userSuffix;
     private final RedissonClient redissonClient;
     private final UserServiceClient userServiceClient;
+    private final UserCacheService userCacheService;
+    private final PostCacheService postCacheService;
     public void generateFeed(){
         TreeSet<FeedDto> feeds = new TreeSet<>(Comparator.comparing(f -> f.getPostInfo().getUpdatedAt()));
 
@@ -35,6 +39,15 @@ public class FeedHeater {
         List<UserDto> listUserDto = userServiceClient.getAllUsers();
 //        List<> followers = userServiceClient.getFollowers(id);
 //        listUserDto.get(0).get
+    }
+
+    private void fillRedisUserCache(){
+        userCacheService.loadAndSaveAllUsers();
+    }
+
+    private void fillRedisPostCache(){
+
+        postCacheService.findUserPosts(userId, postAmount);
     }
 
 }

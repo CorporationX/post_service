@@ -6,17 +6,20 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.repository.redis.PostCacheRepository;
+import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -26,6 +29,7 @@ import static faang.school.postservice.converters.CollectionConverter.toList;
 @RequiredArgsConstructor
 @Slf4j
 public class PostCacheService {
+    private final PostService postService;
     @Value("${spring.data.redis.cache.post_topic.ttl}")
     private long ttl;
     @Value("${news-feed.cache.suffix.post}")
@@ -38,6 +42,7 @@ public class PostCacheService {
     private final PostMapper postMapper;
     private final UserCacheService userCacheService;
     private final RedisTransactionsService redisTransactionsService;
+    private final PostCacheUtilService postCacheUtilService;
 
     public RedisPost findPostById(Long id) {
         return postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found"));
@@ -50,23 +55,17 @@ public class PostCacheService {
     public void addPost(Post post) {
         log.info("publishing post {} to post cache", post.getId());
         RedisPost redisPost = postMapper.toRedisEntity(post);
-        String postAuthorName = userCacheService
-                .findUserById(post.getAuthorId())
-                .getUserInfo()
-                .getUsername();
-
-        redisPost.getPostInfoDto().getDto().setUsername(postAuthorName);
-        LinkedHashSet<LastCommentDto> lastComments = redisPost.getPostInfoDto().getComments();
-        lastComments = lastComments.stream().peek(comment -> {
-            String commentAuthorName;
-            commentAuthorName = userCacheService
-                    .findUserById(comment.getAuthorId())
-                    .getUserInfo()
-                    .getUsername();
-            comment.setAuthor(commentAuthorName);
-        }).collect(Collectors.toCollection(LinkedHashSet::new));
-        redisPost.getPostInfoDto().setComments(lastComments);
-        savePost(redisPost);
+//        String postAuthorName = getUserName(post.getAuthorId());
+//
+//        redisPost.getPostInfoDto().getDto().setUsername(postAuthorName);
+//        LinkedHashSet<LastCommentDto> lastComments = redisPost.getPostInfoDto().getComments();
+//        lastComments = lastComments.stream().peek(comment -> {
+//            String commentAuthorName;
+//            commentAuthorName = getUserName(comment.getAuthorId());
+//            comment.setAuthor(commentAuthorName);
+//        }).collect(Collectors.toCollection(LinkedHashSet::new));
+//        redisPost.getPostInfoDto().setComments(lastComments);
+        savePost(postCacheUtilService.getFilledRedisPost(redisPost));
     }
 
     private void savePost(RedisPost redisPost) {
@@ -78,6 +77,44 @@ public class PostCacheService {
         } else {
             postRepository.save(redisPost);
             log.info("post {} saved", redisPost.getId());
+        }
+    }
+
+    public List<RedisPost> findUserPosts(Long userId, int amount) {
+//        String postAuthorName = postCacheUtilService.getUserName(userId);
+        return postService.getUserPosts(userId, amount)
+                .stream()
+                .map(postMapper::toRedisEntity).toList();
+//        return postService.getUserPosts(userId, amount)
+//                .stream()
+//                .map(post -> {
+//                    RedisPost redisPost = postMapper.toRedisEntity(post);
+//                    redisPost.getPostInfoDto().getDto().setUsername(postAuthorName);
+//                    postCacheUtilService.setLastComments(redisPost);
+//                    return redisPost;
+//                })
+//                .toList();
+    }
+
+    public boolean managePostsAndSave(Long userId, List<RedisPost> posts) {
+        String postAuthorName = postCacheUtilService.getUserName(userId);
+        List<RedisPost> list = CompletableFuture.supplyAsync(() -> posts.stream()
+                .peek(redisPost -> {
+                    redisPost.getPostInfoDto().getDto().setUsername(postAuthorName);
+                    postCacheUtilService.setLastComments(redisPost);
+                })
+                .toList()).join();
+        return savePosts(list);
+    }
+
+    public boolean savePosts(List<RedisPost> redisPosts) {
+        List<RedisPost> posts = toList(postRepository.saveAll(redisPosts));
+        if (!posts.isEmpty()) {
+            log.info("{} posts saved to redis cache", redisPosts.size());
+            return true;
+        } else {
+            log.warn("{} posts saved to redis cache", redisPosts.size());
+            return false;
         }
     }
 

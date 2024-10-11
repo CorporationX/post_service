@@ -27,4 +27,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             SELECT p.id FROM post p WHERE p.author_id = ?1 ORDER BY p.updated_at DESC OFFSET ?2 LIMIT ?3
             """)
     List<Long> findPosts(Long userId, int offset, int limit);
+
+    @Query(nativeQuery = true, value = """
+            SELECT p FROM post p WHERE p.author_id = ?1 ORDER BY p.updated_at DESC OFFSET ?2 LIMIT ?3
+            """)
+    List<Post> findPostsEntity(Long userId, int offset, int limit);
 }
