@@ -3,7 +3,6 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

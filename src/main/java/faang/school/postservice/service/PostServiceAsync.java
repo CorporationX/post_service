@@ -9,4 +9,6 @@ public interface PostServiceAsync {
     void publishScheduledPostsAsyncInBatch(List<Post> posts);
 
     void correctUnpublishedPostsByBatches(List<Post> posts);
+
+    void moderatePostsByBatches(List<Post> posts);
 }
