@@ -1,6 +1,5 @@
 package faang.school.postservice.publisher;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.model.dto.like.LikeEventDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,9 +16,6 @@ import static org.mockito.Mockito.verify;
 class LikeEventPublisherTest {
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
-
-    @Mock
-    private ObjectMapper objectMapper;
 
     @Mock
     private ChannelTopic channelTopic;
