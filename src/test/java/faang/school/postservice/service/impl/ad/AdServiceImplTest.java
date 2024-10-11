@@ -2,6 +2,7 @@ package faang.school.postservice.service.impl.ad;
 
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.ad.AdRepository;
+import faang.school.postservice.service.AdServiceAsync;
 import faang.school.postservice.service.impl.ad.AdServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +28,9 @@ class AdServiceImplTest {
 
     @Mock
     private AdRepository adRepository;
+
+    @Mock
+    private AdServiceAsync adServiceAsync;
 
     @InjectMocks
     private AdServiceImpl adService;
@@ -54,7 +58,7 @@ class AdServiceImplTest {
         adService.removeExpiredAds(50);
 
         verify(adRepository).findAllByEndDateBefore(any(LocalDateTime.class));
-        verify(adRepository).deleteAllInBatch(adList);
+        verify(adServiceAsync).deleteExpiredAdsByBatch(anyList());
     }
 
     @Test
@@ -63,13 +67,5 @@ class AdServiceImplTest {
         doReturn(Collections.emptyList()).when(adRepository).findAllByEndDateBefore(any(LocalDateTime.class));
         adService.removeExpiredAds(50);
         verify(adRepository, never()).deleteAllInBatch(anyList());
-    }
-
-    @Test
-    @DisplayName("Delete Expired Ads")
-    void testDeleteExpiredAdsByBatch() {
-        var batch = List.of(ad);
-        adService.deleteExpiredAdsByBatch(batch);
-        verify(adRepository).deleteAllInBatch(batch);
     }
 }
