@@ -26,6 +26,7 @@ public class AdServiceImpl implements AdService {
         }
     }
 
+    @Override
     @Async("adRemoverThreadPool")
     public void deleteExpiredAdsByBatch(List<Ad> ads) {
         adRepository.deleteAllInBatch(ads);

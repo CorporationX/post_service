@@ -12,6 +12,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.impl.like.publisher.LikeEventPublisher;
+import faang.school.postservice.service.impl.like.LikeServiceImpl;
 import faang.school.postservice.validator.like.LikeValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

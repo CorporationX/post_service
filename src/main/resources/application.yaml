@@ -44,6 +44,28 @@ post:
       cron: "@midnight" # every day at midnight
     threads-count: 20
     max-list-size: 50
+  commenter-banner:
+    scheduler:
+      cron: "0 0/1 * 1/1 * ?" # every day at midnight
+    unverified-comments-limit: 5
+  redis-config:
+    topic-name: "user_ban"
+
+  correcter:
+    retry:
+      max-attempts: 3
+      delay: 5000
+      multiplier: 2
+    scheduler:
+      cron: "@midnight"
+    thread-pool-size: 4
+    posts-batch-size: 100
+
+text-gears:
+  base-url: https://api.textgears.com
+  path-segment: /correct
+  api-key: LwbbSarifE2noQhc
+  language-code: en-US
 
 springdoc:
   swagger-ui:

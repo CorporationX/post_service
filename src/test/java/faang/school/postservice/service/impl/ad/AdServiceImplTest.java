@@ -2,6 +2,7 @@ package faang.school.postservice.service.impl.ad;
 
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.ad.AdRepository;
+import faang.school.postservice.service.impl.ad.AdServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
