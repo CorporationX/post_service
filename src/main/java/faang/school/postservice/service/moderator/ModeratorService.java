@@ -1,7 +1,9 @@
 package faang.school.postservice.service.moderator;
 
 import faang.school.postservice.config.dictionary.OffensiveWordsDictionary;
+import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publisher.PublishedCommentEventPublisher;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -21,6 +24,7 @@ public class ModeratorService {
     private final CommentService commentService;
     private final ExecutorService executorService;
     private final OffensiveWordsDictionary offensiveWordsDictionary;
+    private final PublishedCommentEventPublisher publishedCommentEventPublisher;
 
     public void moderateCommentsContent() {
         log.info("moderateCommentsContent() - start");
@@ -49,7 +53,25 @@ public class ModeratorService {
         }
 
         commentService.saveComments(comments);
+        notifyUserAboutNewComment(comments);
+
         log.info("moderateCommentsContent() - finish");
+    }
+
+    private void notifyUserAboutNewComment(List<Comment> comments) {
+        comments.stream()
+                .filter(Comment::isVerified)
+                .forEach(comment -> CompletableFuture.runAsync(() -> {
+                    CommentEventDto commentEventDto = CommentEventDto.builder()
+                            .userId(comment.getAuthorId())
+                            .authorId(comment.getPost().getAuthorId())
+                            .postId(comment.getPost().getId())
+                            .content(comment.getContent())
+                            .commentId(comment.getId())
+                            .build();
+
+                    publishedCommentEventPublisher.publish(commentEventDto);
+                }, executorService));
     }
 
     private boolean containsOffensiveContent(String content) {
@@ -58,7 +80,7 @@ public class ModeratorService {
                 .anyMatch(offensiveWordsDictionary::isWordContainsInDictionary);
     }
 
-    public void setVerifyToComment(Comment comment, boolean isVerified) {
+    private void setVerifyToComment(Comment comment, boolean isVerified) {
         comment.setVerified(isVerified);
         comment.setVerifiedAt(LocalDateTime.now());
     }
