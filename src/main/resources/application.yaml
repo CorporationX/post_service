@@ -22,10 +22,9 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
-        post_view_channel:
-          name: post_view_channel
+        hashtags: hashtags_channel
+        like_post: like_post_channel
+        post_view_channel: post_view_channel
 
   services:
     s3:

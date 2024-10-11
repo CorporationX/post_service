@@ -1,8 +1,9 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.messaging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.hashtag.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.service.HashtagService;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-public class HashtagListener<T> extends AbstractPostListener<PostDto> implements MessageListener {
+public class HashtagListener extends AbstractPostListener<PostDto> implements MessageListener {
 
     public HashtagListener(ObjectMapper objectMapper, HashtagService hashtagService) {
         super(objectMapper, hashtagService);
@@ -24,7 +25,7 @@ public class HashtagListener<T> extends AbstractPostListener<PostDto> implements
     @Override
     public void onMessage(Message message, byte[] pattern) {
         handleData(message, PostDto.class,
-                (postDto) -> hashtagService.saveHashtags(findHashtags(postDto.getContent(), postDto.getId())));
+                postDto -> hashtagService.saveHashtags(findHashtags(postDto.getContent(), postDto.getId())));
     }
 
     Set<HashtagDto> findHashtags(String content, Long postId) {

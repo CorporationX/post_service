@@ -5,13 +5,20 @@ import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.messaging.likepost.LikeEventPublisher;
+import faang.school.postservice.service.messaging.likepost.LikePostEvent;
 import faang.school.postservice.util.ExceptionThrowingValidator;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,10 +32,13 @@ public class LikeService {
     private static final int BATCH_SIZE = 100;
 
     private final LikeRepository likeRepository;
+    private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ExceptionThrowingValidator validator;
     private final LikeValidator likeValidator;
     private final LikeMapper likeMapper;
+
+    private final LikeEventPublisher likeEventPublisher;
 
     public List<UserDto> getAllUsersLikedPost(long postId) {
         List<Like> likesByPostId = likeRepository.findByPostId(postId);
@@ -82,9 +92,8 @@ public class LikeService {
         return users;
     }
 
+    @Transactional
     public LikeDto addLikeToPost(Long postId, LikeDto likeDto) {
-        log.info("Попытка поставить лайк на пост с ID: {}", postId);
-
         likeValidator.userValidation(likeDto.getUserId());
         likeValidator.validatePostExists(postId);
 
@@ -95,8 +104,10 @@ public class LikeService {
         likeDto.setPostId(postId);
         Like like = likeMapper.toEntity(likeDto);
         like.setCreatedAt(LocalDateTime.now());
+        like.setComment(null); // иначе TransientPropertyValueException
         likeRepository.save(like);
-        log.info("Лайк успешно поставлен пользователем с ID: {} на пост с ID: {}", likeDto.getUserId(), postId);
+        Long postAuthorId = getPostById(postId).getAuthorId(); // иначе like.getPost().getAuthorId() == null
+        likeEventPublisher.publish(new LikePostEvent(like.getUserId(), like.getPost().getId(), postAuthorId));
         return likeMapper.toDto(like);
     }
 
@@ -156,5 +167,10 @@ public class LikeService {
                 .toList();
         log.info("Найдено {} лайков для комментария с ID: {}", userIds.size(), commentId);
         return userIds;
+    }
+
+    private Post getPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found with id: " + id));
     }
 }
