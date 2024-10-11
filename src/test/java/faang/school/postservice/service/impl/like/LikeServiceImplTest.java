@@ -8,10 +8,10 @@ import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.publisher.EventPublisher;
 import faang.school.postservice.validator.like.LikeValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +39,7 @@ class LikeServiceImplTest {
     @Mock
     private UserContext userContext;
     @Mock
-    private EventPublisher likeEventPublisher;
+    private LikeEventPublisher likeEventPublisher;
     @InjectMocks
     private LikeServiceImpl likeService;
 
