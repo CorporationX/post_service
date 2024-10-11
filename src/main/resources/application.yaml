@@ -26,8 +26,8 @@ spring:
           name: calculations_channel
         user-ban:
           name: user_ban
-      channel:
-        like: like_channel
+        like:
+          name: like_channel
 
 
 server:

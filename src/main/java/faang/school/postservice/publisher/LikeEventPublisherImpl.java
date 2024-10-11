@@ -1,4 +1,4 @@
-package faang.school.postservice.service.impl.like.publisher;
+package faang.school.postservice.publisher;
 
 import faang.school.postservice.event.LikeEventDto;
 import lombok.RequiredArgsConstructor;
@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class LikeEventPublisherImpl implements LikeEventPublisher {
+public class LikeEventPublisherImpl implements EventPublisher<LikeEventDto> {
     private final RedisTemplate<String, Object> redisTemplate;
-    @Value("${spring.data.redis.channel.like}")
+    @Value("${spring.data.redis.channels.like.name}")
     private String likeTopic;
 
     @Override

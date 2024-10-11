@@ -13,7 +13,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeService;
-import faang.school.postservice.service.impl.like.publisher.LikeEventPublisher;
+import faang.school.postservice.publisher.EventPublisher;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeValidator likeValidator;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
-    private final LikeEventPublisher likeEventPublisher;
+    private final EventPublisher likeEventPublisher;
 
     @Override
     @Transactional
