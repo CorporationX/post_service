@@ -1,11 +1,17 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostHashtagDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotFoundException;
+import faang.school.postservice.kafka.event.post.PostEvent;
+import faang.school.postservice.kafka.event.post.PostViewEvent;
+import faang.school.postservice.kafka.producer.post.PostProducer;
+import faang.school.postservice.kafka.producer.post.PostViewProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationStatus;
@@ -41,11 +47,20 @@ public class PostServiceImpl implements PostService {
     private final AsyncHashtagService asyncHashtagService;
     private final ModerationDictionary moderationDictionary;
     private final SpellingService spellingService;
+    private final UserServiceClient userServiceClient;
+    private final PostProducer postProducer;
+    private final PostViewProducer postViewProducer;
 
     @Override
-    public Post findById(Long id) {
-        return postRepository.findById(id)
+    public PostDto findById(Long id) {
+        Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Post with id %s not found", id)));
+
+        post.setViewsCount(post.getViewsCount() + 1);
+
+        generateAndSendPostViewEventToKafka(post);
+
+        return postMapper.toDto(post);
     }
 
     @Override
@@ -60,11 +75,13 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto publish(Long id) {
-        Post post = findById(id);
+        Post post = findPostById(id);
         postValidator.validatePublicationPost(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         post = postRepository.save(post);
+
+        generateAndSendPostEventToKafka(post);
 
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
         asyncHashtagService.addHashtags(postHashtagDto);
@@ -75,7 +92,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto update(Long id, PostUpdateDto postUpdateDto) {
-        Post post = findById(id);
+        Post post = findPostById(id);
         postValidator.validatePostContent(post.getContent());
         post.setContent(postUpdateDto.getContent());
         post = postRepository.save(post);
@@ -89,7 +106,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void deleteById(Long id) {
-        Post post = findById(id);
+        Post post = findPostById(id);
         post.setDeleted(true);
         postRepository.save(post);
 
@@ -182,5 +199,28 @@ public class PostServiceImpl implements PostService {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private void generateAndSendPostEventToKafka(Post post){
+        UserDto author = userServiceClient.getUser(post.getAuthorId());
+        var event = PostEvent.builder()
+                .authorId(post.getAuthorId())
+                .followersIds(author.getFollowers())
+                .publishedAt(post.getPublishedAt())
+                .build();
+
+        postProducer.produce(event);
+    }
+
+    private void generateAndSendPostViewEventToKafka(Post postDto){
+        var event = PostViewEvent.builder()
+                .postId(postDto.getId())
+                .build();
+        postViewProducer.produce(event);
+    }
+
+    private Post findPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Post with id %s not found", id)));
     }
 }

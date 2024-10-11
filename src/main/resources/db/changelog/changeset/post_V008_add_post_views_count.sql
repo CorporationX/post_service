@@ -1,0 +1,2 @@
+ALTER TABLE post
+ADD COLUMN views_count INT DEFAULT 0;

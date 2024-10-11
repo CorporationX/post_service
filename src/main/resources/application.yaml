@@ -29,6 +29,20 @@ spring:
       cache:
         hashtag:
           max_size: 1000
+    kafka:
+      port: 9092
+      host: localhost
+      bootstrap_servers: localhost:9092
+      topics:
+        default-partition: 1
+        default-replication: 1
+        topic-settings:
+          post-likes:
+            name: post-likes
+          posts:
+            name: posts
+          post-views:
+            name: post-views
 
   servlet:
     multipart:
@@ -93,6 +107,12 @@ async:
   corePoolSize: 5
   maxPoolSize: 10
   queueCapacity: 100
+  settings:
+    kafka:
+      corePoolSize: 5
+      maxPoolSize: 10
+      queueCapacity: 100
+
 
 spelling:
   url: https://speller.yandex.net/services/spellservice.json/checkText?text=

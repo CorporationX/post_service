@@ -3,12 +3,13 @@ package faang.school.postservice.service.like;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.exception.NotFoundException;
+import faang.school.postservice.kafka.event.like.PostLikeEvent;
+import faang.school.postservice.kafka.producer.like.PostLikeProducer;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.LikeEventPublisher;
-import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -32,6 +33,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeMapper likeMapper;
     private final LikeValidatorImpl likeValidator;
     private final LikeEventPublisher likeEventPublisher;
+    private final PostLikeProducer postLikeProducer;
 
     @Override
     @Transactional
@@ -49,6 +51,7 @@ public class LikeServiceImpl implements LikeService {
         post.getLikes().add(like);
         like = likeRepository.save(like);
 
+        generateAndSendLikeEventToKafka(like, post);
         likeEventPublisher.publish(new LikeEvent(postId, post.getAuthorId(), userId, LocalDateTime.now()));
 
         log.info("Like with likeId = {} was added on post with postId = {} by user with userId = {}", like.getId(), postId, userId);
@@ -113,5 +116,15 @@ public class LikeServiceImpl implements LikeService {
         likeDto.setUserId(userId);
         function.accept(likeDto);
         return likeDto;
+    }
+
+    private void generateAndSendLikeEventToKafka(Like like, Post post){
+        PostLikeEvent event = PostLikeEvent.builder()
+                .postId(post.getId())
+                .authorId(post.getAuthorId())
+                .userId(like.getUserId())
+                .createdAt(LocalDateTime.now())
+                .build();
+        postLikeProducer.produce(event);
     }
 }

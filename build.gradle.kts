@@ -66,6 +66,11 @@ dependencies {
      * Swagger / SpringDoc
      */
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+
+    /**
+     * Kafka
+     */
+    implementation("org.springframework.kafka:spring-kafka:3.1.2")
 }
 
 tasks.withType<Test> {

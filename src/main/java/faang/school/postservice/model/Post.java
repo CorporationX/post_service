@@ -87,4 +87,8 @@ public class Post {
 
     @Column(name = "is_checked_for_spelling", nullable = false)
     private boolean isCheckedForSpelling;
+
+    @Column(name = "views_count", nullable = false)
+    @ColumnDefault("0")
+    private long viewsCount;
 }
