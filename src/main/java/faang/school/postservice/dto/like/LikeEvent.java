@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class LikeEvent {
     private Long postId;
+    private Long authorPostId;
     private Long userId;
     private LocalDateTime createdAt;
 }
