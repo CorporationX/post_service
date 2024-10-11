@@ -51,10 +51,4 @@ public class Comment implements Likeable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Column(name = "verified")
-    private Boolean verified;
-
-    @Column(name = "verified_date")
-    private LocalDateTime verifiedDate;
 }
