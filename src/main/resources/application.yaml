@@ -28,10 +28,11 @@ spring:
            name: comment_channel
     kafka:
       bootstrap-servers: PLAINTEXT://localhost:9092
-      topics:
-        post_topic: posts
-        like_topic: likes
-        comment_topic: comments
+      topic-name:
+        posts: posts
+        likes: likes
+        comments: comments
+        views: views
 
 server:
   port: 8081

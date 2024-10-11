@@ -1,4 +1,4 @@
-package faang.school.postservice.event;
+package faang.school.postservice.dto.like;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @AllArgsConstructor
-public class LikeEvent {
+public class LikeEventDto {
     private Long authorLikeId;
     private Long postId;
     private Long authorPostId;

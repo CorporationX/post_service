@@ -20,14 +20,16 @@ public class KafkaProducerConfig {
     @Value("${spring.data.kafka.bootstrap-servers}")
     public String bootstrapAddress;
 
-    @Value("${spring.data.kafka.topics.post_topic}")
+    @Value("${spring.data.kafka.topic-name.posts}")
     private String postTopic;
 
-    @Value("${spring.data.kafka.topics.like_topic}")
+    @Value("${spring.data.kafka.topic-name.likes}")
     private String likeTopic;
 
-    @Value("${spring.data.kafka.topics.comment_topic}")
+    @Value("${spring.data.kafka.topic-name.comments}")
     private String commentTopic;
+
+    @Value("${spring.data.kafka.topic-name.views}")
 
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
@@ -56,6 +58,11 @@ public class KafkaProducerConfig {
 
     @Bean
     public NewTopic commentKafkaTopic() {
+        return new NewTopic(commentTopic, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic viewKafkaTopic() {
         return new NewTopic(commentTopic, 1, (short) 1);
     }
 }

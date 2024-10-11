@@ -5,7 +5,6 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
@@ -15,7 +14,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
-import faang.school.postservice.service.like.LikeServiceImpl;
+import faang.school.postservice.service.like.LikeService;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -66,7 +65,7 @@ class LikeServiceImplTest {
     UserServiceClient userServiceClient;
 
     @InjectMocks
-    private LikeServiceImpl likeService;
+    private LikeService likeService;
 
     private LikeDto likeDto;
     private Like like;

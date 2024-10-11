@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.dto.like.LikeEventDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,14 +10,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 @Component
-public class LikeEventPublisher implements MessagePublisher<LikeEvent> {
+public class LikeEventPublisher implements MessagePublisher<LikeEventDto> {
 
     @Value("${spring.data.redis.channels.like_post_channel.name.like_channel")
     private String channelTopic;
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
-    public void publish(LikeEvent event) {
+    public void publish(LikeEventDto event) {
         try {
             redisTemplate.convertAndSend(channelTopic, event);
         } catch (Exception e) {
