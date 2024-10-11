@@ -123,7 +123,7 @@ public class LikeServiceImpl implements LikeService {
                 .postId(post.getId())
                 .authorId(post.getAuthorId())
                 .userId(like.getUserId())
-                .createdAt(LocalDateTime.now())
+                .createdAt(like.getCreatedAt())
                 .build();
         postLikeProducer.produce(event);
     }

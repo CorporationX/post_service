@@ -43,6 +43,8 @@ spring:
             name: posts
           post-views:
             name: post-views
+          comments:
+            name: comments
 
   servlet:
     multipart:
