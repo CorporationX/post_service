@@ -3,14 +3,17 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
@@ -25,6 +29,7 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final PostValidator validator;
     private final PostMapper postMapper;
+    private final PostPublisher postPublisher;
 
     @Override
     public void createDraftPost(PostDto postDto) {
@@ -57,6 +62,9 @@ public class PostServiceImpl implements PostService {
             post.setPublishedAt(LocalDateTime.now());
             post.setPublished(true);
             postRepository.save(post);
+
+            postPublisher.publish(new PostEvent(post.getAuthorId(), post.getId()));
+            log.info("post event id = {} published to post_channel", post.getId());
         }
     }
 
