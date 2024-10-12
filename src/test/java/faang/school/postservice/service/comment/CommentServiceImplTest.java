@@ -1,7 +1,9 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.BanEvent;
 import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
@@ -50,6 +52,9 @@ class CommentServiceImplTest {
     @Mock
     private CommentEventPublisher commentEventPublisher;
 
+    @Mock
+    private UserServiceClient userServiceClient;
+
     @InjectMocks
     private CommentServiceImpl commentService;
 
@@ -90,8 +95,15 @@ class CommentServiceImplTest {
     @Test
     void create_whenUserAndPostExist_shouldCreateComment() {
         // given
+        var user = UserDto.builder()
+                .id(1L)
+                .email("email@email.com")
+                .username("username")
+                .build();
+
         var commentEvent = CommentEvent.builder()
                 .commentAuthorId(commentResponseDto.authorId())
+                .username(user.username())
                 .postAuthorId(post.getAuthorId())
                 .postId(post.getId())
                 .content(commentResponseDto.content())
@@ -102,6 +114,7 @@ class CommentServiceImplTest {
         when(commentValidator.findPostById(anyLong())).thenReturn(post);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(commentMapper.toResponseDto(any(Comment.class))).thenReturn(commentResponseDto);
+        when(userServiceClient.getUser(anyLong())).thenReturn(user);
         // when
         CommentResponseDto result = commentService.create(1L, commentRequestDto);
         // then
@@ -109,6 +122,7 @@ class CommentServiceImplTest {
         verify(commentValidator).findPostById(1L);
         verify(commentRepository).save(comment);
         verify(commentEventPublisher).publish(commentEvent);
+        verify(userServiceClient).getUser(1);
         assertThat(result).isEqualTo(commentResponseDto);
     }
 

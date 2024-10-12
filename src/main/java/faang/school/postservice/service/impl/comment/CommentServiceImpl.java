@@ -1,5 +1,6 @@
 package faang.school.postservice.service.impl.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.event.BanEvent;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CommentServiceImpl implements CommentService {
-
+    private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
@@ -35,6 +36,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentResponseDto create(long userId, CommentRequestDto dto) {
         commentValidator.validateUser(userId);
+        var user = userServiceClient.getUser(userId);
         var post = commentValidator.findPostById(dto.postId());
         var comment = commentMapper.toEntity(dto);
         comment.setAuthorId(userId);
@@ -42,7 +44,8 @@ public class CommentServiceImpl implements CommentService {
 
         var savedComment = commentMapper.toResponseDto(commentRepository.save(comment));
         var commentEvent = CommentEvent.builder()
-                .commentAuthorId(userId)
+                .commentAuthorId(savedComment.authorId())
+                .username(user.username())
                 .postAuthorId(post.getAuthorId())
                 .postId(savedComment.postId())
                 .content(savedComment.content())
