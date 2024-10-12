@@ -2,6 +2,7 @@ package faang.school.postservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import faang.school.postservice.config.redis.RedisCacheConfig;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -9,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -20,6 +22,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
 @ConfigurationPropertiesScan("faang.school.postservice.property")
 @EnableRetry
+@EnableRedisRepositories(keyspaceConfiguration = RedisCacheConfig.RedisKeyspaceConfiguration.class)
 public class PostServiceApp {
 
     public static void main(String[] args) {

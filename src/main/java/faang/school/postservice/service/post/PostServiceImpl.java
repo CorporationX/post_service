@@ -15,6 +15,8 @@ import faang.school.postservice.kafka.producer.post.PostViewProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationStatus;
+import faang.school.postservice.redis.cache.entity.AuthorCache;
+import faang.school.postservice.redis.cache.repository.AuthorCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
@@ -50,6 +52,7 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final PostProducer postProducer;
     private final PostViewProducer postViewProducer;
+    private final AuthorCacheRepository authorCacheRepository;
 
     @Override
     public PostDto findById(Long id) {
@@ -81,6 +84,7 @@ public class PostServiceImpl implements PostService {
         post.setPublishedAt(LocalDateTime.now());
         post = postRepository.save(post);
 
+        saveAuthorCache(post.getAuthorId());
         generateAndSendPostEventToKafka(post);
 
         PostHashtagDto postHashtagDto = postMapper.toHashtagDto(post);
@@ -222,5 +226,11 @@ public class PostServiceImpl implements PostService {
     private Post findPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Post with id %s not found", id)));
+    }
+
+    public void saveAuthorCache(Long postAuthorId){
+        UserDto author = userServiceClient.getUser(postAuthorId);
+        authorCacheRepository.save(new AuthorCache(author.getId(), author.getUsername()));
+        log.info("Save user with ID: {} to Redis", author.getId());
     }
 }
