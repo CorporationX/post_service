@@ -204,20 +204,22 @@ public class PostService {
         log.info("Images successfully deleted");
     }
 
-    @Transactional(readOnly = true)
-    public List<Post> getAllReadyToPublishPosts() {
-        return postRepository.findReadyToPublish();
-    }
-
     @Async("postExecutorPool")
     @Transactional
-    public void processSubList(List<Post> subList) {
-        subList.forEach(
-                post -> {
-                    post.setPublished(true);
-                    post.setPublishedAt(LocalDateTime.now());
-                }
-        );
-        postRepository.saveAll(subList);
+    public void processReadyToPublishPosts(Integer postPublishBatchSize) {
+        log.info("Загрузка постов для публикации");
+        List<Post> posts = postRepository.findReadyToPublishSkipLocked(postPublishBatchSize);
+        log.info("Загружено {} постов для публикации", posts.size());
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        posts.forEach(post -> {
+            post.setPublishedAt(currentDateTime);
+            post.setPublished(true);
+        });
+        log.info("Посты опубликованы");
+    }
+
+    @Transactional(readOnly = true)
+    public int getReadyToPublish() {
+        return postRepository.findReadyToPublishCount();
     }
 }

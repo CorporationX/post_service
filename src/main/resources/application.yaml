@@ -33,7 +33,7 @@ server:
 post:
   pool-size: 10
   publisher:
-    sub-list-size: 100
+    batch-size: 100
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:

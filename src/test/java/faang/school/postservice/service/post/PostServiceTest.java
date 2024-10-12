@@ -19,13 +19,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,8 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static faang.school.postservice.utils.ImageRestrictionRule.POST_IMAGES;
 import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
+import static faang.school.postservice.utils.ImageRestrictionRule.POST_IMAGES;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -77,8 +74,6 @@ public class PostServiceTest {
     private MultipartFile image2;
     @Mock
     private InputStream inputStream;
-    @Captor
-    private ArgumentCaptor<List<Post>> listCaptor;
     @InjectMocks
     private PostService postService;
 
@@ -87,13 +82,10 @@ public class PostServiceTest {
     private Post foundPost;
     private List<Post> authorPosts = new ArrayList<>();
     private List<Post> projectPosts = new ArrayList<>();
-    private List<Post> readyToPublishPosts = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(postService, "bucketNamePrefix", BUCKET_NAME_PREFIX);
-//        ReflectionTestUtils.setField(postService, "subListSize", SUB_LIST_SIZE);
-
 
         postForCreate = Post.builder()
                 .content("Some Content")
@@ -151,11 +143,6 @@ public class PostServiceTest {
                 .createdAt(LocalDateTime.of(2024, 9, 14, 0, 0))
                 .publishedAt(LocalDateTime.of(2024, 9, 14, 0, 0))
                 .build());
-
-        Post readyToPublishPost1 = Post.builder().id(1).published(false).build();
-        Post readyToPublishPost2 = Post.builder().id(2).published(false).build();
-        readyToPublishPosts.add(readyToPublishPost1);
-        readyToPublishPosts.add(readyToPublishPost2);
     }
 
     @Test
@@ -517,21 +504,20 @@ public class PostServiceTest {
     }
 
     @Test
-    void testGetAllReadyToPublishPosts() {
-        when(postRepository.findReadyToPublish()).thenReturn(readyToPublishPosts);
+    void testGetReadyToPublish() {
+        int readyToPublishPostsCount = 2;
+        when(postRepository.findReadyToPublishCount()).thenReturn(readyToPublishPostsCount);
 
-        var result = postService.getAllReadyToPublishPosts();
+        var result = postService.getReadyToPublish();
 
-        verify(postRepository).findReadyToPublish();
-        assertEquals(readyToPublishPosts, result);
+        verify(postRepository).findReadyToPublishCount();
+        assertEquals(readyToPublishPostsCount, result);
     }
 
     @Test
-    void testProcessSubList() {
-        postService.processSubList(readyToPublishPosts);
-
-        verify(postRepository).saveAll(listCaptor.capture());
-        assertTrue(listCaptor.getValue().get(0).isPublished());
-        assertTrue(listCaptor.getValue().get(1).isPublished());
+    void testProcessReadyToPublishPosts() {
+        int postPublishBatchSize = 10;
+        postService.processReadyToPublishPosts(postPublishBatchSize);
+        verify(postRepository).findReadyToPublishSkipLocked(postPublishBatchSize);
     }
 }

@@ -12,17 +12,16 @@ import java.util.concurrent.Executor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 @ExtendWith(MockitoExtension.class)
 class PostThreadPoolConfigTest {
+    private final static Integer POST_POOL_SIZE = 10;
+
     @InjectMocks
     private PostThreadPoolConfig postThreadPoolConfig;
 
-    private final Integer postPoolSize = 10;
-
     @BeforeEach
     void init() {
-        ReflectionTestUtils.setField(postThreadPoolConfig, "postPoolSize", postPoolSize);
+        ReflectionTestUtils.setField(postThreadPoolConfig, "postPoolSize", POST_POOL_SIZE);
     }
 
     @Test
