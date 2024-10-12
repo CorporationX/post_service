@@ -1,6 +1,7 @@
 package faang.school.postservice.redis.service;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.kafka.model.CommentEvent;
 import faang.school.postservice.redis.mapper.PostCacheMapper;
 import faang.school.postservice.redis.model.PostCache;
 import faang.school.postservice.redis.repository.PostCacheRepository;
@@ -42,8 +43,7 @@ public class PostCacheService {
 
     public void incrementLikes(Long postId) {
         if (!postCacheRepository.existsById(postId)) {
-            var postDto = postService.getPost(postId);
-            savePostCache(postDto);
+            savePostCache(postId);
         }
         redisTemplate.opsForHash()
                 .increment(generateCachePostKey(postId), cacheLikesField, 1);
@@ -52,20 +52,31 @@ public class PostCacheService {
 
     public void incrementView(Long postId) {
         if (!postCacheRepository.existsById(postId)) {
-            var postDto = postService.getPost(postId);
-            savePostCache(postDto);
+            savePostCache(postId);
         }
         redisTemplate.opsForHash()
                 .increment(generateCachePostKey(postId), cacheViewField, 1);
+    }
+
+    // TODO: не потока безопасно, подумать !!
+    public void addComments(CommentEvent commentEvent) {
+        PostCache postCache = postCacheRepository.findById(commentEvent.postId())
+                .orElseGet(() -> savePostCache(commentEvent.postId()));
+        if (postCache == null) {
+            throw new NullPointerException("postCache is null");
+        }
+        postCache.getComments().add(commentEvent);
     }
 
     private String generateCachePostKey(Long postId) {
         return postCacheKeyPrefix + postId;
     }
 
-    public void savePostCache(PostDto postDto) {
+    public PostCache savePostCache(Long postId) {
+        var postDto = postService.getPost(postId);
         var postCache = postCacheMapper.toPostCache(postDto);
         postCacheRepository.save(postCache);
+        return postCache;
     }
 
 }

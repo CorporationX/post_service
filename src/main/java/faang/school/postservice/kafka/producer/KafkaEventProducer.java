@@ -1,6 +1,6 @@
 package faang.school.postservice.kafka.producer;
 
-import faang.school.postservice.dto.CommentEvent;
+import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.dto.like.LikeEventDto;
 import faang.school.postservice.kafka.model.ViewEvent;
 import faang.school.postservice.mapper.LikeMapper;
@@ -28,7 +28,7 @@ public class KafkaEventProducer {
         kafkaTemplate.send(likeTopic, likeMapper.toEvent(likeEventDto));
     }
 
-    public void sendCommentEvent(CommentEvent commentEvent) {
+    public void sendCommentEvent(CommentEventDto commentEvent) {
         kafkaTemplate.send(commentTopic, commentEvent);
     }
 
