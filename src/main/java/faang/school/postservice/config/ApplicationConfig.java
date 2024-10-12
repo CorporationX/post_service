@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ApplicationConfig {
 
-    @Qualifier("javaTimeModuleObjectMapper")
     @Bean
     public ObjectMapper javaTimeModuleObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
