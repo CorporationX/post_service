@@ -1,13 +1,17 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentToCreateDto;
 import faang.school.postservice.dto.comment.CommentToUpdateDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.kafka.event.comment.CommentEvent;
 import faang.school.postservice.kafka.producer.comment.CommentProducer;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.cache.entity.AuthorCache;
+import faang.school.postservice.redis.cache.repository.AuthorCacheRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.commonMethods.CommonServiceMethods;
@@ -32,6 +36,8 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final CommonServiceMethods commonServiceMethods;
     private final CommentProducer commentProducer;
+    private final UserServiceClient userServiceClient;
+    private final AuthorCacheRepository authorCacheRepository;
 
     @Override
     public CommentDto createComment(long postId, long userId, CommentToCreateDto commentDto) {
@@ -45,6 +51,7 @@ public class CommentServiceImpl implements CommentService {
 
         commentRepository.save(comment);
 
+        saveAuthorCache(comment);
         generateAndSendCommentEventToKafka(comment);
 
         log.info("Created comment on post {} authored by {}", postId, userId);
@@ -97,5 +104,11 @@ public class CommentServiceImpl implements CommentService {
                 .createdAt(comment.getCreatedAt())
                 .build();
         commentProducer.produce(event);
+    }
+
+    private void saveAuthorCache(Comment comment) {
+        UserDto author = userServiceClient.getUser(comment.getAuthorId());
+        authorCacheRepository.save(new AuthorCache(author.getId(), author.getUsername()));
+        log.info("Save user with ID: {} to Redis", author.getId());
     }
 }

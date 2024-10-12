@@ -30,9 +30,12 @@ spring:
         max-hashtags-size: 1000
       cache:
         default-ttl: 3600
+        path-to-entities: faang.school.postservice.redis.cache.entity
         cache-settings:
           authors:
             name: authors
+          posts:
+            name: posts
     kafka:
       port: 9092
       host: localhost

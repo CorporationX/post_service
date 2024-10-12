@@ -5,6 +5,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostHashtagDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.cache.entity.PostCache;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -28,6 +29,9 @@ public interface PostMapper {
 
     @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
     PostDto toDto(Post post);
+
+    @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
+    PostCache toPostCache(Post post);
 
     @Named("getCountFromLikeList")
     default int getCountFromLikeList(List<Like> likes) {

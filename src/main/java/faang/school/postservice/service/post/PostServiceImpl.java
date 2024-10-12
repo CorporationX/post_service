@@ -17,6 +17,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationStatus;
 import faang.school.postservice.redis.cache.entity.AuthorCache;
 import faang.school.postservice.redis.cache.repository.AuthorCacheRepository;
+import faang.school.postservice.redis.cache.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
@@ -53,6 +54,7 @@ public class PostServiceImpl implements PostService {
     private final PostProducer postProducer;
     private final PostViewProducer postViewProducer;
     private final AuthorCacheRepository authorCacheRepository;
+    private final PostCacheRepository postCacheRepository;
 
     @Override
     public PostDto findById(Long id) {
