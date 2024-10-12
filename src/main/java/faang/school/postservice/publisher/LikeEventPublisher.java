@@ -1,23 +1,18 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.model.dto.like.LikeEventDto;
-import org.springframework.beans.factory.annotation.Autowired;
+import faang.school.postservice.event.LikeEvent;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LikeEventPublisher extends AbstractEventPublisher<LikeEventDto> {
+@RequiredArgsConstructor
+public class LikeEventPublisher {
     private final ChannelTopic likeEventTopic;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    @Autowired
-    public LikeEventPublisher(RedisTemplate<String, Object> redisTemplate,
-                              ChannelTopic likeEventTopic) {
-        super(redisTemplate);
-        this.likeEventTopic = likeEventTopic;
-    }
-
-    public void sendEvent(LikeEventDto likeEvent) {
-        publish(likeEventTopic, likeEvent);
+    public void publish(LikeEvent likeEvent) {
+        redisTemplate.convertAndSend(likeEventTopic.getTopic(), likeEvent);
     }
 }

@@ -1,11 +1,11 @@
-package faang.school.postservice.model.dto.like;
+package faang.school.postservice.event;
 
 import lombok.Builder;
 
 import java.time.LocalDateTime;
 
 @Builder
-public record LikeEventDto(
+public record LikeEvent(
         long postId,
         long userId,
         LocalDateTime likedTime

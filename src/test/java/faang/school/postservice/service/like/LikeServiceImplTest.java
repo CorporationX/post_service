@@ -3,7 +3,7 @@ package faang.school.postservice.service.like;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.model.dto.like.LikeDto;
-import faang.school.postservice.model.dto.like.LikeEventDto;
+import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.model.dto.user.UserDto;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -13,6 +13,7 @@ import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.impl.like.LikeServiceImpl;
 import faang.school.postservice.validator.like.LikeValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -135,7 +136,7 @@ class LikeServiceImplTest {
         verify(likeValidator).validate(postId, userId, postRepository);
         verify(likeRepository).save(any(Like.class));
         verify(likeMapper).toLikeDto(any(Like.class));
-        verify(likeEventPublisher).sendEvent(any(LikeEventDto.class));
+        verify(likeEventPublisher).publish(any(LikeEvent.class));
 
         Assertions.assertEquals(likeDto, result);
     }

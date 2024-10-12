@@ -1,9 +1,9 @@
-package faang.school.postservice.service.like;
+package faang.school.postservice.service.impl.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.model.dto.like.LikeDto;
-import faang.school.postservice.model.dto.like.LikeEventDto;
+import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -12,6 +12,7 @@ import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.LikeService;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -76,14 +77,14 @@ public class LikeServiceImpl implements LikeService {
                 .post(post)
                 .build();
 
-        var likeEventDto = LikeEventDto.builder()
+        var likeEvent = LikeEvent.builder()
                 .postId(postId)
                 .userId(userId)
                 .likedTime(LocalDateTime.now())
                 .build();
 
         var likeDto = likeMapper.toLikeDto(likeRepository.save(like));
-        likeEventPublisher.sendEvent(likeEventDto);
+        likeEventPublisher.publish(likeEvent);
         return likeDto;
     }
 

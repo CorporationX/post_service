@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.model.dto.like.LikeEventDto;
+import faang.school.postservice.event.LikeEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,11 +26,11 @@ class LikeEventPublisherTest {
     @Test
     @DisplayName("Send Event Test")
     void testSendEvent() {
-        var likeEvent = LikeEventDto.builder()
+        var likeEvent = LikeEvent.builder()
                 .postId(1)
                 .build();
 
-        likeEventPublisher.sendEvent(likeEvent);
+        likeEventPublisher.publish(likeEvent);
         verify(redisTemplate).convertAndSend(channelTopic.getTopic(), likeEvent);
     }
 }
