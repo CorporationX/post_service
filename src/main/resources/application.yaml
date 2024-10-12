@@ -26,9 +26,13 @@ spring:
           name: calculations_channel
         like_post_channel:
           name: like_channel
+      settings:
+        max-hashtags-size: 1000
       cache:
-        hashtag:
-          max_size: 1000
+        default-ttl: 3600
+        cache-settings:
+          authors:
+            name: authors
     kafka:
       port: 9092
       host: localhost
