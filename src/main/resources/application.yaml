@@ -25,6 +25,9 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  config:
+    import: text-gears-api.yaml
+
   servlet:
     multipart:
       enabled: true
@@ -46,6 +49,21 @@ services:
     bucketName: corpbucket
     region: eu-central-1
     isMocked: false
+  grammar-checker:
+    url: https://api.textgears.com
+    apiKey: ${apiKey}
+    dialects:
+      "en": "en-US"
+      "fr": "fr-FR"
+      "de": "de-DE"
+      "pt": "pt-PT"
+      "it": "it-IT"
+      "ru": "ru-RU"
+      "ar": "ar-AR"
+      "es": "es-ES"
+      "ja": "ja-JP"
+      "zh": "zh-CN"
+      "el": "el-GR"
 
 post:
   publisher:
@@ -54,6 +72,12 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  grammar-checker:
+    scheduler:
+      cron: "0 0 0 * * ?" # every day
+    attempts: 3
+    delay: 1000
+    multiplier: 2
 
 comment:
   obscene-words-resource: obscene_words_resource/obscene-words.json
