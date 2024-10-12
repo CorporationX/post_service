@@ -3,6 +3,7 @@ package faang.school.postservice.moderation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -11,13 +12,13 @@ public class ModerationDictionary {
 
     private final Dictionary dictionary;
 
-    public void searchSwearWords(List<? extends Verifyible> verifyibles) {
+    public void searchSwearWords(List<? extends Verifiable> verifyibles) {
         verifyibles.forEach(entity -> {
             boolean containsSwearWord = dictionary.getDictionary().stream()
-                    .anyMatch(word -> entity.getContentText().contains(word));
+                    .anyMatch(word -> entity.getContent().contains(word));
 
-            entity.setVerificationValue(!containsSwearWord);
-            entity.initVerifiedDate();
+            entity.setVerified(!containsSwearWord);
+            entity.setVerifiedDate(LocalDateTime.now());
         });
     }
 }

@@ -13,7 +13,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -28,7 +27,7 @@ class ModerationDictionaryTest {
     private static final String WORD = "слово";
     private static final String BAD_WORD = "баг";
 
-    private List<Verifyible> verifyibles;
+    private List<Verifiable> verifiables;
     private Post first;
     private Post second;
 
@@ -43,13 +42,13 @@ class ModerationDictionaryTest {
                 .content(BAD_WORD)
                 .build();
 
-        verifyibles = List.of(first, second);
+        verifiables = List.of(first, second);
     }
 
     @Test
     @DisplayName("Успешная верификация контента")
     public void whenSearchSwearWordsThenVerifiedSuccess() {
-        moderationDictionary.searchSwearWords(verifyibles);
+        moderationDictionary.searchSwearWords(verifiables);
 
         verify(dictionary, times(2)).getDictionary();
     }

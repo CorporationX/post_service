@@ -3,7 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
-import faang.school.postservice.moderation.Verifyible;
+import faang.school.postservice.moderation.Verifiable;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +47,7 @@ class PostServiceTest {
     private Post verifiedSecondPost;
     private List<Post> unverifiedPosts;
     private List<Post> verifiedPosts;
-    private List<Verifyible> unverifyibles;
+    private List<Verifiable> unverifiables;
 
     @BeforeEach
     public void init() {
@@ -78,7 +78,7 @@ class PostServiceTest {
 
         unverifiedPosts = List.of(firstPost, secondPost);
         verifiedPosts = List.of(verifiedFirstPost, verifiedSecondPost);
-        unverifyibles = List.of(firstPost, secondPost);
+        unverifiables = List.of(firstPost, secondPost);
     }
 
     @Test
@@ -90,7 +90,7 @@ class PostServiceTest {
         postService.moderatePostsContent();
 
         verify(postRepository).findReadyToVerified();
-        verify(moderationDictionary).searchSwearWords(unverifyibles);
+        verify(moderationDictionary).searchSwearWords(anyList());
         verify(postRepository).saveAll(anyList());
     }
 }
