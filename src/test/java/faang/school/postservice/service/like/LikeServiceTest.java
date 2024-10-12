@@ -10,6 +10,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.publisher.LikePostEventPublisher;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,22 +41,18 @@ public class LikeServiceTest {
 
     @Mock
     private LikeRepository likeRepository;
-
     @Mock
     private PostRepository postRepository;
-
     @Mock
     private CommentRepository commentRepository;
-
     @Mock
     private LikeMapper likeMapper;
-
     @Mock
     private LikeValidator likeValidator;
-
     @Mock
     private UserServiceClient userServiceClient;
-
+    @Mock
+    private LikePostEventPublisher likePostEventPublisher;
     @InjectMocks
     private LikeService likeService;
 
@@ -92,6 +89,7 @@ public class LikeServiceTest {
             verify(postRepository).findById(likeRequestDto.getPostId());
             verify(likeValidator).validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
             verify(userServiceClient).getUser(likeRequestDto.getUserId());
+            verify(likePostEventPublisher).publishEvent(any());
             assertEquals(likeResponseDto, result);
         }
 
