@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: local
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -53,13 +55,32 @@ post:
 user-service:
   host: localhost
   port: 8080
+  requiredHeaders: x-user-id
 project-service:
   host: localhost
   port: 8082
+  requiredHeaders: x-user-id
 payment-service:
   host: localhost
   port: 9080
+  requiredHeaders: x-user-id
 
+moderate:
+  comments:
+    initialDelay: 5000
+    fixedDelay: 3600000
+
+dictionary:
+  offensive:
+    initial: "dictionary/offensive-words.yaml"
+    remote:
+      url: https://raw.githubusercontent.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/refs/heads/master
+      scheduler:
+        cron: "0 0 0/24 * * *" # every 24 hours
+    update:
+      retry:
+        maxAttempts: 2
+        maxDelay: 1000
 services:
   s3:
     endpoint: http://127.0.0.1:9000
