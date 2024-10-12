@@ -3,7 +3,9 @@ package faang.school.postservice.service;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
+import faang.school.postservice.moderation.Verifyible;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,6 +47,7 @@ class PostServiceTest {
     private Post verifiedSecondPost;
     private List<Post> unverifiedPosts;
     private List<Post> verifiedPosts;
+    private List<Verifyible> unverifyibles;
 
     @BeforeEach
     public void init() {
@@ -75,19 +78,19 @@ class PostServiceTest {
 
         unverifiedPosts = List.of(firstPost, secondPost);
         verifiedPosts = List.of(verifiedFirstPost, verifiedSecondPost);
+        unverifyibles = List.of(firstPost, secondPost);
     }
 
     @Test
     @DisplayName("Успешный вызов метода moderationPostContent")
     public void whenModeratePostsContentThenSuccess() {
         when(postRepository.findReadyToVerified()).thenReturn(unverifiedPosts);
-        when(moderationDictionary.searchSwearWords(unverifiedPosts)).thenReturn(verifiedPosts);
         when(postRepository.saveAll(verifiedPosts)).thenReturn(verifiedPosts);
 
         postService.moderatePostsContent();
 
         verify(postRepository).findReadyToVerified();
-        verify(moderationDictionary).searchSwearWords(unverifiedPosts);
+        verify(moderationDictionary).searchSwearWords(unverifyibles);
         verify(postRepository).saveAll(anyList());
     }
 }

@@ -1,6 +1,7 @@
 package faang.school.postservice.model;
 
 import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.moderation.Verifyible;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
@@ -21,7 +22,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "post")
-public class Post {
+public class Post implements Verifyible {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -81,4 +82,19 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_date")
     private LocalDateTime verifiedDate;
+
+    @Override
+    public void setVerificationValue(boolean result) {
+        this.setVerified(result);
+    }
+
+    @Override
+    public void initVerifiedDate() {
+        this.setVerifiedDate(LocalDateTime.now());
+    }
+
+    @Override
+    public String getContentText() {
+        return this.getContent();
+    }
 }

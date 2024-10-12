@@ -1,6 +1,6 @@
 package faang.school.postservice.moderation;
 
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

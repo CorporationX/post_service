@@ -27,16 +27,14 @@ class ModerationDictionaryTest {
 
     private static final String WORD = "слово";
     private static final String BAD_WORD = "баг";
-    private static final String FILE_PATH = "src/main/resources/moderation/dictionary.txt";
 
-    private List<Post> unverifiedPosts;
+    private List<Verifyible> verifyibles;
     private Post first;
     private Post second;
 
     @BeforeEach
     public void init() {
         ReflectionTestUtils.setField(dictionary, "dictionary", Set.of(BAD_WORD));
-        ReflectionTestUtils.setField(dictionary, "filePath", FILE_PATH);
 
         first = Post.builder()
                 .content(WORD)
@@ -45,15 +43,14 @@ class ModerationDictionaryTest {
                 .content(BAD_WORD)
                 .build();
 
-        unverifiedPosts = List.of(first, second);
+        verifyibles = List.of(first, second);
     }
 
     @Test
     @DisplayName("Успешная верификация контента")
     public void whenSearchSwearWordsThenVerifiedSuccess() {
-        List<Post> result = moderationDictionary.searchSwearWords(unverifiedPosts);
+        moderationDictionary.searchSwearWords(verifyibles);
 
-        assertEquals(2, result.size());
         verify(dictionary, times(2)).getDictionary();
     }
 }
