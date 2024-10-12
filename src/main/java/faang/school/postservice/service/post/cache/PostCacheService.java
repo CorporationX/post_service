@@ -29,8 +29,8 @@ public class PostCacheService {
     @Value("${app.post.cache.post_id_prefix}")
     private String postIdPrefix;
 
-    private final RedisTemplate<String, PostCacheDto> redisTemplatePost;
-    private final ZSetOperations<String, String> zSetOperations;
+    private final RedisTemplate<String, PostCacheDto> postCacheDtoRedisTemplate;
+    private final ZSetOperations<String, String> stringZSetOperations;
 
     @Transactional
     public void savePostsByTag(String tag, List<PostCacheDto> posts) {
@@ -38,9 +38,9 @@ public class PostCacheService {
         posts.forEach(post -> {
             String postId = postIdPrefix + post.getId();
             long timeStamp = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
-            redisTemplatePost.opsForValue().set(postId, post);
-            zSetOperations.add(tag, postId, timeStamp);
-            zSetOperations.removeRange(tag, 0, (numberOfTopInCache + 1) * -1);
+            postCacheDtoRedisTemplate.opsForValue().set(postId, post);
+            stringZSetOperations.add(tag, postId, timeStamp);
+            stringZSetOperations.removeRange(tag, 0, (numberOfTopInCache + 1) * -1);
         });
     }
 
@@ -49,14 +49,14 @@ public class PostCacheService {
                                   List<String> delTags, boolean toDeletePost) {
         log.info("Save changes of post: {}", post);
         if (toDeletePost) {
-            redisTemplatePost.delete(postId);
+            postCacheDtoRedisTemplate.delete(postId);
         } else {
-            redisTemplatePost.opsForValue().set(postId, post);
+            postCacheDtoRedisTemplate.opsForValue().set(postId, post);
         }
-        delTags.forEach(tag -> zSetOperations.remove(tag, postId));
+        delTags.forEach(tag -> stringZSetOperations.remove(tag, postId));
         newTags.forEach(tag -> {
-            zSetOperations.add(tag, postId, timestamp);
-            zSetOperations.removeRange(tag, 0, (numberOfTopInCache + 1) * -1);
+            stringZSetOperations.add(tag, postId, timestamp);
+            stringZSetOperations.removeRange(tag, 0, (numberOfTopInCache + 1) * -1);
         });
     }
 
@@ -64,9 +64,9 @@ public class PostCacheService {
     public List<PostCacheDto> findInRangeByHashTag(String tag, int start, int end) {
         log.info("Find posts by tag: {}, in range, start: {}, end: {}", tag, start, end);
         try {
-            Set<String> postIds = zSetOperations.reverseRange(tag, start, end);
+            Set<String> postIds = stringZSetOperations.reverseRange(tag, start, end);
             if (postIds != null) {
-                return redisTemplatePost.opsForValue().multiGet(postIds);
+                return postCacheDtoRedisTemplate.opsForValue().multiGet(postIds);
             } else {
                 log.warn("Ids by tag: {} is null", tag);
                 return List.of();
@@ -81,20 +81,20 @@ public class PostCacheService {
     public List<String> filterByTagsInCache(List<String> tags) {
         return tags
                 .stream()
-                .filter(tag -> Boolean.TRUE.equals(redisTemplatePost.hasKey(tag)))
+                .filter(tag -> Boolean.TRUE.equals(postCacheDtoRedisTemplate.hasKey(tag)))
                 .toList();
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
     public boolean postIsInCache(String postId) {
-        return Boolean.TRUE.equals(redisTemplatePost.hasKey(postId));
+        return Boolean.TRUE.equals(postCacheDtoRedisTemplate.hasKey(postId));
     }
 
     public boolean isRedisConnected() {
         try {
             log.info("Redis connection check");
             String pingResponse =
-                    Objects.requireNonNull(redisTemplatePost.getConnectionFactory()).getConnection().ping();
+                    Objects.requireNonNull(postCacheDtoRedisTemplate.getConnectionFactory()).getConnection().ping();
             return PONG.equals(pingResponse);
         } catch (RedisConnectionFailureException exception) {
             log.error("Redis connection failure:", exception);

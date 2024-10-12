@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableTransactionManagement
 public class RedisConfig {
-
     @Value("${spring.data.redis.host}")
     private String host;
 
@@ -29,41 +28,31 @@ public class RedisConfig {
     }
 
     @Bean
-    public StringRedisSerializer stringRedisSerializer() {
-        return new StringRedisSerializer();
+    public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory connectionFactory) {
+        return buildRedisTemplate(connectionFactory, Object.class);
     }
 
     @Bean
-    public RedisTemplate<String, Object> objectRedisTemplate(JedisConnectionFactory connectionFactory,
-                                                             StringRedisSerializer stringRedisSerializer) {
-        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
-        return buildRedisTemplate(connectionFactory, stringRedisSerializer, serializer);
+    public RedisTemplate<String, String> stringValueRedisTemplate(JedisConnectionFactory connectionFactory) {
+        return buildRedisTemplate(connectionFactory, String.class);
     }
 
     @Bean
-    public RedisTemplate<String, String> redisTemplate(JedisConnectionFactory connectionFactory,
-                                                       StringRedisSerializer stringRedisSerializer) {
-        Jackson2JsonRedisSerializer<String> serializer = new Jackson2JsonRedisSerializer<>(String.class);
-        return buildRedisTemplate(connectionFactory, stringRedisSerializer, serializer);
+    public ZSetOperations<String, String> stringZSetOperations(RedisTemplate<String, String> stringValueRedisTemplate) {
+        return stringValueRedisTemplate.opsForZSet();
     }
 
     @Bean
-    public ZSetOperations<String, String> zSetOperations(RedisTemplate<String, String> redisTemplate) {
-        return redisTemplate.opsForZSet();
+    public RedisTemplate<String, PostCacheDto> postCacheDtoRedisTemplate(JedisConnectionFactory connectionFactory) {
+        return buildRedisTemplate(connectionFactory, PostCacheDto.class);
     }
 
-    @Bean
-    public RedisTemplate<String, PostCacheDto> postCacheDtoRedisTemplate(JedisConnectionFactory connectionFactory,
-                                                                         StringRedisSerializer stringRedisSerializer) {
-        Jackson2JsonRedisSerializer<PostCacheDto> serializer = new Jackson2JsonRedisSerializer<>(PostCacheDto.class);
-        return buildRedisTemplate(connectionFactory, stringRedisSerializer, serializer);
-    }
-
-    private <T> RedisTemplate<String, T> buildRedisTemplate(JedisConnectionFactory connectionFactory,
-                                                            StringRedisSerializer stringRedisSerializer,
-                                                            Jackson2JsonRedisSerializer<T> serializer) {
+    private <T> RedisTemplate<String, T> buildRedisTemplate(JedisConnectionFactory connectionFactory, Class<T> clazz) {
         RedisTemplate<String, T> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
+
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<T> serializer = new Jackson2JsonRedisSerializer<>(clazz);
 
         template.setKeySerializer(stringRedisSerializer);
         template.setValueSerializer(serializer);
