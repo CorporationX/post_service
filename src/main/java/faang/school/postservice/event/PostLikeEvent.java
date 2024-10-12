@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.like;
+package faang.school.postservice.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class LikeEvent {
+public class PostLikeEvent {
     private long postId;
-    private long authorPostId;
+    private long postAuthorId;
     private long likeAuthorId;
 }

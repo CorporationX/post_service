@@ -1,18 +1,26 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.cache.entity.PostCache;
+import faang.school.postservice.cache.entity.UserCache;
 import faang.school.postservice.cache.repository.PostCacheRepository;
+import faang.school.postservice.cache.repository.UserCacheRepository;
 import faang.school.postservice.client.HashtagServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.hashtag.HashtagResponse;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostResponse;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.PostEvent;
+import faang.school.postservice.event.PostViewEvent;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostEventProducer;
+import faang.school.postservice.producer.KafkaPostViewEventProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
@@ -64,8 +72,8 @@ public class PostServiceTest {
 
     @Mock
     private SpellCheckerService spellCheckerService;
-
-
+    @Mock
+    private UserServiceClient userServiceClient;
     @Mock
     private PostMapper postMapper;
 
@@ -90,9 +98,17 @@ public class PostServiceTest {
 
     @Mock
     private UserContext userContext;
+    @Mock
+    private KafkaPostEventProducer kafkaPostEventProducer;
+    @Mock
+    private UserCacheRepository userCacheRepository;
+    @Mock
+    private KafkaPostViewEventProducer kafkaPostViewEventProducer;
 
     @Captor
     private ArgumentCaptor<PostCache> postCacheArgumentCaptor;
+    private Long userId;
+    private UserDto userDto;
     private PostDto postDto;
     private Post post;
     private List<Post> draftPosts;
@@ -107,6 +123,10 @@ public class PostServiceTest {
     public void setUp() {
         long firstPostId = 1L;
         long secondPostId = 2L;
+        userId = 3L;
+        userDto = UserDto.builder()
+                .id(userId)
+                .build();
         String firstPostContent = "FirstPostContent";
         String secondPostContent = "SecondPostContent";
 
@@ -221,6 +241,9 @@ public class PostServiceTest {
     @Test
     @DisplayName("Test creating a new post")
     public void testCreatePost() {
+        when(userContext.getUserId()).thenReturn(userId);
+        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+
         doNothing().when(postServiceValidator).validateCreatePost(postDto);
         doNothing().when(hashtagServiceClient).saveHashtags(hashtagRequest);
         when(hashtagServiceClient.getHashtagsByNames(hashtagRequest)).thenReturn(new HashtagResponse(hashtags));
@@ -228,6 +251,7 @@ public class PostServiceTest {
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
         postDto.setHashtagNames(hashtagNames);
+
         PostDto result = postService.createPost(postDto);
 
         verify(postServiceValidator, times(1)).validateCreatePost(postDto);
@@ -237,6 +261,8 @@ public class PostServiceTest {
         assertEquals(postDto, result);
         verify(postEventPublisher, times(1)).publish(any());
         verify(postCacheRepository, times(1)).save(postCacheArgumentCaptor.capture());
+        verify(userCacheRepository, times(1)).save(any(UserCache.class));
+        verify(kafkaPostEventProducer, times(1)).sendMessage(any(PostEvent.class));
     }
 
     @Test
@@ -343,8 +369,10 @@ public class PostServiceTest {
     @DisplayName("Test getting a post by its ID when the post is found")
     public void testGetPostByPostIdPostFound() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
         postService.getPostDtoById(1L);
 
+        verify(kafkaPostViewEventProducer, times(1)).sendMessage(any(PostViewEvent.class));
         verify(postMapper, times(1)).toDto(post);
     }
 

@@ -8,14 +8,17 @@ import faang.school.postservice.cache.repository.UserCacheRepository;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.PostEvent;
+import faang.school.postservice.event.PostViewEvent;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostEventProducer;
+import faang.school.postservice.producer.KafkaPostViewEventProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
@@ -43,6 +46,15 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class PostService {
+    @Value("${spring.data.hashtag-cache.size.post-cache-size}")
+    private int postCacheSize;
+
+    @Value("${spring.data.redis.cache.post.ttl}")
+    private long postTtl;
+
+    @Value("${spring.data.redis.cache.user.ttl}")
+    private long userTtl;
+
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
     private final SpellCheckerService spellCheckerService;
@@ -56,15 +68,9 @@ public class PostService {
     private final UserContext userContext;
     private final PostCacheRepository postCacheRepository;
     private final UserCacheRepository userCacheRepository;
+    private final KafkaPostEventProducer kafkaPostEventProducer;
+    private final KafkaPostViewEventProducer kafkaPostViewEventProducer;
 
-    @Value("${spring.data.hashtag-cache.size.post-cache-size}")
-    private int postCacheSize;
-
-    @Value("${spring.data.redis.cache.post.ttl}")
-    private long postTtl;
-
-    @Value("${spring.data.redis.cache.user.ttl}")
-    private long userTtl;
 
     @Async(value = "threadPool")
     @Transactional
@@ -99,9 +105,19 @@ public class PostService {
         PostCache postCache = new PostCache(post.getId(), postDtoForReturns, postTtl);
         postCacheRepository.save(postCache);
 
-        UserDto userDto = userServiceClient.getUser(userContext.getUserId());
-        UserCache userCache = new UserCache(userDto.getId(), userDto, userTtl);
+        UserDto authorDto = userServiceClient.getUser(userContext.getUserId());
+        UserCache userCache = new UserCache(authorDto.getId(), authorDto, userTtl);
         userCacheRepository.save(userCache);
+
+        List<Long> userFollowers = userServiceClient.getUserFollowers(authorDto.getId())
+                .stream().map(UserDto::getId).toList();
+
+        PostEvent postEvent = PostEvent.builder()
+                .postId(post.getId())
+                .authorId(authorDto.getId())
+                .subscribersId(userFollowers)
+                .build();
+        kafkaPostEventProducer.sendMessage(postEvent);
 
         return postDtoForReturns;
     }
@@ -147,7 +163,9 @@ public class PostService {
     }
 
     public PostDto getPostDtoById(Long postId) {
-        return postMapper.toDto(getPostById(postId));
+        Post post = getPostById(postId);
+        publishPostViewToKafka(post);
+        return postMapper.toDto(post);
     }
 
     public List<PostDto> getAllDraftPostsByUserId(Long userId) {
@@ -212,7 +230,6 @@ public class PostService {
         }
         countLike = post.getLikes().size();
         context.getCountLikeEveryonePost().put(postId, countLike);
-
         return post;
     }
 
@@ -220,8 +237,12 @@ public class PostService {
         return elasticsearchService.searchPostsByHashtag(hashtagName, page, size);
     }
 
+    @Transactional
     public List<PostDto> getPostsByIds(List<Long> postIds) {
-        return postMapper.toDto(postRepository.findPostsByIds(postIds));
+        List<Post> postsByIds = postRepository.findPostsByIds(postIds);
+        return postsByIds.stream()
+                .peek(this::publishPostViewToKafka).map(postMapper::toDto)
+                .toList();
     }
 
     private List<Post> sortPostsByCreateAt(List<Post> posts) {
@@ -268,5 +289,13 @@ public class PostService {
         log.info("Hashtags request was completed successfully");
 
         return hashtags;
+    }
+
+    private void publishPostViewToKafka(Post post) {
+        PostViewEvent postViewEvent = PostViewEvent.builder()
+                .postId(post.getId())
+                .userId(userContext.getUserId())
+                .build();
+        kafkaPostViewEventProducer.sendMessage(postViewEvent);
     }
 }
