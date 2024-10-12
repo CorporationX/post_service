@@ -37,7 +37,7 @@ dependencies {
     /**
      * AmazonS3
      */
-    implementation("com.amazonaws:aws-java-sdk-s3:1.12.772")
+    implementation("io.github.fuquanming:fqm-file-amazons3:1.0.9")
 
     /**
      * Change Image Dimension
@@ -79,6 +79,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.github.hakky54:logcaptor:2.9.3")
+    testImplementation("org.assertj:assertj-core:3.26.3")
 
     /**
      * Jacoco
