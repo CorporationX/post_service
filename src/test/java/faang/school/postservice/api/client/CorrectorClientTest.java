@@ -2,22 +2,23 @@ package faang.school.postservice.api.client;
 
 import faang.school.postservice.config.corrector.CorrectorClientConfig;
 import faang.school.postservice.config.corrector.CorrectorClientParams;
-import faang.school.postservice.exception.CorrectorApiException;
+import faang.school.postservice.dto.post.corrector.ApiResponse;
+import faang.school.postservice.dto.post.corrector.AutoCorrectionResponse;
+import faang.school.postservice.dto.post.corrector.CheckResponse;
+import faang.school.postservice.dto.post.corrector.Error;
+import faang.school.postservice.dto.post.corrector.LanguageResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Map;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CorrectorClientTest {
     private CorrectorClient correctorClient;
-    private final Map<String, String> dialects = Map.ofEntries(
-            Map.entry("en", "en-US"),
-            Map.entry("ru", "ru-RU"));
 
     @BeforeEach
     void setUp() {
@@ -27,61 +28,67 @@ class CorrectorClientTest {
         CorrectorClientConfig config = new CorrectorClientConfig(params);
         WebClient webClient = config.correctorWebClient();
         correctorClient = new CorrectorClient(webClient);
-        correctorClient.setDialects(dialects);
     }
 
     @Test
-    @DisplayName("Get dialect of english content")
-    void correctorClientTest_getDialectOfEnglishContent() {
-        String content = "My name is  test";
-        String expected = "en-US";
+    @DisplayName("Get language of english content")
+    void correctorClientTest_getLanguageOfEnglishContent() {
+        String content = "My name is test";
+        String expectedLanguage = "en";
 
-        String result = correctorClient.getContentLanguageDialect(content);
+        ApiResponse<LanguageResponse> result = correctorClient.getContentLanguageResponse(content);
+        String resultLanguage = result.response().language();
 
-        assertEquals(expected, result);
+        assertTrue(result.status());
+        assertEquals(expectedLanguage, resultLanguage);
     }
 
     @Test
     @DisplayName("Get dialect of russian content")
     void correctorClientTest_getDialectOfRussianContent() {
         String content = "Мое имя тест";
-        String expected = "ru-RU";
+        String expectedLanguage = "ru";
 
-        String result = correctorClient.getContentLanguageDialect(content);
+        ApiResponse<LanguageResponse> result = correctorClient.getContentLanguageResponse(content);
+        String resultLanguage = result.response().language();
 
-        assertEquals(expected, result);
+        assertTrue(result.status());
+        assertEquals(expectedLanguage, resultLanguage);
     }
 
     @Test
-    @DisplayName("Get  dialect of unknown language")
-    void correctorClientTest_getDialectOfUnknownLanguage() {
-        String content = "My name test";
-        correctorClient.setDialects(Map.of("ru", "ru-RU"));
-
-        assertThrows(CorrectorApiException.class, () -> correctorClient.getContentLanguageDialect(content));
-    }
-
-    @Test
-    @DisplayName("Autro correct english text")
+    @DisplayName("Auto correct english text")
     void correctorClientTest_autoCorrectEnglishText() {
         String content = "My name are test";
         String dialect = "en-US";
         String expected = "My name is Test";
 
-        String result = correctorClient.getAutoCorrectedEnglishText(content, dialect);
+        ApiResponse<AutoCorrectionResponse> result =
+                correctorClient.getAutoCorrectedEnglishTextResponse(content, dialect);
+        String correctedResult = result.response().corrected();
 
-        assertEquals(expected, result);
+        assertTrue(result.status());
+        assertEquals(expected, correctedResult);
     }
 
     @Test
-    @DisplayName("Correct non english text")
-    void correctorClientTest_correctNonEnglishText() {
+    @DisplayName("Get checking response for non english text")
+    void correctorClientTest_getCheckingResponseForNonEnglishText() {
         String content = "Я втарой";
         String dialect = "ru-RU";
-        String expected = "Я второй.";
+        Error expected = Error.builder()
+                .offset(2)
+                .length(6)
+                .bad("втарой")
+                .better(List.of("второй."))
+                .type("grammar")
+                .build();
 
-        String result = correctorClient.getCorrectedNonEnglishText(content, dialect);
+        ApiResponse<CheckResponse> result = correctorClient.getCheckResponseForNonEnglishText(content, dialect);
+        List<Error> errors = result.response().errors();
 
-        assertEquals(expected, result);
+        assertTrue(result.status());
+        assertEquals(1, errors.size());
+        assertEquals(expected, errors.get(0));
     }
 }

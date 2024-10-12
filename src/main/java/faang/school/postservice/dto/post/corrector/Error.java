@@ -6,7 +6,6 @@ import java.util.List;
 
 @Builder
 public record Error(
-        String id,
         int offset,
         int length,
         String bad,

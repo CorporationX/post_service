@@ -27,10 +27,7 @@ public class CorrectorScheduler {
     public void correctNotPublishedPostsContent() {
         try {
             List<Post> posts = postRepository.findAllNotPublishedPosts();
-            posts.forEach(post -> {
-                String correctedContent = postCorrector.correctPost(post);
-                post.setContent(correctedContent);
-            });
+            posts.forEach(postCorrector::correctPost);
             postRepository.saveAll(posts);
         } catch (Exception e) {
             log.error("Exception was thrown when trying to correct post", e);

@@ -1,7 +1,14 @@
 package faang.school.postservice.api;
 
 import faang.school.postservice.api.client.CorrectorClient;
+import faang.school.postservice.dto.post.corrector.ApiResponse;
+import faang.school.postservice.dto.post.corrector.AutoCorrectionResponse;
+import faang.school.postservice.dto.post.corrector.CheckResponse;
+import faang.school.postservice.dto.post.corrector.Error;
+import faang.school.postservice.dto.post.corrector.LanguageResponse;
+import faang.school.postservice.exception.CorrectorApiException;
 import faang.school.postservice.model.Post;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +16,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,41 +34,131 @@ class PostCorrectorTest {
     @InjectMocks
     private PostCorrector postCorrector;
 
-    @Test
-    @DisplayName("Correct post english content")
-    void postCorrectorTest_correctPostContent() {
-        Post post = Post.builder()
-                .id(1L)
+    private Post post;
+
+    @BeforeEach
+    void setUp() {
+        postCorrector.setDialects(Map.of(
+                "ru", "ru-RU",
+                "en", "en-US"));
+        post = Post.builder()
                 .content("text")
                 .build();
-        String dialect = "en-US";
-        String expected = "corrected text";
-        when(correctorClient.getContentLanguageDialect(post.getContent())).thenReturn(dialect);
-        when(correctorClient.getAutoCorrectedEnglishText(post.getContent(), dialect)).thenReturn(expected);
-
-        String result = postCorrector.correctPost(post);
-
-        verify(correctorClient).getContentLanguageDialect(post.getContent());
-        verify(correctorClient).getAutoCorrectedEnglishText(post.getContent(), dialect);
-        assertEquals(expected, result);
     }
 
     @Test
-    @DisplayName("Correct post russian content")
-    void postCorrectorTest_correctPostRussianContent() {
-        Post post = Post.builder()
-                .id(1L)
-                .content("текст")
+    @DisplayName("Correct english post")
+    void postCorrectorTest_correctEnglishPost() {
+        String expectedContent = "corrected text";
+        ApiResponse<LanguageResponse> languageResponse =
+                initApiLanguageResponse(true, "en", 0, "");
+        ApiResponse<AutoCorrectionResponse> autoCorrectionResponseApiResponse =
+                initApiAutoCorrectionResponse(true, expectedContent, 0, "");
+
+        when(correctorClient.getContentLanguageResponse(any())).thenReturn(languageResponse);
+        when(correctorClient.getAutoCorrectedEnglishTextResponse(any(), any()))
+                .thenReturn(autoCorrectionResponseApiResponse);
+
+        postCorrector.correctPost(post);
+        verify(correctorClient).getContentLanguageResponse(any());
+        verify(correctorClient).getAutoCorrectedEnglishTextResponse(any(), any());
+        assertEquals(expectedContent, post.getContent());
+    }
+
+    @Test
+    @DisplayName("Correct russian post")
+    void postCorrectorTest_correctRussianPost() {
+        post.setContent("Я втарой");
+        String expectedContent = "Я второй.";
+        Error error = Error.builder()
+                .offset(2)
+                .length(6)
+                .bad("втарой")
+                .better(List.of("второй."))
                 .build();
-        String dialect = "ru-RU";
-        String expected = "corrected text";
-        when(correctorClient.getContentLanguageDialect(post.getContent())).thenReturn(dialect);
-        when(correctorClient.getCorrectedNonEnglishText(post.getContent(), dialect)).thenReturn(expected);
+        ApiResponse<LanguageResponse> languageResponse =
+                initApiLanguageResponse(true, "ru", 0, "");
+        ApiResponse<CheckResponse> checkResponse =
+                initApiCheckResponse(true, List.of(error), 0, "");
 
-        String result = postCorrector.correctPost(post);
+        when(correctorClient.getContentLanguageResponse(any())).thenReturn(languageResponse);
+        when(correctorClient.getCheckResponseForNonEnglishText(any(), any())).thenReturn(checkResponse);
 
-        assertEquals(expected, result);
-        verify(correctorClient).getContentLanguageDialect(post.getContent());
-        verify(correctorClient).getCorrectedNonEnglishText(post.getContent(), dialect);
+        postCorrector.correctPost(post);
+
+        verify(correctorClient).getContentLanguageResponse(any());
+        verify(correctorClient).getCheckResponseForNonEnglishText(any(), any());
+        assertEquals(expectedContent, post.getContent());
+    }
+
+    @Test
+    @DisplayName("Correct post with unknown language")
+    void postCorrectorTest_correctPostWithUnknownLanguage() {
+        ApiResponse<LanguageResponse> languageResponse =
+                initApiLanguageResponse(true, "unknown", 0, "");
+        when(correctorClient.getContentLanguageResponse(any())).thenReturn(languageResponse);
+
+        assertThrows(CorrectorApiException.class, () -> postCorrector.correctPost(post));
+        verify(correctorClient).getContentLanguageResponse(any());
+    }
+
+    @Test
+    @DisplayName("Correct post with false language response")
+    void postCorrectorTest_correctPostWithFalseLanguageResponse() {
+        ApiResponse<LanguageResponse> languageResponse =
+                initApiLanguageResponse(false, null, 1, "error");
+        when(correctorClient.getContentLanguageResponse(any())).thenReturn(languageResponse);
+
+        assertThrows(CorrectorApiException.class, () -> postCorrector.correctPost(post));
+        verify(correctorClient).getContentLanguageResponse(any());
+    }
+
+    @Test
+    @DisplayName("Correct english post with false auto correction response")
+    void postCorrectorTest_correctEnglishPostWithFalseAutoCorrectionResponse() {
+        ApiResponse<LanguageResponse> languageResponse =
+                initApiLanguageResponse(true, "en", 0, "");
+        ApiResponse<AutoCorrectionResponse> autoCorrectionResponseApiResponse =
+                initApiAutoCorrectionResponse(false, null, 1, "error");
+
+        when(correctorClient.getContentLanguageResponse(any())).thenReturn(languageResponse);
+        when(correctorClient.getAutoCorrectedEnglishTextResponse(any(), any()))
+                .thenReturn(autoCorrectionResponseApiResponse);
+
+        assertThrows(CorrectorApiException.class, () -> postCorrector.correctPost(post));
+        verify(correctorClient).getContentLanguageResponse(any());
+        verify(correctorClient).getAutoCorrectedEnglishTextResponse(any(), any());
+    }
+
+    @Test
+    @DisplayName("Correct non-english post with false check response")
+    void postCorrectorTest_correctNonEnglishPostWithFalseCheckResponse() {
+        ApiResponse<LanguageResponse> languageResponse =
+                initApiLanguageResponse(true, "ru", 0, "");
+        ApiResponse<CheckResponse> checkResponse =
+                initApiCheckResponse(false, null, 1, "error");
+
+        when(correctorClient.getContentLanguageResponse(any())).thenReturn(languageResponse);
+        when(correctorClient.getCheckResponseForNonEnglishText(any(), any())).thenReturn(checkResponse);
+
+        assertThrows(CorrectorApiException.class, () -> postCorrector.correctPost(post));
+        verify(correctorClient).getContentLanguageResponse(any());
+        verify(correctorClient).getCheckResponseForNonEnglishText(any(), any());
+    }
+
+
+    private ApiResponse<LanguageResponse> initApiLanguageResponse(
+            boolean status, String language, int errorCode, String description) {
+        return new ApiResponse<>(status, new LanguageResponse(language), errorCode, description);
+    }
+
+    private ApiResponse<AutoCorrectionResponse> initApiAutoCorrectionResponse(
+            boolean status, String correctedText, int errorCode, String description) {
+        return new ApiResponse<>(status, new AutoCorrectionResponse(correctedText), errorCode, description);
+    }
+
+    private ApiResponse<CheckResponse> initApiCheckResponse(
+            boolean status, List<Error> errors, int errorCode, String description) {
+        return new ApiResponse<>(status, new CheckResponse(errors), errorCode, description);
     }
 }

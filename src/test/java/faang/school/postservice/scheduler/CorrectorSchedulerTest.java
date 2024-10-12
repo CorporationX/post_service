@@ -39,14 +39,12 @@ class CorrectorSchedulerTest {
                 Post.builder().build(),
                 Post.builder().build());
         when(postRepository.findAllNotPublishedPosts()).thenReturn(posts);
-        when(postCorrector.correctPost(any(Post.class))).thenReturn("corrected");
 
         correctorScheduler.correctNotPublishedPostsContent();
 
         verify(postRepository).findAllNotPublishedPosts();
         verify(postCorrector, times(posts.size())).correctPost(any(Post.class));
         verify(postRepository).saveAll(posts);
-        assertTrue(posts.stream().allMatch(post -> post.getContent().equals("corrected")));
     }
 
     @Test
