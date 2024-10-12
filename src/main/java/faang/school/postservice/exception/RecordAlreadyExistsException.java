@@ -1,7 +1,9 @@
 package faang.school.postservice.exception;
 
-public class RecordAlreadyExistsException extends IllegalStateException {
+import org.springframework.http.HttpStatus;
+
+public class RecordAlreadyExistsException extends ApiException {
     public RecordAlreadyExistsException(String message) {
-        super(message);
+        super(message, HttpStatus.CONFLICT);
     }
 }

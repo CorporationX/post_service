@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleApiException(ApiException exception) {
         Map<String, Object> body = new HashMap<>();
         body.put("message", exception.getMessage());
-
+        log.error("ApiException: {}", exception.getMessage(), exception);
         return new ResponseEntity<>(body, exception.getHttpStatus());
     }
 
@@ -43,16 +43,6 @@ public class GlobalExceptionHandler {
                         .errorFields(ex.getErrorFields())
                         .build(),
                 HttpStatus.BAD_REQUEST
-        );
-    }
-
-    @ExceptionHandler(CommentNotFoundException.class)
-    public ResponseEntity<?> handleCommentNotFoundException(CommentNotFoundException ex) {
-        return new ResponseEntity<>(
-                ErrorResponse.builder()
-                        .message(ex.getMessage())
-                        .build(),
-                HttpStatus.NOT_FOUND
         );
     }
 
@@ -93,24 +83,6 @@ public class GlobalExceptionHandler {
                         .build(),
                 HttpStatus.BAD_REQUEST
         );
-    }
-
-    @ExceptionHandler(LikeNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleLikeNotFoundException(LikeNotFoundException e) {
-        log.error("LikeNotFoundException occurred: {}", e.getMessage(), e);
-        return ErrorResponse.builder()
-                .message(e.getMessage())
-                .build();
-    }
-
-    @ExceptionHandler(RecordAlreadyExistsException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleRecordAlreadyExistsException(RecordAlreadyExistsException e) {
-        log.error("RecordAlreadyExistsException occurred: {}", e.getMessage(), e);
-        return ErrorResponse.builder()
-                .message(e.getMessage())
-                .build();
     }
 
     @ExceptionHandler(UserNotFoundException.class)

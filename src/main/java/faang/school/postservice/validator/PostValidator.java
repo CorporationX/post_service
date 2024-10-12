@@ -1,8 +1,10 @@
 package faang.school.postservice.validator;
 
 import faang.school.postservice.client.ProjectServiceClientMock;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.VerificationPostStatus;
 import lombok.AllArgsConstructor;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
@@ -10,6 +12,13 @@ import faang.school.postservice.utils.ImageProcessingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+import static faang.school.postservice.utils.ImageRestrictionRule.POST_IMAGES;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+
 
 @Component
 @RequiredArgsConstructor
@@ -19,7 +28,7 @@ public class PostValidator {
     private int imagesMaxNumber;
 
     private final ResourceRepository resourceRepository;
-    private final UserServiceClientMock userServiceClient;
+    private final UserServiceClient userServiceClient;
     private final ProjectServiceClientMock projectServiceClient;
 
     public void validateCreatePost(Post post) {

@@ -5,11 +5,20 @@ import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
+import faang.school.postservice.repository.ResourceRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -32,16 +41,7 @@ public class PostValidatorTest {
     @InjectMocks
     private PostValidator postValidator;
     @Mock
-    private MultipartFile image;
-    @Mock
     private UserValidator userValidator;
-    @InjectMocks
-    private PostValidator postValidator;
-
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(postValidator, "imagesMaxNumber", IMAGES_MAX_NUMBER);
-    }
 
     @BeforeEach
     void setUp() {
@@ -87,7 +87,6 @@ public class PostValidatorTest {
         Post createPost = Post.builder()
                 .authorId(authorId)
                 .build();
-        doThrow(UserNotFoundException.class).when(userValidator).validateUserExists(createPost.getAuthorId());
         doThrow(new UserNotFoundException("User with ID " + authorId + " not found.")).when(userValidator).validateUserExists(authorId);
 
         assertThrows(UserNotFoundException.class, () -> postValidator.validateCreatePost(createPost));

@@ -9,7 +9,6 @@ import faang.school.postservice.model.Resource;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.ArrayList;
@@ -20,6 +19,8 @@ public interface PostMapper {
     @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "mapResourcesToResourceIds")
     @Mapping(target = "likes", expression = "java(post.getLikes() != null ? post.getLikes().size() : 0)")
     PostResponseDto toDto(Post post);
+
+    List<PostResponseDto> toDtos(List<Post> post);
 
     Post toEntity(CreatePostRequestDto dto);
 
