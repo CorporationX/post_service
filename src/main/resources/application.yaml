@@ -11,7 +11,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -24,9 +24,9 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
+        calculationsChannel:
           name: calculations_channel
-        new_comment_channel:
+        newCommentChannel:
           name: new_comment_channel
 
 server:
@@ -60,7 +60,7 @@ payment-service:
 moderate:
   comments:
     initialDelay: 5000
-    fixedDelay: 3600000
+    fixedDelay: 15000
 
 dictionary:
   offensive:
