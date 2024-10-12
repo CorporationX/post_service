@@ -18,11 +18,11 @@ public class PostDto {
     private long id;
     @NotBlank(message = "Пост должен содержать текст.")
     private String content;
-    @Min(value = 0, message = "АйДи автора должно быть положительным.")
-    @NotNull(message = "АйДи автора не может быть пустым.")
+    @Min(value = 0, message = "Id автора должно быть положительным.")
+    @NotNull(message = "Id автора не может быть пустым.")
     private Long authorId;
-    @Min(value = 0, message = "АйДи проекта должно быть положительным.")
-    @NotNull(message = "АйДи проекта не может быть пустым.")
+    @Min(value = 0, message = "Id проекта должно быть положительным.")
+    @NotNull(message = "Id проекта не может быть пустым.")
     private Long projectId;
     boolean published;
 
