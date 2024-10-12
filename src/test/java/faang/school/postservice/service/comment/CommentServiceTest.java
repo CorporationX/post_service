@@ -1,9 +1,11 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.comment.RedisCommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.CommentValidator;
@@ -22,7 +24,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,6 +39,10 @@ class CommentServiceTest {
     private CommentValidator commentValidator;
     @Mock
     private PostService postService;
+    @Mock
+    private RedisCommentEventPublisher commentEventPublisher;
+    @Captor
+    private ArgumentCaptor<CommentEvent> commentEventCaptor;
     @Captor
     private ArgumentCaptor<Comment> commentCaptor;
     @InjectMocks
@@ -57,16 +65,29 @@ class CommentServiceTest {
 
     @Test
     void testCreateComment() {
-        Post post = Post.builder().id(postId).build();
-        Comment comment = Comment.builder().content(content).build();
+        Long postAuthorId = 3L;
+        Post post = Post.builder().id(postId).authorId(postAuthorId).build();
+        Comment comment = Comment.builder().authorId(authorId).content(content).build();
+        Comment savedComment = Comment.builder().id(10L).authorId(authorId).content(content).post(post).build();
 
         when(postService.findPostById(postId)).thenReturn(post);
+        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
+
         commentService.createComment(postId, comment);
 
         verify(commentValidator).validateCreate(postId, comment);
+
         verify(commentRepository).save(commentCaptor.capture());
         assertEquals(postId, commentCaptor.getValue().getPost().getId());
         assertEquals(content, commentCaptor.getValue().getContent());
+
+        verify(commentEventPublisher).publish(commentEventCaptor.capture());
+
+        CommentEvent capturedEvent = commentEventCaptor.getValue();
+        assertEquals(postId, capturedEvent.getPostId());
+        assertEquals(authorId, capturedEvent.getAuthorId());
+        assertEquals(savedComment.getId(), capturedEvent.getCommentId());
+        assertNotNull(capturedEvent.getTimestamp());
     }
 
     @Test
