@@ -35,7 +35,7 @@ public class PostPublisher {
         }
 
         try {
-            postService.savePostBySchedule(postsFromDB.get().stream().toList());
+            postService.savePosts(postsFromDB.get().stream().toList());
         } catch (InterruptedException | ExecutionException e) {
             log.error("PostPublisher. Error save post", e);
             throw new RuntimeException("PostPublisher. Failed to save post due to async operation failure", e);

@@ -85,7 +85,7 @@ public class S3Service {
 
     private String putObjectsToS3(MultipartFile file) {
         try {
-            String fileName = generationUniqueName();
+            String fileName = generateUniqueName();
             var metadata = new ObjectMetadata();
             metadata.setContentLength(file.getSize());
             metadata.setContentType(file.getContentType());
@@ -115,7 +115,7 @@ public class S3Service {
         return resources;
     }
 
-    private String generationUniqueName() {
+    private String generateUniqueName() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }

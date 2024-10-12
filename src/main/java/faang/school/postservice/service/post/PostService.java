@@ -22,7 +22,7 @@ public class PostService {
         return postRepository.findReadyToPublish();
     }
 
-    public void savePostBySchedule(List<Post> posts) {
+    public void savePosts(List<Post> posts) {
         postRepository.saveAll(posts);
     }
 
