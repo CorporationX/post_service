@@ -46,6 +46,9 @@ spring:
           name: like
           partitions: 3
           replicas: 1
+      producer:
+        retries: 3
+        retry-backoff-ms: 1000
 
   aws:
     s3:
@@ -106,6 +109,16 @@ payment-service:
 feed:
   kafka:
     subscribers-batch-size: 1000
+  async:
+    pool_size: 8
+    queue_capacity: 50
+
+feign:
+  client:
+    config:
+      default:
+        retryer:
+          enabled: true
 
 #springdoc:
 #  api-docs:

@@ -1,6 +1,7 @@
 package faang.school.postservice.client;
 
 import faang.school.postservice.dto.user.UserDto;
+import jakarta.validation.constraints.Min;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,7 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}/api")
+@FeignClient(name = "user-service",
+        url = "${user-service.host}:${user-service.port}/api",
+        configuration = FeignConfig.class)
 public interface UserServiceClient {
 
     @GetMapping("/users/{userId}")
@@ -17,4 +20,9 @@ public interface UserServiceClient {
 
     @PostMapping("/users/")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
+    @GetMapping("/subscription/{followeeId}/followerids")
+    public List<Long> getFollowerIdsByFolloweeId(
+            @PathVariable @Min(value = 1L, message = "Followee id cannot be less than 1") long followeeId);
+
 }

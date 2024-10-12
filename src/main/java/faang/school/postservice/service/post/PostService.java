@@ -89,7 +89,7 @@ public class PostService {
         PostEvent postEvent = new PostEvent(post.getAuthorId(), postId);
         postEventPublisher.publish(postEvent);
 
-        feedService.createAndSendPostEvent(postId, post.getAuthorId());
+        feedService.createAndSendFeedPostEvent(postId, post.getAuthorId());
 
         return postMapper.toDto(savedPost);
     }
