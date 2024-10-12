@@ -14,6 +14,7 @@ public class RedisConfig {
 
     @Value("${redis.pubsub.topic:like-event}")
     private String topic;
+
     @Bean
     public ChannelTopic likeEventTopic() {
         return new ChannelTopic(topic);
