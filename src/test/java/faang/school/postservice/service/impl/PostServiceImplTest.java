@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.impl;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class PostServiceTest {
+class PostServiceImplTest {
 
     @Mock
     private PostRepository postRepository;
@@ -46,7 +46,7 @@ class PostServiceTest {
     ModerationDictionary moderationDictionary;
 
     @InjectMocks
-    private PostService postService;
+    private PostServiceImpl postService;
 
     private Post post;
     private PostDto postDto;
