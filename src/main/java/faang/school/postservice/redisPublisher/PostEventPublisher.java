@@ -1,7 +1,7 @@
 package faang.school.postservice.redisPublisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.event.PostEvent;
+import faang.school.postservice.event.PostEvent;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;

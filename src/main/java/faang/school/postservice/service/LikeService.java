@@ -2,15 +2,13 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.LikeEventMapper;
+import faang.school.postservice.event.PostLikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
-import faang.school.postservice.redisPublisher.LikePostPublisher;
+import faang.school.postservice.producer.KafkaPostLikeEventProducer;
 import faang.school.postservice.redisPublisher.PostLikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
@@ -27,8 +25,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class LikeService {
-
-    private final LikeEventPublisher likeEventPublisher;
     @Value("${batch-size}")
     @Setter
     private int BATCH_SIZE;
@@ -40,8 +36,7 @@ public class LikeService {
     private final CommentService commentService;
     private final LikeMapper likeMapper;
     private final PostLikeEventPublisher postLikeEventPublisher;
-    private final LikePostPublisher likePostPublisher;
-    private final LikeEventMapper likeEventMapper;
+    private final KafkaPostLikeEventProducer kafkaPostLikeEventProducer;
 
     public List<UserDto> getLikesUsersByPostId(Long postId) {
 
@@ -92,12 +87,13 @@ public class LikeService {
         Like like = likeMapper.toEntity(likeDto);
 
         post.getLikes().add(like);
+        Like savedLike = likeRepository.save(like);
 
-        long likeId = likeRepository.save(like).getId();
-        likeEventPublisher.publish(new LikeEvent(post.getId(), post.getAuthorId(), likeId));
-        publishEventLikePost(likeDto, post);
+        PostLikeEvent postLikeEvent = likeMapper.toLikePostEvent(like);
+        postLikeEventPublisher.publish(postLikeEvent);
+        kafkaPostLikeEventProducer.sendMessage(postLikeEvent);
 
-        return likeMapper.toLikeDto(like);
+        return likeMapper.toLikeDto(savedLike);
     }
 
     @Transactional
@@ -132,14 +128,5 @@ public class LikeService {
 
         comment.getLikes().remove(like.get().getId());
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
-    }
-
-    private void publishEventLikePost(LikeDto likeDto, Post post) {
-        likePostPublisher.publish(likeEventMapper.mapLikePostEvent(likeDto, post.getAuthorId()));
-
-        postLikeEventPublisher.publish(LikeEvent.builder()
-                .authorLikeId(likeDto.getUserId())
-                .authorPostId(post.getAuthorId())
-                .postId(post.getId()).build());
     }
 }

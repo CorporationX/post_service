@@ -54,6 +54,7 @@ spring:
     hashtag-cache:
       size:
         post-cache-size: 10
+
   services:
     s3:
       endpoint: http://localhost:9000
@@ -75,6 +76,30 @@ spring:
 
   post:
     max-image-quantity: 10
+
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: postGroup
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-serializer: org.apache.kafka.common.serialization.StringDeserializer
+
+    topic:
+      likes:
+        name: likes
+        partitions: 8
+      posts:
+        name: posts
+        partitions: 8
+      posts_view:
+        name: posts_view
+        partitions: 8
 
 server:
   port: 8081
