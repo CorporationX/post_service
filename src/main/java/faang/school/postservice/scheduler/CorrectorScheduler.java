@@ -18,10 +18,10 @@ public class CorrectorScheduler {
     private final PostRepository postRepository;
     private final PostCorrector postCorrector;
 
-//    @PostConstruct
-//    void initialCheck() {
-//        correctNotPublishedPostsContent();
-//    }
+    @PostConstruct
+    void initialCheck() {
+        correctNotPublishedPostsContent();
+    }
 
     @Scheduled(cron = "${post.grammar-checker.scheduler.cron}")
     public void correctNotPublishedPostsContent() {

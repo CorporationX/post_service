@@ -51,7 +51,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         Post post = getPost(postId);
-        //validateAuthor(commentDto.authorId());
+        validateAuthor(commentDto.authorId());
         Comment comment = commentMapper.toComment(commentDto);
         comment.setPost(post);
         commentRepository.save(comment);
