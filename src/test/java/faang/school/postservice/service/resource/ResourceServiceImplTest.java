@@ -1,6 +1,5 @@
 package faang.school.postservice.service.resource;
 
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import faang.school.postservice.exception.FileException;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Post;

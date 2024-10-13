@@ -17,7 +17,6 @@ import java.util.List;
 public class LikeController {
 
     private final LikeService likeService;
-
     @PostMapping("/post")
     public LikeDto likePost(@RequestBody LikeDto likeDto) {
         return likeService.likePost(likeDto);
@@ -37,6 +36,7 @@ public class LikeController {
     public void unlikeComment(@RequestBody @Valid LikeDto likeDto) {
         likeService.unlikeComment(likeDto);
     }
+
     @GetMapping("/post/{postId}")
     public List<UserDto> getUsersByPostId(@PathVariable long postId) {
         return likeService.getUsersLikedPost(postId);
