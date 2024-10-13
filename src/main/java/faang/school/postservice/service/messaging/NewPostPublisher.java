@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class NewPostPublisher implements MessagePublisher<PostDto> {
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic topic;
+    private final ChannelTopic hashtagTopic;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -23,6 +23,6 @@ public class NewPostPublisher implements MessagePublisher<PostDto> {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        redisTemplate.convertAndSend(topic.getTopic(), json);
+        redisTemplate.convertAndSend(hashtagTopic.getTopic(), json);
     }
 }

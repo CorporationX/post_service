@@ -1,8 +1,9 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.messaging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.hashtag.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.service.HashtagService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -31,7 +32,7 @@ class HashtagListenerTest {
     private HashtagService hashtagService;
 
     @InjectMocks
-    private HashtagListener<PostDto> hashtagListener;
+    private HashtagListener hashtagListener;
 
     private Message message;
     private PostDto postDto;
