@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeEventDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.model.EventType;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.publisher.like.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
@@ -100,16 +101,13 @@ public class LikeService {
 
         if(like.getPost() != null){
             LikeEventDto likeEventDto = LikeEventDto.builder()
-                    .postId(like.getPost().getId())
-                    .authorId(like.getPost().getAuthorId())
+                    .postAuthorId(like.getPost().getAuthorId())
                     .likerId(userContext.getUserId())
+                    .eventType(EventType.POST_LIKE)
                     .createdAt(LocalDateTime.now())
                     .build();
             likeEventPublisher.publish(likeEventDto);
         }
-        //todo likeEvent publish
-        //todo if present postId , like.getPost().getAuthorId(), userContext.getUser(), localDateTime.now()
-
         return likeMapper.toResponseDto(like);
     }
 
