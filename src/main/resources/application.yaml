@@ -1,7 +1,4 @@
 spring:
-  config:
-    import: classpath:application-minio.yaml
-
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -68,3 +65,13 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+currency:
+  api-url: "https://v6.exchangerate-api.com/v6/{key}/latest/{conversion-rate}"
+  api-key: "dd32616c8ec9707b977a7895"
+  conversion-rate-usd: "USD"
+  fetcher:
+    cron: "0 0 0 * * ?"  # Запуск каждый день в полночь
+    retry:
+      maxAttempts: 3     # Максимум 3 попытки
+      backoff: 2000      # Интервал между попытками (в миллисекундах)
