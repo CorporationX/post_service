@@ -1,6 +1,6 @@
 package faang.school.postservice.redis;
 
-import faang.school.postservice.service.publisher.LikeEventPublisher;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

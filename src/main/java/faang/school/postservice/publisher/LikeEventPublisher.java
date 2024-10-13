@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class LikeEventPublisher {
 
-    private final RedisTemplate<String, LikeEvent> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final ChannelTopic likeEventTopic;
 
     public void publish(String message) {
