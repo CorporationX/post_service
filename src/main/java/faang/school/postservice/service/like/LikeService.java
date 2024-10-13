@@ -24,8 +24,8 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class LikeService {
 
@@ -125,7 +125,8 @@ public class LikeService {
         try {
             likePostEventPublisher.publishEvent(likePostEvent);
         } catch (Exception ex) {
-            log.error("Failed to send notification with likePostEvent - {}. {}", likePostEvent.toString(), ex.getMessage());
+            log.error("Failed to send notification with likePostEvent: {}. {}",
+                    likePostEvent.toString(), ex.getMessage());
         }
     }
 }

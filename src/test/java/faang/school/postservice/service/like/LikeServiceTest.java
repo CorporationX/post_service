@@ -41,18 +41,25 @@ public class LikeServiceTest {
 
     @Mock
     private LikeRepository likeRepository;
+
     @Mock
     private PostRepository postRepository;
+
     @Mock
     private CommentRepository commentRepository;
+
     @Mock
     private LikeMapper likeMapper;
+
     @Mock
     private LikeValidator likeValidator;
+
     @Mock
     private UserServiceClient userServiceClient;
+
     @Mock
     private LikePostEventPublisher likePostEventPublisher;
+
     @InjectMocks
     private LikeService likeService;
 
