@@ -2,13 +2,14 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.LikeEvent;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.UserAlreadyLikedException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisherImpl;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -27,6 +28,7 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final LikeMapper likeMapper;
+    private final LikeEventPublisherImpl likeEventPublisher;
 
     @Override
     public LikeDto likePost(Long postId) {
@@ -41,6 +43,7 @@ public class LikeServiceImpl implements LikeService {
                 .post(getPostById(postId))
                 .build();
         likeRepository.save(like);
+        publishLikeEvent(postId, userId);
         log.info("User with id {} liked post with id {}", userId, postId);
         return likeMapper.toLikeDto(like);
     }
@@ -103,5 +106,16 @@ public class LikeServiceImpl implements LikeService {
                 .findById(commentId)
                 .orElseThrow(() ->
                         new EntityNotFoundException("Comment with id %d does not exist".formatted(commentId)));
+    }
+
+    private void publishLikeEvent(long postId, long userId) {
+        LikeEvent likeEvent = LikeEvent.builder()
+                .likeAuthorId(userId)
+                .postAuthorId(postRepository.findById(postId).orElseThrow(() ->
+                        new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId))).getAuthorId())
+                .postId(postId)
+                .build();
+        likeEventPublisher.publish(likeEvent);
+        log.info("Publishing LikeEvent for user with id {} liking post with id {}", userId, postId);
     }
 }
