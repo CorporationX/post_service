@@ -25,12 +25,9 @@ spring:
         hashtags: hashtags_channel
         like_post: like_post_channel
         post_view_channel: post_view_channel
+        ad_bought_channel: ad_bought_channel
         calculations_channel:
           name: calculations_channel
-        post_view_channel:
-          name: post_view_channel
-        ad_bought_channel:
-          name: ad_bought_channel
 
   services:
     s3:

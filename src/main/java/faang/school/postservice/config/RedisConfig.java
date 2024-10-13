@@ -16,7 +16,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @Slf4j
-@PropertySource(value = "classpath:redis.properties")
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
@@ -26,19 +25,19 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.channels.hashtags}")
     private String topicNameHashtags;
+
     @Value("${spring.data.redis.channels.like_post}")
     private String topicNameLike;
 
     @Value("${spring.data.redis.channels.post_view_channel}")
+    String postViewTopic;
+
+    @Value("${spring.data.redis.channels.ad_bought_channel}")
+    String adBoughtChannel;
 
     public interface MessagePublisher<T> {
         void publish(T redisEvent);
     }
-
-    @Value("${spring.data.redis.channels.post_view_channel.name}")
-    String postViewTopic;
-    @Value("${spring.data.redis.channels.ad_bought_channel.name}")
-    String adBoughtChannel;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
