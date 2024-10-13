@@ -21,7 +21,7 @@ public abstract class AbstractEventPublisher<T> implements EventPublisher<T> {
             redisTemplate.convertAndSend(topic.getTopic(), jsonEvent);
             log.info("Send is done");
         } catch (JsonProcessingException jsonProcessingException) {
-            log.error("Failed to convert event to json");
+            log.error("Failed to convert event to json", jsonProcessingException);
         } catch (Exception exception) {
             log.error("Failed to send event to Redis", exception);
         }
