@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -11,7 +10,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.event.LikeEvent;
-import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.publisher.LikeEventPublisherImpl;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -39,7 +38,7 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient userServiceClient;
 
     @Autowired
-    private LikeEventPublisher likeEventPublisher;
+    private LikeEventPublisherImpl likeEventPublisher;
 
     @Override
     public void publish(LikeEvent likeEvent) {
