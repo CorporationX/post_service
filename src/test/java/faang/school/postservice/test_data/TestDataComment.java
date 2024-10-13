@@ -1,6 +1,7 @@
 package faang.school.postservice.test_data;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -89,6 +90,16 @@ public class TestDataComment {
                 .content("testCommentContent1")
                 .authorId(getUserDto().getId())
                 .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public CommentEventDto getCommentEventDto(){
+        return CommentEventDto.builder()
+                .commentId(1L)
+                .commentAuthorId(1L)
+                .postId(1L)
+                .postAuthorId(1L)
+                .commentContent("testCommentContent1")
                 .build();
     }
 }

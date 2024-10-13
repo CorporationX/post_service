@@ -29,7 +29,8 @@ spring:
           name: calculations_channel
         user_ban_channel:
           name: user_ban
-
+        comment_channel:
+          name: comment_event_channel
   servlet:
     multipart:
       max-file-size: 50MB
