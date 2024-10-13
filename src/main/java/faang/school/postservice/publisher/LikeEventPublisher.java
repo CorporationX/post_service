@@ -1,9 +1,7 @@
-package faang.school.postservice.config.redis;
+package faang.school.postservice.publisher;
 
 import faang.school.postservice.dto.like.LikeEvent;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;

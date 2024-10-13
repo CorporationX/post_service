@@ -1,6 +1,7 @@
 package faang.school.postservice.config.redis;
 
 import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
