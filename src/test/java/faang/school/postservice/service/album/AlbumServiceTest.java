@@ -230,7 +230,9 @@ class AlbumServiceTest {
         albumService.deletePosts(USER_ID, ALBUM_ID, postIdsToDelete);
 
         assertEquals(album.getPosts().size(), 1);
-        assertEquals(album.getPosts(), expected);
+        assertThat(album.getPosts())
+                .usingRecursiveComparison()
+                .isEqualTo(expected);
         verify(checker, Mockito.times(1)).checkUserExists(USER_ID);
         verify(checker, Mockito.times(1)).findByIdWithPosts(ALBUM_ID);
         verify(albumRepository, Mockito.times(1)).save(album);

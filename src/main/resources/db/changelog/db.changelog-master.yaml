@@ -4,8 +4,10 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V002__ad.sql
   - include:
-      file: db/changelog/changeset/post_V003_resource.sql
+      file: db/changelog/changeset/post_V003__resource.sql
   - include:
       file: db/changelog/changeset/post_V004__add_columns_to_table_album.sql
   - include:
       file: db/changelog/changeset/post_V005_alter_post.sql
+  - include:
+      file: db/changelog/changeset/post_V005__post_add_hash_tags_column.sql
