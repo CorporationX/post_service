@@ -1,7 +1,6 @@
 spring:
   config:
     import: classpath:application-minio.yaml
-
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -57,6 +56,18 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
     url: "https://speller.yandex.net/services/spellservice.json/checkText"
+  currency:
+    api-url: "https://v6.exchangerate-api.com/v6/{key}/latest/{conversion-rate}"
+    api-key: "dd32616c8ec9707b977a7895"
+    conversion-rate-usd: "USD"
+    api-response-json-field-name: "conversion_rates"
+    scheduler:
+      cron: "0 0 0 * * *"  # Запуск каждый день в полночь
+      retry:
+        maxAttempts: 10     # Максимум 10 попыток
+        backoff:
+          delay: 2000       # Начальный интервал между попытками (в миллисекундах)
+          multiplier: 2.0      # Интервал между попытками (в миллисекундах)
 
 user-service:
   host: localhost
