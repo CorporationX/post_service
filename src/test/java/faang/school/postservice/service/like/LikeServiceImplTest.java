@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceImplTest {
@@ -48,11 +49,15 @@ class LikeServiceImplTest {
     @Mock
     UserServiceClient userServiceClient;
 
-
     LikeDto likeDto = new LikeDto();
     Post post = new Post();
     Comment comment = new Comment();
     Like like = new Like();
+    Like like1 = Like.builder()
+            .id(1L)
+            .userId(1L)
+            .build();
+    List<Like> likes = List.of(like1);
 
     @BeforeEach
     void setUp() {
@@ -91,7 +96,8 @@ class LikeServiceImplTest {
 
     @Test
     void testUnlikePost() {
-        likeRepository.deleteByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId());
+        when(postRepository.findByAuthorIdWithLikes(likeDto.getPostId())).thenReturn(List.of(post));
+        likeService.unlikePost(likeDto);
         verify(likeRepository).deleteByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId());
     }
 
@@ -114,4 +120,25 @@ class LikeServiceImplTest {
         likeRepository.deleteByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId());
         verify(likeRepository).deleteByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId());
     }
+
+    @Test
+    void testGetUsersByPostId() {
+        when(likeRepository.findByPostId(1L)).thenReturn(likes);
+
+        likeService.getUsersLikedPost(1L);
+
+        verify(likeRepository).findByPostId(1L);
+        verify(userServiceClient).getUsersByIds(List.of(1L));
+    }
+
+    @Test
+    void testGetUsersByCommentId() {
+        when(likeRepository.findByCommentId(1L)).thenReturn(likes);
+
+        likeService.getUsersLikedComment(1L);
+
+        verify(likeRepository).findByCommentId(1L);
+        verify(userServiceClient).getUsersByIds(List.of(1L));
+    }
+
 }

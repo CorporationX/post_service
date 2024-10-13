@@ -56,3 +56,8 @@ services:
     accessKey: user
     secretKey: password
     bucketName: corpbucket
+
+redis:
+  pubsub:
+    topics:
+      like-event

@@ -1,7 +1,11 @@
 package faang.school.postservice.service.like;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.redis.LikeEventPublisher;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -14,6 +18,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,22 +35,37 @@ public class LikeServiceImpl implements LikeService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
+    private final LikeEventPublisher likeEventPublisher;
+    private final ObjectMapper objectMapper;
 
     public LikeDto likePost(LikeDto likeDto) {
         Post post = postRepository.findById(likeDto.getPostId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post with %s id not found", likeDto.getPostId())));
         startValidationForPost(likeDto);
-        log.info("The like was verified with the {}post id", likeDto.getPostId());
+        log.info("The like was verified with the {} post id", likeDto.getPostId());
 
         Like like = likeMapper.toEntity(likeDto);
         like.setPost(post);
         like.setCreatedAt(LocalDateTime.now());
 
         likeRepository.save(like);
-        log.info("The like was added to the database to {}post", likeDto.getPostId());
+        log.info("The like was added to the database to {} post", likeDto.getPostId());
+
+        LikeEvent likeEvent = new LikeEvent();
+        likeEvent.setPostId(likeDto.getPostId());
+        likeEvent.setUserId(likeDto.getUserId());
+        likeEvent.setCreatedAt(likeDto.getCreatedAt());
+        try {
+            String json = objectMapper.writeValueAsString(likeEvent);
+            likeEventPublisher.publish(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
         return likeMapper.toDto(like);
     }
 
+    @Transactional
     public void unlikePost(LikeDto likeDto) {
         Post post = validateAndGetPost(likeDto);
         likeRepository.deleteByPostIdAndUserId(post.getId(), likeDto.getUserId());
