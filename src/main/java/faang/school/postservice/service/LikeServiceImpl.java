@@ -18,7 +18,6 @@ import feign.FeignException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -30,15 +29,13 @@ import java.util.List;
 @Validated
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
-    public final PostRepository postRepository;
-    public final CommentRepository commentRepository;
-    public final LikeMapper likeMapper;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final LikeMapper likeMapper;
     private final LikeRepository likeRepository;
     private final UserServiceClient client;
     private final UserServiceClient userServiceClient;
-
-    @Autowired
-    private LikeEventPublisherImpl likeEventPublisher;
+    private final LikeEventPublisherImpl likeEventPublisher;
 
     @Override
     public void publish(LikeEvent likeEvent) {
