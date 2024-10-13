@@ -3,7 +3,7 @@ package faang.school.postservice.controller.comment;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentRequest;
 import faang.school.postservice.dto.comment.UpdateCommentRequest;
-import faang.school.postservice.service.CommentService;
+import faang.school.postservice.service.comment.CommentService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
