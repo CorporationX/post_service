@@ -1,28 +1,19 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.service.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.service.MessagePublisher;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 
 @Service
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class NewPostPublisher implements MessagePublisher<PostDto> {
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic topic;
+    private final ChannelTopic hashtagTopic;
     private final ObjectMapper objectMapper;
-
-    public NewPostPublisher(RedisTemplate<String, Object> redisTemplate,
-                            @Qualifier("hashtagTopic") ChannelTopic topic, ObjectMapper objectMapper) {
-        this.redisTemplate = redisTemplate;
-        this.topic = topic;
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     public void publish(PostDto message) {
@@ -32,6 +23,6 @@ public class NewPostPublisher implements MessagePublisher<PostDto> {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        redisTemplate.convertAndSend(topic.getTopic(), json);
+        redisTemplate.convertAndSend(hashtagTopic.getTopic(), json);
     }
 }

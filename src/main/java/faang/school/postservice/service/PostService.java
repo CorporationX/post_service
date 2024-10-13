@@ -11,6 +11,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.NewPostPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.messaging.NewPostPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +45,7 @@ public class PostService {
     private final NewPostPublisher newPostPublisher;
     private final BatchProcessService batchProcessService;
     private final ExecutorService schedulingThreadPoolExecutor;
+    private final PostBatchService postBatchService;
 
     @Value("${post.publisher.butch-size}")
     private int batchSize;
@@ -161,8 +163,6 @@ public class PostService {
     public Post updatePostInternal(Post post) {
         return postRepository.save(post);
     }
-
-    private final PostBatchService postBatchService;
 
     public List<CompletableFuture<Void>> publishScheduledPosts() {
         List<Post> readyToPublish = postRepository.findReadyToPublish();
