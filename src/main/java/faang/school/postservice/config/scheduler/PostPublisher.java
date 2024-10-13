@@ -27,11 +27,10 @@ public class PostPublisher {
     private final PostService postService;
 
     /**
-     * Получаем список постов один раз, чтобы избежать многократного вызова get().
      * Задаем тайм-аут на ожидание результата.
      * Проверяем, если список пуст, то дальнейшие операции не требуются.
-     * Проверяем, есть ли посты с датой публикации в будущем, и обновляем их.
-     * Устанавливаем флаг "published" для постов с датой публикации в будущем.
+     * Проверяем, есть ли посты с датой публикации, и обновляем их.
+     * Устанавливаем флаг "published" для постов с датой публикации.
      * Асинхронно сохраняем обновленные посты.
      */
     @Scheduled(cron = "${post.publisher.scheduler.cron}")
@@ -41,7 +40,7 @@ public class PostPublisher {
 
         List<Post> postsFromDB;
         try {
-            postsFromDB = postsFromDBFuture.get(2, TimeUnit.SECONDS);
+            postsFromDB = postsFromDBFuture.get(30, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             log.error("PostPublisher. Error retrieving posts from DB", e);
             throw new RuntimeException("PostPublisher. Failed to retrieve posts due to async operation failure", e);
