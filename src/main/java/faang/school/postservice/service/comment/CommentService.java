@@ -5,7 +5,7 @@ import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.feed.FeedService;
+import faang.school.postservice.service.feed.FeedEventService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +26,7 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final ModerationDictionary moderationDictionary;
     private final ExecutorService moderationExecutor;
-    private final FeedService feedService;
+    private final FeedEventService feedEventService;
 
     @Value("${comment.batchSize}")
     private int batchSize;
@@ -37,14 +37,14 @@ public class CommentService {
             CommentValidator commentValidator,
             ModerationDictionary moderationDictionary,
             @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor,
-            FeedService feedService
+            FeedEventService feedEventService
     ) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
         this.commentValidator = commentValidator;
         this.moderationDictionary = moderationDictionary;
         this.moderationExecutor = moderationExecutor;
-        this.feedService = feedService;
+        this.feedEventService = feedEventService;
     }
 
     @Transactional
@@ -52,7 +52,7 @@ public class CommentService {
         commentValidator.findPostById(postId);
         Comment savedComment = commentRepository.save(commentMapper.toEntity(commentDto));
 
-        feedService.createAndSendFeedCommentEvent(new FeedCommentEvent(
+        feedEventService.createAndSendFeedCommentEvent(new FeedCommentEvent(
                 commentDto.getId(), commentDto.getPostId(), commentDto.getAuthorId(), commentDto.getContent()));
 
         return commentMapper.toDto(savedComment);

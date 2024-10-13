@@ -11,7 +11,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.feed.FeedService;
+import faang.school.postservice.service.feed.FeedEventService;
 import faang.school.postservice.service.publisher.LikeEventPublisher;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,7 +33,7 @@ public class LikeService {
     private final LikeValidator likeValidator;
     private final UserServiceClient userServiceClient;
     private final LikeEventPublisher eventPublisher;
-    private final FeedService feedService;
+    private final FeedEventService feedEventService;
     @Value("${like.userBatchSize}")
     private int userBatchSize;
   
@@ -54,7 +54,7 @@ public class LikeService {
         LikeEvent event = new LikeEvent(like.getUserId(), post.getAuthorId(), post.getId());
         eventPublisher.publish(event);
 
-        feedService.createAndSendFeedLikeEvent(post.getId());
+        feedEventService.createAndSendFeedLikeEvent(post.getId());
     }
 
     public void unlikePost(LikeDto likeDto) {

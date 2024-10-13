@@ -30,6 +30,10 @@ spring:
         calculations_channel: calculations_channel
         like: like_channel
         post: post_channel
+      cache:
+        feed:
+          maxSize: 500
+          pageSize: 20
 
     kafka:
       bootstrap-servers: kafka:9092
@@ -49,6 +53,19 @@ spring:
       producer:
         retries: 3
         retry-backoff-ms: 1000
+      consumer:
+        auto-offset-reset: earliest
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+        properties:
+          spring.json.trusted.packages: 'faang.school.postservice.dto'
+          spring.json.use.type.headers: false
+        groups:
+          postGroup: postGroup
+          commentGroup: commentGroup
+          likeGroup: likeGroup
+      listener:
+        missing-topics-fatal: false
 
   aws:
     s3:
