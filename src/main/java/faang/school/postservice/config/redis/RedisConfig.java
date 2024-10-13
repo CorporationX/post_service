@@ -1,5 +1,6 @@
 package faang.school.postservice.config.redis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,13 +29,15 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory connectionFactory) {
-        return buildRedisTemplate(connectionFactory, Object.class);
+    public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory connectionFactory,
+                                                       ObjectMapper javaTimeModuleObjectMapper) {
+        return buildRedisTemplate(connectionFactory, Object.class, javaTimeModuleObjectMapper);
     }
 
     @Bean
-    public RedisTemplate<String, String> stringValueRedisTemplate(JedisConnectionFactory connectionFactory) {
-        return buildRedisTemplate(connectionFactory, String.class);
+    public RedisTemplate<String, String> stringValueRedisTemplate(JedisConnectionFactory connectionFactory,
+                                                                  ObjectMapper javaTimeModuleObjectMapper) {
+        return buildRedisTemplate(connectionFactory, String.class, javaTimeModuleObjectMapper);
     }
 
     @Bean
@@ -43,16 +46,18 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, PostCacheDto> postCacheDtoRedisTemplate(JedisConnectionFactory connectionFactory) {
-        return buildRedisTemplate(connectionFactory, PostCacheDto.class);
+    public RedisTemplate<String, PostCacheDto> postCacheDtoRedisTemplate(JedisConnectionFactory connectionFactory,
+                                                                         ObjectMapper javaTimeModuleObjectMapper) {
+        return buildRedisTemplate(connectionFactory, PostCacheDto.class, javaTimeModuleObjectMapper);
     }
 
-    private <T> RedisTemplate<String, T> buildRedisTemplate(JedisConnectionFactory connectionFactory, Class<T> clazz) {
+    private <T> RedisTemplate<String, T> buildRedisTemplate(JedisConnectionFactory connectionFactory, Class<T> clazz,
+                                                            ObjectMapper objectMapper) {
         RedisTemplate<String, T> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        Jackson2JsonRedisSerializer<T> serializer = new Jackson2JsonRedisSerializer<>(clazz);
+        Jackson2JsonRedisSerializer<T> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, clazz);
 
         template.setKeySerializer(stringRedisSerializer);
         template.setValueSerializer(serializer);
