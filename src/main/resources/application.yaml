@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: classpath:application-minio.yaml
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -24,6 +27,14 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        user_ban_channel:
+          name: user_ban
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
 
 server:
   port: 8081
@@ -39,6 +50,13 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  user_ban:
+    scheduler:
+      cron: "00 01 06 * * *"
+  spell-corrector:
+    scheduler:
+      cron: "0 0/1 * 1/1 * ?" # every minute
+    url: "https://speller.yandex.net/services/spellservice.json/checkText"
 
 user-service:
   host: localhost
@@ -49,6 +67,7 @@ project-service:
   port: 8082
 payment-service:
   host: localhost
+
   port: 9080
 
 currency:
@@ -60,3 +79,4 @@ currency:
     retry:
       maxAttempts: 3     # Максимум 3 попытки
       backoff: 2000      # Интервал между попытками (в миллисекундах)
+

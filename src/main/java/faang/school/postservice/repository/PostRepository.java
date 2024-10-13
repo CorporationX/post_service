@@ -3,7 +3,6 @@ package faang.school.postservice.repository;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,6 +23,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false")
+    List<Post> findAllDrafts();
+
+    @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.spellCheck = false")
+    List<Post> findAllDraftsWithoutSpellCheck();
+
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.authorId = :authorId ORDER BY p.createdAt DESC")
     List<Post> findDraftsByAuthorId(long authorId);
 
@@ -35,4 +40,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = true AND p.deleted = false AND p.projectId = :projectId ORDER BY p.publishedAt DESC")
     List<Post> findPublishedByProjectId(long projectId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT author_id FROM post
+            WHERE verified = false
+            GROUP BY author_id
+            HAVING COUNT(*) >= 5;
+            """)
+    List<Long> findAuthorsWithExcessVerifiedFalsePosts();
 }
