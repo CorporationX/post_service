@@ -1,7 +1,11 @@
 package faang.school.postservice.service.feed;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentEvent;
+import faang.school.postservice.dto.publishable.fornewsfeed.FeedLikeEvent;
 import faang.school.postservice.dto.publishable.fornewsfeed.FeedPostEvent;
+import faang.school.postservice.producer.KafkaCommentProducer;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.producer.KafkaPostProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +22,8 @@ import java.util.List;
 public class FeedService {
     private final UserServiceClient userServiceClient;
     private final KafkaPostProducer kafkaPostProducer;
+    private final KafkaCommentProducer kafkaCommentProducer;
+    private final KafkaLikeProducer kafkaLikeProducer;
     @Value("${feed.kafka.subscribers-batch-size}")
     private int subscribersBatchSize;
 
@@ -30,6 +36,7 @@ public class FeedService {
             return;
         } else if (subscribersIds.size() <= subscribersBatchSize) {
             kafkaPostProducer.sendEvent(new FeedPostEvent(postId, authorId, subscribersIds));
+            log.info("Sent FeedPostEvent for postId {} with {} subscribers", postId, subscribersIds.size());
         } else {
             List<List<Long>> batches = partitionList(subscribersIds, subscribersBatchSize);
 
@@ -55,5 +62,16 @@ public class FeedService {
             partitions.add(list.subList(i, Math.min(i + batchSize, totalSize)));
         }
         return partitions;
+    }
+
+    @Async("feedExecutor")
+    public void createAndSendFeedCommentEvent(FeedCommentEvent feedCommentEvent) {
+        kafkaCommentProducer.sendEvent(feedCommentEvent);
+        log.info("Sent FeedCommentEvent for postId {}", feedCommentEvent.getPostId());
+    }
+
+    @Async("feedExecutor")
+    public void createAndSendFeedLikeEvent(long postId) {
+        kafkaLikeProducer.sendEvent(new FeedLikeEvent(postId));
     }
 }

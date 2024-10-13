@@ -1,11 +1,12 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.feed.FeedService;
 import faang.school.postservice.validator.comment.CommentValidator;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 public class CommentService {
@@ -26,6 +26,7 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final ModerationDictionary moderationDictionary;
     private final ExecutorService moderationExecutor;
+    private final FeedService feedService;
 
     @Value("${comment.batchSize}")
     private int batchSize;
@@ -35,19 +36,25 @@ public class CommentService {
             CommentMapper commentMapper,
             CommentValidator commentValidator,
             ModerationDictionary moderationDictionary,
-            @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor
+            @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor,
+            FeedService feedService
     ) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
         this.commentValidator = commentValidator;
         this.moderationDictionary = moderationDictionary;
         this.moderationExecutor = moderationExecutor;
+        this.feedService = feedService;
     }
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         commentValidator.findPostById(postId);
         Comment savedComment = commentRepository.save(commentMapper.toEntity(commentDto));
+
+        feedService.createAndSendFeedCommentEvent(new FeedCommentEvent(
+                commentDto.getId(), commentDto.getPostId(), commentDto.getAuthorId(), commentDto.getContent()));
+
         return commentMapper.toDto(savedComment);
     }
 
