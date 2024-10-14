@@ -56,25 +56,25 @@ public class PostController {
         return postMapper.toDto(postService.getPostById(id));
     }
 
-    @GetMapping("/drafts")
+    @GetMapping("/drafts/{userId}")
     public List<PostDto> getUserDrafts(@RequestParam(name = "user-id") long userId) {
         List<Post> drafts = postService.getUserDrafts(userId);
         return postMapper.toDto(drafts);
     }
 
-    @GetMapping("/drafts")
+    @GetMapping("/drafts/{projectId}")
     public List<PostDto> getProjectDrafts(@RequestParam(name = "project-id") long projectId) {
         List<Post> drafts = postService.getProjectDrafts(projectId);
         return postMapper.toDto(drafts);
     }
 
-    @GetMapping("/published")
+    @GetMapping("/published/{userId}")
     public List<PostDto> getUserPublishedPosts(@RequestParam(name = "user-id") long userId) {
         List<Post> publishedPosts = postService.getUserPublishedPosts(userId);
         return postMapper.toDto(publishedPosts);
     }
 
-    @GetMapping("/published")
+    @GetMapping("/published/{projectId}")
     public List<PostDto> getProjectPublishedPosts(@RequestParam(name = "project-id") long projectId) {
         List<Post> publishedPosts = postService.getProjectPublishedPosts(projectId);
         return postMapper.toDto(publishedPosts);

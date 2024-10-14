@@ -42,6 +42,7 @@ post:
   config:
     thread-pool:
       max-size: 10
+    batch-size: 1000
 
 
 

@@ -8,6 +8,9 @@ import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,8 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
     private final ExecutorService executorService;
+    @Value("${post.config.batch-size}")
+    private int batchSize;
 
     @Transactional
     public Post createDraftPost(Post post) {
@@ -42,16 +47,13 @@ public class PostService {
         return postRepository.save(existingPost);
     }
 
-    @Transactional
+    @Async("treadPool")
     public void publishScheduledPosts() {
         List<Post> posts = postRepository.findReadyToPublish();
 
-        int batchSize = 1000;
+        List<List<Post>> partitions = ListUtils.partition(posts, batchSize);
 
-        for (int i = 0; i < posts.size(); i += batchSize) {
-            int end = Math.min(i + batchSize, posts.size());
-            List<Post> sendPosts = posts.subList(i, end);
-
+        for (List<Post> sendPosts : partitions) {
             executorService.submit(() -> {
                 List<Post> newPost = sendPosts.stream()
                         .peek(post -> {

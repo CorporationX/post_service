@@ -12,7 +12,7 @@ public class ThreadPoolConfig {
     @Value("${post.config.thread-pool.max-size}")
     private int maxSize;
 
-    @Bean
+    @Bean(name = "treadPool")
     public ExecutorService threadPool() {
         return Executors.newFixedThreadPool(maxSize);
     }
