@@ -32,12 +32,6 @@ public interface PostMapper {
 
     Post toEntity(FilterPostRequestDto dto);
 
-    default List<PostResponseDto> listEntitiesToListDto(List<Post> posts) {
-        return posts.stream()
-                .map(this::toDto)
-                .toList();
-    }
-
     @Named("mapResourcesToResourceIds")
     default List<Long> mapResourcesToResourceIds(List<Resource> resources) {
         if (resources == null) {
