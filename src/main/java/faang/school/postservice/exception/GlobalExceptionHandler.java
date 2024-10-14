@@ -3,8 +3,6 @@ package faang.school.postservice.exception;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import faang.school.postservice.constant.ValidationConstant;
 import faang.school.postservice.dto.error.InvalidFormatResponseDto;
-import faang.school.postservice.exception.comment.CommentNotFoundException;
-import faang.school.postservice.exception.like.LikeNotFoundException;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
