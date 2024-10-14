@@ -13,5 +13,9 @@ public interface CommentService {
 
     List<CommentResponseDto> findAll(Long postId);
 
+    void commentersBanCheck(int unverifiedCommentsLimit);
+
     void delete(Long id);
+
+    void moderateComments();
 }

@@ -3,22 +3,36 @@ package faang.school.postservice.service.impl.comment;
 import faang.school.postservice.model.dto.comment.CommentRequestDto;
 import faang.school.postservice.model.dto.comment.CommentResponseDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.CommentService;
+import faang.school.postservice.service.CommentService;
+import faang.school.postservice.service.CommentServiceAsync;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
+    private final RedisBanMessagePublisher redisBanMessagePublisher;
+    private final CommentServiceAsync commentServiceAsync;
+
+    @Value("${comments.batch-size}")
+    private int batchSize;
 
     @Override
     @Transactional
@@ -52,5 +66,28 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void delete(Long id) {
         commentRepository.deleteById(id);
+    }
+
+    @Override
+    public void commentersBanCheck(int unverifiedCommentsLimit) {
+        Map<Long, Long> unverifiedAuthorsAndCommentsCount = commentRepository.findAllByVerifiedFalse().stream()
+                .collect(Collectors.groupingBy(Comment::getAuthorId, Collectors.counting()));
+
+        unverifiedAuthorsAndCommentsCount.entrySet().stream()
+                .filter((longLongEntry -> longLongEntry.getValue() >= unverifiedCommentsLimit))
+                .map((Map.Entry::getKey))
+                .forEach((id) -> {
+                    log.info("Publishing User ID to ban: {}", id);
+                    redisBanMessagePublisher.publish(new BanEvent(id));
+                });
+    }
+
+    @Override
+    @Transactional
+    public void moderateComments() {
+        List<Comment> unverifiedPosts = commentRepository.findAllByVerifiedDateIsNull();
+        List<List<Comment>> batches = ListUtils.partition(unverifiedPosts, batchSize);
+
+        batches.forEach(commentServiceAsync::moderateCommentsByBatches);
     }
 }

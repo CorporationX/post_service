@@ -46,6 +46,11 @@ public record PostDto(
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
+        LocalDateTime scheduledAt
 ) {
 }

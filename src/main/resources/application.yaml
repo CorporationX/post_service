@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        user-ban:
+          name: user_ban
         like-channel:
           name: like-channel
 
@@ -38,11 +40,36 @@ post:
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+    batch-size: 1000
   ad-remover:
     scheduler:
       cron: "@midnight" # every day at midnight
     threads-count: 20
     max-list-size: 50
+  comments:
+    scheduler:
+      cron: "0 30 0 * * *" # every day at 00:30
+  commenter-banner:
+    scheduler:
+      cron: "0 0/1 * 1/1 * ?" # every day at midnight
+    unverified-comments-limit: 5
+  moderation:
+    scheduler:
+      cron: "0 0 0 * * *" # every day at midnight
+  correcter:
+    retry:
+      max-attempts: 3
+      delay: 5000
+      multiplier: 2
+    scheduler:
+      cron: "@midnight"
+    posts-batch-size: 100
+
+text-gears:
+  base-url: https://api.textgears.com
+  path-segment: /correct
+  api-key: LwbbSarifE2noQhc
+  language-code: en-US
 
 springdoc:
   swagger-ui:
@@ -59,3 +86,19 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+moderation:
+  file-path: src/main/resources/badWords.txt
+
+comments:
+  batch-size: 100
+
+posts:
+  batch-size: 100
+
+premium:
+  pool-size: 3
+
+thread-pool:
+  fixed:
+    size: 5

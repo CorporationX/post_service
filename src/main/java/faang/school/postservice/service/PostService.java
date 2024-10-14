@@ -25,4 +25,10 @@ public interface PostService {
     List<PostDto> getAllPublishedPostsByAuthorId(Long userId);
 
     List<PostDto> getAllPublishedPostsByProjectId(Long projectId);
+
+    void moderatePosts();
+
+    void correctUnpublishedPosts();
+
+    void publishScheduledPosts(int batchSize);
 }

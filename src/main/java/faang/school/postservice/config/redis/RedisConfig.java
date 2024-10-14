@@ -16,7 +16,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.util.List;
 
-
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
@@ -24,10 +23,14 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
     private String host;
+
     @Value("${spring.data.redis.port}")
     private int port;
     @Value("${spring.data.redis.channels.like-channel.name}")
     private String likeChannelName;
+
+    @Value("${spring.data.redis.channels.user-ban.name}")
+    private String topicName;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
