@@ -1,14 +1,14 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentRequestDto;
-import faang.school.postservice.dto.comment.CommentResponseDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.BanEvent;
 import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.dto.comment.CommentRequestDto;
+import faang.school.postservice.model.dto.comment.CommentResponseDto;
+import faang.school.postservice.model.dto.user.UserDto;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;

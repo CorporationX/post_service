@@ -1,7 +1,7 @@
 package faang.school.postservice.config.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.dto.post.PostDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -76,6 +76,7 @@ public class RedisConfig {
         return new ChannelTopic(commentReceivingTopic);
     }
 
+    @Bean
     public ChannelTopic likeChannelTopic() {
         return new ChannelTopic(likeChannelName);
     }

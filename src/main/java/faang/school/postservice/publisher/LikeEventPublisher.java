@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class LikeEventPublisher {
-    private final ChannelTopic likeEventTopic;
+    private final ChannelTopic likeChannelTopic;
     private final RedisTemplate<String, Object> redisTemplate;
 
     public void publish(LikeEvent likeEvent) {
-        redisTemplate.convertAndSend(likeEventTopic.getTopic(), likeEvent);
+        redisTemplate.convertAndSend(likeChannelTopic.getTopic(), likeEvent);
     }
 }
