@@ -26,12 +26,12 @@ spring:
       host: localhost
       channels:
         calculations_channel:
-          name: calculations_channel
-        user_ban_channel:
+          name: calculations_channel  # я так понимаю никто не использует?
+        user-ban-channel:
           name: user_ban
-        comment_channel:
+        comment-channel:
           name: comment_event_channel
-        like_channel:
+        like-channel:
           name: like_event_channel
   servlet:
     multipart:
