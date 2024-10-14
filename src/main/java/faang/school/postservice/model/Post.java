@@ -1,11 +1,13 @@
 package faang.school.postservice.model;
 
 import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.model.resource.Resource;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -19,6 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "post")
 public class Post {
@@ -83,6 +86,10 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "spell_check_completed", nullable = false)
+    @Builder.Default
+    private boolean spellCheckCompleted = false;
 
     @Column(name = "verified")
     private Boolean verified;

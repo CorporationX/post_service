@@ -22,6 +22,8 @@ public interface PostService {
     Page<PostDto> getAllPostsByHashtagId(String content, Pageable pageable);
     Post getPostByIdInternal(Long id);
     Post updatePostInternal(Post post);
+    List<CompletableFuture<Void>> publishScheduledPosts();
+    void correctSpellingInUnpublishedPosts();
     List<List<Post>> findAndSplitUnverifiedPosts();
     CompletableFuture<Void> verifyPostsForSwearWords(List<Post> unverifiedPostsBatch);
 }

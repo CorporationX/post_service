@@ -5,6 +5,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.BatchProcessService;
 import faang.school.postservice.util.moderation.ModerationDictionary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -28,8 +32,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,6 +51,9 @@ class PostServiceImplTest {
 
     @Mock
     ModerationDictionary moderationDictionary;
+
+    @Mock
+    private BatchProcessService batchProcessService;
 
     @InjectMocks
     private PostServiceImpl postService;
@@ -62,6 +72,8 @@ class PostServiceImplTest {
         postDto = new PostDto();
         postDto.setId(1L);
         postDto.setContent("Test post DTO");
+
+        ReflectionTestUtils.setField(postService, "correcterBatchSize", 100);
 
         ReflectionTestUtils.setField(postService, "moderationBatchSize", 2);
     }
@@ -152,6 +164,53 @@ class PostServiceImplTest {
         assertEquals(postDto.getPublishedAt(), result.get(0).getPublishedAt());
         verify(postRepository, times(1)).findByProjectIdWithLikes(projectId);
         verify(postMapper, times(1)).toPostDto(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("Should successfully correct spelling for unpublished posts in batches")
+    public void testCorrectSpellingInUnpublishedPosts_Success() {
+        List<Post> mockPosts = new ArrayList<>();
+        for (int i = 0; i < 500; i++) {
+            Post post = new Post();
+            post.setContent("This is post No. " + i);
+            post.setPublished(false);
+            post.setDeleted(false);
+            post.setScheduledAt(LocalDateTime.now().plusDays(1));
+            mockPosts.add(post);
+        }
+
+        when(postRepository.findReadyForSpellCheck()).thenReturn(mockPosts);
+        doAnswer(invocation -> {
+            List<Post> postsBatch = invocation.getArgument(0);
+            postsBatch.forEach(post -> {
+                String content = post.getContent();
+                post.setContent(content + " corrected\n[Automatic correction of spelling and grammatical errors" +
+                        " has been applied to the post text. Please review the text before publishing!]");
+                post.setSpellCheckCompleted(true);
+            });
+            return CompletableFuture.completedFuture(null);
+        }).when(batchProcessService).processBatch(anyList());
+
+        postService.correctSpellingInUnpublishedPosts();
+
+        verify(batchProcessService, times(5)).processBatch(anyList());
+
+        for (Post post : mockPosts) {
+            assertTrue(post.getContent().endsWith("corrected\n" +
+                    "[Automatic correction of spelling and grammatical errors has been applied to the post text." +
+                    " Please review the text before publishing!]"));
+            assertTrue(post.isSpellCheckCompleted());
+        }
+    }
+
+    @Test
+    @DisplayName("Should do nothing when no unpublished posts are found")
+    public void testCorrectSpellingInUnpublishedPosts_NoPosts() {
+        when(postRepository.findReadyToPublish()).thenReturn(Collections.emptyList());
+
+        postService.correctSpellingInUnpublishedPosts();
+
+        verify(batchProcessService, never()).processBatch(anyList());
     }
 
     @Test

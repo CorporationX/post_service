@@ -10,10 +10,13 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.NewPostPublisher;
+import faang.school.postservice.service.BatchProcessService;
+import faang.school.postservice.service.messaging.NewPostPublisher;
+import faang.school.postservice.service.PostBatchService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.util.moderation.ModerationDictionary;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,11 +31,16 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostServiceImpl implements PostService {
+
+    @Value("${spell-checker.batch-size}")
+    private int correcterBatchSize;
 
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
@@ -40,6 +48,12 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final NewPostPublisher newPostPublisher;
     private final ModerationDictionary moderationDictionary;
+    private final BatchProcessService batchProcessService;
+    private final ExecutorService schedulingThreadPoolExecutor;
+    private final PostBatchService postBatchService;
+
+    @Value("${post.publisher.butch-size}")
+    private int batchSize;
 
     @Value("${post.moderation.batch-size}")
     private int moderationBatchSize;
@@ -166,15 +180,58 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public Post updatePostInternal(Post post){
+    public Post updatePostInternal(Post post) {
         return postRepository.save(post);
+    }
+
+    @Override
+    public List<CompletableFuture<Void>> publishScheduledPosts() {
+        List<Post> readyToPublish = postRepository.findReadyToPublish();
+        log.info("{} posts were found for scheduled publishing", readyToPublish.size());
+        List<List<Post>> postBatches = partitionList(readyToPublish, batchSize);
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (List<Post> postBatch : postBatches) {
+            postBatch.forEach(post -> {
+                post.setPublished(true);
+                post.setPublishedAt(LocalDateTime.now());
+                log.info("Post with id '{}' prepared for scheduled publishing", post.getId());
+            });
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> postBatchService.savePostBatch(postBatch), schedulingThreadPoolExecutor);
+            futures.add(future);
+        }
+        return futures;
+    }
+
+    private List<List<Post>> partitionList(List<Post> list, int batchSize) {
+        List<List<Post>> partitions = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += batchSize) {
+            partitions.add(list.subList(i, Math.min(i + batchSize, list.size())));
+        }
+        return partitions;
+    }
+
+
+    @Transactional
+    public void correctSpellingInUnpublishedPosts() {
+        List<Post> unpublishedPosts = postRepository.findReadyForSpellCheck();
+
+        if (!unpublishedPosts.isEmpty()) {
+            int batchSize = correcterBatchSize;
+            List<List<Post>> batches = partitionList(unpublishedPosts, batchSize);
+
+            List<CompletableFuture<Void>> futures = batches.stream()
+                    .map(batchProcessService::processBatch)
+                    .toList();
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        }
     }
 
     @Override
     public List<List<Post>> findAndSplitUnverifiedPosts() {
         List<Post> unverifiedPosts = postRepository.findAllByVerifiedDateIsNull();
 
-        return splitIntoBatches(unverifiedPosts, moderationBatchSize);
+        return partitionList(unverifiedPosts, moderationBatchSize);
     }
 
     @Override
@@ -190,13 +247,5 @@ public class PostServiceImpl implements PostService {
 
             postRepository.saveAll(unverifiedPostsBatch);
         });
-    }
-
-    private <T> List<List<T>> splitIntoBatches(List<T> list, int batchSize) {
-        List<List<T>> batches = new ArrayList<>();
-        for (int i = 0; i < list.size(); i += batchSize) {
-            batches.add(list.subList(i, Math.min(i + batchSize, list.size())));
-        }
-        return batches;
     }
 }
