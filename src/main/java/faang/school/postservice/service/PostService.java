@@ -11,8 +11,8 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.event.PostEvent;
-import faang.school.postservice.event.PostViewEvent;
+import faang.school.postservice.event.kafka.KafkaPostEvent;
+import faang.school.postservice.event.kafka.KafkaPostViewEvent;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
@@ -112,12 +112,12 @@ public class PostService {
         List<Long> userFollowers = userServiceClient.getUserFollowers(authorDto.getId())
                 .stream().map(UserDto::getId).toList();
 
-        PostEvent postEvent = PostEvent.builder()
+        KafkaPostEvent kafkaPostEvent = KafkaPostEvent.builder()
                 .postId(post.getId())
                 .authorId(authorDto.getId())
                 .subscribersId(userFollowers)
                 .build();
-        kafkaPostEventProducer.sendMessage(postEvent);
+        kafkaPostEventProducer.sendMessage(kafkaPostEvent);
 
         return postDtoForReturns;
     }
@@ -258,7 +258,7 @@ public class PostService {
     }
 
     private void sendToRedisPublisher(long userId, long postId) {
-        PostEvent event = PostEvent.builder()
+        KafkaPostEvent event = KafkaPostEvent.builder()
                 .authorId(userId)
                 .postId(postId)
                 .build();
@@ -292,10 +292,10 @@ public class PostService {
     }
 
     private void publishPostViewToKafka(Post post) {
-        PostViewEvent postViewEvent = PostViewEvent.builder()
+        KafkaPostViewEvent kafkaPostViewEvent = KafkaPostViewEvent.builder()
                 .postId(post.getId())
                 .userId(userContext.getUserId())
                 .build();
-        kafkaPostViewEventProducer.sendMessage(postViewEvent);
+        kafkaPostViewEventProducer.sendMessage(kafkaPostViewEvent);
     }
 }

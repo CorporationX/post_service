@@ -20,9 +20,14 @@ public class KafkaTopicConfig {
     private Integer postsPartitionsNumber;
 
     @Value("${spring.kafka.topic.posts_view.name}")
-    private String postsViewName;
+    private String postsViewTopicName;
     @Value("${spring.kafka.topic.posts_view.partitions}")
     private Integer postsViewPartitionsNumber;
+
+    @Value("${spring.kafka.topic.comments.name}")
+    private String commentTopicName;
+    @Value("${spring.kafka.topic.posts_view.partitions}")
+    private Integer commentsPartitionsNumber;
 
     @Bean
     public NewTopic likesTopic() {
@@ -40,8 +45,15 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic postsViewTopic() {
-        return TopicBuilder.name(postsViewName)
+        return TopicBuilder.name(postsViewTopicName)
                 .partitions(postsViewPartitionsNumber)
+                .build();
+    }
+
+    @Bean
+    public NewTopic commentsTopic() {
+        return TopicBuilder.name(commentTopicName)
+                .partitions(commentsPartitionsNumber)
                 .build();
     }
 }

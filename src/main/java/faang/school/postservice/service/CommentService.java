@@ -8,9 +8,11 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.kafka.KafkaCommentEvent;
 import faang.school.postservice.mapper.CommentAchievementMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.KafkaCommentEventProducer;
 import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
 import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
@@ -31,6 +33,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CommentService {
+    @Value("${spring.data.redis.cache.user.ttl}")
+    private long userTtl;
+
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final UserContext userContext;
@@ -41,9 +46,8 @@ public class CommentService {
     private final CommentAchievementMapper commentAchievementMapper;
     private final UserServiceClient userServiceClient;
     private final UserCacheRepository userCacheRepository;
+    private final KafkaCommentEventProducer kafkaCommentEventProducer;
 
-    @Value("${spring.data.redis.cache.user.ttl}")
-    private long userTtl;
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
@@ -65,6 +69,9 @@ public class CommentService {
         UserDto userDto = userServiceClient.getUser(userContext.getUserId());
         UserCache userCache = new UserCache(userDto.getId(), userDto, userTtl);
         userCacheRepository.save(userCache);
+
+        KafkaCommentEvent kafkaCommentEvent = commentMapper.toKafkaEvent(comment);
+        kafkaCommentEventProducer.sendMessage(kafkaCommentEvent);
 
         return commentMapper.entityToDto(savedComment);
     }

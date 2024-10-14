@@ -12,8 +12,8 @@ import faang.school.postservice.dto.hashtag.HashtagResponse;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostResponse;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.event.PostEvent;
-import faang.school.postservice.event.PostViewEvent;
+import faang.school.postservice.event.kafka.KafkaPostEvent;
+import faang.school.postservice.event.kafka.KafkaPostViewEvent;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
@@ -262,7 +262,7 @@ public class PostServiceTest {
         verify(postEventPublisher, times(1)).publish(any());
         verify(postCacheRepository, times(1)).save(postCacheArgumentCaptor.capture());
         verify(userCacheRepository, times(1)).save(any(UserCache.class));
-        verify(kafkaPostEventProducer, times(1)).sendMessage(any(PostEvent.class));
+        verify(kafkaPostEventProducer, times(1)).sendMessage(any(KafkaPostEvent.class));
     }
 
     @Test
@@ -372,7 +372,7 @@ public class PostServiceTest {
 
         postService.getPostDtoById(1L);
 
-        verify(kafkaPostViewEventProducer, times(1)).sendMessage(any(PostViewEvent.class));
+        verify(kafkaPostViewEventProducer, times(1)).sendMessage(any(KafkaPostViewEvent.class));
         verify(postMapper, times(1)).toDto(post);
     }
 
