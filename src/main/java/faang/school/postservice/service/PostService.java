@@ -104,7 +104,7 @@ public class PostService {
     public PostDto getPost(Long id) {
         Post post = getEntityFromDB(id);
         long views = postRepository.incrementAndGetViewsById(id, 1);
-        kafkaProducer.send(postViewedTopic, new PostViewedEvent(id, views));
+        sendPostViewedEvent(id, views);
         return mapper.toDto(post);
     }
 
@@ -140,9 +140,13 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post by id %s not found", postId)));
     }
 
-
     private void sendPostPublishedEvent(Post post, UserDto userDto) {
         PostPublishedEvent event = new PostPublishedEvent(post.getId(), userDto.getFollowersIds());
         kafkaProducer.send(postPublishedTopic, event);
+    }
+
+    private void sendPostViewedEvent(Long id, long views) {
+        PostViewedEvent event = new PostViewedEvent(id, views);
+        kafkaProducer.send(postViewedTopic, event);
     }
 }
