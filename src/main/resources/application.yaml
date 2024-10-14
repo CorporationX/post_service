@@ -29,6 +29,8 @@ spring:
         like-channel:
           name: like-channel
 
+        comment-receiving:
+          name: comment-receiving-topic
 server:
   port: 8081
 
@@ -101,4 +103,4 @@ premium:
 
 thread-pool:
   fixed:
-    size: 5
+    size: 8
