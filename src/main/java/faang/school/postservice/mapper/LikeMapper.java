@@ -1,7 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.event.PostLikeEvent;
+import faang.school.postservice.event.kafka.KafkaPostLikeEvent;
 import faang.school.postservice.model.Like;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,5 +19,5 @@ public interface LikeMapper {
     LikeDto toLikeDto(Like like);
 
     @Mapping(source = "post.id", target = "postId")
-    PostLikeEvent toLikePostEvent(Like like);
+    KafkaPostLikeEvent toLikePostEvent(Like like);
 }

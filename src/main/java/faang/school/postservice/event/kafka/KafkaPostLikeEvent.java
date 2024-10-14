@@ -1,4 +1,4 @@
-package faang.school.postservice.event;
+package faang.school.postservice.event.kafka;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostLikeEvent {
+public class KafkaPostLikeEvent {
     private long postId;
     private long postAuthorId;
     private long likeAuthorId;

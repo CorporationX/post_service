@@ -100,6 +100,10 @@ spring:
       posts_view:
         name: posts_view
         partitions: 8
+      comments:
+        name: comments
+        partitions: 8
+
 
 server:
   port: 8081

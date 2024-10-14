@@ -3,7 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.event.PostLikeEvent;
+import faang.school.postservice.event.kafka.KafkaPostLikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -89,9 +89,9 @@ public class LikeService {
         post.getLikes().add(like);
         Like savedLike = likeRepository.save(like);
 
-        PostLikeEvent postLikeEvent = likeMapper.toLikePostEvent(like);
-        postLikeEventPublisher.publish(postLikeEvent);
-        kafkaPostLikeEventProducer.sendMessage(postLikeEvent);
+        KafkaPostLikeEvent kafkaPostLikeEvent = likeMapper.toLikePostEvent(like);
+        postLikeEventPublisher.publish(kafkaPostLikeEvent);
+        kafkaPostLikeEventProducer.sendMessage(kafkaPostLikeEvent);
 
         return likeMapper.toLikeDto(savedLike);
     }

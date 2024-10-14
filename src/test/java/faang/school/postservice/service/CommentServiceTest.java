@@ -8,10 +8,12 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentAchievementEvent;
 import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.kafka.KafkaCommentEvent;
 import faang.school.postservice.mapper.CommentAchievementMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaCommentEventProducer;
 import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
 import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
@@ -60,6 +62,8 @@ public class CommentServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private UserCacheRepository userCacheRepository;
+    @Mock
+    private KafkaCommentEventProducer kafkaCommentEventProducer;
 
     private long commentId;
     private long postId;
@@ -70,6 +74,7 @@ public class CommentServiceTest {
     private Post post;
     private CommentAchievementEvent commentAchievementEvent;
     private UserDto userDto;
+    private KafkaCommentEvent kafkaCommentEvent;
 
     @BeforeEach
     void init() {
@@ -77,6 +82,7 @@ public class CommentServiceTest {
         userId = 2L;
         postId = 4L;
         String content = "content";
+        kafkaCommentEvent = new KafkaCommentEvent();
         userDto = UserDto.builder().build();
         post = Post.builder()
                 .id(postId)
@@ -129,6 +135,7 @@ public class CommentServiceTest {
         when(commentMapper.entityToDto(comment)).thenReturn(commentDto);
         when(commentAchievementMapper.commentDtoToCommentAchievementEvent(commentDto)).thenReturn(commentAchievementEvent);
         when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(commentMapper.toKafkaEvent(comment)).thenReturn(kafkaCommentEvent);
         CommentDto result = commentService.createComment(commentDto);
         CommentEvent commentEvent = CommentEvent.builder()
                 .commentAuthorId(comment.getAuthorId())
@@ -139,6 +146,8 @@ public class CommentServiceTest {
         verify(commentAchievementEventPublisher).publish(commentAchievementEvent);
         verify(userServiceClient, times(1)).getUser(userId);
         verify(userCacheRepository, times(1)).save(any(UserCache.class));
+        verify(commentMapper, times(1)).toKafkaEvent(comment);
+        verify(kafkaCommentEventProducer, times(1)).sendMessage(kafkaCommentEvent);
         assertNotNull(result);
         assertEquals(commentDto, result);
     }

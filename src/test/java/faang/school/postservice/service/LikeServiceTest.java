@@ -3,15 +3,12 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.event.PostLikeEvent;
-import faang.school.postservice.mapper.LikeEventMapper;
+import faang.school.postservice.event.kafka.KafkaPostLikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaPostLikeEventProducer;
-import faang.school.postservice.publisher.LikeEventPublisher;
-import faang.school.postservice.redisPublisher.LikePostPublisher;
 import faang.school.postservice.redisPublisher.PostLikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
@@ -172,7 +169,7 @@ public class LikeServiceTest {
     @DisplayName("Когда метод по добавлению лайка к посту отработал")
     @Test
     public void testAddLikeToPostWhenValid() {
-        PostLikeEvent postLikeEvent = new PostLikeEvent();
+        KafkaPostLikeEvent kafkaPostLikeEvent = new KafkaPostLikeEvent();
         UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
         post.setAuthorId(1L);
 
@@ -183,7 +180,7 @@ public class LikeServiceTest {
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
         doNothing().when(postLikeEventPublisher).publish(any());
         when(likeRepository.save(any())).thenReturn(like);
-        when(likeMapper.toLikePostEvent(like)).thenReturn(postLikeEvent);
+        when(likeMapper.toLikePostEvent(like)).thenReturn(kafkaPostLikeEvent);
 
         likeService.addLikeToPost(likeDtoPost);
 
@@ -195,7 +192,7 @@ public class LikeServiceTest {
         verify(likeMapper, times(1)).toLikeDto(like);
         verify(postLikeEventPublisher, times(1)).publish(any());
         verify(likeRepository, times(1)).save(like);
-        verify(kafkaPostLikeEventProducer, times(1)).sendMessage(postLikeEvent);
+        verify(kafkaPostLikeEventProducer, times(1)).sendMessage(kafkaPostLikeEvent);
     }
 
     @DisplayName("Когда метод по удалению лайка с поста отработал")
