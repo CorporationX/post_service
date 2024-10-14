@@ -11,4 +11,8 @@ public class RedisProperties {
     private int port;
     private String host;
     private Map<String, String> channels;
+
+    public String getChannel(String channelKey) {
+        return channels.get(channelKey);
+    }
 }

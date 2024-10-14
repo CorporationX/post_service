@@ -24,6 +24,7 @@ spring:
       channels:
         calculations-channel: calculations_channel
         user-service: ban_user_channel
+        comment-channel: comment_channel
 
 server:
   port: 8081
