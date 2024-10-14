@@ -11,6 +11,7 @@ import java.util.Map;
 public class RedisCacheProperty {
 
     private final Long defaultTtl;
+    private final String pathToEntities;
     private final Map<String, CacheSettings> cacheSettings;
 
     @Data
