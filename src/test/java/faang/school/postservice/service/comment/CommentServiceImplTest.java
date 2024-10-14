@@ -2,10 +2,12 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
@@ -25,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,6 +47,9 @@ class CommentServiceImplTest {
 
     @Mock
     private CommentMapperImpl commentMapper;
+
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
     @InjectMocks
     private CommentServiceImpl commentService;
@@ -94,6 +100,20 @@ class CommentServiceImplTest {
         when(commentRepository.existsById(commentId)).thenReturn(true);
         commentService.deleteComment(commentId);
         verify(commentRepository).deleteById(commentId);
+    }
+
+    @Test
+    void addComment_WhenOk() {
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(commentMapper.toComment(commentDto)).thenReturn(mockComment);
+
+        commentService.addComment(commentDto);
+
+        verify(postRepository).findById(postId);
+        verify(userServiceClient).getUser(authorId);
+        verify(commentRepository).save(any());
+        verify(commentEventPublisher).publish(any());
+        verify(commentMapper).toDto((Comment) any());
     }
 
     @Test
