@@ -26,6 +26,8 @@ public interface PostService {
 
     List<PostDto> getAllPublishedPostsByProjectId(Long projectId);
 
+    void moderatePosts();
+
     void correctUnpublishedPosts();
 
     void publishScheduledPosts(int batchSize);

@@ -3,6 +3,7 @@ package faang.school.postservice.service.impl.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.PostService;
@@ -31,6 +32,7 @@ public class PostServiceImpl implements PostService {
     private final HashtagService hashtagService;
     private final PostValidator postValidator;
     private final PostServiceAsync postServiceAsync;
+    private final ModerationDictionary dictionary;
 
     @Value("${post.correcter.posts-batch-size}")
     private int batchSize;
@@ -175,14 +177,23 @@ public class PostServiceImpl implements PostService {
                 .forEach(postServiceAsync::correctUnpublishedPostsByBatches);
     }
 
-    private Post getPostFromRepository(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
-    }
-
     @Override
     public void publishScheduledPosts(int batchSize) {
         var readyToPublishPosts = postRepository.findReadyToPublish();
         ListUtils.partition(readyToPublishPosts, batchSize).forEach(postServiceAsync::publishScheduledPostsAsyncInBatch);
+    }
+
+    @Override
+    @Transactional
+    public void moderatePosts() {
+        List<Post> unverifiedPosts = postRepository.findAllByVerifiedDateIsNull();
+        List<List<Post>> batches = ListUtils.partition(unverifiedPosts, batchSize);
+
+        batches.forEach(postServiceAsync::moderatePostsByBatches);
+    }
+
+    private Post getPostFromRepository(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
     }
 }

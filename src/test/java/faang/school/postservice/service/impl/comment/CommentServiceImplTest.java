@@ -7,8 +7,10 @@ import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.RedisBanMessagePublisher;
+import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.impl.comment.CommentServiceImpl;
+import faang.school.postservice.service.impl.comment.async.CommentServiceAsyncImpl;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
@@ -23,7 +26,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceImplTest {
@@ -36,6 +43,12 @@ class CommentServiceImplTest {
 
     @Mock
     private CommentValidator commentValidator;
+
+    @Mock
+    private ModerationDictionary dictionary;
+
+    @Mock
+    private CommentServiceAsyncImpl commentServiceAsync;
 
     @Mock
     private RedisBanMessagePublisher redisBanMessagePublisher;
@@ -76,6 +89,8 @@ class CommentServiceImplTest {
                 .content("This is a comment")
                 .post(post)
                 .authorId(1L)
+                .verified(null)
+                .verifiedDate(null)
                 .build();
 
 
@@ -99,6 +114,8 @@ class CommentServiceImplTest {
                 .authorId(2L)
                 .verified(false)
                 .build();
+
+        ReflectionTestUtils.setField(commentService, "batchSize", 1);
     }
 
     @Test
@@ -174,5 +191,21 @@ class CommentServiceImplTest {
         // Assert
         verify(redisBanMessagePublisher, times(1)).publish(new BanEvent(1L));
         verify(redisBanMessagePublisher, never()).publish(new BanEvent(2L));
+    }
+
+    @Test
+    void testModerateComments() {
+        Comment badComment = Comment.builder()
+                .content("I have seen babushka")
+                .verified(null)
+                .verifiedDate(null)
+                .build();
+        List<Comment> comments = List.of(comment, badComment);
+
+        when(commentRepository.findAllByVerifiedDateIsNull()).thenReturn(comments);
+
+        commentService.moderateComments();
+
+        verify(commentServiceAsync, times(2)).moderateCommentsByBatches(any());
     }
 }
