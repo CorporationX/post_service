@@ -24,6 +24,10 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        user-ban-channel:
+          name: user_ban_channel
+        comment-channel:
+          name: comment_channel
 
   config:
     import: text-gears-api.yaml
@@ -100,11 +104,6 @@ resource:
     max-rectangle-width: 1080
     max-rectangle-height: 566
     max-square-dimension: 1080
-
-redis:
-  channel:
-    user-ban: user_ban
-    comment: comment_channel
 
 user-service:
   host: localhost

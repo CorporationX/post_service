@@ -1,7 +1,7 @@
 package faang.school.postservice.config.redis;
 
 import faang.school.postservice.dto.redis.event.CommentEvent;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
@@ -14,10 +14,7 @@ import org.springframework.retry.annotation.EnableRetry;
 
 @Configuration
 @EnableRetry
-@RequiredArgsConstructor
 public class RedisConfig {
-
-    private final RedisChannelName redisChannelName;
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
@@ -42,12 +39,12 @@ public class RedisConfig {
     }
 
     @Bean(value = "banChannel")
-    public ChannelTopic channelTopic() {
-        return new ChannelTopic(redisChannelName.getUserBan());
+    public ChannelTopic channelTopic(@Value("${spring.data.redis.channels.user-ban-channel.name}") String userBanChannel) {
+        return new ChannelTopic(userBanChannel);
     }
 
     @Bean(value = "commentChannel")
-    public ChannelTopic commentChannel() {
-        return new ChannelTopic(redisChannelName.getComment());
+    public ChannelTopic commentChannel(@Value("${spring.data.redis.channels.comment-channel.name}") String commentChannel) {
+        return new ChannelTopic(commentChannel);
     }
 }
