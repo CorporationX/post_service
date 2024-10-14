@@ -6,6 +6,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.dto.comment.CommentRequestDto;
 import faang.school.postservice.model.dto.comment.CommentResponseDto;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.impl.comment.CommentServiceImpl;
@@ -48,6 +49,9 @@ class CommentServiceImplTest {
 
     @Mock
     private RedisBanMessagePublisher redisBanMessagePublisher;
+
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
     @InjectMocks
     private CommentServiceImpl commentService;

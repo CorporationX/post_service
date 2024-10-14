@@ -1,18 +1,22 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.event.CommentEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class LikeEventPublisher {
-    private final ChannelTopic likeTopic;
+@Slf4j
+public class CommentEventPublisher {
+
+    private final ChannelTopic commentTopic;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public void publish(LikeEvent likeEvent) {
-        redisTemplate.convertAndSend(likeTopic.getTopic(), likeEvent);
+    public void publish(CommentEvent commentEvent) {
+        redisTemplate.convertAndSend(commentTopic.getTopic(), commentEvent);
+        log.info("Comment event was sent");
     }
 }

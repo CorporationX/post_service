@@ -19,18 +19,21 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
+
     private final ObjectMapper objectMapper;
 
     @Value("${spring.data.redis.host}")
     private String host;
-
     @Value("${spring.data.redis.port}")
     private int port;
+
     @Value("${spring.data.redis.channels.like-channel.name}")
-    private String likeChannelName;
+    private String likeEvent;
+    @Value("${spring.data.redis.channels.comment-event-channel.name}")
+    private String commentEvent;
 
     @Value("${spring.data.redis.channels.user-ban.name}")
-    private String topicName;
+    private String userBanEvent;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -62,7 +65,17 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic likeChannelTopic() {
-        return new ChannelTopic(likeChannelName);
+    public ChannelTopic likeTopic() {
+        return new ChannelTopic(likeEvent);
+    }
+
+    @Bean
+    public ChannelTopic userBanTopic() {
+        return new ChannelTopic(userBanEvent);
+    }
+
+    @Bean
+    public ChannelTopic commentTopic() {
+        return new ChannelTopic(commentEvent);
     }
 }

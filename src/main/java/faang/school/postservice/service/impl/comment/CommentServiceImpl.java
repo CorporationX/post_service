@@ -1,10 +1,12 @@
 package faang.school.postservice.service.impl.comment;
 
 import faang.school.postservice.event.BanEvent;
+import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.dto.comment.CommentRequestDto;
 import faang.school.postservice.model.dto.comment.CommentResponseDto;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.CommentService;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,6 +34,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentValidator commentValidator;
     private final RedisBanMessagePublisher redisBanMessagePublisher;
     private final CommentServiceAsync commentServiceAsync;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Value("${comments.batch-size}")
     private int batchSize;
@@ -43,7 +47,9 @@ public class CommentServiceImpl implements CommentService {
         var comment = commentMapper.toEntity(dto);
         comment.setAuthorId(userId);
         comment.setPost(post);
-        return commentMapper.toResponseDto(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+        sendEvent(userId, savedComment);
+        return commentMapper.toResponseDto(savedComment);
     }
 
     @Override
@@ -90,5 +96,18 @@ public class CommentServiceImpl implements CommentService {
         List<List<Comment>> batches = ListUtils.partition(unverifiedPosts, batchSize);
 
         batches.forEach(commentServiceAsync::moderateCommentsByBatches);
+    }
+
+    private void sendEvent(long userId, Comment savedComment) {
+        CommentEvent event = buildCommentEvent(userId, savedComment);
+        commentEventPublisher.publish(event);
+    }
+
+    private CommentEvent buildCommentEvent(long userId, Comment savedComment) {
+        return CommentEvent.builder()
+                .commentId(savedComment.getId())
+                .authorId(userId)
+                .commentedAt(LocalDateTime.now())
+                .build();
     }
 }
