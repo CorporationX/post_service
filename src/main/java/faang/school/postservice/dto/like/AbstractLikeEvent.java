@@ -1,13 +1,14 @@
 package faang.school.postservice.dto.like;
 
 import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Builder
+@AllArgsConstructor
 public abstract class AbstractLikeEvent {
     @Positive
     protected final Long likedEntityId;
