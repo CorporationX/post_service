@@ -1,13 +1,14 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.impl.post.PostServiceImpl;
+import faang.school.postservice.service.impl.post.async.PostServiceAsyncImpl;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
-import faang.school.postservice.service.HashtagService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,9 +52,6 @@ public class PostServiceImplTest {
 
     @Mock
     private HashtagService hashtagService;
-
-    @Mock
-    private ModerationDictionary dictionary;
 
     @Mock
     private PostServiceAsyncImpl postServiceAsync;

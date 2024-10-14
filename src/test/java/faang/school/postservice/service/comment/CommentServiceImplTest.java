@@ -1,14 +1,13 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.model.dto.comment.CommentRequestDto;
-import faang.school.postservice.model.dto.comment.CommentResponseDto;
+import faang.school.postservice.event.BanEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.dto.comment.CommentRequestDto;
+import faang.school.postservice.model.dto.comment.CommentResponseDto;
 import faang.school.postservice.publisher.RedisBanMessagePublisher;
-import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.impl.comment.CommentServiceImpl;
 import faang.school.postservice.service.impl.comment.CommentServiceImpl;
 import faang.school.postservice.service.impl.comment.async.CommentServiceAsyncImpl;
 import faang.school.postservice.validator.comment.CommentValidator;
@@ -27,10 +26,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceImplTest {
@@ -45,9 +44,6 @@ class CommentServiceImplTest {
     private CommentValidator commentValidator;
 
     @Mock
-    private ModerationDictionary dictionary;
-
-    @Mock
     private CommentServiceAsyncImpl commentServiceAsync;
 
     @Mock
@@ -60,10 +56,6 @@ class CommentServiceImplTest {
     private CommentRequestDto commentRequestDto;
     private CommentResponseDto commentResponseDto;
     private Comment comment;
-
-    private Comment verifiedComment;
-    private Comment unverifiedComment1;
-    private Comment unverifiedComment2;
 
     @BeforeEach
     void setUp() {
@@ -91,28 +83,6 @@ class CommentServiceImplTest {
                 .authorId(1L)
                 .verified(null)
                 .verifiedDate(null)
-                .build();
-
-
-        verifiedComment = Comment.builder()
-                .id(1L)
-                .content("This is a verified comment")
-                .authorId(1L)
-                .verified(true)
-                .build();
-
-        unverifiedComment1 = Comment.builder()
-                .id(2L)
-                .content("This is an unverified comment")
-                .authorId(1L)
-                .verified(false)
-                .build();
-
-        unverifiedComment2 = Comment.builder()
-                .id(3L)
-                .content("This is another unverified comment")
-                .authorId(2L)
-                .verified(false)
                 .build();
 
         ReflectionTestUtils.setField(commentService, "batchSize", 1);
