@@ -34,6 +34,9 @@ spring:
         feed:
           maxSize: 500
           pageSize: 20
+        ttl:
+          post: 86400
+          user: 86400
 
     kafka:
       bootstrap-servers: kafka:9092
@@ -61,9 +64,9 @@ spring:
           spring.json.trusted.packages: 'faang.school.postservice.dto'
           spring.json.use.type.headers: false
         groups:
-          postGroup: postGroup
-          commentGroup: commentGroup
-          likeGroup: likeGroup
+          post: postGroup
+          comment: commentGroup
+          like: likeGroup
       listener:
         missing-topics-fatal: false
 

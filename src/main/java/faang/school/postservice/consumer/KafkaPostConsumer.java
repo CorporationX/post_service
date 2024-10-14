@@ -13,12 +13,9 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class KafkaPostConsumer {
     private final FeedService feedService;
-    @Value("${spring.data.kafka.topics.post.name}")
-    private String topic;
-    @Value("${spring.data.kafka.consumer.groups.postGroup}")
-    private int groupId;
 
-    @KafkaListener(topics = topic, groupId = groupId)
+    @KafkaListener(topics = "${spring.data.kafka.topics.post.name}",
+            groupId = "${spring.data.kafka.consumer.groups.post}")
     public void consume(FeedPostEvent event) {
         Long postId = event.getPostId();
         log.info("Received PostEvent for post ID: {}", postId);
