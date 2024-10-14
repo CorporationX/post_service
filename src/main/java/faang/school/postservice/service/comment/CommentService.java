@@ -36,7 +36,7 @@ public class CommentService {
                     savedComment.getId(),
                     LocalDateTime.now()
             );
-            commentEventPublisher.publish(event);
+            commentEventPublisher.publishCommentEvent(event);
         }
         return savedComment;
     }

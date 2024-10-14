@@ -81,7 +81,7 @@ class CommentServiceTest {
         assertEquals(postId, commentCaptor.getValue().getPost().getId());
         assertEquals(content, commentCaptor.getValue().getContent());
 
-        verify(commentEventPublisher).publish(commentEventCaptor.capture());
+        verify(commentEventPublisher).publishCommentEvent(commentEventCaptor.capture());
 
         CommentEvent capturedEvent = commentEventCaptor.getValue();
         assertEquals(postId, capturedEvent.getPostId());

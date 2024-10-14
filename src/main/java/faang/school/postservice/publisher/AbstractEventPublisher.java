@@ -11,19 +11,18 @@ import org.springframework.data.redis.listener.Topic;
 @RequiredArgsConstructor
 public abstract class AbstractEventPublisher<T> implements EventPublisher<T> {
     private final RedisTemplate<String, Object> redisTemplate;
-    private final Topic topic;
     private final ObjectMapper objectMapper;
 
     @Override
-    public void publish(T event) {
+    public void publish(T event, Topic topic) {
         try {
             String jsonEvent = objectMapper.writeValueAsString(event);
             redisTemplate.convertAndSend(topic.getTopic(), jsonEvent);
-            log.info("Send is done");
-        } catch (JsonProcessingException jsonProcessingException) {
-            log.error("Failed to convert event to json", jsonProcessingException);
-        } catch (Exception exception) {
-            log.error("Failed to send event to Redis", exception);
+            log.info("Event published to Redis topic {}: {}", topic.getTopic(), jsonEvent);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to convert event to JSON", e);
+        } catch (Exception e) {
+            log.error("Failed to publish event to Redis", e);
         }
     }
 }
