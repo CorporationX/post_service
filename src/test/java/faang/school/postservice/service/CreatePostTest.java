@@ -10,6 +10,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.messaging.NewPostPublisher;
+import faang.school.postservice.service.impl.PostServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +42,7 @@ public class CreatePostTest {
     private PostMapper postMapper;
 
     @InjectMocks
-    private PostService postService;
+    private PostServiceImpl postService;
 
     private PostDto validUserPostDto;
     private PostDto validProjectPostDto;

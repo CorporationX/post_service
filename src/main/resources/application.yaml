@@ -49,6 +49,11 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: trace
 
 post:
+  moderation:
+    scheduler:
+      cron: "@daily"
+    batch-size: 100
+    file-path: src/main/resources/swear_words.txt
   publisher:
     butch-size: 1000
     scheduler:
