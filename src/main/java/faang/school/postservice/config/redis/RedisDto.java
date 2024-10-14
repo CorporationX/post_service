@@ -1,4 +1,4 @@
-package faang.school.postservice.redis;
+package faang.school.postservice.config.redis;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;

@@ -42,7 +42,7 @@ public class LikeServiceImpl implements LikeService {
         Post post = postRepository.findById(likeDto.getPostId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post with %s id not found", likeDto.getPostId())));
         startValidationForPost(likeDto);
-        log.info("The like was verified with the {}post id", likeDto.getPostId());
+        log.info("The like was verified with the {} post id", likeDto.getPostId());
 
         Like like = likeMapper.toEntity(likeDto);
         like.setPost(post);
@@ -73,22 +73,13 @@ public class LikeServiceImpl implements LikeService {
         like.setPost(null);
         like.setCreatedAt(LocalDateTime.now());
         likeRepository.save(like);
-        log.info("The like was added to the database to {}comment", likeDto.getCommentId());
+        log.info("The like was added to the database to {} comment", likeDto.getCommentId());
         return likeMapper.toDto(like);
     }
 
     public void unlikeComment(LikeDto likeDto) {
         Comment comment = validateAndGetComment(likeDto);
         likeRepository.deleteByCommentIdAndUserId(comment.getId(), likeDto.getUserId());
-    }
-
-    private void pushMessage(LikeEvent likeEvent) {
-        try {
-            String json = objectMapper.writeValueAsString(likeEvent);
-            likeEventPublisher.publish(json);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private void startValidationForPost(LikeDto likeDto) {
@@ -212,6 +203,7 @@ public class LikeServiceImpl implements LikeService {
     private void publishLikeEvent(LikeDto likeDto, Post post) {
         LikeEvent likeEvent = new LikeEvent();
         likeEvent.setPostId(likeDto.getPostId());
+        likeEvent.setUserId(likeDto.getUserId());
         likeEvent.setLikingUserId(likeDto.getUserId());
         likeEvent.setLikedUserId(post.getAuthorId());
         likeEvent.setCreatedAt(likeDto.getCreatedAt());

@@ -13,6 +13,7 @@ public class LikeEvent {
     private Long postId;
     private Long authorPostId;
     private Long likingUserId;
+    private Long userId;
     private Long likedUserId;
     private LocalDateTime createdAt;
 }

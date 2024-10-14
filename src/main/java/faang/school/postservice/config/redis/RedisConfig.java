@@ -1,4 +1,4 @@
-package faang.school.postservice.redis;
+package faang.school.postservice.config.redis;
 
 import faang.school.postservice.publisher.LikeEventPublisher;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public LikeEventPublisher redisPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic likeEventTopic) {
+    public LikeEventPublisher likeEventPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic likeEventTopic) {
         return new LikeEventPublisher(redisTemplate, likeEventTopic);
     }
 }
