@@ -26,6 +26,9 @@ spring:
           name: calculations_channel
         user-ban:
           name: user_ban
+        like-channel:
+          name: like-channel
+
 server:
   port: 8081
 

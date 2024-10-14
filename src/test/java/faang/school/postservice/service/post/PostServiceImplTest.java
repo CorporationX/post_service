@@ -1,12 +1,11 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.moderation.ModerationDictionary;
+import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.impl.post.PostServiceImpl;
 import faang.school.postservice.service.HashtagService;
+import faang.school.postservice.service.impl.post.PostServiceImpl;
 import faang.school.postservice.service.impl.post.async.PostServiceAsyncImpl;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,9 +52,6 @@ public class PostServiceImplTest {
 
     @Mock
     private HashtagService hashtagService;
-
-    @Mock
-    private ModerationDictionary dictionary;
 
     @Mock
     private PostServiceAsyncImpl postServiceAsync;
@@ -114,7 +110,7 @@ public class PostServiceImplTest {
         when(postRepository.save(any(Post.class))).thenReturn(examplePost);
 
         // Act
-        PostDto result = postService.publishPost(examplePostDto);
+        postService.publishPost(examplePostDto);
 
         // Assert
         assertTrue(examplePost.isPublished());

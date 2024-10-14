@@ -1,9 +1,8 @@
 package faang.school.postservice.service.impl.post;
 
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.moderation.ModerationDictionary;
+import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.PostService;
@@ -32,7 +31,6 @@ public class PostServiceImpl implements PostService {
     private final HashtagService hashtagService;
     private final PostValidator postValidator;
     private final PostServiceAsync postServiceAsync;
-    private final ModerationDictionary dictionary;
 
     @Value("${post.correcter.posts-batch-size}")
     private int batchSize;
@@ -105,15 +103,13 @@ public class PostServiceImpl implements PostService {
     public List<PostDto> getAllDraftsByAuthorId(Long userId) {
         postValidator.validateIfAuthorExists(userId);
 
-        List<PostDto> posts = postRepository.findAll().stream()
+        return postRepository.findAll().stream()
                 .filter(post -> Objects.equals(post.getAuthorId(), userId))
                 .filter(post -> !post.isPublished())
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
-
-        return posts;
     }
 
     @Override
@@ -121,15 +117,13 @@ public class PostServiceImpl implements PostService {
     public List<PostDto> getAllDraftsByProjectId(Long projectId) {
         postValidator.validateIfProjectExists(projectId);
 
-        List<PostDto> posts = postRepository.findAll().stream()
+        return postRepository.findAll().stream()
                 .filter(post -> Objects.equals(post.getProjectId(), projectId))
                 .filter(post -> !post.isPublished())
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
-
-        return posts;
     }
 
     @Override
@@ -137,15 +131,13 @@ public class PostServiceImpl implements PostService {
     public List<PostDto> getAllPublishedPostsByAuthorId(Long userId) {
         postValidator.validateIfAuthorExists(userId);
 
-        List<PostDto> posts = postRepository.findAll().stream()
+        return postRepository.findAll().stream()
                 .filter(post -> Objects.equals(post.getAuthorId(), userId))
                 .filter(Post::isPublished)
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
-
-        return posts;
     }
 
     @Override
@@ -153,15 +145,13 @@ public class PostServiceImpl implements PostService {
     public List<PostDto> getAllPublishedPostsByProjectId(Long projectId) {
         postValidator.validateIfProjectExists(projectId);
 
-        List<PostDto> posts = postRepository.findAll().stream()
+        return postRepository.findAll().stream()
                 .filter(post -> Objects.equals(post.getProjectId(), projectId))
                 .filter(Post::isPublished)
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
-
-        return posts;
     }
 
     @Override

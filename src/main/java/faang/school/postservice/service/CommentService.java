@@ -1,12 +1,9 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.comment.CommentRequestDto;
-import faang.school.postservice.dto.comment.CommentResponseDto;
-import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.dto.comment.CommentRequestDto;
+import faang.school.postservice.model.dto.comment.CommentResponseDto;
 
 import java.util.List;
-import java.util.Map;
 
 public interface CommentService {
 
