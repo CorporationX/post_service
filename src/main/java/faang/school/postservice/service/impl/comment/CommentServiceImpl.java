@@ -1,5 +1,6 @@
 package faang.school.postservice.service.impl.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.event.BanEvent;
 import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
@@ -19,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CommentServiceImpl implements CommentService {
 
+    private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
@@ -43,12 +44,21 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentResponseDto create(long userId, CommentRequestDto dto) {
         commentValidator.validateUser(userId);
+        var user = userServiceClient.getUser(userId);
         var post = commentValidator.findPostById(dto.postId());
         var comment = commentMapper.toEntity(dto);
         comment.setAuthorId(userId);
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
-        sendEvent(userId, savedComment);
+        CommentEvent event = CommentEvent.builder()
+                .commentAuthorId(savedComment.getAuthorId())
+                .username(user.username())
+                .postAuthorId(post.getAuthorId())
+                .postId(savedComment.getPost().getId())
+                .content(savedComment.getContent())
+                .commentId(savedComment.getId())
+                .build();
+        commentEventPublisher.publish(event);
         return commentMapper.toResponseDto(savedComment);
     }
 
@@ -96,18 +106,5 @@ public class CommentServiceImpl implements CommentService {
         List<List<Comment>> batches = ListUtils.partition(unverifiedPosts, batchSize);
 
         batches.forEach(commentServiceAsync::moderateCommentsByBatches);
-    }
-
-    private void sendEvent(long userId, Comment savedComment) {
-        CommentEvent event = buildCommentEvent(userId, savedComment);
-        commentEventPublisher.publish(event);
-    }
-
-    private CommentEvent buildCommentEvent(long userId, Comment savedComment) {
-        return CommentEvent.builder()
-                .commentId(savedComment.getId())
-                .authorId(userId)
-                .commentedAt(LocalDateTime.now())
-                .build();
     }
 }
