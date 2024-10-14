@@ -20,6 +20,7 @@ public class LikeValidator {
 
     public <T, R extends JpaRepository<T, Long>> T validateCommentOrPost(long commentAndPostId, R repository) {
         return repository.findById(commentAndPostId).orElseThrow(() -> {
+            log.error("The comment with ID {}  does not exist", commentAndPostId);
             return new DataValidationException("Комментарий не существует " + commentAndPostId);
         });
     }
@@ -29,6 +30,10 @@ public class LikeValidator {
                 .filter(like -> like.getUserId().equals(userId))
                 .findFirst()
                 .ifPresent(like -> {
+                    log.error("User with ID {} already liked the {} with ID {}",
+                            userId,
+                            commentOrPost.getClass().getName(),
+                            commentOrPost.getId());
                     throw new DataValidationException("User with ID " +
                             userId +
                             " already liked the" +

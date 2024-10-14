@@ -4,7 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.event.LikeEventDto;
+import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -73,7 +73,7 @@ public class LikeServiceImpl implements LikeService {
         log.info("Creating a like for a post with ID {}", postId);
 
         Like saveLike = saveLikePost(post, userId);
-        LikeEventDto likeEventDto = new LikeEventDto(post.getAuthorId(), userId, postId);
+        LikeEvent likeEventDto = new LikeEvent(post.getAuthorId(), userId, postId);
         likeEventPublisher.publisher(likeEventDto);
 
         log.info("Created a like with ID {} from a user with ID {} to a post with ID {}",
