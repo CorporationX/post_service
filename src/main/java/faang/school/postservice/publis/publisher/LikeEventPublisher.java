@@ -3,7 +3,7 @@ package faang.school.postservice.publis.publisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.config.redis.RedisProperties;
-import faang.school.postservice.dto.like.LikeEventDto;
+import faang.school.postservice.dto.like.AbstractLikeEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -17,9 +17,13 @@ public class LikeEventPublisher {
     private final StringRedisTemplate redisTemplate;
     private final RedisProperties redisProperties;
 
-    public void publish(LikeEventDto message) {
+    public void publishPostLikeEventToBroker(AbstractLikeEvent message) {
+        String postLikeEventChannel = redisProperties.getPostLikeEventChannelName();
+        publish(message, postLikeEventChannel);
+    }
+
+    public void publish(Object message, String likeEventChannel) {
         String valueAsString;
-        String likeEventChannel = redisProperties.getLikeEventChannelName();
         try {
             valueAsString = objectMapper.writeValueAsString(message);
         } catch (JsonProcessingException e) {
@@ -27,6 +31,6 @@ public class LikeEventPublisher {
             throw new RuntimeException(e);
         }
         redisTemplate.convertAndSend(likeEventChannel, valueAsString);
-        log.info("Sand LikeEvent message to NotificationService: " + message);
+        log.info("Send LikeEvent message to NotificationService: {} to channel: {}", message, likeEventChannel);
     }
 }

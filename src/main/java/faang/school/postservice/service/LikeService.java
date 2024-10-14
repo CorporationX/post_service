@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.like.LikeEventDto;
+import faang.school.postservice.dto.like.AbstractLikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.like.LikeEventMapper;
 import faang.school.postservice.model.Comment;
@@ -51,7 +51,9 @@ public class LikeService {
         List<Like> likeList = post.getLikes();
         likeList.add(newLike);
         post.setLikes(likeList);
-
+        //вопросик к реализации этого метода, я тут пока ничего не меняю
+        //в пост добавляется лайк, но не вижу сохранения поста
+        publishPostLikeEventToBroker(newLike, post);
         return newLike;
     }
 
@@ -74,6 +76,9 @@ public class LikeService {
         List<Like> likeList = comment.getLikes();
         likeList.add(newLike);
         comment.setLikes(likeList);
+
+        //вопросик к реализации этого метода, я тут пока ничего не меняю
+        //в комментарий добавляется лайк, но не вижу сохранения комментария
 
         return newLike;
     }
@@ -140,8 +145,8 @@ public class LikeService {
     }
 
 
-    private void publishLikeEventToNotificationService(Like like, Post post) {
-        LikeEventDto likeEventDto = likeEventMapper.toEvent(like, post);
-        likeEventPublisher.publish(likeEventDto);
+    private void publishPostLikeEventToBroker(Like like, Post post) {
+        AbstractLikeEvent abstractLikeEvent = likeEventMapper.toPostLikeEvent(like, post);
+        likeEventPublisher.publishPostLikeEventToBroker(abstractLikeEvent);
     }
 }
