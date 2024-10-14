@@ -1,10 +1,13 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.like.LikeEventDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.like.LikeEventMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publis.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -25,6 +28,8 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final LikeEventMapper likeEventMapper;
+    private final LikeEventPublisher likeEventPublisher;
 
     @Transactional
     public Like addToPost(Long postId, Like tempLike) {
@@ -132,5 +137,11 @@ public class LikeService {
         if (!postRepository.existsById(postId)) {
             throw new NoSuchElementException(Util.POST_NOT_EXIST);
         }
+    }
+
+
+    private void publishLikeEventToNotificationService(Like like, Post post) {
+        LikeEventDto likeEventDto = likeEventMapper.toEvent(like, post);
+        likeEventPublisher.publish(likeEventDto);
     }
 }
