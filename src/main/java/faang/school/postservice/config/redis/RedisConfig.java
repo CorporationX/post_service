@@ -27,6 +27,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
 
+    @Value("${spring.data.redis.channels.like-channel.name}")
+    private String likeChannelName;
+
     @Value("${spring.data.redis.channels.user-ban.name}")
     private String userBanTopic;
 
@@ -35,7 +38,6 @@ public class RedisConfig {
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
-        System.out.println(port);
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         return new JedisConnectionFactory(config);
     }
@@ -58,7 +60,7 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer =
                 new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
-
+        redisTemplate.setConnectionFactory(redisConnectionFactory());
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
         return redisTemplate;
@@ -72,5 +74,9 @@ public class RedisConfig {
     @Bean
     public ChannelTopic commentReceivingTopic() {
         return new ChannelTopic(commentReceivingTopic);
+    }
+
+    public ChannelTopic likeChannelTopic() {
+        return new ChannelTopic(likeChannelName);
     }
 }

@@ -13,6 +13,7 @@ import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.impl.comment.CommentServiceImpl;
+import faang.school.postservice.service.impl.comment.async.CommentServiceAsyncImpl;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
@@ -45,6 +47,9 @@ class CommentServiceImplTest {
 
     @Mock
     private CommentValidator commentValidator;
+
+    @Mock
+    private CommentServiceAsyncImpl commentServiceAsync;
 
     @Mock
     private RedisBanMessagePublisher redisBanMessagePublisher;
@@ -88,8 +93,11 @@ class CommentServiceImplTest {
                 .content("This is a comment")
                 .post(post)
                 .authorId(1L)
+                .verified(null)
+                .verifiedDate(null)
                 .build();
 
+        ReflectionTestUtils.setField(commentService, "batchSize", 1);
     }
 
     @Test
@@ -121,10 +129,11 @@ class CommentServiceImplTest {
         verify(commentValidator).validateUser(1L);
         verify(commentValidator).findPostById(1L);
         verify(commentRepository).save(comment);
+        assertThat(result).isEqualTo(commentResponseDto);
         verify(commentEventPublisher).publish(commentEvent);
         verify(userServiceClient).getUser(1);
-        assertThat(result).isEqualTo(commentResponseDto);
     }
+
 
     @Test
     void update_whenCommentExists_shouldUpdateComment() {
@@ -182,5 +191,21 @@ class CommentServiceImplTest {
         // Assert
         verify(redisBanMessagePublisher, times(1)).publish(new BanEvent(1L));
         verify(redisBanMessagePublisher, never()).publish(new BanEvent(2L));
+    }
+
+    @Test
+    void testModerateComments() {
+        Comment badComment = Comment.builder()
+                .content("I have seen babushka")
+                .verified(null)
+                .verifiedDate(null)
+                .build();
+        List<Comment> comments = List.of(comment, badComment);
+
+        when(commentRepository.findAllByVerifiedDateIsNull()).thenReturn(comments);
+
+        commentService.moderateComments();
+
+        verify(commentServiceAsync, times(2)).moderateCommentsByBatches(any());
     }
 }

@@ -1,16 +1,14 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.impl.post.PostServiceImpl;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.impl.post.PostServiceImpl;
 import faang.school.postservice.service.impl.post.async.PostServiceAsyncImpl;
 import faang.school.postservice.validator.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
-import faang.school.postservice.service.HashtagService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,7 +54,7 @@ public class PostServiceImplTest {
     private HashtagService hashtagService;
 
     @Mock
-    private PostServiceAsyncImpl postServiceAsyncImpl;
+    private PostServiceAsyncImpl postServiceAsync;
 
     private PostDto examplePostDto;
     private Post examplePost;
@@ -81,7 +80,11 @@ public class PostServiceImplTest {
                 .publishedAt(timeInstance)
                 .createdAt(timeInstance)
                 .title("Title")
+                .verified(null)
+                .verifiedDate(null)
                 .build();
+
+        ReflectionTestUtils.setField(postService, "batchSize", 1);
     }
 
     @Test
@@ -107,7 +110,7 @@ public class PostServiceImplTest {
         when(postRepository.save(any(Post.class))).thenReturn(examplePost);
 
         // Act
-        PostDto result = postService.publishPost(examplePostDto);
+        postService.publishPost(examplePostDto);
 
         // Assert
         assertTrue(examplePost.isPublished());
@@ -316,6 +319,18 @@ public class PostServiceImplTest {
         postService.publishScheduledPosts(1000);
 
         verify(postRepository).findReadyToPublish();
-        verify(postServiceAsyncImpl).publishScheduledPostsAsyncInBatch(anyList());
+        verify(postServiceAsync).publishScheduledPostsAsyncInBatch(anyList());
+    }
+
+    @Test
+    void testModeratePosts(){
+        Post badPost = Post.builder().content("here is bad word babushka").verified(null).verifiedDate(null).build();
+        List<Post> posts = List.of(examplePost, badPost);
+
+        when(postRepository.findAllByVerifiedDateIsNull()).thenReturn(posts);
+
+        postService.moderatePosts();
+
+        verify(postServiceAsync, times(2)).moderatePostsByBatches(any());
     }
 }

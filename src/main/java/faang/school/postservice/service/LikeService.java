@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.model.dto.like.LikeDto;
 
 public interface LikeService {
 

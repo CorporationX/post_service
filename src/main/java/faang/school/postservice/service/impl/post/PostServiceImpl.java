@@ -1,8 +1,8 @@
 package faang.school.postservice.service.impl.post;
 
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.PostService;
@@ -103,15 +103,13 @@ public class PostServiceImpl implements PostService {
     public List<PostDto> getAllDraftsByAuthorId(Long userId) {
         postValidator.validateIfAuthorExists(userId);
 
-        List<PostDto> posts = postRepository.findAll().stream()
+        return postRepository.findAll().stream()
                 .filter(post -> Objects.equals(post.getAuthorId(), userId))
                 .filter(post -> !post.isPublished())
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
-
-        return posts;
     }
 
     @Override
@@ -119,15 +117,13 @@ public class PostServiceImpl implements PostService {
     public List<PostDto> getAllDraftsByProjectId(Long projectId) {
         postValidator.validateIfProjectExists(projectId);
 
-        List<PostDto> posts = postRepository.findAll().stream()
+        return postRepository.findAll().stream()
                 .filter(post -> Objects.equals(post.getProjectId(), projectId))
                 .filter(post -> !post.isPublished())
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
-
-        return posts;
     }
 
     @Override
@@ -135,15 +131,13 @@ public class PostServiceImpl implements PostService {
     public List<PostDto> getAllPublishedPostsByAuthorId(Long userId) {
         postValidator.validateIfAuthorExists(userId);
 
-        List<PostDto> posts = postRepository.findAll().stream()
+        return postRepository.findAll().stream()
                 .filter(post -> Objects.equals(post.getAuthorId(), userId))
                 .filter(Post::isPublished)
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
-
-        return posts;
     }
 
     @Override
@@ -151,15 +145,13 @@ public class PostServiceImpl implements PostService {
     public List<PostDto> getAllPublishedPostsByProjectId(Long projectId) {
         postValidator.validateIfProjectExists(projectId);
 
-        List<PostDto> posts = postRepository.findAll().stream()
+        return postRepository.findAll().stream()
                 .filter(post -> Objects.equals(post.getProjectId(), projectId))
                 .filter(Post::isPublished)
                 .filter(post -> !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
-
-        return posts;
     }
 
     @Override
@@ -175,14 +167,23 @@ public class PostServiceImpl implements PostService {
                 .forEach(postServiceAsync::correctUnpublishedPostsByBatches);
     }
 
-    private Post getPostFromRepository(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
-    }
-
     @Override
     public void publishScheduledPosts(int batchSize) {
         var readyToPublishPosts = postRepository.findReadyToPublish();
         ListUtils.partition(readyToPublishPosts, batchSize).forEach(postServiceAsync::publishScheduledPostsAsyncInBatch);
+    }
+
+    @Override
+    @Transactional
+    public void moderatePosts() {
+        List<Post> unverifiedPosts = postRepository.findAllByVerifiedDateIsNull();
+        List<List<Post>> batches = ListUtils.partition(unverifiedPosts, batchSize);
+
+        batches.forEach(postServiceAsync::moderatePostsByBatches);
+    }
+
+    private Post getPostFromRepository(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
     }
 }

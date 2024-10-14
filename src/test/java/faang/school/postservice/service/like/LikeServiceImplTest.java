@@ -2,12 +2,14 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.model.dto.like.LikeDto;
+import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.model.dto.user.UserDto;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -19,8 +21,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceImplTest {
@@ -38,6 +45,8 @@ class LikeServiceImplTest {
     private UserServiceClient userServiceClient;
     @Mock
     private UserContext userContext;
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
     @InjectMocks
     private LikeServiceImpl likeService;
 
@@ -57,6 +66,7 @@ class LikeServiceImplTest {
         postId = 1L;
         comment = new Comment();
         post = new Post();
+        post.setAuthorId(1L);
         likeDto = new LikeDto();
         like = new Like();
         userDto = new UserDto(1L, "david", "david228", "david228@mail.ru");
@@ -69,39 +79,39 @@ class LikeServiceImplTest {
         likeDto.setId(1L);
         likeDto.setPostId(null);
 
-        Mockito.when(userContext.getUserId()).thenReturn(userId);
-        Mockito.when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userContext.getUserId()).thenReturn(userId);
+        when(userServiceClient.getUser(userId)).thenReturn(userDto);
 
-        Mockito.when(likeValidator.validate(commentId, userId, commentRepository))
+        when(likeValidator.validate(commentId, userId, commentRepository))
                 .thenReturn(comment);
-        Mockito.when(likeRepository.save(Mockito.any(Like.class))).thenReturn(like);
-        Mockito.when(likeMapper.toLikeDto(Mockito.any(Like.class))).thenReturn(likeDto);
+        when(likeRepository.save(any(Like.class))).thenReturn(like);
+        when(likeMapper.toLikeDto(any(Like.class))).thenReturn(likeDto);
 
         var result = likeService.createLikeComment(commentId);
 
-        Mockito.verify(userContext).getUserId();
-        Mockito.verify(userServiceClient).getUser(userId);
-        Mockito.verify(likeValidator).validate(commentId, userId, commentRepository);
-        Mockito.verify(likeRepository).save(Mockito.any(Like.class));
-        Mockito.verify(likeMapper).toLikeDto(Mockito.any(Like.class));
+        verify(userContext).getUserId();
+        verify(userServiceClient).getUser(userId);
+        verify(likeValidator).validate(commentId, userId, commentRepository);
+        verify(likeRepository).save(any(Like.class));
+        verify(likeMapper).toLikeDto(any(Like.class));
 
         Assertions.assertEquals(likeDto, result);
     }
 
     @Test
     void deleteLikeComment() {
-        Mockito.when(userContext.getUserId()).thenReturn(userId);
-        Mockito.when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userContext.getUserId()).thenReturn(userId);
+        when(userServiceClient.getUser(userId)).thenReturn(userDto);
 
-        Mockito.doNothing().when(likeRepository)
-                .deleteByCommentIdAndUserId(Mockito.anyLong(), Mockito.anyLong());
-        Mockito.when(likeValidator.validateCommentOrPost(commentId, commentRepository))
+        doNothing().when(likeRepository)
+                .deleteByCommentIdAndUserId(anyLong(), anyLong());
+        when(likeValidator.validateCommentOrPost(commentId, commentRepository))
                 .thenReturn(comment);
 
         likeService.deleteLikeComment(commentId);
 
-        Mockito.verify(likeValidator).validateCommentOrPost(commentId, commentRepository);
-        Mockito.verify(likeRepository).deleteByCommentIdAndUserId(commentId, userId);
+        verify(likeValidator).validateCommentOrPost(commentId, commentRepository);
+        verify(likeRepository).deleteByCommentIdAndUserId(commentId, userId);
     }
 
     @Test
@@ -111,38 +121,39 @@ class LikeServiceImplTest {
         likeDto.setId(1L);
         likeDto.setPostId(1L);
 
-        Mockito.when(userContext.getUserId()).thenReturn(userId);
-        Mockito.when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userContext.getUserId()).thenReturn(userId);
+        when(userServiceClient.getUser(userId)).thenReturn(userDto);
 
-        Mockito.when(likeValidator.validate(postId, userId, postRepository))
+        when(likeValidator.validate(postId, userId, postRepository))
                 .thenReturn(post);
-        Mockito.when(likeRepository.save(Mockito.any(Like.class))).thenReturn(like);
-        Mockito.when(likeMapper.toLikeDto(Mockito.any(Like.class))).thenReturn(likeDto);
+        when(likeRepository.save(any(Like.class))).thenReturn(like);
+        when(likeMapper.toLikeDto(any(Like.class))).thenReturn(likeDto);
 
         var result = likeService.createLikePost(postId);
 
-        Mockito.verify(userContext).getUserId();
-        Mockito.verify(userServiceClient).getUser(userId);
-        Mockito.verify(likeValidator).validate(postId, userId, postRepository);
-        Mockito.verify(likeRepository).save(Mockito.any(Like.class));
-        Mockito.verify(likeMapper).toLikeDto(Mockito.any(Like.class));
+        verify(userContext).getUserId();
+        verify(userServiceClient).getUser(userId);
+        verify(likeValidator).validate(postId, userId, postRepository);
+        verify(likeRepository).save(any(Like.class));
+        verify(likeMapper).toLikeDto(any(Like.class));
+        verify(likeEventPublisher).publish(any(LikeEvent.class));
 
         Assertions.assertEquals(likeDto, result);
     }
 
     @Test
     void deleteLikePost() {
-        Mockito.when(userContext.getUserId()).thenReturn(userId);
-        Mockito.when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userContext.getUserId()).thenReturn(userId);
+        when(userServiceClient.getUser(userId)).thenReturn(userDto);
 
-        Mockito.doNothing().when(likeRepository)
-                .deleteByPostIdAndUserId(Mockito.anyLong(), Mockito.anyLong());
-        Mockito.when(likeValidator.validateCommentOrPost(postId, postRepository))
+        doNothing().when(likeRepository)
+                .deleteByPostIdAndUserId(anyLong(), anyLong());
+        when(likeValidator.validateCommentOrPost(postId, postRepository))
                 .thenReturn(post);
 
         likeService.deleteLikePost(postId);
 
-        Mockito.verify(likeValidator).validateCommentOrPost(postId, postRepository);
-        Mockito.verify(likeRepository).deleteByPostIdAndUserId(postId, userId);
+        verify(likeValidator).validateCommentOrPost(postId, postRepository);
+        verify(likeRepository).deleteByPostIdAndUserId(postId, userId);
     }
 }

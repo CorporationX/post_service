@@ -1,6 +1,6 @@
 package faang.school.postservice.exception;
 
-import faang.school.postservice.dto.error.ErrorResponse;
+import faang.school.postservice.model.dto.error.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleEntityNotFoundException(EntityNotFoundException exception) {
-        log.error("Entity not found exception occurred: {}",exception.getMessage());
+        log.error("Entity not found exception occurred: {}", exception.getMessage());
         return ErrorResponse.builder()
                 .code(HttpStatus.NOT_FOUND.value())
                 .message(exception.getMessage())

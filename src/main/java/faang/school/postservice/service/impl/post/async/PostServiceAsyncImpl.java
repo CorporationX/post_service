@@ -4,6 +4,7 @@ import faang.school.postservice.client.TextGearsClient;
 import faang.school.postservice.dto.post.corrector.CorrectionResponseDto;
 import faang.school.postservice.exception.correcter.TextGearsException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostServiceAsync;
 import faang.school.postservice.validator.correcter.PostCorrecterValidator;
@@ -22,9 +23,11 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class PostServiceAsyncImpl implements PostServiceAsync {
+
     private final PostRepository postRepository;
     private final PostCorrecterValidator postCorrecterValidator;
     private final TextGearsClient textGearsClient;
+    private final ModerationDictionary dictionary;
 
     @Async("fixedThreadPool")
     public void publishScheduledPostsAsyncInBatch(List<Post> posts) {
@@ -54,6 +57,19 @@ public class PostServiceAsyncImpl implements PostServiceAsync {
                 log.error("Failed to correct", e);
             }
         });
+        postRepository.saveAll(posts);
+    }
+
+    @Override
+    @Async("fixedThreadPool")
+    public void moderatePostsByBatches(List<Post> posts) {
+        posts.forEach(post -> {
+            boolean badWordsExist = dictionary.containsBadWords(post.getContent());
+
+            post.setVerified(!badWordsExist);
+            post.setVerifiedDate(LocalDateTime.now());
+        });
+
         postRepository.saveAll(posts);
     }
 }

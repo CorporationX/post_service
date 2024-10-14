@@ -26,6 +26,9 @@ spring:
           name: calculations_channel
         user-ban:
           name: user_ban
+        like-channel:
+          name: like-channel
+
         comment-receiving:
           name: comment-receiving-topic
 server:
@@ -45,11 +48,16 @@ post:
       cron: "@midnight" # every day at midnight
     threads-count: 20
     max-list-size: 50
+  comments:
+    scheduler:
+      cron: "0 30 0 * * *" # every day at 00:30
   commenter-banner:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every day at midnight
     unverified-comments-limit: 5
-
+  moderation:
+    scheduler:
+      cron: "0 0 0 * * *" # every day at midnight
   correcter:
     retry:
       max-attempts: 3
@@ -80,6 +88,18 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+moderation:
+  file-path: src/main/resources/badWords.txt
+
+comments:
+  batch-size: 100
+
+posts:
+  batch-size: 100
+
+premium:
+  pool-size: 3
 
 thread-pool:
   fixed:
