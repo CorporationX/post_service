@@ -13,7 +13,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    @Value("${redis.pubsub.topic:like-event}")
+    @Value("${redis.pubsub.topics:like-event}")
     private String topic;
 
     @Bean
@@ -22,8 +22,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, LikeEvent> redisTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, LikeEvent> template = new RedisTemplate<String, LikeEvent>();
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<String, Object>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new StringRedisSerializer());
