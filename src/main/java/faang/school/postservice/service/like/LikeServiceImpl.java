@@ -43,8 +43,14 @@ public class LikeServiceImpl implements LikeService {
                 .post(getPostById(postId))
                 .build();
         likeRepository.save(like);
-        publishLikeEvent(postId, userId);
         log.info("User with id {} liked post with id {}", userId, postId);
+        LikeEvent likeEvent = LikeEvent.builder()
+                .likeAuthorId(userId)
+                .postAuthorId(getPostById(postId).getAuthorId())
+                .postId(postId)
+                .build();
+        likeEventPublisher.publish(likeEvent);
+        log.info("Publishing LikeEvent for user with id {} liking post with id {}", userId, postId);
         return likeMapper.toLikeDto(like);
     }
 
@@ -106,16 +112,5 @@ public class LikeServiceImpl implements LikeService {
                 .findById(commentId)
                 .orElseThrow(() ->
                         new EntityNotFoundException("Comment with id %d does not exist".formatted(commentId)));
-    }
-
-    private void publishLikeEvent(long postId, long userId) {
-        LikeEvent likeEvent = LikeEvent.builder()
-                .likeAuthorId(userId)
-                .postAuthorId(postRepository.findById(postId).orElseThrow(() ->
-                        new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId))).getAuthorId())
-                .postId(postId)
-                .build();
-        likeEventPublisher.publish(likeEvent);
-        log.info("Publishing LikeEvent for user with id {} liking post with id {}", userId, postId);
     }
 }
