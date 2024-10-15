@@ -8,7 +8,7 @@ import faang.school.postservice.kafka.event.post.PostViewedEvent;
 import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.filter.post.PostFilter;
-import faang.school.postservice.kafka.producer.Producer;
+import faang.school.postservice.kafka.producer.KafkaProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.cache.model.PostRedis;
@@ -36,7 +36,7 @@ public class PostService {
     private final PostValidator validator;
     private final PostMapper mapper;
     private final List<PostFilter> postFilters;
-    private final Producer kafkaProducer;
+    private final KafkaProducer kafkaProducer;
     @Value("${spring.kafka.topic.post.published}")
     private String postPublishedTopic;
     @Value("${spring.kafka.topic.post.viewed}")

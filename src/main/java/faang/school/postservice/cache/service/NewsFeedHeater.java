@@ -8,7 +8,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.kafka.event.heater.HeaterNewsFeedEvent;
 import faang.school.postservice.kafka.event.heater.HeaterPostsEvent;
 import faang.school.postservice.kafka.event.heater.HeaterUsersEvent;
-import faang.school.postservice.kafka.producer.Producer;
+import faang.school.postservice.kafka.producer.KafkaProducer;
 import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ import java.util.TreeSet;
 @Slf4j
 public class NewsFeedHeater {
     private final UserServiceClient userServiceClient;
-    private final Producer kafkaProducer;
+    private final KafkaProducer kafkaProducer;
     private final PostService postService;
     private final CommentService commentService;
     private final PostRedisService postRedisService;

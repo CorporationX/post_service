@@ -3,7 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.kafka.event.like.LikeAddedEvent;
-import faang.school.postservice.kafka.producer.Producer;
+import faang.school.postservice.kafka.producer.KafkaProducer;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -26,7 +26,7 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeRepository likeRepository;
     private final LikeMapper mapper;
-    private final Producer kafkaProducer;
+    private final KafkaProducer kafkaProducer;
     @Value("${spring.kafka.topic.like.added}")
     private String likeAddedTopic;
 

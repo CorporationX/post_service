@@ -14,7 +14,7 @@ import faang.school.postservice.exception.post.PostWithTwoAuthorsException;
 import faang.school.postservice.exception.post.PostWithoutAuthorException;
 import faang.school.postservice.kafka.event.post.PostPublishedEvent;
 import faang.school.postservice.kafka.event.post.PostViewedEvent;
-import faang.school.postservice.kafka.producer.Producer;
+import faang.school.postservice.kafka.producer.KafkaProducer;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -62,7 +62,7 @@ public class PostServiceTest {
     @MockBean
     private PostValidator validator;
     @MockBean
-    private Producer kafkaProducer;
+    private KafkaProducer kafkaProducer;
     @MockBean
     private PostMapperImpl mapper;
     @Captor
