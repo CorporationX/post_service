@@ -5,12 +5,12 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentRequest;
 import faang.school.postservice.dto.comment.UpdateCommentRequest;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validator.CommentValidator;
+import faang.school.postservice.validator.comment.CommentValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +31,19 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
 
+    public List<Comment> getUnverifiedComments() {
+        return commentRepository.findByVerifiedAtIsNull();
+    }
+
+    public void saveComments(List<Comment> comments) {
+        log.info("Trying to save comments in db");
+        commentRepository.saveAll(comments);
+        log.info("Comments saved");
+    }
+
+    public void saveComment(Comment comment) {
+        commentRepository.save(comment);
+    }
 
     public CommentDto createComment(long postId, CreateCommentRequest createCommentRequest) {
         userServiceClient.getUser(createCommentRequest.getAuthorId());
@@ -91,18 +104,5 @@ public class CommentService {
     public void deleteComment(long commentId) {
         commentRepository.deleteById(commentId);
         log.info("[{}] the comment with id: {} was successfully deleted", "deleteComment", commentId);
-    }
-    public List<Comment> getUnverifiedComments() {
-        return commentRepository.findByVerifiedAtIsNull();
-    }
-
-    public void saveComments(List<Comment> comments) {
-        log.info("Trying to save comments in db");
-        commentRepository.saveAll(comments);
-        log.info("Comments saved");
-    }
-
-    public void saveComment(Comment comment) {
-        commentRepository.save(comment);
     }
 }

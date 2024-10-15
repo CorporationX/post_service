@@ -1,4 +1,4 @@
-package faang.school.postservice.validator;
+package faang.school.postservice.validator.comment;
 
 import faang.school.postservice.dto.comment.UpdateCommentRequest;
 import faang.school.postservice.exception.DataValidationException;

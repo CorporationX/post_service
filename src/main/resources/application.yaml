@@ -37,12 +37,22 @@ logging:
     root: info
 
 post:
+  executor:
+    threads:
+      count: 5
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderation:
+    scheduler:
+      cron: "0 0 * * * ?" # every day at 00:00
+    dictionary:
+      file-path: "src/main/resources/moderation/dictionary.txt"
+    sublist:
+      length: 10
 
 user-service:
   host: localhost
