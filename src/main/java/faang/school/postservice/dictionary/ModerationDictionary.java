@@ -1,7 +1,6 @@
 package faang.school.postservice.dictionary;
 
 import faang.school.postservice.exception.comment.ExceptionMessages;
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -15,7 +14,7 @@ import java.util.Set;
 @Component
 public class ModerationDictionary {
 
-    private Set<String> forbiddenWords;
+    private final Set<String> forbiddenWords = new HashSet<>();
 
     public ModerationDictionary (@Value("${post.moderator.scheduler.dictionary.file}") Resource dictionaryResource) {
         try (BufferedReader bufferedReader = new BufferedReader(
