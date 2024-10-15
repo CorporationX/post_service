@@ -7,6 +7,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.AsyncPostPublishService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,7 +34,7 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final PostValidator validator;
     private final PostMapper postMapper;
-    private final AsyncPostPublishServiceImpl asyncPostPublishService;
+    private final AsyncPostPublishService asyncPostPublishService;
 
     @Override
     public void createDraftPost(PostDto postDto) {
