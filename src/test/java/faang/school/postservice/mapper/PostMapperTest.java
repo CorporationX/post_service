@@ -1,5 +1,7 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.cache.model.PostRedis;
+import faang.school.postservice.cache.model.UserRedis;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
@@ -20,6 +22,7 @@ public class PostMapperTest {
     private PostMapper mapper;
     private Post entity;
     private PostDto dto;
+    private PostRedis postRedis;
 
     @BeforeEach
     void setUp() {
@@ -27,20 +30,57 @@ public class PostMapperTest {
         List<Optional> optionals = getOptionals();
         entity = (Post) optionals.get(0).get();
         dto = (PostDto) optionals.get(1).get();
+        postRedis = PostRedis.builder()
+                .id(entity.getId())
+                .content(entity.getContent())
+                .author(UserRedis.builder()
+                        .id(entity.getAuthorId())
+                        .build())
+                .publishedAt(entity.getPublishedAt())
+                .likesCount(entity.getLikes().size())
+                .views(entity.getViews())
+                .build();
     }
 
     @Test
-    void testToDto() {
+    void testToDtoFromEntity() {
         PostDto actualDto = mapper.toDto(entity);
 
         assertEquals(dto, actualDto);
     }
 
     @Test
-    void testToEntity() {
+    void testToDtoListFromEntityList() {
+        List<PostDto> expected = List.of(dto);
+        List<Post> posts = List.of(entity);
+
+        List<PostDto> actual = mapper.toDto(posts);
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testToEntityFromDto() {
         Post expected = getEntity();
 
         Post actual = mapper.toEntity(dto);
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void toRedisFromEntity() {
+        PostRedis actual = mapper.toRedis(entity);
+
+        assertEquals(postRedis, actual);
+    }
+
+    @Test
+    void toRedisListFromEntityList() {
+        List<PostRedis> expected = List.of(postRedis);
+        List<Post> posts = List.of(entity);
+
+        List<PostRedis> actual = mapper.toRedis(posts);
 
         assertEquals(expected, actual);
     }
@@ -95,7 +135,7 @@ public class PostMapperTest {
         boolean deleted = false;
         LocalDateTime createdAt = publishedAt.minusDays(1);
         LocalDateTime updatedAt = publishedAt.plusMinutes(5);
-        Long likesCount = (long) likeIds.size();
+        long likesCount = likeIds.size();
         long views = 0;
 
         Optional<Post> postOptional = Optional.of(new Post(postId, content, authorId, projectId, likes, comments,

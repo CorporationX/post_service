@@ -20,8 +20,6 @@ public interface PostMapper {
 
     List<PostDto> toDto(List<Post> entities);
 
-    PostDto toDto(PostRedis entity);
-
     Post toEntity(PostDto dto);
 
     @Mapping(target = "comments", ignore = true)
