@@ -1,5 +1,4 @@
 package faang.school.postservice.service;
-
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -107,7 +106,7 @@ public class LikeService {
         like.setComment(null); // иначе TransientPropertyValueException
         likeRepository.save(like);
         Long postAuthorId = getPostById(postId).getAuthorId(); // иначе like.getPost().getAuthorId() == null
-        likeEventPublisher.publish(new LikePostEvent(like.getUserId(), like.getPost().getId(), postAuthorId));
+        likeEventPublisher.publish(new LikePostEvent(like.getUserId(), like.getPost().getId(), postAuthorId, like.getCreatedAt()));
         return likeMapper.toDto(like);
     }
 

@@ -10,7 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.time.LocalDateTime;
+
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,8 +38,9 @@ class LikeEventPublisherTest {
 
     @Test
     void testPublish() throws Exception {
-        LikePostEvent likePostEvent = new LikePostEvent(1L, 2L, 3L);
-        String eventJson = "{\"userId\":1,\"postId\":2,\"authorId\":3}";
+        LocalDateTime createdAt = LocalDateTime.now();
+        LikePostEvent likePostEvent = new LikePostEvent(1L, 2L, 3L, createdAt );
+            String eventJson = "{\"userId\":1,\"postId\":2,\"authorId\":3,\"createdAt\":4}";
         when(objectMapper.writeValueAsString(likePostEvent)).thenReturn(eventJson);
 
         likeEventPublisher.publish(likePostEvent);
