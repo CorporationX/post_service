@@ -1,6 +1,8 @@
 package faang.school.postservice.client;
 
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserExtendedFilterDto;
+import faang.school.postservice.dto.user.UserResponseShortDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,4 +19,11 @@ public interface UserServiceClient {
 
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
+    @PostMapping("/subscriptions/{followeeId}/followers")
+    List<UserResponseShortDto> getFollowers(@PathVariable long followeeId, @RequestBody UserExtendedFilterDto filter);
+
+    @PostMapping("/users/active")
+    List<Long> getOnlyActiveUsersFromList(@RequestBody List<Long> ids);
+
 }

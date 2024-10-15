@@ -1,6 +1,5 @@
 package faang.school.postservice.validator;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.model.Comment;
@@ -11,12 +10,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CommentValidator {
-    private final UserServiceClient userServiceClient;
     private final PostService postService;
+    private final UserValidator userValidator;
 
     public void validateCreate(Long postId, Comment comment) {
         validatePost(postId);
-        validateComment(comment);
+        userValidator.validateUserExists(comment.getAuthorId());
     }
 
     public void validateCommentAuthorId(Long userId, Comment comment) {
@@ -31,9 +30,5 @@ public class CommentValidator {
         } catch (PostNotFoundException exception) {
             throw new ValidationException(exception.getMessage());
         }
-    }
-
-    private void validateComment(Comment comment) {
-        userServiceClient.getUser(comment.getAuthorId());
     }
 }

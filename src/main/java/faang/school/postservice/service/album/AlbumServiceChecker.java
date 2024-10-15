@@ -1,6 +1,6 @@
 package faang.school.postservice.service.album;
 
-import faang.school.postservice.client.UserServiceClientMock;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.BadRequestException;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.model.album.Album;
@@ -26,7 +26,7 @@ import static faang.school.postservice.service.album.error_messages.AlbumErrorMe
 public class AlbumServiceChecker {
     private final PostRepository postRepository;
     private final AlbumRepository albumRepository;
-    private final UserServiceClientMock userServiceClient;
+    private final UserServiceClient userServiceClient;
 
     public boolean isExistingPosts(long postId) {
         return postRepository.existsById(postId);
@@ -36,7 +36,7 @@ public class AlbumServiceChecker {
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException e) {
-            throw new UserNotFoundException(USER_NOT_FOUND, userId);
+            throw new UserNotFoundException("User with ID " + userId + " not found.");
         }
     }
 

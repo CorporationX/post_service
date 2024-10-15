@@ -1,7 +1,9 @@
 package faang.school.postservice.service.album;
 
-import faang.school.postservice.client.UserServiceClientMock;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumFilterDto;
+import faang.school.postservice.dto.user.UserExtendedFilterDto;
+import faang.school.postservice.dto.user.UserResponseShortDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.album.Album;
 import faang.school.postservice.model.album.AlbumVisibility;
@@ -29,7 +31,7 @@ public class AlbumService {
     private final PostRepository postRepository;
     private final AlbumServiceChecker checker;
     private final List<AlbumFilter> albumFilters;
-    private final UserServiceClientMock userServiceClient;
+    private final UserServiceClient userServiceClient;
 
     @Transactional
     public Album createNewAlbum(long authorId, Album album, List<Long> chosenUserIds) {
@@ -182,7 +184,8 @@ public class AlbumService {
         AlbumVisibility visibility = album.getVisibility();
         return switch (visibility) {
             case ALL_USERS -> true;
-            case SUBSCRIBERS_ONLY -> userServiceClient.getFollowers(authorId).contains(userId);
+            case SUBSCRIBERS_ONLY -> userServiceClient.getFollowers(authorId, new UserExtendedFilterDto()).stream()
+                    .map(UserResponseShortDto::getId).toList().contains(userId);
             case CHOSEN_USERS -> album.getChosenUserIds().contains(userId);
             case AUTHOR_ONLY -> false;
         };

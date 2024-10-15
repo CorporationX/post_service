@@ -21,15 +21,16 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
     @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "mapResourcesToResourceIds")
+    @Mapping(target = "likes", expression = "java(post.getLikes() != null ? post.getLikes().size() : 0)")
     PostResponseDto toDto(Post post);
+
+    List<PostResponseDto> toDtos(List<Post> post);
 
     Post toEntity(CreatePostRequestDto dto);
 
     Post toEntity(UpdatePostRequestDto dto);
 
     Post toEntity(FilterPostRequestDto dto);
-
-    List<PostResponseDto> toDtos(List<Post> posts);
 
     @Named("mapResourcesToResourceIds")
     default List<Long> mapResourcesToResourceIds(List<Resource> resources) {
