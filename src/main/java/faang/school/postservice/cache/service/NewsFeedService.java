@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,30 @@ public class NewsFeedService {
         });
     }
 
+    public List<NewsFeedRedis> getNewsFeedsForUsers(List<UserRedis> usersRedis) {
+        return usersRedis.parallelStream()
+                .map(user -> {
+                    List<Long> postIds = postService.findPostIdsByFollowerId(user.getId(), newsFeedMaxSize);
+                    return new NewsFeedRedis(user.getId(), postIds);
+                })
+                .filter(newsFeed -> !newsFeed.getPostIds().isEmpty())
+                .toList();
+    }
+
+    public void setComments(List<PostRedis> posts) {
+        log.info("Setting comments for posts");
+        List<Long> postIds = posts.stream().map(PostRedis::getId).toList();
+        List<CommentRedis> comments = commentService.findLastBatchByPostIds(commentsMaxSize, postIds);
+        if (comments.isEmpty()) {
+            return;
+        }
+        Map<Long, TreeSet<CommentRedis>> commentsByPosts = new HashMap<>();
+        comments.forEach(comment -> commentsByPosts
+                .computeIfAbsent(comment.getPostId(), k -> new TreeSet<>())
+                .add(comment));
+        posts.forEach(post -> post.setComments(commentsByPosts.get(post.getId())));
+    }
+
     private void addPost(String key, Long postId) {
         newsFeedRedisRepository.addPostId(key, postId);
 
@@ -97,14 +122,6 @@ public class NewsFeedService {
         }
         setComments(posts);
         return new TreeSet<>(posts);
-    }
-
-    private void setComments(List<PostRedis> posts) {
-        log.info("Setting comments for posts");
-        posts.forEach(post -> {
-            TreeSet<CommentRedis> comments = commentService.findLastBatchByPostId(commentsMaxSize, post.getId());
-            post.setComments(comments);
-        });
     }
 
     private List<Long> getResultPostIds(Long lastPostId, List<Long> postIds) {

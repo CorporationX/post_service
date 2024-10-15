@@ -1,6 +1,5 @@
 package faang.school.postservice.cache.service;
 
-import faang.school.postservice.cache.model.CommentRedis;
 import faang.school.postservice.cache.model.NewsFeedRedis;
 import faang.school.postservice.cache.model.PostRedis;
 import faang.school.postservice.cache.model.UserRedis;
@@ -9,7 +8,6 @@ import faang.school.postservice.kafka.event.heater.HeaterNewsFeedEvent;
 import faang.school.postservice.kafka.event.heater.HeaterPostsEvent;
 import faang.school.postservice.kafka.event.heater.HeaterUsersEvent;
 import faang.school.postservice.kafka.producer.KafkaProducer;
-import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.util.ListSplitter;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +24,8 @@ public class NewsFeedHeater {
     private final UserServiceClient userServiceClient;
     private final KafkaProducer kafkaProducer;
     private final PostService postService;
-    private final CommentService commentService;
     private final PostRedisService postRedisService;
+    private final NewsFeedService newsFeedService;
 
     @Value("${news-feed.heater.batch-size}")
     private int batchSize;
@@ -40,16 +35,12 @@ public class NewsFeedHeater {
     private String heaterNewsFeedsTopic;
     @Value("${spring.kafka.topic.heater.posts}")
     private String heaterPostsTopic;
-    @Value("${news-feed.max-size}")
-    private int newsFeedMaxSize;
-    @Value("${spring.data.redis.cache.post.comments.max-size}")
-    private int commentsMaxSize;
 
     public void heat() {
         List<UserRedis> usersRedis = userServiceClient.getActiveUsersRedis();
         splitAndSendUsersEvents(usersRedis);
 
-        List<NewsFeedRedis> newsFeeds = getNewsFeedsForUsers(usersRedis);
+        List<NewsFeedRedis> newsFeeds = newsFeedService.getNewsFeedsForUsers(usersRedis);
         splitAndSendNewsFeedsEvents(newsFeeds);
 
         List<Long> postIds = getUniquePostIds(newsFeeds);
@@ -58,36 +49,14 @@ public class NewsFeedHeater {
 
     public void saveAllPosts(List<Long> postIds) {
         List<PostRedis> posts = postService.findAllByIdsWithLikes(postIds);
-        setComments(postIds, posts);
+        newsFeedService.setComments(posts);
         postRedisService.saveAll(posts);
-    }
-
-    private void setComments(List<Long> postIds, List<PostRedis> posts) {
-        List<CommentRedis> comments = commentService.findLastBatchByPostIds(commentsMaxSize, postIds);
-        if (comments.isEmpty()) {
-            return;
-        }
-        Map<Long, TreeSet<CommentRedis>> commentsByPosts = new HashMap<>();
-        comments.forEach(comment -> commentsByPosts
-                .computeIfAbsent(comment.getPostId(), k -> new TreeSet<>())
-                .add(comment));
-        posts.forEach(post -> post.setComments(commentsByPosts.get(post.getId())));
     }
 
     private List<Long> getUniquePostIds(List<NewsFeedRedis> newsFeeds) {
         return newsFeeds.stream()
                 .flatMap(newsFeedRedis -> newsFeedRedis.getPostIds().stream())
                 .distinct()
-                .toList();
-    }
-
-    private List<NewsFeedRedis> getNewsFeedsForUsers(List<UserRedis> usersRedis) {
-        return usersRedis.parallelStream()
-                .map(user -> {
-                    List<Long> postIds = postService.findPostIdsByFollowerId(user.getId(), newsFeedMaxSize);
-                    return new NewsFeedRedis(user.getId(), postIds);
-                })
-                .filter(newsFeed -> !newsFeed.getPostIds().isEmpty())
                 .toList();
     }
 
