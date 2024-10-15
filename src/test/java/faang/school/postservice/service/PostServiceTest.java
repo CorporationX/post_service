@@ -12,6 +12,10 @@ import faang.school.postservice.exception.post.PostAlreadyDeletedException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.post.PostWithTwoAuthorsException;
 import faang.school.postservice.exception.post.PostWithoutAuthorException;
+import faang.school.postservice.filter.post.filterImpl.PostFilterProjectDraftNonDeleted;
+import faang.school.postservice.filter.post.filterImpl.PostFilterProjectPostNonDeleted;
+import faang.school.postservice.filter.post.filterImpl.PostFilterUserDraftNonDeleted;
+import faang.school.postservice.filter.post.filterImpl.PostFilterUserPostNonDeleted;
 import faang.school.postservice.kafka.event.post.PostPublishedEvent;
 import faang.school.postservice.kafka.event.post.PostViewedEvent;
 import faang.school.postservice.kafka.producer.KafkaProducer;
@@ -31,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -46,7 +51,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@SpringBootTest(classes = PostService.class)
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
     @Autowired
@@ -65,6 +70,14 @@ public class PostServiceTest {
     private KafkaProducer kafkaProducer;
     @MockBean
     private PostMapperImpl mapper;
+    @SpyBean
+    private PostFilterUserDraftNonDeleted userDraftNonDeleted;
+    @SpyBean
+    private PostFilterUserPostNonDeleted userPostNonDeleted;
+    @SpyBean
+    private PostFilterProjectDraftNonDeleted projectDraftNonDeleted;
+    @SpyBean
+    private PostFilterProjectPostNonDeleted projectPostNonDeleted;
     @Captor
     private ArgumentCaptor<Post> postCaptor;
     private PostContainer container;
