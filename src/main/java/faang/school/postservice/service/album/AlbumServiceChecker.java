@@ -36,7 +36,7 @@ public class AlbumServiceChecker {
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException e) {
-            throw new UserNotFoundException(USER_NOT_FOUND, userId);
+            throw new UserNotFoundException("User with ID " + userId + " not found.");
         }
     }
 

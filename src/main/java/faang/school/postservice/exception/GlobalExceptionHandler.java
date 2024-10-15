@@ -83,15 +83,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleUserNotFoundException(UserNotFoundException e) {
-        log.error("UserNotFoundException occurred: {}", e.getMessage(), e);
-        return ErrorResponse.builder()
-                .message(e.getMessage())
-                .build();
-    }
-
     @ExceptionHandler(InvalidFormatException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public InvalidFormatResponseDto handleInvalidFormatException(InvalidFormatException e) {
