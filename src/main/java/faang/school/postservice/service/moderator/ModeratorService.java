@@ -59,7 +59,7 @@ public class ModeratorService {
     }
 
     private void notifyUserAboutNewComment(List<Comment> comments) {
-        comments.stream()
+        comments.parallelStream()
                 .filter(Comment::isVerified)
                 .forEach(comment -> CompletableFuture.runAsync(() -> {
                     CommentEventDto commentEventDto = CommentEventDto.builder()
