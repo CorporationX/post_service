@@ -11,12 +11,12 @@ import faang.school.postservice.kafka.event.heater.HeaterUsersEvent;
 import faang.school.postservice.kafka.producer.KafkaProducer;
 import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.util.ListSplitter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,26 +92,17 @@ public class NewsFeedHeater {
     }
 
     private void splitAndSendNewsFeedsEvents(List<NewsFeedRedis> newsFeeds) {
-        List<List<NewsFeedRedis>> splitNewsFeeds = split(newsFeeds, batchSize);
+        List<List<NewsFeedRedis>> splitNewsFeeds = ListSplitter.split(newsFeeds, batchSize);
         splitNewsFeeds.forEach(list -> kafkaProducer.send(heaterNewsFeedsTopic, new HeaterNewsFeedEvent(list)));
     }
 
     private void splitAndSendUsersEvents(List<UserRedis> usersRedis) {
-        List<List<UserRedis>> splitUsers = split(usersRedis, batchSize);
+        List<List<UserRedis>> splitUsers = ListSplitter.split(usersRedis, batchSize);
         splitUsers.forEach(list -> kafkaProducer.send(heaterUsersTopic, new HeaterUsersEvent(list)));
     }
 
     private void splitAndSendPostsEvents(List<Long> postIds) {
-        List<List<Long>> splitUsers = split(postIds, batchSize);
-        splitUsers.forEach(list -> kafkaProducer.send(heaterPostsTopic, new HeaterPostsEvent(list)));
-    }
-
-    private <T> List<List<T>> split(List<T> list, int batchSize) {
-        List<List<T>> result = new ArrayList<>();
-        int size = list.size();
-        for (int i = 0; i < size; i += batchSize) {
-            result.add(list.subList(i, Math.min(size, i + batchSize)));
-        }
-        return result;
+        List<List<Long>> splitIds = ListSplitter.split(postIds, batchSize);
+        splitIds.forEach(list -> kafkaProducer.send(heaterPostsTopic, new HeaterPostsEvent(list)));
     }
 }
