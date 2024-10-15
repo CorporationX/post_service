@@ -29,6 +29,7 @@ class CommentEventMapperTest {
         comment = testDataComment.getComment1();
         newCommentEventDto = new CommentEventDto();
         expectedCommentEventDto = testDataComment.getCommentEventDto();
+        expectedCommentEventDto.setReceivedAt(comment.getCreatedAt());
     }
 
     @Test
