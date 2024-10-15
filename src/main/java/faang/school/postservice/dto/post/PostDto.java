@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
@@ -22,4 +23,5 @@ public class PostDto {
         Long projectId;
         boolean published;
         boolean deleted;
+        LocalDateTime scheduledAt;
 }

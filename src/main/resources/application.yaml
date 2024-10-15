@@ -38,6 +38,7 @@ post:
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+      size_batch: 100
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
@@ -50,7 +51,9 @@ post:
       delay: 5000
     scheduler:
       cron: "0 0 2 * * *" # every day
-
+  thread-pool:
+    count_pool: 10
+    
 user-service:
   host: localhost
   port: 8080

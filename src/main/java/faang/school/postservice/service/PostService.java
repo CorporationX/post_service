@@ -25,4 +25,6 @@ public interface PostService {
     List<PostDto> getPublishedPostsByProjectId(long id);
 
     List<Long> getAuthorsWithMoreFiveUnverifiedPosts();
+
+    void publishScheduledPosts();
 }
