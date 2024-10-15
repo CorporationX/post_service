@@ -14,8 +14,8 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-@Slf4j
 @Configuration
+@Slf4j
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
@@ -25,11 +25,19 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.channels.hashtags}")
     private String topicNameHashtags;
+
     @Value("${spring.data.redis.channels.like_post}")
     private String topicNameLike;
 
     @Value("${spring.data.redis.channels.post_view_channel}")
     String postViewTopic;
+
+    @Value("${spring.data.redis.channels.ad_bought_channel}")
+    String adBoughtChannel;
+
+    public interface MessagePublisher<T> {
+        void publish(T redisEvent);
+    }
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -72,5 +80,10 @@ public class RedisConfig {
 
     public ChannelTopic viewProfileTopic() {
         return new ChannelTopic(postViewTopic);
+    }
+
+    @Bean
+    ChannelTopic adBoughtTopic() {
+        return new ChannelTopic(adBoughtChannel);
     }
 }
