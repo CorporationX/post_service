@@ -36,9 +36,23 @@ spring:
             name: authors
           posts:
             name: posts
+          feed:
+            name: feed
+        settings:
+          max-feed-size: 500
+          max-post-comments-size: 3
+      lock-registry:
+        default:
+          post-lock-key: POST_LOCK_KEY
+          release-time-duration-millis: 10000
+        feed:
+          post-lock-key: FEED_LOCK_KEY
+          release-time-duration-millis: 10000
+
     kafka:
       port: 9092
       host: localhost
+      group-id: account_service
       bootstrap_servers: localhost:9092
       topics:
         default-partition: 1
@@ -121,6 +135,24 @@ async:
       corePoolSize: 5
       maxPoolSize: 10
       queueCapacity: 100
+    redis:
+      settings:
+        posts:
+          corePoolSize: 5
+          maxPoolSize: 10
+          queueCapacity: 100
+        feed:
+          corePoolSize: 5
+          maxPoolSize: 10
+          queueCapacity: 100
+        comments:
+          corePoolSize: 5
+          maxPoolSize: 10
+          queueCapacity: 100
+        authors:
+          corePoolSize: 5
+          maxPoolSize: 10
+          queueCapacity: 100
 
 
 spelling:

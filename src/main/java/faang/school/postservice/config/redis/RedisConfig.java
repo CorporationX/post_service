@@ -28,28 +28,31 @@ public class RedisConfig {
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
-        return redisTemplate;
+        return createRedisTemplate(redisConnectionFactory, Object.class);
     }
 
     @Bean
     public RedisTemplate<String, PostHashtagDto> hashtagRedisTemplate(JedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, PostHashtagDto> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
-        return redisTemplate;
+        return createRedisTemplate(redisConnectionFactory, PostHashtagDto.class);
+    }
+
+    @Bean
+    public RedisTemplate<String, Long> feedRedisTemplate(JedisConnectionFactory redisConnectionFactory){
+        return createRedisTemplate(redisConnectionFactory, Long.class);
     }
 
     @Bean
     ChannelTopic likeTopic(@Value("${spring.data.redis.channels.like_post_channel.name}") String topicName) {
         return new ChannelTopic(topicName);
+    }
+
+    private <T> RedisTemplate<String, T> createRedisTemplate(RedisConnectionFactory redisConnectionFactory, Class<T> clazz) {
+        RedisTemplate<String, T> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return redisTemplate;
     }
 }
