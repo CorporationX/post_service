@@ -41,7 +41,7 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectClient;
     private final ModerationDictionary moderationDictionary;
     @Value("${post.moderator.count-posts-in-thread}")
-    private int countPostsInThread;
+    private int postBatchSize;
 
     @Override
     public PostDto create(PostCreationRequest request) {
@@ -115,7 +115,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public void moderatePosts() {
         List<Post> posts = postRepository.findNotVerified();
-        ListUtils.partition(posts, countPostsInThread).forEach(this::verifyPosts);
+        ListUtils.partition(posts, postBatchSize).forEach(this::verifyPosts);
     }
 
     @Override
@@ -134,7 +134,7 @@ public class PostServiceImpl implements PostService {
                 log.info("Post '{}' has been successfully verified. Verification date: {}",
                         post.getId(), post.getVerifiedDate());
             }
-            postRepository.save(post);
+            postRepository.saveAll(posts);
         }
     }
 

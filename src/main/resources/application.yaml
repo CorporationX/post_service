@@ -40,9 +40,9 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   moderator:
-    count-posts-in-thread: "100"
+    post-batch-size: 100
     scheduler:
-      cron: "0 0 * * *"
+      cron: "0 0 * * *" # every day
       dictionary:
         file: "classpath:moderation-dictionary.txt"
 
