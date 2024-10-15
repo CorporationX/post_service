@@ -26,6 +26,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        public_post:
+          name: public_post
 
 server:
   port: 8081
@@ -51,6 +53,7 @@ post:
       file-path: "src/main/resources/moderation/dictionary.txt"
     sublist:
       length: 10
+
 
 user-service:
   host: localhost
@@ -95,3 +98,4 @@ executor:
   corePoolSize: 1
   maximumPoolSize: 10
   keepAliveTime: 60
+
