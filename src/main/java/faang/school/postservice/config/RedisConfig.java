@@ -24,13 +24,16 @@ public class RedisConfig {
     private String likeEventTopic;
 
     @Value("${redis.channels.post_view}")
-    String postViewTopic;
+    protected String postViewTopic;
+
+    @Value("${redis.channels.comment_channel}")
+    private String topicNameComment;
 
     @Value("${redis.channels.ad_bought}")
-    String adBoughtChannel;
+    private String adBoughtChannel;
 
     @Value("${redis.channels.user_ban}")
-    String bannedUserTopic;
+    private String bannedUserTopic;
 
     public interface MessagePublisher<T> {
         void publish(T redisEvent);
@@ -68,6 +71,11 @@ public class RedisConfig {
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
         return redisTemplate;
+    }
+
+    @Bean
+    public ChannelTopic commentTopic() {
+        return new ChannelTopic(topicNameComment);
     }
 
     @Bean

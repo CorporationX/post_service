@@ -104,6 +104,7 @@ redis:
     post_view: post_view_channel
     ad_bought: ad_bought_channel
     user_ban: user_ban_channel
+    comment_channel: comment_channel
 
 scheduler:
   cron:
