@@ -57,6 +57,11 @@ public class RedisConfig {
     }
 
     @Bean
+    public ChannelTopic postViewTopic() {
+        return new ChannelTopic(postViewTopic);
+    }
+
+    @Bean
     public ChannelTopic bannedUserTopic() {
         return new ChannelTopic(bannedUserTopic);
     }

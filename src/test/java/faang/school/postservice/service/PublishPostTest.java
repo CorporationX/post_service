@@ -1,5 +1,7 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.model.dto.PostDto;
 import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -26,6 +28,12 @@ public class PublishPostTest {
 
     @Mock
     private PostMapper postMapper;
+
+    @Mock
+    UserContext userContext;
+
+    @Mock
+    PostViewPublisher postViewPublisher;
 
     @InjectMocks
     private PostServiceImpl postService;
