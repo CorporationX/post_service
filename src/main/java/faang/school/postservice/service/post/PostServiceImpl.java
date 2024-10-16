@@ -10,15 +10,11 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.kafka.event.post.PostEvent;
 import faang.school.postservice.kafka.event.post.PostViewEvent;
-import faang.school.postservice.kafka.producer.post.PostProducer;
 import faang.school.postservice.kafka.producer.post.PostViewProducer;
+import faang.school.postservice.kafka.producer.split.MessageSplitPostProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerificationStatus;
-import faang.school.postservice.redis.cache.entity.AuthorCache;
-import faang.school.postservice.redis.cache.entity.PostCache;
-import faang.school.postservice.redis.cache.repository.AuthorCacheRepository;
-import faang.school.postservice.redis.cache.repository.PostCacheRepository;
 import faang.school.postservice.redis.cache.service.author.AuthorCacheService;
 import faang.school.postservice.redis.cache.service.post.PostCacheService;
 import faang.school.postservice.repository.PostRepository;
@@ -54,7 +50,7 @@ public class PostServiceImpl implements PostService {
     private final ModerationDictionary moderationDictionary;
     private final SpellingService spellingService;
     private final UserServiceClient userServiceClient;
-    private final PostProducer postProducer;
+    private final MessageSplitPostProducer messageSplitPostProducer;
     private final PostViewProducer postViewProducer;
     private final AuthorCacheService authorCacheService;
     private final PostCacheService postCacheService;
@@ -216,11 +212,11 @@ public class PostServiceImpl implements PostService {
         UserDto author = userServiceClient.getUser(post.getAuthorId());
         PostEvent event = PostEvent.builder()
                 .authorId(post.getAuthorId())
-                .followersIds(author.getFollowers())
+                .followersIds(author.getSubscriberIds())
                 .publishedAt(post.getPublishedAt())
                 .build();
 
-        postProducer.produce(event);
+        messageSplitPostProducer.produce(event);
     }
 
     private void generateAndSendPostViewEventToKafka(Post postDto){

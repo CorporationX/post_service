@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.integration.redis.util.RedisLockRegistry;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,10 +28,10 @@ public class FeedCacheServiceImpl implements FeedCacheService {
 
     @Value("${spring.data.redis.cache.settings.max-feed-size}")
     private long maxFeedSize;
-    @Value("{spring.data.redis.lock-registry.feed.post-lock-key}")
+    @Value("${spring.data.redis.lock-registry.lockSettings.feed.post-lock-key}")
     private String feedCacheKeyPrefix;
-    @Value("{spring.data.redis.feed-cache.batch_size:20}")
-    private int batchSize;
+    @Value("${spring.data.redis.cache.settings.batch-size}")
+    private long batchSize;
 
     private final ZSetOperations<String, Long> redisFeedZSetOps;
     private final RedisLockRegistry feedLockRegistry;
@@ -37,7 +39,22 @@ public class FeedCacheServiceImpl implements FeedCacheService {
     private final PostCacheMapper postCacheMapper;
 
     @Override
-    public void addPostToFeed(long postId, long subscriberId, LocalDateTime publishedAt) {
+    public void addPostIdToAuthorFollowers(long postId, List<Long> subscribersId, LocalDateTime publishedAt) {
+        subscribersId.forEach(subscriberId -> addPostIdToFollowerFeed(postId, subscriberId, publishedAt));
+    }
+
+    @Override
+    public List<PostDto> getFeedByUserId(Long userId, Long postId){
+        List<Long> followerPostIds = getFollowerPostIds(userId, postId);
+
+        return postCacheService.getPostCacheByIds(followerPostIds).stream()
+                .map(postCacheMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    @Retryable(retryFor = {OptimisticLockException.class}, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
+    public void addPostIdToFollowerFeed(Long postId, Long subscriberId, LocalDateTime publishedAt){
         String feedCacheKey = generateFeedCacheKey(subscriberId);
         long score = publishedAt.toInstant(ZoneOffset.UTC).toEpochMilli() * (-1);
 
@@ -49,15 +66,6 @@ public class FeedCacheServiceImpl implements FeedCacheService {
                 redisFeedZSetOps.removeRange(feedCacheKey, 0, setSize - maxFeedSize);
             }
         }, feedCacheKey);
-    }
-
-    @Override
-    public List<PostDto> getFeedByUserId(Long userId, Long postId){
-        List<Long> followerPostIds = getFollowerPostIds(userId, postId);
-
-        return postCacheService.getPostCacheByIds(followerPostIds).stream()
-                .map(postCacheMapper::toDto)
-                .toList();
     }
 
     private String generateFeedCacheKey(Long followerId) {

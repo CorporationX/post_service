@@ -40,14 +40,16 @@ spring:
             name: feed
         settings:
           max-feed-size: 500
+          batch-size: 20
           max-post-comments-size: 3
       lock-registry:
-        default:
-          post-lock-key: POST_LOCK_KEY
-          release-time-duration-millis: 10000
-        feed:
-          post-lock-key: FEED_LOCK_KEY
-          release-time-duration-millis: 10000
+        lockSettings:
+          default:
+            post-lock-key: POST_LOCK_KEY
+            release-time-duration-millis: 10000
+          feed:
+            post-lock-key: FEED_LOCK_KEY
+            release-time-duration-millis: 10000
 
     kafka:
       port: 9092
@@ -55,6 +57,7 @@ spring:
       group-id: account_service
       bootstrap_servers: localhost:9092
       topics:
+        split-batch-size: 500
         default-partition: 1
         default-replication: 1
         topic-settings:
@@ -66,6 +69,8 @@ spring:
             name: post-views
           comments:
             name: comments
+          split:
+            name: split
 
   servlet:
     multipart:
@@ -127,31 +132,31 @@ payment-service:
   port: 9080
 
 async:
-  corePoolSize: 5
-  maxPoolSize: 10
+  corePoolSize: 1
+  maxPoolSize: 1
   queueCapacity: 100
   settings:
     kafka:
-      corePoolSize: 5
-      maxPoolSize: 10
+      corePoolSize: 1
+      maxPoolSize: 1
       queueCapacity: 100
     redis:
       settings:
         posts:
-          corePoolSize: 5
-          maxPoolSize: 10
+          corePoolSize: 1
+          maxPoolSize: 1
           queueCapacity: 100
         feed:
-          corePoolSize: 5
-          maxPoolSize: 10
+          corePoolSize: 1
+          maxPoolSize: 1
           queueCapacity: 100
         comments:
-          corePoolSize: 5
-          maxPoolSize: 10
+          corePoolSize: 1
+          maxPoolSize: 1
           queueCapacity: 100
         authors:
-          corePoolSize: 5
-          maxPoolSize: 10
+          corePoolSize: 1
+          maxPoolSize: 1
           queueCapacity: 100
 
 

@@ -1,17 +1,13 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentToCreateDto;
 import faang.school.postservice.dto.comment.CommentToUpdateDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.kafka.event.comment.CommentEvent;
 import faang.school.postservice.kafka.producer.comment.CommentProducer;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.redis.cache.entity.AuthorCache;
-import faang.school.postservice.redis.cache.repository.AuthorCacheRepository;
 import faang.school.postservice.redis.cache.service.author.AuthorCacheService;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -50,8 +46,8 @@ public class CommentServiceImpl implements CommentService {
         commentValidator.validateCreateComment(userId);
 
         commentRepository.save(comment);
-
         authorCacheService.save(userId);
+
         generateAndSendCommentEventToKafka(comment);
 
         log.info("Created comment on post {} authored by {}", postId, userId);

@@ -1,11 +1,17 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.kafka.producer.post.PostViewProducer;
+import faang.school.postservice.kafka.producer.split.MessageSplitPostProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.cache.service.author.AuthorCacheService;
+import faang.school.postservice.redis.cache.service.post.PostCacheService;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.spelling.SpellingService;
 import faang.school.postservice.service.hashtag.async.AsyncHashtagService;
@@ -46,6 +52,16 @@ class PostServiceImplTest {
     private AsyncHashtagService hashtagService;
     @Mock
     private SpellingService spellingService;
+    @Mock
+    private MessageSplitPostProducer messageSplitPostProducer;
+    @Mock
+    private PostViewProducer postViewProducer;
+    @Mock
+    private AuthorCacheService authorCacheService;
+    @Mock
+    private PostCacheService postCacheService;
+    @Mock
+    private UserServiceClient userServiceClient;
 
     @InjectMocks
     private PostServiceImpl postServiceImpl;
@@ -72,12 +88,15 @@ class PostServiceImplTest {
     void successPublish() {
         Post post = Post.builder()
                 .id(1L)
+                .projectId(2L)
+                .authorId(3L)
                 .content("test")
                 .published(false)
                 .build();
 
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
         when(postRepository.save(post)).thenReturn(post);
+        when(userServiceClient.getUser(3L)).thenReturn(new UserDto());
 
         PostDto result = postServiceImpl.publish(1L);
         assertTrue(result.isPublished());

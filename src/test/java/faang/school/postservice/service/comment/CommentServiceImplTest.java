@@ -3,9 +3,11 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentToCreateDto;
 import faang.school.postservice.dto.comment.CommentToUpdateDto;
+import faang.school.postservice.kafka.producer.comment.CommentProducer;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.cache.service.author.AuthorCacheService;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.commonMethods.CommonServiceMethods;
@@ -18,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,6 +48,12 @@ class CommentServiceImplTest {
     @Mock
     private CommonServiceMethods commonServiceMethods;
 
+    @Mock
+    private AuthorCacheService authorCacheService;
+
+    @Mock
+    private CommentProducer commentProducer;
+
     @InjectMocks
     private CommentServiceImpl commentService;
 
@@ -55,7 +64,7 @@ class CommentServiceImplTest {
         CommentToCreateDto commentToCreateDto = new CommentToCreateDto();
         CommentDto commentDto = new CommentDto();
         Post post = new Post();
-        Comment comment = new Comment();
+        Comment comment = Comment.builder().likes(Collections.emptyList()).build();
 
         when(commonServiceMethods.findEntityById(postRepository, postId, "Post")).thenReturn(post);
         when(commentMapper.toEntity(commentToCreateDto)).thenReturn(comment);

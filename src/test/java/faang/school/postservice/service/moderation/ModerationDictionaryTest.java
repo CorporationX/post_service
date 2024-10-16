@@ -1,53 +1,33 @@
 package faang.school.postservice.service.moderation;
 
+import faang.school.postservice.config.moderation.ModerationDictionary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doReturn;
 
-@ExtendWith(MockitoExtension.class)
 class ModerationDictionaryTest {
 
-    @Mock
-    private ResourceLoader resourceLoader;
-
-    @Mock
-    private Resource resource;
-
-    @InjectMocks
     private ModerationDictionary moderationDictionary;
 
     @BeforeEach
-    void setUp() throws IOException, NoSuchFieldException, IllegalAccessException {
+    void setUp() throws NoSuchFieldException, IllegalAccessException {
 
-        moderationDictionary = new ModerationDictionary(resourceLoader);
-        Field field = ModerationDictionary.class.getDeclaredField("filepath");
+        moderationDictionary = new ModerationDictionary();
+        Field field = ModerationDictionary.class.getDeclaredField("curseWordsPath");
         field.setAccessible(true);
-        field.set(moderationDictionary, "classpath:bad-words.txt");
-        InputStream inputStream = new ByteArrayInputStream("badword1\nbadword2\nbadword3".getBytes());
+        field.set(moderationDictionary, Path.of("src/main/resources/bad-words.txt"));
 
-        doReturn(resource).when(resourceLoader).getResource("classpath:bad-words.txt");
-        doReturn(inputStream).when(resource).getInputStream();
-
-        moderationDictionary.loadDictionary();
+        moderationDictionary.init();
     }
 
     @Test
     void containsBadWord() {
-        assertTrue(moderationDictionary.containsBadWord("This is a badword1 test"));
-        assertFalse(moderationDictionary.containsBadWord("This is a clean comment"));
+        assertTrue(moderationDictionary.checkCurseWordsInPost("This is a damn test"));
+        assertFalse(moderationDictionary.checkCurseWordsInPost("This is a clean comment"));
     }
 }
