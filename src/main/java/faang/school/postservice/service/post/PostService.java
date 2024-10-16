@@ -214,6 +214,7 @@ public class PostService {
         posts.forEach(post -> {
             post.setPublishedAt(currentDateTime);
             post.setPublished(true);
+            postRepository.save(post);
         });
         log.info("Посты опубликованы");
     }
