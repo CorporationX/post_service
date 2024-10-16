@@ -1,15 +1,15 @@
 package faang.school.postservice;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.dto.album.filter.AlbumFilterDto;
+import faang.school.postservice.model.dto.AlbumDto;
+import faang.school.postservice.model.dto.AlbumFilterDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.AlbumMapper;
-import faang.school.postservice.model.Album;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.entity.Album;
+import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.AlbumService;
+import faang.school.postservice.service.impl.AlbumServiceImpl;
 import faang.school.postservice.validator.AlbumValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ public class AlbumServiceTest {
     private AlbumValidator validator;
 
     @InjectMocks
-    private AlbumService albumService;
+    private AlbumServiceImpl albumService;
 
     private Album album;
     private AlbumDto albumDto;

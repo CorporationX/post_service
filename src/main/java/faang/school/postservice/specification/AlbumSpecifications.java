@@ -1,6 +1,6 @@
 package faang.school.postservice.specification;
 
-import faang.school.postservice.model.Album;
+import faang.school.postservice.model.entity.Album;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;

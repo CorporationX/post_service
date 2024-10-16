@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.PostgreSQLContainerConfig;
 import org.junit.jupiter.api.Test;

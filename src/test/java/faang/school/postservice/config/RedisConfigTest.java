@@ -1,13 +1,13 @@
 package faang.school.postservice.config;
 
 
-import faang.school.postservice.service.messaging.HashtagListener;
+import faang.school.postservice.listener.HashtagListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
@@ -23,7 +23,7 @@ class RedisConfigTest {
     private HashtagListener hashtagListener;
 
     @Mock
-    private RedisConnectionFactory redisConnectionFactory;
+    private LettuceConnectionFactory lettuceConnectionFactory;
 
     @InjectMocks
     private RedisConfig redisConfig;
@@ -35,9 +35,9 @@ class RedisConfigTest {
 
     @Test
     void testRedisTemplate() {
-        RedisTemplate<String, Object> redisTemplate = redisConfig.redisTemplate(redisConnectionFactory);
+        RedisTemplate<String, Object> redisTemplate = redisConfig.redisTemplate(lettuceConnectionFactory);
         assertNotNull(redisTemplate);
-        assertEquals(redisConnectionFactory, redisTemplate.getConnectionFactory());
+        assertEquals(lettuceConnectionFactory, redisTemplate.getConnectionFactory());
         assertTrue(redisTemplate.getKeySerializer() instanceof StringRedisSerializer);
         assertTrue(redisTemplate.getValueSerializer() instanceof StringRedisSerializer);
     }

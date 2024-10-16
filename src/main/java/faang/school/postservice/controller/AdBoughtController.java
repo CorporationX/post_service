@@ -1,11 +1,7 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.model.dto.AdBoughtEvent;
+import faang.school.postservice.model.event.AdBoughtEvent;
 import faang.school.postservice.publisher.AdBoughtEventPublisher;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

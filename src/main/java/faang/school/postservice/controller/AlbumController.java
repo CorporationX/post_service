@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.dto.album.filter.AlbumFilterDto;
+import faang.school.postservice.model.dto.AlbumDto;
+import faang.school.postservice.model.dto.AlbumFilterDto;
 import faang.school.postservice.service.AlbumService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

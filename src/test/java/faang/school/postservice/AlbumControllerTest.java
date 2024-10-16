@@ -1,9 +1,9 @@
 package faang.school.postservice;
 
 import faang.school.postservice.controller.AlbumController;
-import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.dto.album.filter.AlbumFilterDto;
-import faang.school.postservice.service.AlbumService;
+import faang.school.postservice.model.dto.AlbumDto;
+import faang.school.postservice.model.dto.AlbumFilterDto;
+import faang.school.postservice.service.impl.AlbumServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 public class AlbumControllerTest {
 
     @Mock
-    private AlbumService albumService;
+    private AlbumServiceImpl albumService;
 
     @InjectMocks
     private AlbumController albumController;
