@@ -39,8 +39,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
-    private static final int UNVERIFIED_POSTS_LIMIT = 5;
-
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final ResourceService resourceService;
