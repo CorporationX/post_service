@@ -3,6 +3,7 @@ package faang.school.postservice.cache.service;
 import faang.school.postservice.cache.model.CommentRedis;
 import faang.school.postservice.cache.model.PostRedis;
 import faang.school.postservice.cache.repository.PostRedisRepository;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +64,8 @@ public class PostRedisService {
     }
 
     public PostRedis findById(Long id) {
-        return postRedisRepository.findById(id).orElse(null);
+        return postRedisRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post by id %s not found in cache".formatted(id)));
     }
 
     public void addCommentConcurrent(CommentRedis comment) {
@@ -76,22 +78,7 @@ public class PostRedisService {
         concurrentExecutor.execute(key, () -> addComment(comment), "adding comment by id " + comment.getId());
     }
 
-    public void updateViewsConcurrent(Long postId, Long views) {
-        String key = generateKey(postId);
-        if (!existsById(postId)) {
-            log.info("{} not found in cache", key);
-            return;
-        }
-        concurrentExecutor.execute(key, () -> updateViews(postId, views), "updating views");
-    }
-
-    private void updateViews(Long postId, Long views) {
-        PostRedis post = findById(postId);
-        post.setViews(views);
-        postRedisRepository.save(post);
-    }
-
-    private void addComment(CommentRedis comment) {
+    public void addComment(CommentRedis comment) {
         PostRedis postRedis = findById(comment.getPostId());
         TreeSet<CommentRedis> comments = postRedis.getComments();
         if (comments == null) {
@@ -104,6 +91,21 @@ public class PostRedisService {
         }
         postRedis.setComments(comments);
         postRedisRepository.save(postRedis);
+    }
+
+    public void updateViewsConcurrent(Long postId, Long views) {
+        String key = generateKey(postId);
+        if (!existsById(postId)) {
+            log.info("{} not found in cache", key);
+            return;
+        }
+        concurrentExecutor.execute(key, () -> updateViews(postId, views), "updating views");
+    }
+
+    public void updateViews(Long postId, Long views) {
+        PostRedis post = findById(postId);
+        post.setViews(views);
+        postRedisRepository.save(post);
     }
 
     private String generateKey(Long postId) {
