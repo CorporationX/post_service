@@ -1,6 +1,6 @@
-package faang.school.postservice.service.publisher;
+package faang.school.postservice.publisher;
 
-import faang.school.postservice.dto.redis.CommentEvent;
+import faang.school.postservice.dto.event.CommentEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;

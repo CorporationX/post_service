@@ -1,6 +1,8 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import java.util.List;
 @RequestMapping("/api/v1/post")
 public class PostController {
     private final PostService postService;
+    private final CommentEventPublisher commentEventPublisher;
 
     @PostMapping
     public PostDto create(@RequestBody @Valid PostDto postDto) {
@@ -34,6 +37,11 @@ public class PostController {
     @PutMapping
     public PostDto update(@RequestBody PostDto postDto) {
         return postService.updatePost(postDto);
+    }
+
+    @PutMapping("/notification")
+    public void commentEvent(@RequestBody CommentEvent commentEvent) {
+        commentEventPublisher.publish(commentEvent);
     }
 
     @GetMapping("/{id}")
