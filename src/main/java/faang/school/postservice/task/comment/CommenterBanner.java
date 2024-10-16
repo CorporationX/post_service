@@ -26,7 +26,7 @@ public class CommenterBanner {
         try {
             commentService.banUsersWithObsceneCommentsMoreThan(banCommentLimit);
         } catch (Exception e) {
-            log.error(String.valueOf(e));
+            log.error(e.getMessage(), e);
             throw new UserBanException("Fail ban user", e);
         }
     }

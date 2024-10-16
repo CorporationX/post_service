@@ -10,10 +10,8 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.retry.annotation.EnableRetry;
 
 @Configuration
-@EnableRetry
 public class RedisConfig {
 
     @Bean
@@ -22,8 +20,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
+    public RedisTemplate<String, Long> redisTemplate() {
+        RedisTemplate<String, Long> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());
         template.setValueSerializer(new GenericToStringSerializer<>(Object.class));
         return template;
