@@ -48,6 +48,11 @@ public class AsyncConfig {
     }
 
     @Bean
+    public ExecutorService executorService(@Value("${post.moderator.threads-count}") int threadsCount) {
+        return Executors.newFixedThreadPool(threadsCount);
+    }
+
+    @Bean
     public Executor kafkaThreadPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(asyncProperty.getSettings().get("kafka").getCorePoolSize());

@@ -12,10 +12,10 @@ public class RedisCacheProperty {
 
     private final Long defaultTtl;
     private final String pathToEntities;
-    private final Map<String, CacheSettings> cacheSettings;
+    private final Map<String, CacheSetting> cacheSettings;
 
     @Data
-    public static class CacheSettings {
+    public static class CacheSetting {
 
         private String name;
         private Long ttl;

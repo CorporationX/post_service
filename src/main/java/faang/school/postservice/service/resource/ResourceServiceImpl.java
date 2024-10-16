@@ -9,7 +9,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.s3.AmazonS3Service;
 import faang.school.postservice.validator.resource.ResourceValidator;
 import lombok.RequiredArgsConstructor;
@@ -32,12 +31,11 @@ import java.util.concurrent.Executors;
 @Slf4j
 public class ResourceServiceImpl implements ResourceService {
 
+    private final PostRepository postRepository;
     private final ResourceRepository resourceRepository;
     private final ResourceMapper resourceMapper;
     private final ResourceValidator resourceValidator;
     private final AmazonS3Service amazonS3Service;
-    private final PostService postService;
-    private final PostRepository postRepository;
 
     @Override
     @Transactional

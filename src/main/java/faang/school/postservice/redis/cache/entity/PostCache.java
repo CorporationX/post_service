@@ -21,7 +21,7 @@ import java.util.NavigableSet;
 @NoArgsConstructor
 @AllArgsConstructor
 @RedisHash("posts")
-public class PostCache implements Serializable, Comparable<PostCache> {
+public class PostCache implements Serializable {
 
     @Id
     private long id;
@@ -32,11 +32,6 @@ public class PostCache implements Serializable, Comparable<PostCache> {
     private LocalDateTime createdAt;
     private long likesCount;
     private long viewsCount;
-
-    @Override
-    public int compareTo(PostCache o) {
-        return o.getPublishedAt().compareTo(this.getPublishedAt());
-    }
 
     @Override
     public boolean equals(Object o) {

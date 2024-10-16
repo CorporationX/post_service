@@ -25,6 +25,7 @@ public class AuthorCache implements Serializable {
     @Id
     private long id;
     private String username;
+    private String smallFileId;
 
     @Override
     public boolean equals(Object o) {

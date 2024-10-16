@@ -1,10 +1,8 @@
 package faang.school.postservice.scheduler.comment;
 
+import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.moderation.ModerationDictionary;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -48,7 +46,7 @@ class CommentModeratorTest {
         comment2.setCreatedAt(LocalDateTime.now());
 
         List<Comment> batch = Arrays.asList(comment1, comment2);
-        when(moderationDictionary.containsBadWord(anyString())).thenReturn(false);
+        when(moderationDictionary.checkCurseWordsInPost(anyString())).thenReturn(false);
 
         commentModerator.moderateBatch(batch);
 
