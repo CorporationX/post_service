@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.impl.PostServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +22,7 @@ public class DeletePostTest {
     private PostRepository postRepository;
 
     @InjectMocks
-    private PostService postService;
+    private PostServiceImpl postService;
 
     private Post post;
 

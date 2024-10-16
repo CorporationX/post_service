@@ -5,6 +5,7 @@ import faang.school.postservice.enums.AuthorType;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.service.impl.PostServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +27,7 @@ public class UpdatePostTest {
     private PostMapper postMapper;
 
     @InjectMocks
-    private PostService postService;
+    private PostServiceImpl postService;
 
     private Post existingPost;
     private PostDto updatedPostDto;

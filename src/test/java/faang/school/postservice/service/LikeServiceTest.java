@@ -8,6 +8,8 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.messaging.likepost.LikeEventPublisher;
 import faang.school.postservice.util.ExceptionThrowingValidator;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
@@ -50,6 +52,10 @@ class LikeServiceTest {
     @Mock
     private LikeRepository likeRepository;
     @Mock
+    private PostRepository postRepository;
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
+    @Mock
     private UserServiceClient userServiceClient;
     @Mock
     private ExceptionThrowingValidator validator;
@@ -65,12 +71,17 @@ class LikeServiceTest {
     private Long userId;
     private LikeDto likeDto;
     private Like likeEntity;
+    private Post post;
 
     @BeforeEach
     void setUp() {
         postId = 1L;
         commentId = 1L;
         userId = 2L;
+
+        post = new Post();
+        post.setId(postId);
+        post.setAuthorId(1L);
 
         likeDto = new LikeDto();
         likeDto.setUserId(userId);
@@ -80,6 +91,7 @@ class LikeServiceTest {
         likeEntity = new Like();
         likeEntity.setUserId(userId);
         likeEntity.setCreatedAt(LocalDateTime.now());
+        likeEntity.setPost(post);
     }
 
     @Test
@@ -198,6 +210,7 @@ class LikeServiceTest {
         when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(Optional.empty());
         when(likeMapper.toEntity(likeDto)).thenReturn(likeEntity);
         when(likeRepository.save(likeEntity)).thenReturn(likeEntity);
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
         likeService.addLikeToPost(postId, likeDto);
 

@@ -22,10 +22,25 @@ spring:
       port: 6379
       host: localhost
       channels:
+        hashtags: hashtags_channel
+        like_post: like_post_channel
+        post_view_channel: post_view_channel
+        ad_bought_channel: ad_bought_channel
         calculations_channel:
           name: calculations_channel
-        post_view_channel:
-          name: post_view_channel
+
+  services:
+    s3:
+      endpoint: http://127.0.0.1:9000
+      accessKey: user
+      secretKey: password
+      bucketName: post-service-bucket
+      region: US_EAST_1
+
+  servlet:
+    multipart:
+      max-request-size: 100MB
+      max-file-size: 10MB
 
 server:
   port: 8081
@@ -33,14 +48,42 @@ server:
 logging:
   level:
     root: info
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
 
 post:
+  moderation:
+    scheduler:
+      cron: "@daily"
+    batch-size: 100
+    file-path: src/main/resources/swear_words.txt
   publisher:
+    butch-size: 1000
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  max-images-per-post: 10
+  executor:
+    core-pool-size: 8
+    max-pool-size: 16
+    queue-capacity: 32
+
+resources:
+  file:
+    max-file-size: 5242880
+  image:
+    max-width-horizontal: 1080
+    max-height-horizontal: 566
+    max-size-square: 1080
+    supported-image-types: "image/png,image/jpeg,image/jpg"
+  cleanup:
+    scheduler:
+      cron: "0 0 2 * * ?" # каждый день в 2 часа ночи
+    retention-period: 1M # настройка периода: M - месяц, D - день
+
 
 user-service:
   host: localhost
@@ -51,3 +94,13 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+spell-checker:
+  api:
+    host: https://api.textgears.com
+    key: 18ZFDi6vjqn0XCYm
+    autocorrect: /correct
+    language-detection: /detect
+  scheduler:
+    cron: "0 0 3 * * *" # каждый день в 3 часа ночи
+  batch-size: 100

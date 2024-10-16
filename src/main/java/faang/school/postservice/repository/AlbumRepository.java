@@ -1,6 +1,7 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Album;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -10,7 +11,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
-public interface AlbumRepository extends CrudRepository<Album, Long> {
+public interface AlbumRepository extends CrudRepository<Album, Long>, JpaSpecificationExecutor<Album> {
 
     boolean existsByTitleAndAuthorId(String title, long authorId);
 
@@ -34,4 +35,7 @@ public interface AlbumRepository extends CrudRepository<Album, Long> {
             )
             """)
     Stream<Album> findFavoriteAlbumsByUserId(long userId);
+
+    @Query(nativeQuery = true, value = "SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM favorite_albums WHERE album_id = :albumId AND user_id = :userId")
+    boolean existsInFavorites(long albumId, long userId);
 }
