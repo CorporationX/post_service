@@ -31,6 +31,6 @@ public class LikeEventPublisher {
             throw new RuntimeException(e);
         }
         redisTemplate.convertAndSend(likeEventChannel, valueAsString);
-        log.info("Send LikeEvent message to NotificationService: {} to channel: {}", message, likeEventChannel);
+        log.info("Send LikeEvent to Brokers channel: {} , message: {}", message, likeEventChannel);
     }
 }

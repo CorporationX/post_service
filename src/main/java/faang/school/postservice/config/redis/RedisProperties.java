@@ -19,6 +19,6 @@ public class RedisProperties {
     @Value("${spring.data.redis.channels.comment-channel.name}")
     private String commentEventChannelName;
 
-    @Value("${spring.data.redis.channels.like-channel.name}")
+    @Value("${spring.data.redis.channels.post-like-channel.name}")
     private String PostLikeEventChannelName;
 }

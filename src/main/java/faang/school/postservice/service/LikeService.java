@@ -53,7 +53,7 @@ public class LikeService {
         post.setLikes(likeList);
         //вопросик к реализации этого метода, я тут пока ничего не меняю
         //в пост добавляется лайк, но не вижу сохранения поста
-        publishPostLikeEventToBroker(newLike, post);
+        publishPostLikeEventToBroker(newLike);
         return newLike;
     }
 
@@ -144,9 +144,9 @@ public class LikeService {
         }
     }
 
-
-    private void publishPostLikeEventToBroker(Like like, Post post) {
-        AbstractLikeEvent abstractLikeEvent = likeEventMapper.toPostLikeEvent(like, post);
+    private void publishPostLikeEventToBroker(Like like) {
+        AbstractLikeEvent abstractLikeEvent = likeEventMapper.toPostLikeEvent(like);
         likeEventPublisher.publishPostLikeEventToBroker(abstractLikeEvent);
+
     }
 }

@@ -13,7 +13,4 @@ public class PostLikeEventDto extends AbstractLikeEvent {
         super(likedEntityId, authorId, userExciterId);
     }
 
-    public long getPostId() {
-        return getLikedEntityId();
-    }
 }

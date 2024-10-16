@@ -31,8 +31,8 @@ spring:
           name: user_ban
         comment-channel:
           name: comment_event_channel
-        like-channel:
-          name: like_event_channel
+        post-like-channel:
+          name: post_like_event_channel
   servlet:
     multipart:
       max-file-size: 50MB

@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class LikeEventMapper {
 
-    public PostLikeEventDto toPostLikeEvent(Like like, Post post) {
+    public PostLikeEventDto toPostLikeEvent(Like like) {
+        Post post = like.getPost();
         return new PostLikeEventDto(post.getId(), post.getAuthorId(), like.getUserId());
     }
 
