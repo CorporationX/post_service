@@ -126,6 +126,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostDto getPost(Long id) {
         Post post = getPostById(id);
+        System.out.println("yyyyyyyyyyy");
         postViewPublisher.publish(createPostViewEvent(post));
         return postMapper.toPostDto(post);
     }
@@ -180,11 +181,8 @@ public class PostServiceImpl implements PostService {
     }
 
     private Post getPostById(Long id) {
-        Post post = postRepository.findById(id)
+        return postRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found with id: " + id));
-        postViewPublisher.publish(createPostViewEvent(post));
-
-        return post;
     }
 
     @Override
@@ -279,6 +277,7 @@ public class PostServiceImpl implements PostService {
     }
 
     private PostViewEvent createPostViewEvent(Post post) {
+        System.out.println("5555555555555555");
         return new PostViewEvent(post.getId(), post.getAuthorId(), userContext.getUserId(), LocalDateTime.now());
     }
 
