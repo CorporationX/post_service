@@ -3,7 +3,6 @@ package faang.school.postservice.service.post;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -51,7 +50,7 @@ public class RedisCache {
             String jsonValue = objectMapper.writeValueAsString(value);
             String keyStr = key.toString();
 
-            Boolean success = performTransaction(pattern, keyStr, jsonValue);
+            Boolean success = performHSetTransaction(pattern, keyStr, jsonValue);
 
             if (!success) {
                 log.error("Failed to add pattern {} due to optimistic lock", pattern);
@@ -117,13 +116,7 @@ public class RedisCache {
     @Retryable(value = {OptimisticLockingFailureException.class}, maxAttempts = 5, backoff = @Backoff(delay = 300, multiplier = 3))
     protected void saveZSetOption(String key, long currentTime, String value, String timestamp) {
 
-        Boolean success = redisTemplate.execute((RedisCallback<Boolean>) connection -> {
-            connection.multi();
-            connection.zAdd(key.getBytes(), currentTime, value.getBytes());
-            connection.set(timestamp.getBytes(), String.valueOf(currentTime).getBytes());
-            connection.exec();
-            return true;
-        });
+        boolean success = performZSetTransaction(key, currentTime, value, timestamp);
 
         if (!success) {
             log.error("Failed to add post due to optimistic locking conflict.");
@@ -144,11 +137,21 @@ public class RedisCache {
         return locks.computeIfAbsent(key, k -> new Object());
     }
 
-    private Boolean performTransaction(String pattern, String key, String value) {
+    private Boolean performHSetTransaction(String pattern, String key, String value) {
         return Boolean.TRUE.equals(redisTemplate.execute((RedisCallback<Boolean>) connection -> {
             connection.multi();
             connection.hSet(pattern.getBytes(), key.getBytes(), value.getBytes());
             connection.expire(pattern.getBytes(), ttl);
+            connection.exec();
+            return true;
+        }));
+    }
+
+    private boolean performZSetTransaction(String key, long currentTime, String value, String timestamp) {
+        return Boolean.TRUE.equals(redisTemplate.execute((RedisCallback<Boolean>) connection -> {
+            connection.multi();
+            connection.zAdd(key.getBytes(), currentTime, value.getBytes());
+            connection.set(timestamp.getBytes(), String.valueOf(currentTime).getBytes());
             connection.exec();
             return true;
         }));
