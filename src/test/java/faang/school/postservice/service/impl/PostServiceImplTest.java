@@ -1,9 +1,11 @@
 package faang.school.postservice.service.impl;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.BatchProcessService;
 import faang.school.postservice.util.moderation.ModerationDictionary;
@@ -41,6 +43,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class PostServiceImplTest {
+    @Mock
+    UserContext userContext;
+
+    @Mock
+    PostViewPublisher postViewPublisher;
 
     @Mock
     private PostRepository postRepository;
@@ -144,6 +151,7 @@ class PostServiceImplTest {
         assertEquals(postDto.getPublishedAt(), result.get(0).getPublishedAt());
         verify(postRepository, times(1)).findByAuthorIdWithLikes(authorId);
         verify(postMapper, times(1)).toPostDto(any(Post.class));
+        verify(postViewPublisher).publish(any());
     }
 
     @Test
@@ -163,6 +171,7 @@ class PostServiceImplTest {
         assertEquals(postDto.getPublishedAt(), result.get(0).getPublishedAt());
         verify(postRepository, times(1)).findByProjectIdWithLikes(projectId);
         verify(postMapper, times(1)).toPostDto(any(Post.class));
+        verify(postViewPublisher).publish(any());
     }
 
     @Test

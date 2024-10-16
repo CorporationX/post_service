@@ -1,7 +1,9 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.service.impl.PostServiceImpl;
@@ -26,6 +28,12 @@ public class PublishPostTest {
 
     @Mock
     private PostMapper postMapper;
+
+    @Mock
+    UserContext userContext;
+
+    @Mock
+    PostViewPublisher postViewPublisher;
 
     @InjectMocks
     private PostServiceImpl postService;
@@ -72,7 +80,6 @@ public class PublishPostTest {
         assertNotNull(unpublishedPost.getPublishedAt());
 
         verify(postRepository).save(argThat(post -> post.isPublished() && post.getId() == 1L));
-
         assertTrue(unpublishedPost.isPublished());
     }
 

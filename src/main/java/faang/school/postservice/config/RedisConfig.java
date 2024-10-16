@@ -78,7 +78,8 @@ public class RedisConfig {
         return container;
     }
 
-    public ChannelTopic viewProfileTopic() {
+    @Bean
+    public ChannelTopic postViewTopic() {
         return new ChannelTopic(postViewTopic);
     }
 
