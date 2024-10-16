@@ -1,6 +1,7 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.album.AlbumCreatedEvent;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -12,15 +13,16 @@ import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.AlbumCreatedEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
-
 import faang.school.postservice.service.AlbumService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,11 +31,13 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class AlbumServiceImpl implements AlbumService {
+
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final List<AlbumFilter> filters;
+    private final AlbumCreatedEventPublisher albumCreatedEventPublisher;
 
     @Override
     public void createAlbum(AlbumDto albumDto) {
@@ -45,6 +49,17 @@ public class AlbumServiceImpl implements AlbumService {
         addPostsToAlbum(albumDto, newAlbum);
 
         albumRepository.save(newAlbum);
+        publishCreateEvent(albumDto);
+    }
+
+    private void publishCreateEvent(AlbumDto albumDto) {
+        AlbumCreatedEvent event = AlbumCreatedEvent.builder()
+                .albumId(albumDto.getId())
+                .userId(albumDto.getAuthorId())
+                .albumName(albumDto.getTitle())
+                .eventTime(LocalDateTime.now())
+                .build();
+        albumCreatedEventPublisher.publish(event);
     }
 
     @Override

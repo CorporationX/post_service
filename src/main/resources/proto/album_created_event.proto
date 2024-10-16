@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option java_outer_classname = "AlbumCreatedEventProto";
+
+message AlbumCreatedEvent {
+  int64 user_id = 1;
+  int64 album_id = 2;
+  string album_name = 3;
+  google.protobuf.Timestamp event_time = 4;
+}

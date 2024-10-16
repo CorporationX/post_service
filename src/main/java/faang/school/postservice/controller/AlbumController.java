@@ -1,15 +1,20 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.exception.DataValidationException;
-import java.util.List;
-
 import faang.school.postservice.service.AlbumService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -20,7 +25,7 @@ public class AlbumController {
     private final AlbumService albumService;
     private final UserContext userContext;
 
-    @PostMapping("")
+    @PostMapping
     public void createAlbum(@RequestBody @Valid AlbumDto albumDto) {
         albumDto.setAuthorId(userContext.getUserId());
         albumService.createAlbum(albumDto);

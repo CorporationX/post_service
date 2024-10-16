@@ -27,6 +27,18 @@ spring:
       topics:
         comment_event_topic: commentEventQueue
 
+  kafka:
+    bootstrap-servers: "localhost:9092"
+    pool-size: 3
+    consumer:
+      group-id: "group"
+      auto-offset-reset: earliest
+    topics:
+      album-created:
+        name: album-created_topic
+        num-partitions: 3
+        replication-factor: 1
+
 server:
   port: 8081
 
