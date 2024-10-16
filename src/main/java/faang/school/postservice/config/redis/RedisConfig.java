@@ -1,8 +1,8 @@
 package faang.school.postservice.config.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.dto.post.PostDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +17,9 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class RedisConfig {
+    private final ObjectMapper objectMapper;
 
     @Value("${spring.data.redis.host}")
     private String host;
@@ -25,8 +27,14 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
 
+    @Value("${spring.data.redis.channels.like-channel.name}")
+    private String likeChannelName;
+
     @Value("${spring.data.redis.channels.user-ban.name}")
-    private String topicName;
+    private String userBanTopic;
+
+    @Value("${spring.data.redis.channels.comment-receiving.name}")
+    private String commentReceivingTopic;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -50,20 +58,26 @@ public class RedisConfig {
     public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer =
                 new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
-
+        redisTemplate.setConnectionFactory(redisConnectionFactory());
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
         return redisTemplate;
     }
 
     @Bean
-    public ChannelTopic channelTopic() {
-        return new ChannelTopic(topicName);
+    public ChannelTopic userBanTopic() {
+        return new ChannelTopic(userBanTopic);
+    }
+
+    @Bean
+    public ChannelTopic commentReceivingTopic() {
+        return new ChannelTopic(commentReceivingTopic);
+    }
+
+    @Bean
+    public ChannelTopic likeChannelTopic() {
+        return new ChannelTopic(likeChannelName);
     }
 }

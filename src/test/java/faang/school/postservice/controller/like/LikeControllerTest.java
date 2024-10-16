@@ -1,6 +1,6 @@
 package faang.school.postservice.controller.like;
 
-import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.model.dto.like.LikeDto;
 import faang.school.postservice.service.impl.like.LikeServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ class LikeControllerTest {
 
         Mockito.when(likeService.createLikeComment(Mockito.anyLong())).thenReturn(likeDto);
 
-        mockMvc.perform(post("/api/v1/like/commentId/{commentId}", commentAndPostId)
+        mockMvc.perform(post("/api/v1/likes/commentId/{commentId}", commentAndPostId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -66,7 +66,7 @@ class LikeControllerTest {
 
         Mockito.doNothing().when(likeService).deleteLikeComment(commentAndPostId);
 
-        mockMvc.perform(delete("/api/v1/like/commentId/{commentId}", commentAndPostId)
+        mockMvc.perform(delete("/api/v1/likes/commentId/{commentId}", commentAndPostId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()
@@ -81,7 +81,7 @@ class LikeControllerTest {
         likeDto.setUserId(1L);
         Mockito.when(likeService.createLikePost(Mockito.anyLong())).thenReturn(likeDto);
 
-        mockMvc.perform(post("/api/v1/like/postId/{postId}", 1L)
+        mockMvc.perform(post("/api/v1/likes/postId/{postId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -95,7 +95,7 @@ class LikeControllerTest {
     void deleteLikePost() throws Exception {
         Mockito.doNothing().when(likeService).deleteLikePost(commentAndPostId);
 
-        mockMvc.perform(delete("/api/v1/like/postId/{postId}", commentAndPostId)
+        mockMvc.perform(delete("/api/v1/likes/postId/{postId}", commentAndPostId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()

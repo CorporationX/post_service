@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.payment;
+package faang.school.postservice.model.dto.payment;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.user;
+package faang.school.postservice.model.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Email;

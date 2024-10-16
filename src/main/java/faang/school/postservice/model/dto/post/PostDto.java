@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.post;
+package faang.school.postservice.model.dto.post;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

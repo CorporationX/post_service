@@ -2,8 +2,13 @@ package faang.school.postservice.event;
 
 import lombok.Builder;
 
-public record LikeEvent(long postAuthorId,
-                        long likeAuthorId,
-                        long postId) {
+import java.time.LocalDateTime;
 
+@Builder
+public record LikeEvent(
+        long postId,
+        long likeAuthorId,
+        long postAuthorId,
+        LocalDateTime likedTime
+) {
 }

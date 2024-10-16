@@ -3,7 +3,7 @@ package faang.school.postservice.validator.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.exception.DataValidationException;
 import lombok.RequiredArgsConstructor;

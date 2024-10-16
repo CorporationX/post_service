@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.project;
+package faang.school.postservice.model.dto.project;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;

@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.error;
+package faang.school.postservice.model.dto.error;
 
 import lombok.Builder;
 
