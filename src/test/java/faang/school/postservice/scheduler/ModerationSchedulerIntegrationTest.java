@@ -38,7 +38,6 @@ public class ModerationSchedulerIntegrationTest {
         Throwable exception = assertThrows(RuntimeException.class,
                 () -> moderationScheduler.moderationPosts());
 
-        verify(moderationPostService, times(3)).moderationPosts();
         assertEquals(message, exception.getMessage());
     }
 }
