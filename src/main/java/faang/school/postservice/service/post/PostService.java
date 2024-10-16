@@ -3,7 +3,6 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.request.PostCreationRequest;
 import faang.school.postservice.dto.post.request.PostUpdatingRequest;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.model.post.PostCreator;
 
 import java.util.List;
@@ -23,6 +22,4 @@ public interface PostService {
     List<PostDto> getPostsByCreatorAndPublishedStatus(Long creatorId, PostCreator creator, Boolean publishedStatus);
 
     void moderatePosts();
-
-    void verifyPosts(List<Post> posts);
 }

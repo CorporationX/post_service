@@ -23,18 +23,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -51,6 +49,9 @@ public class PostServiceTest {
     @Mock
     private ProjectServiceClient projectClient;
 
+    @Mock
+    private PostServiceAsync postServiceAsync;
+
     @InjectMocks
     private PostServiceImpl postService;
 
@@ -58,6 +59,7 @@ public class PostServiceTest {
     private PostDto postDto;
     private PostCreationRequest creationRequest;
     private PostUpdatingRequest updatingRequest;
+    private final List<Post> posts = new ArrayList<>();
 
     @BeforeEach
     public void setUp() {
@@ -76,6 +78,7 @@ public class PostServiceTest {
                 .content("Test")
                 .build();
         updatingRequest = PostUpdatingRequest.builder().content("Test2").build();
+        ReflectionTestUtils.setField(postService,"postBatchSize", 3);
     }
 
     @Test
@@ -391,5 +394,24 @@ public class PostServiceTest {
         assertEquals(3, postDtos.size());
         assertEquals(1L, postDtos.get(0).id());
         assertEquals(2L, postDtos.get(2).id());
+    }
+
+    @Test
+    public void testModeratePostsWhenNoPostsFound() {
+        when(postRepository.findNotVerified()).thenReturn(Collections.emptyList());
+        postService.moderatePosts();
+        verify(postServiceAsync, never()).verifyPosts(any());
+    }
+
+    @Test
+    public void testModeratePostsWhenPostsFound() {
+        posts.add(post);
+        when(postRepository.findNotVerified()).thenReturn(posts);
+        doNothing().when(postServiceAsync).verifyPosts(posts);
+
+        postService.moderatePosts();
+
+        verify(postRepository).findNotVerified();
+        verify(postServiceAsync).verifyPosts(anyList());
     }
 }

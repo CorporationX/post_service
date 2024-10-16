@@ -2,7 +2,6 @@ package faang.school.postservice.service.post.impl;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.request.PostCreationRequest;
 import faang.school.postservice.dto.post.request.PostUpdatingRequest;
@@ -14,6 +13,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.post.PostCreator;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.post.PostServiceAsync;
 import faang.school.postservice.service.post.impl.filter.PostFilter;
 import faang.school.postservice.service.post.impl.filter.PublishedPostFilter;
 import faang.school.postservice.service.post.impl.filter.UnPublishedPostFilter;
@@ -22,13 +22,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @Slf4j
@@ -39,9 +37,10 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userClient;
     private final ProjectServiceClient projectClient;
-    private final ModerationDictionary moderationDictionary;
-    @Value("${post.moderator.count-posts-in-thread}")
+    private final PostServiceAsync postServiceAsync;
+    @Value("${post.moderator.post-batch-size}")
     private int postBatchSize;
+    private int POSTS_MAX_SIZE = 1000;
 
     @Override
     public PostDto create(PostCreationRequest request) {
@@ -114,27 +113,15 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void moderatePosts() {
-        List<Post> posts = postRepository.findNotVerified();
-        ListUtils.partition(posts, postBatchSize).forEach(this::verifyPosts);
-    }
-
-    @Override
-    @Async("postServicePool")
-    public void verifyPosts(List<Post> posts) {
-        Set<String> banWords = moderationDictionary.getForbiddenWords();
-        for (Post post : posts) {
-            boolean containsBanWord = banWords.stream()
-                    .anyMatch(banWord -> post.getContent().toLowerCase().contains(banWord));
-            if (containsBanWord) {
-                post.setVerified(false);
-                log.warn("Post '{}' contains forbidden words. It will not be verified.", post.getId());
-            } else {
-                post.setVerified(true);
-                post.setVerifiedDate(LocalDateTime.now());
-                log.info("Post '{}' has been successfully verified. Verification date: {}",
-                        post.getId(), post.getVerifiedDate());
+        while (true) {
+            List<Post> posts = postRepository.findNotVerified().stream()
+                    .limit(POSTS_MAX_SIZE)
+                    .toList();
+            if (posts.isEmpty()) {
+                break;
             }
-            postRepository.saveAll(posts);
+            log.info("Number of found posts for moderation: {}", posts.size());
+            ListUtils.partition(posts, postBatchSize).forEach(postServiceAsync::verifyPosts);
         }
     }
 

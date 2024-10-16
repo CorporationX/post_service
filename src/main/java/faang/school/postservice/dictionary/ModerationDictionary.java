@@ -1,7 +1,7 @@
 package faang.school.postservice.dictionary;
 
-import faang.school.postservice.exception.comment.ExceptionMessages;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -10,6 +10,7 @@ import java.io.*;
 import java.util.HashSet;
 import java.util.Set;
 
+@Slf4j
 @Getter
 @Component
 public class ModerationDictionary {
@@ -20,8 +21,8 @@ public class ModerationDictionary {
         try (BufferedReader bufferedReader = new BufferedReader(
                 new InputStreamReader(dictionaryResource.getInputStream()))) {
             bufferedReader.lines().forEach(line -> forbiddenWords.add(line.trim()));
-        } catch (IOException e) {
-            throw new RuntimeException(ExceptionMessages.POST_NOT_FOUND.getMessage());
+        } catch (Exception e) {
+            log.error("The file {} could not be read", forbiddenWords);
         }
     }
 }
