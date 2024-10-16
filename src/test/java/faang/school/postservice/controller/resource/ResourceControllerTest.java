@@ -1,7 +1,7 @@
 package faang.school.postservice.controller.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.model.dto.resource.ResourceDto;
 import faang.school.postservice.model.resource.ResourceStatus;
 import faang.school.postservice.service.resource.ResourceService;
 import org.junit.jupiter.api.BeforeEach;

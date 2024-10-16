@@ -1,6 +1,6 @@
 package faang.school.postservice.album.mapper;
 
-import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.model.dto.album.AlbumDto;
 import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;

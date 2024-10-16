@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.album;
+package faang.school.postservice.model.dto.album;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

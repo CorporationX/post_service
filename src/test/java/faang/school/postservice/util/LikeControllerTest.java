@@ -6,7 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import faang.school.postservice.controller.LikeController;
-import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.model.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.validator.LikeValidator;
 import org.junit.jupiter.api.BeforeEach;

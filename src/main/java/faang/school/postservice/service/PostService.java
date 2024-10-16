@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

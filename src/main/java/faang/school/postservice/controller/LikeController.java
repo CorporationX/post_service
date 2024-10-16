@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.model.dto.like.LikeDto;
+import faang.school.postservice.model.dto.user.UserDto;
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;

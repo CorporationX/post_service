@@ -2,10 +2,10 @@ package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.enums.AuthorType;
+import faang.school.postservice.model.dto.post.PostDto;
+import faang.school.postservice.model.dto.project.ProjectDto;
+import faang.school.postservice.model.dto.user.UserDto;
+import faang.school.postservice.model.enums.AuthorType;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;

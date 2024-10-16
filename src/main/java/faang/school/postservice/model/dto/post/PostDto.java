@@ -1,6 +1,6 @@
-package faang.school.postservice.dto.post;
+package faang.school.postservice.model.dto.post;
 
-import faang.school.postservice.enums.AuthorType;
+import faang.school.postservice.model.enums.AuthorType;
 import faang.school.postservice.model.Like;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

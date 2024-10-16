@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.like;
+package faang.school.postservice.model.dto.like;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

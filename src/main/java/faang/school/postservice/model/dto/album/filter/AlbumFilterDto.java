@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.album.filter;
+package faang.school.postservice.model.dto.album.filter;
 
 import lombok.Getter;
 import lombok.Setter;

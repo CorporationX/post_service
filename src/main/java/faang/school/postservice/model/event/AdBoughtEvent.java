@@ -1,4 +1,4 @@
-package faang.school.postservice.model.dto;
+package faang.school.postservice.model.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

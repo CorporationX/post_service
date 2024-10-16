@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.enums.AuthorType;
+import faang.school.postservice.model.dto.post.PostDto;
+import faang.school.postservice.model.enums.AuthorType;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.mapper.PostMapper;

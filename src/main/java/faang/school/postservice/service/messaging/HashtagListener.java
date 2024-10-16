@@ -1,8 +1,8 @@
 package faang.school.postservice.service.messaging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.hashtag.HashtagDto;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.dto.hashtag.HashtagDto;
+import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.service.HashtagService;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;

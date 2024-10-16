@@ -1,8 +1,8 @@
 package faang.school.postservice;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.dto.album.filter.AlbumFilterDto;
+import faang.school.postservice.model.dto.album.AlbumDto;
+import faang.school.postservice.model.dto.album.filter.AlbumFilterDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;

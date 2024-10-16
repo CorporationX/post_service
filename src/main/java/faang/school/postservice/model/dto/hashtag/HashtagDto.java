@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.hashtag;
+package faang.school.postservice.model.dto.hashtag;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

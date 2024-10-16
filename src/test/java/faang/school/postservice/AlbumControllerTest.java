@@ -1,8 +1,8 @@
 package faang.school.postservice;
 
 import faang.school.postservice.controller.AlbumController;
-import faang.school.postservice.dto.album.AlbumDto;
-import faang.school.postservice.dto.album.filter.AlbumFilterDto;
+import faang.school.postservice.model.dto.album.AlbumDto;
+import faang.school.postservice.model.dto.album.filter.AlbumFilterDto;
 import faang.school.postservice.service.AlbumService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

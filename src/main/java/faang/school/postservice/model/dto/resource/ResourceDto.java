@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.resource;
+package faang.school.postservice.model.dto.resource;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import faang.school.postservice.model.resource.ResourceStatus;

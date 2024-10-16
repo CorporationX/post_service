@@ -1,6 +1,6 @@
 package faang.school.postservice.service.resource;
 
-import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.model.dto.resource.ResourceDto;
 import faang.school.postservice.exception.MediaFileException;
 import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.Post;
