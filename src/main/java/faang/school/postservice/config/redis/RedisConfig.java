@@ -49,7 +49,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public AdBoughtEventPublisher adBoughtEventPublisher(RedisTemplate<String, Object> redisTemplate, @Qualifier("adBoughtEventTopicK") ChannelTopic adBoughtTopic) {
+    public AdBoughtEventPublisher adBoughtEventPublisher(RedisTemplate<String, Object> redisTemplate, @Qualifier("adBoughtEventTopic") ChannelTopic adBoughtTopic) {
         return new AdBoughtEventPublisher(redisTemplate, adBoughtTopic);
     }
 
