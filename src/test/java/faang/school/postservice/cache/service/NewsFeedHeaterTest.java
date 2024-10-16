@@ -101,7 +101,7 @@ class NewsFeedHeaterTest {
         newsFeedHeater.saveAllPosts(postIds);
 
         verify(postService, times(1)).findAllByIdsWithLikes(postIds);
-        verify(newsFeedService, times(1)).setComments(posts);
+        verify(postRedisService, times(1)).setCommentsFromDB(posts);
         verify(postRedisService, times(1)).saveAll(posts);
     }
 }

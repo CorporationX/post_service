@@ -48,9 +48,9 @@ public class NewsFeedHeater {
     }
 
     public void saveAllPosts(List<Long> postIds) {
-        List<PostRedis> posts = postService.findAllByIdsWithLikes(postIds);
-        newsFeedService.setComments(posts);
-        postRedisService.saveAll(posts);
+        List<PostRedis> postsRedis = postService.findAllByIdsWithLikes(postIds);
+        postRedisService.setCommentsFromDB(postsRedis);
+        postRedisService.saveAll(postsRedis);
     }
 
     private List<Long> getUniquePostIds(List<NewsFeedRedis> newsFeeds) {

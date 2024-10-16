@@ -2,16 +2,25 @@ package faang.school.postservice.cache.service;
 
 import faang.school.postservice.cache.model.CommentRedis;
 import faang.school.postservice.cache.model.PostRedis;
+import faang.school.postservice.cache.model.UserRedis;
 import faang.school.postservice.cache.repository.PostRedisRepository;
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -23,6 +32,9 @@ public class PostRedisService {
     private final PostRedisRepository postRedisRepository;
     private final PostMapper postMapper;
     private final RedisConcurrentExecutor concurrentExecutor;
+    private final CommentService commentService;
+    private final UserRedisService userRedisService;
+    private final UserServiceClient userServiceClient;
 
     @Value("${spring.data.redis.cache.post.comments.max-size}")
     private int commentsMaxSize;
@@ -106,6 +118,67 @@ public class PostRedisService {
         PostRedis post = findById(postId);
         post.setViews(views);
         postRedisRepository.save(post);
+    }
+
+    public void setCommentsFromDB(List<PostRedis> posts) {
+        log.info("Setting comments for posts");
+        List<Long> postIds = posts.stream().map(PostRedis::getId).toList();
+        List<CommentRedis> comments = commentService.findLastBatchByPostIds(commentsMaxSize, postIds);
+        if (comments.isEmpty()) {
+            return;
+        }
+        Map<Long, TreeSet<CommentRedis>> commentsByPosts = new HashMap<>();
+        comments.forEach(comment -> commentsByPosts
+                .computeIfAbsent(comment.getPostId(), k -> new TreeSet<>())
+                .add(comment));
+        posts.forEach(post -> post.setComments(commentsByPosts.get(post.getId())));
+    }
+
+    public void setAuthors(TreeSet<PostRedis> postsRedis) {
+        log.info("Setting authors to posts");
+        Set<Long> authorIds = extractUserIds(postsRedis);
+
+        Map<Long, UserRedis> authors = userRedisService.getAllByIds(authorIds).stream()
+                .collect(Collectors.toMap(UserRedis::getId, user -> user));
+        if (authors.size() < authorIds.size()) {
+            addExpiredAuthors(authors, authorIds);
+        }
+        setAuthorsToPostsAndComments(postsRedis, authors);
+    }
+
+    public Set<Long> extractUserIds(TreeSet<PostRedis> postsRedis) {
+        Set<Long> userIds = new HashSet<>();
+        postsRedis.forEach(post -> {
+            userIds.add(post.getAuthor().getId());
+            TreeSet<CommentRedis> comments = post.getComments();
+            if (comments != null) {
+                comments.forEach(comment -> userIds.add(comment.getAuthor().getId()));
+            }
+        });
+        return userIds;
+    }
+
+    private void setAuthorsToPostsAndComments(TreeSet<PostRedis> postsRedis, Map<Long, UserRedis> authors) {
+        postsRedis.forEach(post -> {
+            post.setAuthor(authors.get(post.getAuthor().getId()));
+            TreeSet<CommentRedis> comments = post.getComments();
+            if (comments != null) {
+                comments.forEach(comment -> {
+                    Long authorId = comment.getAuthor().getId();
+                    comment.setAuthor(authors.get(authorId));
+                });
+            }
+        });
+    }
+
+    private void addExpiredAuthors(Map<Long, UserRedis> usersRedis, Set<Long> userIds) {
+        log.info("Adding authors, that were not found in cache");
+        List<Long> userRedisIds = usersRedis.keySet().stream().toList();
+        List<Long> expiredUserIds = new ArrayList<>(userIds);
+        expiredUserIds.removeAll(userRedisIds);
+        List<UserDto> expiredUsers = userServiceClient.getUsersByIds(expiredUserIds);
+        expiredUsers.forEach(userDto -> usersRedis.put(
+                userDto.getId(), new UserRedis(userDto.getId(), userDto.getUsername())));
     }
 
     private String generateKey(Long postId) {
