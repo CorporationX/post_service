@@ -22,7 +22,7 @@ public class CommentEventPublisher implements MessagePublisher<CommentEvent> {
         this.commentTopic = commentTopic;
     }
 
-    @Retryable(retryFor = {RuntimeException.class}, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = {RuntimeException.class}, backoff = @Backoff(delayExpression = "${retryable.delay}"))
     @Override
     public void publish(CommentEvent event) {
         try {

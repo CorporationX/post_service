@@ -21,7 +21,7 @@ public class UserBanEventPublisher implements MessagePublisher<Long> {
         this.topic = topic;
     }
 
-    @Retryable(retryFor = {RuntimeException.class}, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = {RuntimeException.class}, backoff = @Backoff(delayExpression = "${retryable.delay}"))
     @Override
     public void publish(Long userId) {
         try {

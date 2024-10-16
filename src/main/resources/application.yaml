@@ -105,6 +105,9 @@ resource:
     max-rectangle-height: 566
     max-square-dimension: 1080
 
+retryable:
+  delay: 5000
+
 user-service:
   host: localhost
   port: 8080

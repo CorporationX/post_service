@@ -21,7 +21,7 @@ public class CommenterBanner {
     private int banCommentLimit;
 
     @Scheduled(cron = "${comment.user-ban-cron}")
-    @Retryable(retryFor = {UserBanException.class}, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = {UserBanException.class}, backoff = @Backoff(delayExpression = "${retryable.delay}"))
     public void banUsers() {
         try {
             commentService.banUsersWithObsceneCommentsMoreThan(banCommentLimit);
