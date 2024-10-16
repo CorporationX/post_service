@@ -96,7 +96,7 @@ public class LikeServiceTest {
             verify(postRepository).findById(likeRequestDto.getPostId());
             verify(likeValidator).validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
             verify(userServiceClient).getUser(likeRequestDto.getUserId());
-            verify(likePostEventPublisher).publishEvent(any());
+            verify(likePostEventPublisher).publish(any());
             assertEquals(likeResponseDto, result);
         }
 

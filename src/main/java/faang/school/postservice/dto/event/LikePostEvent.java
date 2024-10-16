@@ -1,13 +1,15 @@
 package faang.school.postservice.dto.event;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.ToString;
 
-@Data
+import java.io.Serializable;
+
+@Getter
+@ToString
 @Builder
-@AllArgsConstructor
-public class LikePostEvent {
+public class LikePostEvent implements Serializable {
     private Long postAuthorId;
     private Long likeAuthorId;
     private long postId;

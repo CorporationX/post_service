@@ -1,6 +1,6 @@
 package faang.school.postservice.service.publisher;
 
-public interface MessagePublisher {
+public interface MessagePublisher<T> {
 
-    void publish(String message);
+    void publish(T message);
 }
