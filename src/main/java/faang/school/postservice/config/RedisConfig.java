@@ -1,10 +1,11 @@
 package faang.school.postservice.config;
 
-import faang.school.postservice.redis.listener.HashtagListener;
+import faang.school.postservice.service.HashtagListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
@@ -16,20 +17,18 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @Slf4j
+@PropertySource(value = "classpath:redis.properties")
 public class RedisConfig {
     @Value("${spring.data.redis.host}")
     private String host;
     @Value("${spring.data.redis.port}")
     private int port;
-    @Value("${redis.channels.post_view_channel}")
+    @Value("${spring.data.redis.channels.post_view_channel.name}")
     String postViewTopic;
-    @Value("${redis.channels.hashtags}")
-    String hashtagsTopic;
-    @Value("${redis.channels.user-ban}")
-    String bannedUserTopic;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
+        System.out.println(port);
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         return new JedisConnectionFactory(config);
     }
@@ -45,12 +44,7 @@ public class RedisConfig {
 
     @Bean
     public ChannelTopic hashtagTopic() {
-        return new ChannelTopic(hashtagsTopic);
-    }
-
-    @Bean
-    public ChannelTopic bannedUserTopic() {
-        return new ChannelTopic(bannedUserTopic);
+        return new ChannelTopic("${port.hashtags}");
     }
 
     @Bean

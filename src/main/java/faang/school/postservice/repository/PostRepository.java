@@ -5,10 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -31,13 +29,4 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Post> findByHashtagId(Long hashtagId);
 
     Page<Post> findByHashtagsContent(String content, Pageable pageable);
-
-    @Query("SELECT p.authorId " +
-            "FROM Post p " +
-            "WHERE p.verified = false AND p.deleted = false " +
-            "AND p.authorId BETWEEN :minAuthorId AND :maxAuthorId " +
-            "GROUP BY p.authorId " +
-            "HAVING COUNT(p) > 5")
-    List<Long> findAuthorsWithMoreThanFiveUnverifiedPostsInRange(Long minAuthorId, Long maxAuthorId);
-
 }

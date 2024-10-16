@@ -14,8 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -143,95 +141,5 @@ class PostServiceTest {
         assertEquals(postDto.getPublishedAt(), result.get(0).getPublishedAt());
         verify(postRepository, times(1)).findByProjectIdWithLikes(projectId);
         verify(postMapper, times(1)).toPostDto(any(Post.class));
-    }
-
-    @Test
-    public void testGetUserDrafts() {
-        Long authorId = 1L;
-
-        Post draftPost1 = new Post();
-        draftPost1.setId(1L);
-        draftPost1.setAuthorId(authorId);
-        draftPost1.setDeleted(false);
-        draftPost1.setPublished(false);
-        draftPost1.setCreatedAt(LocalDateTime.now().minusDays(1));
-
-        Post draftPost2 = new Post();
-        draftPost2.setId(2L);
-        draftPost2.setAuthorId(authorId);
-        draftPost2.setDeleted(false);
-        draftPost2.setPublished(false);
-        draftPost2.setCreatedAt(LocalDateTime.now().minusDays(2));
-
-        List<Post> mockPosts = Arrays.asList(draftPost1, draftPost2);
-
-        when(postRepository.findByAuthorId(authorId)).thenReturn(mockPosts);
-
-        PostDto draftPostDto1 = new PostDto();
-        draftPostDto1.setId(1L);
-        draftPostDto1.setAuthorId(authorId);
-        draftPostDto1.setCreatedAt(draftPost1.getCreatedAt());
-
-        PostDto draftPostDto2 = new PostDto();
-        draftPostDto2.setId(2L);
-        draftPostDto2.setAuthorId(authorId);
-        draftPostDto2.setCreatedAt(draftPost2.getCreatedAt());
-
-        when(postMapper.toPostDto(draftPost1)).thenReturn(draftPostDto1);
-        when(postMapper.toPostDto(draftPost2)).thenReturn(draftPostDto2);
-
-        List<PostDto> userDrafts = postService.getUserDrafts(authorId);
-
-        assertEquals(2, userDrafts.size());
-        assertEquals(draftPostDto1, userDrafts.get(0)); // Проверка сортировки
-        assertEquals(draftPostDto2, userDrafts.get(1)); // Проверка сортировки
-
-        verify(postRepository, times(1)).findByAuthorId(authorId);
-        verify(postMapper, times(1)).toPostDto(draftPost1);
-        verify(postMapper, times(1)).toPostDto(draftPost2);
-    }
-
-    @Test
-    public void testGetProjectDrafts() {
-        Long projectId = 100L;
-
-        Post draftPost1 = new Post();
-        draftPost1.setId(1L);
-        draftPost1.setProjectId(projectId);
-        draftPost1.setDeleted(false);
-        draftPost1.setPublished(false);
-        draftPost1.setCreatedAt(LocalDateTime.now().minusDays(1));
-
-        Post draftPost2 = new Post();
-        draftPost2.setId(2L);
-        draftPost2.setProjectId(projectId);
-        draftPost2.setDeleted(false);
-        draftPost2.setPublished(false);
-        draftPost2.setCreatedAt(LocalDateTime.now().minusDays(2));
-
-        List<Post> mockPosts = Arrays.asList(draftPost1, draftPost2);
-
-        when(postRepository.findByProjectId(projectId)).thenReturn(mockPosts);
-
-        PostDto draftPostDto1 = new PostDto();
-        draftPostDto1.setId(1L);
-        draftPostDto1.setCreatedAt(draftPost1.getCreatedAt());
-
-        PostDto draftPostDto2 = new PostDto();
-        draftPostDto2.setId(2L);
-        draftPostDto2.setCreatedAt(draftPost2.getCreatedAt());
-
-        when(postMapper.toPostDto(draftPost1)).thenReturn(draftPostDto1);
-        when(postMapper.toPostDto(draftPost2)).thenReturn(draftPostDto2);
-
-        List<PostDto> projectDrafts = postService.getProjectDrafts(projectId);
-
-        assertEquals(2, projectDrafts.size());
-        assertEquals(draftPostDto1, projectDrafts.get(0)); // Проверка сортировки
-        assertEquals(draftPostDto2, projectDrafts.get(1)); // Проверка сортировки
-
-        verify(postRepository, times(1)).findByProjectId(projectId);
-        verify(postMapper, times(1)).toPostDto(draftPost1);
-        verify(postMapper, times(1)).toPostDto(draftPost2);
     }
 }

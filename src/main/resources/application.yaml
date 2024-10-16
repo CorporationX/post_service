@@ -21,6 +21,11 @@ spring:
     redis:
       port: 6379
       host: localhost
+      channels:
+        calculations_channel:
+          name: calculations_channel
+        post_view_channel:
+          name: post_view_channel
 
 server:
   port: 8081
@@ -37,16 +42,6 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
-scheduler:
-  cron:
-    ban-users: "0 0 0 * * ?" # every day at midnight
-
-redis:
-  channels:
-    post_view_channel: post_view_channel
-    hashtags: hashtags
-    user-ban: user_ban
-
 user-service:
   host: localhost
   port: 8080
@@ -56,5 +51,3 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
-
-

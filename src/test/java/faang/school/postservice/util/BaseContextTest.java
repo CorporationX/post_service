@@ -26,6 +26,7 @@ import org.testcontainers.utility.DockerImageName;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
+@Testcontainers
 @AutoConfigureMockMvc
 public class BaseContextTest {
     @Autowired
@@ -33,4 +34,30 @@ public class BaseContextTest {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @Container
+    public static PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
+            new PostgreSQLContainer<>("postgres:13.6");
+    @Container
+    private static final RedisContainer REDIS_CONTAINER =
+            new RedisContainer(DockerImageName.parse("redis/redis-stack:latest"));
+
+    @DynamicPropertySource
+    static void postgresqlProperties(DynamicPropertyRegistry registry) {
+        POSTGRESQL_CONTAINER.start();
+        REDIS_CONTAINER.start();
+
+        registry.add("spring.datasource.url", POSTGRESQL_CONTAINER::getJdbcUrl);
+        registry.add("spring.datasource.username", POSTGRESQL_CONTAINER::getUsername);
+        registry.add("spring.datasource.password", POSTGRESQL_CONTAINER::getPassword);
+
+        registry.add("spring.data.redis.port", () -> REDIS_CONTAINER.getMappedPort(6379));
+        registry.add("spring.data.redis.host", REDIS_CONTAINER::getHost);
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

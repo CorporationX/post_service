@@ -7,5 +7,3 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003_resource.sql
   - include:
       file: db/changelog/changeset/post_V004_create_hashtag.sql
-  - include:
-      file: db/changelog/changeset/post_V_006_BJS2-27273_add_verified_fields_to_post.sql

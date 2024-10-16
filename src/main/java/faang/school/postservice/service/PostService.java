@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
@@ -10,7 +9,6 @@ import faang.school.postservice.enums.AuthorType;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.redis.publisher.NewPostPublisher;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,7 +33,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final NewPostPublisher newPostPublisher;
 
-    public PostDto createPost(PostDto postDto) throws JsonProcessingException {
+    public PostDto createPost(PostDto postDto) {
         if (postDto.getAuthorType() == AuthorType.USER) {
             UserDto user = userServiceClient.getUser(postDto.getAuthorId());
             if (user == null) {

@@ -3,7 +3,6 @@ package faang.school.postservice.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.redis.publisher.NewPostPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -11,9 +10,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -39,7 +37,6 @@ class NewPostPublisherTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(newPostPublisher, "hashtagsTopic", "testTopic");
 
         postDto = PostDto.builder()
                 .id(1L)
@@ -64,7 +61,7 @@ class NewPostPublisherTest {
         when(objectMapper.writeValueAsString(postDto)).thenThrow(new JsonProcessingException("Error") {
         });
 
-        assertThrows(JsonProcessingException.class, () -> newPostPublisher.publish(postDto));
+        assertThrows(RuntimeException.class, () -> newPostPublisher.publish(postDto));
 
         verify(redisTemplate, never()).convertAndSend(anyString(), anyString());
     }

@@ -3,7 +3,6 @@ package faang.school.postservice.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.hashtag.HashtagDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.redis.listener.HashtagListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

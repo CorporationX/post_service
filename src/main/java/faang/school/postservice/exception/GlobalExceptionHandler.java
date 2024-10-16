@@ -1,6 +1,5 @@
 package faang.school.postservice.exception;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.xml.bind.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -78,12 +77,5 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleException(Exception e) {
         log.error("Exception", e);
         return new ErrorResponse("Exception", e.getMessage());
-    }
-
-    @ExceptionHandler(JsonProcessingException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleJsonProcessingException(JsonProcessingException e) {
-        log.error("JsonProcessingException", e);
-        return new ErrorResponse("JsonProcessingException", e.getMessage());
     }
 }

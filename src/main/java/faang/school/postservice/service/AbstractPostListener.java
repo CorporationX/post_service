@@ -1,7 +1,6 @@
-package faang.school.postservice.redis.listener;
+package faang.school.postservice.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.service.HashtagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.Message;
 
