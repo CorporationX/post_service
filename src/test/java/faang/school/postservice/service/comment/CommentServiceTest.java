@@ -1,12 +1,13 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.model.dto.comment.CommentDto;
-import faang.school.postservice.model.dto.user.UserDto;
+import faang.school.postservice.model.dto.CommentDto;
+import faang.school.postservice.model.dto.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.entity.Comment;
+import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.impl.CommentServiceImpl;
 import faang.school.postservice.validator.comment.CommentServiceValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,7 @@ class CommentServiceTest {
     private CommentServiceValidator validator;
 
     @InjectMocks
-    private CommentService commentService;
+    private CommentServiceImpl commentService;
 
     @Captor
     private ArgumentCaptor<Comment> commentCaptor;

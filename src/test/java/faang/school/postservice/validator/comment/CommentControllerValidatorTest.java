@@ -1,6 +1,6 @@
 package faang.school.postservice.validator.comment;
 
-import faang.school.postservice.model.dto.comment.CommentDto;
+import faang.school.postservice.model.dto.CommentDto;
 import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

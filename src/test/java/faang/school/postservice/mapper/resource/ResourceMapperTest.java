@@ -1,8 +1,8 @@
 package faang.school.postservice.mapper.resource;
 
-import faang.school.postservice.model.dto.resource.ResourceDto;
-import faang.school.postservice.model.resource.Resource;
-import faang.school.postservice.model.resource.ResourceStatus;
+import faang.school.postservice.model.dto.ResourceDto;
+import faang.school.postservice.model.entity.Resource;
+import faang.school.postservice.model.enums.ResourceStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

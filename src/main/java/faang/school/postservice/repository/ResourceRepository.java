@@ -1,7 +1,7 @@
 package faang.school.postservice.repository;
 
-import faang.school.postservice.model.resource.Resource;
-import faang.school.postservice.model.resource.ResourceStatus;
+import faang.school.postservice.model.entity.Resource;
+import faang.school.postservice.model.enums.ResourceStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

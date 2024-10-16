@@ -7,14 +7,19 @@ import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.model.dto.project.ProjectDto;
 import faang.school.postservice.model.dto.user.UserDto;
 import faang.school.postservice.model.enums.AuthorType;
+import faang.school.postservice.model.dto.PostDto;
+import faang.school.postservice.model.dto.ProjectDto;
+import faang.school.postservice.model.dto.UserDto;
+import faang.school.postservice.enums.AuthorType;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.entity.Post;
+import faang.school.postservice.publisher.NewPostPublisher;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.event.PostViewEvent;
 import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.BatchProcessService;
-import faang.school.postservice.service.messaging.NewPostPublisher;
 import faang.school.postservice.service.PostBatchService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.util.moderation.ModerationDictionary;
@@ -57,7 +62,7 @@ public class PostServiceImpl implements PostService {
     private final PostViewPublisher postViewPublisher;
     private final UserContext userContext;
 
-    @Value("${post.publisher.butch-size}")
+    @Value("${post.publisher.batch-size}")
     private int batchSize;
 
     @Value("${post.moderation.batch-size}")

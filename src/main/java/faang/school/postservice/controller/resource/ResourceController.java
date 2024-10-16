@@ -1,7 +1,7 @@
 package faang.school.postservice.controller.resource;
 
-import faang.school.postservice.model.dto.resource.ResourceDto;
-import faang.school.postservice.service.resource.ResourceService;
+import faang.school.postservice.model.dto.ResourceDto;
+import faang.school.postservice.service.ResourceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;

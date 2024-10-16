@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.model.dto.post.PostDto;
+import faang.school.postservice.model.dto.PostDto;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

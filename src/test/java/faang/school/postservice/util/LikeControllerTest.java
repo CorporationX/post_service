@@ -6,8 +6,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import faang.school.postservice.controller.LikeController;
-import faang.school.postservice.model.dto.like.LikeDto;
-import faang.school.postservice.service.LikeService;
+import faang.school.postservice.model.dto.LikeDto;
+import faang.school.postservice.service.impl.LikeServiceImpl;
 import faang.school.postservice.validator.LikeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import java.util.List;
 public class LikeControllerTest {
 
     @Mock
-    private LikeService likeService;
+    private LikeServiceImpl likeService;
     @Mock
     private LikeValidator likeValidator;
     @InjectMocks

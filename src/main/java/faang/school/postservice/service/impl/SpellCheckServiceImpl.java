@@ -1,8 +1,8 @@
 package faang.school.postservice.service.impl;
 
-import faang.school.postservice.model.dto.correcter.LanguageDetectionResponse;
-import faang.school.postservice.model.dto.correcter.SpellCheckResponse;
-import faang.school.postservice.model.dto.correcter.TextGearsResponse;
+import faang.school.postservice.model.response.LanguageDetectionResponse;
+import faang.school.postservice.model.response.SpellCheckResponse;
+import faang.school.postservice.model.response.TextGearsResponse;
 import faang.school.postservice.service.SpellCheckService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

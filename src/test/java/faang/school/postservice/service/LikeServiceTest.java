@@ -1,15 +1,16 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.model.dto.like.LikeDto;
-import faang.school.postservice.model.dto.user.UserDto;
+import faang.school.postservice.model.dto.LikeDto;
+import faang.school.postservice.model.dto.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.entity.Comment;
+import faang.school.postservice.model.entity.Like;
+import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.messaging.likepost.LikeEventPublisher;
+import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.service.impl.LikeServiceImpl;
 import faang.school.postservice.util.ExceptionThrowingValidator;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
@@ -64,7 +65,7 @@ class LikeServiceTest {
     @Mock
     private LikeMapper likeMapper;
     @InjectMocks
-    private LikeService likeService;
+    private LikeServiceImpl likeService;
 
     private Long postId;
     private Long commentId;

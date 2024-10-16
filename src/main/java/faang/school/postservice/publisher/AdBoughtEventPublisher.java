@@ -8,7 +8,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AdBoughtEventPublisher extends RedisEventPublisher<AdBoughtEvent> {
+public class AdBoughtEventPublisher extends AbstractEventPublisher<AdBoughtEvent> {
     public AdBoughtEventPublisher(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper,
                                   @Qualifier("adBoughtTopic") ChannelTopic channelTopic) {
         super(redisTemplate, objectMapper, channelTopic);

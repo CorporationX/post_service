@@ -2,8 +2,10 @@ package faang.school.postservice.service.impl;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.model.dto.post.PostDto;
+import faang.school.postservice.model.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;

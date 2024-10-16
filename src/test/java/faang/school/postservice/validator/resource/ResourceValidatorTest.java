@@ -1,7 +1,7 @@
 package faang.school.postservice.validator.resource;
 
 import faang.school.postservice.exception.MediaFileException;
-import faang.school.postservice.model.resource.Resource;
+import faang.school.postservice.model.entity.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

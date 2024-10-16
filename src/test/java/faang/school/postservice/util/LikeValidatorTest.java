@@ -7,8 +7,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.model.dto.like.LikeDto;
-import faang.school.postservice.model.dto.user.UserDto;
+import faang.school.postservice.model.dto.LikeDto;
+import faang.school.postservice.model.dto.UserDto;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.LikeValidator;
