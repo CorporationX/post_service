@@ -29,9 +29,6 @@ public class TextGearsClient implements SpellingClient {
     @Value("${post.spelling-corrector.client.textgears.auth-token}")
     private String authToken;
 
-    @Value("${post.spelling-corrector.client.textgears.host}")
-    private String serviceHost;
-
     @Value("${post.spelling-corrector.client.textgears.correct-endpoint}")
     private String correctorEndpoint;
 

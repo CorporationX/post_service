@@ -1,9 +1,11 @@
 package faang.school.postservice.model;
 
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.model.album.Album;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,12 +24,16 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@ToString
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -36,6 +42,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "post")
+@Convert(attributeName = "jsonb", converter = JsonBinaryType.class)
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -84,6 +91,7 @@ public class Post {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -94,4 +102,8 @@ public class Post {
 
     @Column(name = "verified_date")
     private LocalDateTime verifiedDate;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "hash_tags")
+    private List<String> hashTags;
 }

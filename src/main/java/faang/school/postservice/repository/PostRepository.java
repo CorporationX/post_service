@@ -29,6 +29,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    List<Post> findByVerificationStatus(VerificationPostStatus status);
+
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND (p.scheduledAt IS NULL OR p.updatedAt > p.scheduledAt)")
     List<Post> findDraftsPaginate(Pageable pageable);
 
@@ -50,4 +52,30 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("select count(p) from Post p where p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     int findReadyToPublishCount();
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post
+            WHERE hash_tags @> CAST(:hashTag AS jsonb)
+            """)
+    List<Post> findAllByHashTag(@Param("hashTag") String hashTag);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post
+            WHERE hash_tags @> CAST(:hashTag AS jsonb)
+            AND published = true
+            AND deleted = false
+            ORDER BY published_at DESC LIMIT :number
+            """)
+    List<Post> findTopByHashTagByDate(@Param("hashTag") String hashTag, @Param("number") int number);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post
+            WHERE hash_tags @> CAST(:hashTag AS jsonb)
+            AND published = true
+            AND deleted = false
+            ORDER BY published_at DESC
+            LIMIT :limit
+            OFFSET :offset
+            """)
+    List<Post> findInRangeByHashTagByDate(@Param("hashTag") String hashTag, @Param("offset") int offset, @Param("limit") int limit);
 }
