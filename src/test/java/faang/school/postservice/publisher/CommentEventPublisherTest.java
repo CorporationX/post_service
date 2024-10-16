@@ -1,5 +1,7 @@
 package faang.school.postservice.publisher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.topic.CommentEventTopic;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,14 +13,23 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class CommentEventPublisherTest {
+
     @InjectMocks
     private CommentEventPublisher publisher;
+
     @Mock
     private RedisTemplate<String, String> redisTemplate;
+
     @Mock
     private CommentEventTopic topic;
+
+    @Mock
+    private ObjectMapper objectMapper;
+
     private CommentEvent commentEvent;
 
     @BeforeEach
@@ -27,7 +38,10 @@ class CommentEventPublisherTest {
     }
 
     @Test
-    void publish_whenOk() {
+    void publish_whenOk() throws JsonProcessingException {
+        String json = "json";
+        when(objectMapper.writeValueAsString(commentEvent)).thenReturn(json);
+
         publisher.publish(commentEvent);
 
         Mockito.verify(redisTemplate, Mockito.times(1))

@@ -22,7 +22,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, List<Long>> redisTemplate(RedisConnectionFactory connection) {
+    public RedisTemplate<String, List<Long>> listRedisTemplate(RedisConnectionFactory connection) {
         RedisTemplate<String, List<Long>> redisTemplate = new RedisTemplate<>();
         var serializer = new Jackson2JsonRedisSerializer<>(List.class);
         redisTemplate.setConnectionFactory(connection);

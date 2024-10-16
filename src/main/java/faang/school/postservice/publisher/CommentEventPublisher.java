@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+
 public class CommentEventPublisher implements MessagePublisher {
+
     private final RedisTemplate<String, String> redisTemplate;
     private final CommentEventTopic topic;
     private final ObjectMapper objectMapper;
