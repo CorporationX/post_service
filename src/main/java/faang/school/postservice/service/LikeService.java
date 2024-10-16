@@ -3,28 +3,26 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeEventDto;
+import faang.school.postservice.dto.like.LikeRequestDto;
+import faang.school.postservice.dto.like.LikeResponseDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.like.LikeMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.EventType;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.like.LikeEventPublisher;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.like.LikeValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-
-import faang.school.postservice.dto.like.LikeRequestDto;
-import faang.school.postservice.dto.like.LikeResponseDto;
-import faang.school.postservice.mapper.like.LikeMapper;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validator.like.LikeValidator;
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -84,7 +82,7 @@ public class LikeService {
         if (likeRequestDto.getPostId() != null) {
             Post post = postRepository.findById(likeRequestDto.getPostId())
                     .orElseThrow(() -> new IllegalArgumentException("Post with ID " + likeRequestDto.getPostId() + " not found"));
-            
+
             likeValidator.validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
 
             like.setPost(post);
@@ -99,14 +97,8 @@ public class LikeService {
         like.setUserId(userContext.getUserId());
         likeRepository.save(like);
 
-        if(like.getPost() != null){
-            LikeEventDto likeEventDto = LikeEventDto.builder()
-                    .postAuthorId(like.getPost().getAuthorId())
-                    .likerId(userContext.getUserId())
-                    .eventType(EventType.POST_LIKE)
-                    .createdAt(LocalDateTime.now())
-                    .build();
-            likeEventPublisher.publish(likeEventDto);
+        if (like.getPost() != null) {
+            publishLikeEventOnPost(like);
         }
         return likeMapper.toResponseDto(like);
     }
@@ -124,5 +116,15 @@ public class LikeService {
         } catch (Exception e) {
             throw new EntityNotFoundException("User not found with ID: " + userId);
         }
+    }
+
+    private void publishLikeEventOnPost(Like like) {
+        LikeEventDto likeEventDto = LikeEventDto.builder()
+                .postAuthorId(like.getPost().getAuthorId())
+                .likerId(userContext.getUserId())
+                .eventType(EventType.POST_LIKE)
+                .createdAt(LocalDateTime.now())
+                .build();
+        likeEventPublisher.publish(likeEventDto);
     }
 }

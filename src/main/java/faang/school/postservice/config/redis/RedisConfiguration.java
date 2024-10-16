@@ -1,18 +1,21 @@
 package faang.school.postservice.config.redis;
 
-import faang.school.postservice.dto.like.LikeEventDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfiguration {
 
-    private final RedisPropertiesConfiguration propertiesConfig;
+    private final RedisProperties propertiesConfig;
+    private final ObjectMapper objectMapper;
 
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
@@ -20,14 +23,16 @@ public class RedisConfiguration {
     }
 
     @Bean
-    public ChannelTopic channelTopic() {
-        return new ChannelTopic(propertiesConfig.getLikeEvents());
+    public ChannelTopic likeEventsTopic() {
+        return new ChannelTopic(propertiesConfig.getChannels().getLike_events_channel().getName());
     }
 
     @Bean
-    public RedisTemplate<String, LikeEventDto> redisTemplate() {
-        RedisTemplate<String, LikeEventDto> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(jedisConnectionFactory());
-        return redisTemplate;
+    public RedisTemplate<String, Object> redisTemplate() {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(jedisConnectionFactory());
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
+        return template;
     }
 }

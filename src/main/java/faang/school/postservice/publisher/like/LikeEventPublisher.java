@@ -1,8 +1,5 @@
 package faang.school.postservice.publisher.like;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import faang.school.postservice.dto.like.LikeEventDto;
 import faang.school.postservice.publisher.MessagePublisher;
 import lombok.RequiredArgsConstructor;
@@ -14,18 +11,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LikeEventPublisher implements MessagePublisher<LikeEventDto> {
 
-    private final RedisTemplate<String, LikeEventDto> redisTemplate;
-    private final ChannelTopic topic;
-    private final ObjectMapper objectMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ChannelTopic likeEventsTopic;
 
     @Override
-    public void publish(LikeEventDto likeEventDto) {
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        try {
-            String message = objectMapper.writeValueAsString(likeEventDto);
-            redisTemplate.convertAndSend(topic.getTopic(), message);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    public void publish(LikeEventDto message) {
+        redisTemplate.convertAndSend(likeEventsTopic.getTopic(), message);
     }
 }
