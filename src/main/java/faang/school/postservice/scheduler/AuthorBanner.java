@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@EnableRetry
 public class AuthorBanner {
 
     private final PostService postService;

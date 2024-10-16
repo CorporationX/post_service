@@ -24,8 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-        user_ban_channel:
-          name: user_ban_channel
+        post_channel:
+          name: post_channel
 
   config:
     import: text-gears-api.yaml
