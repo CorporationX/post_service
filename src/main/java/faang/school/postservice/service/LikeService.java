@@ -1,9 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.like.AbstractLikeEvent;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.like.LikeEventMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -28,7 +26,6 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-    private final LikeEventMapper likeEventMapper;
     private final LikeEventPublisher likeEventPublisher;
 
     @Transactional
@@ -53,7 +50,7 @@ public class LikeService {
         post.setLikes(likeList);
         //вопросик к реализации этого метода, я тут пока ничего не меняю
         //в пост добавляется лайк, но не вижу сохранения поста
-        publishPostLikeEventToBroker(newLike);
+        likeEventPublisher.publishPostLikeEventToBroker(newLike);
         return newLike;
     }
 
@@ -142,11 +139,5 @@ public class LikeService {
         if (!postRepository.existsById(postId)) {
             throw new NoSuchElementException(Util.POST_NOT_EXIST);
         }
-    }
-
-    private void publishPostLikeEventToBroker(Like like) {
-        AbstractLikeEvent abstractLikeEvent = likeEventMapper.toPostLikeEvent(like);
-        likeEventPublisher.publishPostLikeEventToBroker(abstractLikeEvent);
-
     }
 }
