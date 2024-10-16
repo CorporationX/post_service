@@ -84,7 +84,7 @@ public class RedisConfig {
     }
 
     @Bean
-    ChannelTopic adBoughtTopic() {
+    public ChannelTopic adBoughtTopic() {
         return new ChannelTopic(adBoughtChannel);
     }
 }
