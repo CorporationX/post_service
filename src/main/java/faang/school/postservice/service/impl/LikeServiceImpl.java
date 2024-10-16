@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
@@ -14,6 +14,7 @@ import faang.school.postservice.publisher.LikeEventPublisherImpl;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.LikeService;
 import feign.FeignException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -47,11 +48,18 @@ public class LikeServiceImpl implements LikeService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("There is no such post"));
         Like like = likeMapper.toLike(likeDto);
+        LikeEvent likeEvent = LikeEvent.builder()
+                .postId(postId)
+                .authorId(post.getAuthorId())
+                .userId(like.getUserId())
+                .createdAt(like.getCreatedAt())
+                .build();
         validateLike(like, post);
         checkUser(like.getUserId());
         validatePostAndCommentLikes(post, like);
         like.setPost(post);
         likeRepository.save(like);
+        likeEventPublisher.publishLikeEvent(likeEvent);
     }
 
     @Override

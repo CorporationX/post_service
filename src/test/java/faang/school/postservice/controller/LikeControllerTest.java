@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.service.LikeServiceImpl;
+import faang.school.postservice.service.impl.LikeServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,6 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDateTime;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -26,7 +28,7 @@ class LikeControllerTest {
     void setUp() {
         postId = 3L;
         commentId = 3L;
-        likeDto = new LikeDto(1L, 2L);
+        likeDto = new LikeDto(1L, 2L, LocalDateTime.now());
     }
     @Test
     void getUsersLikedPost_whenOk() {
