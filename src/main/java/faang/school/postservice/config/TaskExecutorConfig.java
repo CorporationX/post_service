@@ -1,5 +1,6 @@
-package faang.school.postservice.config.context.comment;
+package faang.school.postservice.config;
 
+import faang.school.postservice.config.context.comment.TaskExecutorParams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;

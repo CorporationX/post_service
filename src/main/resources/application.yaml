@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        user_ban_channel:
+          name: user_ban_channel
 
   config:
     import: text-gears-api.yaml
@@ -78,6 +80,14 @@ post:
     attempts: 3
     delay: 1000
     multiplier: 2
+  user-ban:
+    cron: "0 0 0 * * ?" # every day
+    post-limit: 5
+    verify-task-executor:
+      core-pool-size: 10
+      max-pool-size: 20
+      queue-capacity: 100
+      thread-name-prefix: "post-verify-task-executor-"
 
 comment:
   obscene-words-resource: obscene_words_resource/obscene-words.json

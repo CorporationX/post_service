@@ -11,6 +11,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.MessagePublisher;
 import faang.school.postservice.service.comment.sort.CommentSortingStrategy;
 import faang.school.postservice.service.comment.sort.SortingStrategyAppliersMap;
 import jakarta.persistence.EntityNotFoundException;

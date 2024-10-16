@@ -8,12 +8,14 @@ import faang.school.postservice.dto.post.request.PostUpdatingRequest;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.resource.ResourceObjectResponse;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.comment.UserBanException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.post.PostCreator;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.MessagePublisher;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.post.impl.filter.PostFilter;
 import faang.school.postservice.service.post.impl.filter.PublishedPostFilter;
@@ -24,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,11 +39,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
+    private static final int UNVERIFIED_POSTS_LIMIT = 5;
+
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final ResourceService resourceService;
     private final UserServiceClient userClient;
     private final ProjectServiceClient projectClient;
+    private final MessagePublisher messagePublisher;
 
     @Setter
     @Value("${resource.max-count}")
@@ -146,6 +152,22 @@ public class PostServiceImpl implements PostService {
                 .toList();
         log.debug("Found {} resources for post with id {}", files.size(), id);
         return files;
+    }
+
+    @Async("postTaskExecutor")
+    @Override
+    public void banAuthorsWithUnverifiedPostsMoreThan(int banPostLimit) {
+        List<Long> authorIds = postRepository.findAuthorIdsToBan(banPostLimit);
+        log.info("Found {} authors to ban", authorIds.size());
+        authorIds.forEach(authorId -> {
+            try {
+                messagePublisher.publish(authorId);
+                log.info("Published ban event for author ID {}", authorId);
+            } catch (Exception e) {
+                log.error("Failed to publish ban event for author ID {}: {}", authorId, e.getMessage());
+                throw new UserBanException("Failed to publish ban event for author ID " + authorId, e);
+            }
+        });
     }
 
     private List<Post> getPostsByCreatorId(Long creatorId, PostCreator creator) {
