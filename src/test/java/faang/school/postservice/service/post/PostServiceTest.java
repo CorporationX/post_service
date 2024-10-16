@@ -583,4 +583,22 @@ public class PostServiceTest {
 
         postService.deleteImagesFromPost(resourceIds);
     }
+
+    @Test
+    void testGetReadyToPublish() {
+        int readyToPublishPostsCount = 2;
+        when(postRepository.findReadyToPublishCount()).thenReturn(readyToPublishPostsCount);
+
+        var result = postService.getReadyToPublish();
+
+        verify(postRepository).findReadyToPublishCount();
+        assertEquals(readyToPublishPostsCount, result);
+    }
+
+    @Test
+    void testProcessReadyToPublishPosts() {
+        int postPublishBatchSize = 10;
+        postService.processReadyToPublishPosts(postPublishBatchSize);
+        verify(postRepository).findReadyToPublishSkipLocked(postPublishBatchSize);
+    }
 }
