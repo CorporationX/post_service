@@ -1,7 +1,6 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.model.dto.ResourceDto;
-import faang.school.postservice.model.dto.resource.ResourceDto;
 import faang.school.postservice.exception.MediaFileException;
 import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.entity.Post;
@@ -12,7 +11,6 @@ import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.ResourceService;
 import faang.school.postservice.service.S3Service;
 import faang.school.postservice.util.resource.ImageResizer;
-import faang.school.postservice.service.s3.S3Service;
 import faang.school.postservice.validator.resource.ResourceValidator;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

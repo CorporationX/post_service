@@ -1,7 +1,6 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.PostRepository;

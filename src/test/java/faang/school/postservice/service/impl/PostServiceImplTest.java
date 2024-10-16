@@ -1,12 +1,10 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.model.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.entity.Post;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.BatchProcessService;
@@ -100,6 +98,7 @@ class PostServiceImplTest {
         assertEquals(1, result.getTotalElements());
         verify(postRepository, times(1)).findByHashtagsContent(anyString(), any(Pageable.class));
         verify(postMapper, times(1)).toPostDto(any(Post.class));
+        verify(postViewPublisher,times(1)).publish(any());
     }
 
     @Test
@@ -111,6 +110,7 @@ class PostServiceImplTest {
         assertNotNull(result);
         assertEquals(1L, result.getId());
         verify(postRepository, times(1)).findById(1L);
+        verify(postViewPublisher,times(1)).publish(any());
     }
 
     @Test
@@ -123,6 +123,7 @@ class PostServiceImplTest {
 
         assertEquals("'Post not in database' error occurred while fetching post", exception.getMessage());
         verify(postRepository, times(1)).findById(1L);
+        verify(postViewPublisher,times(0)).publish(any());
     }
 
     @Test
@@ -153,7 +154,7 @@ class PostServiceImplTest {
         assertEquals(postDto.getPublishedAt(), result.get(0).getPublishedAt());
         verify(postRepository, times(1)).findByAuthorIdWithLikes(authorId);
         verify(postMapper, times(1)).toPostDto(any(Post.class));
-        verify(postViewPublisher).publish(any());
+        verify(postViewPublisher,times(1)).publish(any());
     }
 
     @Test
@@ -173,7 +174,7 @@ class PostServiceImplTest {
         assertEquals(postDto.getPublishedAt(), result.get(0).getPublishedAt());
         verify(postRepository, times(1)).findByProjectIdWithLikes(projectId);
         verify(postMapper, times(1)).toPostDto(any(Post.class));
-        verify(postViewPublisher).publish(any());
+        verify(postViewPublisher,times(1)).publish(any());
     }
 
     @Test

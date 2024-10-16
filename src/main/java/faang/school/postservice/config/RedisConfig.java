@@ -57,6 +57,11 @@ public class RedisConfig {
     }
 
     @Bean
+    public ChannelTopic postViewTopic() {
+        return new ChannelTopic(postViewTopic);
+    }
+
+    @Bean
     public ChannelTopic bannedUserTopic() {
         return new ChannelTopic(bannedUserTopic);
     }
@@ -83,15 +88,5 @@ public class RedisConfig {
         container.setConnectionFactory(lettuceConnectionFactory);
         container.addMessageListener(hashtagListenerAdapter(hashtagListener), hashtagTopic());
         return container;
-    }
-
-    @Bean
-    public ChannelTopic postViewTopic() {
-        return new ChannelTopic(postViewTopic);
-    }
-
-    @Bean
-    public ChannelTopic adBoughtTopic() {
-        return new ChannelTopic(adBoughtChannel);
     }
 }

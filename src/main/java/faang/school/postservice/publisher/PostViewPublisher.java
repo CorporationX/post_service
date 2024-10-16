@@ -8,7 +8,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PostViewPublisher extends RedisEventPublisher<PostViewEvent> {
+public class PostViewPublisher extends AbstractEventPublisher<PostViewEvent> {
     public PostViewPublisher(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper,
                              @Qualifier("postViewTopic") ChannelTopic channelTopic) {
         super(redisTemplate, objectMapper, channelTopic);
