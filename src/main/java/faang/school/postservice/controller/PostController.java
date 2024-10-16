@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.dto.PostDto;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

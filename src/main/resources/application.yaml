@@ -21,13 +21,6 @@ spring:
     redis:
       port: 6379
       host: localhost
-      channels:
-        hashtags: hashtags_channel
-        like_post: like_post_channel
-        post_view_channel: post_view_channel
-        ad_bought_channel: ad_bought_channel
-        calculations_channel:
-          name: calculations_channel
 
   services:
     s3:
@@ -58,7 +51,7 @@ post:
     batch-size: 100
     file-path: src/main/resources/swear_words.txt
   publisher:
-    butch-size: 1000
+    batch-size: 1000
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
 
@@ -84,7 +77,6 @@ resources:
       cron: "0 0 2 * * ?" # каждый день в 2 часа ночи
     retention-period: 1M # настройка периода: M - месяц, D - день
 
-
 user-service:
   host: localhost
   port: 8080
@@ -104,3 +96,15 @@ spell-checker:
   scheduler:
     cron: "0 0 3 * * *" # каждый день в 3 часа ночи
   batch-size: 100
+
+redis:
+  channels:
+    hashtag: hashtags_channel
+    like_post: like_post_channel
+    post_view: post_view_channel
+    ad_bought: ad_bought_channel
+    user_ban: user_ban_channel
+
+scheduler:
+  cron:
+    ban-users: "0 0 0 * * ?" # every day at midnight

@@ -1,6 +1,6 @@
 package faang.school.postservice.repository;
 
-import faang.school.postservice.model.Like;
+import faang.school.postservice.model.entity.Like;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

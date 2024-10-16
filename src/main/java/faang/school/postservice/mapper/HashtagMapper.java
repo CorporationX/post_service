@@ -1,7 +1,7 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.hashtag.HashtagDto;
-import faang.school.postservice.model.Hashtag;
+import faang.school.postservice.model.dto.HashtagDto;
+import faang.school.postservice.model.entity.Hashtag;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 

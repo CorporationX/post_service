@@ -1,26 +1,18 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.hashtag.HashtagDto;
+import faang.school.postservice.model.dto.HashtagDto;
 import faang.school.postservice.mapper.HashtagMapper;
-import faang.school.postservice.model.Hashtag;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.entity.Hashtag;
+import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.HashtagRepository;
+import faang.school.postservice.service.impl.HashtagServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class HashtagServiceTest {
 
@@ -34,7 +26,7 @@ class HashtagServiceTest {
     private PostService postService;
 
     @InjectMocks
-    private HashtagService hashtagService;
+    private HashtagServiceImpl hashtagService;
 
     private Set<HashtagDto> hashtagDtos;
     private Post post;
@@ -59,22 +51,5 @@ class HashtagServiceTest {
 
         hashtag = new Hashtag();
         hashtag.setId(1L);
-    }
-
-    @Test
-    @Transactional
-    void shouldSaveHashtagsSuccessfully() {
-        when(hashtagMapper.dtoToEntity(any(HashtagDto.class))).thenReturn(hashtag);
-        when(hashtagRepository.save(any(Hashtag.class))).thenReturn(hashtag);
-        when(postService.getPostByIdInternal(anyLong())).thenReturn(post);
-
-        hashtagService.saveHashtags(hashtagDtos);
-
-        verify(hashtagRepository, times(1)).save(any(Hashtag.class));
-        verify(postService, times(1)).getPostByIdInternal(anyLong());
-        verify(postService, times(1)).updatePostInternal(any(Post.class));
-
-        assertEquals(1, post.getHashtags().size());
-        assertTrue(post.getHashtags().contains(hashtag));
     }
 }

@@ -1,9 +1,9 @@
 package faang.school.postservice.controller.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.resource.ResourceDto;
-import faang.school.postservice.model.resource.ResourceStatus;
-import faang.school.postservice.service.resource.ResourceService;
+import faang.school.postservice.model.dto.ResourceDto;
+import faang.school.postservice.model.enums.ResourceStatus;
+import faang.school.postservice.service.impl.ResourceServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class ResourceControllerTest {
     private MockMultipartFile file;
 
     @Mock
-    private ResourceService resourceService;
+    private ResourceServiceImpl resourceService;
 
     @InjectMocks
     private ResourceController resourceController;

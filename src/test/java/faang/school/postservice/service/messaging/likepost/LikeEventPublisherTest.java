@@ -1,6 +1,8 @@
 package faang.school.postservice.service.messaging.likepost;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.model.enums.LikePostEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,14 +26,14 @@ class LikeEventPublisherTest {
     private ObjectMapper objectMapper;
 
     @Mock
-    private ChannelTopic likeTopic;
+    private ChannelTopic likeEventTopic;
 
     @InjectMocks
     private LikeEventPublisher likeEventPublisher;
 
     @BeforeEach
     void setUp() {
-        when(likeTopic.getTopic()).thenReturn("likeTopic");
+        when(likeEventTopic.getTopic()).thenReturn("likeEventTopic");
     }
 
     @Test
@@ -43,6 +44,6 @@ class LikeEventPublisherTest {
 
         likeEventPublisher.publish(likePostEvent);
 
-        verify(redisTemplate, times(1)).convertAndSend("likeTopic", eventJson);
+        verify(redisTemplate, times(1)).convertAndSend("likeEventTopic", eventJson);
     }
 }

@@ -1,14 +1,15 @@
 package faang.school.postservice.service.resource;
 
-import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.model.dto.ResourceDto;
 import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.mapper.resource.ResourceMapperImpl;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.model.resource.Resource;
-import faang.school.postservice.model.resource.ResourceStatus;
+import faang.school.postservice.model.entity.Post;
+import faang.school.postservice.model.entity.Resource;
+import faang.school.postservice.model.enums.ResourceStatus;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.service.s3.S3Service;
+import faang.school.postservice.service.impl.ResourceServiceImpl;
+import faang.school.postservice.service.impl.S3ServiceImpl;
 import faang.school.postservice.util.resource.ImageResizer;
 import faang.school.postservice.validator.resource.ResourceValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +53,7 @@ class ResourceServiceTest {
     private MultipartFile imageFile;
 
     @Mock
-    private S3Service s3Service;
+    private S3ServiceImpl s3Service;
 
     @Mock
     private ResourceRepository resourceRepository;
@@ -70,7 +71,7 @@ class ResourceServiceTest {
     private ResourceMapper resourceMapper = new ResourceMapperImpl();
 
     @InjectMocks
-    private ResourceService resourceService;
+    private ResourceServiceImpl resourceService;
 
     @BeforeEach
     public void setUp() {

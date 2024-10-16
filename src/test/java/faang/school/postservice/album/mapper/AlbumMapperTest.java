@@ -1,9 +1,9 @@
 package faang.school.postservice.album.mapper;
 
-import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.model.dto.AlbumDto;
 import faang.school.postservice.mapper.AlbumMapper;
-import faang.school.postservice.model.Album;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.entity.Album;
+import faang.school.postservice.model.entity.Post;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
