@@ -87,7 +87,11 @@ public class LikeService {
             likeValidator.validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
 
             like.setPost(post);
-            likePostEvent = new LikePostEvent(post.getAuthorId(), likeRequestDto.getUserId(), post.getId());
+            likePostEvent = LikePostEvent.builder()
+                    .postAuthorId(post.getAuthorId())
+                    .likeAuthorId(likeRequestDto.getUserId())
+                    .postId(post.getId())
+                    .build();
         } else {
             Comment comment = commentRepository.findById(likeRequestDto.getCommentId())
                     .orElseThrow(() -> new IllegalArgumentException("Comment with ID " + likeRequestDto.getCommentId() + " not found"));
@@ -123,7 +127,7 @@ public class LikeService {
 
     private void publishLikePostEvent(LikePostEvent likePostEvent) {
         try {
-            likePostEventPublisher.publishEvent(likePostEvent);
+            likePostEventPublisher.publish(likePostEvent);
         } catch (Exception ex) {
             log.error("Failed to send notification with likePostEvent: {}. {}",
                     likePostEvent.toString(), ex.getMessage());
