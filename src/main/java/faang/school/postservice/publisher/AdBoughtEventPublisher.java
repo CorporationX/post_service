@@ -1,19 +1,17 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.dto.add.AdBoughtEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
-public class LikeEventPublisher {
+public class AdBoughtEventPublisher {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic likeEventTopic;
+    private final ChannelTopic adBoughtTopic;
 
     public void publish(String message) {
-        redisTemplate.convertAndSend(likeEventTopic.getTopic(), message);
+        redisTemplate.convertAndSend(adBoughtTopic.getTopic(), message);
     }
-
 }

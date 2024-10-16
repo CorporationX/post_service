@@ -1,7 +1,8 @@
 package faang.school.postservice.config.redis;
 
-import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.publisher.AdBoughtEventPublisher;
 import faang.school.postservice.publisher.LikeEventPublisher;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,12 +15,21 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     @Value("${redis.pubsub.topics:like-event}")
-    private String topic;
+    private String likeEventTopic;
 
-    @Bean
+    @Value("${redis.pubsub.topics:adBought-event}")
+    private String adBoughtTopic;
+
+    @Bean(name = "likeEventTopic")
     public ChannelTopic likeEventTopic() {
-        return new ChannelTopic(topic);
+        return new ChannelTopic(likeEventTopic);
     }
+
+    @Bean(name = "adBoughtEventTopic")
+    public ChannelTopic adBoughtEventTopic() {
+        return new ChannelTopic(adBoughtTopic);
+    }
+
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
@@ -34,8 +44,13 @@ public class RedisConfig {
     }
 
     @Bean
-    public LikeEventPublisher redisPublisher(RedisTemplate<String, LikeEvent> redisTemplate, ChannelTopic likeEventTopic) {
+    public LikeEventPublisher likeEventPublisher(RedisTemplate<String, Object> redisTemplate, @Qualifier("likeEventTopic") ChannelTopic likeEventTopic) {
         return new LikeEventPublisher(redisTemplate, likeEventTopic);
+    }
+
+    @Bean
+    public AdBoughtEventPublisher adBoughtEventPublisher(RedisTemplate<String, Object> redisTemplate, @Qualifier("adBoughtEventTopicK") ChannelTopic adBoughtTopic) {
+        return new AdBoughtEventPublisher(redisTemplate, adBoughtTopic);
     }
 
 }
