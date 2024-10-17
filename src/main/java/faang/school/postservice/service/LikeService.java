@@ -118,7 +118,7 @@ public class LikeService {
 
     private void checkUserExist(Long userId) {
         //TODO: необходимо реализовать контроллер для UserService
-        //UserDto userDto = userServiceClient.getUser(authorId);
+        //UserDto userDto = userServiceClient.getUser(userId);
 
         // Поскольку контроллера для UserService пока нет, создаем заглушку
         UserDto userDto = new UserDto(1L, "Alex", "alex@gmail.com", List.of(), List.of());
