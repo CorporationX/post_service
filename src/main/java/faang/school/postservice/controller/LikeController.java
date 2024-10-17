@@ -18,7 +18,7 @@ public class LikeController {
 
     private final LikeService likeService;
     @PostMapping("/post")
-    public LikeDto likePost(@RequestBody @Valid LikeDto likeDto) {
+    public LikeDto likePost(@RequestBody LikeDto likeDto) {
         return likeService.likePost(likeDto);
     }
 
