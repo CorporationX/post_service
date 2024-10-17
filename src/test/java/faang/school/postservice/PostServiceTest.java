@@ -4,8 +4,10 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.SpellCheckerDto;
+import faang.school.postservice.event.PostViewEvent;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.tools.YandexSpeller;
@@ -50,6 +52,9 @@ public class PostServiceTest {
 
     @Mock
     private YandexSpeller yandexSpeller;
+
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
 
     @InjectMocks
     PostService postService;
@@ -122,11 +127,16 @@ public class PostServiceTest {
     public void testGetPostById_Success() {
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
 
+        when(userContext.getUserId()).thenReturn(1L);
+
         Post result = postService.getPostById(post.getId());
 
         assertNotNull(result);
         assertEquals(post.getId(), result.getId());
+
         verify(postRepository, times(1)).findById(post.getId());
+
+        verify(postViewEventPublisher, times(1)).publish(any(PostViewEvent.class));
     }
 
     @Test
