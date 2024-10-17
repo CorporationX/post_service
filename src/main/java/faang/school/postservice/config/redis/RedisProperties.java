@@ -18,8 +18,8 @@ public class RedisProperties {
     @Getter
     @Setter
     protected static class Channels {
-        private Channel calculations_channel;
-        private Channel like_events_channel;
+        private Channel calculationsChannel;
+        private Channel likeEventsChannel;
 
         @Getter
         @Setter
