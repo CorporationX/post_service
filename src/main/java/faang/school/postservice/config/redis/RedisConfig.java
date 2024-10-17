@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableTransactionManagement
 public class RedisConfig {
+
     @Value("${spring.data.redis.host}")
     private String host;
 
@@ -30,19 +32,15 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(jedisConnectionFactory());
-        template.setDefaultSerializer(new StringRedisSerializer());
     public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory connectionFactory,
-                                                       ObjectMapper javaTimeModuleObjectMapper) {
-        return buildRedisTemplate(connectionFactory, Object.class, javaTimeModuleObjectMapper);
+                                                       ObjectMapper objectMapper) {
+        return buildRedisTemplate(connectionFactory, Object.class, objectMapper);
     }
 
     @Bean
     public RedisTemplate<String, String> stringValueRedisTemplate(JedisConnectionFactory connectionFactory,
-                                                                  ObjectMapper javaTimeModuleObjectMapper) {
-        return buildRedisTemplate(connectionFactory, String.class, javaTimeModuleObjectMapper);
+                                                                  ObjectMapper objectMapper) {
+        return buildRedisTemplate(connectionFactory, String.class, objectMapper);
     }
 
     @Bean
@@ -52,24 +50,28 @@ public class RedisConfig {
 
     @Bean
     public RedisTemplate<String, PostCacheDto> postCacheDtoRedisTemplate(JedisConnectionFactory connectionFactory,
-                                                                         ObjectMapper javaTimeModuleObjectMapper) {
-        return buildRedisTemplate(connectionFactory, PostCacheDto.class, javaTimeModuleObjectMapper);
+                                                                         ObjectMapper objectMapper) {
+        return buildRedisTemplate(connectionFactory, PostCacheDto.class, objectMapper);
     }
 
-    private <T> RedisTemplate<String, T> buildRedisTemplate(JedisConnectionFactory connectionFactory, Class<T> clazz,
+    private <T> RedisTemplate<String, T> buildRedisTemplate(JedisConnectionFactory connectionFactory,
+                                                            Class<T> clazz,
                                                             ObjectMapper objectMapper) {
         RedisTemplate<String, T> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
+        // Configure serializers
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        Jackson2JsonRedisSerializer<T> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, clazz);
+        GenericJackson2JsonRedisSerializer jacksonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
+        // Set key and value serializers
         template.setKeySerializer(stringRedisSerializer);
-        template.setValueSerializer(serializer);
+        template.setValueSerializer(jacksonSerializer);
         template.setHashKeySerializer(stringRedisSerializer);
-        template.setHashValueSerializer(serializer);
+        template.setHashValueSerializer(jacksonSerializer);
 
         template.setEnableTransactionSupport(true);
+        template.afterPropertiesSet();
         return template;
     }
 }
