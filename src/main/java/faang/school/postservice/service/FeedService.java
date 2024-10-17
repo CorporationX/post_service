@@ -15,7 +15,7 @@ public class FeedService {
    private final UserServiceClient userServiceClient;
    private final UserCacheRepository userCacheRepository;
     public void addPostToFollowers(PostCreatedEvent postCreatedEvent){
-        List<Long> followersId = userServiceClient.getFollowerIds(postCreatedEvent.)
-        List<UserCache>  followers = userCacheRepository.findAllById(postCreatedEvent.getFollowersId()).spliterator()
+        List<Long> followersId = postCreatedEvent.getFollowersId();
+        List<UserCache>  followers = userCacheRepository.findAllById(followersId).spliterator()
     }
 }
