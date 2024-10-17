@@ -1,6 +1,6 @@
 package faang.school.postservice.service.comment.async;
 
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.entity.Comment;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.impl.comment.async.CommentServiceAsyncImpl;

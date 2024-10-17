@@ -1,7 +1,7 @@
 package faang.school.postservice.client;
 
 import faang.school.postservice.config.correcter.TextGearsProperties;
-import faang.school.postservice.dto.post.corrector.CorrectionResponseDto;
+import faang.school.postservice.model.dto.corrector.CorrectionResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;

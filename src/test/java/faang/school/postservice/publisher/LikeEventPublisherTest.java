@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.model.event.LikeEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +24,9 @@ class LikeEventPublisherTest {
 
     @BeforeEach
     void setUp() throws NoSuchFieldException, IllegalAccessException {
-        likeEvent = new LikeEvent(1L, 1L, 1L);
+        likeEvent = LikeEvent.builder()
+                .postId(1L)
+                .build();
 
         Field field = likeEventPublisher.getClass().getDeclaredField("likeTopic");
         field.setAccessible(true);
@@ -34,7 +36,7 @@ class LikeEventPublisherTest {
     @Test
     void publisher() {
         //when
-        likeEventPublisher.publisher(likeEvent);
+        likeEventPublisher.publish(likeEvent);
 
         //then
         Mockito.verify(redisTemplate, Mockito.times(1))

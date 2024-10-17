@@ -1,8 +1,8 @@
 package faang.school.postservice.mapper.like;
 
-import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.event.LikeEvent;
-import faang.school.postservice.model.Like;
+import faang.school.postservice.model.event.LikeEvent;
+import faang.school.postservice.model.entity.Like;
+import faang.school.postservice.model.dto.like.LikeDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;

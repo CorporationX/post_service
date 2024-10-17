@@ -1,4 +1,4 @@
-package faang.school.postservice.model;
+package faang.school.postservice.model.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

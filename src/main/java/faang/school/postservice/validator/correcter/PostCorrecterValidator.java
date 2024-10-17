@@ -1,6 +1,6 @@
 package faang.school.postservice.validator.correcter;
 
-import faang.school.postservice.dto.post.corrector.CorrectionResponseDto;
+import faang.school.postservice.model.dto.corrector.CorrectionResponseDto;
 import faang.school.postservice.exception.correcter.TextGearsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

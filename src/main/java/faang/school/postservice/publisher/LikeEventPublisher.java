@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.model.event.LikeEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -13,7 +13,7 @@ public class LikeEventPublisher {
     @Value("${spring.data.redis.channels.like.name}")
     private String likeTopic;
 
-    public void publisher(LikeEvent likeEvent) {
+    public void publish(LikeEvent likeEvent) {
         redisTemplate.convertAndSend(likeTopic, likeEvent);
     }
 }
