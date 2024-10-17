@@ -11,20 +11,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RedisCommentEventPublisher extends AbstractEventPublisher<CommentEvent> {
-    @Value("${spring.data.redis.channels.comment_event_channel.name}")
-    private String commentEventChannel;
-    private final RedisTopicsFactory redisTopicsFactory;
+    private final Topic commentTopic;
 
-
-    public RedisCommentEventPublisher(RedisTemplate<String, Object> redisTemplate,
-                                      ObjectMapper objectMapper,
-                                      RedisTopicsFactory redisTopicsFactory) {
+    public RedisCommentEventPublisher(
+            RedisTemplate<String, Object> redisTemplate,
+            ObjectMapper objectMapper,
+            RedisTopicsFactory redisTopicsFactory,
+            @Value("${spring.data.redis.channels.comment_event_channel.name}") String commentEventChannel) {
         super(redisTemplate, objectMapper);
-        this.redisTopicsFactory = redisTopicsFactory;
+        this.commentTopic = redisTopicsFactory.getTopic(commentEventChannel);
     }
 
     public void publishCommentEvent(CommentEvent event) {
-        Topic commentTopic = redisTopicsFactory.getTopic(commentEventChannel);
         publish(event, commentTopic);
     }
 }

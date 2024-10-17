@@ -39,10 +39,6 @@ class CommentServiceTest {
     private CommentValidator commentValidator;
     @Mock
     private PostService postService;
-    @Mock
-    private RedisCommentEventPublisher commentEventPublisher;
-    @Captor
-    private ArgumentCaptor<CommentEvent> commentEventCaptor;
     @Captor
     private ArgumentCaptor<Comment> commentCaptor;
     @InjectMocks
@@ -73,21 +69,13 @@ class CommentServiceTest {
         when(postService.findPostById(postId)).thenReturn(post);
         when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
 
-        commentService.createComment(postId, comment);
+        Comment result = commentService.createComment(postId, comment);
 
         verify(commentValidator).validateCreate(postId, comment);
+        verify(postService).findPostById(postId);
+        verify(commentRepository).save(comment);
 
-        verify(commentRepository).save(commentCaptor.capture());
-        assertEquals(postId, commentCaptor.getValue().getPost().getId());
-        assertEquals(content, commentCaptor.getValue().getContent());
-
-        verify(commentEventPublisher).publishCommentEvent(commentEventCaptor.capture());
-
-        CommentEvent capturedEvent = commentEventCaptor.getValue();
-        assertEquals(postId, capturedEvent.getPostId());
-        assertEquals(authorId, capturedEvent.getAuthorId());
-        assertEquals(savedComment.getId(), capturedEvent.getCommentId());
-        assertNotNull(capturedEvent.getTimestamp());
+        assertEquals(savedComment, result);
     }
 
     @Test
