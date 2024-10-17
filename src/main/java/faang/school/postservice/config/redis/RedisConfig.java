@@ -1,12 +1,11 @@
 package faang.school.postservice.config.redis;
 
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.publisher.LikeEventPublisher;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -20,9 +19,8 @@ public class RedisConfig {
     private String likeChannelName;
 
     @Bean
-    public JedisConnectionFactory jedisConnectionFactory() {
-        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration(redisDto.getHost(), redisDto.getPort());
-        return new JedisConnectionFactory(redisConfig);
+    public ChannelTopic likeEventTopic() {
+        return new ChannelTopic(topic);
     }
 
     @Bean
@@ -46,4 +44,5 @@ public class RedisConfig {
     public LikeEventPublisher likeEventPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic likeEventTopic) {
         return new LikeEventPublisher(redisTemplate, likeEventTopic);
     }
+
 }
