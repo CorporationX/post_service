@@ -103,7 +103,7 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.findUnverifiedComments(startDate);
     }
 
-    @Async("taskExecutor")
+    @Async("commonTaskExecutor")
     @Override
     public void verifyComments(List<Comment> comments) {
         comments.forEach(comment -> {

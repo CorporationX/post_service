@@ -1,6 +1,6 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.exception.comment.UserBanException;
+import faang.school.postservice.exception.post.UserBanException;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.MessagePublisher;
 import faang.school.postservice.service.post.impl.PostServiceImpl;
@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,16 +31,16 @@ public class PostServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(postService, "banPostLimit", 5);
     }
 
     @Test
-    void testBanAuthorsWithUnverifiedPostsMoreThan() {
-        int banPostLimit = 5;
+    void testBanAuthorsWithUnverifiedPostsMoreThan_Success() {
         List<Long> authorIdsToBan = Arrays.asList(1L, 2L, 3L);
 
-        when(postRepository.findAuthorIdsToBan(banPostLimit)).thenReturn(authorIdsToBan);
+        when(postRepository.findAuthorIdsToBan(5)).thenReturn(authorIdsToBan);
 
-        postService.banAuthorsWithUnverifiedPostsMoreThan(banPostLimit);
+        postService.banAuthorsWithUnverifiedPostsMoreThan();
 
         for (Long authorId : authorIdsToBan) {
             verify(messagePublisher, times(1)).publish(authorId);
@@ -49,24 +50,11 @@ public class PostServiceImplTest {
     }
 
     @Test
-    void testBanAuthorsWithUnverifiedPostsMoreThan_WithException() {
-        int banPostLimit = 5;
-        List<Long> authorIdsToBan = Arrays.asList(1L, 2L);
+    void testBanAuthorsWithUnverifiedPostsMoreThan_NoAuthorsToBan() {
+        when(postRepository.findAuthorIdsToBan(5)).thenReturn(Arrays.asList());
 
-        when(postRepository.findAuthorIdsToBan(banPostLimit)).thenReturn(authorIdsToBan);
+        postService.banAuthorsWithUnverifiedPostsMoreThan();
 
-        doNothing().when(messagePublisher).publish(1L);
-        doThrow(new RuntimeException("Redis error")).when(messagePublisher).publish(2L);
-
-        UserBanException exception = assertThrows(UserBanException.class, () -> {
-            postService.banAuthorsWithUnverifiedPostsMoreThan(banPostLimit);
-        });
-
-        assertEquals("Failed to publish ban event for author ID 2", exception.getMessage());
-        assertNotNull(exception.getCause());
-        assertEquals("Redis error", exception.getCause().getMessage());
-
-        verify(messagePublisher, times(1)).publish(1L);
-        verify(messagePublisher, times(1)).publish(2L);
+        verify(messagePublisher, never()).publish(anyLong());
     }
 }

@@ -24,5 +24,5 @@ public interface PostService {
 
     List<ResourceObjectResponse> getResourcesByPostId(Long id);
 
-    void banAuthorsWithUnverifiedPostsMoreThan(int banPostLimit);
+    void banAuthorsWithUnverifiedPostsMoreThan();
 }

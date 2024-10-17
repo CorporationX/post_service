@@ -50,6 +50,9 @@ public class PostServiceImpl implements PostService {
     @Value("${resource.max-count}")
     private int maxFilesCount;
 
+    @Value("${post.user-ban.post-limit}")
+    private int banPostLimit;
+
     @Override
     @Transactional
     public PostDto create(PostCreationRequest request) {
@@ -152,19 +155,14 @@ public class PostServiceImpl implements PostService {
         return files;
     }
 
-    @Async("postTaskExecutor")
+    @Async("commonTaskExecutor")
     @Override
-    public void banAuthorsWithUnverifiedPostsMoreThan(int banPostLimit) {
+    public void banAuthorsWithUnverifiedPostsMoreThan() {
         List<Long> authorIds = postRepository.findAuthorIdsToBan(banPostLimit);
         log.info("Found {} authors to ban", authorIds.size());
         authorIds.forEach(authorId -> {
-            try {
-                messagePublisher.publish(authorId);
-                log.info("Published ban event for author ID {}", authorId);
-            } catch (Exception e) {
-                log.error("Failed to publish ban event for author ID {}: {}", authorId, e.getMessage());
-                throw new UserBanException("Failed to publish ban event for author ID " + authorId, e);
-            }
+            messagePublisher.publish(authorId);
+            log.info("Published ban event for author ID {}", authorId);
         });
     }
 

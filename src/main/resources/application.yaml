@@ -83,21 +83,11 @@ post:
   user-ban:
     cron: "0 0 0 * * ?" # every day
     post-limit: 5
-    verify-task-executor:
-      core-pool-size: 10
-      max-pool-size: 20
-      queue-capacity: 100
-      thread-name-prefix: "post-verify-task-executor-"
 
 comment:
   obscene-words-resource: obscene_words_resource/obscene-words.json
   verify-cron: "0 0 * * * ?" # every day at 00:00
   verify-batch: 10
-  verify-task-executor:
-    core-pool-size: 10
-    max-pool-size: 20
-    queue-capacity: 100
-    thread-name-prefix: "verify-task-executor-"
   user-ban-cron: "0 0 * * * ?" # every day at 00:00
   user-ban-comment-limit: 5
   constants:
@@ -124,3 +114,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+task-executor:
+  core-pool-size: 10
+  max-pool-size: 20
+  queue-capacity: 100
+  thread-name-prefix: "common-task-executor-"

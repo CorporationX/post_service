@@ -18,17 +18,9 @@ public class AuthorBanner {
 
     private final PostService postService;
 
-    @Value("${post.user-ban.post-limit}")
-    private int banPostLimit;
-
     @Scheduled(cron = "${post.user-ban.cron}")
     @Retryable(retryFor = {UserBanException.class}, backoff = @Backoff(delay = 5000))
     public void banAuthors() {
-        try {
-            postService.banAuthorsWithUnverifiedPostsMoreThan(banPostLimit);
-        } catch (Exception e) {
-            log.error("Failed to ban authors: {}", e.getMessage(), e);
-            throw new UserBanException("Failed to ban authors", e);
-        }
+        postService.banAuthorsWithUnverifiedPostsMoreThan();
     }
 }
