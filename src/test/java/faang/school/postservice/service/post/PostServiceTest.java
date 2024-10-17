@@ -50,7 +50,7 @@ public class PostServiceTest {
     private ProjectServiceClient projectClient;
 
     @Mock
-    private PostServiceAsync postServiceAsync;
+    private PostContentVerifier postServiceAsync;
 
     @InjectMocks
     private PostServiceImpl postService;

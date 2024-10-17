@@ -3,7 +3,7 @@ package faang.school.postservice.service.post.impl.async;
 import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.post.PostServiceAsync;
+import faang.school.postservice.service.post.PostContentVerifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -16,7 +16,7 @@ import java.util.Set;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class PostServiceAsyncImpl implements PostServiceAsync {
+public class PostContentVerifierImpl implements PostContentVerifier {
 
     private final ModerationDictionary moderationDictionary;
     private final PostRepository postRepository;

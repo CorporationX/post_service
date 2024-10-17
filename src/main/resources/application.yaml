@@ -45,6 +45,8 @@ post:
       cron: "0 0 * * *" # every day
       dictionary:
         file: "classpath:moderation-dictionary.txt"
+  constants:
+    post-max-size: 1000
 
 
 user-service:

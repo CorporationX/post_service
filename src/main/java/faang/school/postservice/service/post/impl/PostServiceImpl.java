@@ -13,7 +13,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.post.PostCreator;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.service.post.PostServiceAsync;
+import faang.school.postservice.service.post.PostContentVerifier;
 import faang.school.postservice.service.post.impl.filter.PostFilter;
 import faang.school.postservice.service.post.impl.filter.PublishedPostFilter;
 import faang.school.postservice.service.post.impl.filter.UnPublishedPostFilter;
@@ -37,10 +37,11 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userClient;
     private final ProjectServiceClient projectClient;
-    private final PostServiceAsync postServiceAsync;
+    private final PostContentVerifier postServiceAsync;
     @Value("${post.moderator.post-batch-size}")
     private int postBatchSize;
-    private int POSTS_MAX_SIZE = 1000;
+    @Value(("{post.constants.post-max-size}"))
+    private int postMaxSize;
 
     @Override
     public PostDto create(PostCreationRequest request) {
@@ -113,16 +114,11 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void moderatePosts() {
-        while (true) {
-            List<Post> posts = postRepository.findNotVerified().stream()
-                    .limit(POSTS_MAX_SIZE)
-                    .toList();
-            if (posts.isEmpty()) {
-                break;
-            }
-            log.info("Number of found posts for moderation: {}", posts.size());
-            ListUtils.partition(posts, postBatchSize).forEach(postServiceAsync::verifyPosts);
-        }
+        List<Post> posts = postRepository.findNotVerified().stream()
+                .limit(postMaxSize)
+                .toList();
+        log.info("Number of found posts for moderation: {}", posts.size());
+        ListUtils.partition(posts, postBatchSize).forEach(postServiceAsync::verifyPosts);
     }
 
     private List<Post> getPostsByCreatorId(Long creatorId, PostCreator creator) {
