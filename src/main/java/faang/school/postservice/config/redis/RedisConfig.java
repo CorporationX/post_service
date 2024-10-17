@@ -11,8 +11,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
@@ -60,11 +58,9 @@ public class RedisConfig {
         RedisTemplate<String, T> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // Configure serializers
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         GenericJackson2JsonRedisSerializer jacksonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
-        // Set key and value serializers
         template.setKeySerializer(stringRedisSerializer);
         template.setValueSerializer(jacksonSerializer);
         template.setHashKeySerializer(stringRedisSerializer);
