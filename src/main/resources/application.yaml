@@ -38,7 +38,7 @@ post:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   spelling-corrector:
-    batch-size: 1000
+    batch-size: 10
     scheduler:
       cron: "0 0 0 * * *" # каждый день в 00:00:00
     retry:
@@ -82,7 +82,19 @@ moderation:
 quartz:
   job:
     interval-seconds: 30
-  
+
+app:
+  post:
+    cache:
+      post_id_prefix: "post:"
+      number_of_top_in_cache: 10
+  async-config:
+    post-cache-service:
+      core_pool_size: 10
+      max_pool_size: 20
+      queue_capacity: 1000
+      thread_mane_prefix: PostCacheProcessExecutor-Async-
+
 springdoc:
   api-docs:
     path: /api-docs
