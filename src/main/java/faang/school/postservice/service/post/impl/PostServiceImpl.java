@@ -43,7 +43,7 @@ public class PostServiceImpl implements PostService {
     private final ResourceService resourceService;
     private final UserServiceClient userClient;
     private final ProjectServiceClient projectClient;
-    private final PostContentVerifier postServiceAsync;
+    private final PostContentVerifier postContentVerifier;
     @Value("${post.moderator.post-batch-size}")
     private int postBatchSize;
     @Value(("{post.constants.post-max-size}"))
@@ -151,7 +151,7 @@ public class PostServiceImpl implements PostService {
                 .limit(postMaxSize)
                 .toList();
         log.info("Number of found posts for moderation: {}", posts.size());
-        ListUtils.partition(posts, postBatchSize).forEach(postServiceAsync::verifyPosts);
+        ListUtils.partition(posts, postBatchSize).forEach(postContentVerifier::verifyPosts);
     }
 
     @Override

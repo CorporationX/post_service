@@ -64,7 +64,7 @@ class PostServiceTest {
     private ProjectServiceClient projectClient;
 
     @Mock
-    private PostContentVerifier postServiceAsync;
+    private PostContentVerifier postContentVerifier;
 
     @Mock
     private ResourceService resourceService;
@@ -591,19 +591,19 @@ class PostServiceTest {
     public void testModeratePostsWhenNoPostsFound() {
         when(postRepository.findNotVerified()).thenReturn(Collections.emptyList());
         postService.moderatePosts();
-        verify(postServiceAsync, never()).verifyPosts(any());
+        verify(postContentVerifier, never()).verifyPosts(any());
     }
 
     @Test
     public void testModeratePostsWhenPostsFound() {
         posts.add(post);
         when(postRepository.findNotVerified()).thenReturn(posts);
-        doNothing().when(postServiceAsync).verifyPosts(posts);
+        doNothing().when(postContentVerifier).verifyPosts(posts);
 
         postService.moderatePosts();
 
         verify(postRepository).findNotVerified();
-        verify(postServiceAsync).verifyPosts(anyList());
+        verify(postContentVerifier).verifyPosts(anyList());
     }
 
     @Test
