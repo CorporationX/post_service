@@ -1,4 +1,4 @@
-package faang.school.postservice.service.ad;
+package faang.school.postservice.service.impl.ad;
 
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.repository.ad.AdRepository;

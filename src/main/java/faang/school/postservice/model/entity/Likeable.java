@@ -1,4 +1,6 @@
-package faang.school.postservice.model;
+package faang.school.postservice.model.entity;
+
+import faang.school.postservice.model.entity.Like;
 
 import java.util.List;
 

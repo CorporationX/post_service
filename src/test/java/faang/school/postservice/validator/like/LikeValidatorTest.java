@@ -1,9 +1,9 @@
 package faang.school.postservice.validator.like;
 
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Likeable;
+import faang.school.postservice.model.entity.Comment;
+import faang.school.postservice.model.entity.Like;
+import faang.school.postservice.model.entity.Likeable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

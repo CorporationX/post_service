@@ -1,9 +1,9 @@
 package faang.school.postservice.service.impl.post.async;
 
 import faang.school.postservice.client.TextGearsClient;
-import faang.school.postservice.dto.post.corrector.CorrectionResponseDto;
+import faang.school.postservice.model.dto.corrector.CorrectionResponseDto;
 import faang.school.postservice.exception.correcter.TextGearsException;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostServiceAsync;
