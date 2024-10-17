@@ -21,7 +21,7 @@ public class KafkaCommentConsumer {
         log.info("Received FeedCommentEvent for post ID: {}", postId);
 
         try {
-            feedService.updatePostComments(postId, event);
+            feedService.addNewComment(postId, event);
             log.info("Successfully updated comments for post ID: {}", postId);
         } catch (Exception e) {
             log.error("Failed to update comments for post ID: {}", postId, e);

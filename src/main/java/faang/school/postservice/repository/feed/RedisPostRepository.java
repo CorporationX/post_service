@@ -8,10 +8,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,8 +28,9 @@ public class RedisPostRepository {
     @Value("${data.redis.cache.feed.showLastComments}")
     private int showLastComments;
 
-    public void savePost(PostDto postDto) {
-        String key = POST_KEY_PREFIX + postDto.getId();
+    public void addNewPost(PostDto postDto) {
+        Long postId = postDto.getId();
+        String key = POST_KEY_PREFIX + postId;
         cacheRedisTemplate.opsForValue().set(key, postDto, Duration.ofSeconds(ttl));
     }
 
@@ -45,7 +47,9 @@ public class RedisPostRepository {
     public void addComment(Long postId, CommentDto commentDto) {
         String key = POST_KEY_PREFIX + postId + COMMENT_KEY_SUFFIX;
 
-        cacheRedisTemplate.opsForZSet().add(key,commentDto, System.currentTimeMillis());
+        double score = commentDto.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        cacheRedisTemplate.opsForZSet().add(key,commentDto, score);
         cacheRedisTemplate.opsForZSet().removeRange(key, 0, -showLastComments - 1);
         cacheRedisTemplate.expire(key, Duration.ofSeconds(ttl));
     }
@@ -58,7 +62,7 @@ public class RedisPostRepository {
         }
 
         return comments.stream()
-                .map(comment -> (CommentDto) comment)
+                .map(CommentDto.class::cast)
                 .toList();
     }
 
@@ -71,12 +75,12 @@ public class RedisPostRepository {
         String key = POST_KEY_PREFIX + postId + COMMENT_KEY_SUFFIX;
         List<CommentDto> comments = getComments(postId);
 
-        boolean removed = comments.removeIf(comment -> comment.getId() == commentId);
+        boolean removed = comments.removeIf(comment -> Objects.equals(comment.getId(), commentId));
 
         if (removed) {
             cacheRedisTemplate.delete(key);
             for (int i = comments.size() - 1; i >= 0; i--) {
-                cacheRedisTemplate.opsForList().leftPush(key, comments.get(i));
+                addComment(postId, comments.get(i));
             }
             cacheRedisTemplate.expire(key, Duration.ofSeconds(ttl));
         }

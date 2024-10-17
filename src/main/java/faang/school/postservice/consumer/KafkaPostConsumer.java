@@ -21,10 +21,7 @@ public class KafkaPostConsumer {
         log.info("Received PostEvent for post ID: {}", postId);
 
         try {
-            for (Long subscribersId : event.getSubscribersIds()) {
-                feedService.addPostToFeed(subscribersId, postId);
-                feedService.savePost(postId);
-            }
+            feedService.addPostToFeed(event.getSubscribersIds(), postId, event.getPublishedAt());
             log.info("Successfully processed FeedPostEvent for post ID: {}", postId);
         } catch (Exception e) {
             log.error("Failed to process FeedPostEvent for post ID: {}", postId, e);

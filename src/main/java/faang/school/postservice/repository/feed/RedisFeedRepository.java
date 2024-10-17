@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 
@@ -18,14 +20,16 @@ public class RedisFeedRepository {
     @Value("${spring.data.redis.cache.feed.pageSize}")
     private int pageSize;
 
-    public void addPost(Long subscriberId, Long postId) {
+    public void addPost(Long subscriberId, Long postId, LocalDateTime publishedAt) {
         String key = FEED_KEY_PREFIX + subscriberId;
-        cacheRedisTemplate.opsForZSet().add(key, postId, System.currentTimeMillis());
+        double score = publishedAt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        cacheRedisTemplate.opsForZSet().add(key, postId, score);
         cacheRedisTemplate.opsForZSet().removeRange(key, 0, (long) -feedMaxSize - 1);
     }
 
-    public void addPost(List<Long> subscribersIds, Long postId) {
-        subscribersIds.forEach(subscriberId -> addPost(subscriberId, postId));
+    public void addPost(List<Long> subscribersIds, Long postId, LocalDateTime publishedAt) {
+        subscribersIds.forEach(subscriberId -> addPost(subscriberId, postId, publishedAt));
     }
 
     public List<Long> getUserFeed(Long subscriberId, int offset) {
@@ -35,7 +39,7 @@ public class RedisFeedRepository {
         Set<Object>
     }
 
-    public void removePostFromAllFeeds(Long postId) {
+    public void deletePostFromAllFeeds(Long postId) {
         Set<String> feedKeys = cacheRedisTemplate.keys(FEED_KEY_PREFIX + "*");
         if (feedKeys != null) {
             for (String key : feedKeys) {

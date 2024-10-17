@@ -78,7 +78,7 @@ public class CommentService {
         List<Comment> comments = commentRepository.findAllByPostIdSorted(postId);
         return comments.stream()
                 .map(commentMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
@@ -98,7 +98,7 @@ public class CommentService {
 
         List<CompletableFuture<Void>> futures = partitions.stream()
                 .map(this::moderatePartition)
-                .collect(Collectors.toList());
+                .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }

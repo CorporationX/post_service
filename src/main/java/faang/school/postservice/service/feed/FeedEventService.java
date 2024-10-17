@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,20 +38,20 @@ public class FeedEventService {
     private int subscribersBatchSize;
 
     @Async("feedExecutor")
-    public void createAndSendFeedPostEvent(Long postId, Long authorId) {
+    public void createAndSendFeedPostEvent(Long postId, Long authorId, LocalDateTime publishedAt) {
         List<Long> subscribersIds = userServiceClient.getFollowerIdsByFolloweeId(authorId);
 
         if (subscribersIds.isEmpty()) {
             log.info("Author {} has no subscribers. No events will be sent.", authorId);
         } else if (subscribersIds.size() <= subscribersBatchSize) {
-            kafkaPostProducer.sendEvent(new FeedPostEvent(postId, authorId, subscribersIds));
+            kafkaPostProducer.sendEvent(new FeedPostEvent(postId, authorId, publishedAt, subscribersIds));
             log.info("Sent FeedPostEvent for postId {} with {} subscribers", postId, subscribersIds.size());
         } else {
             List<List<Long>> batches = partitionList(subscribersIds, subscribersBatchSize);
 
             int batchNumber = 0;
             for (List<Long> batch : batches) {
-                FeedPostEvent event = new FeedPostEvent(postId, authorId, batch);
+                FeedPostEvent event = new FeedPostEvent(postId, authorId, publishedAt, batch);
 
                 String messageKey = postId + "-" + batchNumber;
 

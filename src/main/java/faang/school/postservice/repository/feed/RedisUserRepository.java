@@ -15,14 +15,14 @@ public class RedisUserRepository {
     private final RedisTemplate<String, Object> cacheRedisTemplate;
 
     @Value("${spring.data.redis.cache.ttl.user}")
-    private long userTtl;
+    private long ttl;
 
-    public void savePost(UserDto userDto) {
+    public void save(UserDto userDto) {
         String key = USER_KEY_PREFIX + userDto.getId();
-        cacheRedisTemplate.opsForValue().set(key, userDto, Duration.ofSeconds(userTtl));
+        cacheRedisTemplate.opsForValue().set(key, userDto, Duration.ofSeconds(ttl));
     }
 
-    public UserDto getPost(Long userId) {
+    public UserDto get(Long userId) {
         String key = USER_KEY_PREFIX + userId;
         return (UserDto) cacheRedisTemplate.opsForValue().get(key);
     }
