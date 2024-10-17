@@ -19,4 +19,8 @@ public class UserDto {
     private String username;
     @Email(message = "Email must be in email format")
     private String email;
+
+    private String phone;
+    private boolean active;
+    private Integer experience;
 }
