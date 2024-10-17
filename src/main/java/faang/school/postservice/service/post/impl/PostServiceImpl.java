@@ -15,6 +15,7 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.post.PostCreator;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.post.PostContentVerifier;
 import faang.school.postservice.service.post.impl.filter.PostFilter;
 import faang.school.postservice.service.post.impl.filter.PublishedPostFilter;
 import faang.school.postservice.service.post.impl.filter.UnPublishedPostFilter;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,11 @@ public class PostServiceImpl implements PostService {
     private final ResourceService resourceService;
     private final UserServiceClient userClient;
     private final ProjectServiceClient projectClient;
+    private final PostContentVerifier postContentVerifier;
+    @Value("${post.moderator.post-batch-size}")
+    private int postBatchSize;
+    @Value(("{post.constants.post-max-size}"))
+    private int postMaxSize;
 
     @Setter
     @Value("${resource.max-count}")
@@ -136,6 +143,15 @@ public class PostServiceImpl implements PostService {
         log.debug("Found {} posts by {} with id {} with published - {}",
                 posts.size(), creator, creatorId, publishedStatus);
         return postMapper.toPostDtoList(posts);
+    }
+
+    @Override
+    public void moderatePosts() {
+        List<Post> posts = postRepository.findNotVerified().stream()
+                .limit(postMaxSize)
+                .toList();
+        log.info("Number of found posts for moderation: {}", posts.size());
+        ListUtils.partition(posts, postBatchSize).forEach(postContentVerifier::verifyPosts);
     }
 
     @Override

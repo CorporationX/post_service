@@ -1,0 +1,4 @@
+badWord1
+badWord2
+badWord3
+badWord4

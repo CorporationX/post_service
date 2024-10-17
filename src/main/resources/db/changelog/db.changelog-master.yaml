@@ -6,4 +6,6 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V003_resource.sql
   - include:
+      file: db/changelog/changeset/post_V004_ad_verified.sql
+  - include:
       file: db/changelog/changeset/post_V004_update_comment_add_verified.sql
