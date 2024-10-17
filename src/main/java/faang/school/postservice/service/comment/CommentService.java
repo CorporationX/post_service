@@ -1,5 +1,7 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.annotations.PublishEvent;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -19,12 +21,14 @@ public class CommentService {
     private final PostService postService;
     private final CommentValidator commentValidator;
 
+    @PublishEvent(eventType = CommentEvent.class)
     @Transactional
     public Comment createComment(Long postId, Comment comment) {
         commentValidator.validateCreate(postId, comment);
         Post post = postService.findPostById(postId);
         comment.setPost(post);
-        return commentRepository.save(comment);
+        Comment savedComment = commentRepository.save(comment);
+        return savedComment;
     }
 
     @Transactional
