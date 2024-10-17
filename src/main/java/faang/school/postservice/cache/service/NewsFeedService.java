@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -37,6 +38,9 @@ public class NewsFeedService {
         List<Long> postIds = newsFeedRedisRepository.getSortedPostIds(key);
         if (postIds.isEmpty()) {
             TreeSet<PostRedis> postsFromDB = getPostsFromDB(userId, lastPostId, batchSize);
+            if (postsFromDB.isEmpty()) {
+                return postsFromDB;
+            }
             postRedisService.setAuthors(postsFromDB);
             return postsFromDB;
         }
@@ -120,9 +124,10 @@ public class NewsFeedService {
         List<Long> resultIds = result.stream()
                 .map(PostRedis::getId)
                 .toList();
-        redisPostIds.removeAll(resultIds);
+        List<Long> expiredPostIds = new ArrayList<>(redisPostIds);
+        expiredPostIds.removeAll(resultIds);
 
-        List<PostRedis> postsRedis = postService.findAllByIdsWithLikes(redisPostIds);
+        List<PostRedis> postsRedis = postService.findAllByIdsWithLikes(expiredPostIds);
         postRedisService.setCommentsFromDB(postsRedis);
         result.addAll(postsRedis);
     }
