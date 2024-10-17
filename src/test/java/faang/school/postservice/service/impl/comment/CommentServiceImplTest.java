@@ -10,6 +10,7 @@ import faang.school.postservice.model.dto.comment.CommentRequestDto;
 import faang.school.postservice.model.dto.comment.CommentResponseDto;
 import faang.school.postservice.model.dto.user.UserDto;
 import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.impl.comment.async.CommentServiceAsyncImpl;
@@ -132,7 +133,6 @@ class CommentServiceImplTest {
         verify(commentEventPublisher).publish(commentEvent);
         verify(userServiceClient).getUser(1);
     }
-
 
     @Test
     void update_whenCommentExists_shouldUpdateComment() {

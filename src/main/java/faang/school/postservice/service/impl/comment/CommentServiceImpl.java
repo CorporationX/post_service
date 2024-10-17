@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CommentServiceImpl implements CommentService {
+
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
@@ -48,19 +49,17 @@ public class CommentServiceImpl implements CommentService {
         var comment = commentMapper.toEntity(dto);
         comment.setAuthorId(userId);
         comment.setPost(post);
-
-        var savedComment = commentMapper.toResponseDto(commentRepository.save(comment));
-        var commentEvent = CommentEvent.builder()
-                .commentAuthorId(savedComment.authorId())
+        Comment savedComment = commentRepository.save(comment);
+        CommentEvent event = CommentEvent.builder()
+                .commentAuthorId(savedComment.getAuthorId())
                 .username(user.username())
                 .postAuthorId(post.getAuthorId())
-                .postId(savedComment.postId())
-                .content(savedComment.content())
-                .commentId(savedComment.id())
+                .postId(savedComment.getPost().getId())
+                .content(savedComment.getContent())
+                .commentId(savedComment.getId())
                 .build();
-
-        commentEventPublisher.publish(commentEvent);
-        return savedComment;
+        commentEventPublisher.publish(event);
+        return commentMapper.toResponseDto(savedComment);
     }
 
     @Override
