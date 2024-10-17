@@ -1,5 +1,6 @@
 package faang.school.postservice.consumer;
 
+import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentDeleteEvent;
 import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentEvent;
 import faang.school.postservice.service.feed.FeedService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,21 @@ public class KafkaCommentConsumer {
             log.info("Successfully updated comments for post ID: {}", postId);
         } catch (Exception e) {
             log.error("Failed to update comments for post ID: {}", postId, e);
+        }
+    }
+
+    @KafkaListener(topics = "${spring.data.kafka.topics.delete-comment.name}",
+            groupId = "${spring.data.kafka.consumer.groups.comment}")
+    public void consumeDelete(FeedCommentDeleteEvent event) {
+        Long commentId = event.getId();
+        Long postId = event.getPostId();
+        log.info("Received FeedCommentDeleteEvent for commentId: {}, post ID: {}", commentId, postId);
+
+        try {
+            feedService.deleteComment(postId, commentId);
+            log.info("Successfully delete comment with ID: {} for post ID: {}", commentId, postId);
+        } catch (Exception e) {
+            log.error("Failed to update comment with ID: {} for post ID: {}",commentId, postId, e);
         }
     }
 }

@@ -34,6 +34,7 @@ spring:
         feed:
           maxSize: 500
           pageSize: 20
+          showLastComments: 3
         ttl:
           post: 86400
           user: 86400
@@ -45,12 +46,24 @@ spring:
           name: post
           partitions: 3
           replicas: 1
+        delete-post:
+          name: delete-post
+          partitions: 3
+          replicas: 1
         comment:
           name: comment
           partitions: 3
           replicas: 1
+        delete-comment:
+          name: delete-comment
+          partitions: 3
+          replicas: 1
         like:
           name: like
+          partitions: 3
+          replicas: 1
+        unlike:
+          name: unlike
           partitions: 3
           replicas: 1
       producer:

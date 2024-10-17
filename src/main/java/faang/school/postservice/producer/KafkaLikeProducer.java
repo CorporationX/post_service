@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaLikeProducer extends AbstractEventProducer<FeedLikeEvent> {
     public KafkaLikeProducer(KafkaTemplate<String, Object> kafkaTemplate,
-                             @Value("${spring.data.kafka.topics.like}") String topic) {
+                             @Value("${spring.data.kafka.topics.like.name}") String topic) {
         super(kafkaTemplate, topic);
     }
 }

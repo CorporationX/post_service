@@ -34,4 +34,13 @@ public class RedisFeedRepository {
 
         Set<Object>
     }
+
+    public void removePostFromAllFeeds(Long postId) {
+        Set<String> feedKeys = cacheRedisTemplate.keys(FEED_KEY_PREFIX + "*");
+        if (feedKeys != null) {
+            for (String key : feedKeys) {
+                cacheRedisTemplate.opsForZSet().remove(key, postId);
+            }
+        }
+    }
 }

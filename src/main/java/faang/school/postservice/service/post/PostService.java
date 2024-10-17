@@ -139,6 +139,8 @@ public class PostService {
 
         Post savedPost = postRepository.save(post);
 
+        feedEventService.createAndSendFeedPostEvent(post.getId(), post.getAuthorId());
+
         return postMapper.toDto(savedPost);
     }
 
@@ -152,6 +154,8 @@ public class PostService {
         post.setDeleted(true);
 
         postRepository.save(post);
+
+        feedEventService.createAndSendFeedPostDeletedEvent(post.getId());
     }
 
     @Transactional(readOnly = true)

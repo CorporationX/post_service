@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentDeleteEvent;
 import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -64,6 +65,10 @@ public class CommentService {
         Comment comment = commentValidator.findCommentById(commentId);
         commentValidator.checkUserRightsToChangeComment(comment, commentDto);
         comment.setContent(commentDto.getContent());
+
+        feedEventService.createAndSendFeedCommentEvent(new FeedCommentEvent(
+                commentDto.getId(), commentDto.getPostId(), commentDto.getAuthorId(), commentDto.getContent()));
+
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
@@ -78,8 +83,11 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long commentId) {
-        commentValidator.findCommentById(commentId);
+        Comment comment = commentValidator.findCommentById(commentId);
         commentRepository.deleteById(commentId);
+
+        feedEventService.createAndSendFeedCommentDeleteEvent(
+                new FeedCommentDeleteEvent(comment.getId(), comment.getPost().getId()));
     }
 
     @Transactional

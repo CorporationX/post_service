@@ -63,6 +63,8 @@ public class LikeService {
         Like like = likeRepository.findByPostIdAndUserId(likeDto.getPostId(), likeDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("Лайк не найден"));
         likeRepository.delete(like);
+
+        feedEventService.createAndSendFeedUnlikeEvent(likeDto.getPostId());
     }
 
 

@@ -1,12 +1,18 @@
 package faang.school.postservice.service.feed;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentDeleteEvent;
 import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentEvent;
 import faang.school.postservice.dto.publishable.fornewsfeed.FeedLikeEvent;
+import faang.school.postservice.dto.publishable.fornewsfeed.FeedPostDeleteEvent;
 import faang.school.postservice.dto.publishable.fornewsfeed.FeedPostEvent;
+import faang.school.postservice.dto.publishable.fornewsfeed.FeedUnlikeEvent;
+import faang.school.postservice.producer.KafkaCommentDeleteProducer;
 import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.producer.KafkaLikeProducer;
+import faang.school.postservice.producer.KafkaPostDeleteProducer;
 import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.producer.KafkaUnlikeProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,8 +28,11 @@ import java.util.List;
 public class FeedEventService {
     private final UserServiceClient userServiceClient;
     private final KafkaPostProducer kafkaPostProducer;
+    private final KafkaPostDeleteProducer kafkaPostDeleteProducer;
     private final KafkaCommentProducer kafkaCommentProducer;
+    private final KafkaCommentDeleteProducer kafkaCommentDeleteProducer;
     private final KafkaLikeProducer kafkaLikeProducer;
+    private final KafkaUnlikeProducer kafkaUnlikeProducer;
     @Value("${feed.kafka.subscribers-batch-size}")
     private int subscribersBatchSize;
 
@@ -33,7 +42,6 @@ public class FeedEventService {
 
         if (subscribersIds.isEmpty()) {
             log.info("Author {} has no subscribers. No events will be sent.", authorId);
-            return;
         } else if (subscribersIds.size() <= subscribersBatchSize) {
             kafkaPostProducer.sendEvent(new FeedPostEvent(postId, authorId, subscribersIds));
             log.info("Sent FeedPostEvent for postId {} with {} subscribers", postId, subscribersIds.size());
@@ -73,5 +81,18 @@ public class FeedEventService {
     @Async("feedExecutor")
     public void createAndSendFeedLikeEvent(long postId) {
         kafkaLikeProducer.sendEvent(new FeedLikeEvent(postId));
+    }
+
+    @Async("feedExecutor")
+    public void createAndSendFeedPostDeletedEvent(long postId) {
+        kafkaPostDeleteProducer.sendEvent(new FeedPostDeleteEvent(postId));
+    }
+
+    public void createAndSendFeedUnlikeEvent(Long postId) {
+        kafkaUnlikeProducer.sendEvent(new FeedUnlikeEvent(postId));
+    }
+
+    public void createAndSendFeedCommentDeleteEvent(FeedCommentDeleteEvent event) {
+        kafkaCommentDeleteProducer.sendEvent(event);
     }
 }

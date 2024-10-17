@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import org.mapstruct.*;
@@ -18,6 +19,8 @@ public interface CommentMapper {
     @Mapping(source = "likeIds", target = "likes", qualifiedByName = "mapLikeIdsToLike")
     @Mapping(source = "postId", target = "post.id")
     Comment toEntity(CommentDto commentDto);
+
+    CommentDto fromFeedCommentEventToDto(FeedCommentEvent event);
 
     @Named("mapLikesToLikeIds")
     default List<Long> mapLikesToLikeIds(List<Like> likes) {
