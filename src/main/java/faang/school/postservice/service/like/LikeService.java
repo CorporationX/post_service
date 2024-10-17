@@ -129,8 +129,7 @@ public class LikeService {
         try {
             likePostEventPublisher.publish(likePostEvent);
         } catch (Exception ex) {
-            log.error("Failed to send notification with likePostEvent: {}. {}",
-                    likePostEvent.toString(), ex.getMessage());
+            log.error("Failed to send notification with likePostEvent: {}", likePostEvent.toString(), ex);
         }
     }
 }

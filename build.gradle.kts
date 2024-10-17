@@ -38,7 +38,7 @@ dependencies {
      * AmazonS3
      */
     implementation("io.github.fuquanming:fqm-file-amazons3:1.0.9")
-
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.772")
     /**
      * Change Image Dimension
      */
