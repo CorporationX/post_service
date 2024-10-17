@@ -2,6 +2,7 @@ package faang.school.postservice.service.feed;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.feed.FeedPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentEvent;
 import faang.school.postservice.dto.user.UserDto;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,12 +37,8 @@ public class FeedService {
     private final UserServiceClient userServiceClient;
 
 
-    public void addPostToFeed(Long subscriberId, Long postId, LocalDateTime publishedAt) {
-        redisFeedRepository.addPost(subscriberId, postId, publishedAt);
-    }
-
     public void addPostToFeed(List<Long> subscribersIds, Long postId, LocalDateTime publishedAt) {
-        subscribersIds.forEach(userId -> addPostToFeed(userId, postId, publishedAt));
+        redisFeedRepository.addPost(subscribersIds, postId, publishedAt);
     }
 
     public void addPostToCache(PostDto postDto) {
@@ -90,20 +88,6 @@ public class FeedService {
     }
 
 
-
-    public void addPostToCache(Long postId) {
-        Optional<Post> optionalPost = getPostFromDB(postId);
-        if (optionalPost.isPresent()) {
-            PostDto postDto = postMapper.toDto(optionalPost.get());
-            redisPostRepository.addNewPost(postDto);
-        }
-        addPostCommentsFromDB(postId);
-    }
-
-    private void addPostCommentsFromDB(Long postId) {
-
-    }
-
     private void addToCachePostFromDB(Long postId) {
         Optional<Post> optionalPost = getPostFromDB(postId);
         if (optionalPost.isPresent()) {
@@ -122,16 +106,43 @@ public class FeedService {
         return Optional.of(redisPostRepository.getPost(postId));
     }
 
-    private Optional<Post> getPostFromDB(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post with ID " + postId + " not found"));
+    private List<Optional<Post>> getPostFromDB(List<Long> postsIds) {
+        List<Post> missingPosts = postRepository.findAllById(postsIds);
+
+        Post post = postRepository.findById(postsIds)
+                .orElseThrow(() -> new EntityNotFoundException("Post with ID " + postsIds + " not found"));
 
         if (post.isDeleted()) {
-            log.info("Post with ID {} was found in DB but it was deleted", postId);
-            handlePostDeletion(postId);
+            log.info("Post with ID {} was found in DB but it was deleted", postsIds);
+            handlePostDeletion(postsIds);
             return Optional.empty();
         }
 
         return Optional.of(post);
+    }
+
+    public List<FeedPostDto> getFeed(Long userId, LocalDateTime lastSeenDate) {
+        List<Long> postIds = redisFeedRepository.getPostIds(userId, lastSeenDate);
+
+        List<PostDto> posts = new ArrayList<>();
+        List<Long> missingPosts = new ArrayList<>();
+        for (Long postId : postIds) {
+            Optional<PostDto> postFromCache = getPostFromCache(postId);
+
+            if (postFromCache.isPresent()) {
+                PostDto postDto = postFromCache.get();
+                long likesCount = redisPostRepository.getLikesCounter(postId) + postDto.getLikesCount();
+                postDto.setLikesCount(likesCount);
+                long commentsCount = redisPostRepository.getCommentsCounter(postId) + postDto.getCommentsCount();
+                postDto.setCommentsCount(commentsCount);
+
+                posts.add(postDto);
+                continue;
+            }
+
+            missingPosts.add(postId);
+        }
+
+
     }
 }

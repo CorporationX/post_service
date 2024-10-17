@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -32,13 +33,6 @@ public class RedisFeedRepository {
         subscribersIds.forEach(subscriberId -> addPost(subscriberId, postId, publishedAt));
     }
 
-    public List<Long> getUserFeed(Long subscriberId, int offset) {
-        String key = FEED_KEY_PREFIX + subscriberId;
-        long end = offset + pageSize - 1;
-
-        Set<Object>
-    }
-
     public void deletePostFromAllFeeds(Long postId) {
         Set<String> feedKeys = cacheRedisTemplate.keys(FEED_KEY_PREFIX + "*");
         if (feedKeys != null) {
@@ -46,5 +40,24 @@ public class RedisFeedRepository {
                 cacheRedisTemplate.opsForZSet().remove(key, postId);
             }
         }
+    }
+
+    public List<Long> getPostIds(Long userId, LocalDateTime lastSeenDate) {
+        String key = FEED_KEY_PREFIX + userId;
+        double maxScore = Double.POSITIVE_INFINITY;
+
+        if (lastSeenDate != null) {
+            maxScore = lastSeenDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        }
+
+        Set<Object> postIds = cacheRedisTemplate.opsForZSet().reverseRangeByScore(key, 0, maxScore, 0, pageSize);
+
+        if (postIds == null || postIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return postIds.stream()
+                .map(id -> (Long) id)
+                .toList();
     }
 }

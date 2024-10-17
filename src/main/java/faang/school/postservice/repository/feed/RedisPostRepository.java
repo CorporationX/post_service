@@ -116,4 +116,14 @@ public class RedisPostRepository {
         String key = POST_KEY_PREFIX + postId + COMMENT_COUNT_SUFFIX;
         cacheRedisTemplate.delete(key);
     }
+
+    public Long getLikesCounter(Long postId) {
+        String key = POST_KEY_PREFIX + postId + LIKE_KEY_SUFFIX;
+        return (Long) cacheRedisTemplate.opsForValue().get(key);
+    }
+
+    public Long getCommentsCounter(Long postId) {
+        String key = POST_KEY_PREFIX + postId + COMMENT_COUNT_SUFFIX;
+        return (Long) cacheRedisTemplate.opsForValue().get(key);
+    }
 }
