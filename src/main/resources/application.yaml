@@ -25,12 +25,45 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  config:
+    import: text-gears-api.yaml
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
 server:
   port: 8081
 
 logging:
   level:
     root: info
+
+services:
+  s3:
+    endpoint: http://127.0.0.1:9000
+    accessKey: test
+    secretKey: testtest
+    bucketName: corpbucket
+    region: eu-central-1
+    isMocked: false
+  grammar-checker:
+    url: https://api.textgears.com
+    apiKey: ${apiKey}
+    dialects:
+      "en": "en-US"
+      "fr": "fr-FR"
+      "de": "de-DE"
+      "pt": "pt-PT"
+      "it": "it-IT"
+      "ru": "ru-RU"
+      "ar": "ar-AR"
+      "es": "es-ES"
+      "ja": "ja-JP"
+      "zh": "zh-CN"
+      "el": "el-GR"
 
 post:
   publisher:
@@ -48,6 +81,38 @@ post:
   constants:
     post-max-size: 1000
 
+  grammar-checker:
+    scheduler:
+      cron: "0 0 0 * * ?" # every day
+    attempts: 3
+    delay: 1000
+    multiplier: 2
+
+comment:
+  obscene-words-resource: obscene_words_resource/obscene-words.json
+  verify-cron: "0 0 * * * ?" # every day at 00:00
+  verify-batch: 10
+  verify-task-executor:
+    core-pool-size: 10
+    max-pool-size: 20
+    queue-capacity: 100
+    thread-name-prefix: "verify-task-executor-"
+  user-ban-cron: "0 0 * * * ?" # every day at 00:00
+  user-ban-comment-limit: 5
+  constants:
+    verification-days-limit: 30
+
+resource:
+  max-size: 5242880
+  max-count: 10
+  image:
+    max-rectangle-width: 1080
+    max-rectangle-height: 566
+    max-square-dimension: 1080
+
+redis:
+  topic:
+    user-ban: user_ban
 
 user-service:
   host: localhost

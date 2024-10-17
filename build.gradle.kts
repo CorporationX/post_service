@@ -21,8 +21,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation("org.springframework.retry:spring-retry")
+    implementation("org.springframework:spring-aspects")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
@@ -31,6 +34,11 @@ dependencies {
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
+
+    /**
+     * Amazon S3
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
 
     /**
      * Swagger
@@ -49,6 +57,12 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+
+    /**
+     *  Apache Lucene
+     * */
+    implementation("org.apache.lucene:lucene-core:9.11.1")
+    implementation("org.apache.lucene:lucene-queryparser:9.11.1")
 
     /**
      * Test containers
@@ -73,11 +87,13 @@ dependencies {
 }
 
 val jacocoInclude = listOf(
-    "**/controller/**",
-    "**/service/**",
-    "**/validator/**",
-    "**/mapper/**",
-    "**/filter/**",
+        "**/controller/**",
+        "**/service/**",
+        "**/validator/**",
+        "**/mapper/**",
+        "**/filter/**",
+        "**/api/**",
+        "**/scheduler/**"
 )
 
 jacoco {
@@ -96,13 +112,13 @@ tasks.jacocoTestReport {
         html.outputLocation.set(file("${buildDir}/reports/jacoco/html"))
     }
     classDirectories.setFrom(
-        files(
-            classDirectories.files.map {
-                fileTree(it) {
-                    include(jacocoInclude)
-                }
-            }
-        )
+            files(
+                    classDirectories.files.map {
+                        fileTree(it) {
+                            include(jacocoInclude)
+                        }
+                    }
+            )
     )
 }
 
@@ -111,9 +127,9 @@ tasks.jacocoTestCoverageVerification {
         rule {
             element = "CLASS"
             classDirectories.setFrom(
-                sourceSets.main.get().output.asFileTree.matching {
-                    include(jacocoInclude)
-                }
+                    sourceSets.main.get().output.asFileTree.matching {
+                        include(jacocoInclude)
+                    }
             )
             enabled = true
             limit {

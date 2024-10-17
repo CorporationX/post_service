@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.SortingStrategyDto;
+import faang.school.postservice.model.Comment;
 
 import java.util.List;
 
@@ -13,4 +14,10 @@ public interface CommentService {
     List<CommentDto> getComments(Long postId, SortingStrategyDto sortingStrategyDto);
 
     CommentDto deleteComment(Long postId, Long commentId);
+
+    List<Comment> getUnverifiedComments();
+
+    void verifyComments(List<Comment> comments);
+
+    void banUsersWithObsceneCommentsMoreThan(int banCommentLimit);
 }

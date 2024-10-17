@@ -16,8 +16,11 @@ import faang.school.postservice.service.comment.sort.SortingStrategyAppliersMap;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static faang.school.postservice.exception.comment.ExceptionMessages.COMMENT_NOT_FOUND;
@@ -36,7 +39,12 @@ public class CommentServiceImpl implements CommentService {
     private final UserContext userContext;
     private final CommentMapper commentMapper;
     private final SortingStrategyAppliersMap sortingStrategiesAppliers;
+    private final CommentChecker commentChecker;
+    private final MessagePublisher messagePublisher;
 
+    @Value("${comment.constants.verification-days-limit}")
+    private int verificationDaysLimit;
+    
     @Override
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         Post post = getPost(postId);
@@ -86,6 +94,30 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.delete(comment);
         log.info("Deleted comment: {}", comment.getId());
         return commentMapper.toCommentDto(comment);
+    }
+
+    @Override
+    public List<Comment> getUnverifiedComments() {
+        LocalDateTime startDate = LocalDateTime.now().minusDays(verificationDaysLimit);
+        return commentRepository.findUnverifiedComments(startDate);
+    }
+
+    @Async("taskExecutor")
+    @Override
+    public void verifyComments(List<Comment> comments) {
+        comments.forEach(comment -> {
+            comment.setVerified(commentChecker.isAcceptableComment(comment));
+            comment.setVerifiedDate(LocalDateTime.now());
+        });
+        commentRepository.saveAll(comments);
+        log.info("Verified comments: {}", comments.size());
+    }
+
+    @Override
+    public void banUsersWithObsceneCommentsMoreThan(int banCommentLimit) {
+        List<Long> usersIds = commentRepository.findUserIdsToBan(banCommentLimit);
+        log.info("Found {} users to Ban", usersIds.size());
+        usersIds.forEach(messagePublisher::publish);
     }
 
     private Post getPost(Long postId) {
