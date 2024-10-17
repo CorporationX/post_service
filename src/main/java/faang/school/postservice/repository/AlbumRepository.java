@@ -20,21 +20,21 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     @Query("SELECT a FROM Album a LEFT JOIN FETCH a.posts WHERE a.id = :id")
     Optional<Album> findByIdWithPosts(long id);
 
-    @Query(nativeQuery = true, value = "INSERT INTO favorite_albums (album_id, user_id) VALUES (:albumId, :authorId)")
+    @Query(nativeQuery = true, value = "INSERT INTO favorite_albums (album_id, user_id) VALUES (:albumId, :userId)")
     @Modifying
-    void addAlbumToFavorites(long albumId, long authorId);
+    void addAlbumToFavorites(long albumId, long userId);
 
-    @Query(nativeQuery = true, value = "DELETE FROM favorite_albums WHERE album_id = :albumId AND user_id = :authorId")
+    @Query(nativeQuery = true, value = "DELETE FROM favorite_albums WHERE album_id = :albumId AND user_id = :userId")
     @Modifying
-    void deleteAlbumFromFavorites(long albumId, long authorId);
+    void deleteAlbumFromFavorites(long albumId, long userId);
 
     @Query(nativeQuery = true, value = """
             SELECT * FROM album
             WHERE id IN (
-                SELECT album_id FROM favorite_albums WHERE user_id = :authorId
+                SELECT album_id FROM favorite_albums WHERE user_id = :userId
             )
             """)
-    Stream<Album> findFavoriteAlbumsByUserId(long authorId);
+    Stream<Album> findFavoriteAlbumsByUserId(long userId);
 
     @Query(nativeQuery = true, value = """
             SELECT id FROM album
@@ -44,9 +44,9 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     @Query(nativeQuery = true, value = """
             SELECT id FROM album
-            WHERE visibility = 'ONLY_AUTHOR' AND author_id = :authorId
+            WHERE visibility = 'ONLY_AUTHOR' AND author_id = :userId
             """)
-    List<Long> findAlbumsIdsOnlyAuthor(Long authorId);
+    List<Long> findAlbumsIdsOnlyAuthor(Long userId);
 
     @Query(nativeQuery = true, value = """
             SELECT id FROM album
@@ -54,4 +54,3 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
             """)
     List<Long> findAlbumIdsByAuthorIdsAndSubsStatus(List<Long> authorIds);
 }
-
