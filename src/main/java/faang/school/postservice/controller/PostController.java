@@ -37,7 +37,6 @@ public class PostController {
         Post post = postMapper.toEntity(postDto);
         Post createdPost = postService.createDraftPost(post);
 
-
         return postMapper.toDto(createdPost);
     }
 
