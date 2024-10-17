@@ -56,7 +56,7 @@ public class Post {
     private Ad ad;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Resource> resources;
+    private List<ResourceEntity> resourceEntities;
 
     @Column(name = "published", nullable = false)
     private boolean published;
@@ -81,4 +81,10 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "verified")
+    private boolean verified;
+
+    @Column(name = "ai_spell_check")
+    private boolean spellCheck;
 }

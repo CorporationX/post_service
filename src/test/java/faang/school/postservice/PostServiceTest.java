@@ -3,10 +3,13 @@ package faang.school.postservice;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.post.SpellCheckerDto;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.tools.YandexSpeller;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,9 +28,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,6 +51,9 @@ public class PostServiceTest {
 
     @Mock
     private UserContext userContext;
+
+    @Mock
+    private YandexSpeller yandexSpeller;
 
     @Mock
     private ExecutorService executorService;
@@ -212,5 +221,47 @@ public class PostServiceTest {
         assertNotNull(post2.getPublishedAt());
 
         verify(postRepository, times(1)).saveAll(anyList());
+    }
+
+    @Test
+    public void testCorrectAllDraftPosts_CorrectText() {
+        String wordWithError = "Helo world";
+        String wordWithoutError = "Hello world";
+
+        List<Post> draftPosts = new ArrayList<>();
+        Post post = new Post();
+        post.setContent(wordWithError);
+        draftPosts.add(post);
+
+        List<SpellCheckerDto> checkers = new ArrayList<>();
+        checkers.add(new SpellCheckerDto());
+        when(postRepository.findAllDraftsWithoutSpellCheck()).thenReturn(draftPosts);
+        when(yandexSpeller.checkText(wordWithError)).thenReturn(checkers);
+        when(yandexSpeller.correctText(anyString(), anyList())).thenReturn(wordWithoutError);
+
+        postService.correctAllDraftPosts();
+
+        assertEquals(wordWithoutError, post.getContent());
+        assertTrue(post.isSpellCheck());
+        verify(postRepository, times(1)).saveAll(draftPosts);
+    }
+
+    @Test
+    public void testCorrectAllDraftPosts_NoCorrections() {
+        String wordWithoutError = "Hello world";
+
+        List<Post> draftPosts = new ArrayList<>();
+        Post post = new Post();
+        post.setContent(wordWithoutError);
+        draftPosts.add(post);
+
+        when(postRepository.findAllDraftsWithoutSpellCheck()).thenReturn(draftPosts);
+        when(yandexSpeller.checkText(wordWithoutError)).thenReturn(new ArrayList<>());
+
+        postService.correctAllDraftPosts();
+
+        assertEquals(wordWithoutError, post.getContent());
+        assertTrue(post.isSpellCheck());
+        verify(postRepository, times(1)).saveAll(draftPosts);
     }
 }

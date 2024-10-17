@@ -3,12 +3,15 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.post.SpellCheckerDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.tools.YandexSpeller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,12 +21,14 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
+    private final YandexSpeller yandexSpeller;
     private final ExecutorService executorService;
 
     @Transactional
@@ -57,6 +62,7 @@ public class PostService {
     public Post updatePost(Long id, String content) {
         Post existingPost = postRepository.findById(id).orElseThrow(() -> new PostRequirementsException("Post not found"));
         updateContent(existingPost, content);
+        existingPost.setSpellCheck(false);
         return postRepository.save(existingPost);
     }
 
@@ -90,6 +96,28 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<Post> getProjectPublishedPosts(long projectId) {
         return postRepository.findPublishedByProjectId(projectId);
+    }
+
+    @Transactional
+    public void correctAllDraftPosts() {
+        List<Post> draftPosts = postRepository.findAllDraftsWithoutSpellCheck();
+
+        draftPosts.forEach(post -> {
+            String text = post.getContent();
+            List<SpellCheckerDto> checkers = yandexSpeller.checkText(text);
+            if (!checkers.isEmpty()) {
+                String correctedText = yandexSpeller.correctText(text, checkers);
+                post.setContent(correctedText);
+            }
+            post.setSpellCheck(true);
+        });
+
+        postRepository.saveAll(draftPosts);
+    }
+
+
+    public List<Long> getAuthorsWithExcessVerifiedFalsePosts() {
+        return postRepository.findAuthorsWithExcessVerifiedFalsePosts();
     }
 
     private void validateAuthorOrProject(Post post) {

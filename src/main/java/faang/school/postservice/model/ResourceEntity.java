@@ -2,6 +2,8 @@ package faang.school.postservice.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,13 +26,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "post_resource")
-public class Resource {
+public class ResourceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "key", nullable = false, length = 50)
+    @Column(name = "key", nullable = false)
     private String key;
 
     @Column(name = "size")
@@ -45,7 +47,8 @@ public class Resource {
     private String name;
 
     @Column(name = "type", length = 50)
-    private String type;
+    @Enumerated(EnumType.STRING)
+    private ResourceType type;
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
