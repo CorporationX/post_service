@@ -39,7 +39,7 @@ public class PostController {
         return postService.updatePost(postDto);
     }
 
-    @PutMapping("/notification")
+    @PutMapping("/comment")
     public void commentEvent(@RequestBody CommentEvent commentEvent) {
         commentEventPublisher.publish(commentEvent);
     }
