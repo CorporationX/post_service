@@ -1,7 +1,7 @@
 package faang.school.postservice.validator.like;
 
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.model.Likeable;
+import faang.school.postservice.model.entity.Likeable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.repository.JpaRepository;

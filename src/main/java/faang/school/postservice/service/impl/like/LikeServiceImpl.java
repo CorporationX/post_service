@@ -2,12 +2,13 @@ package faang.school.postservice.service.impl.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.model.dto.like.LikeDto;
-import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.model.event.LikeEvent;
 import faang.school.postservice.mapper.like.LikeMapper;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.entity.Comment;
+import faang.school.postservice.model.entity.Like;
+import faang.school.postservice.model.entity.Post;
+import faang.school.postservice.model.dto.like.LikeDto;
+import faang.school.postservice.model.dto.user.UserDto;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -33,7 +34,6 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final LikeEventPublisher likeEventPublisher;
-
 
     @Override
     @Transactional
@@ -72,20 +72,28 @@ public class LikeServiceImpl implements LikeService {
     public LikeDto createLikePost(Long postId) {
         long userId = getUserId();
         Post post = likeValidator.validate(postId, userId, postRepository);
-        var like = Like.builder()
-                .userId(userId)
-                .post(post)
-                .build();
+        log.info("Creating a like for a post with ID {}", postId);
 
-        var likeEvent = LikeEvent.builder()
-                .postId(postId)
-                .userId(userId)
-                .likedTime(LocalDateTime.now())
-                .build();
+        Like saveLike = saveLikePost(post, userId);
+        LikeEvent likeEventDto = new LikeEvent(post.getAuthorId(),
+                userId,
+                postId,
+                LocalDateTime.now());
+        likeEventPublisher.publish(likeEventDto);
 
-        var likeDto = likeMapper.toLikeDto(likeRepository.save(like));
-        likeEventPublisher.publish(likeEvent);
-        return likeDto;
+        log.info("Created a like with ID {} from a user with ID {} to a post with ID {}",
+                saveLike.getId(),
+                userId,
+                postId);
+        return likeMapper.toLikeDto(saveLike);
+    }
+
+    private Like saveLikePost(Post post, long userId) {
+        Like like = new Like();
+        like.setUserId(userId);
+        like.setPost(post);
+        likeRepository.save(like);
+        return like;
     }
 
     @Override
@@ -98,6 +106,7 @@ public class LikeServiceImpl implements LikeService {
 
     private long getUserId() {
         long userId = userContext.getUserId();
-        return userServiceClient.getUser(userId).id();
+        UserDto userDto = userServiceClient.getUser(userId);
+        return userDto.id();
     }
 }

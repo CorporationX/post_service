@@ -5,7 +5,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.model.dto.project.ProjectDto;
 import faang.school.postservice.model.dto.user.UserDto;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.exception.DataValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

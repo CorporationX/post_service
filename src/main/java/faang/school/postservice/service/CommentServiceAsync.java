@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.entity.Comment;
 
 import java.util.List;
 
