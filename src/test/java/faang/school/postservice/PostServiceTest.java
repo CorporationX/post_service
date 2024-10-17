@@ -20,11 +20,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -196,25 +198,19 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testPublishScheduledPost() {
+    public void testPublishScheduledPosts() {
         Post post1 = new Post();
-        post1.setScheduledAt(LocalDateTime.now());
-        post1.setPublished(false);
         Post post2 = new Post();
-        post2.setPublishedAt(LocalDateTime.now());
-        post2.setPublished(false);
+        List<Post> posts = List.of(post1, post2);
 
-        List<Post> mockPosts = List.of(post1, post2);
+        postService.publishScheduledPosts(posts);
 
-        when(postRepository.findReadyToPublish()).thenReturn(mockPosts);
+        assertTrue(post1.isPublished());
+        assertNotNull(post1.getPublishedAt());
 
-        doAnswer(invocation -> {
-            Runnable task = invocation.getArgument(0);
-            task.run();
-            return null;
-        }).when(executorService).submit(any(Runnable.class));
+        assertTrue(post2.isPublished());
+        assertNotNull(post2.getPublishedAt());
 
-        postService.publishScheduledPosts();
-        verify(postRepository, times(1)).saveAll(mockPosts);
+        verify(postRepository, times(1)).saveAll(anyList());
     }
 }
