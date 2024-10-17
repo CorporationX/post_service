@@ -19,4 +19,9 @@ public class UserDto {
     private String username;
     @Schema(description = "User's email address", example = "vasya_super@mail.ru")
     private String email;
+    private String phone;
+    private String aboutMe;
+    private Long countryId;
+    private String city;
+    private String userProfilePicId;
 }
