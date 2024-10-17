@@ -1,4 +1,4 @@
-package faang.school.postservice.service.post.impl.async;
+package faang.school.postservice.service.post.impl.verifier;
 
 import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.model.Post;
