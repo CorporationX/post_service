@@ -1,4 +1,4 @@
-package faang.school.postservice.config.context.comment;
+package faang.school.postservice.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

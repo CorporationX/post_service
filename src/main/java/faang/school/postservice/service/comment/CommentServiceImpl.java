@@ -11,6 +11,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.MessagePublisher;
 import faang.school.postservice.service.comment.sort.CommentSortingStrategy;
 import faang.school.postservice.service.comment.sort.SortingStrategyAppliersMap;
 import jakarta.persistence.EntityNotFoundException;
@@ -102,7 +103,7 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.findUnverifiedComments(startDate);
     }
 
-    @Async("taskExecutor")
+    @Async("commonTaskExecutor")
     @Override
     public void verifyComments(List<Comment> comments) {
         comments.forEach(comment -> {

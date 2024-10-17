@@ -1,4 +1,4 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +17,6 @@ public class RedisMessagePublisher implements MessagePublisher {
     @Override
     public void publish(Long userId) {
         redisTemplate.convertAndSend(topic.getTopic(), userId);
-        log.info("publishUserToBan: userId = {}", userId);
+        log.info("Message published to Redis topic: {}", userId);
     }
 }
