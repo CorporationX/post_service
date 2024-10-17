@@ -1,12 +1,15 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.dto.CommentDto;
 import faang.school.postservice.model.dto.UserDto;
-import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.entity.Comment;
 import faang.school.postservice.model.entity.Post;
+import faang.school.postservice.model.event.CommentEvent;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.impl.CommentServiceImpl;
 import faang.school.postservice.validator.comment.CommentServiceValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,6 +51,12 @@ class CommentServiceTest {
     @Mock
     private CommentServiceValidator validator;
 
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
+
+    @Mock
+    private PostRepository postRepository;
+
     @InjectMocks
     private CommentServiceImpl commentService;
 
@@ -55,10 +65,13 @@ class CommentServiceTest {
 
     private CommentDto commentDto;
     private Comment comment;
+    private Post post;
     private Long userId;
 
     @BeforeEach
     void setUp() {
+        post = new Post();
+        post.setId(10L);
         commentDto = new CommentDto();
         commentDto.setPostId(10L);
         commentDto.setAuthorId(5L);
@@ -66,18 +79,21 @@ class CommentServiceTest {
         long commentId = 10L;
         comment = new Comment();
         comment.setId(commentId);
+        comment.setPost(post);
         userId = 5L;
     }
 
     @Test
     void createComment() {
-        when(userServiceClient.getUser(userId)).thenReturn(new UserDto(commentDto.getAuthorId(),
-                "User1", "email@somedomain.com"));
+        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
+        when(postRepository.findById(any(Long.class))).thenReturn(Optional.of(post));
 
-        commentService.createComment(commentDto,userId);
+        commentService.createComment(commentDto, userId);
 
-        verify(userServiceClient, times(1)).getUser(commentDto.getAuthorId());
-        verify(commentRepository, times(1)).save(commentCaptor.capture());
+        verify(commentRepository).save(commentCaptor.capture());
+        verify(postRepository).findById(any(Long.class));
+        verify(commentEventPublisher).publish(any(CommentEvent.class));
+
         Comment savedComment = commentCaptor.getValue();
         assertAll(
                 () -> assertEquals(commentDto.getContent(), savedComment.getContent()),
@@ -125,7 +141,7 @@ class CommentServiceTest {
                 "User1", "email@somedomain.com"));
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
-        commentService.updateComment(commentId, commentDto,userId);
+        commentService.updateComment(commentId, commentDto, userId);
 
         verify(userServiceClient, times(1)).getUser(commentDto.getAuthorId());
         verify(commentRepository, times(1)).save(commentCaptor.capture());
