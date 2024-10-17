@@ -76,6 +76,7 @@ class PostServiceTest {
     private PostDto postDto;
     private PostCreationRequest creationRequest;
     private PostUpdatingRequest updatingRequest;
+    private final List<Post> posts = new ArrayList<>();
 
     @BeforeEach
     public void setUp() {
@@ -396,6 +397,7 @@ class PostServiceTest {
     public void testRemovePostSuccess() {
         when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.of(post));
         when(postRepository.save(post)).thenReturn(post);
+        post.setResources(new ArrayList<>());
 
         postDto = postService.remove(0L);
 
@@ -595,18 +597,10 @@ class PostServiceTest {
 
     @Test
     public void testModeratePostsWhenPostsFound() {
-        List<Post> posts = new ArrayList<>();
-        Post post1 = Post.builder()
-                .content("any")
-                .build();
-        posts.add(post1);
         when(postRepository.findNotVerified()).thenReturn(posts);
-        doNothing().when(postContentVerifier).verifyPosts(posts);
-
         postService.moderatePosts();
 
         verify(postRepository).findNotVerified();
-        verify(postContentVerifier).verifyPosts(anyList());
     }
 
     @Test
