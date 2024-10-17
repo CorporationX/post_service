@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 
 @Service
 @Slf4j
@@ -29,7 +28,6 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
     private final YandexSpeller yandexSpeller;
-    private final ExecutorService executorService;
 
     @Transactional
     public Post createDraftPost(Post post) {
