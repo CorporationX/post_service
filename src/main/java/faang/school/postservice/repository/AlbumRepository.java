@@ -20,21 +20,21 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     @Query("SELECT a FROM Album a LEFT JOIN FETCH a.posts WHERE a.id = :id")
     Optional<Album> findByIdWithPosts(long id);
 
-    @Query(nativeQuery = true, value = "INSERT INTO favorite_albums (album_id, user_id) VALUES (:albumId, :userId)")
+    @Query(nativeQuery = true, value = "INSERT INTO favorite_albums (album_id, user_id) VALUES (:albumId, :authorId)")
     @Modifying
-    void addAlbumToFavorites(long albumId, long userId);
+    void addAlbumToFavorites(long albumId, long authorId);
 
-    @Query(nativeQuery = true, value = "DELETE FROM favorite_albums WHERE album_id = :albumId AND user_id = :userId")
+    @Query(nativeQuery = true, value = "DELETE FROM favorite_albums WHERE album_id = :albumId AND user_id = :authorId")
     @Modifying
-    void deleteAlbumFromFavorites(long albumId, long userId);
+    void deleteAlbumFromFavorites(long albumId, long authorId);
 
     @Query(nativeQuery = true, value = """
             SELECT * FROM album
             WHERE id IN (
-                SELECT album_id FROM favorite_albums WHERE user_id = :userId
+                SELECT album_id FROM favorite_albums WHERE user_id = :authorId
             )
             """)
-    Stream<Album> findFavoriteAlbumsByUserId(long userId);
+    Stream<Album> findFavoriteAlbumsByUserId(long authorId);
 
     @Query(nativeQuery = true, value = """
             SELECT id FROM album
@@ -44,9 +44,9 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     @Query(nativeQuery = true, value = """
             SELECT id FROM album
-            WHERE visibility = 'ONLY_AUTHOR' AND author_id = :userId
+            WHERE visibility = 'ONLY_AUTHOR' AND author_id = :authorId
             """)
-    List<Long> findAlbumsIdsOnlyAuthor(Long userId);
+    List<Long> findAlbumsIdsOnlyAuthor(Long authorId);
 
     @Query(nativeQuery = true, value = """
             SELECT id FROM album

@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.SpellCheckerDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publis.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.tools.YandexSpeller;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
     private final YandexSpeller yandexSpeller;
+    private final PostEventPublisher postEventPublisher;
 
     @Transactional
     public Post createDraftPost(Post post) {
@@ -42,7 +44,9 @@ public class PostService {
             throw new PostRequirementsException("This post is already published");
         }
         publish(existingPost);
-        return postRepository.save(existingPost);
+        Post savedPost =  postRepository.save(existingPost);
+        postEventPublisher.publish(savedPost);
+        return savedPost;
     }
 
     @Transactional

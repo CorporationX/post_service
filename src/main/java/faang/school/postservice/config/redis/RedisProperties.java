@@ -18,4 +18,7 @@ public class RedisProperties {
 
     @Value("${spring.data.redis.channels.comment_channel.name}")
     private String commentEventChannelName;
+
+    @Value("${spring.data.redis.channels.post_channel.name}")
+    private String postEventChannelName;
 }
