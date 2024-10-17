@@ -16,7 +16,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
     private final RedisDto redisDto;
 
-    @Value("${spring.data.redis.channels.like_channel.name}")
+    @Value("${spring.data.redis.channels.like_channel-name}")
     private String likeChannelName;
 
     @Bean
