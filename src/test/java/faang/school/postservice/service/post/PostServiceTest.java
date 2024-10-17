@@ -32,8 +32,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
-import java.util.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -76,7 +76,6 @@ class PostServiceTest {
     private PostDto postDto;
     private PostCreationRequest creationRequest;
     private PostUpdatingRequest updatingRequest;
-    private final List<Post> posts = new ArrayList<>();
 
     @BeforeEach
     public void setUp() {
@@ -596,7 +595,11 @@ class PostServiceTest {
 
     @Test
     public void testModeratePostsWhenPostsFound() {
-        posts.add(post);
+        List<Post> posts = new ArrayList<>();
+        Post post1 = Post.builder()
+                .content("any")
+                .build();
+        posts.add(post1);
         when(postRepository.findNotVerified()).thenReturn(posts);
         doNothing().when(postContentVerifier).verifyPosts(posts);
 

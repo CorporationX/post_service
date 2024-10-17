@@ -27,7 +27,7 @@ public class PostContentVerifierTest {
     private PostRepository postRepository;
 
     @InjectMocks
-    private PostContentVerifierImpl postServiceAsync;
+    private PostContentVerifierImpl postContentVerifier;
 
     private Set<String> banWords;
     private Post post;
@@ -46,7 +46,7 @@ public class PostContentVerifierTest {
                 .content("some text")
                 .build();
         List<Post> posts = List.of(post);
-        postServiceAsync.verifyPosts(posts);
+        postContentVerifier.verifyPosts(posts);
 
         assertTrue(post.isVerified());
         assertNotNull(post.getVerifiedDate());
@@ -62,7 +62,7 @@ public class PostContentVerifierTest {
                 .content("bad")
                 .build();
         List<Post> posts = List.of(post);
-        postServiceAsync.verifyPosts(posts);
+        postContentVerifier.verifyPosts(posts);
 
         assertFalse(post.isVerified());
         assertNotNull(post.getVerifiedDate());
