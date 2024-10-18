@@ -55,3 +55,8 @@ out/
 .vscode/
 
 /logs/
+
+.DS_Store
+
+### DOT ENV ###
+.env

@@ -27,4 +27,5 @@ public class PostResponseDto {
     private VerificationPostStatus verificationStatus;
     private LocalDateTime verifiedDate;
     private List<Long> resourceIds;
+    private Integer likes;
 }
