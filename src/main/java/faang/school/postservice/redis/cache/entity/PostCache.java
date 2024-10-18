@@ -12,7 +12,7 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.NavigableSet;
 
 @Getter
 @Setter
@@ -25,7 +25,7 @@ public class PostCache implements Serializable {
 
     @Id
     private long id;
-    private CopyOnWriteArraySet<CommentDto> comments;
+    private NavigableSet<CommentDto> comments;
     private long authorId;
     private String content;
     private LocalDateTime publishedAt;

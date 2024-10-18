@@ -10,26 +10,27 @@ import org.mapstruct.ReportingPolicy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostCacheMapper {
 
-    @Mapping(target = "comments", qualifiedByName = "mapListToCopyOnWriteArrayList")
+    @Mapping(target = "comments", qualifiedByName = "mapListToNavigableSet")
     PostCache toPostCache(PostDto postDto);
 
-    @Mapping(target = "comments", qualifiedByName = "mapCopyOnWriteArrayListToList")
+    @Mapping(target = "comments", qualifiedByName = "mapNavigableSetToList")
     PostDto toDto(PostCache postCache);
 
-    @Named("mapCopyOnWriteArrayListToList")
-    default List<CommentDto> mapCopyOnWriteArrayListToList(CopyOnWriteArraySet<CommentDto> comments) {
+    @Named("mapNavigableSetToList")
+    default List<CommentDto> mapNavigableSetToList(NavigableSet<CommentDto> comments) {
         if(comments == null) return null;
         return new ArrayList<>(comments);
     }
 
-    @Named("mapListToCopyOnWriteArrayList")
-    default CopyOnWriteArraySet<CommentDto> mapListToCopyOnWriteArrayList(List<CommentDto> comments) {
+    @Named("mapListToNavigableSet")
+    default NavigableSet<CommentDto> mapListToNavigableSet(List<CommentDto> comments) {
         if(comments == null) return null;
-        return new CopyOnWriteArraySet<>(comments);
+        return new TreeSet<>(comments);
     }
 }

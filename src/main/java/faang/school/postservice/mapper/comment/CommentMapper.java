@@ -3,6 +3,7 @@ package faang.school.postservice.mapper.comment;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentToCreateDto;
 import faang.school.postservice.dto.comment.CommentToUpdateDto;
+import faang.school.postservice.kafka.event.comment.CommentEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import org.mapstruct.Mapper;
@@ -22,6 +23,9 @@ public interface CommentMapper {
     @Mapping(source = "likes", target = "likesCount", qualifiedByName = "getCountFromLikeList")
     @Mapping(source = "post.id", target = "postId")
     CommentDto toDto(Comment comment);
+
+    @Mapping(target = "authorId", source = "userId")
+    CommentDto toDto(CommentEvent commentEvent);
 
     @Mapping(target = "id", ignore = true)
     void update(CommentToUpdateDto commentDto, @MappingTarget Comment comment);
