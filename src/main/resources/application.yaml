@@ -30,6 +30,8 @@ spring:
           name: like-channel
         comment-event-channel:
           name: comment_event_channel
+        post-channel:
+          name: post_channel
         comment-receiving:
           name: comment-receiving-topic
 

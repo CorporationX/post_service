@@ -25,7 +25,7 @@ public record PostDto(
         boolean deleted,
 
         @NotBlank(message = "Content can not be null or empty")
-        @Max(4096)
+        @Size(max = 4096)
         String content,
         boolean published,
 
@@ -35,7 +35,7 @@ public record PostDto(
         LocalDateTime publishedAt,
 
         @NotBlank(message = "Title can not be null or empty")
-        @Max(150)
+        @Size(max = 150)
         String title,
 
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

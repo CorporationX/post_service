@@ -3,6 +3,8 @@ package faang.school.postservice.service.impl.post;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.model.dto.post.PostDto;
+import faang.school.postservice.model.event.PostEvent;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.PostService;
@@ -31,6 +33,7 @@ public class PostServiceImpl implements PostService {
     private final HashtagService hashtagService;
     private final PostValidator postValidator;
     private final PostServiceAsync postServiceAsync;
+    private final PostEventPublisher postEventPublisher;
 
     @Value("${post.correcter.posts-batch-size}")
     private int batchSize;
@@ -57,8 +60,13 @@ public class PostServiceImpl implements PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
-        postRepository.save(post);
+        Post publishedPost = postRepository.save(post);
         hashtagService.createHashtags(post);
+        PostEvent event = PostEvent.builder()
+                .authorId(publishedPost.getAuthorId())
+                .postId(publishedPost.getId())
+                .build();
+        postEventPublisher.publish(event);
 
         return postMapper.toDto(post);
     }
