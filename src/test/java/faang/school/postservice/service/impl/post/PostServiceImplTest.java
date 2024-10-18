@@ -1,8 +1,13 @@
 package faang.school.postservice.service.impl.post;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.mapper.post.PostMapperImpl;
+import faang.school.postservice.model.dto.user.UserDto;
 import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.model.dto.post.PostDto;
+import faang.school.postservice.model.event.PostEvent;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.impl.post.async.PostServiceAsyncImpl;
@@ -27,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -55,9 +61,19 @@ public class PostServiceImplTest {
     @Mock
     private PostServiceAsyncImpl postServiceAsync;
 
+    @Mock
+    private PostEventPublisher postEventPublisher;
+
+    @Mock
+    private UserContext userContext;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
     private PostDto examplePostDto;
     private Post examplePost;
     private LocalDateTime timeInstance;
+    private UserDto userDto;
 
     @BeforeEach
     void setUp() {
@@ -81,6 +97,10 @@ public class PostServiceImplTest {
                 .title("Title")
                 .verified(null)
                 .verifiedDate(null)
+                .build();
+
+        userDto = UserDto.builder()
+                .id(1L)
                 .build();
 
         ReflectionTestUtils.setField(postService, "batchSize", 1);
@@ -156,13 +176,16 @@ public class PostServiceImplTest {
     void getPost_shouldReturnPostDto() {
         // Arrange
         when(postRepository.findById(1L)).thenReturn(Optional.ofNullable(examplePost));
-
+        when(userContext.getUserId()).thenReturn(1L);
+        when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
         // Act
         PostDto result = postService.getPost(1L);
 
         // Assert
         assertEquals(examplePostDto, result);
         verify(postRepository, times(1)).findById(1L);
+        verify(postEventPublisher, times(1))
+                .publish(any(PostEvent.class));
     }
 
     @Test

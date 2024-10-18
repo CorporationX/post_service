@@ -1,8 +1,13 @@
 package faang.school.postservice.service.impl.post;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.model.dto.post.PostDto;
+import faang.school.postservice.model.dto.user.UserDto;
+import faang.school.postservice.model.entity.Post;
+import faang.school.postservice.model.event.PostEvent;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.PostService;
@@ -31,6 +36,9 @@ public class PostServiceImpl implements PostService {
     private final HashtagService hashtagService;
     private final PostValidator postValidator;
     private final PostServiceAsync postServiceAsync;
+    private final UserContext userContext;
+    private final UserServiceClient userServiceClient;
+    private final PostEventPublisher postEventPublisher;
 
     @Value("${post.correcter.posts-batch-size}")
     private int batchSize;
@@ -94,7 +102,13 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDto getPost(Long id) {
         Post post = getPostFromRepository(id);
-
+        PostEvent postEvent = PostEvent.builder()
+                .postId(post.getId())
+                .authorPostId(post.getAuthorId())
+                .viewUserId(getUser().id())
+                .viewTime(LocalDateTime.now())
+                .build();
+        postEventPublisher.publish(postEvent);
         return postMapper.toDto(post);
     }
 
@@ -185,5 +199,10 @@ public class PostServiceImpl implements PostService {
     private Post getPostFromRepository(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found with id: " + postId));
+    }
+
+    private UserDto getUser() {
+        long id = userContext.getUserId();
+        return userServiceClient.getUser(id);
     }
 }
