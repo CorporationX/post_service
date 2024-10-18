@@ -14,6 +14,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Qualifier("listRedisTemplate")
 public class AuthorBannerScheduler {
 
     private final RedisTemplate<String, List<Long>> redisTemplate;
