@@ -9,4 +9,4 @@ DROP TABLE IF EXISTS album;
 DROP TABLE IF EXISTS resource_id;
 DROP TABLE IF EXISTS resource;
 
-DELETE FROM databasechangelog;
+DELETE FROM databasechangelog where filename = 'post_V005__alter_post.sql';

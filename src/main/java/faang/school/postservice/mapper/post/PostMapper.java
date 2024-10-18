@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.redisCache.PostCache;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -22,10 +23,14 @@ public interface PostMapper {
     @Mapping(source = "albums", target = "albumIds", qualifiedByName = "mapAlbums")
     @Mapping(source = "ad.id", target = "adId")
     @Mapping(source = "resources", target = "resourceIds", qualifiedByName = "mapResources")
-    @Mapping(target = "numLikes", expression = "java(mapLikesToNumLikes(entity.getLikes()))")
+    @Mapping(target = "numberLikes", expression = "java(mapLikesToNumLikes(entity.getLikes()))")
     PostDto toDto(Post entity);
 
+    PostDto toDto(PostCache postCache);
+
     Post toEntity(PostDto dto);
+
+    PostCache toPostCache(Post entity);
 
     @Named("mapLikes")
     default List<Long> mapLikesToLikeIds(List<Like> likes) {

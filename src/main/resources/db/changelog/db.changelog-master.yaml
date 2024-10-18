@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003__resource.sql
   - include:
       file: db/changelog/changeset/post_V004__insert_post.sql
+  - include:
+      file: db/changelog/changeset/post_V005__alter_post.sql

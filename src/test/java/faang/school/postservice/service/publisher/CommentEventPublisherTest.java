@@ -1,6 +1,6 @@
 package faang.school.postservice.service.publisher;
 
-import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
+import faang.school.postservice.service.publisher.messagePublishers.CommentEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

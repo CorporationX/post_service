@@ -3,7 +3,7 @@ package faang.school.postservice.service.publisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.event.CommentEvent;
-import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
+import faang.school.postservice.service.publisher.messagePublishers.CommentEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

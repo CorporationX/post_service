@@ -9,7 +9,7 @@ import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.ResourceRepository;
-import faang.school.postservice.repository.ad.AdRepository;
+import faang.school.postservice.repository.AdRepository;
 import faang.school.postservice.util.container.PostContainer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

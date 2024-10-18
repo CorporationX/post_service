@@ -12,6 +12,11 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
         format_sql: true
 
   liquibase:
@@ -21,11 +26,41 @@ spring:
     redis:
       port: 6379
       host: localhost
+      cache:
+        post:
+          ttl: 86400
+        feed:
+          limit: 500
       channels:
         like_event_channel: like_event_channel
         calculations_channel:
           name: calculations_channel
         comment: comment_channel
+
+    kafka:
+      bootstrap_servers: localhost:9092
+      acknowledgment_nack_sec: 5
+
+      consumer:
+        auto_offset_reset: earliest
+        group_id: my_group
+
+      topics:
+        post:
+          name: post_topic
+          consumer_group: group_1
+        like:
+          name: like_topic
+        comment:
+          name: comment_topic
+        post_view:
+          name: post-views
+          delay_minutes: 5
+          period_minutes: 5
+          pool_size: 1
+
+  messages:
+    basename: messages
 
 server:
   port: 8081

@@ -1,0 +1,2 @@
+ALTER TABLE post
+ADD COLUMN number_views BIGINT DEFAULT 0;

@@ -1,5 +1,7 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.event.PostEvent;
+import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.filter.PostFilterDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -9,10 +11,12 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -24,6 +28,9 @@ public class PostService {
     private final PostMapper mapper;
     private final PostDataPreparer preparer;
     private final List<PostFilter> postFilters;
+    private final CacheService cacheService;
+    private final ProducerService producerService;
+    private final MessageSource messageSource;
 
     public PostDto create(PostDto postDto) {
         validator.validateBeforeCreate(postDto);
@@ -31,10 +38,16 @@ public class PostService {
         Post postEntity = mapper.toEntity(postDto);
         postEntity = preparer.prepareForCreate(postDto, postEntity);
 
-        Post createdEntity = postRepository.save(postEntity);
-        log.info("Created a post: {}", createdEntity);
+        Post createdPost = postRepository.save(postEntity);
+        log.info("Created a post: {}", createdPost);
 
-        return mapper.toDto(createdEntity);
+        if (createdPost.isPublished()) {
+            cachePublishedPost(createdPost);
+        }
+
+        producerService.sendPostEvent(preparer.createPostEvent(PostEvent.EventType.CREATE, createdPost));
+
+        return mapper.toDto(createdPost);
     }
 
     public PostDto publish(Long postId) {
@@ -43,20 +56,25 @@ public class PostService {
         Post publishedPost = preparer.prepareForPublish(entity);
 
         publishedPost = postRepository.save(publishedPost);
-        log.info("Published post: {}", publishedPost);
+        cachePublishedPost(publishedPost);
+        producerService.sendPostEvent(preparer.createPostEvent(PostEvent.EventType.CREATE, publishedPost));
 
         return mapper.toDto(publishedPost);
     }
+
 
     public PostDto update(PostDto postDto) {
         Post entity = getPostEntity(postDto.getId());
         validator.validateBeforeUpdate(postDto, entity);
 
-        Post updatedEntity = preparer.prepareForUpdate(postDto, entity);
-        updatedEntity = postRepository.save(updatedEntity);
-        log.info("Updated post: {}", updatedEntity);
+        Post updatedPost = preparer.prepareForUpdate(postDto, entity);
+        updatedPost = postRepository.save(updatedPost);
+        log.info("Updated post: {}", updatedPost);
 
-        return mapper.toDto(updatedEntity);
+        cacheService.savePost(mapper.toPostCache(updatedPost));
+        producerService.sendPostEvent(preparer.createPostEvent(PostEvent.EventType.UPDATE, updatedPost));
+
+        return mapper.toDto(updatedPost);
     }
 
     public PostDto delete(Long postId) {
@@ -66,14 +84,26 @@ public class PostService {
         entity.setPublished(false);
         entity.setDeleted(true);
         entity.setUpdatedAt(LocalDateTime.now());
-        Post deletedEntity = postRepository.save(entity);
-        log.info("Deleted post: {}", deletedEntity);
+        Post deletedPost = postRepository.save(entity);
+        log.info("Deleted post: {}", deletedPost);
 
-        return mapper.toDto(deletedEntity);
+        cacheService.deletePost(mapper.toPostCache(deletedPost));
+        producerService.sendPostEvent(preparer.createPostEvent(PostEvent.EventType.DELETE, deletedPost));
+
+        return mapper.toDto(deletedPost);
     }
 
     public PostDto getPost(Long postId) {
-        return mapper.toDto(getPostEntity(postId));
+        PostDto viewedPostDto = cacheService.getPost(postId)
+                .map(mapper::toDto)
+                .orElse(null);
+
+        if (viewedPostDto == null) {
+            viewedPostDto = mapper.toDto(getPostEntity(postId));
+        }
+
+        producerService.sendPostView(new PostViewEvent(viewedPostDto.getId()));
+        return viewedPostDto;
     }
 
     public List<PostDto> getFilteredPosts(PostFilterDto filters) {
@@ -88,6 +118,15 @@ public class PostService {
     }
 
     private Post getPostEntity(Long postId) {
-        return postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Такого сообщения не существует."));
+        return postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException(
+                messageSource.getMessage("exception.post_entity_not_found", new Object[]{postId}, Locale.getDefault())));
     }
+
+    private void cachePublishedPost(Post publishedPost) {
+        log.info("Published post: {}", publishedPost);
+
+        cacheService.saveUser(publishedPost.getAuthorId());
+        cacheService.savePost(mapper.toPostCache(publishedPost));
+    }
+
 }

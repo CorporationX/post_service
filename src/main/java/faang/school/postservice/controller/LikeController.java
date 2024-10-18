@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.service.LikeService;
+import faang.school.postservice.service.like.LikeService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +25,10 @@ public class LikeController {
     }
 
     @DeleteMapping("/unlike")
-    public LikeDto deletePostLike(
+    public void deletePostLike(
             @PathVariable @Min(MIN_ID) Long postId,
             @RequestBody @Valid LikeDto dto) {
-        return service.deletePostLike(postId, dto);
+        service.deletePostLike(postId, dto);
     }
 
     @PutMapping("/comment/{commentId}/like")
@@ -40,10 +40,10 @@ public class LikeController {
     }
 
     @DeleteMapping("/comment/{commentId}/unlike")
-    public LikeDto deleteCommentLike(
+    public void deleteCommentLike(
             @PathVariable @Min(MIN_ID) Long postId,
             @PathVariable @Min(MIN_ID) Long commentId,
             @RequestBody @Valid LikeDto dto) {
-        return service.deleteCommentLike(postId, commentId, dto);
+        service.deleteCommentLike(postId, commentId, dto);
     }
 }

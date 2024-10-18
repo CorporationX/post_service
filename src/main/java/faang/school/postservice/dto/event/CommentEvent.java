@@ -10,8 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class CommentEvent {
-    private Long id;
-    private String content;
-    private Long authorId;
-    private Long postId;
+  private Long id;
+  private String content;
+  private Long authorId;
+  private Long postId;
+  private LikeEvent.EventType eventType;
+
+  public static enum EventType {
+    CREATE, DELETE
+  }
 }

@@ -13,11 +13,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentDto {
-    private Long id;
-    private String content;
-    private Long authorId;
-    private List<Long> likesId;
-    private Long postId;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+  private Long id;
+  private String content;
+  private Long authorId;
+  private List<Long> likesId;
+  private Long likeCount;
+  private Long postId;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
 }

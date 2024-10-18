@@ -1,4 +1,4 @@
-package faang.school.postservice.repository.ad;
+package faang.school.postservice.repository;
 
 import faang.school.postservice.model.ad.Ad;
 import org.springframework.data.jpa.repository.Query;
