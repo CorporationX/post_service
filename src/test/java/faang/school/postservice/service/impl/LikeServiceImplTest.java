@@ -2,12 +2,14 @@ package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -32,18 +34,28 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceImplTest {
+
     @InjectMocks
     private LikeServiceImpl likeService;
+
     @Mock
     public PostRepository postRepository;
+
     @Mock
     public CommentRepository commentRepository;
+
     @Spy
     public LikeMapperImpl likeMapperImpl;
+
     @Mock
     private LikeRepository likeRepository;
+
     @Mock
     private UserServiceClient userServiceClient;
+
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
+
     private List<Like> likes1;
     private List<Like> likes2;
     private Post post;
@@ -110,12 +122,18 @@ class LikeServiceImplTest {
         post.setId(postId);
         post.setLikes(new ArrayList<>());
         post.setComments(new ArrayList<>());
-        like1.setPost(post);
+
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(likeMapperImpl.toLike(likeDto)).thenReturn(like1);
+        doNothing().when(likeEventPublisher).publish(any(LikeEvent.class));
+        when(likeRepository.save(any(Like.class))).thenReturn(like1);
 
         likeService.addLikeToPost(likeDto, postId);
 
+        verify(likeEventPublisher, times(1)).publish(any(LikeEvent.class));
         verify(likeRepository, times(1)).save(like1);
+        verify(userServiceClient, times(1)).getUser(like1.getUserId());
+        verify(postRepository, times(1)).findById(postId);
     }
 
     @Test
