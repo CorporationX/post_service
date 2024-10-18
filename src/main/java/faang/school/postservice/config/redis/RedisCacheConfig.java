@@ -29,10 +29,10 @@ import java.util.List;
 public class RedisCacheConfig {
 
     @Value("${spring.data.redis.lock-registry.lockSettings.default.name}")
-    private final String defaultLockSettings;
+    private String defaultLockSettings;
 
     @Value("${spring.data.redis.lock-registry.lockSettings.feed.name}")
-    private final String feedLockSettings;
+    private String feedLockSettings;
 
     private final RedisLockRegistryProperty redisLockRegistryProperty;
     private final RedisCacheProperty redisCacheProperty;

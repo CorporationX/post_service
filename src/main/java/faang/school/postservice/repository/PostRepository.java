@@ -55,7 +55,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p " +
             "WHERE p.published = true AND " +
             "p.deleted = false AND " +
-            "p.authorId IN :authors AND " +
+            "p.authorId IN :authors " +
             "ORDER BY p.publishedAt DESC " +
             "LIMIT :countPosts")
     List<Post> findByAuthorsAndLimit(List<Long> authors, int countPosts);
