@@ -44,13 +44,15 @@ public class RedisFeedRepository {
 
     public List<Long> getPostIds(Long userId, LocalDateTime lastSeenDate) {
         String key = FEED_KEY_PREFIX + userId;
-        double maxScore = Double.POSITIVE_INFINITY;
+        Set<Object> postIds;
 
-        if (lastSeenDate != null) {
-            maxScore = lastSeenDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        if (lastSeenDate == null) {
+            postIds = cacheRedisTemplate.opsForZSet().reverseRange(key, 0, pageSize);
+        } else {
+            double maxScore = lastSeenDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - 1;
+            postIds = cacheRedisTemplate.opsForZSet()
+                    .reverseRangeByScore(key, 0, maxScore, 0, pageSize);
         }
-
-        Set<Object> postIds = cacheRedisTemplate.opsForZSet().reverseRangeByScore(key, 0, maxScore, 0, pageSize);
 
         if (postIds == null || postIds.isEmpty()) {
             return Collections.emptyList();

@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,6 +21,10 @@ public class RedisUserRepository {
     public void save(UserDto userDto) {
         String key = USER_KEY_PREFIX + userDto.getId();
         cacheRedisTemplate.opsForValue().set(key, userDto, Duration.ofSeconds(ttl));
+    }
+
+    public void save(List<UserDto> userDtos) {
+        userDtos.forEach(this::save);
     }
 
     public UserDto get(Long userId) {
