@@ -25,4 +25,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.verifiedDate IS NULL")
     List<Post> findReadyToVerified();
+
+    @Query(nativeQuery = true, value = """
+        SELECT author_id 
+        FROM post p
+        WHERE p.verified = false AND p.verified_date IS NOT NULL
+        GROUP BY p.author_id
+        HAVING COUNT(*) >= :limit
+        """)
+    List<Long> findAuthorsWithUnverifiedPosts(int limit);
 }

@@ -2,9 +2,9 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.dto.event.LikePostEvent;
+import faang.school.postservice.event.like.LikePostEvent;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.service.publisher.LikePostEventPublisher;
+import faang.school.postservice.publisher.like.LikePostEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

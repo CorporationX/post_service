@@ -48,6 +48,10 @@ public class PostService {
                 .toList();
     }
 
+    public List<Long> findAuthorsWithUnverifiedPosts(int limit) {
+        return postRepository.findAuthorsWithUnverifiedPosts(limit);
+    }
+
     @Async("executor")
     public void moderatePostsContent() {
         List<Post> unverifiedPosts = postRepository.findReadyToVerified();

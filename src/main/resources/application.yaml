@@ -28,6 +28,8 @@ spring:
           name: calculations_channel
         likePostChannel:
           name: like_post_channel
+        userBanChannel:
+          name: user_ban
 
 server:
   port: 8081
@@ -53,6 +55,10 @@ post:
       file-path: "src/main/resources/moderation/dictionary.txt"
     sublist:
       length: 10
+  author-banner:
+    schedule:
+      cron: "0 0/10 * * * ?" # event 10 minutes
+    unverified-posts-limit: 5
 
 user-service:
   host: localhost
