@@ -19,13 +19,14 @@ spring:
 
   data:
     redis:
-      port: 6379
+      port: 6380
       host: localhost
       channels:
         calculations-channel: calculations_channel
         user-service: ban_user_channel
       topics:
         comment_event_topic: commentEventQueue
+        like_event_topic: like_event_topic
 
   kafka:
     bootstrap-servers: "localhost:9092"

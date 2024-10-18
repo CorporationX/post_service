@@ -2,19 +2,20 @@ package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.topic.CommentEventTopic;
+import faang.school.postservice.topic.LikeEventTopic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+// need AbstractEventPublisher<T>
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class CommentEventPublisher implements MessagePublisher {
+public class LikeEventPublisher implements MessagePublisher {
 
     private final RedisTemplate<String, String> redisTemplate;
-    private final CommentEventTopic topic;
+    private final LikeEventTopic topic;
     private final ObjectMapper objectMapper;
 
     @Override

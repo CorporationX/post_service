@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
@@ -9,6 +10,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,12 +31,14 @@ import java.util.List;
 @Validated
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
+
     public final PostRepository postRepository;
     public final CommentRepository commentRepository;
     public final LikeMapper likeMapper;
     private final LikeRepository likeRepository;
     private final UserServiceClient client;
     private final UserServiceClient userServiceClient;
+    private final LikeEventPublisher likeEventPublisher;
 
     @Override
     public void addLikeToPost(@Valid LikeDto likeDto, long postId) {
@@ -44,6 +49,9 @@ public class LikeServiceImpl implements LikeService {
         checkUser(like.getUserId());
         validatePostAndCommentLikes(post, like);
         like.setPost(post);
+
+        publishLikeEvent(like, post);
+
         likeRepository.save(like);
     }
 
@@ -178,5 +186,15 @@ public class LikeServiceImpl implements LikeService {
         }
 
         return response;
+    }
+
+    private void publishLikeEvent(Like like, Post post) {
+        LikeEvent likeEvent = LikeEvent.builder()
+                .authorLikeId(like.getUserId())
+                .authorPostId(post.getId())
+                .createdAt(LocalDateTime.now())
+                .build();
+        likeEventPublisher.publish(likeEvent);
+        log.info("Like event published to topic, event: {}", likeEvent);
     }
 }
