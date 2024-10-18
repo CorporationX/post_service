@@ -5,7 +5,6 @@ import faang.school.postservice.topic.PostTopic;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.RedisTemplate;
 
 @Configuration
 public class RedisPubSubConfig {
@@ -23,10 +22,5 @@ public class RedisPubSubConfig {
     @Bean
     PostTopic postTopic() {
         return new PostTopic(postTopic);
-    }
-
-    @Bean
-    RedisTemplate<String, String> redisTemplate() {
-        return new RedisTemplate<>();
     }
 }
