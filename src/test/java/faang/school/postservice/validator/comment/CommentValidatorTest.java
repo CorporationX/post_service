@@ -2,8 +2,8 @@ package faang.school.postservice.validator.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.model.dto.user.UserDto;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.entity.Comment;
+import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;

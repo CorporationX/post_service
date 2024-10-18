@@ -1,4 +1,4 @@
-package faang.school.postservice.model;
+package faang.school.postservice.model.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,35 +12,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "comment")
-public class Comment implements Likeable {
+@Table(name = "album")
+public class Album {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "content", nullable = false, length = 4096)
-    private String content;
+    @Column(name = "title", nullable = false, length = 256)
+    private String title;
+
+    @Column(name = "description", nullable = false, length = 4096)
+    private String description;
 
     @Column(name = "author_id", nullable = false)
     private long authorId;
 
-    @OneToMany(mappedBy = "comment", orphanRemoval = true)
-    private List<Like> likes;
-
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
-
-    @Column(name = "verified")
-    private Boolean verified;
-
-    @Column(name = "verified_date")
-    private LocalDateTime verifiedDate;
+    @ManyToMany
+    @JoinTable(name = "post_album", joinColumns = @JoinColumn(name = "album_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
+    private List<Post> posts;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
@@ -51,4 +45,12 @@ public class Comment implements Likeable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void addPost(Post post) {
+        posts.add(post);
+    }
+
+    public void removePost(long postId) {
+        posts.removeIf(post -> post.getId() == postId);
+    }
 }

@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class LikeController {
     private final LikeService likeService;
 
-
     @PostMapping("/commentId/{commentId}")
     public LikeDto createLikeComment(@PathVariable @Positive Long commentId) {
         return likeService.createLikeComment(commentId);

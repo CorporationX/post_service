@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.model.event.LikeEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,26 +11,26 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class LikeEventPublisherTest {
+
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
 
     @Mock
-    private ChannelTopic channelTopic;
+    private ChannelTopic topic;
 
     @InjectMocks
-    private LikeEventPublisher likeEventPublisher;
+    private LikeEventPublisher publisher;
 
     @Test
-    @DisplayName("Send Event Test")
-    void testSendEvent() {
-        var likeEvent = LikeEvent.builder()
-                .postId(1)
-                .build();
-
-        likeEventPublisher.publish(likeEvent);
-        verify(redisTemplate).convertAndSend(channelTopic.getTopic(), likeEvent);
+    @DisplayName("Publish Like Event Test")
+    void testPublish() {
+        var likeEvent = LikeEvent.builder().build();
+        publisher.publish(likeEvent);
+        verify(redisTemplate).convertAndSend(topic.getTopic(), likeEvent);
+        verifyNoMoreInteractions(redisTemplate);
     }
 }

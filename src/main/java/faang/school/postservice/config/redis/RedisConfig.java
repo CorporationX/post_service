@@ -19,22 +19,22 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
+
     private final ObjectMapper objectMapper;
 
     @Value("${spring.data.redis.host}")
     private String host;
-
     @Value("${spring.data.redis.port}")
     private int port;
 
     @Value("${spring.data.redis.channels.like-channel.name}")
-    private String likeChannelName;
+    private String likeEvent;
+    @Value("${spring.data.redis.channels.comment-event-channel.name}")
+    private String commentEvent;
 
     @Value("${spring.data.redis.channels.user-ban.name}")
-    private String userBanTopic;
+    private String userBanEvent;
 
-    @Value("${spring.data.redis.channels.comment-receiving.name}")
-    private String commentReceivingTopic;
     @Value("${spring.data.redis.channels.post-channel.name}")
     private String postEventChannel;
 
@@ -57,9 +57,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer =
                 new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
         redisTemplate.setConnectionFactory(redisConnectionFactory());
@@ -69,18 +68,18 @@ public class RedisConfig {
     }
 
     @Bean
+    public ChannelTopic likeTopic() {
+        return new ChannelTopic(likeEvent);
+    }
+
+    @Bean
     public ChannelTopic userBanTopic() {
-        return new ChannelTopic(userBanTopic);
+        return new ChannelTopic(userBanEvent);
     }
 
     @Bean
-    public ChannelTopic commentReceivingTopic() {
-        return new ChannelTopic(commentReceivingTopic);
-    }
-
-    @Bean
-    public ChannelTopic likeChannelTopic() {
-        return new ChannelTopic(likeChannelName);
+    public ChannelTopic commentTopic() {
+        return new ChannelTopic(commentEvent);
     }
 
     @Bean

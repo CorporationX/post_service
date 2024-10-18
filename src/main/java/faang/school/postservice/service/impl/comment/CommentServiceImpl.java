@@ -1,10 +1,10 @@
 package faang.school.postservice.service.impl.comment;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.event.BanEvent;
-import faang.school.postservice.event.CommentEvent;
+import faang.school.postservice.model.event.BanEvent;
+import faang.school.postservice.model.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.entity.Comment;
 import faang.school.postservice.model.dto.comment.CommentRequestDto;
 import faang.school.postservice.model.dto.comment.CommentResponseDto;
 import faang.school.postservice.publisher.CommentEventPublisher;
@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CommentServiceImpl implements CommentService {
+
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
@@ -48,19 +49,17 @@ public class CommentServiceImpl implements CommentService {
         var comment = commentMapper.toEntity(dto);
         comment.setAuthorId(userId);
         comment.setPost(post);
-
-        var savedComment = commentMapper.toResponseDto(commentRepository.save(comment));
-        var commentEvent = CommentEvent.builder()
-                .commentAuthorId(savedComment.authorId())
+        Comment savedComment = commentRepository.save(comment);
+        CommentEvent event = CommentEvent.builder()
+                .commentAuthorId(savedComment.getAuthorId())
                 .username(user.username())
                 .postAuthorId(post.getAuthorId())
-                .postId(savedComment.postId())
-                .content(savedComment.content())
-                .commentId(savedComment.id())
+                .postId(savedComment.getPost().getId())
+                .content(savedComment.getContent())
+                .commentId(savedComment.getId())
                 .build();
-
-        commentEventPublisher.publish(commentEvent);
-        return savedComment;
+        commentEventPublisher.publish(event);
+        return commentMapper.toResponseDto(savedComment);
     }
 
     @Override

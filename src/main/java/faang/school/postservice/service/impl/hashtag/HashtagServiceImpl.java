@@ -2,8 +2,8 @@ package faang.school.postservice.service.impl.hashtag;
 
 import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.model.Hashtag;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.entity.Hashtag;
+import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.hashtag.HashtagRepository;
 import faang.school.postservice.service.HashtagService;
 import lombok.RequiredArgsConstructor;

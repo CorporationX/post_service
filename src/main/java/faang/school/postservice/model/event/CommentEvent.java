@@ -1,6 +1,8 @@
-package faang.school.postservice.event;
+package faang.school.postservice.model.event;
 
 import lombok.Builder;
+
+import java.time.LocalDateTime;
 
 @Builder
 public record CommentEvent(
@@ -9,6 +11,7 @@ public record CommentEvent(
         long postAuthorId,
         long postId,
         String content,
-        long commentId
+        long commentId,
+        LocalDateTime commentedAt
 ) {
 }
