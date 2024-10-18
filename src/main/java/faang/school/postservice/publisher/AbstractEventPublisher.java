@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 public abstract class AbstractEventPublisher<T, K> {
     private final RedisTemplate<String, Object> redisTemplate;
     private final UserContext userContext;
-    private final ObjectMapper javaTimeModuleObjectMapper;
+    private final ObjectMapper objectMapper;
 
     public void sendEntityToAnalytics(K entity, String viewChannel) {
         try {
@@ -26,7 +26,7 @@ public abstract class AbstractEventPublisher<T, K> {
             long actorId = userContext.getUserId();
             log.info("Actor id = {}", actorId);
             T event = createEvent(entity, actorId);
-            String jsonEvent = javaTimeModuleObjectMapper.writeValueAsString(event);
+            String jsonEvent = objectMapper.writeValueAsString(event);
             redisTemplate.convertAndSend(viewChannel, jsonEvent);
             log.info("Message published {} to topic {}", event, viewChannel);
         } catch (JsonProcessingException jsonProcessingException) {

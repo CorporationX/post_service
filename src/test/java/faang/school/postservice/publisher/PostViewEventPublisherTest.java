@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostViewEventPublisherTest {
-
     private final long actorId = 1L;
 
     @Mock
@@ -39,7 +38,7 @@ public class PostViewEventPublisherTest {
     private UserContext userContext;
 
     @Mock
-    private ObjectMapper javaTimeModuleObjectMapper;
+    private ObjectMapper objectMapper;
 
     @Mock
     private SendPostViewEventToAnalytics sendPostViewEventToAnalytics;
@@ -61,7 +60,7 @@ public class PostViewEventPublisherTest {
         when(userContext.getUserId()).thenReturn(actorId);
         when(sendPostViewEventToAnalytics.value()).thenReturn((Class) Post.class);
         PostViewEvent event = postViewEventPublisher.createEvent(post, actorId);
-        when(javaTimeModuleObjectMapper.writeValueAsString(any(PostViewEvent.class))).thenReturn(event.toString());
+        when(objectMapper.writeValueAsString(any(PostViewEvent.class))).thenReturn(event.toString());
 
         postViewEventPublisher.publishPostEvent(post, sendPostViewEventToAnalytics);
 

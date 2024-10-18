@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.exception.post.ForbiddenWordsLoadingException;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -12,14 +13,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Getter
+@RequiredArgsConstructor
 @Service
 public class ModerationDictionary {
+    private final ObjectMapper objectMapper;
+
     private Set<String> forbiddenWords;
 
     @PostConstruct
     public void loadForbiddenWords() {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             forbiddenWords = new HashSet<>(objectMapper.readValue(
                     new ClassPathResource("forbidden-words.json").getInputStream(),
                     Set.class

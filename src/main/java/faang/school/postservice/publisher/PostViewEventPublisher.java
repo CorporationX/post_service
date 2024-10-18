@@ -31,8 +31,8 @@ public class PostViewEventPublisher extends AbstractEventPublisher<PostViewEvent
 
     public PostViewEventPublisher(RedisTemplate<String, Object> redisTemplate,
                                   UserContext userContext,
-                                  ObjectMapper javaTimeModuleObjectMapper) {
-        super(redisTemplate, userContext, javaTimeModuleObjectMapper);
+                                  ObjectMapper objectMapper) {
+        super(redisTemplate, userContext, objectMapper);
     }
 
     @AfterReturning(

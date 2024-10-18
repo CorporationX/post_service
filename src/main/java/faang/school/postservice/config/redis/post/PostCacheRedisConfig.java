@@ -16,8 +16,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 public class PostCacheRedisConfig {
     @Bean
     public RedisTemplate<String, String> stringValueRedisTemplate(JedisConnectionFactory connectionFactory,
-                                                                  ObjectMapper javaTimeModuleObjectMapper) {
-        return buildRedisTemplate(connectionFactory, String.class, javaTimeModuleObjectMapper);
+                                                                  ObjectMapper objectMapper) {
+        return buildRedisTemplate(connectionFactory, String.class, objectMapper);
     }
 
     @Bean
@@ -27,8 +27,8 @@ public class PostCacheRedisConfig {
 
     @Bean
     public RedisTemplate<String, PostCacheDto> postCacheDtoRedisTemplate(JedisConnectionFactory connectionFactory,
-                                                                         ObjectMapper javaTimeModuleObjectMapper) {
-        return buildRedisTemplate(connectionFactory, PostCacheDto.class, javaTimeModuleObjectMapper);
+                                                                         ObjectMapper objectMapper) {
+        return buildRedisTemplate(connectionFactory, PostCacheDto.class, objectMapper);
     }
 
     private <T> RedisTemplate<String, T> buildRedisTemplate(JedisConnectionFactory connectionFactory, Class<T> clazz,
