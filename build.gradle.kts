@@ -29,6 +29,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
     implementation("org.springframework.boot:spring-boot-starter-quartz")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.retry:spring-retry:2.0.9")
 
     /**
      * Database
@@ -92,7 +93,8 @@ val jacocoInclude = listOf(
 )
 
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.12"
+    reportsDirectory.set(layout.buildDirectory.dir("$buildDir/reports/jacoco"))
 }
 
 tasks.test {
@@ -102,9 +104,9 @@ tasks.test {
 
 tasks.jacocoTestReport {
     reports {
-        xml.required.set(true)
+        xml.required.set(false)
         csv.required.set(false)
-        html.outputLocation.set(file("${buildDir}/jacocoHtml"))
+        html.required.set(true)
     }
     classDirectories.setFrom(
         fileTree(project.buildDir) {
@@ -175,8 +177,8 @@ tasks.check {
     dependsOn(tasks.jacocoTestCoverageVerification)
 }
 
-tasks.build {
-    finalizedBy("checkTotalCoverage")
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
 }
 
 tasks.withType<Test> {
