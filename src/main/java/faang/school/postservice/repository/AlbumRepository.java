@@ -54,4 +54,3 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
             """)
     List<Long> findAlbumIdsByAuthorIdsAndSubsStatus(List<Long> authorIds);
 }
-
