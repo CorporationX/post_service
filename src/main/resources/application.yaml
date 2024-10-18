@@ -32,6 +32,8 @@ spring:
           name: comment_event_channel
         comment-receiving:
           name: comment-receiving-topic
+        post-channel:
+          name: post_channel
 
 server:
   port: 8081

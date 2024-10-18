@@ -31,9 +31,10 @@ public class RedisConfig {
     private String likeEvent;
     @Value("${spring.data.redis.channels.comment-event-channel.name}")
     private String commentEvent;
-
     @Value("${spring.data.redis.channels.user-ban.name}")
     private String userBanEvent;
+    @Value("${spring.data.redis.channels.post-channel.name}")
+    private String postEvent;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -77,5 +78,10 @@ public class RedisConfig {
     @Bean
     public ChannelTopic commentTopic() {
         return new ChannelTopic(commentEvent);
+    }
+
+    @Bean
+    public ChannelTopic postTopic() {
+        return new ChannelTopic(postEvent);
     }
 }
