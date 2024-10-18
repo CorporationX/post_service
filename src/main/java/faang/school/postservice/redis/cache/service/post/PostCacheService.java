@@ -12,8 +12,6 @@ public interface PostCacheService {
 
     void incrementViews(long postId);
 
-    void decrementLikes(long postId);
-
     void deleteById(long postId);
 
     List<PostCache> getPostCacheByIds(List<Long> postIds);

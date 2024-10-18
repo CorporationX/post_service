@@ -65,14 +65,4 @@ public class PostCacheServiceImpl implements PostCacheService {
             });
         });
     }
-
-    @Override
-    public void decrementLikes(long postId) {
-        redisOperations.customUpdate(postCacheRepository, postId,  () -> {
-            postCacheRepository.findById(postId).ifPresent(post ->{
-                post.setLikesCount(post.getLikesCount() - 1);
-                postCacheRepository.save(post);
-            });
-        });
-    }
 }
