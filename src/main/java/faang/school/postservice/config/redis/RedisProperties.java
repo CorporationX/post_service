@@ -17,6 +17,7 @@ public class RedisProperties {
     @Setter
     protected static class Channels {
         private Channel calculationsChannel;
+        private Channel likePostChannel;
         private Channel newCommentChannel;
 
         @Getter

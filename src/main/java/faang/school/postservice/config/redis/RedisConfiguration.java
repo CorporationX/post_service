@@ -16,7 +16,12 @@ public class RedisConfiguration {
     private final RedisProperties redisProperties;
 
     @Bean
-    ChannelTopic publishedCommentEventTopic() {
+    public ChannelTopic achievementEventTopic() {
+        return new ChannelTopic(redisProperties.getChannels().getLikePostChannel().getName());
+    }
+
+    @Bean
+    public ChannelTopic publishedCommentEventTopic() {
         return new ChannelTopic(redisProperties.getChannels().getNewCommentChannel().getName());
     }
 
