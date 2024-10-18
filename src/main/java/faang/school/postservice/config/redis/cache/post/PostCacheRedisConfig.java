@@ -1,4 +1,4 @@
-package faang.school.postservice.config.redis.post;
+package faang.school.postservice.config.redis.cache.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
