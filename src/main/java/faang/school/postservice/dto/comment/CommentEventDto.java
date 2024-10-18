@@ -12,8 +12,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentEventDto {
-    private long userId;
-    private long authorId;
+    private long commentAuthorId;
+    private long postAuthorId;
     private long postId;
     private String content;
     private long commentId;

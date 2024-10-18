@@ -1,9 +1,10 @@
 package faang.school.postservice.service.moderator;
 
 import faang.school.postservice.config.dictionary.OffensiveWordsDictionary;
+import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.PublishedCommentEventPublisher;
+import faang.school.postservice.publisher.comment.PublishedCommentEventPublisher;
 import faang.school.postservice.service.comment.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +21,13 @@ import java.util.concurrent.Executors;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ModeratorServiceTest {
@@ -42,6 +49,9 @@ class ModeratorServiceTest {
     @Mock
     private PublishedCommentEventPublisher publishedCommentEventPublisher;
 
+    @Mock
+    private CommentMapper commentMapper;
+
     private ModeratorService moderatorService;
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -54,6 +64,7 @@ class ModeratorServiceTest {
     @BeforeEach
     void init() {
         moderatorService = new ModeratorService(commentService,
+                commentMapper,
                 executorService,
                 offensiveWordsDictionary,
                 publishedCommentEventPublisher);

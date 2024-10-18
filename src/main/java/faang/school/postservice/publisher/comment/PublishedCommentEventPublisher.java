@@ -1,6 +1,7 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.publisher.comment;
 
 import faang.school.postservice.dto.comment.CommentEventDto;
+import faang.school.postservice.publisher.MessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -13,11 +14,11 @@ import org.springframework.stereotype.Component;
 public class PublishedCommentEventPublisher implements MessagePublisher<CommentEventDto> {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic newCommentEventTopic;
+    private final ChannelTopic publishedCommentEventTopic;
 
     @Override
     public void publish(CommentEventDto message) {
-        log.info("Sending message - {}", message);
-        redisTemplate.convertAndSend(newCommentEventTopic.getTopic(), message);
+        redisTemplate.convertAndSend(publishedCommentEventTopic.getTopic(), message);
+        log.debug("Message was send {}, in topic - {}", message, publishedCommentEventTopic.getTopic());
     }
 }
