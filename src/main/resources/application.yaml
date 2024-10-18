@@ -58,7 +58,7 @@ post:
   author-banner:
     schedule:
       cron: "0 0/10 * * * ?" # event 10 minutes
-    unverified-post-limit: 5
+    unverified-posts-limit: 5
 
 user-service:
   host: localhost

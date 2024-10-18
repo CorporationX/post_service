@@ -15,7 +15,7 @@ public class AuthorBanner {
     private final PostService postService;
     private final UserBanMessagePublisher userBanMessagePublisher;
 
-    @Value("${post.author-banner.unverified-post-limit}")
+    @Value("${post.author-banner.unverified-posts-limit}")
     private int unverifiedPostLimit;
 
     @Scheduled(cron = "${post.author-banner.schedule.cron}")
