@@ -51,6 +51,10 @@ post:
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  config:
+    thread-pool:
+      max-size: 10
+    batch-size: 1000
   user_ban:
     scheduler:
       cron: "00 01 06 * * *"
