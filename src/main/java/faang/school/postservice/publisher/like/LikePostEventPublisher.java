@@ -1,6 +1,7 @@
-package faang.school.postservice.service.publisher;
+package faang.school.postservice.publisher.like;
 
 import faang.school.postservice.dto.event.LikePostEvent;
+import faang.school.postservice.publisher.MessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -13,11 +14,11 @@ import org.springframework.stereotype.Component;
 public class LikePostEventPublisher implements MessagePublisher<LikePostEvent> {
 
     private final RedisTemplate redisTemplate;
-    private final ChannelTopic channelTopic;
+    private final ChannelTopic achievementEventTopic;
 
     @Override
     public void publish(LikePostEvent message) {
-        redisTemplate.convertAndSend(channelTopic.getTopic(), message);
-        log.info("Message was send {}, in topic - {}", message, channelTopic.getTopic());
+        redisTemplate.convertAndSend(achievementEventTopic.getTopic(), message);
+        log.debug("Message was send {}, in topic - {}", message, achievementEventTopic.getTopic());
     }
 }

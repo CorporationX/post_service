@@ -28,6 +28,11 @@ public class PostService {
     private final ModerationDictionary moderationDictionary;
     private final ExecutorService executor;
 
+    public PostResponseDto getPost(long postId){
+        Post post = findById(postId);
+        return postMapper.toResponseDto(post, post.getLikes().size());
+    }
+
     public Post findById(Long postId) {
         Optional<Post> post = postRepository.findById(postId);
         return post.orElseThrow(
