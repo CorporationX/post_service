@@ -1,5 +1,7 @@
 package faang.school.postservice.publisher;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.annotations.SendPostViewEventToAnalytics;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.model.Post;
@@ -27,18 +29,23 @@ public class PostViewEventPublisher extends AbstractEventPublisher<PostViewEvent
     @Value("${spring.data.redis.channels.post-view}")
     private String postViewChannel;
 
-    public PostViewEventPublisher(RedisTemplate<String, PostViewEvent> eventRedisTemplate, UserContext userContext) {
-        super(eventRedisTemplate, userContext);
+    public PostViewEventPublisher(RedisTemplate<String, Object> redisTemplate,
+                                  UserContext userContext,
+                                  ObjectMapper javaTimeModuleObjectMapper) {
+        super(redisTemplate, userContext, javaTimeModuleObjectMapper);
     }
 
     @AfterReturning(
-            pointcut = "@annotation(faang.school.postservice.annotations.SendPostViewEventToAnalytics)",
+            pointcut = "@annotation(sendPostViewEventToAnalytics)",
             returning = "returnValue"
     )
-    public void publishPostEvent(Object returnValue) {
-        if (returnValue instanceof Post post) {
-            sendEntityToAnalytics(post, postViewChannel);
-        } else if (returnValue instanceof List<?> posts) {
+    public void publishPostEvent(Object returnValue, SendPostViewEventToAnalytics sendPostViewEventToAnalytics) {
+        Class<?> clazz = sendPostViewEventToAnalytics.value();
+        if (clazz == Post.class) {
+            sendEntityToAnalytics((Post) returnValue, postViewChannel);
+        }
+        if (clazz == List.class) {
+            List<?> posts = (List<?>) returnValue;
             posts.stream()
                     .map(post -> (Post) post)
                     .forEach(post -> sendEntityToAnalytics(post, postViewChannel));

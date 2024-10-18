@@ -1,9 +1,11 @@
 package faang.school.postservice.publisher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.annotations.SendPostViewEventToAnalytics;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.model.Post;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
@@ -30,10 +33,16 @@ public class PostViewEventPublisherTest {
     private final long actorId = 1L;
 
     @Mock
-    private RedisTemplate<String, PostViewEvent> eventRedisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Mock
     private UserContext userContext;
+
+    @Mock
+    private ObjectMapper javaTimeModuleObjectMapper;
+
+    @Mock
+    private SendPostViewEventToAnalytics sendPostViewEventToAnalytics;
 
     @InjectMocks
     private PostViewEventPublisher postViewEventPublisher;
@@ -48,29 +57,31 @@ public class PostViewEventPublisherTest {
     }
 
     @Test
-    void testPublishPostEvent_SinglePost() {
+    void testPublishPostEvent_SinglePost() throws JsonProcessingException {
         when(userContext.getUserId()).thenReturn(actorId);
+        when(sendPostViewEventToAnalytics.value()).thenReturn((Class) Post.class);
+        PostViewEvent event = postViewEventPublisher.createEvent(post, actorId);
+        when(javaTimeModuleObjectMapper.writeValueAsString(any(PostViewEvent.class))).thenReturn(event.toString());
 
-        postViewEventPublisher.publishPostEvent(post);
+        postViewEventPublisher.publishPostEvent(post, sendPostViewEventToAnalytics);
 
-        ArgumentCaptor<PostViewEvent> eventCaptor = ArgumentCaptor.forClass(PostViewEvent.class);
-        verify(eventRedisTemplate).convertAndSend(eq(postViewChannel), eventCaptor.capture());
+        ArgumentCaptor<String> topicCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
 
-        PostViewEvent capturedEvent = eventCaptor.getValue();
-
-        Assertions.assertEquals(post.getId(), capturedEvent.getPostId());
-        Assertions.assertEquals(post.getAuthorId(), capturedEvent.getReceiverId());
-        Assertions.assertEquals(actorId, capturedEvent.getActorId());
+        verify(redisTemplate).convertAndSend(topicCaptor.capture(), messageCaptor.capture());
+        assertEquals(postViewChannel, topicCaptor.getValue());
+        assertEquals(event.toString(), messageCaptor.getValue());
     }
 
     @Test
     void testPublishPostEvent_ListOfPosts() {
         Post post2 = buildPost(2L, 2L);
         List<Post> posts = List.of(post, post2);
+        when(sendPostViewEventToAnalytics.value()).thenReturn((Class) List.class);
 
-        postViewEventPublisher.publishPostEvent(posts);
+        postViewEventPublisher.publishPostEvent(posts, sendPostViewEventToAnalytics);
 
-        verify(eventRedisTemplate, times(2)).convertAndSend(eq(postViewChannel), any(PostViewEvent.class));
+        verify(redisTemplate, times(2)).convertAndSend(eq(postViewChannel), any());
     }
 
     @Test

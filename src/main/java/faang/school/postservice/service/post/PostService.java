@@ -144,13 +144,13 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    @SendPostViewEventToAnalytics()
+    @SendPostViewEventToAnalytics(Post.class)
     public Post get(Long postId) {
         return findPostById(postId);
     }
 
     @Transactional(readOnly = true)
-    @SendPostViewEventToAnalytics()
+    @SendPostViewEventToAnalytics(List.class)
     public List<Post> searchByAuthor(Post filterPost) {
         List<Post> posts = postRepository.findByAuthorId(filterPost.getAuthorId());
         posts = applyFiltersAndSorted(posts, filterPost)
@@ -160,7 +160,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    @SendPostViewEventToAnalytics()
+    @SendPostViewEventToAnalytics(List.class)
     public List<Post> searchByProject(Post filterPost) {
         List<Post> posts = postRepository.findByProjectId(filterPost.getProjectId());
         posts = applyFiltersAndSorted(posts, filterPost)
