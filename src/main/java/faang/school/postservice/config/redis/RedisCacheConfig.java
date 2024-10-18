@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -27,6 +28,12 @@ import java.util.List;
 @Slf4j
 public class RedisCacheConfig {
 
+    @Value("${spring.data.redis.lock-registry.lockSettings.default.name}")
+    private String defaultLockSettings;
+
+    @Value("${spring.data.redis.lock-registry.lockSettings.feed.name}")
+    private String feedLockSettings;
+
     private final RedisLockRegistryProperty redisLockRegistryProperty;
     private final RedisCacheProperty redisCacheProperty;
     private static final List<Class<?>> entityClasses = new ArrayList<>();
@@ -34,14 +41,14 @@ public class RedisCacheConfig {
     @Bean
     public ExpirableLockRegistry expirableLockRegistry(RedisConnectionFactory redisConnectionFactory) {
 
-        return new RedisLockRegistry(redisConnectionFactory, redisLockRegistryProperty.getLockSettings().get("default").getPostLockKey(),
-                redisLockRegistryProperty.getLockSettings().get("default").getReleaseTimeDurationMillis());
+        return new RedisLockRegistry(redisConnectionFactory, redisLockRegistryProperty.getLockSettings().get(defaultLockSettings).getPostLockKey(),
+                redisLockRegistryProperty.getLockSettings().get(defaultLockSettings).getReleaseTimeDurationMillis());
     }
 
     @Bean
     public ExpirableLockRegistry feedLockRegistry(RedisConnectionFactory redisConnectionFactory){
-        return new RedisLockRegistry(redisConnectionFactory, redisLockRegistryProperty.getLockSettings().get("feed").getPostLockKey(),
-                redisLockRegistryProperty.getLockSettings().get("feed").getReleaseTimeDurationMillis());
+        return new RedisLockRegistry(redisConnectionFactory, redisLockRegistryProperty.getLockSettings().get(feedLockSettings).getPostLockKey(),
+                redisLockRegistryProperty.getLockSettings().get(feedLockSettings).getReleaseTimeDurationMillis());
     }
 
     @Bean
@@ -72,12 +79,14 @@ public class RedisCacheConfig {
     private void findAllCacheEntities() {
         InputStream stream = ClassLoader.getSystemClassLoader()
                 .getResourceAsStream(redisCacheProperty.getPathToEntities().replaceAll("[.]", "/"));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        reader.lines()
-                .filter(line -> line.endsWith(".class"))
-                .map(line -> getClass(line, redisCacheProperty.getPathToEntities()))
-                .filter(cls -> cls.isAnnotationPresent(RedisHash.class))
-                .forEach(entityClasses::add);
+        if(stream != null) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            reader.lines()
+                    .filter(line -> line.endsWith(".class"))
+                    .map(line -> getClass(line, redisCacheProperty.getPathToEntities()))
+                    .filter(cls -> cls.isAnnotationPresent(RedisHash.class))
+                    .forEach(entityClasses::add);
+        }
     }
 
     private Class<?> getClass(String className, String packageName) {

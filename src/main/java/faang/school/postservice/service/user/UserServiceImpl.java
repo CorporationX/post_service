@@ -24,4 +24,11 @@ public class UserServiceImpl implements UserService {
 
         return userServiceClient.getUser(userId);
     }
+
+    @Override
+    @Retryable(retryFor = { FeignException.class }, maxAttempts = 5, backoff = @Backoff(delay = 500, multiplier = 3))
+    public List<UserDto> getAllUsers() {
+
+        return userServiceClient.getAllUsers();
+    }
 }

@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -38,7 +40,7 @@ public class AuthorCacheServiceImpl implements AuthorCacheService {
 
         log.info("Saved author with id {} to cache: {}", entity.getId(), redisUser);
 
-        return CompletableFuture.completedFuture(userDto);
+        return completedFuture(userDto);
     }
 
     @Override
@@ -48,6 +50,6 @@ public class AuthorCacheServiceImpl implements AuthorCacheService {
 
         UserDto userDto = userService.getUserById(id);
 
-        return CompletableFuture.completedFuture(userDto);
+        return completedFuture(userDto);
     }
 }

@@ -20,4 +20,7 @@ public interface UserServiceClient {
 
     @GetMapping("followers/{followeeId}")
     List<UserDto> getFollowers(@PathVariable long followeeId);
+
+    @GetMapping("users")
+    List<UserDto> getAllUsers();
 }

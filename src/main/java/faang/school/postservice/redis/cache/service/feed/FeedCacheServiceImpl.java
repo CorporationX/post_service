@@ -1,8 +1,12 @@
 package faang.school.postservice.redis.cache.service.feed;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostCacheMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.redis.cache.service.post.PostCacheService;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.user.UserService;
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,25 +35,32 @@ public class FeedCacheServiceImpl implements FeedCacheService {
     @Value("${spring.data.redis.lock-registry.lockSettings.feed.post-lock-key}")
     private String feedCacheKeyPrefix;
     @Value("${spring.data.redis.cache.settings.batch-size}")
-    private long batchSize;
+    private int batchSize;
 
     private final ZSetOperations<String, Long> redisFeedZSetOps;
     private final RedisLockRegistry feedLockRegistry;
     private final PostCacheService postCacheService;
     private final PostCacheMapper postCacheMapper;
-
-    @Override
-    public void addPostIdToAuthorFollowers(long postId, List<Long> subscribersId, LocalDateTime publishedAt) {
-        subscribersId.forEach(subscriberId -> addPostIdToFollowerFeed(postId, subscriberId, publishedAt));
-    }
+    private final PostRepository postRepository;
+    private final UserService userService;
+    private final PostMapper postMapper;
 
     @Override
     public List<PostDto> getFeedByUserId(Long userId, Long postId){
         List<Long> followerPostIds = getFollowerPostIds(userId, postId);
 
-        return postCacheService.getPostCacheByIds(followerPostIds).stream()
+        List<PostDto> postDtos = postCacheService.getPostCacheByIds(followerPostIds).stream()
                 .map(postCacheMapper::toDto)
                 .toList();
+
+        if(postDtos.isEmpty()){
+            UserDto userDto = userService.getUserById(userId);
+            postDtos = postRepository.findByAuthorsAndLimitAndStartFromPostId(userDto.getFolloweesIds(), batchSize, postId)
+                    .stream()
+                    .map(postMapper::toDto)
+                    .toList();
+        }
+        return postDtos;
     }
 
     @Override
