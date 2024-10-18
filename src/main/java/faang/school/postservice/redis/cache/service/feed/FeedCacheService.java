@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface FeedCacheService {
 
-    void addPostIdToAuthorFollowers(long postId, List<Long> subscriberId, LocalDateTime publishedAt);
-
     void addPostIdToFollowerFeed(Long postId, Long subscriberId, LocalDateTime publishedAt);
 
     List<PostDto> getFeedByUserId(Long userId, Long postId);

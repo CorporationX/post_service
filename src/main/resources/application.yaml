@@ -45,9 +45,11 @@ spring:
       lock-registry:
         lockSettings:
           default:
+            name: default
             post-lock-key: POST_LOCK_KEY
             release-time-duration-millis: 10000
           feed:
+            name: feed
             post-lock-key: FEED_LOCK_KEY
             release-time-duration-millis: 10000
 
@@ -71,6 +73,8 @@ spring:
             name: comments
           split:
             name: split
+          feed-heater:
+            name: feed-heater
 
   servlet:
     multipart:

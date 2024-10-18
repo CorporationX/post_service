@@ -184,8 +184,6 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
-
-
     @Override
     public void correctPosts(){
         List<Post> unpublishedPosts = postRepository.findReadyToPublish();
