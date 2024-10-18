@@ -14,6 +14,7 @@ public class CommentEventMapper {
                 .postId(post.getId())
                 .postAuthorId(post.getAuthorId())
                 .commentContent(comment.getContent())
+                .receivedAt(comment.getCreatedAt())
                 .build();
     }
 }
