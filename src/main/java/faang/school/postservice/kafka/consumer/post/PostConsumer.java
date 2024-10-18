@@ -23,15 +23,10 @@ public class PostConsumer implements KafkaConsumer<PostEvent> {
 
         log.info("Received new post event {}", event);
 
-        try {
-            event.getFollowersIds()
-                    .forEach(followerId ->{
-                        feedCacheService.addPostIdToFollowerFeed(event.getPostId(), followerId, event.getPublishedAt());
-                    });
-            ack.acknowledge();
-        } catch (Exception e) {
-            log.error("Post with id:{} is not added to followers feeds.", event.getPostId());
-            throw e;
-        }
+        event.getFollowersIds()
+                .forEach(followerId ->{
+                    feedCacheService.addPostIdToFollowerFeed(event.getPostId(), followerId, event.getPublishedAt());
+                });
+        ack.acknowledge();
     }
 }
