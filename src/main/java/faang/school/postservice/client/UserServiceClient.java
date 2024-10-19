@@ -25,4 +25,7 @@ public interface UserServiceClient {
     public List<Long> getFollowerIdsByFolloweeId(
             @PathVariable @Min(value = 1L, message = "Followee id cannot be less than 1") long followeeId);
 
+    @GetMapping("/{followerId}/followeeeids")
+    public List<Long> getFolloweeIdsByFollowerId(
+            @PathVariable @Min(value = 1L, message = "Follower id cannot be less than 1") long followerId);
 }

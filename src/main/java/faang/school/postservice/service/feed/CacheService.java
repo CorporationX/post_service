@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -131,28 +132,25 @@ public class CacheService {
     }
 
     public Map<Long, UserDto> fetchUsers(List<PostDto> postDtos) {
-        Map<Long, UserDto> resultUsersMap = new HashMap<>();
-        Set<Long> processedAuthorIds = new HashSet<>();
-        for (PostDto postDto : postDtos) {
-            long authorId = postDto.getAuthorId();
-            if (!processedAuthorIds.contains(authorId)) {
-                UserDto userDto = redisUserRepository.get(authorId);
-                if (userDto != null) {
-                    resultUsersMap.put(authorId, userDto);
-                }
-                processedAuthorIds.add(authorId);
-            }
-        }
+        Map<Long, UserDto> resultUsersMap = postDtos.stream()
+                .map(PostDto::getAuthorId)
+                .distinct()
+                .collect(Collectors.toMap(
+                        authorId -> authorId,
+                        redisUserRepository::get,
+                        (existing, replacement) -> existing
+                ));
 
-        processMissingUsers(resultUsersMap, postDtos);
+        processMissingUsers(resultUsersMap);
 
         return resultUsersMap;
     }
 
-    private void processMissingUsers(Map<Long, UserDto> actualUserMap, List<PostDto> postDtos) {
-        Set<Long> actualUserIds = new HashSet<>(actualUserMap.keySet());
-        List<Long> expectedUserIds = postDtos.stream().map(PostDto::getAuthorId).toList();
-        List<Long> missingUserIds = findMissingIds(actualUserIds, expectedUserIds);
+    private void processMissingUsers(Map<Long, UserDto> actualUserMap) {
+        List<Long> missingUserIds = actualUserMap.entrySet().stream()
+                .filter(entry -> entry.getValue() == null)
+                .map(Map.Entry::getKey)
+                .toList();
 
         if (!missingUserIds.isEmpty()) {
             List<UserDto> missingUsers = getUsersFromDB(missingUserIds);
@@ -162,7 +160,7 @@ public class CacheService {
     }
 
     private List<UserDto> getUsersFromDB(List<Long> missingUserIds) {
-        return userServiceClient.getUsersByIds(missingUserIds.stream().toList());
+        return userServiceClient.getUsersByIds(missingUserIds);
     }
 
     private void updateUsers(List<UserDto> missingUsers) {
@@ -170,16 +168,15 @@ public class CacheService {
     }
 
     public List<PostDto> fetchPosts(List<Long> postIds) {
-        List<PostDto> postDtos = new ArrayList<>();
-        for (Long postId : postIds) {
-            Optional<PostDto> postFromCache = getPostFromCache(postId);
-
-            if (postFromCache.isPresent()) {
-                PostDto postDto = postFromCache.get();
-                updatePostCounters(postDto);
-                postDtos.add(postDto);
-            }
-        }
+        List<PostDto> postDtos = postIds.stream()
+                .map(this::getPostFromCache)
+                .filter(Optional::isPresent)
+                .map(optionalPostDto -> {
+                    PostDto postDto = optionalPostDto.get();
+                    updatePostCounters(postDto);
+                    return postDto;
+                })
+                .toList();
 
         processMissingPosts(postIds, postDtos);
 
@@ -187,7 +184,7 @@ public class CacheService {
     }
 
     private Optional<PostDto> getPostFromCache(Long postId) {
-        return Optional.of(redisPostRepository.getPost(postId));
+        return Optional.ofNullable(redisPostRepository.getPost(postId));
     }
 
     private void updatePostCounters(PostDto postDto) {
@@ -219,15 +216,17 @@ public class CacheService {
         List<Post> posts = new ArrayList<>();
         missingPosts.forEach(posts::add);
 
-        for (Post post : posts) {
-            if (post.isDeleted()) {
-                log.info("Post with ID {} was found in DB but it was deleted", post.getId());
-                handlePostDeletion(post.getId());
-                posts.remove(post);
-            }
-        }
-
-        return posts.stream().map(postMapper::toDto).toList();
+        return posts.stream()
+                .filter(post -> {
+                    if (post.isDeleted()) {
+                        log.info("Post with ID {} was found in DB but it was deleted", post.getId());
+                        handlePostDeletion(post.getId());
+                        return false;
+                    }
+                    return true;
+                })
+                .map(postMapper::toDto)
+                .toList();
     }
 
     private void processNonexistentPosts(List<Long> expectedIds, List<PostDto> actualPosts) {

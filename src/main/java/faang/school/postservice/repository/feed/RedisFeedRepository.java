@@ -42,7 +42,7 @@ public class RedisFeedRepository {
         }
     }
 
-    public List<Long> getPostIds(Long userId, LocalDateTime lastSeenDate) {
+    public List<Long> getPostIds(Long userId, LocalDateTime lastSeenDate, int pageSize) {
         String key = FEED_KEY_PREFIX + userId;
         Set<Object> postIds;
 
