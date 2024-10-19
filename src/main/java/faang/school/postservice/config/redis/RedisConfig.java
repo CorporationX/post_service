@@ -1,5 +1,7 @@
 package faang.school.postservice.config.redis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +11,7 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -16,8 +19,18 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
     private final RedisDto redisDto;
 
-    @Value("${spring.data.redis.channels.like_channel-name}")
+    @Value("${spring.data.redis.channels.like_channel}")
     private String likeChannelName;
+
+    @Value("${spring.data.redis.channels.comment_channel}")
+    private String commentChannelName;
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper;
+    }
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
@@ -30,9 +43,9 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper()));
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper()));
         template.afterPropertiesSet();
         return template;
     }
@@ -40,6 +53,11 @@ public class RedisConfig {
     @Bean
     public ChannelTopic likeEventTopic() {
         return new ChannelTopic(likeChannelName);
+    }
+
+    @Bean
+    public ChannelTopic commentEventTopic() {
+        return new ChannelTopic(commentChannelName);
     }
 
     @Bean
