@@ -1,27 +1,32 @@
 package faang.school.postservice.client;
 
+import faang.school.postservice.cache.model.UserRedis;
 import faang.school.postservice.dto.filter.UserFilterDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
 @FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}")
 public interface UserServiceClient {
 
-    @GetMapping("/api/users/{userId}")
+    @GetMapping("/api/user/{userId}")
     UserDto getUser(@PathVariable long userId);
 
-    @GetMapping("/api/users/list")
-    List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+    @GetMapping("/api/user")
+    List<UserDto> getUsersByIds(@RequestParam List<Long> ids);
 
-    @PutMapping("/api/users/{userId}/diactivate")
+    @GetMapping("/api/user/all_active")
+    List<UserRedis> getActiveUsersRedis();
+
+    @PutMapping("/api/user/{userId}/deactivate")
     UserDto deactivatesUserProfile(@PathVariable Long userId);
 
-    @GetMapping("/api/users/premium")
+    @GetMapping("/api/user/premium")
     List<UserDto> getPremiumUsers(@RequestBody UserFilterDto userFilterDto);
 }

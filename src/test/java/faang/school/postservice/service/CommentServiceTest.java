@@ -1,34 +1,42 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import faang.school.postservice.cache.model.CommentRedis;
+import faang.school.postservice.cache.service.UserRedisService;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentEvent;
-import faang.school.postservice.mapper.CommentMapperImpl;
+import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.UserDto;
+import faang.school.postservice.kafka.event.comment.CommentAddedEvent;
+import faang.school.postservice.kafka.producer.KafkaProducer;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.publisher.PublicationService;
-import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest(classes = CommentService.class)
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
     private static final String MESSAGE_POST_NOT_IN_DB = "Post is not in the database";
@@ -44,40 +52,49 @@ class CommentServiceTest {
     private static final long RANDOM_LONG = 5L;
 
     private Post post;
-    private CommentDto dto;
+    private CommentDto commentDto;
     private Comment comment;
+    private UserDto userDto;
+    private int batchSize;
 
-    @Spy
-    private CommentMapperImpl mapper;
-    @Mock
-    private PublicationService<CommentEventPublisher, CommentEvent> publishService;
-    @Mock
+    @MockBean
+    private CommentMapper mapper;
+    @MockBean
+    private KafkaProducer kafkaProducer;
+    @MockBean
     private PostRepository postRepository;
-    @Mock
+    @MockBean
     private CommentRepository commentRepository;
-    @Mock
+    @MockBean
     private UserServiceClient userServiceClient;
-    @InjectMocks
+    @MockBean
+    private UserRedisService userRedisService;
+    @Autowired
     private CommentService service;
+
+    @Value("${spring.kafka.topic.comment.added}")
+    private String commentAddedTopic;
 
     @BeforeEach
     void setUp() {
         //Arrange
         post = new Post();
         post.setId(VALID_ID_IN_DB);
-        dto = new CommentDto();
-        dto.setAuthorId(VALID_ID_IN_DB);
-        dto.setContent(RANDOM_VALID_STRING);
-        dto.setId(VALID_ID_IN_DB);
+        commentDto = new CommentDto();
+        commentDto.setAuthorId(VALID_ID_IN_DB);
+        commentDto.setContent(RANDOM_VALID_STRING);
+        commentDto.setId(VALID_ID_IN_DB);
         comment = new Comment();
         post.setComments(List.of(comment));
         comment.setId(VALID_ID_IN_DB);
         comment.setPost(post);
         comment.setCreatedAt(LocalDateTime.now());
+        userDto = UserDto.builder().id(VALID_ID_IN_DB).build();
+        batchSize = 5;
     }
 
     @Test
-    public void testGetPostWithInvalidId() {
+    public void testAddCommentWhenPostNotFound() {
         //Act
         when(postRepository.findById(INVALID_ID_IN_DB)).thenReturn(Optional.empty());
         //Assert
@@ -87,98 +104,81 @@ class CommentServiceTest {
     }
 
     @Test
-    public void testEmptyContentComment() {
-        //Arrange
-        dto.setContent(EMPTY_CONTENT);
-        //Act
-        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
-        //Assert
-        assertEquals(MESSAGE_INVALID_TEXT_OF_COMMENT,
-                assertThrows(RuntimeException.class,
-                        () -> service.addComment(VALID_ID_IN_DB, dto)).getMessage());
-    }
-
-    @Test
-    public void testBlankContentComment() {
-        //Arrange
-        dto.setContent(BLANK_CONTENT);
-        //Act
-        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
-        //Assert
-        assertEquals(MESSAGE_INVALID_TEXT_OF_COMMENT,
-                assertThrows(RuntimeException.class,
-                        () -> service.addComment(VALID_ID_IN_DB, dto)).getMessage());
-    }
-
-    @Test
-    public void testContentInvalidLengthComment() {
-        //Arrange
-        dto.setContent(new String(new char[INVALID_LENGTH_OF_CONTENT]));
-        //Act
-        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
-        //Assert
-        assertEquals(MESSAGE_INVALID_TEXT_OF_COMMENT,
-                assertThrows(RuntimeException.class,
-                        () -> service.addComment(VALID_ID_IN_DB, dto)).getMessage());
-    }
-
-    @Test
-    public void testAddPostWithInvalidAuthor() {
+    public void testAddCommentWithInvalidAuthor() {
         // Arrange
-        doThrow(RuntimeException.class).when(userServiceClient).getUser(dto.getAuthorId());
-        //Assert
-        assertThrows(RuntimeException.class, () -> userServiceClient.getUser(dto.getAuthorId()));
-    }
-
-    @Test
-    public void testVerifyServiceAddComment() throws JsonProcessingException {
-        // Arrange
+        doThrow(FeignException.class).when(userServiceClient).getUser(commentDto.getAuthorId());
         when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
-        when(mapper.toEntity(dto)).thenReturn(comment);
-        when(commentRepository.save(Mockito.any())).thenReturn(comment);
-        //Act
-        service.addComment(post.getId(), dto);
         //Assert
-        Mockito.verify(mapper).toDto(Mockito.any());
+        assertThrows(RuntimeException.class, () -> service.addComment(VALID_ID_IN_DB, commentDto));
     }
 
     @Test
-    public void testVerifyPublishCommentEvent() throws JsonProcessingException {
-        long postId = 1L;
-        Post post = Post.builder()
-                .id(postId)
-                .build();
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        CommentDto commentDto = CommentDto.builder()
-                .authorId(2L)
-                .content("content")
-                .build();
-        Comment commentEntity = Comment.builder()
-                .id(3L)
-                .authorId(commentDto.getAuthorId())
-                .post(post)
-                .content(commentDto.getContent())
-                .build();
-        when(commentRepository.save(Mockito.any())).thenReturn(commentEntity);
-        CommentEvent commentEvent = mapper.toCommentEvent(commentEntity);
-        CommentDto expDto = mapper.toDto(commentEntity);
+    public void testAddCommentWhenContentIsEmpty() {
+        //Arrange
+        commentDto.setContent(EMPTY_CONTENT);
         //Act
-        CommentDto actualDto = service.addComment(postId, commentDto);
+        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
         //Assert
-        Mockito.verify(publishService).publishEvent(commentEvent);
-        assertEquals(expDto, actualDto);
+        assertEquals(MESSAGE_INVALID_TEXT_OF_COMMENT,
+                assertThrows(RuntimeException.class,
+                        () -> service.addComment(VALID_ID_IN_DB, commentDto)).getMessage());
+    }
+
+    @Test
+    public void testAddCommentWhenContentIsBlank() {
+        //Arrange
+        commentDto.setContent(BLANK_CONTENT);
+        //Act
+        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
+        //Assert
+        assertEquals(MESSAGE_INVALID_TEXT_OF_COMMENT,
+                assertThrows(RuntimeException.class,
+                        () -> service.addComment(VALID_ID_IN_DB, commentDto)).getMessage());
+    }
+
+    @Test
+    public void testAddCommentWhenInvalidLengthContent() {
+        //Arrange
+        commentDto.setContent(new String(new char[INVALID_LENGTH_OF_CONTENT]));
+        //Act
+        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
+        //Assert
+        assertEquals(MESSAGE_INVALID_TEXT_OF_COMMENT,
+                assertThrows(RuntimeException.class,
+                        () -> service.addComment(VALID_ID_IN_DB, commentDto)).getMessage());
+    }
+
+    @Test
+    public void testAddComment() {
+        // Arrange
+        CommentAddedEvent event = new CommentAddedEvent();
+        when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
+        when(userServiceClient.getUser(VALID_ID_IN_DB)).thenReturn(userDto);
+        when(mapper.toEntity(commentDto)).thenReturn(comment);
+        when(commentRepository.save(comment)).thenReturn(comment);
+        when(mapper.toCommentEvent(comment)).thenReturn(event);
+        when(mapper.toDto(comment)).thenReturn(commentDto);
+
+        //Act
+        CommentDto actual = service.addComment(post.getId(), commentDto);
+        //Assert
+        verify(commentRepository,times(1)).save(comment);
+        verify(userRedisService, times(1)).save(userDto);
+        verify(kafkaProducer, times(1)).send(commentAddedTopic, event);
+        verify(mapper, times(1)).toDto(Mockito.any());
+        assertEquals(commentDto, actual);
     }
 
     @Test
     public void testGetCommentFromDbWithInvalidId() {
         //Arrange
-        dto.setId(INVALID_ID_IN_DB);
+        commentDto.setId(INVALID_ID_IN_DB);
         //Act
         when(commentRepository.findById(INVALID_ID_IN_DB)).thenReturn(Optional.empty());
         //Assert
         assertEquals(MESSAGE_COMMENT_NOT_EXIST,
                 assertThrows(RuntimeException.class,
-                        () -> service.changeComment(INVALID_ID_IN_DB, dto)).getMessage());
+                        () -> service.changeComment(INVALID_ID_IN_DB, commentDto)).getMessage());
     }
 
     @Test
@@ -188,7 +188,7 @@ class CommentServiceTest {
         //Assert
         assertEquals(MESSAGE_POST_ID_AND_COMMENT_POST_ID_NOT_EQUAL,
                 assertThrows(RuntimeException.class,
-                        () -> service.changeComment(INVALID_ID_IN_DB, dto)).getMessage());
+                        () -> service.changeComment(INVALID_ID_IN_DB, commentDto)).getMessage());
     }
 
     @Test
@@ -196,8 +196,8 @@ class CommentServiceTest {
         //Act
         when(commentRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(comment));
         //Assert
-        service.changeComment(post.getId(), dto);
-        Mockito.verify(mapper).toDto(Mockito.any());
+        service.changeComment(post.getId(), commentDto);
+        verify(mapper).toDto(Mockito.any());
     }
 
     @Test
@@ -208,7 +208,7 @@ class CommentServiceTest {
         when(commentRepository.findAllByPostId(VALID_ID_IN_DB)).thenReturn(comments);
         //Assert
         service.getAllCommentsOfPost(post.getId());
-        Mockito.verify(mapper, Mockito.times(comments.size())).toDto(comment);
+        verify(mapper, Mockito.times(comments.size())).toDto(comment);
     }
 
     @Test
@@ -227,6 +227,36 @@ class CommentServiceTest {
         when(postRepository.findById(VALID_ID_IN_DB)).thenReturn(Optional.of(post));
         //Assert
         service.deleteComment(post.getId(), comment.getId());
-        Mockito.verify(mapper).toDto(comment);
+        verify(mapper).toDto(comment);
+    }
+
+    @Test
+    public void testFindLastBatchByPostId() {
+        List<Comment> comments = List.of(comment);
+        CommentRedis commentRedis = CommentRedis.builder().id(comment.getId()).build();
+        TreeSet<CommentRedis> redisComments = new TreeSet<>(Set.of(commentRedis));
+        when(commentRepository.findLastBatchByPostId(batchSize, post.getId())).thenReturn(comments);
+        when(mapper.toRedisTreeSet(comments)).thenReturn(redisComments);
+
+        TreeSet<CommentRedis> actual = service.findLastBatchByPostId(batchSize, post.getId());
+
+        verify(commentRepository, times(1)).findLastBatchByPostId(batchSize, post.getId());
+        verify(mapper, times(1)).toRedisTreeSet(comments);
+        assertEquals(redisComments, actual);
+    }
+
+    @Test
+    void testFindLastBatchByPostIds() {
+        List<Long> postIds = List.of(post.getId());
+        List<Comment> comments = post.getComments();
+        List<CommentRedis> redisComments = List.of(CommentRedis.builder().id(comment.getId()).build());
+        when(commentRepository.findLastBatchByPostIds(batchSize, postIds)).thenReturn(comments);
+        when(mapper.toRedis(comments)).thenReturn(redisComments);
+
+        List<CommentRedis> actual = service.findLastBatchByPostIds(batchSize, postIds);
+
+        verify(commentRepository, times(1)).findLastBatchByPostIds(batchSize, postIds);
+        verify(mapper, times(1)).toRedis(comments);
+        assertEquals(redisComments, actual);
     }
 }

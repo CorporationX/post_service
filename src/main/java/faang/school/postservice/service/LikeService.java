@@ -1,17 +1,17 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.redisEvent.LikeEvent;
-import faang.school.postservice.mapper.LikeEventMapper;
+import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.kafka.event.like.LikeAddedEvent;
+import faang.school.postservice.kafka.producer.KafkaProducer;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,8 +26,9 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeRepository likeRepository;
     private final LikeMapper mapper;
-    private final LikeEventPublisher likeEventPublisher;
-    private final LikeEventMapper likeEventMapper;
+    private final KafkaProducer kafkaProducer;
+    @Value("${spring.kafka.topic.like.added}")
+    private String likeAddedTopic;
 
     public LikeDto addPostLike(Long postId, LikeDto dto) {
         Post post = validateUserAndGetPost(postId, dto);
@@ -36,8 +37,7 @@ public class LikeService {
         }
         Like like = mapper.toEntity(dto);
         like.setPost(post);
-        LikeEvent publisherEvent = conerterLikeEvent(dto , postId);
-        likeEventPublisher.publish(publisherEvent);
+        kafkaProducer.send(likeAddedTopic, new LikeAddedEvent(postId));
         return mapper.toDto(likeRepository.save(like));
     }
 
@@ -94,12 +94,5 @@ public class LikeService {
 
     private boolean isPostLikePresent(Post post, LikeDto dto) {
         return post.getLikes().stream().anyMatch(like -> like.getUserId().equals(dto.getUserId()));
-    }
-
-    private LikeEvent conerterLikeEvent(LikeDto likeDto, Long postId) {
-        Post post = getPost(postId);
-        LikeEvent likeEvent = likeEventMapper.toEntity(likeDto);
-        likeEvent.setAuthorId(post.getAuthorId());
-        return likeEvent;
     }
 }

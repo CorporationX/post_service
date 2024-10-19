@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.service.LikeService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
-@RequestMapping("/api/post/{postId}")
+@RequestMapping("/post/{postId}")
 @RequiredArgsConstructor
 public class LikeController {
     private static final long MIN_ID = 0L;

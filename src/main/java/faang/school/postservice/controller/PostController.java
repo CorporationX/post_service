@@ -1,8 +1,8 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.filter.PostFilterDto;
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,7 +22,7 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
 
-    @PostMapping("/")
+    @PostMapping
     public PostDto create(@Valid @RequestBody PostDto postDto) {
         return postService.create(postDto);
     }
@@ -32,7 +32,7 @@ public class PostController {
         return postService.publish(postId);
     }
 
-    @PutMapping("/")
+    @PutMapping
     public PostDto update(@Valid @RequestBody PostDto postDto) {
         return postService.update(postDto);
     }
@@ -51,5 +51,4 @@ public class PostController {
     public List<PostDto> getFilteredPosts(@RequestBody PostFilterDto filters) {
         return postService.getFilteredPosts(filters);
     }
-
 }

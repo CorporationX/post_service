@@ -1,32 +1,34 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.redisEvent.LikeEvent;
-import faang.school.postservice.mapper.LikeEventMapper;
+import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.kafka.event.like.LikeAddedEvent;
+import faang.school.postservice.kafka.producer.KafkaProducer;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest(classes = LikeService.class)
 @ExtendWith(MockitoExtension.class)
 class LikeServiceTest {
     private static final long INVALID_ID_IN_DB = 2L;
@@ -40,20 +42,20 @@ class LikeServiceTest {
     private Post post;
     private LikeDto dto;
     private Like like;
+    @Value("${spring.kafka.topic.like.added}")
+    private String likeAddedTopic;
 
-    @Mock
-    private LikeEventPublisher likeEventPublisher;
-    @Mock
+    @MockBean
+    private KafkaProducer kafkaProducer;
+    @MockBean
     private PostRepository postRepository;
-    @Mock
+    @MockBean
     private UserServiceClient userServiceClient;
-    @Mock
+    @MockBean
     private LikeRepository likeRepository;
-    @Mock
+    @MockBean
     private LikeMapper mapper;
-    @Mock
-    private LikeEventMapper likeEventMapper;
-    @InjectMocks
+    @Autowired
     private LikeService service;
 
     @BeforeEach
@@ -118,11 +120,13 @@ class LikeServiceTest {
         when(postRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(post));
         when(mapper.toEntity(Mockito.any())).thenReturn(like);
         when(likeRepository.save(Mockito.any())).thenReturn(like);
-        when(likeEventMapper.toEntity(Mockito.any())).thenReturn(new LikeEvent());
-        doNothing().when(likeEventPublisher).publish(Mockito.any());
-        service.addPostLike(VALID_ID_IN_DB, dto);
+        when(mapper.toDto(like)).thenReturn(dto);
+
+        LikeDto actual = service.addPostLike(VALID_ID_IN_DB, dto);
         //Assert
-        Mockito.verify(mapper).toDto(like);
+        verify(mapper).toDto(like);
+        verify(kafkaProducer).send(likeAddedTopic, new LikeAddedEvent(post.getId()));
+        assertEquals(dto, actual);
     }
 
     @Test
@@ -144,7 +148,7 @@ class LikeServiceTest {
         when(mapper.toEntity(Mockito.any())).thenReturn(like);
         service.deletePostLike(VALID_ID_IN_DB, dto);
         //Assert
-        Mockito.verify(mapper).toDto(like);
+        verify(mapper).toDto(like);
     }
 
     @Test
@@ -177,7 +181,7 @@ class LikeServiceTest {
         when(likeRepository.save(Mockito.any())).thenReturn(like);
         service.addCommentLike(VALID_ID_IN_DB, VALID_ID_IN_DB, dto);
         //Assert
-        Mockito.verify(mapper).toDto(like);
+        verify(mapper).toDto(like);
     }
 
     @Test
@@ -199,6 +203,6 @@ class LikeServiceTest {
         when(mapper.toEntity(Mockito.any())).thenReturn(like);
         service.deleteCommentLike(VALID_ID_IN_DB, VALID_ID_IN_DB, dto);
         //Assert
-        Mockito.verify(mapper).toDto(like);
+        verify(mapper).toDto(like);
     }
 }

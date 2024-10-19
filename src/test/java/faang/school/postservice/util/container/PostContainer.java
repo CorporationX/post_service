@@ -1,13 +1,13 @@
 package faang.school.postservice.util.container;
 
 import faang.school.postservice.dto.filter.PostFilterDto;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.model.Ad;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -118,16 +118,13 @@ public class PostContainer {
                 .content(content)
                 .authorId(authorId)
                 .projectId(projectId)
-                .likeIds(likeIds())
-                .commentIds(commentIds())
-                .albumIds(albumIds())
-                .adId(adId)
-                .resourceIds(resourceIds())
                 .published(published)
                 .publishedAt(publishedAt)
                 .scheduledAt(scheduledAt)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
                 .deleted(deleted)
-                .numLikes((long) likes().size())
+                .likesCount((long) likes().size())
                 .build();
     }
 

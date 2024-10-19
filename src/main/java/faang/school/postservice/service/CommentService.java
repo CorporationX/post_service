@@ -1,24 +1,26 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.UserDto;
+import faang.school.postservice.kafka.producer.KafkaProducer;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.cache.model.CommentRedis;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.publisher.PublicationService;
-import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
+import faang.school.postservice.cache.service.UserRedisService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 
 @Service
 @RequiredArgsConstructor
@@ -35,12 +37,17 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
-    private final PublicationService<CommentEventPublisher, CommentEvent> publishService;
+    private final KafkaProducer kafkaProducer;
+    private final UserRedisService userRedisService;
 
-    public CommentDto addComment(Long postId, CommentDto dto) throws JsonProcessingException {
+    @Value("${spring.kafka.topic.comment.added}")
+    private String commentAddedTopic;
+
+    public CommentDto addComment(Long postId, CommentDto dto) {
         Post post = getPost(postId);
+        UserDto userDto;
         try {
-            userServiceClient.getUser(dto.getAuthorId());
+            userDto = userServiceClient.getUser(dto.getAuthorId());
         } catch (FeignException e) {
             throw new RuntimeException(MESSAGE_USER_LEFT_COMMENT_NOT_EXIST);
         }
@@ -49,7 +56,8 @@ public class CommentService {
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
         log.info("comment with id:{} created.", savedComment.getId());
-        publishService.publishEvent(mapper.toCommentEvent(savedComment));
+        saveUserToCache(userDto);
+        kafkaProducer.send(commentAddedTopic, mapper.toCommentEvent(savedComment));
         return mapper.toDto(savedComment);
     }
 
@@ -71,6 +79,18 @@ public class CommentService {
         Comment commentForDelete = getCommentForDelete(commentId, post.getComments());
         commentRepository.delete(commentForDelete);
         return mapper.toDto(commentForDelete);
+    }
+
+    public TreeSet<CommentRedis> findLastBatchByPostId(int batchSize, Long postId) {
+        return mapper.toRedisTreeSet(commentRepository.findLastBatchByPostId(batchSize, postId));
+    }
+
+    public List<CommentRedis> findLastBatchByPostIds(int batchSize, List<Long> postIds) {
+        return mapper.toRedis(commentRepository.findLastBatchByPostIds(batchSize, postIds));
+    }
+
+    private void saveUserToCache(UserDto userDto) {
+        userRedisService.save(userDto);
     }
 
     private List<CommentDto> getListCommentDto(List<Comment> comments) {

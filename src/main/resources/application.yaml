@@ -21,11 +21,52 @@ spring:
     redis:
       port: 6379
       host: localhost
-      channels:
-        like_event_channel: like_event_channel
-        calculations_channel:
-          name: calculations_channel
-        comment: comment_channel
+      lock-registry:
+        key: registry-key
+        ttl-millis: 10000
+        try-lock-millis: 2000
+      cache:
+        post:
+          ttl-hours: 24
+          prefix: "Post:"
+          field:
+            likes: likesCount
+          comments:
+            max-size: 3
+        user:
+          ttl-hours: 24
+        news-feed:
+          prefix: "NewsFeed:"
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      enable-auto-commit: false
+      group-id: group1
+    topic:
+      post:
+        published: post-published-topic
+        viewed: post-viewed-topic
+      like:
+        added: like-added-topic
+      comment:
+        added: comment-added-topic
+      heater:
+        users: heater-users-topic
+        news-feeds: heater-news-feed-topic
+        posts: heater-posts-topic
+
+  async:
+    executor:
+      core-pool-size: 50
+      max-pool-size: 100
+      queue-capacity: 500
+
+news-feed:
+  max-size: 500
+  batch-size: 20
+  heater:
+    batch-size: 3
 
 server:
   port: 8081
@@ -33,14 +74,6 @@ server:
 logging:
   level:
     root: info
-
-post:
-  publisher:
-    scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
-  ad-remover:
-    scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
 
 user-service:
   host: localhost
