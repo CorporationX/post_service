@@ -54,6 +54,7 @@ dependencies {
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
     implementation("org.apache.commons:commons-collections4:4.0")
+    implementation("org.springframework.kafka:spring-kafka:3.1.1")
 
     /**
      * Test containers

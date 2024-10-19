@@ -66,7 +66,8 @@ public class PostServiceImpl implements PostService {
                 .authorId(publishedPost.getAuthorId())
                 .postId(publishedPost.getId())
                 .build();
-        postEventPublisher.publish(event);
+//        postEventPublisher.publish(event);
+        postEventPublisher.publishByKafka(event);
 
         return postMapper.toDto(post);
     }
