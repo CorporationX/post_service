@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.annotations.SendPostCreatedEvent;
 import faang.school.postservice.annotations.SendPostViewEventToAnalytics;
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import faang.school.postservice.exception.ResourceNotFoundException;
@@ -58,6 +59,7 @@ public class PostService {
     private final PostCacheService postCacheService;
 
     @Transactional
+    @SendPostCreatedEvent
     public Post create(Post post) {
         log.info("Create post with id: {}", post.getId());
         postValidator.validateCreatePost(post);

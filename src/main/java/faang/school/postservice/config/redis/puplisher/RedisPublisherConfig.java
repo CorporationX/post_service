@@ -10,10 +10,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisPublisherConfig {
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory connectionFactory,
+    public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory jedisConnectionFactory,
                                                        StringRedisSerializer stringRedisSerializer) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
+        template.setConnectionFactory(jedisConnectionFactory);
 
         template.setDefaultSerializer(stringRedisSerializer);
 
@@ -21,7 +21,7 @@ public class RedisPublisherConfig {
     }
 
     @Bean
-    public StringRedisTemplate stringRedisTemplate() {
-        return new StringRedisTemplate();
+    public StringRedisTemplate stringRedisTemplate(JedisConnectionFactory jedisConnectionFactory) {
+        return new StringRedisTemplate(jedisConnectionFactory);
     }
 }
