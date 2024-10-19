@@ -13,11 +13,11 @@ import java.util.Set;
 
 @Getter
 @Component
-public class ModerationDictionary {
+public class CommentModerationDictionary {
 
     private final Set<String> obsceneWords;
 
-    public ModerationDictionary(@Value("${comment.obscene-words-resource}") String obsceneWordsResource,
+    public CommentModerationDictionary(@Value("${comment.obscene-words-resource}") String obsceneWordsResource,
                                 ObjectMapper objectMapper) {
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(obsceneWordsResource)) {
             obsceneWords = objectMapper.readValue(inputStream, new TypeReference<>() {

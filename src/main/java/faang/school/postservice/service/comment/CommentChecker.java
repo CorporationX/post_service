@@ -29,7 +29,7 @@ public class CommentChecker {
 
     private final ByteBuffersDirectory buffersDirectory;
 
-    public CommentChecker(ModerationDictionary moderationDictionary) {
+    public CommentChecker(CommentModerationDictionary moderationDictionary) {
         this.buffersDirectory = new ByteBuffersDirectory();
         IndexWriterConfig config = new IndexWriterConfig(new StandardAnalyzer());
         try {

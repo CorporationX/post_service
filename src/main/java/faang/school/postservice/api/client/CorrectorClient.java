@@ -4,9 +4,7 @@ import faang.school.postservice.dto.post.corrector.ApiResponse;
 import faang.school.postservice.dto.post.corrector.AutoCorrectionResponse;
 import faang.school.postservice.dto.post.corrector.CheckResponse;
 import faang.school.postservice.dto.post.corrector.LanguageResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.retry.annotation.Backoff;
@@ -17,17 +15,17 @@ import org.springframework.web.reactive.function.client.WebClientException;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class CorrectorClient {
-
-    @Autowired
-    @Qualifier("correctorWebClient")
     private final WebClient webClient;
+
+    public CorrectorClient(@Qualifier("correctorWebClient") WebClient webClient) {
+        this.webClient = webClient;
+    }
 
     @Retryable(
             retryFor = {WebClientException.class},
             maxAttemptsExpression = "${post.grammar-checker.attempts}",
-            backoff = @Backoff(delayExpression = "${post.grammar-checker}",
+            backoff = @Backoff(delayExpression = "${post.grammar-checker.delay}",
                     multiplierExpression = "${post.grammar-checker.multiplier}"))
     public ApiResponse<LanguageResponse> getContentLanguageResponse(String content) {
         return webClient.get()
@@ -36,7 +34,8 @@ public class CorrectorClient {
                         .queryParam("text", content)
                         .build())
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<ApiResponse<LanguageResponse>>() {})
+                .bodyToMono(new ParameterizedTypeReference<ApiResponse<LanguageResponse>>() {
+                })
                 .block();
     }
 
@@ -44,7 +43,7 @@ public class CorrectorClient {
     @Retryable(
             retryFor = {WebClientException.class},
             maxAttemptsExpression = "${post.grammar-checker.attempts}",
-            backoff = @Backoff(delayExpression = "${post.grammar-checker}",
+            backoff = @Backoff(delayExpression = "${post.grammar-checker.delay}",
                     multiplierExpression = "${post.grammar-checker.multiplier}"))
     public ApiResponse<AutoCorrectionResponse> getAutoCorrectedEnglishTextResponse(String content, String language) {
         return webClient.get()
@@ -54,14 +53,15 @@ public class CorrectorClient {
                         .queryParam("language", language)
                         .build())
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<ApiResponse<AutoCorrectionResponse>>() {})
+                .bodyToMono(new ParameterizedTypeReference<ApiResponse<AutoCorrectionResponse>>() {
+                })
                 .block();
     }
 
     @Retryable(
             retryFor = {WebClientException.class},
             maxAttemptsExpression = "${post.grammar-checker.attempts}",
-            backoff = @Backoff(delayExpression = "${post.grammar-checker}",
+            backoff = @Backoff(delayExpression = "${post.grammar-checker.delay}",
                     multiplierExpression = "${post.grammar-checker.multiplier}"))
     public ApiResponse<CheckResponse> getCheckResponseForNonEnglishText(String content, String language) {
         return webClient.get()
@@ -71,7 +71,8 @@ public class CorrectorClient {
                         .queryParam("language", language)
                         .build())
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<ApiResponse<CheckResponse>>() {})
+                .bodyToMono(new ParameterizedTypeReference<ApiResponse<CheckResponse>>() {
+                })
                 .block();
     }
 }

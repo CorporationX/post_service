@@ -1,6 +1,6 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.dictionary.ModerationDictionary;
+import faang.school.postservice.dictionary.PostModerationDictionary;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.impl.verifier.PostContentVerifierImpl;
@@ -21,7 +21,7 @@ import java.util.Set;
 public class PostContentVerifierTest {
 
     @Mock
-    private ModerationDictionary moderationDictionary;
+    private PostModerationDictionary postModerationDictionary;
 
     @Mock
     private PostRepository postRepository;
@@ -39,7 +39,7 @@ public class PostContentVerifierTest {
 
     @Test
     public void testVerifyPostsSuccess() {
-        when(moderationDictionary.getForbiddenWords()).thenReturn(banWords);
+        when(postModerationDictionary.getForbiddenWords()).thenReturn(banWords);
         post = Post.builder()
                 .id(1)
                 .authorId(2L)
@@ -55,7 +55,7 @@ public class PostContentVerifierTest {
 
     @Test
     public void testVerifyPostsContainBadWords() {
-        when(moderationDictionary.getForbiddenWords()).thenReturn(banWords);
+        when(postModerationDictionary.getForbiddenWords()).thenReturn(banWords);
         post = Post.builder()
                 .id(1)
                 .authorId(2L)
