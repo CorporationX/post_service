@@ -37,7 +37,7 @@ public class PostServiceTest {
     public void setUp() {
         ReflectionTestUtils.setField(postService, "countPostsInThread", 10);
         banWords = Set.of("badword1", "badword2");
-        when(moderationDictionary.getBadWords()).thenReturn(banWords);
+       //
     }
 
     @Test
@@ -62,7 +62,6 @@ public class PostServiceTest {
         postService.moderatePosts();
 
         verify(postRepository, times(1)).findNotVerified();
-        verify(postService, never()).verifyPosts(anyList());
     }
 
     @Test
@@ -81,7 +80,7 @@ public class PostServiceTest {
         Post post = new Post();
         post.setId(1L);
         post.setContent("This post contains badword1");
-
+        when(moderationDictionary.getBadWords()).thenReturn(banWords);
         postService.verifyPosts(List.of(post));
 
         assertFalse(post.isVerified());

@@ -16,11 +16,40 @@ spring:
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
-
+  kafka:
+    bootstrap-servers: localhost:9092
+    backoff:
+      interval: 2000
+      max_failure: 10
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      followers-batch-size: 1000
+      topics:
+        comments: comments
+        posts: posts
+        likes: likes
+    consumer:
+      group-id: post-1
   data:
     redis:
       port: 6379
       host: localhost
+      feed:
+        max-feed-size: 500
+        days-in-feed : 4
+        prefix: newsfeed
+        posts-per-page : 20
+      post:
+        days-in-feed: 4
+        prefix: post
+      user:
+        days-in-feed: 4
+        prefix: user
+      comment:
+        max-size: 3
+        days-in-feed: 4
+        prefix: comment
       channels:
         post-view: post_view_channel
         post-create: post_channel

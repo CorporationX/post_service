@@ -1,6 +1,7 @@
 package faang.school.postservice.dto.comment;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
@@ -16,8 +17,8 @@ public class CommentDto {
     @NotEmpty
     @Size(max = 4096)
     private String content;
-    @NotEmpty
-    private long authorId;
+    @NotNull
+    private Long authorId;
     private List<Long> likeIds;
     private long postId;
     private LocalDateTime createdAt;

@@ -1,7 +1,11 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dictionary.ModerationDictionary;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.UserMapper;
+import faang.school.postservice.producer.kafka.KafkaPostProducer;
 import faang.school.postservice.publisher.PostCreatePublisher;
 import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.dto.like.LikeDto;
@@ -13,6 +17,8 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.cache.PostCacheRepository;
+import faang.school.postservice.repository.cache.UserCacheRepository;
 import faang.school.postservice.repository.post.PostFilterRepository;
 import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
@@ -74,6 +80,17 @@ public class PostServiceTest {
     @Mock
     private PostFilterRepository authorFilterSpecification;
 
+    @Mock
+    private UserServiceClient userServiceClient;
+    @Mock
+    private PostCacheRepository postCacheRepository;
+    @Mock
+    private KafkaPostProducer kafkaPostProducer;
+    @Mock
+    private UserCacheRepository userCacheRepository;
+    @Mock
+    private UserMapper userMapper;
+
     private List<PostFilterRepository> postFilterRepository;
 
 //    @InjectMocks
@@ -89,7 +106,10 @@ public class PostServiceTest {
         post = Post.builder().id(1L).content("content").authorId(null).projectId(1L).build();
         postFilterRepository = List.of(authorFilterSpecification);
 
-        postService = new PostService(postRepository, postFilterRepository, postValidator, postMapper, postPublishService, postViewPublisher, postCreatePublisher, userContext, moderationDictionary);
+        postService = new PostService(postRepository, postFilterRepository, postValidator, postMapper,
+                postPublishService, postViewPublisher, postCreatePublisher, userContext, moderationDictionary,
+                userServiceClient, postCacheRepository, kafkaPostProducer, userCacheRepository, userMapper);
+        ReflectionTestUtils.setField(postService, "followersBatchSize", 10);
     }
 
     @Test
@@ -174,13 +194,15 @@ public class PostServiceTest {
 
     @Test
     public void testPublishSuccessfully() {
-        Post expectedPost = Post.builder().id(1L).content("content").authorId(null).projectId(1L).published(true).build();
-        PostDto expectedDtoPost = PostDto.builder().id(1L).content("content").authorId(null).projectId(1L).published(true).build();
-        Post postToUpdate = Post.builder().id(1L).content("content").authorId(null).projectId(1L).published(false).build();
+        Post expectedPost = Post.builder().id(1L).content("content").authorId(1L).projectId(1L).published(true).build();
+        PostDto expectedDtoPost = PostDto.builder().id(1L).content("content").authorId(1L).projectId(1L).published(true).build();
+        Post postToUpdate = Post.builder().id(1L).content("content").authorId(1L).projectId(1L).published(false).build();
+        UserDto userDto = UserDto.builder().followersId(List.of(2L,3L,4L)).build();
         when(postRepository.findById(postToUpdate.getId())).thenReturn(Optional.of(postToUpdate));
         doNothing().when(postValidator).checkPostPublished(post.getId(), post.isPublished());
         when(postRepository.save(postToUpdate)).thenReturn(expectedPost);
         when(postMapper.toDto(any(Post.class))).thenReturn(expectedDtoPost);
+        when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
 
         PostDto actualPublished = postService.publish(postToUpdate.getId());
 

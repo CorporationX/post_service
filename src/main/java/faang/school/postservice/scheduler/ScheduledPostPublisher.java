@@ -16,6 +16,6 @@ public class ScheduledPostPublisher {
 
     @Scheduled(cron = "${post.publisher.scheduler.cron}")
     public void publishScheduledPosts() {
-        postService.publishScheduledPosts();
+        //postService.publishScheduledPosts();
     }
 }

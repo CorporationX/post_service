@@ -7,6 +7,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.kafka.KafkaCommentProducer;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -27,6 +28,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentEventPublisher commentPusher;
+    private final KafkaCommentProducer kafkaCommentProducer;
 
     @Transactional
     public void delete(long commentId) {
@@ -46,7 +48,9 @@ public class CommentService {
         commentValidator.checkPostIsExist(commentDto.getPostId());
         Comment savedComment = commentRepository.save(commentMapper.toEntity(commentDto));
         commentPusher.publish(commentMapper.toEvent(savedComment));
-        return commentMapper.toDto(savedComment);
+        CommentDto savedCommentDto = commentMapper.toDto(savedComment);
+        kafkaCommentProducer.sendEvent(commentMapper.toKafkaEvent(savedCommentDto));
+        return savedCommentDto;
     }
 
     @Transactional

@@ -3,11 +3,13 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.event.PostLikeEventDto;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.event.like.LikeKafkaEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.kafka.KafkaLikeProducer;
 import faang.school.postservice.publisher.PostLikePublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.post.PostService;
@@ -53,6 +55,9 @@ class LikeServiceTest {
     @Mock
     private CommentService commentService;
 
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
+
     @Test
     void createLikeToPost_ShouldThrowExceptionWhenLikeIdIsNotNull() {
         LikeDto likeDto = LikeDto.builder().likeId(1L).build();
@@ -67,6 +72,7 @@ class LikeServiceTest {
     @Test
     void createLikeToPost_ShouldCreateLikeSuccessfully() {
         LikeDto likeDto = LikeDto.builder().userId(1L).postId(1L).build();
+
         Post post = new Post();
         Like like = new Like();
 
@@ -75,6 +81,7 @@ class LikeServiceTest {
         when(likeRepository.save(like)).thenReturn(like);
         doNothing().when(postLikePublisher).publish(any(PostLikeEventDto.class));
         when(likeMapper.toDto(like)).thenReturn(likeDto);
+        when(likeMapper.toEvent(likeDto)).thenReturn(new LikeKafkaEvent());
 
         LikeDto result = likeService.createLikeToPost(likeDto);
 
@@ -118,6 +125,7 @@ class LikeServiceTest {
         when(postService.validationAndPostReceived(likeDto)).thenReturn(post);
         when(likeRepository.findById(likeDto.getLikeId())).thenReturn(Optional.of(like));
         when(likeMapper.toEntity(likeDto)).thenReturn(like);
+        when(likeMapper.toEvent(likeDto)).thenReturn(new LikeKafkaEvent());
 
         LikeDto result = likeService.removeLikeToPost(likeDto);
 

@@ -1,7 +1,14 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostCreateEventDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.post.PostKafkaEvent;
+import faang.school.postservice.mapper.UserMapper;
+import faang.school.postservice.model.redis.PostRedis;
+import faang.school.postservice.model.redis.UserRedis;
+import faang.school.postservice.producer.kafka.KafkaPostProducer;
 import faang.school.postservice.publisher.PostCreatePublisher;
 import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.dto.event.PostViewEventDto;
@@ -12,6 +19,8 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.cache.PostCacheRepository;
+import faang.school.postservice.repository.cache.UserCacheRepository;
 import faang.school.postservice.repository.post.PostFilterRepository;
 import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.validator.post.PostValidator;
@@ -19,6 +28,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -49,11 +59,18 @@ public class PostService {
     private final PostCreatePublisher postCreatePublisher;
     private final UserContext userContext;
     private final ModerationDictionary moderationDictionary;
+    private final UserServiceClient userServiceClient;
+    private final PostCacheRepository postCacheRepository;
+    private final KafkaPostProducer kafkaPostProducer;
+    private final UserCacheRepository userCacheRepository;
+    private final UserMapper userMapper;
 
     @Value("${post.publisher.batch-size}")
     private int postsBatchSize;
     @Value("${post.moderator.count-posts-in-thread}")
     private int countPostsInThread;
+    @Value("${spring.kafka.producer.followers-batch-size}")
+    private int followersBatchSize;
 
 
     public void publishScheduledPosts() {
@@ -92,8 +109,39 @@ public class PostService {
         Post post = getEntityById(id);
         postValidator.checkPostPublished(post.getId(), post.isPublished());
         post.setPublished(true);
+        PostDto savedPostDto = postMapper.toDto(postRepository.save(post));
+        savePostIntoCache(savedPostDto);
+        sendEventToKafkaAndAuthorToCache(savedPostDto);
+        return savedPostDto;
+    }
 
-        return postMapper.toDto(postRepository.save(post));
+    private void sendEventToKafkaAndAuthorToCache(PostDto savedPostDto) {
+       userContext.setUserId(savedPostDto.getAuthorId());
+       UserDto userDto =  userServiceClient.getUser(savedPostDto.getAuthorId());
+
+       UserRedis userRedis =  userMapper.toRedis(userDto);
+       userCacheRepository.save(userRedis);
+
+       List<Long> followerIds = userDto.getFollowersId();
+       List<List<Long>> followerIdBatches = ListUtils.partition(followerIds, followersBatchSize);
+       for (var followerList : followerIdBatches) {
+           PostKafkaEvent event = PostKafkaEvent.builder()
+                   .postId(savedPostDto.getId())
+                   .authorId(savedPostDto.getAuthorId())
+                   .createdAt(savedPostDto.getCreatedAt())
+                   .followerIds(followerList)
+                   .build();
+           kafkaPostProducer.sendEvent(event);
+       }
+    }
+
+    private void saveAuthorToCache(UserDto userDto) {
+
+    }
+
+    private void savePostIntoCache(PostDto savedPostDto) {
+        PostRedis postRedis = postMapper.toPostRedis(savedPostDto);
+        postCacheRepository.save(postRedis);
     }
 
     @Transactional
