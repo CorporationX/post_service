@@ -6,11 +6,14 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.SortingBy;
 import faang.school.postservice.dto.comment.SortingOrder;
 import faang.school.postservice.dto.comment.SortingStrategyDto;
+import faang.school.postservice.dto.redis.event.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.MessagePublisher;
+import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.sort.SortByUpdateAscending;
@@ -39,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -73,6 +77,12 @@ class CommentServiceTest {
     @Mock
     private CommentChecker commentChecker;
 
+    @Mock
+    private UserBanEventPublisher userBanEventPublisher;
+
+    @Mock
+    private MessagePublisher<CommentEvent> commentPublisher;
+
     private SortingStrategyAppliersMap sortingStrategyAppliersMap;
 
     @BeforeEach
@@ -86,7 +96,9 @@ class CommentServiceTest {
                 userContext,
                 commentMapper,
                 sortingStrategyAppliersMap,
-                commentChecker);
+                commentChecker,
+                userBanEventPublisher,
+                commentPublisher);
         post = initPost(POST_ID, true, false);
         author = initAuthor(AUTHOR_ID);
     }
@@ -108,6 +120,7 @@ class CommentServiceTest {
         verify(userServiceClient).getUser(AUTHOR_ID);
         verify(userContext).getUserId();
         verify(commentRepository).save(any(Comment.class));
+        verify(commentPublisher).publish(any(CommentEvent.class));
         assertEquals(expectedDto.authorId(), result.authorId());
         assertEquals(expectedDto.content(), result.content());
         assertEquals(expectedDto.updatedAt(), result.updatedAt());
@@ -386,6 +399,14 @@ class CommentServiceTest {
         commentService.verifyComments(comments);
 
         verify(commentRepository).saveAll(comments);
+    }
+
+    @Test
+    @DisplayName("Getting users to ban")
+    public void testGettingUsersToBan() {
+        commentService.banUsersWithObsceneCommentsMoreThan(anyInt());
+
+        verify(commentRepository).findUserIdsToBan(anyInt());
     }
 
     CommentDto initCommentDto(Long id, Long authorId, String content, LocalDateTime updateAt) {

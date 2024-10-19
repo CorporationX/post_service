@@ -23,4 +23,6 @@ public interface PostService {
     List<PostDto> getPostsByCreatorAndPublishedStatus(Long creatorId, PostCreator creator, Boolean publishedStatus);
 
     List<ResourceObjectResponse> getResourcesByPostId(Long id);
+
+    void moderatePosts();
 }

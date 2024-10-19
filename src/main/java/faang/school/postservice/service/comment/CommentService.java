@@ -18,4 +18,6 @@ public interface CommentService {
     List<Comment> getUnverifiedComments();
 
     void verifyComments(List<Comment> comments);
+
+    void banUsersWithObsceneCommentsMoreThan(int banCommentLimit);
 }

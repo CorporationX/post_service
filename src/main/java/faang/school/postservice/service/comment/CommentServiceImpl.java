@@ -4,11 +4,13 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.SortingStrategyDto;
+import faang.school.postservice.dto.redis.event.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.sort.CommentSortingStrategy;
@@ -40,6 +42,8 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final SortingStrategyAppliersMap sortingStrategiesAppliers;
     private final CommentChecker commentChecker;
+    private final MessagePublisher<Long> banUserPublisher;
+    private final MessagePublisher<CommentEvent> commentPublisher;
 
     @Value("${comment.constants.verification-days-limit}")
     private int verificationDaysLimit;
@@ -52,6 +56,9 @@ public class CommentServiceImpl implements CommentService {
         comment.setPost(post);
         commentRepository.save(comment);
         log.info("Saved comment: {}, for post: {}", comment.getId(), post.getId());
+
+        CommentEvent event = commentMapper.toCommentEvent(comment);
+        commentPublisher.publish(event);
         return commentMapper.toCommentDto(comment);
     }
 
@@ -110,6 +117,13 @@ public class CommentServiceImpl implements CommentService {
         });
         commentRepository.saveAll(comments);
         log.info("Verified comments: {}", comments.size());
+    }
+
+    @Override
+    public void banUsersWithObsceneCommentsMoreThan(int banCommentLimit) {
+        List<Long> usersIds = commentRepository.findUserIdsToBan(banCommentLimit);
+        log.info("Found {} users to Ban", usersIds.size());
+        usersIds.forEach(banUserPublisher::publish);
     }
 
     private Post getPost(Long postId) {
