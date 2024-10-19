@@ -1,5 +1,6 @@
 package faang.school.postservice.config.redis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,10 +15,16 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfiguration {
 
     private final RedisProperties redisProperties;
+    private final ObjectMapper objectMapper;
 
     @Bean
-    ChannelTopic achievementEventTopic() {
+    ChannelTopic likePostEventTopic() {
         return new ChannelTopic(redisProperties.getChannels().getLikePostChannel().getName());
+    }
+
+    @Bean
+    ChannelTopic postViewEventTopic() {
+        return new ChannelTopic(redisProperties.getChannels().getPostViewChannel().getName());
     }
 
     @Bean
@@ -25,7 +32,7 @@ public class RedisConfiguration {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
         return template;
     }
 

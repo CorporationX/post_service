@@ -28,6 +28,8 @@ spring:
           name: calculations_channel
         likePostChannel:
           name: like_post_channel
+        postViewChannel:
+          name: post_view_channel
 
 server:
   port: 8081
