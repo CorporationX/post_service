@@ -2,6 +2,7 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.LikeEvent;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.UserAlreadyLikedException;
@@ -9,11 +10,11 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisherImpl;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.apache.catalina.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,8 +30,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
@@ -38,6 +38,7 @@ public class LikeServiceTest {
     private final static long POST_ID = 1;
     private final static long COMMENT_ID = 1;
     private final static long NON_EXISTING_USER_ID = 10;
+    private final static long POST_AUTHOR_ID = 4;
 
     @Mock
     private LikeRepository likeRepository;
@@ -53,6 +54,9 @@ public class LikeServiceTest {
 
     @Mock
     private UserServiceClient userServiceClient;
+
+    @Mock
+    private LikeEventPublisherImpl likeEventPublisher;
 
     @Spy
     private LikeMapper likeMapper = Mappers.getMapper(LikeMapper.class);
@@ -70,6 +74,7 @@ public class LikeServiceTest {
     public void setUp() {
         post = Post.builder()
                 .id(POST_ID)
+                .authorId(POST_AUTHOR_ID)
                 .build();
         comment = Comment.builder()
                 .id(COMMENT_ID)
@@ -97,7 +102,7 @@ public class LikeServiceTest {
         assertNull(result.commentId());
         verify(likeRepository).save(like);
         verify(likeRepository).findByPostIdAndUserId(POST_ID, USER_ID);
-        verify(postRepository).findById(POST_ID);
+        verify(postRepository, times(2)).findById(POST_ID);
         verify(userContext).getUserId();
         verify(userServiceClient).getUser(USER_ID);
     }
@@ -130,6 +135,28 @@ public class LikeServiceTest {
         verify(likeRepository).findByPostIdAndUserId(POST_ID, USER_ID);
         verify(userContext).getUserId();
         verify(userServiceClient).getUser(USER_ID);
+    }
+
+    @Test
+    @DisplayName("Проверка отправки лайка в redis")
+    public void testLikeEventPublishSuccess() {
+        when(userContext.getUserId()).thenReturn(USER_ID);
+        when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID)).thenReturn(Optional.empty());
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
+        Like like = Like.builder()
+                .post(post)
+                .userId(USER_ID)
+                .build();
+        when(likeRepository.save(like)).thenReturn(like);
+        LikeEvent likeEvent = LikeEvent.builder()
+                .likeAuthorId(USER_ID)
+                .postAuthorId(POST_AUTHOR_ID)
+                .postId(POST_ID)
+                .build();
+        LikeDto result = likeService.likePost(POST_ID);
+
+        verify(likeEventPublisher).publish(likeEvent);
     }
 
     @Test
