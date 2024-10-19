@@ -20,7 +20,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
              """)
     List<Comment> findAllByPostIdOrderByCreatedAtDesc(long postId);
 
-    @Query(value = """
+    @Query("""
         SELECT c.authorId
         FROM Comment c
         WHERE c.verified = false
