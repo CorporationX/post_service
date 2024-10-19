@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.publisher.PostViewEventPublisher;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -41,10 +43,13 @@ public class PostServiceTest {
     @Mock
     private PostMapper postMapper;
 
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
+
     @BeforeEach
     public void setup() {
         post = new Post();
-        post.setId(1L);
+        post.setId(ID);
         post.setContent("Test content");
         post.setAuthorId(authorId);
         post.setProjectId(projectId);
@@ -81,9 +86,14 @@ public class PostServiceTest {
         void whenFindByIdThenSuccess() {
             when(postRepository.findById(ID)).thenReturn(Optional.of(post));
 
-            postService.findById(ID);
+            Post existedPost = postService.findById(ID);
 
-            assertEquals(1L, ID);
+            assertNotNull(existedPost);
+            assertEquals(post.getId(), existedPost.getId());
+            verify(postViewEventPublisher).publish(argThat(event ->
+                    event.getPostId() == ID &&
+                            event.getAuthorId().equals(ID) &&
+                            event.getLocalDateTime() != null));
         }
 
         @Test
