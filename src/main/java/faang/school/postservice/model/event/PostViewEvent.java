@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record PostEvent(
+public record PostViewEvent(
         long postId,
         long authorPostId,
         long viewUserId,

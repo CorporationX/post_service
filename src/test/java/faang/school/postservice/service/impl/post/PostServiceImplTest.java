@@ -6,8 +6,8 @@ import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.dto.user.UserDto;
 import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.model.dto.post.PostDto;
-import faang.school.postservice.model.event.PostEvent;
-import faang.school.postservice.publisher.PostEventPublisher;
+import faang.school.postservice.model.event.PostViewEvent;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.impl.post.async.PostServiceAsyncImpl;
@@ -62,7 +62,7 @@ public class PostServiceImplTest {
     private PostServiceAsyncImpl postServiceAsync;
 
     @Mock
-    private PostEventPublisher postEventPublisher;
+    private PostViewEventPublisher postEventPublisher;
 
     @Mock
     private UserContext userContext;
@@ -185,7 +185,7 @@ public class PostServiceImplTest {
         assertEquals(examplePostDto, result);
         verify(postRepository, times(1)).findById(1L);
         verify(postEventPublisher, times(1))
-                .publish(any(PostEvent.class));
+                .publish(any(PostViewEvent.class));
     }
 
     @Test

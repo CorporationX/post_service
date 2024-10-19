@@ -6,8 +6,8 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.dto.post.PostDto;
 import faang.school.postservice.model.dto.user.UserDto;
 import faang.school.postservice.model.entity.Post;
-import faang.school.postservice.model.event.PostEvent;
-import faang.school.postservice.publisher.PostEventPublisher;
+import faang.school.postservice.model.event.PostViewEvent;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.PostService;
@@ -38,7 +38,7 @@ public class PostServiceImpl implements PostService {
     private final PostServiceAsync postServiceAsync;
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
-    private final PostEventPublisher postEventPublisher;
+    private final PostViewEventPublisher postEventPublisher;
 
     @Value("${post.correcter.posts-batch-size}")
     private int batchSize;
@@ -102,7 +102,7 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDto getPost(Long id) {
         Post post = getPostFromRepository(id);
-        PostEvent postEvent = PostEvent.builder()
+        PostViewEvent postEvent = PostViewEvent.builder()
                 .postId(post.getId())
                 .authorPostId(post.getAuthorId())
                 .viewUserId(getUser().id())

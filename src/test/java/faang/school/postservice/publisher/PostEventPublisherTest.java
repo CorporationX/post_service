@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.model.event.PostEvent;
+import faang.school.postservice.model.event.PostViewEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,12 +24,12 @@ class PostEventPublisherTest {
     private ChannelTopic postTopic;
 
     @InjectMocks
-    private PostEventPublisher postEventPublisher;
+    private PostViewEventPublisher postEventPublisher;
 
     @Test
     @DisplayName("Publish Post Event Test")
     void testPublish() {
-        var postEvent = PostEvent.builder().build();
+        var postEvent = PostViewEvent.builder().build();
         postEventPublisher.publish(postEvent);
         verify(redisTemplate, times(1))
                 .convertAndSend(postTopic.getTopic(), postEvent);
