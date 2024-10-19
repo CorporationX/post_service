@@ -16,12 +16,12 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     @Bean
-    JedisConnectionFactory jedisConnectionFactory() {
+    public JedisConnectionFactory jedisConnectionFactory() {
         return new JedisConnectionFactory();
     }
 
     @Bean
-    RedisTemplate<String, LikeEvent> likeEventRedisTemplate() {
+    public RedisTemplate<String, LikeEvent> likeEventRedisTemplate() {
         RedisTemplate<String, LikeEvent> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
@@ -42,7 +42,6 @@ public class RedisConfig {
         RedisTemplate<String, CommentEvent> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(LikeEvent.class));
         template.setValueSerializer(new Jackson2JsonRedisSerializer<>(CommentEvent.class));
         return template;
     }
