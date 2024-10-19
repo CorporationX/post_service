@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.dto.event.PostCreateEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.post.PostKafkaEvent;
@@ -12,9 +13,12 @@ import faang.school.postservice.producer.kafka.KafkaPostProducer;
 import faang.school.postservice.publisher.PostCreatePublisher;
 import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.dto.event.PostViewEventDto;
-import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.post.*;
+import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostFilterDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.post.SortField;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundEntityException;
 import faang.school.postservice.mapper.PostMapper;
@@ -23,6 +27,7 @@ import faang.school.postservice.repository.cache.PostCacheRepository;
 import faang.school.postservice.repository.cache.UserCacheRepository;
 import faang.school.postservice.repository.post.PostFilterRepository;
 import faang.school.postservice.repository.post.PostRepository;
+import faang.school.postservice.service.kafka.KafkaPublisherService;
 import faang.school.postservice.validator.post.PostValidator;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.Valid;
@@ -71,7 +76,6 @@ public class PostService {
     private int countPostsInThread;
     @Value("${spring.kafka.producer.followers-batch-size}")
     private int followersBatchSize;
-
 
     public void publishScheduledPosts() {
         log.info("Start publishing posts, at: {}", LocalDateTime.now());
