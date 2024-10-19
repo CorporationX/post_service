@@ -1,6 +1,5 @@
 package faang.school.postservice.publisher.comment;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.config.redis.RedisTopicsFactory;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.publisher.AbstractEventPublisher;
@@ -15,10 +14,9 @@ public class RedisCommentEventPublisher extends AbstractEventPublisher<CommentEv
 
     public RedisCommentEventPublisher(
             RedisTemplate<String, Object> redisTemplate,
-            ObjectMapper objectMapper,
             RedisTopicsFactory redisTopicsFactory,
             @Value("${spring.data.redis.channels.comment_event_channel.name}") String commentEventChannel) {
-        super(redisTemplate, objectMapper);
+        super(redisTemplate);
         this.commentTopic = redisTopicsFactory.getTopic(commentEventChannel);
     }
 

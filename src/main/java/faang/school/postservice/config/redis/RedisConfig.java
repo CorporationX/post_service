@@ -32,7 +32,9 @@ public class RedisConfig {
     @Bean
     public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory connectionFactory,
                                                        ObjectMapper objectMapper) {
-        return buildRedisTemplate(connectionFactory, Object.class, objectMapper);
+        RedisTemplate<String, Object> redisTemplate = buildRedisTemplate(connectionFactory, Object.class, objectMapper);
+        redisTemplate.setEnableTransactionSupport(false);
+        return redisTemplate;
     }
 
     @Bean
