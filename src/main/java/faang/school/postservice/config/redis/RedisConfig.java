@@ -19,16 +19,17 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
-
     private final ObjectMapper objectMapper;
 
     @Value("${spring.data.redis.host}")
     private String host;
+
     @Value("${spring.data.redis.port}")
     private int port;
 
     @Value("${spring.data.redis.channels.like-channel.name}")
     private String likeEvent;
+
     @Value("${spring.data.redis.channels.comment-event-channel.name}")
     private String commentEvent;
 
@@ -37,6 +38,9 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.channels.post-channel.name}")
     private String postEventChannel;
+
+    @Value("${spring.data.redis.channels.album-channel.name}")
+    private String albumEventChannel;
 
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
@@ -85,5 +89,10 @@ public class RedisConfig {
     @Bean
     public ChannelTopic postEventTopic() {
         return new ChannelTopic(postEventChannel);
+    }
+
+    @Bean
+    public ChannelTopic albumEventTopic() {
+        return new ChannelTopic(albumEventChannel);
     }
 }

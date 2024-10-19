@@ -32,8 +32,8 @@ spring:
           name: comment_event_channel
         post-channel:
           name: post_channel
-        comment-receiving:
-          name: comment-receiving-topic
+        album-channel:
+          name: album-channel
 
 server:
   port: 8081
@@ -98,12 +98,6 @@ moderation:
 
 comments:
   batch-size: 100
-
-posts:
-  batch-size: 100
-
-premium:
-  pool-size: 3
 
 thread-pool:
   fixed:
