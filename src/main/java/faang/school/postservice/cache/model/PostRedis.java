@@ -3,6 +3,7 @@ package faang.school.postservice.cache.model;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
@@ -12,6 +13,7 @@ import java.util.TreeSet;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @RedisHash("Post")
 @Builder
 public class PostRedis implements Serializable, Comparable<PostRedis> {
