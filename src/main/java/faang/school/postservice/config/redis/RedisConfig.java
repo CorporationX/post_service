@@ -46,5 +46,4 @@ public class RedisConfig {
     public LikeEventPublisher likeEventPublisher(RedisTemplate<String, Object> redisTemplate, ChannelTopic likeEventTopic) {
         return new LikeEventPublisher(redisTemplate, likeEventTopic);
     }
-
 }
