@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public abstract class AbstractLikeEvent {
-    protected final Long likedEntityId;
     protected final Long authorId;
     protected final Long userExciterId;
     protected final LocalDateTime createdAt = LocalDateTime.now();

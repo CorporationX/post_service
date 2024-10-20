@@ -31,10 +31,10 @@ public class LikeEventPublisher {
         try {
             valueAsString = objectMapper.writeValueAsString(message);
             redisTemplate.convertAndSend(likeEventChannel, valueAsString);
+            log.info("Send LikeEvent to Brokers channel: {} , message: {}", message, likeEventChannel);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
-        log.info("Send LikeEvent to Brokers channel: {} , message: {}", message, likeEventChannel);
     }
 }
