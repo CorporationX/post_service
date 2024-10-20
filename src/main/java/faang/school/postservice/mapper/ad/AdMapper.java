@@ -9,6 +9,8 @@ import org.mapstruct.ReportingPolicy;
 
 import java.time.LocalDateTime;
 
+import static java.time.Duration.between;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AdMapper {
 
@@ -26,6 +28,6 @@ public interface AdMapper {
     AdBoughtEvent toEvent(Ad ad);
 
     default int calculateAdDuration(LocalDateTime startDate, LocalDateTime endDate) {
-        return (int) java.time.Duration.between(startDate, endDate).toDays();
+        return (int) between(startDate, endDate).toDays();
     }
 }
