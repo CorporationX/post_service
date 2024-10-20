@@ -1,7 +1,6 @@
-package faang.school.postservice.service.publisher;
+package faang.school.postservice.publisher.like;
 
 import faang.school.postservice.event.like.LikePostEvent;
-import faang.school.postservice.publisher.like.LikePostEventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
