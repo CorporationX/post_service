@@ -16,4 +16,8 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V008_change_album_visibility_to_uppercase.sql
   - include:
+      file: db/changelog/changeset/post_V009_add_ai_spell_check_status.sql
+  - include:
+      file: db/changelog/changeset/post_V010_add_column_verified_to_table_post.sql
+  - include:
       file: db/changelog/changeset/post_V011_add_moderation_fields_to_post.sql

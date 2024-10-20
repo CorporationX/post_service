@@ -3,6 +3,7 @@ package faang.school.postservice;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.post.SpellCheckerDto;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.ModerationStatus;
 import faang.school.postservice.model.Post;
@@ -10,6 +11,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.scheduler.post.moderation.AhoCorasickContentChecker;
 import faang.school.postservice.service.ContentModerationService;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.tools.YandexSpeller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,28 +20,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
+
     @Mock
     private PostRepository postRepository;
 
@@ -51,6 +46,7 @@ public class PostServiceTest {
 
     @Mock
     private UserContext userContext;
+
     @Mock
     private AhoCorasickContentChecker contentChecker;
 
@@ -60,12 +56,13 @@ public class PostServiceTest {
     @Mock
     private ExecutorService postModerationThreadPool;
 
-    @InjectMocks
-    PostService postService;
+    @Mock
+    private YandexSpeller yandexSpeller;
 
+    @InjectMocks
+    private PostService postService;
 
     private Post post;
-
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -109,7 +106,6 @@ public class PostServiceTest {
         verify(projectServiceClient, times(1)).getProject(post.getProjectId());
     }
 
-
     @Test
     public void testUpdatePost() {
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
@@ -118,7 +114,6 @@ public class PostServiceTest {
 
         verify(postRepository, times(1)).save(post);
     }
-
 
     @Test
     public void testDeletePost() {
@@ -227,5 +222,66 @@ public class PostServiceTest {
         postService.moderatePosts();
 
         verify(contentModerationService, times(1)).checkContentAndModerate(unverifiedPosts);
+    }
+
+    @Test
+    public void testPublishScheduledPosts() {
+        Post post1 = new Post();
+        post1.setPublished(false);
+        Post post2 = new Post();
+        post2.setPublished(false);
+        List<Post> posts = List.of(post1, post2);
+
+        postService.publishScheduledPosts(posts);
+
+        assertTrue(post1.isPublished());
+        assertNotNull(post1.getPublishedAt());
+
+        assertTrue(post2.isPublished());
+        assertNotNull(post2.getPublishedAt());
+
+        verify(postRepository, times(1)).saveAll(anyList());
+    }
+
+    @Test
+    public void testCorrectAllDraftPosts_CorrectText() {
+        String wordWithError = "Helo world";
+        String wordWithoutError = "Hello world";
+
+        List<Post> draftPosts = new ArrayList<>();
+        Post post = new Post();
+        post.setContent(wordWithError);
+        draftPosts.add(post);
+
+        List<SpellCheckerDto> checkers = new ArrayList<>();
+        checkers.add(new SpellCheckerDto());
+        when(postRepository.findAllDraftsWithoutSpellCheck()).thenReturn(draftPosts);
+        when(yandexSpeller.checkText(wordWithError)).thenReturn(checkers);
+        when(yandexSpeller.correctText(anyString(), anyList())).thenReturn(wordWithoutError);
+
+        postService.correctAllDraftPosts();
+
+        assertEquals(wordWithoutError, post.getContent());
+        assertTrue(post.isSpellCheck());
+        verify(postRepository, times(1)).saveAll(draftPosts);
+    }
+
+    @Test
+    public void testCorrectAllDraftPosts_NoCorrections() {
+        String wordWithoutError = "Hello world";
+
+        List<Post> draftPosts = new ArrayList<>();
+        Post post = new Post();
+        post.setContent(wordWithoutError);
+        draftPosts.add(post);
+
+        when(postRepository.findAllDraftsWithoutSpellCheck()).thenReturn(draftPosts);
+        when(yandexSpeller.checkText(wordWithoutError)).thenReturn(new ArrayList<>());
+
+        postService.correctAllDraftPosts();
+
+        assertEquals(wordWithoutError, post.getContent());
+        assertTrue(post.isSpellCheck());
+        verify(postRepository, times(1)).saveAll(draftPosts);
     }
 }

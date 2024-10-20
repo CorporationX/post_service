@@ -3,23 +3,24 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.post.SpellCheckerDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostModerationException;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.ModerationStatus;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.tools.YandexSpeller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 @Service
@@ -32,6 +33,7 @@ public class PostService {
     private final UserContext userContext;
     private final ContentModerationService contentModerationService;
     private final ExecutorService postModerationThreadPool;
+    private final YandexSpeller yandexSpeller;
 
     @Value("${post.moderation.scheduler.batch.size}")
     private int batchSize;
@@ -53,11 +55,22 @@ public class PostService {
         return postRepository.save(existingPost);
     }
 
+    @Async("treadPool")
+    public void publishScheduledPosts(List<Post> posts) {
+        List<Post> newPost = posts.stream()
+                .peek(post -> {
+                    post.setPublished(true);
+                    post.setPublishedAt(LocalDateTime.now());
+                }).toList();
+        postRepository.saveAll(newPost);
+    }
+
     @Transactional
     public Post updatePost(Long id, String content) {
         Post existingPost = postRepository.findById(id).orElseThrow(() -> new PostRequirementsException("Post not found"));
         updateContent(existingPost, content);
         existingPost.setModerationStatus(ModerationStatus.UNVERIFIED);
+        existingPost.setSpellCheck(false);
         return postRepository.save(existingPost);
     }
 
@@ -111,6 +124,27 @@ public class PostService {
         }
     }
 
+    @Transactional
+    public void correctAllDraftPosts() {
+        List<Post> draftPosts = postRepository.findAllDraftsWithoutSpellCheck();
+
+        draftPosts.forEach(post -> {
+            String text = post.getContent();
+            List<SpellCheckerDto> checkers = yandexSpeller.checkText(text);
+            if (!checkers.isEmpty()) {
+                String correctedText = yandexSpeller.correctText(text, checkers);
+                post.setContent(correctedText);
+            }
+            post.setSpellCheck(true);
+        });
+
+        postRepository.saveAll(draftPosts);
+    }
+
+    public List<Long> getAuthorsWithExcessVerifiedFalsePosts() {
+        return postRepository.findAuthorsWithExcessVerifiedFalsePosts();
+    }
+
     private void validateAuthorOrProject(Post post) {
         if (Objects.nonNull(post.getAuthorId()) && Objects.nonNull(post.getProjectId())) {
             throw new DataValidationException("The post can't be made by both a user and a project at the same time.");
@@ -155,4 +189,3 @@ public class PostService {
         post.setPublished(false);
     }
 }
-

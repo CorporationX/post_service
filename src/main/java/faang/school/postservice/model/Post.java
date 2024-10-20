@@ -84,6 +84,12 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "verified")
+    private boolean verified;
+
+    @Column(name = "ai_spell_check")
+    private boolean spellCheck;
+
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
 
