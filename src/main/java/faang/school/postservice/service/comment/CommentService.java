@@ -8,6 +8,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
@@ -30,6 +31,7 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
+    private final CommentEventPublisher commentEventPublisher;
 
     public List<Comment> getUnverifiedComments() {
         return commentRepository.findByVerifiedAtIsNull();
@@ -61,6 +63,7 @@ public class CommentService {
         comment = commentRepository.save(comment);
         log.info("[{}] Comment successfully saved to DB with ID: {}", "createComment", comment.getId());
 
+        commentEventPublisher.publish(commentMapper.toCommentEventDto(comment));
         return commentMapper.toCommentDto(comment);
     }
 

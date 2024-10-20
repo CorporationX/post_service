@@ -26,6 +26,8 @@ spring:
       channels:
         calculationsChannel:
           name: calculations_channel
+        commentChannel:
+          name: comment_channel
         likePostChannel:
           name: like_post_channel
 
