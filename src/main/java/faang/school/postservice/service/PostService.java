@@ -10,6 +10,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.tools.YandexSpeller;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,16 @@ public class PostService {
         }
         publish(existingPost);
         return postRepository.save(existingPost);
+    }
+
+    @Async("treadPool")
+    public void publishScheduledPosts(List<Post> posts) {
+        List<Post> newPost = posts.stream()
+                .peek(post -> {
+                    post.setPublished(true);
+                    post.setPublishedAt(LocalDateTime.now());
+                }).toList();
+        postRepository.saveAll(newPost);
     }
 
     @Transactional
