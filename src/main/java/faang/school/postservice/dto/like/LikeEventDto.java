@@ -17,7 +17,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class LikeEventDto implements Serializable {
     private Long postAuthorId;
-    private Long likerId;
+    private Long likeAuthorId;  //likerId
+    private Long postId;  // + post_id
     private EventType eventType;
     private LocalDateTime createdAt;
 }

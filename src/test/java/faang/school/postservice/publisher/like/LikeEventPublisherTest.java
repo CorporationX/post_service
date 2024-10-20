@@ -1,6 +1,6 @@
-package faang.school.postservice.service.publisher;
+package faang.school.postservice.publisher.like;
 
-import faang.school.postservice.dto.event.LikePostEvent;
+import faang.school.postservice.dto.like.LikeEventDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,26 +14,26 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class LikePostEventPublisherTest {
+class LikeEventPublisherTest {
 
     @InjectMocks
-    private LikePostEventPublisher likePostEventPublisher;
+    private LikeEventPublisher likeEventPublisher;
 
     @Mock
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String,Object> redisTemplate;
 
     @Mock
     private ChannelTopic channelTopic;
 
-    private static final String LIKE_POST_EVENT_TOPIC = "LikePostEventTopic";
+    private static final String LIKE_POST_EVENT_TOPIC = "like_event_channel";
 
     @Test
     @DisplayName("Успешная отправка message")
     public void whenPublishEventShouldSuccess() {
-        LikePostEvent event = LikePostEvent.builder().build();
+        LikeEventDto event = LikeEventDto.builder().build();
         when(channelTopic.getTopic()).thenReturn(LIKE_POST_EVENT_TOPIC);
 
-        likePostEventPublisher.publish(event);
+        likeEventPublisher.publish(event);
 
         verify(redisTemplate).convertAndSend(LIKE_POST_EVENT_TOPIC, event);
     }

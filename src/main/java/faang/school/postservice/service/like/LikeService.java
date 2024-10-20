@@ -18,9 +18,9 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,26 +73,20 @@ public class LikeService {
     }
 
     public LikeResponseDto addLike(LikeRequestDto likeRequestDto) {
-        validateUserExists(likeRequestDto.getUserId());
+//        validateUserExists(likeRequestDto.getUserId());
         if (likeRequestDto.getPostId() == null && likeRequestDto.getCommentId() == null) {
             throw new IllegalArgumentException("Like must target either a post or a comment");
         }
 
         Like like = likeMapper.toEntity(likeRequestDto);
-        LikePostEvent likePostEvent = null;
 
         if (likeRequestDto.getPostId() != null) {
             Post post = postRepository.findById(likeRequestDto.getPostId())
                     .orElseThrow(() -> new IllegalArgumentException("Post with ID " + likeRequestDto.getPostId() + " not found"));
 
-            likeValidator.validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
+//            likeValidator.validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
 
             like.setPost(post);
-            likePostEvent = LikePostEvent.builder()
-                    .postAuthorId(post.getAuthorId())
-                    .likeAuthorId(likeRequestDto.getUserId())
-                    .postId(post.getId())
-                    .build();
         } else {
             Comment comment = commentRepository.findById(likeRequestDto.getCommentId())
                     .orElseThrow(() -> new IllegalArgumentException("Comment with ID " + likeRequestDto.getCommentId() + " not found"));
@@ -103,10 +97,11 @@ public class LikeService {
         }
 
         like.setUserId(userContext.getUserId());
-        likeRepository.save(like);
+//        likeRepository.save(like);
 
         if (like.getPost() != null) {
             publishLikeEventOnPost(like);
+            log.debug("Sent like event dto for post {}", like.getPost().getId());
         }
         return likeMapper.toResponseDto(like);
     }
@@ -129,9 +124,10 @@ public class LikeService {
     private void publishLikeEventOnPost(Like like) {
         LikeEventDto likeEventDto = LikeEventDto.builder()
                 .postAuthorId(like.getPost().getAuthorId())
-                .likerId(userContext.getUserId())
+                .likeAuthorId(like.getUserId())
+                .postId(like.getPost().getId())
                 .eventType(EventType.POST_LIKE)
-                .createdAt(LocalDateTime.now())
+                .createdAt(like.getCreatedAt())
                 .build();
         likeEventPublisher.publish(likeEventDto);
     }

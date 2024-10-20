@@ -24,7 +24,7 @@ public class RedisConfiguration {
 
     @Bean
     public ChannelTopic likeEventsTopic() {
-        return new ChannelTopic(propertiesConfig.getChannels().getLikeEventsChannel().getName());
+        return new ChannelTopic(redisProperties.getChannels().getLikeEventsChannel().getName());
     }
 
     @Bean
