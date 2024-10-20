@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,11 +48,23 @@ public class FeedService {
     }
 
     public List<FeedPostDto> getFeed(Long userId, LocalDateTime lastSeenDate) {
-        List<PostDto> resultPostDtos = constructPostsForFeed(userId, lastSeenDate);
-        Map<Long, UserDto> resultUsersMap = cacheService.fetchUsers(resultPostDtos);
-        Map<Long, List<CommentDto>> resultCommentsMap = cacheService.fetchComments(resultPostDtos);
+        List<PostDto> postDtos = constructPostsForFeed(userId, lastSeenDate);
+        Map<Long, List<CommentDto>> commentsMap = cacheService.fetchComments(postDtos);
 
-        return assembleFeedPosts(resultPostDtos, resultUsersMap, resultCommentsMap);
+        Set<Long> userIds = prepareAuthorsIds(postDtos, commentsMap);
+        Map<Long, UserDto> usersMap = cacheService.fetchUsers(userIds);
+
+        return assembleFeedPosts(postDtos, usersMap, commentsMap);
+    }
+
+    private Set<Long> prepareAuthorsIds(List<PostDto> postDtos, Map<Long, List<CommentDto>> commentsMap) {
+        return Stream.concat(
+                postDtos.stream()
+                        .map(PostDto::getAuthorId),
+                commentsMap.values().stream()
+                        .flatMap(List::stream)
+                        .map(CommentDto::getAuthorId)
+        ).collect(Collectors.toSet());
     }
 
     private List<PostDto> constructPostsForFeed(Long userId, LocalDateTime lastSeenDate) {
@@ -95,26 +109,49 @@ public class FeedService {
 
     private List<FeedPostDto> assembleFeedPosts(
             List<PostDto> postDtos,
-            Map<Long, UserDto> resultUsersMap,
-            Map<Long, List<CommentDto>> resultCommentsMap) {
+            Map<Long, UserDto> usersMap,
+            Map<Long, List<CommentDto>> commentsMap) {
 
         return postDtos.stream()
                 .sorted(Comparator.comparing(PostDto::getPublishedAt).reversed())
                 .flatMap(postDto -> {
-                    UserDto author = resultUsersMap.get(postDto.getAuthorId());
-                    if (author == null) {
+                    UserDto postAuthor = usersMap.get(postDto.getAuthorId());
+                    if (postAuthor == null) {
                         log.warn("Can't create FeedPostDto, because author not found for postId: {} " +
                                 "with authorId: {}. Skipping this post.", postDto.getId(), postDto.getAuthorId());
                         return Stream.empty();
                     } else {
+                        List<CommentDto> comments = commentsMap.getOrDefault(postDto.getId(), Collections.emptyList())
+                                .stream()
+                                .filter(commentDto -> usersMap.containsKey(commentDto.getAuthorId()))
+                                .toList();
+
+                        List<UserDto> commentAuthors = getCommentAuthors(comments, usersMap);
+
                         FeedPostDto feedPostDto = FeedPostDto.builder()
                                 .postDto(postDto)
-                                .author(author)
-                                .comments(resultCommentsMap.getOrDefault(postDto.getId(), Collections.emptyList()))
+                                .author(postAuthor)
+                                .comments(comments)
+                                .commentsAuthors(commentAuthors)
                                 .build();
                         return Stream.of(feedPostDto);
                     }
                 })
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    private List<UserDto> getCommentAuthors(List<CommentDto> comments, Map<Long, UserDto> usersMap) {
+        return comments.stream()
+                .map(commentDto -> {
+                    UserDto commentAuthor = usersMap.get(commentDto.getAuthorId());
+                    if (commentAuthor == null) {
+                        log.warn("Author not found for commentId: {} with authorId: {}. Skipping this comment.",
+                                commentDto.getId(), commentDto.getAuthorId());
+                        return null;
+                    }
+                    return commentAuthor;
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 }

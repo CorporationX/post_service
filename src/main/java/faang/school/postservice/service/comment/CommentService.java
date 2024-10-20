@@ -6,8 +6,10 @@ import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.feed.CacheService;
 import faang.school.postservice.service.feed.FeedEventService;
 import faang.school.postservice.validator.comment.CommentValidator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,32 +23,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
     private final ModerationDictionary moderationDictionary;
+    @Qualifier("moderation-thread-pool")
     private final ExecutorService moderationExecutor;
     private final FeedEventService feedEventService;
+    private final CacheService cacheService;
 
     @Value("${comment.batchSize}")
     private int batchSize;
-
-    public CommentService(
-            CommentRepository commentRepository,
-            CommentMapper commentMapper,
-            CommentValidator commentValidator,
-            ModerationDictionary moderationDictionary,
-            @Qualifier("moderation-thread-pool") ExecutorService moderationExecutor,
-            FeedEventService feedEventService
-    ) {
-        this.commentRepository = commentRepository;
-        this.commentMapper = commentMapper;
-        this.commentValidator = commentValidator;
-        this.moderationDictionary = moderationDictionary;
-        this.moderationExecutor = moderationExecutor;
-        this.feedEventService = feedEventService;
-    }
 
     @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
@@ -55,6 +44,7 @@ public class CommentService {
 
         feedEventService.createAndSendFeedCommentEvent(new FeedCommentEvent(
                 commentDto.getId(), commentDto.getPostId(), commentDto.getAuthorId(), commentDto.getContent()));
+        cacheService.addUserToCache(savedComment.getAuthorId());
 
         return commentMapper.toDto(savedComment);
     }

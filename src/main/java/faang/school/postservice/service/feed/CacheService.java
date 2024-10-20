@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -131,19 +130,17 @@ public class CacheService {
         comments.forEach(commentDto -> redisPostRepository.addComment(postId, commentDto));
     }
 
-    public Map<Long, UserDto> fetchUsers(List<PostDto> postDtos) {
-        Map<Long, UserDto> resultUsersMap = postDtos.stream()
-                .map(PostDto::getAuthorId)
-                .distinct()
+    public Map<Long, UserDto> fetchUsers(Set<Long> userIds) {
+        Map<Long, UserDto> userMap = userIds.stream()
                 .collect(Collectors.toMap(
                         authorId -> authorId,
                         redisUserRepository::get,
                         (existing, replacement) -> existing
                 ));
 
-        processMissingUsers(resultUsersMap);
+        processMissingUsers(userMap);
 
-        return resultUsersMap;
+        return userMap;
     }
 
     private void processMissingUsers(Map<Long, UserDto> actualUserMap) {

@@ -18,4 +18,5 @@ public class FeedPostDto {
     private PostDto postDto;
     private UserDto author;
     private List<CommentDto> comments;
+    private List<UserDto> commentsAuthors;
 }
