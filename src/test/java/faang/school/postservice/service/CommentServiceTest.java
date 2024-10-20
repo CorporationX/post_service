@@ -248,5 +248,4 @@ class CommentServiceTest {
                 .updatedAt(updateAt)
                 .build();
     }
-
 }

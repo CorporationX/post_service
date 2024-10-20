@@ -14,17 +14,17 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @RequiredArgsConstructor
 public class RedisConfiguration {
 
-    private final RedisProperties propertiesConfig;
+    private final RedisProperties redisProperties;
     private final ObjectMapper objectMapper;
 
     @Bean
-    JedisConnectionFactory jedisConnectionFactory() {
-        return new JedisConnectionFactory();
+    public ChannelTopic achievementEventTopic() {
+        return new ChannelTopic(redisProperties.getChannels().getLikePostChannel().getName());
     }
 
     @Bean
     public ChannelTopic commentEventChannel() {
-        return new ChannelTopic(propertiesConfig.getChannels().getCommentChannel().getName());
+        return new ChannelTopic(redisProperties.getChannels().getCommentChannel().getName());
     }
 
     @Bean
@@ -34,5 +34,9 @@ public class RedisConfiguration {
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
         return template;
+    }
+    @Bean
+    JedisConnectionFactory jedisConnectionFactory() {
+        return new JedisConnectionFactory();
     }
 }
