@@ -73,7 +73,7 @@ public class LikeService {
     }
 
     public LikeResponseDto addLike(LikeRequestDto likeRequestDto) {
-//        validateUserExists(likeRequestDto.getUserId());
+        validateUserExists(likeRequestDto.getUserId());
         if (likeRequestDto.getPostId() == null && likeRequestDto.getCommentId() == null) {
             throw new IllegalArgumentException("Like must target either a post or a comment");
         }
@@ -84,7 +84,7 @@ public class LikeService {
             Post post = postRepository.findById(likeRequestDto.getPostId())
                     .orElseThrow(() -> new IllegalArgumentException("Post with ID " + likeRequestDto.getPostId() + " not found"));
 
-//            likeValidator.validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
+            likeValidator.validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
 
             like.setPost(post);
         } else {
@@ -97,7 +97,7 @@ public class LikeService {
         }
 
         like.setUserId(userContext.getUserId());
-//        likeRepository.save(like);
+        likeRepository.save(like);
 
         if (like.getPost() != null) {
             publishLikeEventOnPost(like);
