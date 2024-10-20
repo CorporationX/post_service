@@ -38,6 +38,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = true AND p.deleted = false AND p.projectId = :projectId ORDER BY p.publishedAt DESC")
     List<Post> findPublishedByProjectId(long projectId);
 
-    @Query("SELECT p FROM Post p WHERE p.verified = false OR p.verifiedAt <= :time")
-    List<Post> findUnverifiedOrOldVerifiedPosts(LocalDateTime time);
+    @Query("SELECT p FROM Post p WHERE p.moderationStatus = 'UNVERIFIED'")
+    List<Post> findUnverifiedPosts();
 }

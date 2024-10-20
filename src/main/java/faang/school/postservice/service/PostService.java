@@ -6,6 +6,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostModerationException;
 import faang.school.postservice.exception.PostRequirementsException;
+import faang.school.postservice.model.ModerationStatus;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,7 @@ public class PostService {
     public Post updatePost(Long id, String content) {
         Post existingPost = postRepository.findById(id).orElseThrow(() -> new PostRequirementsException("Post not found"));
         updateContent(existingPost, content);
+        existingPost.setModerationStatus(ModerationStatus.UNVERIFIED);
         return postRepository.save(existingPost);
     }
 
@@ -92,27 +94,21 @@ public class PostService {
     }
 
     public void moderatePosts() {
-        List<Post> unverifiedOrOldVerifiedPosts = postRepository.findUnverifiedOrOldVerifiedPosts(LocalDateTime.now().minusHours(24));
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        List<Post> unverifiedPosts = postRepository.findUnverifiedPosts();
 
-        for (int i = 0; i < unverifiedOrOldVerifiedPosts.size(); i += batchSize) {
-            int end = Math.min(i + batchSize, unverifiedOrOldVerifiedPosts.size());
-            List<Post> batch = unverifiedOrOldVerifiedPosts.subList(i, end);
+        for (int i = 0; i < unverifiedPosts.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, unverifiedPosts.size());
+            List<Post> batch = unverifiedPosts.subList(i, end);
 
-            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                for (Post post : batch) {
-                    try {
-                        contentModerationService.checkContentAndModerate(post);
-                    } catch (Exception e) {
-                        log.error("Error moderating post with ID: {}. Error: {}", post.getId(), e.getMessage());
-                        throw new PostModerationException("Error moderating post with ID: " + post.getId(), e);
-                    }
+            postModerationThreadPool.submit(() -> {
+                try {
+                    contentModerationService.checkContentAndModerate(batch);
+                } catch (Exception e) {
+                    log.error("Error moderating post batch. Error: {}", e.getMessage());
+                    throw new PostModerationException("Error moderating post batch", e);
                 }
-            }, postModerationThreadPool);
-            futures.add(future);
+            });
         }
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
     private void validateAuthorOrProject(Post post) {

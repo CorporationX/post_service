@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.PostRequirementsException;
+import faang.school.postservice.model.ModerationStatus;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.scheduler.post.moderation.AhoCorasickContentChecker;
@@ -19,6 +20,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -31,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -71,6 +74,7 @@ public class PostServiceTest {
         post.setAuthorId(1L);
         post.setContent("Sample content");
         post.setPublished(false);
+        post.setModerationStatus(ModerationStatus.UNVERIFIED);
     }
 
     @Test
@@ -207,30 +211,21 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testModerationOfPostWithBatchProcessing() {
-        int batchSize = 2;
-        ReflectionTestUtils.setField(postService, "batchSize", batchSize);
+    public void testModeratePosts() {
+        List<Post> unverifiedPosts = Arrays.asList(post);
 
-        ExecutorService testExecutor = Executors.newFixedThreadPool(2);
-        ReflectionTestUtils.setField(postService, "postModerationThreadPool", testExecutor);
+        when(postRepository.findUnverifiedPosts()).thenReturn(unverifiedPosts);
 
-        List<Post> postsToModerate = new ArrayList<>();
-        for (long i = 1; i <= 10; i++) {
-            Post post = new Post();
-            post.setId(i);
-            post.setContent("Test content " + i);
-            postsToModerate.add(post);
-        }
+        ReflectionTestUtils.setField(postService, "batchSize", 1);
 
-        when(postRepository.findUnverifiedOrOldVerifiedPosts(any(LocalDateTime.class))).thenReturn(postsToModerate);
-        when(contentModerationService.checkContentAndModerate(any(Post.class))).thenReturn(CompletableFuture.completedFuture(null));
+        doAnswer(invocation -> {
+            Runnable task = invocation.getArgument(0);
+            task.run();
+            return null;
+        }).when(postModerationThreadPool).submit(any(Runnable.class));
 
         postService.moderatePosts();
 
-        verify(contentModerationService, times(postsToModerate.size())).checkContentAndModerate(any(Post.class));
-
-        verify(postRepository, times(1)).findUnverifiedOrOldVerifiedPosts(any(LocalDateTime.class));
-
-        testExecutor.shutdown();
+        verify(contentModerationService, times(1)).checkContentAndModerate(unverifiedPosts);
     }
 }

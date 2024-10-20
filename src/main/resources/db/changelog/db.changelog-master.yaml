@@ -17,3 +17,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V008_change_album_visibility_to_uppercase.sql
   - include:
       file: db/changelog/changeset/post_V009_add_verified_fields_to_post.sql
+  - include:
+        file: db/changelog/changeset/post_V010_edit_verified_fields_to_post.sql
