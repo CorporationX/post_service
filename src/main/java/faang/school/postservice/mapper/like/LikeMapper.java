@@ -1,4 +1,4 @@
-package faang.school.postservice.mapper;
+package faang.school.postservice.mapper.like;
 
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.model.Like;
