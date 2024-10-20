@@ -208,11 +208,6 @@ public class LikeServiceImpl implements LikeService {
         likeEvent.setLikedUserId(post.getAuthorId());
         likeEvent.setCreatedAt(likeDto.getCreatedAt());
 
-        try {
-            String json = objectMapper.writeValueAsString(likeEvent);
-            likeEventPublisher.publish(json);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        likeEventPublisher.publish(likeEvent);
     }
 }
