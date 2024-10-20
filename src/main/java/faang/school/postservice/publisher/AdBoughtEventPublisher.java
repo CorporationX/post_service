@@ -1,6 +1,5 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.dto.add.AdBoughtEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;

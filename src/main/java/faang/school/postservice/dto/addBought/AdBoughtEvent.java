@@ -1,9 +1,8 @@
-package faang.school.postservice.dto.add;
+package faang.school.postservice.dto.addBought;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.joda.time.DateTime;
 
 import java.time.LocalDateTime;
 
@@ -12,14 +11,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AdBoughtEvent {
-
     private Long postId;
-
     private Long userId;
-
     private Double paymentAmount;
-
     private Integer adDuration;
-
     private LocalDateTime eventTimestamp;
 }

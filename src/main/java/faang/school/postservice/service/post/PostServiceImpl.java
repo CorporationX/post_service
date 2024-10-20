@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.addBought.AdBoughtEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.PostException;
 import faang.school.postservice.mapper.PostMapper;
