@@ -10,15 +10,19 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Builder
 @NoArgsConstructor
@@ -30,11 +34,11 @@ public class Resource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "key", nullable = false, length = 50)
+    @Column(name = "key", nullable = false, length = 200)
     private String key;
 
     @Column(name = "size")
-    private long size;
+    private BigInteger size;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
@@ -44,7 +48,7 @@ public class Resource {
     @Column(name = "name", length = 150)
     private String name;
 
-    @Column(name = "type", length = 50)
+    @Column(name = "type", length = 200)
     private String type;
 
     @ManyToOne

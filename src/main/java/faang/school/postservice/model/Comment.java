@@ -45,4 +45,11 @@ public class Comment {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "verified")
+    private boolean verified;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
 }

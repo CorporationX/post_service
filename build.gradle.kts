@@ -35,6 +35,16 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
+     * AmazonS3
+     */
+    implementation("io.github.fuquanming:fqm-file-amazons3:1.0.9")
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.772")
+    /**
+     * Change Image Dimension
+     */
+    implementation("org.imgscalr:imgscalr-lib:4.2")
+
+    /**
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
@@ -45,6 +55,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("org.springframework.retry:spring-retry:2.0.9")
 
     /**
      * OpenAPI & swagger dependencies
@@ -69,10 +80,14 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.github.hakky54:logcaptor:2.9.3")
+    testImplementation("org.assertj:assertj-core:3.26.3")
 
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+    /**
+     * Jacoco
+     */
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
 }
 
 tasks.test {

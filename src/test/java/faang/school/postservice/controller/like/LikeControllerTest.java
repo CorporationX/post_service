@@ -1,7 +1,7 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.like;
 
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.service.LikeService;
+import faang.school.postservice.service.like.LikeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,6 +22,7 @@ public class LikeControllerTest {
 
     @InjectMocks
     private LikeController likeController;
+
     @Mock
     private LikeService likeService;
 

@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LikeService {
@@ -78,6 +79,7 @@ public class LikeService {
         }
 
         Like like = likeMapper.toEntity(likeRequestDto);
+        LikePostEvent likePostEvent = null;
 
         if (likeRequestDto.getPostId() != null) {
             Post post = postRepository.findById(likeRequestDto.getPostId())
@@ -86,14 +88,20 @@ public class LikeService {
             likeValidator.validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
 
             like.setPost(post);
+            likePostEvent = LikePostEvent.builder()
+                    .postAuthorId(post.getAuthorId())
+                    .likeAuthorId(likeRequestDto.getUserId())
+                    .postId(post.getId())
+                    .build();
         } else {
             Comment comment = commentRepository.findById(likeRequestDto.getCommentId())
-            .orElseThrow(() -> new IllegalArgumentException("Comment with ID " + likeRequestDto.getCommentId() + " not found"));
-            
+                    .orElseThrow(() -> new IllegalArgumentException("Comment with ID " + likeRequestDto.getCommentId() + " not found"));
+
             likeValidator.validateLikeForCommentExists(likeRequestDto.getCommentId(), likeRequestDto.getUserId());
-            
+
             like.setComment(comment);
         }
+
         like.setUserId(userContext.getUserId());
         likeRepository.save(like);
 
