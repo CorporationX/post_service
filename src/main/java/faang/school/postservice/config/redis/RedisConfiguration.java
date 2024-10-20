@@ -16,8 +16,13 @@ public class RedisConfiguration {
     private final RedisProperties redisProperties;
 
     @Bean
-    ChannelTopic achievementEventTopic() {
+    ChannelTopic likePostTopic() {
         return new ChannelTopic(redisProperties.getChannels().getLikePostChannel().getName());
+    }
+
+    @Bean
+    ChannelTopic userBanTopic() {
+        return new ChannelTopic(redisProperties.getChannels().getUserBanChannel().getName());
     }
 
     @Bean
@@ -26,6 +31,7 @@ public class RedisConfiguration {
         template.setConnectionFactory(jedisConnectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+
         return template;
     }
 
