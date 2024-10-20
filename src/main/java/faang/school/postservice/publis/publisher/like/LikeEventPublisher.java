@@ -1,4 +1,4 @@
-package faang.school.postservice.publis.publisher;
+package faang.school.postservice.publis.publisher.like;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,11 +30,11 @@ public class LikeEventPublisher {
         String valueAsString;
         try {
             valueAsString = objectMapper.writeValueAsString(message);
+            redisTemplate.convertAndSend(likeEventChannel, valueAsString);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
-        redisTemplate.convertAndSend(likeEventChannel, valueAsString);
         log.info("Send LikeEvent to Brokers channel: {} , message: {}", message, likeEventChannel);
     }
 }

@@ -1,11 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.annotation.like.PublishLikeEvent;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publis.publisher.LikeEventPublisher;
+import faang.school.postservice.publis.publisher.like.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -26,9 +27,9 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-    private final LikeEventPublisher likeEventPublisher;
 
     @Transactional
+    @PublishLikeEvent
     public Like addToPost(Long postId, Like tempLike) {
         checkUserExist(tempLike.getUserId());
 
@@ -48,9 +49,6 @@ public class LikeService {
         List<Like> likeList = post.getLikes();
         likeList.add(newLike);
         post.setLikes(likeList);
-        //вопросик к реализации этого метода, я тут пока ничего не меняю
-        //в пост добавляется лайк, но не вижу сохранения поста
-        likeEventPublisher.publishPostLikeEventToBroker(newLike);
         return newLike;
     }
 
@@ -73,9 +71,6 @@ public class LikeService {
         List<Like> likeList = comment.getLikes();
         likeList.add(newLike);
         comment.setLikes(likeList);
-
-        //вопросик к реализации этого метода, я тут пока ничего не меняю
-        //в комментарий добавляется лайк, но не вижу сохранения комментария
 
         return newLike;
     }

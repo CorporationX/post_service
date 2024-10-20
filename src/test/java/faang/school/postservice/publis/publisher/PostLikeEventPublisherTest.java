@@ -7,6 +7,7 @@ import faang.school.postservice.config.redis.RedisProperties;
 import faang.school.postservice.dto.like.PostLikeEventDto;
 import faang.school.postservice.mapper.like.LikeEventMapper;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.publis.publisher.like.LikeEventPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
