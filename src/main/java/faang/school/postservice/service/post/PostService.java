@@ -1,13 +1,14 @@
 package faang.school.postservice.service.post;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.service.AuthorCacheService;
 import faang.school.postservice.redis.service.PostCacheService;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,8 +21,8 @@ public class PostService {
 
     private final PostMapper postMapper;
     private final PostRepository postRepository;
-    private final UserServiceClient userServiceClient;
     private final PostCacheService postCacheService;
+    private final AuthorCacheService authorCacheService;
 
     public PostDto createPost(final PostDto postDto) {
         Post post = postMapper.toEntity(postDto);
@@ -41,9 +42,15 @@ public class PostService {
 
 
         PostDto postDto = postMapper.toDto(postRepository.save(post));
-        postCacheService.savePostEvent(postDto);
+        redisFilling(postDto);
 
         return postDto;
+    }
+
+    @Async
+    protected void redisFilling(final PostDto postDto) {
+        authorCacheService.updateAuthorCache(postDto.getAuthorId(), postDto.getId());
+        postCacheService.savePostEvent(postDto);
     }
 
     private void validatePostPublishing(Post post) {

@@ -7,8 +7,8 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.util.List;
 
-@RedisHash(value = "posts", timeToLive = 86400)
 @Data
+@RedisHash(value = "posts", timeToLive = 86400)
 public class PostCache {
 
     @Id
