@@ -1,6 +1,5 @@
-package faang.school.postservice.model.ad;
+package faang.school.postservice.model.entity;
 
-import faang.school.postservice.model.entity.Post;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,6 +15,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -47,4 +47,7 @@ public class Ad {
     @Column(name = "end_date", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime endDate;
+
+    @Column(name = "price", nullable = false)
+    private BigDecimal price;
 }

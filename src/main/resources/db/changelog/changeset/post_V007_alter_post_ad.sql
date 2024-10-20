@@ -1,0 +1,1 @@
+alter table post_ad add column price numeric(16, 2);
