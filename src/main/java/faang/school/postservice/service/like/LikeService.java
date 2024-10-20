@@ -4,8 +4,9 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.dto.event.LikePostEvent;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.service.publisher.LikePostEventPublisher;
+import faang.school.postservice.publisher.like.LikePostEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -71,6 +72,7 @@ public class LikeService {
         return usersLiked;
     }
 
+    @Transactional
     public LikeResponseDto addLike(LikeRequestDto likeRequestDto) {
         validateUserExists(likeRequestDto.getUserId());
         if (likeRequestDto.getPostId() == null && likeRequestDto.getCommentId() == null) {

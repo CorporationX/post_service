@@ -18,7 +18,7 @@ public class RedisConfiguration {
     private final ObjectMapper objectMapper;
 
     @Bean
-    public ChannelTopic achievementEventTopic() {
+    public ChannelTopic likePostChannel() {
         return new ChannelTopic(redisProperties.getChannels().getLikePostChannel().getName());
     }
 
@@ -35,6 +35,7 @@ public class RedisConfiguration {
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
         return template;
     }
+
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
         return new JedisConnectionFactory();
