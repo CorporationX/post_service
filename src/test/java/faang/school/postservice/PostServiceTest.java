@@ -5,8 +5,11 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.SpellCheckerDto;
 import faang.school.postservice.exception.PostRequirementsException;
+import faang.school.postservice.model.ModerationStatus;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.scheduler.post.moderation.AhoCorasickContentChecker;
+import faang.school.postservice.service.ContentModerationService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.tools.YandexSpeller;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,26 +18,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
+
     @Mock
     private PostRepository postRepository;
 
@@ -48,22 +48,30 @@ public class PostServiceTest {
     private UserContext userContext;
 
     @Mock
+    private AhoCorasickContentChecker contentChecker;
+
+    @Mock
+    private ContentModerationService contentModerationService;
+
+    @Mock
+    private ExecutorService postModerationThreadPool;
+
+    @Mock
     private YandexSpeller yandexSpeller;
 
-
     @InjectMocks
-    PostService postService;
-
+    private PostService postService;
 
     private Post post;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         post = new Post();
         post.setId(1L);
         post.setAuthorId(1L);
         post.setContent("Sample content");
         post.setPublished(false);
+        post.setModerationStatus(ModerationStatus.UNVERIFIED);
     }
 
     @Test
@@ -98,7 +106,6 @@ public class PostServiceTest {
         verify(projectServiceClient, times(1)).getProject(post.getProjectId());
     }
 
-
     @Test
     public void testUpdatePost() {
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
@@ -107,7 +114,6 @@ public class PostServiceTest {
 
         verify(postRepository, times(1)).save(post);
     }
-
 
     @Test
     public void testDeletePost() {
@@ -197,6 +203,25 @@ public class PostServiceTest {
         assertFalse(result.isEmpty());
         assertEquals(1L, result.get(0).getProjectId());
         verify(postRepository, times(1)).findPublishedByProjectId(post.getProjectId());
+    }
+
+    @Test
+    public void testModeratePosts() {
+        List<Post> unverifiedPosts = Arrays.asList(post);
+
+        when(postRepository.findUnverifiedPosts()).thenReturn(unverifiedPosts);
+
+        ReflectionTestUtils.setField(postService, "batchSize", 1);
+
+        doAnswer(invocation -> {
+            Runnable task = invocation.getArgument(0);
+            task.run();
+            return null;
+        }).when(postModerationThreadPool).submit(any(Runnable.class));
+
+        postService.moderatePosts();
+
+        verify(contentModerationService, times(1)).checkContentAndModerate(unverifiedPosts);
     }
 
     @Test

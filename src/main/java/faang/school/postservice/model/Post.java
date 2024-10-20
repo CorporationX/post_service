@@ -4,6 +4,8 @@ import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -87,4 +89,11 @@ public class Post {
 
     @Column(name = "ai_spell_check")
     private boolean spellCheck;
+
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "moderation_status", nullable = false)
+    private ModerationStatus moderationStatus = ModerationStatus.UNVERIFIED;
 }
