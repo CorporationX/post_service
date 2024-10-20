@@ -34,6 +34,8 @@ spring:
           name: post_channel
         comment-receiving:
           name: comment-receiving-topic
+        ad-bought-channel:
+          name: ad_bought_channel
 
 server:
   port: 8081
