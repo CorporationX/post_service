@@ -14,11 +14,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,10 +46,13 @@ public class LikeControllerTest {
 
     private LikeDto commentLikeDto;
 
+    private LocalDateTime timestamp;
+
     @BeforeEach
     public void setUp() {
-        postLikeDto = new LikeDto(USER_ID, POST_ID, null);
-        commentLikeDto = new LikeDto(USER_ID, null, COMMENT_ID);
+        timestamp = LocalDateTime.of(2020, 1, 1, 1, 1);
+        postLikeDto = new LikeDto(USER_ID, POST_ID, null, timestamp);
+        commentLikeDto = new LikeDto(USER_ID, null, COMMENT_ID, timestamp);
     }
 
     @Test
@@ -57,7 +61,7 @@ public class LikeControllerTest {
         when(likeService.likePost(POST_ID)).thenReturn(postLikeDto);
 
         mockMvc.perform(post("/likes/posts/%d".formatted(POST_ID))
-                .header("x-user-id", USER_ID))
+                        .header("x-user-id", USER_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(USER_ID))
                 .andExpect(jsonPath("$.postId").value(POST_ID))

@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -45,9 +47,10 @@ public class LikeServiceImpl implements LikeService {
         likeRepository.save(like);
         log.info("User with id {} liked post with id {}", userId, postId);
         LikeEvent likeEvent = LikeEvent.builder()
-                .likeAuthorId(userId)
                 .postAuthorId(getPostById(postId).getAuthorId())
+                .likeAuthorId(userId)
                 .postId(postId)
+                .timestamp(LocalDateTime.now())
                 .build();
         likeEventPublisher.publish(likeEvent);
         log.info("Publishing LikeEvent for user with id {} liking post with id {}", userId, postId);

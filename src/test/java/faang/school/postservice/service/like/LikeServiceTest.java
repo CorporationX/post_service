@@ -25,12 +25,16 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
@@ -140,6 +144,7 @@ public class LikeServiceTest {
     @Test
     @DisplayName("Проверка отправки лайка в redis")
     public void testLikeEventPublishSuccess() {
+        LocalDateTime timestamp = LocalDateTime.of(2020, 1, 1, 1, 1, 1);
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID)).thenReturn(Optional.empty());
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
@@ -150,13 +155,18 @@ public class LikeServiceTest {
                 .build();
         when(likeRepository.save(like)).thenReturn(like);
         LikeEvent likeEvent = LikeEvent.builder()
-                .likeAuthorId(USER_ID)
                 .postAuthorId(POST_AUTHOR_ID)
+                .likeAuthorId(USER_ID)
                 .postId(POST_ID)
+                .timestamp(timestamp)
                 .build();
         LikeDto result = likeService.likePost(POST_ID);
 
-        verify(likeEventPublisher).publish(likeEvent);
+        verify(likeEventPublisher).publish(argThat(actuallikeEvent ->
+                likeEvent.postAuthorId() == POST_AUTHOR_ID &&
+                        likeEvent.likeAuthorId() == USER_ID &&
+                        likeEvent.postId() == POST_ID
+        ));
     }
 
     @Test
