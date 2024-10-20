@@ -1,11 +1,10 @@
 package faang.school.postservice.mapper.like;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
 import faang.school.postservice.dto.like.LikeRequestDto;
 import faang.school.postservice.dto.like.LikeResponseDto;
 import faang.school.postservice.model.Like;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface LikeMapper {

@@ -1,28 +1,28 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.like.LikeEventDto;
+import faang.school.postservice.dto.like.LikeRequestDto;
+import faang.school.postservice.dto.like.LikeResponseDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.dto.event.LikePostEvent;
+import faang.school.postservice.mapper.like.LikeMapper;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.EventType;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.service.publisher.LikePostEventPublisher;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.like.LikeEventPublisher;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.like.LikeValidator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-
-
-import faang.school.postservice.dto.like.LikeRequestDto;
-import faang.school.postservice.dto.like.LikeResponseDto;
-import faang.school.postservice.mapper.like.LikeMapper;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validator.like.LikeValidator;
-import jakarta.persistence.EntityNotFoundException;
 
 @Slf4j
 @Service
@@ -37,7 +37,8 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final LikeMapper likeMapper;
     private final LikeValidator likeValidator;
-    private final LikePostEventPublisher likePostEventPublisher;
+    private final LikeEventPublisher likeEventPublisher;
+    private final UserContext userContext;
 
     public List<UserDto> getAllUsersByPostId(long id) {
         return getUsersBatched(getUsersIdsByLikes(getUsersIdsByPostId(id)));
@@ -78,7 +79,6 @@ public class LikeService {
         }
 
         Like like = likeMapper.toEntity(likeRequestDto);
-        LikePostEvent likePostEvent = null;
 
         if (likeRequestDto.getPostId() != null) {
             Post post = postRepository.findById(likeRequestDto.getPostId())
@@ -87,11 +87,6 @@ public class LikeService {
             likeValidator.validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
 
             like.setPost(post);
-            likePostEvent = LikePostEvent.builder()
-                    .postAuthorId(post.getAuthorId())
-                    .likeAuthorId(likeRequestDto.getUserId())
-                    .postId(post.getId())
-                    .build();
         } else {
             Comment comment = commentRepository.findById(likeRequestDto.getCommentId())
                     .orElseThrow(() -> new IllegalArgumentException("Comment with ID " + likeRequestDto.getCommentId() + " not found"));
@@ -101,12 +96,13 @@ public class LikeService {
             like.setComment(comment);
         }
 
+        like.setUserId(userContext.getUserId());
         likeRepository.save(like);
 
-        if (likeRequestDto.getPostId() != null) {
-            publishLikePostEvent(likePostEvent);
+        if (like.getPost() != null) {
+            publishLikeEventOnPost(like);
+            log.debug("Sent like event dto for post {}", like.getPost().getId());
         }
-
         return likeMapper.toResponseDto(like);
     }
 
@@ -125,11 +121,14 @@ public class LikeService {
         }
     }
 
-    private void publishLikePostEvent(LikePostEvent likePostEvent) {
-        try {
-            likePostEventPublisher.publish(likePostEvent);
-        } catch (Exception ex) {
-            log.error("Failed to send notification with likePostEvent: {}", likePostEvent.toString(), ex);
-        }
+    private void publishLikeEventOnPost(Like like) {
+        LikeEventDto likeEventDto = LikeEventDto.builder()
+                .postAuthorId(like.getPost().getAuthorId())
+                .likeAuthorId(like.getUserId())
+                .postId(like.getPost().getId())
+                .eventType(EventType.POST_LIKE)
+                .createdAt(like.getCreatedAt())
+                .build();
+        likeEventPublisher.publish(likeEventDto);
     }
 }
