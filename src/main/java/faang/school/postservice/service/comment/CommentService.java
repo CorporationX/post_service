@@ -2,7 +2,6 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.dto.comment.CreateCommentRequest;
 import faang.school.postservice.dto.comment.UpdateCommentRequest;
 import faang.school.postservice.exception.DataValidationException;
@@ -64,7 +63,7 @@ public class CommentService {
         comment = commentRepository.save(comment);
         log.info("[{}] Comment successfully saved to DB with ID: {}", "createComment", comment.getId());
 
-        commentEventPublisher.publish(buildCommentEventDto(comment));
+        commentEventPublisher.publish(commentMapper.toCommentEventDto(comment));
         return commentMapper.toCommentDto(comment);
     }
 
@@ -108,14 +107,5 @@ public class CommentService {
     public void deleteComment(long commentId) {
         commentRepository.deleteById(commentId);
         log.info("[{}] the comment with id: {} was successfully deleted", "deleteComment", commentId);
-    }
-
-    private CommentEventDto buildCommentEventDto(Comment comment) {
-        return CommentEventDto.builder()
-                .commentAuthorId(comment.getAuthorId())
-                .postId(comment.getPost().getId())
-                .commentId(comment.getId())
-                .commentText(comment.getContent())
-                .build();
     }
 }
