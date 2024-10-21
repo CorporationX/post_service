@@ -8,6 +8,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
@@ -57,6 +58,9 @@ class CommentServiceTest {
 
     @Mock
     private CommentValidator commentValidator;
+
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
     private static final long POST_ID = 1L;
     private static final String CONTENT = "test";
