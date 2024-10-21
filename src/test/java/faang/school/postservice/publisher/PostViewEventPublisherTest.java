@@ -59,7 +59,7 @@ public class PostViewEventPublisherTest {
     void testPublishPostEvent_SinglePost() throws JsonProcessingException {
         when(userContext.getUserId()).thenReturn(actorId);
         when(sendPostViewEventToAnalytics.value()).thenReturn((Class) Post.class);
-        PostViewEvent event = postViewEventPublisher.createEvent(post, actorId);
+        PostViewEvent event = postViewEventPublisher.convert(post);
         when(objectMapper.writeValueAsString(any(PostViewEvent.class))).thenReturn(event.toString());
 
         postViewEventPublisher.publishPostEvent(post, sendPostViewEventToAnalytics);
@@ -87,7 +87,9 @@ public class PostViewEventPublisherTest {
     void testCreatePostViewEvent() {
         PostViewEvent expected = new PostViewEvent(post.getId(), post.getAuthorId(), actorId, LocalDateTime.now());
 
-        PostViewEvent postViewEvent = postViewEventPublisher.createEvent(post, actorId);
+        when(userContext.getUserId()).thenReturn(actorId);
+
+        PostViewEvent postViewEvent = postViewEventPublisher.convert(post);
 
         assertThat(expected)
                 .usingRecursiveComparison()

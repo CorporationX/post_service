@@ -19,12 +19,13 @@ spring:
 
   data:
     redis:
-      port: 6379
       host: localhost
+      port: 6379
       channels:
         calculations_channel:
           name: calculations_channel
         post-view: post_view_channel
+        post-crated: post_created_topic
 
 server:
   port: 8081
