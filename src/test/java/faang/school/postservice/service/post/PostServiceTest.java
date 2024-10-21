@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +42,9 @@ public class PostServiceTest {
     @Mock
     private PostMapper postMapper;
 
+    @Mock
+    private List<Post> posts;
+
     @BeforeEach
     public void setup() {
         post = new Post();
@@ -49,17 +53,30 @@ public class PostServiceTest {
         post.setAuthorId(authorId);
         post.setProjectId(projectId);
         post.setLikes(Collections.emptyList());
+        post.setPublishedAt(LocalDateTime.now());
 
         postResponseDto = new PostResponseDto(post.getId(),
                 post.getContent(),
                 post.getAuthorId(),
                 post.getProjectId(),
-                0);
+                0,
+                post.getPublishedAt());
     }
 
     @Nested
     @DisplayName("Позитивные тесты")
     class PositiveTests {
+
+        @Test
+        @DisplayName("When get all posts not published then success")
+        public void whenGetAllPostsNotPublishedThenSuccess() {
+            when(postRepository.findReadyToPublish()).thenReturn(posts);
+
+            List<Post> postList = postService.getAllPostsNotPublished();
+
+            assertEquals(postList, posts);
+            verify(postRepository, atLeastOnce()).findReadyToPublish();
+        }
 
         @Test
         @DisplayName("Должен вернуть посты автора с количеством лайков")
