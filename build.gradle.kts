@@ -23,6 +23,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation("org.springframework.retry:spring-retry")
+    implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j:3.1.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
@@ -78,6 +80,11 @@ dependencies {
      */
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+
+    /**
+     * kafka
+     */
+    implementation("org.springframework.kafka:spring-kafka")
 }
 
 jacoco {

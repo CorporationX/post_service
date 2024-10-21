@@ -30,6 +30,62 @@ spring:
         calculations_channel: calculations_channel
         like: like_channel
         post: post_channel
+      cache:
+        feed:
+          maxSize: 500
+          pageSize: 20
+          showLastComments: 3
+        ttl:
+          post: 86400
+          user: 86400
+
+    kafka:
+      bootstrap-servers: kafka:9092
+      topics:
+        post:
+          name: post
+          partitions: 3
+          replicas: 1
+        delete-post:
+          name: delete-post
+          partitions: 3
+          replicas: 1
+        comment:
+          name: comment
+          partitions: 3
+          replicas: 1
+        delete-comment:
+          name: delete-comment
+          partitions: 3
+          replicas: 1
+        like:
+          name: like
+          partitions: 3
+          replicas: 1
+        unlike:
+          name: unlike
+          partitions: 3
+          replicas: 1
+        feed-heater:
+          name: feed-heater
+          partitions: 3
+          replicas: 1
+      producer:
+        retries: 3
+        retry-backoff-ms: 1000
+      consumer:
+        auto-offset-reset: earliest
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+        properties:
+          spring.json.trusted.packages: 'faang.school.postservice.dto'
+          spring.json.use.type.headers: false
+        groups:
+          post: postGroup
+          comment: commentGroup
+          like: likeGroup
+      listener:
+        missing-topics-fatal: false
 
   aws:
     s3:
@@ -86,6 +142,24 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+feed:
+  kafka:
+    subscribers-batch-size: 1000
+  async:
+    pool_size: 8
+    queue_capacity: 50
+
+feed-heater:
+  pageSize:
+  postLimit:
+
+feign:
+  client:
+    config:
+      default:
+        retryer:
+          enabled: true
 
 #springdoc:
 #  api-docs:

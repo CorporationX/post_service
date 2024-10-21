@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.mapstruct.control.DeepClone;
 
@@ -39,6 +40,12 @@ public class Post {
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Comment> comments;
+
+    @Formula("(SELECT COUNT(*) FROM \"likes\" l WHERE l.post_id = id)")
+    private long likesCount;
+
+    @Formula("(SELECT COUNT(*) FROM \"comment\" c WHERE c.post_id = id)")
+    private long commentsCount;
 
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;
