@@ -76,8 +76,10 @@ public class CommentService {
         Comment comment = commentValidator.findCommentById(commentId);
         commentRepository.deleteById(commentId);
 
-        feedEventService.createAndSendFeedCommentDeleteEvent(
-                new FeedCommentDeleteEvent(comment.getId(), comment.getPost().getId()));
+        if (comment != null) {
+            feedEventService.createAndSendFeedCommentDeleteEvent(
+                    new FeedCommentDeleteEvent(comment.getId(), comment.getPost().getId()));
+        }
     }
 
     @Transactional

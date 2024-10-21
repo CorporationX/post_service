@@ -15,7 +15,7 @@ import java.util.List;
 @Mapper(
         componentModel = "spring",
         injectionStrategy = InjectionStrategy.FIELD,
-        unmappedSourcePolicy = ReportingPolicy.IGNORE
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface PostMapper {
 

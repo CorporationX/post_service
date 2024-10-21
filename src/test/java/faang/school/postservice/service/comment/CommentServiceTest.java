@@ -34,10 +34,8 @@ public class CommentServiceTest {
 
     @Mock
     private CommentRepository commentRepository;
-
     @Mock
     private CommentMapper commentMapper;
-
     @Mock
     private CommentValidator commentValidator;
     @Mock
