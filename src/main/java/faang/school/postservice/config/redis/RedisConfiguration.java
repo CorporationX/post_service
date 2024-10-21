@@ -28,6 +28,16 @@ public class RedisConfiguration {
     }
 
     @Bean
+    public ChannelTopic achievementEventTopic() {
+        return new ChannelTopic(redisProperties.getChannels().getLikePostChannel().getName());
+    }
+
+    @Bean
+    public ChannelTopic publishedCommentEventTopic() {
+        return new ChannelTopic(redisProperties.getChannels().getNewCommentChannel().getName());
+    }
+
+    @Bean
     public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());

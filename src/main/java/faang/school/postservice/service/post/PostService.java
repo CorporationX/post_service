@@ -28,6 +28,11 @@ public class PostService {
     private final ModerationDictionary moderationDictionary;
     private final ExecutorService executor;
 
+    public PostResponseDto getPost(long postId){
+        Post post = findById(postId);
+        return postMapper.toResponseDto(post, post.getLikes().size());
+    }
+
     public List<Post> getAllPostsNotPublished() {
         return postRepository.findReadyToPublish();
     }

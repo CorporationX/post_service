@@ -30,6 +30,8 @@ spring:
           name: comment_channel
         likePostChannel:
           name: like_post_channel
+        newCommentChannel:
+          name: new_comment_channel
 
 server:
   port: 8081
@@ -39,6 +41,9 @@ logging:
     root: info
 
 post:
+  executor:
+    threads:
+      count: 5
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute

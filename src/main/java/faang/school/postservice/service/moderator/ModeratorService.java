@@ -1,7 +1,10 @@
 package faang.school.postservice.service.moderator;
 
 import faang.school.postservice.config.dictionary.OffensiveWordsDictionary;
+import faang.school.postservice.dto.comment.CommentEventDto;
+import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.publisher.comment.PublishedCommentEventPublisher;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +22,10 @@ import java.util.concurrent.ExecutorService;
 public class ModeratorService {
 
     private final CommentService commentService;
+    private final CommentMapper commentMapper;
     private final ExecutorService executorService;
     private final OffensiveWordsDictionary offensiveWordsDictionary;
+    private final PublishedCommentEventPublisher publishedCommentEventPublisher;
 
     public void moderateCommentsContent() {
         log.info("moderateCommentsContent() - start");
@@ -49,7 +54,17 @@ public class ModeratorService {
         }
 
         commentService.saveComments(comments);
+        notifyUserAboutNewComment(comments);
+
         log.info("moderateCommentsContent() - finish");
+    }
+
+    private void notifyUserAboutNewComment(List<Comment> comments) {
+        comments.parallelStream()
+                .filter(Comment::isVerified)
+                .forEach(comment -> {
+                    publishedCommentEventPublisher.publish(commentMapper.toCommentEventDto(comment));
+                });
     }
 
     private boolean containsOffensiveContent(String content) {
@@ -58,7 +73,7 @@ public class ModeratorService {
                 .anyMatch(offensiveWordsDictionary::isWordContainsInDictionary);
     }
 
-    public void setVerifyToComment(Comment comment, boolean isVerified) {
+    private void setVerifyToComment(Comment comment, boolean isVerified) {
         comment.setVerified(isVerified);
         comment.setVerifiedAt(LocalDateTime.now());
     }
