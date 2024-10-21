@@ -26,6 +26,8 @@ spring:
       channels:
         calculationsChannel:
           name: calculations_channel
+        commentChannel:
+          name: comment_channel
         likePostChannel:
           name: like_post_channel
         newCommentChannel:
@@ -39,9 +41,6 @@ logging:
     root: info
 
 post:
-  executor:
-    threads:
-      count: 5
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute

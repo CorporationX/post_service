@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LikePostEventPublisher implements MessagePublisher<LikePostEvent> {
 
-    private final RedisTemplate redisTemplate;
-    private final ChannelTopic achievementEventTopic;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ChannelTopic likePostChannel;
 
     @Override
     public void publish(LikePostEvent message) {
-        redisTemplate.convertAndSend(achievementEventTopic.getTopic(), message);
-        log.debug("Message was send {}, in topic - {}", message, achievementEventTopic.getTopic());
+        redisTemplate.convertAndSend(likePostChannel.getTopic(), message);
+        log.info("Message was send {}, in topic - {}", message, likePostChannel.getTopic());
     }
 }

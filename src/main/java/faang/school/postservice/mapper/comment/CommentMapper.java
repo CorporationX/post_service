@@ -20,9 +20,8 @@ public interface CommentMapper {
     CommentDto toCommentDto(Comment comment);
 
     @Mapping(source = "authorId", target = "commentAuthorId")
-    @Mapping(source = "post.authorId", target = "postAuthorId")
-    @Mapping(source = "post.id", target = "postId")
-    @Mapping(source = "content", target = "content")
+    @Mapping(source = "comment.post.id", target = "postId")
     @Mapping(source = "id", target = "commentId")
+    @Mapping(source = "content", target = "commentText")
     CommentEventDto toCommentEventDto(Comment comment);
 }

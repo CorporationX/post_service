@@ -33,10 +33,18 @@ public class PostService {
         return postMapper.toResponseDto(post, post.getLikes().size());
     }
 
+    public List<Post> getAllPostsNotPublished() {
+        return postRepository.findReadyToPublish();
+    }
+
+    public void savePosts(List<Post> posts) {
+        postRepository.saveAll(posts);
+    }
+
     public Post findById(Long postId) {
         Optional<Post> post = postRepository.findById(postId);
         return post.orElseThrow(
-                ()-> new EntityNotFoundException("Post service. Post not found. id: " + postId));
+                () -> new EntityNotFoundException("Post service. Post not found. id: " + postId));
     }
 
     public List<PostResponseDto> getPostsByAuthorWithLikes(long authorId) {
