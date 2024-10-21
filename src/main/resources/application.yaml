@@ -37,6 +37,12 @@ spring:
         ad-bought-channel:
           name: ad_bought_channel
 
+    kafka:
+      port: 9092
+      host: localhost
+      channels:
+        post-channel: post_channel
+
 server:
   port: 8081
 
