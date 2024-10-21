@@ -1,7 +1,7 @@
 package faang.school.postservice.model.dto;
 
-import faang.school.postservice.enums.AuthorType;
 import faang.school.postservice.model.entity.Like;
+import faang.school.postservice.model.enums.AuthorType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;

@@ -1,5 +1,7 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.publisher.PostViewPublisher;
 import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.impl.PostServiceImpl;
@@ -17,6 +19,11 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DeletePostTest {
+    @Mock
+    UserContext userContext;
+
+    @Mock
+    PostViewPublisher postViewPublisher;
 
     @Mock
     private PostRepository postRepository;

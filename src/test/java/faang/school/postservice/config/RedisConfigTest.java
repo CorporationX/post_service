@@ -50,9 +50,9 @@ class RedisConfigTest {
     }
 
     @Test
-    void testViewProfileTopic() {
+    void testPostViewTopic() {
         redisConfig.postViewTopic = "test_channel";
-        ChannelTopic topic = redisConfig.viewProfileTopic();
+        ChannelTopic topic = redisConfig.postViewTopic();
         assertEquals("test_channel", topic.getTopic());
     }
 }
