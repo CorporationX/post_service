@@ -20,7 +20,7 @@ public class CommentCheckerTest {
     private CommentChecker commentChecker;
 
     @Mock
-    private ModerationDictionary moderationDictionary;
+    private CommentModerationDictionary moderationDictionary;
 
     @BeforeEach
     public void setUp() {

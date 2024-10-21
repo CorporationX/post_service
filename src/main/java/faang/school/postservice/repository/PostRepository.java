@@ -21,7 +21,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.authorId = :authorId")
     List<Post> findByAuthorIdWithLikes(long authorId);
 
-    @Query("SELECT p FROM Post p WHERE p.verified_date = null AND p.deleted = false")
+    @Query("SELECT p FROM Post p WHERE p.verifiedDate = null AND p.deleted = false")
     List<Post> findNotVerified();
 
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")

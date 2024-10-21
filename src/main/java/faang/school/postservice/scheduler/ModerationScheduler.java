@@ -1,4 +1,4 @@
-package faang.school.postservice.sheduler;
+package faang.school.postservice.scheduler;
 
 import faang.school.postservice.exception.post.ModeratingPostsException;
 import faang.school.postservice.service.post.PostService;

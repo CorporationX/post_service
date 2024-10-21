@@ -13,11 +13,11 @@ import java.util.Set;
 @Slf4j
 @Getter
 @Component
-public class ModerationDictionary {
+public class PostModerationDictionary {
 
     private final Set<String> forbiddenWords = new HashSet<>();
 
-    public ModerationDictionary (@Value("${post.moderator.scheduler.dictionary.file}") Resource dictionaryResource) {
+    public PostModerationDictionary(@Value("${post.moderator.scheduler.dictionary.file}") Resource dictionaryResource) {
         try (BufferedReader bufferedReader = new BufferedReader(
                 new InputStreamReader(dictionaryResource.getInputStream()))) {
             bufferedReader.lines().forEach(line -> forbiddenWords.add(line.trim()));

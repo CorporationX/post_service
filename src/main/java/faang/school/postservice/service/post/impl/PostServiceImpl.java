@@ -44,9 +44,13 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userClient;
     private final ProjectServiceClient projectClient;
     private final PostContentVerifier postContentVerifier;
+
+    @Setter
     @Value("${post.moderator.post-batch-size}")
     private int postBatchSize;
-    @Value(("{post.constants.post-max-size}"))
+
+    @Setter
+    @Value(("${post.constants.post-max-size}"))
     private int postMaxSize;
 
     @Setter

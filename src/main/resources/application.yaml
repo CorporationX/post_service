@@ -81,12 +81,11 @@ post:
   moderator:
     post-batch-size: 100
     scheduler:
-      cron: "0 0 * * *" # every day
+      cron: "0 0 * * * ?" # every day
       dictionary:
         file: "classpath:moderation-dictionary.txt"
   constants:
     post-max-size: 1000
-
   grammar-checker:
     scheduler:
       cron: "0 0 0 * * ?" # every day

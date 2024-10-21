@@ -1,6 +1,6 @@
 package faang.school.postservice.service.post.impl.verifier;
 
-import faang.school.postservice.dictionary.ModerationDictionary;
+import faang.school.postservice.dictionary.PostModerationDictionary;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostContentVerifier;
@@ -18,13 +18,13 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class PostContentVerifierImpl implements PostContentVerifier {
 
-    private final ModerationDictionary moderationDictionary;
+    private final PostModerationDictionary postModerationDictionary;
     private final PostRepository postRepository;
 
     @Override
     @Async("taskExecutor")
     public void verifyPosts(List<Post> posts) {
-        Set<String> banWords = moderationDictionary.getForbiddenWords();
+        Set<String> banWords = postModerationDictionary.getForbiddenWords();
         for (Post post : posts) {
             boolean containsBanWord = banWords.stream()
                     .anyMatch(banWord -> post.getContent().toLowerCase().contains(banWord));
