@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class KafkaPostConsumer {
     private final FeedService feedService;
 
-    @KafkaListener(topics = "${spring.data.kafka.topics.post.name}",
+    @KafkaListener(topics = {"${spring.data.kafka.topics.post.name}", "${spring.data.kafka.topics.feed-heater.name}"},
             groupId = "${spring.data.kafka.consumer.groups.post}")
     public void consume(FeedPostEvent event) {
         Long postId = event.getPostId();

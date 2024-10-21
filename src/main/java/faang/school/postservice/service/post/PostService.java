@@ -95,7 +95,7 @@ public class PostService {
 
         cacheService.savePost(postDto);
         cacheService.addUserToCache(postDto.getAuthorId());
-        feedEventService.createAndSendFeedPostEvent(postId, post.getAuthorId(), post.getPublishedAt());
+        feedEventService.createAndSendFeedPostEventForNewPost(postId, post.getAuthorId(), post.getPublishedAt());
 
         return postDto;
     }
@@ -148,7 +148,6 @@ public class PostService {
         PostDto postDto = postMapper.toDto(savedPost);
 
         cacheService.updatePost(postDto);
-        feedEventService.createAndSendFeedPostEvent(post.getId(), post.getAuthorId(), post.getPublishedAt());
 
         return postDto;
     }

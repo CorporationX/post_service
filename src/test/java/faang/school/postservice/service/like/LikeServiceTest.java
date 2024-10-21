@@ -11,6 +11,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.feed.FeedEventService;
 import faang.school.postservice.service.publisher.LikeEventPublisher;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -53,6 +54,8 @@ class LikeServiceTest {
     private LikeValidator likeValidator;
     @Mock
     private LikeEventPublisher eventPublisher;
+    @Mock
+    private FeedEventService feedEventService;
 
     LikeDto likeDto;
     private Post post;

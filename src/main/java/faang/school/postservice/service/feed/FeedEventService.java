@@ -36,15 +36,28 @@ public class FeedEventService {
     private final KafkaUnlikeProducer kafkaUnlikeProducer;
     @Value("${feed.kafka.subscribers-batch-size}")
     private int subscribersBatchSize;
+    @Value("${spring.data.kafka.topics.post.name}")
+    String postTopic;
+    @Value("${spring.data.kafka.topics.feed-heater.name}")
+    private String feedHeaterTopic;
 
     @Async("feedExecutor")
-    public void createAndSendFeedPostEvent(Long postId, Long authorId, LocalDateTime publishedAt) {
+    public void createAndSendFeedPostEventForNewPost(Long postId, Long authorId, LocalDateTime publishedAt) {
+        createAndSendFeedPostEvent(postId, authorId, publishedAt, postTopic);
+    }
+
+    @Async("feedExecutor")
+    public void createAndSendFeedPostEventForFeedHeater(Long postId, Long authorId, LocalDateTime publishedAt) {
+        createAndSendFeedPostEvent(postId, authorId, publishedAt, feedHeaterTopic);
+    }
+
+    private void createAndSendFeedPostEvent(Long postId, Long authorId, LocalDateTime publishedAt, String topicName) {
         List<Long> subscribersIds = userServiceClient.getFollowerIdsByFolloweeId(authorId);
 
-        if (subscribersIds.isEmpty()) {
-            log.info("Author {} has no subscribers. No events will be sent.", authorId);
+        if (subscribersIds == null || subscribersIds.isEmpty()) {
+            log.info("Author {} has no subscribers or failed to retrieve subscribers. No events will be sent.", authorId);
         } else if (subscribersIds.size() <= subscribersBatchSize) {
-            kafkaPostProducer.sendEvent(new FeedPostEvent(postId, authorId, publishedAt, subscribersIds));
+            kafkaPostProducer.sendEventToTopic(new FeedPostEvent(postId, authorId, publishedAt, subscribersIds), topicName);
             log.info("Sent FeedPostEvent for postId {} with {} subscribers", postId, subscribersIds.size());
         } else {
             List<List<Long>> batches = partitionList(subscribersIds, subscribersBatchSize);
@@ -55,7 +68,7 @@ public class FeedEventService {
 
                 String messageKey = postId + "-" + batchNumber;
 
-                kafkaPostProducer.sendEvent(event, messageKey);
+                kafkaPostProducer.sendEventToTopic(event, messageKey, topicName);
 
                 log.info("Sent FeedPostEvent for postId {} batch {} with {} subscribers", postId, batchNumber, batch.size());
 
@@ -63,6 +76,7 @@ public class FeedEventService {
             }
         }
     }
+
 
     private <T> List<List<T>> partitionList(List<T> list, int batchSize) {
         int totalSize = list.size();

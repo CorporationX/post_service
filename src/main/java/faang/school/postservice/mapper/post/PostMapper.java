@@ -22,8 +22,6 @@ public interface PostMapper {
     PostDto fromDraftPostDto(DraftPostDto draftPostDto);
 
     @Mapping(source = "resources", target = "resources", qualifiedByName = "mapResources")
-    @Mapping(target = "likesCount", source = "likes", qualifiedByName = "mapLikes")
-    @Mapping(target = "commentsCount", source = "comments", qualifiedByName = "mapComments")
     PostDto toDto(Post post);
 
     @Named("mapResources")
@@ -41,22 +39,6 @@ public interface PostMapper {
                         )
                 )
                 .toList();
-    }
-
-    @Named("mapLikes")
-    default long mapLikes(List<Like> likes) {
-        if (likes == null) {
-            return 0;
-        }
-        return likes.size();
-    }
-
-    @Named("mapComments")
-    default long mapComments(List<Comment> comments) {
-        if (comments == null) {
-            return 0;
-        }
-        return comments.size();
     }
 
     @Mapping(source = "postDto.resources", target = "resources", qualifiedByName = "mapPreviewPostResourceDto")

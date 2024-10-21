@@ -6,20 +6,15 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.publishable.fornewsfeed.FeedCommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
-import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.feed.RedisFeedRepository;
 import faang.school.postservice.repository.feed.RedisPostRepository;
 import faang.school.postservice.repository.feed.RedisUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,17 +30,20 @@ public class CacheService {
     private final RedisFeedRepository redisFeedRepository;
     private final RedisUserRepository redisUserRepository;
     private final RedisPostRepository redisPostRepository;
-    private final PostRepository postRepository;
     private final CommentMapper commentMapper;
-    private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
-    private final CommentRepository commentRepository;
+    private final CacheTransactionalService cacheTransactionalService;
 
     @Value("${data.redis.cache.feed.showLastComments}")
     private int showLastComments;
 
     public void savePost(PostDto postDto) {
         redisPostRepository.addNewPost(postDto);
+    }
+
+    @Async("feedExecutor")
+    public void savePosts(List<PostDto> postDtos) {
+        postDtos.forEach(this::savePost);
     }
 
     public void updatePost(PostDto postDto) {
@@ -62,6 +60,11 @@ public class CacheService {
     public void saveComment(Long postId, FeedCommentEvent event) {
         CommentDto commentDto = commentMapper.fromFeedCommentEventToDto(event);
         redisPostRepository.addComment(postId, commentDto);
+    }
+
+    @Async("feedExecutor")
+    public void saveComments(Long postId, List<CommentDto> commentDtos) {
+        commentDtos.forEach(commentDto -> redisPostRepository.addComment(postId, commentDto));
     }
 
     public void handlePostDeletion(Long postId) {
@@ -108,22 +111,12 @@ public class CacheService {
         }
 
         if (!missingCommentsPostIds.isEmpty()) {
-            Map<Long, List<CommentDto>> missingComments = getCommentsFromDB(missingCommentsPostIds);
+            Map<Long, List<CommentDto>> missingComments = cacheTransactionalService.getCommentsFromDB(missingCommentsPostIds);
             missingComments.forEach(this::updateComments);
             resultCommentsMap.putAll(missingComments);
         }
 
         return resultCommentsMap;
-    }
-
-    private Map<Long, List<CommentDto>> getCommentsFromDB(Set<Long> postIds) {
-        List<Comment> comments = commentRepository.findLastsByPostId(postIds, showLastComments);
-
-        return comments.stream()
-                .collect(Collectors.groupingBy(
-                        comment -> comment.getPost().getId(),
-                        Collectors.mapping(commentMapper::toDto, Collectors.toList())
-                ));
     }
 
     private void updateComments(Long postId, List<CommentDto> comments) {
@@ -151,7 +144,7 @@ public class CacheService {
 
         if (!missingUserIds.isEmpty()) {
             List<UserDto> missingUsers = getUsersFromDB(missingUserIds);
-            updateUsers(missingUsers);
+            saveUsers(missingUsers);
             missingUsers.forEach(userDto -> actualUserMap.put(userDto.getId(), userDto));
         }
     }
@@ -160,8 +153,9 @@ public class CacheService {
         return userServiceClient.getUsersByIds(missingUserIds);
     }
 
-    private void updateUsers(List<UserDto> missingUsers) {
-        redisUserRepository.save(missingUsers);
+    @Async("feedExecutor")
+    public void saveUsers(List<UserDto> userDtos) {
+        redisUserRepository.save(userDtos);
     }
 
     public List<PostDto> fetchPosts(List<Long> postIds) {
@@ -202,28 +196,10 @@ public class CacheService {
         List<Long> missingPostIds = findMissingIds(actualPostIds, expectedPostIds);
 
         if (!missingPostIds.isEmpty()) {
-            List<PostDto> missingPostDtosFromDB = getPostDtosFromDB(missingPostIds);
+            List<PostDto> missingPostDtosFromDB = cacheTransactionalService.getPostDtosFromDB(missingPostIds);
             processNonexistentPosts(missingPostIds, missingPostDtosFromDB);
             postDtos.addAll(missingPostDtosFromDB);
         }
-    }
-
-    private List<PostDto> getPostDtosFromDB(List<Long> postsIds) {
-        Iterable<Post> missingPosts = postRepository.findAllById(postsIds);
-        List<Post> posts = new ArrayList<>();
-        missingPosts.forEach(posts::add);
-
-        return posts.stream()
-                .filter(post -> {
-                    if (post.isDeleted()) {
-                        log.info("Post with ID {} was found in DB but it was deleted", post.getId());
-                        handlePostDeletion(post.getId());
-                        return false;
-                    }
-                    return true;
-                })
-                .map(postMapper::toDto)
-                .toList();
     }
 
     private void processNonexistentPosts(List<Long> expectedIds, List<PostDto> actualPosts) {

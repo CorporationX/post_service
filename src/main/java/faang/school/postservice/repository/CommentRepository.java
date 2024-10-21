@@ -20,7 +20,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     @Query(value = "SELECT * FROM ( " +
             "  SELECT c.*, ROW_NUMBER() OVER (PARTITION BY c.post_id ORDER BY c.created_at DESC) as rn " +
             "  FROM comment c " +
-            "  WHERE c.post_id IN (:postIds) " +
+            "  WHERE c.post_id IN (:postIds) AND c.deleted = false" +
             ") sub " +
             "WHERE sub.rn <= :limit", nativeQuery = true)
     List<Comment> findLastsByPostId(Set<Long> postIds, int limit);

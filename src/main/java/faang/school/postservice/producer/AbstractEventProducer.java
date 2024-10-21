@@ -16,9 +16,15 @@ public abstract class AbstractEventProducer<T> {
         log.info("Event {} sent successfully to topic {}", event, topicName);
     }
 
-    public void sendEvent(T event, String messageKey) {
+    public void sendEventToTopic(T event, String messageKey, String topicName) {
         kafkaTemplate.send(topicName, messageKey, event);
         log.info("Event {} sent successfully to topic {} with messageKey {}",
                 event, topicName, messageKey);
+    }
+
+    public void sendEventToTopic(T event, String topicName) {
+        kafkaTemplate.send(topicName, event);
+        log.info("Event {} sent successfully to topic {}",
+                event, topicName);
     }
 }

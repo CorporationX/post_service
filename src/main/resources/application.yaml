@@ -66,6 +66,10 @@ spring:
           name: unlike
           partitions: 3
           replicas: 1
+        feed-heater:
+          name: feed-heater
+          partitions: 3
+          replicas: 1
       producer:
         retries: 3
         retry-backoff-ms: 1000
@@ -145,6 +149,10 @@ feed:
   async:
     pool_size: 8
     queue_capacity: 50
+
+feed-heater:
+  pageSize:
+  postLimit:
 
 feign:
   client:

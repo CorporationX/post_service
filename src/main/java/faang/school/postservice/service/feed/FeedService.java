@@ -1,13 +1,9 @@
 package faang.school.postservice.service.feed;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.feed.FeedPostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.feed.RedisFeedRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,9 +27,7 @@ import java.util.stream.Stream;
 public class FeedService {
     private final RedisFeedRepository redisFeedRepository;
     private final CacheService cacheService;
-    private final PostRepository postRepository;
-    private final UserServiceClient userServiceClient;
-    private final PostMapper postMapper;
+    private final FeedTransactionalService feedTransactionalService;
 
     @Value("${spring.data.redis.cache.feed.pageSize}")
     private int pageSize;
@@ -85,7 +79,7 @@ public class FeedService {
 
         int quantityMissingPosts = pageSize - resultPostDtos.size();
         if (quantityMissingPosts > 0) {
-            List<PostDto> missingPostsFromDB = fetchPostsFromDB(userId, quantityMissingPosts, currentLastSeenDate);
+            List<PostDto> missingPostsFromDB = feedTransactionalService.fetchPostsFromDB(userId, quantityMissingPosts, currentLastSeenDate);
             resultPostDtos.addAll(missingPostsFromDB);
         }
 
@@ -97,14 +91,6 @@ public class FeedService {
                 .map(PostDto::getPublishedAt)
                 .min(LocalDateTime::compareTo)
                 .orElse(null);
-    }
-
-    private List<PostDto> fetchPostsFromDB(Long userId, int quantity, LocalDateTime lastSeenDate) {
-        List<Long> followeeIds = userServiceClient.getFolloweeIdsByFollowerId(userId);
-        List<Post> postsForFeed = postRepository.findPostsForFeed(followeeIds, lastSeenDate, quantity);
-        return postsForFeed.stream()
-                .map(postMapper::toDto)
-                .toList();
     }
 
     private List<FeedPostDto> assembleFeedPosts(

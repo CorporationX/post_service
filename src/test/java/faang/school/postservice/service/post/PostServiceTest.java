@@ -7,6 +7,8 @@ import faang.school.postservice.exception.post.UnexistentPostException;
 import faang.school.postservice.mapper.post.*;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.feed.CacheService;
+import faang.school.postservice.service.feed.FeedEventService;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
 import faang.school.postservice.validator.post.PostServiceValidator;
@@ -54,6 +56,10 @@ public class PostServiceTest {
     private PostServiceValidator postServiceValidator;
     @Mock
     private PostEventPublisher postEventPublisher;
+    @Mock
+    private FeedEventService feedEventService;
+    @Mock
+    private CacheService cacheService;
 
     @InjectMocks
     private PostService postService;
