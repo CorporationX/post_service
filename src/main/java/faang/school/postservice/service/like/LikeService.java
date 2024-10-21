@@ -2,9 +2,13 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.event.LikePostEvent;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.publisher.like.LikePostEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,6 +25,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LikeService {
@@ -33,6 +38,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final LikeMapper likeMapper;
     private final LikeValidator likeValidator;
+    private final LikePostEventPublisher likePostEventPublisher;
 
     public List<UserDto> getAllUsersByPostId(long id) {
         return getUsersBatched(getUsersIdsByLikes(getUsersIdsByPostId(id)));
@@ -66,6 +72,7 @@ public class LikeService {
         return usersLiked;
     }
 
+    @Transactional
     public LikeResponseDto addLike(LikeRequestDto likeRequestDto) {
         validateUserExists(likeRequestDto.getUserId());
         if (likeRequestDto.getPostId() == null && likeRequestDto.getCommentId() == null) {
@@ -73,24 +80,35 @@ public class LikeService {
         }
 
         Like like = likeMapper.toEntity(likeRequestDto);
+        LikePostEvent likePostEvent = null;
 
         if (likeRequestDto.getPostId() != null) {
             Post post = postRepository.findById(likeRequestDto.getPostId())
                     .orElseThrow(() -> new IllegalArgumentException("Post with ID " + likeRequestDto.getPostId() + " not found"));
-            
+
             likeValidator.validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
 
             like.setPost(post);
+            likePostEvent = LikePostEvent.builder()
+                    .postAuthorId(post.getAuthorId())
+                    .likeAuthorId(likeRequestDto.getUserId())
+                    .postId(post.getId())
+                    .build();
         } else {
             Comment comment = commentRepository.findById(likeRequestDto.getCommentId())
-            .orElseThrow(() -> new IllegalArgumentException("Comment with ID " + likeRequestDto.getCommentId() + " not found"));
-            
+                    .orElseThrow(() -> new IllegalArgumentException("Comment with ID " + likeRequestDto.getCommentId() + " not found"));
+
             likeValidator.validateLikeForCommentExists(likeRequestDto.getCommentId(), likeRequestDto.getUserId());
-            
+
             like.setComment(comment);
         }
-        
+
         likeRepository.save(like);
+
+        if (likeRequestDto.getPostId() != null) {
+            publishLikePostEvent(likePostEvent);
+        }
+
         return likeMapper.toResponseDto(like);
     }
 
@@ -106,6 +124,14 @@ public class LikeService {
             userServiceClient.getUser(userId);
         } catch (Exception e) {
             throw new EntityNotFoundException("User not found with ID: " + userId);
+        }
+    }
+
+    private void publishLikePostEvent(LikePostEvent likePostEvent) {
+        try {
+            likePostEventPublisher.publish(likePostEvent);
+        } catch (Exception ex) {
+            log.error("Failed to send notification with likePostEvent: {}", likePostEvent.toString(), ex);
         }
     }
 }
