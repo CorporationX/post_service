@@ -92,6 +92,9 @@ post:
     attempts: 3
     delay: 1000
     multiplier: 2
+  user-ban:
+    cron: "0 0 0 * * ?" # every day
+    post-limit: 5
 
 comment:
   obscene-words-resource: obscene_words_resource/obscene-words.json
