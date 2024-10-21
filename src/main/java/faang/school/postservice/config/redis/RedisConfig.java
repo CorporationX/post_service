@@ -38,6 +38,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.post-channel.name}")
     private String postEventChannel;
 
+    @Value("${spring.data.redis.channels.ad-bought-channel.name}")
+    private String adBoughtEvent;
+
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
@@ -85,5 +88,10 @@ public class RedisConfig {
     @Bean
     public ChannelTopic postEventTopic() {
         return new ChannelTopic(postEventChannel);
+    }
+
+    @Bean
+    public ChannelTopic adBoughtEventTopic() {
+        return new ChannelTopic(adBoughtEvent);
     }
 }

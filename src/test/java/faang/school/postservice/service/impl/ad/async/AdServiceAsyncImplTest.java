@@ -1,6 +1,6 @@
 package faang.school.postservice.service.impl.ad.async;
 
-import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.model.entity.Ad;
 import faang.school.postservice.repository.ad.AdRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

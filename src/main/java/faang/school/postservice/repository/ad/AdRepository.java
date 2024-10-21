@@ -1,6 +1,6 @@
 package faang.school.postservice.repository.ad;
 
-import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.model.entity.Ad;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
