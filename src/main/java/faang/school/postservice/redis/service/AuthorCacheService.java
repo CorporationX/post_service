@@ -24,6 +24,10 @@ public class AuthorCacheService {
         authorCache.getSubscribers().addAll(updateSubscribers(authorCache));
     }
 
+    public AuthorCache getSubscribers(Long authorId) {
+        return authorCacheRepository.findById(authorId).orElse(null);
+    }
+
     private AuthorCache saveAuthor(Long authorId, Long postId) {
         UserDto userDto = userServiceClient.getUser(authorId);
         AuthorCache authorCache = authorCacheMapper.toAuthorCache(userDto, postId);
@@ -33,6 +37,5 @@ public class AuthorCacheService {
 
     private List<Long> updateSubscribers(AuthorCache authorId) {
         return userServiceClient.getFollowers(authorId.getId()).stream().map(UserDto::getId).toList();
-
     }
 }

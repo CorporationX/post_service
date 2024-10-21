@@ -5,6 +5,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.redis.service.AuthorCacheService;
+import faang.school.postservice.redis.service.FeedService;
 import faang.school.postservice.redis.service.PostCacheService;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostCacheService postCacheService;
     private final AuthorCacheService authorCacheService;
+    private final FeedService feedService;
 
     public PostDto createPost(final PostDto postDto) {
         Post post = postMapper.toEntity(postDto);
@@ -51,6 +53,7 @@ public class PostService {
     protected void redisFilling(final PostDto postDto) {
         authorCacheService.updateAuthorCache(postDto.getAuthorId(), postDto.getId());
         postCacheService.savePostEvent(postDto);
+        feedService.fillingFeed(postDto);
     }
 
     private void validatePostPublishing(Post post) {
