@@ -8,14 +8,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
+import static org.apache.commons.collections4.ListUtils.partition;
 
 @Slf4j
 @Component
@@ -26,47 +23,61 @@ public class PostPublisher {
     private final ExecutorService executorService;
     private final PostService postService;
 
-    /**
-     * Задаем тайм-аут на ожидание результата.
-     * Проверяем, если список пуст, то дальнейшие операции не требуются.
-     * Проверяем, есть ли посты с датой публикации, и обновляем их.
-     * Устанавливаем флаг "published" для постов с датой публикации.
-     * Асинхронно сохраняем обновленные посты.
-     */
     @Scheduled(cron = "${post.publisher.scheduler.cron}")
     public void checkPostToPublish() {
+        CompletableFuture
+                .supplyAsync(this::getUnpublishedPosts, executorService)
+                .thenAcceptAsync(this::publishAndSavePosts, executorService)
+                .exceptionally(ex -> {
+                    log.error("PostPublisher. Error occurred during post publishing", ex);
+                    return null;
+                });
+    }
 
-        Future<List<Post>> postsFromDBFuture = executorService.submit(postService::getAllPostsNotPublished);
-
-        List<Post> postsFromDB;
+    private List<Post> getUnpublishedPosts() {
         try {
-            postsFromDB = postsFromDBFuture.get(30, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            log.error("PostPublisher. Error retrieving posts from DB", e);
-            throw new RuntimeException("PostPublisher. Failed to retrieve posts due to async operation failure", e);
+            return postService.getAllPostsNotPublished();
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "PostPublisher. Failed to retrieve posts due to async operation failure", e);
         }
+    }
 
+    private void publishAndSavePosts(List<Post> postsFromDB) {
         if (postsFromDB.isEmpty()) {
             log.info("No unpublished posts found.");
             return;
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        postsFromDB.forEach(post -> post.setPublished(true));
 
-        boolean hasFuturePosts = postsFromDB.stream()
-                .anyMatch(post -> post.getPublishedAt().isAfter(now));
+        List<List<Post>> subLists = partition(postsFromDB, 10);
 
-        if (hasFuturePosts) {
-            postsFromDB.parallelStream().forEach(post -> post.setPublished(true));
+        List<CompletableFuture<Void>> futures = subLists.stream()
+                .map(subList -> CompletableFuture.runAsync(() -> savePostBatch(subList), executorService)
+                        .exceptionally(ex -> {
+                            log.error("PostPublisher. Error saving post batch", ex);
+                            return null;
+                        }))
+                .toList();
+
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+        try {
+            allFutures.join();
+            log.info("All post batches processed successfully.");
+        } catch (Exception ex) {
+            log.error("PostPublisher. Some post batches failed during processing.", ex);
         }
+    }
 
-        CompletableFuture.runAsync(() -> {
-            try {
-                postService.savePosts(postsFromDB);
-            } catch (Exception e) {
-                log.error("PostPublisher. Error save post", e);
-                throw new RuntimeException("PostPublisher. Failed to save post due to async operation failure", e);
-            }
-        }, executorService);
+    private void savePostBatch(List<Post> subList) {
+        try {
+            postService.savePosts(subList);
+        } catch (Exception e) {
+            log.error("PostPublisher. Error saving post batch", e);
+            throw new RuntimeException(
+                    "PostPublisher. Failed to save post batch due to async operation failure", e);
+        }
     }
 }
