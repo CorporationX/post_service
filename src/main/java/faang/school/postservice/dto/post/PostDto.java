@@ -1,7 +1,6 @@
 package faang.school.postservice.dto.post;
 
 import faang.school.postservice.dto.comment.CommentEventDto;
-import faang.school.postservice.kafka.model.CommentEvent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

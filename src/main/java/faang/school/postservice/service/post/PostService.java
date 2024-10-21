@@ -1,6 +1,5 @@
 package faang.school.postservice.service.post;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -32,7 +31,7 @@ public class PostService {
     }
 
 
-    public PostDto publishPost(final long postId) throws JsonProcessingException {
+    public PostDto publishPost(final long postId) {
         Post post = getPostByIdOrFail(postId);
 
         validatePostPublishing(post);
