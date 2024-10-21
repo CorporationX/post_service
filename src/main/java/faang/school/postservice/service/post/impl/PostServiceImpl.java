@@ -13,6 +13,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.post.PostCreator;
+import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.post.PostContentVerifier;
@@ -26,6 +27,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +46,7 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userClient;
     private final ProjectServiceClient projectClient;
     private final PostContentVerifier postContentVerifier;
+    private final MessagePublisher<Long> banUserPublisher;
 
     @Setter
     @Value("${post.moderator.post-batch-size}")
@@ -156,6 +159,17 @@ public class PostServiceImpl implements PostService {
                 .toList();
         log.info("Number of found posts for moderation: {}", posts.size());
         ListUtils.partition(posts, postBatchSize).forEach(postContentVerifier::verifyPosts);
+    }
+
+    @Async("taskExecutor")
+    @Override
+    public void banAuthorsWithUnverifiedPostsMoreThan(int banPostLimit) {
+        List<Long> authorIds = postRepository.findAuthorIdsToBan(banPostLimit);
+        log.info("Found {} authors to ban", authorIds.size());
+        authorIds.forEach(authorId -> {
+            banUserPublisher.publish(authorId);
+            log.info("Published ban event for author ID {}", authorId);
+        });
     }
 
     @Override

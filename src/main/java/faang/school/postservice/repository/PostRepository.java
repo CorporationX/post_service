@@ -3,6 +3,7 @@ package faang.school.postservice.repository;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -31,4 +32,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllNotPublishedPosts();
 
     Optional<Post> findByIdAndDeletedFalse(long id);
+
+    @Query("""
+            SELECT p.authorId
+            FROM Post p
+            WHERE p.verified = false
+            GROUP BY p.authorId
+            HAVING COUNT(p.id) > :banPostLimit
+            """)
+    List<Long> findAuthorIdsToBan(@Param("banPostLimit") int banPostLimit);
 }
