@@ -22,9 +22,23 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
-        like-event: like-event-channel
+        calculations-channel: calculations_channel
+        user-service: ban_user_channel
+        like-service: like-event-channel
+      topics:
+        comment_event_topic: commentEventQueue
+
+  kafka:
+    bootstrap-servers: "localhost:9092"
+    pool-size: 3
+    consumer:
+      group-id: "group"
+      auto-offset-reset: earliest
+    topics:
+      album-created:
+        name: album-created_topic
+        num-partitions: 3
+        replication-factor: 1
 
 server:
   port: 8081
@@ -37,9 +51,21 @@ post:
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+      size_batch: 100
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  ban-user:
+    scheduler:
+      cron: "0 0 2 * * *" # every day
+  verify:
+    retry:
+      max-attempts: 3
+      delay: 5000
+    scheduler:
+      cron: "0 0 2 * * *" # every day
+  thread-pool:
+    count_pool: 10
 
 user-service:
   host: localhost
@@ -50,3 +76,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+censorship:
+  words:
+    - 1C
+    - Динамическая типизация
+    - Многопоточность

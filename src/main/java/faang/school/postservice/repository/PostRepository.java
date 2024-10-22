@@ -1,16 +1,16 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Repository
-public interface PostRepository extends CrudRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByAuthorId(long authorId);
 
@@ -62,5 +62,11 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             """)
     List<Post> findByProjectIdAndPublished(long projectId);
 
-    List<Post> findByPublishedTrueAndDeletedFalse();
+    @Query(nativeQuery = true, value = """
+            SELECT author_id FROM post
+            WHERE verified = false AND author_id IS NOT NULL
+            GROUP BY author_id
+            HAVING COUNT(*) > 5 ;
+            """)
+    List<Long> findAuthorsWithMoreThanFiveUnverifiedPosts();
 }

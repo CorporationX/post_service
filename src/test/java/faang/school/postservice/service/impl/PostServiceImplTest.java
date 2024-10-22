@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +39,9 @@ class PostServiceImplTest {
 
     @Mock
     private ProjectServiceClient projectServiceClient;
+
+    @Mock
+    private AsyncPostPublishServiceImpl asyncPostPublishService;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -206,5 +211,29 @@ class PostServiceImplTest {
         verify(postRepository).findByProjectIdAndPublished(projectId);
         verify(postMapper).toDto(posts);
         assertEquals(postDtos, result);
+    }
+
+    @Test
+    public void publishScheduledPosts_when() {
+        ReflectionTestUtils.setField(postService, "sizeBatch", 100);
+        List<Post> posts = List.of(
+                Post.builder().content("content").authorId(1L).published(false).build()
+        );
+
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+        postService.publishScheduledPosts();
+
+        verify(postRepository, times(1)).findReadyToPublish();
+        verify(asyncPostPublishService, times(1)).publishPost(any());
+    }
+
+    @Test
+    void getAuthorsWithMoreFiveUnverifiedPosts() {
+        List<Long> violatorIds = List.of(1L, 2L, 3L);
+        when(postRepository.findAuthorsWithMoreThanFiveUnverifiedPosts()).thenReturn(violatorIds);
+
+        List<Long> result = postService.getAuthorsWithMoreFiveUnverifiedPosts();
+
+        assertEquals(violatorIds, result);
     }
 }

@@ -1,6 +1,7 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.album.AlbumCreatedEvent;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.UserNotFoundException;
@@ -8,6 +9,7 @@ import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.AlbumCreatedEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityExistsException;
@@ -17,6 +19,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
@@ -50,12 +55,19 @@ public class AlbumServiceImplTest {
     @Mock
     private AlbumMapper albumMapper;
 
+    @Mock
+    private AlbumCreatedEventPublisher albumCreatedEventPublisher;
+
+    @Captor
+    private ArgumentCaptor<AlbumCreatedEvent> albumCreatedEventCaptor;
+
     @InjectMocks
     private AlbumServiceImpl albumService;
 
     @BeforeEach
     public void setUp() {
         albumDto = new AlbumDto();
+        albumDto.setId(albumId);
         albumDto.setAuthorId(1L);
         albumDto.setTitle("example title");
     }
@@ -88,6 +100,11 @@ public class AlbumServiceImplTest {
 
     @Test
     public void testCreateAlbumSuccessfully() {
+        AlbumCreatedEvent correctEvent = AlbumCreatedEvent.builder()
+                .albumId(albumId)
+                .albumName(albumDto.getTitle())
+                .userId(albumDto.getAuthorId())
+                .build();
         when(userServiceClient.existsUserById(albumDto.getAuthorId())).thenReturn(true);
         when(albumRepository.existsByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId())).thenReturn(false);
         Album album = new Album();
@@ -95,7 +112,12 @@ public class AlbumServiceImplTest {
 
         albumService.createAlbum(albumDto);
 
-        verify(albumRepository, times(1)).save(album);
+        verify(albumRepository).save(album);
+        verify(albumCreatedEventPublisher).publish(albumCreatedEventCaptor.capture());
+        AlbumCreatedEvent capturedEvent = albumCreatedEventCaptor.getValue();
+        assertEquals(correctEvent.getAlbumId(), capturedEvent.getAlbumId());
+        assertEquals(correctEvent.getAlbumName(), capturedEvent.getAlbumName());
+        assertEquals(correctEvent.getUserId(), capturedEvent.getUserId());
     }
 
     @Test

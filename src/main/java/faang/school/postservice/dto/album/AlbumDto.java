@@ -14,7 +14,7 @@ public class AlbumDto {
     @NotBlank(message = "Description cannot be empty")
     private String description;
     private Long authorId;
-    private AlbumVisibility albumVisibility;
+    private AlbumVisibility visibility;
     private List<Long> selectedUsersIds;
     private List<Long> postIds;
 }
