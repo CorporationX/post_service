@@ -2,14 +2,14 @@ package faang.school.postservice.publisher.comment;
 
 import faang.school.postservice.config.redis.RedisTopicsFactory;
 import faang.school.postservice.dto.comment.CommentEvent;
-import faang.school.postservice.publisher.AbstractEventPublisher;
+import faang.school.postservice.publisher.AbstractEventsPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.Topic;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RedisCommentEventPublisher extends AbstractEventPublisher<CommentEvent> {
+public class RedisCommentEventPublisher extends AbstractEventsPublisher<CommentEvent> {
     private final Topic commentTopic;
 
     public RedisCommentEventPublisher(
