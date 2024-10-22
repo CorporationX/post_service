@@ -21,7 +21,7 @@ public class AuthorBannerScheduler {
     private int banPostLimit;
 
     @Scheduled(cron = "${post.user-ban.cron}")
-    @Retryable(retryFor = {UserBanException.class}, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = {UserBanException.class}, backoff = @Backoff(delayExpression = "${post.user-ban.delay}"))
     public void banAuthors() {
         try {
             postService.banAuthorsWithUnverifiedPostsMoreThan(banPostLimit);
