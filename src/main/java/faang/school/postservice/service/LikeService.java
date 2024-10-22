@@ -1,7 +1,9 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.model.event.LikeEvent;
 
 import java.util.List;
 
@@ -19,4 +21,5 @@ public interface LikeService {
     void deleteLikeFromComment(LikeDto likeDto, long commentId);
 
     List<LikeDto> findLikesOfPublishedPost(long postId);
+    void publish(LikeEvent likeEvent) throws JsonProcessingException;
 }

@@ -1,23 +1,25 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.event.LikeEvent;
+import faang.school.postservice.publisher.LikeEventPublisherImpl;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.LikeService;
 import feign.FeignException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
@@ -28,23 +30,36 @@ import java.util.List;
 @Validated
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
-    public final PostRepository postRepository;
-    public final CommentRepository commentRepository;
-    public final LikeMapper likeMapper;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final LikeMapper likeMapper;
     private final LikeRepository likeRepository;
     private final UserServiceClient client;
     private final UserServiceClient userServiceClient;
+    private final LikeEventPublisherImpl likeEventPublisher;
+
+    @Override
+    public void publish(LikeEvent likeEvent) {
+        likeEventPublisher.publishLikeEvent(likeEvent);
+    }
 
     @Override
     public void addLikeToPost(@Valid LikeDto likeDto, long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("There is no such post"));
         Like like = likeMapper.toLike(likeDto);
+        LikeEvent likeEvent = LikeEvent.builder()
+                .postId(postId)
+                .authorId(post.getAuthorId())
+                .userId(like.getUserId())
+                .createdAt(like.getCreatedAt())
+                .build();
         validateLike(like, post);
         checkUser(like.getUserId());
         validatePostAndCommentLikes(post, like);
         like.setPost(post);
         likeRepository.save(like);
+        likeEventPublisher.publishLikeEvent(likeEvent);
     }
 
     @Override

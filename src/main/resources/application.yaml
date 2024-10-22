@@ -24,6 +24,7 @@ spring:
       channels:
         calculations-channel: calculations_channel
         user-service: ban_user_channel
+        like-service: like-event-channel
       topics:
         comment_event_topic: commentEventQueue
 
@@ -65,7 +66,7 @@ post:
       cron: "0 0 2 * * *" # every day
   thread-pool:
     count_pool: 10
-    
+
 user-service:
   host: localhost
   port: 8080
