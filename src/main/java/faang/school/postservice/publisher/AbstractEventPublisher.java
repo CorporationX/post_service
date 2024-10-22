@@ -38,3 +38,4 @@ public abstract class AbstractEventPublisher<T, K> {
 
     public abstract T createEvent(K entity, Long actorId);
 }
+
