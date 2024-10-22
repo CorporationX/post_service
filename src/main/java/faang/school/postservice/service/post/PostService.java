@@ -6,7 +6,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.publisher.PostViewEventPublisher;
+import faang.school.postservice.publisher.post.PostViewEventPublisher;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 

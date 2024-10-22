@@ -1,9 +1,9 @@
-package faang.school.postservice.service.publisher;
+package faang.school.postservice.publisher.post;
 
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.publisher.MessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
