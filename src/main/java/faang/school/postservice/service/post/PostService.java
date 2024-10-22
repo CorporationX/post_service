@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -30,6 +31,19 @@ public class PostService {
     private final ModerationDictionary moderationDictionary;
     private final ExecutorService executor;
     private final PostViewEventPublisher postViewEventPublisher;
+
+    public PostResponseDto getPost(long postId){
+        Post post = findById(postId);
+        return postMapper.toResponseDto(post, post.getLikes().size());
+    }
+
+    public List<Post> getAllPostsNotPublished() {
+        return postRepository.findReadyToPublish();
+    }
+
+    public void savePosts(List<Post> posts) {
+        postRepository.saveAll(posts);
+    }
 
     public Post findById(Long postId) {
         Post post = postRepository.findById(postId)

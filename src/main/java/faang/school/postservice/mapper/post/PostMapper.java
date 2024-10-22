@@ -10,4 +10,5 @@ public interface PostMapper {
 
     @Mapping(target = "likeCount", source = "likeCount")
     PostResponseDto toResponseDto(Post post, int likeCount);
+
 }

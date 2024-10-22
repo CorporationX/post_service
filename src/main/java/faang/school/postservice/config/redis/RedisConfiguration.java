@@ -18,13 +18,28 @@ public class RedisConfiguration {
     private final ObjectMapper objectMapper;
 
     @Bean
-    ChannelTopic likePostEventTopic() {
+    public ChannelTopic likePostChannel() {
         return new ChannelTopic(redisProperties.getChannels().getLikePostChannel().getName());
     }
 
     @Bean
     ChannelTopic postViewEventTopic() {
         return new ChannelTopic(redisProperties.getChannels().getPostViewChannel().getName());
+    }
+
+    @Bean
+    public ChannelTopic commentEventChannel() {
+        return new ChannelTopic(redisProperties.getChannels().getCommentChannel().getName());
+    }
+
+    @Bean
+    public ChannelTopic achievementEventTopic() {
+        return new ChannelTopic(redisProperties.getChannels().getLikePostChannel().getName());
+    }
+
+    @Bean
+    public ChannelTopic publishedCommentEventTopic() {
+        return new ChannelTopic(redisProperties.getChannels().getNewCommentChannel().getName());
     }
 
     @Bean

@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 @Slf4j
@@ -48,7 +47,6 @@ public class S3Service {
      */
     public List<Resource> uploadFiles(List<MultipartFile> files, Long postId) {
         try {
-            Executors.newFixedThreadPool(10);
             putFileToBucket(files);
         } catch (AmazonS3Exception e) {
             log.error("ERROR uploading images to Object Storage. Reason:", e);
