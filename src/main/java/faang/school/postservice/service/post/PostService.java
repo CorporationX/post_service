@@ -9,6 +9,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.publisher.PostViewEventPublisher;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -49,12 +51,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(()-> new EntityNotFoundException("Post service. Post not found. id: " + postId));
 
-        PostViewEvent postViewEvent = PostViewEvent.builder()
-                .postId(postId)
-                .authorId(post.getAuthorId())
-                .localDateTime(LocalDateTime.now())
-                .build();
-        postViewEventPublisher.publish(postViewEvent);
+        publishEvent(postId, post.getAuthorId());
 
         return post;
     }
@@ -84,6 +81,19 @@ public class PostService {
                     CompletableFuture.runAsync(() -> moderationDictionary.searchSwearWords(subList), executor);
 
             verifiedEntities.thenAccept(result -> postRepository.saveAll(subList));
+        }
+    }
+
+    private void publishEvent(Long postId, Long postAuthorId) {
+        PostViewEvent postViewEvent = PostViewEvent.builder()
+                .postId(postId)
+                .authorId(postAuthorId)
+                .localDateTime(LocalDateTime.now())
+                .build();
+        try {
+            postViewEventPublisher.publish(postViewEvent);
+        } catch (Exception ex) {
+            log.error("Failed to send notification with postViewEvent: {}", postViewEvent.toString(), ex);
         }
     }
 }

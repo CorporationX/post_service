@@ -18,12 +18,12 @@ public class RedisConfiguration {
     private final ObjectMapper objectMapper;
 
     @Bean
-    public ChannelTopic likePostChannel() {
+    public ChannelTopic likePostEventTopic() {
         return new ChannelTopic(redisProperties.getChannels().getLikePostChannel().getName());
     }
 
     @Bean
-    ChannelTopic postViewEventTopic() {
+    public ChannelTopic postViewEventTopic() {
         return new ChannelTopic(redisProperties.getChannels().getPostViewChannel().getName());
     }
 
