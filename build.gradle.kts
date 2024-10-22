@@ -22,12 +22,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation ("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     implementation("org.springframework.boot:spring-boot-starter-quartz")
     implementation("org.springframework.retry:spring-retry:2.0.3")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
     implementation("org.springframework.boot:spring-boot-starter-quartz")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.retry:spring-retry:2.0.9")
 
     /**
      * Database
@@ -41,6 +43,12 @@ dependencies {
      * AWS S3
      */
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.772")
+
+
+    /**
+     * AOP
+     */
+    implementation ("org.aspectj:aspectjweaver:1.9.19")
 
     /**
      * Utils & Logging
@@ -85,7 +93,8 @@ val jacocoInclude = listOf(
 )
 
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.12"
+    reportsDirectory.set(layout.buildDirectory.dir("$buildDir/reports/jacoco"))
 }
 
 tasks.test {
@@ -95,9 +104,9 @@ tasks.test {
 
 tasks.jacocoTestReport {
     reports {
-        xml.required.set(true)
+        xml.required.set(false)
         csv.required.set(false)
-        html.outputLocation.set(file("${buildDir}/jacocoHtml"))
+        html.required.set(true)
     }
     classDirectories.setFrom(
         fileTree(project.buildDir) {
@@ -168,8 +177,8 @@ tasks.check {
     dependsOn(tasks.jacocoTestCoverageVerification)
 }
 
-tasks.build {
-    finalizedBy("checkTotalCoverage")
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
 }
 
 tasks.withType<Test> {

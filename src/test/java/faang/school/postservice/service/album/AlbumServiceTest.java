@@ -1,7 +1,9 @@
 package faang.school.postservice.service.album;
 
-import faang.school.postservice.client.UserServiceClientMock;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumFilterDto;
+import faang.school.postservice.dto.user.UserExtendedFilterDto;
+import faang.school.postservice.dto.user.UserResponseShortDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.album.Album;
 import faang.school.postservice.model.album.AlbumVisibility;
@@ -14,6 +16,7 @@ import faang.school.postservice.service.album.filter.AlbumFilter;
 import faang.school.postservice.service.album.filter.AlbumTitleFilter;
 import faang.school.postservice.service.album.filter.MinimumOfPostsAtAlbum;
 import faang.school.postservice.util.album.BuilderForAlbumsTests;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -46,6 +49,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -63,7 +67,7 @@ class AlbumServiceTest {
     @Mock
     private AlbumServiceChecker checker;
     @Mock
-    private UserServiceClientMock userServiceClient;
+    private UserServiceClient userServiceClient;
     @Mock
     private List<AlbumFilter> albumFilters;
 
@@ -78,6 +82,11 @@ class AlbumServiceTest {
             new AlbumCreatedToFilter()
     );
     private Album album;
+
+    @BeforeEach
+    void setUp() {
+        reset(userServiceClient);
+    }
 
     @Test
     void createNewAlbum() {
@@ -445,12 +454,15 @@ class AlbumServiceTest {
 
         doNothing().when(checker).checkUserExists(userId);
         when(albumRepository.findAll()).thenReturn(List.of(existedAlbum));
-        when(userServiceClient.getFollowers(2L)).thenReturn(List.of(1L));
+
+        when(userServiceClient.getFollowers(eq(2L), any(UserExtendedFilterDto.class)))
+                .thenReturn(List.of(new UserResponseShortDto(1L, "test", "mail")));
 
         List<Album> result = albumService.getAllAlbums(userId, albumFilterDto);
 
         assertEquals(1, result.size());
     }
+
 
     @Test
     void testGetAllAlbums_CHOSEN_USERS() {

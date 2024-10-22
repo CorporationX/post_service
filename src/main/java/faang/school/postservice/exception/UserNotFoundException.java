@@ -1,7 +1,9 @@
 package faang.school.postservice.exception;
 
-public class UserNotFoundException extends RuntimeException {
-    public UserNotFoundException(String message, Object... args) {
-        super(String.format(message, args));
+import org.springframework.http.HttpStatus;
+
+public class UserNotFoundException extends ApiException {
+    public UserNotFoundException(String message) {
+        super(message, HttpStatus.NOT_FOUND);
     }
 }

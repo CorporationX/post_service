@@ -1,7 +1,5 @@
 package faang.school.postservice.config.redis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.post.serializable.PostCacheDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +12,6 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@EnableTransactionManagement
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
@@ -71,5 +68,8 @@ public class RedisConfig {
         template.setEnableTransactionSupport(true);
         template.afterPropertiesSet();
         return template;
+      
+    public StringRedisSerializer stringRedisSerializer() {
+        return new StringRedisSerializer();
     }
 }

@@ -1,6 +1,6 @@
 package faang.school.postservice.service.banner;
 
-import faang.school.postservice.publisher.RedisMessagePublisher;
+import faang.school.postservice.publisher.UserBanMessagePublisher;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,7 @@ class AuthorBannerTest {
     @Mock
     private PostService postService;
     @Mock
-    private RedisMessagePublisher redisMessagePublisher;
+    private UserBanMessagePublisher userBanMessagePublisher;
 
     @InjectMocks
     private AuthorBanner authorBanner;
@@ -34,7 +34,7 @@ class AuthorBannerTest {
         authorBanner.publishingUsersForBan();
 
         userIds.forEach(userId ->
-                verify(redisMessagePublisher, Mockito.times(1))
+                verify(userBanMessagePublisher, Mockito.times(1))
                         .publish(String.valueOf(userId)));
     }
 
@@ -42,6 +42,6 @@ class AuthorBannerTest {
     void testPublishingUsersForBan_emptyUserList() {
         when(postService.findUserIdsForBan()).thenReturn(List.of());
         authorBanner.publishingUsersForBan();
-        verify(redisMessagePublisher, never()).publish(anyString());
+        verify(userBanMessagePublisher, never()).publish(anyString());
     }
 }

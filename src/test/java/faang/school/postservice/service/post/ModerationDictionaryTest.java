@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,13 +15,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class ModerationDictionaryTest {
-
+    private ObjectMapper objectMapper;
     private ModerationDictionary moderationDictionary;
     private Field forbiddenWordsField;
 
     @BeforeEach
     void setUp() throws Exception {
-        moderationDictionary = new ModerationDictionary();
+        objectMapper = new ObjectMapper();
+        moderationDictionary = new ModerationDictionary(objectMapper);
         forbiddenWordsField = ModerationDictionary.class.getDeclaredField("forbiddenWords");
         forbiddenWordsField.setAccessible(true);
         forbiddenWordsField.set(moderationDictionary, Set.of("badword", "anotherbadword"));

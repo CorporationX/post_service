@@ -1,6 +1,6 @@
 package faang.school.postservice.service.album;
 
-import faang.school.postservice.client.UserServiceClientMock;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.BadRequestException;
 import faang.school.postservice.model.album.Album;
 import faang.school.postservice.repository.AlbumRepository;
@@ -42,7 +42,7 @@ class AlbumServiceCheckerTest {
     @Mock
     private AlbumRepository albumRepository;
     @Mock
-    private UserServiceClientMock userServiceClient;
+    private UserServiceClient userServiceClient;
 
     @InjectMocks
     private AlbumServiceChecker checker;
