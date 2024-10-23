@@ -21,9 +21,39 @@ spring:
     redis:
       port: 6379
       host: localhost
+      directory:
+        post: Post
+        infoAboutAuthor: InfoAboutAuthor
+        feed: Feed_
+        comment: Comment_By_Post_
+        like: Like_By_Post_
+        timestamp: :timestamp
+      settings:
+        ttl: 86400
+        maxSizeFeed: 500
+        maxSizeComment: 3
       channels:
         calculations_channel:
           name: calculations_channel
+        like_channel:
+          name: like_view_channel
+        post_view_channel:
+          name: post_view_channel
+        comment-event-chanel:
+          name: comment_event_chanel;
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: my-group
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+      retries: 10
+      enable-idempotence: true
+    topic:
+      post: Post
+      comment: Comment
+      like: Like
 
 server:
   port: 8081
@@ -49,3 +79,14 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+postServiceThreadPool:
+  poolAmount: 4
+  poolComment: 4
+  poolPost: 4
+  poolFeed: 4
+  poolFeedAlgo: 4
+  poolHeatCache: 10
+
+value:
+  feedSize: 20
