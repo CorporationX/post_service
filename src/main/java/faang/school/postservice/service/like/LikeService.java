@@ -1,29 +1,30 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.LikePostEvent;
+import faang.school.postservice.dto.like.LikeRequestDto;
+import faang.school.postservice.dto.like.LikeResponseDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.like.LikeMapper;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.EventType;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.like.LikePostEventPublisher;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.like.LikeValidator;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-
-import faang.school.postservice.dto.like.LikeRequestDto;
-import faang.school.postservice.dto.like.LikeResponseDto;
-import faang.school.postservice.mapper.like.LikeMapper;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validator.like.LikeValidator;
-import jakarta.persistence.EntityNotFoundException;
 
 @Slf4j
 @Service
@@ -38,6 +39,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final LikeMapper likeMapper;
     private final LikeValidator likeValidator;
+    private final UserContext userContext;
     private final LikePostEventPublisher likePostEventPublisher;
 
     public List<UserDto> getAllUsersByPostId(long id) {
@@ -90,9 +92,11 @@ public class LikeService {
 
             like.setPost(post);
             likePostEvent = LikePostEvent.builder()
-                    .postAuthorId(post.getAuthorId())
-                    .likeAuthorId(likeRequestDto.getUserId())
+                    .postAuthorId(like.getPost().getAuthorId())
+                    .likeAuthorId(userContext.getUserId())
                     .postId(post.getId())
+                    .eventType(EventType.POST_LIKE)
+                    .createdAt(LocalDateTime.now())
                     .build();
         } else {
             Comment comment = commentRepository.findById(likeRequestDto.getCommentId())
@@ -103,12 +107,12 @@ public class LikeService {
             like.setComment(comment);
         }
 
+        like.setUserId(userContext.getUserId());
         likeRepository.save(like);
 
-        if (likeRequestDto.getPostId() != null) {
+        if (like.getPost() != null) {
             publishLikePostEvent(likePostEvent);
         }
-
         return likeMapper.toResponseDto(like);
     }
 

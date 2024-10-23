@@ -1,16 +1,17 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeRequestDto;
 import faang.school.postservice.dto.like.LikeResponseDto;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.like.LikePostEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.publisher.like.LikePostEventPublisher;
 import faang.school.postservice.validator.like.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +28,10 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Тесты для LikeService")
@@ -56,6 +60,8 @@ public class LikeServiceTest {
 
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private UserContext userContext;
 
     @Mock
     private LikePostEventPublisher likePostEventPublisher;
@@ -88,7 +94,7 @@ public class LikeServiceTest {
 
             // Мокаем вызов валидатора и проверки пользователя
             doNothing().when(likeValidator).validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
-            when(userServiceClient.getUser(likeRequestDto.getUserId())).thenReturn(null); // Предполагаем, что пользователь существует
+            when(userContext.getUserId()).thenReturn(userId); // Предполагаем, что пользователь существует
 
             LikeResponseDto result = likeService.addLike(likeRequestDto);
 
@@ -96,6 +102,7 @@ public class LikeServiceTest {
             verify(postRepository).findById(likeRequestDto.getPostId());
             verify(likeValidator).validateLikeForPostExists(likeRequestDto.getPostId(), likeRequestDto.getUserId());
             verify(userServiceClient).getUser(likeRequestDto.getUserId());
+            verify(likePostEventPublisher).publish(any());
             verify(likePostEventPublisher).publish(any());
             assertEquals(likeResponseDto, result);
         }
@@ -116,7 +123,7 @@ public class LikeServiceTest {
 
             // Мокаем вызов валидатора и проверки пользователя
             doNothing().when(likeValidator).validateLikeForCommentExists(likeRequestDto.getCommentId(), likeRequestDto.getUserId());
-            when(userServiceClient.getUser(likeRequestDto.getUserId())).thenReturn(null); // Предполагаем, что пользователь существует
+            when(userContext.getUserId()).thenReturn(userId); // Предполагаем, что пользователь существует
 
             LikeResponseDto result = likeService.addLike(likeRequestDto);
 
