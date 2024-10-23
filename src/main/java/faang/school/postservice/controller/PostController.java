@@ -1,7 +1,9 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.dto.event.AdBoughtEvent;
 import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.publisher.AdBoughtEventPublisher;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
@@ -18,6 +20,7 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
     private final CommentEventPublisher commentEventPublisher;
+    private final AdBoughtEventPublisher adBoughtEventPublisher;
 
     @PostMapping
     public PostDto create(@RequestBody @Valid PostDto postDto) {
@@ -42,6 +45,11 @@ public class PostController {
     @PutMapping("/comment")
     public void commentEvent(@RequestBody CommentEvent commentEvent) {
         commentEventPublisher.publish(commentEvent);
+    }
+
+    @PostMapping("/ad/buy")
+    public void adBoughtEvent(@RequestBody AdBoughtEvent adBoughtEvent) {
+        adBoughtEventPublisher.publish(adBoughtEvent);
     }
 
     @GetMapping("/{id}")

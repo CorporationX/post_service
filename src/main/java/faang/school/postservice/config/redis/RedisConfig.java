@@ -25,6 +25,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.comment_channel}")
     private String commentChannelName;
 
+    @Value("${spring.data.redis.channels.ad_bought_channel}")
+    private String adBoughtChannelName;
+
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -54,6 +57,11 @@ public class RedisConfig {
     @Bean
     public ChannelTopic commentEventTopic() {
         return new ChannelTopic(commentChannelName);
+    }
+
+    @Bean
+    public ChannelTopic adBoughtEventTopic() {
+        return new ChannelTopic(adBoughtChannelName);
     }
 
     @Bean

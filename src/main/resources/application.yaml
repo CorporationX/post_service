@@ -25,6 +25,7 @@ spring:
         calculations_channel: calculations_channel
         comment_channel: comment_channel
         like_channel: like_channel
+        ad_bought_channel: ad_bought_channel
 
 
 server:
@@ -58,3 +59,6 @@ services:
     accessKey: user
     secretKey: password
     bucketName: corpbucket
+
+task:
+  cron: "0 0 12 * * 0"
