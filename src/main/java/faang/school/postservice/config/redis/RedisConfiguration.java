@@ -35,17 +35,11 @@ public class RedisConfiguration {
     @Bean
     public ChannelTopic publishedCommentEventTopic() {
         return new ChannelTopic(redisProperties.getChannels().getNewCommentChannel().getName());
-    private final RedisProperties propertiesConfig;
-    private final ObjectMapper objectMapper;
+    }
 
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
         return new JedisConnectionFactory();
-    }
-
-    @Bean
-    public ChannelTopic likeEventsTopic() {
-        return new ChannelTopic(propertiesConfig.getChannels().getLikeEventsChannel().getName());
     }
 
     @Bean
@@ -55,10 +49,5 @@ public class RedisConfiguration {
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
         return template;
-    }
-
-    @Bean
-    JedisConnectionFactory jedisConnectionFactory() {
-        return new JedisConnectionFactory();
     }
 }
