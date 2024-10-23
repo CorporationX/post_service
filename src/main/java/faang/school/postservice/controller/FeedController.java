@@ -19,7 +19,7 @@ public class FeedController {
     private final FeedService feedService;
 
     @GetMapping()
-    public List<FeedDto> getFeed(@RequestParam(value = "afterPostId", required = false) String lastPostId) {
+    public List<FeedDto> getFeed(@RequestParam(value = "pivotPostId", required = false) String lastPostId) {
         return feedService.getFeed(lastPostId);
     }
 

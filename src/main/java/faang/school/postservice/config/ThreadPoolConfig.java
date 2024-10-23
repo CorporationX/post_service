@@ -19,9 +19,6 @@ public class ThreadPoolConfig {
     @Value("${postServiceThreadPool.poolFeed}")
     private int kThreads;
 
-    @Value("${postServiceThreadPool.poolFeedAlgo}")
-    private int qThreads;
-
     @Bean
     public ExecutorService postServicePool() {
         return Executors.newFixedThreadPool(nThreads);
@@ -35,11 +32,6 @@ public class ThreadPoolConfig {
     @Bean
     public ExecutorService feedPool() {
         return Executors.newFixedThreadPool(kThreads);
-    }
-
-    @Bean
-    public ExecutorService feedAlgoPool() {
-        return Executors.newFixedThreadPool(qThreads);
     }
 
 }
