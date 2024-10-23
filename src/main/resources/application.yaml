@@ -11,7 +11,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -24,10 +24,14 @@ spring:
       port: 6379
       host: localhost
       channels:
-        likeEventsChannel:
-          name: like_event_channel
         calculationsChannel:
           name: calculations_channel
+        commentChannel:
+          name: comment_channel
+        likePostChannel:
+          name: like_post_channel
+        newCommentChannel:
+          name: new_comment_channel
 
 server:
   port: 8081
@@ -37,19 +41,63 @@ logging:
     root: info
 
 post:
+  executor:
+    threads:
+      count: 5
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
   ad-remover:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
+  moderation:
+    scheduler:
+      cron: "0 0 * * * ?" # every day at 00:00
+    dictionary:
+      file-path: "src/main/resources/moderation/dictionary.txt"
+    sublist:
+      length: 10
 
 user-service:
   host: localhost
   port: 8080
+  requiredHeaders: x-user-id
 project-service:
   host: localhost
   port: 8082
+  requiredHeaders: x-user-id
 payment-service:
   host: localhost
   port: 9080
+  requiredHeaders: x-user-id
+
+moderate:
+  comments:
+    initialDelay: 5000
+    fixedDelay: 3600000
+
+dictionary:
+  offensive:
+    initial: "dictionary/offensive-words.yaml"
+    remote:
+      url: https://raw.githubusercontent.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/refs/heads/master
+      scheduler:
+        cron: "0 0 0/24 * * *" # every 24 hours
+    update:
+      retry:
+        maxAttempts: 2
+        maxDelay: 1000
+services:
+  s3:
+    endpoint: http://127.0.0.1:9000
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+    connectionTimeout: 50_000
+    socketTimeout: 50_000
+
+executor:
+  capacity: 10
+  corePoolSize: 1
+  maximumPoolSize: 10
+  keepAliveTime: 60

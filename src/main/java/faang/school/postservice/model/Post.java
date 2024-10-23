@@ -1,18 +1,9 @@
 package faang.school.postservice.model;
 
 import faang.school.postservice.model.ad.Ad;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import faang.school.postservice.moderation.Verifiable;
+import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,7 +22,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "post")
-public class Post {
+public class Post implements Verifiable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -84,4 +75,11 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "verified")
+    private Boolean verified;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verified_date")
+    private LocalDateTime verifiedDate;
 }
