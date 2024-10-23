@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 @Slf4j
 @Service
@@ -64,35 +63,33 @@ public class FeedService {
         if (!posts.isEmpty()) {
             return posts.stream().map(idPost -> {
                 String postInfo = redisCache.getFromHSetCache(post, idPost);
-                Long authorId = extractAuthorIdFromJson(postInfo);
+                Long authorId = getAuthorIdFromJson(postInfo);
                 String authorInfo = redisCache.getFromHSetCache(infoAboutAuthor, authorId.toString());
                 Set<String> commentInfo = redisCache.getAllZSetValues(comment + idPost);
                 Long likeInfo = redisCache.getZSetSize(comment + idPost);
                 return FeedDto.builder().postInfo(postInfo).authorInfo(authorInfo).commentInfo(commentInfo).likeInfo(likeInfo).build();
             }).toList();
         } else {
-            return createOldFeed(userId, (long) startScore);
+            return createFeedFromDB(userId, (long) startScore);
         }
     }
 
     public void heatCache() {
         List<Long> ids = userServiceClient.getAllUsersId();
         if (!ids.isEmpty()) {
-            ids.forEach(userId -> {
-                Future<?> future = threadPoolConfig.heaterPool().submit(() -> {
-                    heatUserFeed(userId, null);
-                });
-            });
+            ids.forEach(userId -> threadPoolConfig.heaterPool().submit(() -> {
+                heatUserFeed(userId, null);
+            }));
         }
     }
 
-    public Long extractAuthorIdFromJson(String json) {
+    public Long getAuthorIdFromJson(String json) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(json);
             return jsonNode.has("authorId") ? jsonNode.get("authorId").asLong() : null;
         } catch (Exception e) {
-            log.error("Error processing JSON", e);
+            log.error("Couldn't extract value from JSON", e);
             return null;
         }
     }
@@ -102,7 +99,7 @@ public class FeedService {
         postList.forEach(postId -> heaters.forEach(heatFeed -> heatFeed.addInfoToRedis(userId, postId)));
     }
 
-    public List<FeedDto> createOldFeed(Long userId, Long StartPostId) {
+    public List<FeedDto> createFeedFromDB(Long userId, Long StartPostId) {
         List<Long> postList = postService.findPostIdsByFolloweeId(userId, StartPostId);
         if (!postList.isEmpty()) {
             return postList.stream().map(postId -> {
@@ -111,7 +108,12 @@ public class FeedService {
                     String authorInfo = objectMapper.writeValueAsString(userServiceClient.getUserByPostId(postId));
                     Set<String> commentInfo = commentService.getTheLastCommentsForNewsFeed(postId);
                     Long likeInfo = likeService.getNumberOfLike(postId);
-                    return FeedDto.builder().postInfo(postInfo).authorInfo(authorInfo).commentInfo(commentInfo).likeInfo(likeInfo).build();
+                    return FeedDto.builder()
+                            .postInfo(postInfo)
+                            .authorInfo(authorInfo)
+                            .commentInfo(commentInfo)
+                            .likeInfo(likeInfo)
+                            .build();
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
