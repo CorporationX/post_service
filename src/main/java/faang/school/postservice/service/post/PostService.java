@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.post.PostMapper;
@@ -32,9 +33,13 @@ public class PostService {
     private final ModerationDictionary moderationDictionary;
     private final ExecutorService executor;
     private final PostViewEventPublisher postViewEventPublisher;
+    private final UserContext userContext;
 
     public PostResponseDto getPost(long postId){
         Post post = findById(postId);
+
+        publishEvent(postId, post.getAuthorId());
+
         return postMapper.toResponseDto(post, post.getLikes().size());
     }
 
@@ -47,12 +52,8 @@ public class PostService {
     }
 
     public Post findById(Long postId) {
-        Post post = postRepository.findById(postId)
+        return postRepository.findById(postId)
                 .orElseThrow(()-> new EntityNotFoundException("Post service. Post not found. id: " + postId));
-
-        publishEvent(postId, post.getAuthorId());
-
-        return post;
     }
 
     public List<PostResponseDto> getPostsByAuthorWithLikes(long authorId) {
@@ -87,7 +88,8 @@ public class PostService {
         PostViewEvent postViewEvent = PostViewEvent.builder()
                 .postId(postId)
                 .authorId(postAuthorId)
-                .localDateTime(LocalDateTime.now())
+                .userId(userContext.getUserId())
+                .viewTime(LocalDateTime.now())
                 .build();
         try {
             postViewEventPublisher.publish(postViewEvent);

@@ -14,5 +14,5 @@ public class PostViewEvent implements Serializable {
     private long postId;
     private Long authorId;
     private Long userId;
-    private LocalDateTime localDateTime;
+    private LocalDateTime viewTime;
 }

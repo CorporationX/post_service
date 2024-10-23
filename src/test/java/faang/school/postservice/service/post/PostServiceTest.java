@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
@@ -55,6 +56,9 @@ public class PostServiceTest {
     private PostViewEventPublisher postViewEventPublisher;
 
     @Mock
+    private UserContext userContext;
+
+    @Mock
     private List<Post> posts;
 
     @BeforeEach
@@ -82,6 +86,7 @@ public class PostServiceTest {
         @Test
         @DisplayName("When post exists then return post response dto")
         void whenPostIdIsPositiveAndExistsThenReturnPostResponseDto() {
+            userContext.setUserId(ID);
             when(postRepository.findById(ID))
                     .thenReturn(Optional.of(post));
             when(postMapper.toResponseDto(eq(post), anyInt()))
@@ -91,6 +96,9 @@ public class PostServiceTest {
 
             verify(postRepository).findById(ID);
             verify(postMapper).toResponseDto(eq(post), anyInt());
+            verify(postViewEventPublisher).publish(argThat(event ->
+                    event.getPostId() == ID &&
+                            event.getAuthorId().equals(ID)));
         }
 
         @Test
@@ -128,10 +136,7 @@ public class PostServiceTest {
 
             assertNotNull(existedPost);
             assertEquals(post.getId(), existedPost.getId());
-            verify(postViewEventPublisher).publish(argThat(event ->
-                    event.getPostId() == ID &&
-                            event.getAuthorId().equals(ID) &&
-                            event.getLocalDateTime() != null));
+            verify(postRepository).findById(ID);
         }
 
         @Test
