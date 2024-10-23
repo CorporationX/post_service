@@ -4,11 +4,11 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.SpellCheckerDto;
-import faang.school.postservice.event.PostViewEvent;
+import faang.school.postservice.event.AnalyticsEvent;
+import faang.school.postservice.event.EventType;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.tools.YandexSpeller;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,6 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
     private final YandexSpeller yandexSpeller;
-    private final PostViewEventPublisher postViewEventPublisher;
 
     @Transactional
     public Post createDraftPost(Post post) {
@@ -64,16 +63,10 @@ public class PostService {
     }
 
     @Transactional
+    @AnalyticsEvent(EventType.POST_VIEW)
     public Post getPostById(Long id) {
-        userContext.setUserId(1);
-        Long viewerId = userContext.getUserId();
-
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new PostRequirementsException("Post not found"));
-
-        PostViewEvent event = new PostViewEvent(post.getId(), post.getAuthorId(), viewerId, LocalDateTime.now());
-        postViewEventPublisher.publish(event);
-
         return post;
     }
 
