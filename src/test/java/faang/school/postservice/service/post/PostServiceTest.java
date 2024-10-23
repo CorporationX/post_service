@@ -1,9 +1,11 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.publisher.post.PostViewEventPublisher;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +22,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.atLeastOnce;
@@ -49,12 +53,18 @@ public class PostServiceTest {
     private PostMapper postMapper;
 
     @Mock
+    private PostViewEventPublisher postViewEventPublisher;
+
+    @Mock
+    private UserContext userContext;
+
+    @Mock
     private List<Post> posts;
 
     @BeforeEach
     public void setup() {
         post = new Post();
-        post.setId(1L);
+        post.setId(ID);
         post.setContent("Test content");
         post.setAuthorId(authorId);
         post.setProjectId(projectId);
@@ -72,9 +82,11 @@ public class PostServiceTest {
     @Nested
     @DisplayName("Позитивные тесты")
     class PositiveTests {
+
         @Test
         @DisplayName("When post exists then return post response dto")
         void whenPostIdIsPositiveAndExistsThenReturnPostResponseDto() {
+            userContext.setUserId(ID);
             when(postRepository.findById(ID))
                     .thenReturn(Optional.of(post));
             when(postMapper.toResponseDto(eq(post), anyInt()))
@@ -84,6 +96,9 @@ public class PostServiceTest {
 
             verify(postRepository).findById(ID);
             verify(postMapper).toResponseDto(eq(post), anyInt());
+            verify(postViewEventPublisher).publish(argThat(event ->
+                    event.getPostId() == ID &&
+                            event.getAuthorId().equals(ID)));
         }
 
         @Test
@@ -117,9 +132,11 @@ public class PostServiceTest {
         void whenFindByIdThenSuccess() {
             when(postRepository.findById(ID)).thenReturn(Optional.of(post));
 
-            postService.findById(ID);
+            Post existedPost = postService.findById(ID);
 
-            assertEquals(1L, ID);
+            assertNotNull(existedPost);
+            assertEquals(post.getId(), existedPost.getId());
+            verify(postRepository).findById(ID);
         }
 
         @Test

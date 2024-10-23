@@ -1,21 +1,26 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.publisher.post.PostViewEventPublisher;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -27,9 +32,14 @@ public class PostService {
     private final PostMapper postMapper;
     private final ModerationDictionary moderationDictionary;
     private final ExecutorService executor;
+    private final PostViewEventPublisher postViewEventPublisher;
+    private final UserContext userContext;
 
     public PostResponseDto getPost(long postId){
         Post post = findById(postId);
+
+        publishEvent(postId, post.getAuthorId());
+
         return postMapper.toResponseDto(post, post.getLikes().size());
     }
 
@@ -42,9 +52,8 @@ public class PostService {
     }
 
     public Post findById(Long postId) {
-        Optional<Post> post = postRepository.findById(postId);
-        return post.orElseThrow(
-                () -> new EntityNotFoundException("Post service. Post not found. id: " + postId));
+        return postRepository.findById(postId)
+                .orElseThrow(()-> new EntityNotFoundException("Post service. Post not found. id: " + postId));
     }
 
     public List<PostResponseDto> getPostsByAuthorWithLikes(long authorId) {
@@ -72,6 +81,20 @@ public class PostService {
                     CompletableFuture.runAsync(() -> moderationDictionary.searchSwearWords(subList), executor);
 
             verifiedEntities.thenAccept(result -> postRepository.saveAll(subList));
+        }
+    }
+
+    private void publishEvent(Long postId, Long postAuthorId) {
+        PostViewEvent postViewEvent = PostViewEvent.builder()
+                .postId(postId)
+                .authorId(postAuthorId)
+                .userId(userContext.getUserId())
+                .viewTime(LocalDateTime.now())
+                .build();
+        try {
+            postViewEventPublisher.publish(postViewEvent);
+        } catch (Exception ex) {
+            log.error("Failed to send notification with postViewEvent: {}", postViewEvent.toString(), ex);
         }
     }
 }

@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "spring.data.redis")
 public class RedisProperties {
 
-    private String host;
-    private int port;
     private Channels channels;
 
     @Getter
@@ -22,6 +20,7 @@ public class RedisProperties {
         private Channel likePostChannel;
         private Channel newCommentChannel;
         private Channel commentChannel;
+        private Channel postViewChannel;
 
         @Getter
         @Setter
