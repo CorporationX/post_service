@@ -30,6 +30,8 @@ spring:
           name: user_ban_channel
         comment-channel:
           name: comment_channel
+        post-view-channel:
+          name: post_view_channel
 
   config:
     import: text-gears-api.yaml
