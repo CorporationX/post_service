@@ -1,7 +1,7 @@
 package faang.school.postservice.scheduler;
 
-import faang.school.postservice.publis.publisher.UserBanMessagePublisher;
 import faang.school.postservice.redis.publisher.BanAuthorPublisher;
+import faang.school.postservice.redis.publisher.dto.AuthorBanDto;
 import faang.school.postservice.service.comment.CommentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +32,7 @@ public class CommentBannerTest {
 
         verify(commentService, times(1)).getAuthorIdsToBeBanned();
         for (Long id : ids) {
-            verify(publisher, times(1)).publish(id.toString());
+            verify(publisher, times(1)).publish(new AuthorBanDto(id));
         }
     }
 }

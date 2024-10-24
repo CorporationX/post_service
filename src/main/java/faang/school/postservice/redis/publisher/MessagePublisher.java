@@ -1,5 +1,7 @@
 package faang.school.postservice.redis.publisher;
 
+import faang.school.postservice.redis.publisher.dto.AuthorBanDto;
+
 public interface MessagePublisher {
-    void publish(String message);
+    void publish(AuthorBanDto dto);
 }
