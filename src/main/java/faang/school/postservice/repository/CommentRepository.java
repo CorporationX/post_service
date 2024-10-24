@@ -19,4 +19,12 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
              ORDER BY created_at DESC
              """)
     List<Comment> findAllByPostIdOrderByCreatedAtDesc(long postId);
+
+    @Query("""
+        SELECT c.authorId
+        FROM Comment c
+        WHERE c.verified = false
+        GROUP BY c.authorId
+        HAVING COUNT(c) > 5""")
+    List<Long> findAuthorIdsToBeBanned();
 }

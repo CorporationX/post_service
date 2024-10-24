@@ -19,3 +19,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V009_add_ai_spell_check_status.sql
   - include:
       file: db/changelog/changeset/post_V010_add_column_verified_to_table_post.sql
+  - include:
+      file: db/changelog/changeset/post_V011_add_column_verified_to_comment.sql

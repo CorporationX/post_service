@@ -12,6 +12,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.test_data.TestDataComment;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,8 +25,10 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -120,6 +123,19 @@ class CommentServiceTest {
 
             verify(commentServiceHandler, atLeastOnce()).postExistsValidation(post.getId());
             verify(commentRepository, atLeastOnce()).findAllByPostIdOrderByCreatedAtDesc(post.getId());
+        }
+
+        @Test
+        void testGetAuthorIdsToBeBanned() {
+            List<Long> ids = List.of(1L, 2L);
+            when(commentService.getAuthorIdsToBeBanned()).thenReturn(ids);
+
+            List<Long> actualIds = commentService.getAuthorIdsToBeBanned();
+
+            verify(commentRepository, times(1)).findAuthorIdsToBeBanned();
+            assertNotNull(actualIds);
+            assertIterableEquals(ids, actualIds);
+
         }
     }
 

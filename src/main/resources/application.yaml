@@ -44,6 +44,10 @@ logging:
   level:
     root: info
 
+comment:
+  banner:
+    scheduler:
+      cron: "00 01 06 * * *"
 post:
   publisher:
     scheduler:
