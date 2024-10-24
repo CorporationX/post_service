@@ -27,9 +27,8 @@ public class LikeEventPublisher {
     }
 
     private void publish(Object message, String likeEventChannel) {
-        String valueAsString;
         try {
-            valueAsString = objectMapper.writeValueAsString(message);
+            String valueAsString = objectMapper.writeValueAsString(message);
             redisTemplate.convertAndSend(likeEventChannel, valueAsString);
             log.info("Send LikeEvent to Brokers channel: {} , message: {}", message, likeEventChannel);
         } catch (JsonProcessingException e) {

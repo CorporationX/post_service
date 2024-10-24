@@ -1,12 +1,12 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.annotation.like.PublishLikeEvent;
+import faang.school.postservice.annotation.like.NotificationEvent;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.NotificationEventType;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publis.publisher.like.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -29,7 +29,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
 
     @Transactional
-    @PublishLikeEvent
+    @NotificationEvent(NotificationEventType.POST_LIKE)
     public Like addToPost(Long postId, Like tempLike) {
         checkUserExist(tempLike.getUserId());
 
