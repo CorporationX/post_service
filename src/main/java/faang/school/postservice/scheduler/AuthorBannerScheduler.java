@@ -21,10 +21,17 @@ public class AuthorBannerScheduler {
     private int banPostLimit;
 
     @Scheduled(cron = "${post.user-ban.cron}")
-    @Retryable(retryFor = {UserBanException.class}, backoff = @Backoff(delayExpression = "${post.user-ban.delay}"))
+    @Retryable(
+            retryFor = {UserBanException.class},
+            backoff = @Backoff(delayExpression = "${post.user-ban.delay}")
+    )
     public void banAuthors() {
+        log.info("Scheduler started and began the process of banning authors with more than {} unverified posts.",
+                banPostLimit);
         try {
             postService.banAuthorsWithUnverifiedPostsMoreThan(banPostLimit);
+            log.info("The process of banning authors with more than {} unverified posts is complete.",
+                    banPostLimit);
         } catch (Exception e) {
             log.error("Failed to ban authors: {}", e.getMessage(), e);
             throw new UserBanException("Failed to ban authors", e);

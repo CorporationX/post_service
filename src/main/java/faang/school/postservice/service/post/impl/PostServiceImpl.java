@@ -165,10 +165,18 @@ public class PostServiceImpl implements PostService {
     @Override
     public void banAuthorsWithUnverifiedPostsMoreThan(int banPostLimit) {
         List<Long> authorIds = postRepository.findAuthorIdsToBan(banPostLimit);
-        log.info("Found {} authors to ban", authorIds.size());
+        if (authorIds.isEmpty()) {
+            log.info("No authors found to ban with more than {} unverified posts.", banPostLimit);
+            return;
+        }
+        log.info("Found {} authors to ban: {}", authorIds.size(), authorIds);
         authorIds.forEach(authorId -> {
-            banUserPublisher.publish(authorId);
-            log.info("Published ban event for author ID {}", authorId);
+            try {
+                banUserPublisher.publish(authorId);
+                log.info("Published ban event for author ID {}", authorId);
+            } catch (Exception e) {
+                log.error("Failed to publish ban event for author ID {}: {}", authorId, e.getMessage(), e);
+            }
         });
     }
 
