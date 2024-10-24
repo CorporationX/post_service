@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper.post;
 
+import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.request.PostCreationRequest;
 import faang.school.postservice.model.Like;
@@ -20,6 +21,9 @@ public interface PostMapper {
     PostDto toPostDto(Post post);
 
     List<PostDto> toPostDtoList(List<Post> posts);
+
+    @Mapping(source = "id", target = "postId")
+    PostViewEvent toPostViewEvent(Post post);
 
     @Named("getLikesCount")
     default int getLikesCount(List<Like> likes) {

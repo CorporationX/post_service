@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.request.PostCreationRequest;
 import faang.school.postservice.dto.post.request.PostUpdatingRequest;
@@ -13,6 +14,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.post.PostCreator;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.impl.PostServiceImpl;
 import faang.school.postservice.service.resource.ResourceService;
@@ -68,6 +70,12 @@ class PostServiceTest {
 
     @Mock
     private ResourceService resourceService;
+
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
+
+    @Mock
+    private UserContext userContext;
 
     @InjectMocks
     private PostServiceImpl postService;
@@ -130,6 +138,7 @@ class PostServiceTest {
         postService.create(creationRequest);
 
         verify(postRepository).save(post);
+
     }
 
     @Test
@@ -417,10 +426,13 @@ class PostServiceTest {
     @DisplayName("Get a post success")
     public void testGetPostSuccess() {
         when(postRepository.findByIdAndDeletedFalse(0L)).thenReturn(Optional.of(post));
+        when(userContext.getUserId()).thenReturn(2L);
 
         PostDto postDto = postService.getPostById(0L);
 
         verify(postRepository).findByIdAndDeletedFalse(0L);
+        verify(userContext).getUserId();
+        verify(postViewEventPublisher).publish(any());
         assertNotNull(postDto);
         assertEquals(0L, postDto.id());
     }
