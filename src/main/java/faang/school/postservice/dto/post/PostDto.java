@@ -36,7 +36,6 @@ public class PostDto {
     @FutureOrPresent(message = "Published date must be in the present or future.")
     LocalDateTime publishedAt;
 
-    @NotNull(message = "Scheduled date must not be null.")
     @FutureOrPresent(message = "Scheduled date must be in the present or future.")
     LocalDateTime scheduledAt;
 
