@@ -28,7 +28,7 @@ public class BanAuthorPublisher implements MessagePublisher {
             redisTemplate.convertAndSend(properties.getUserBanChannelName(), data);
         } catch(JsonProcessingException e) {
             log.error("Faced issues during deserialization of AuthorBanDto");
-            throw new IllegalStateException("Faced issues during deserialization of AuthorBanDto");
+            throw new IllegalStateException("Faced issues during serialization of AuthorBanDto");
         }
     }
 }
