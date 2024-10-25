@@ -30,8 +30,10 @@ dependencies {
     /**
      * Database
      */
+    implementation("org.springframework.kafka:spring-kafka")
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
+    implementation("org.redisson:redisson:3.23.3")
     runtimeOnly("org.postgresql:postgresql")
 
     /**

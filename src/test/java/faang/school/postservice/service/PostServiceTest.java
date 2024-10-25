@@ -1,16 +1,26 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.cache.entity.PostCache;
+import faang.school.postservice.cache.entity.UserCache;
+import faang.school.postservice.cache.repository.PostCacheRepository;
+import faang.school.postservice.cache.repository.UserCacheRepository;
 import faang.school.postservice.client.HashtagServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.hashtag.HashtagRequest;
 import faang.school.postservice.dto.hashtag.HashtagResponse;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostResponse;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.kafka.KafkaPostEvent;
+import faang.school.postservice.event.kafka.KafkaPostViewEvent;
 import faang.school.postservice.mapper.PostContextMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostEventProducer;
+import faang.school.postservice.producer.KafkaPostViewEventProducer;
 import faang.school.postservice.redisPublisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.elasticsearchService.ElasticsearchService;
@@ -21,12 +31,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -35,10 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -54,11 +67,13 @@ public class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private PostCacheRepository postCacheRepository;
 
     @Mock
     private SpellCheckerService spellCheckerService;
-
-
+    @Mock
+    private UserServiceClient userServiceClient;
     @Mock
     private PostMapper postMapper;
 
@@ -83,7 +98,17 @@ public class PostServiceTest {
 
     @Mock
     private UserContext userContext;
+    @Mock
+    private KafkaPostEventProducer kafkaPostEventProducer;
+    @Mock
+    private UserCacheRepository userCacheRepository;
+    @Mock
+    private KafkaPostViewEventProducer kafkaPostViewEventProducer;
 
+    @Captor
+    private ArgumentCaptor<PostCache> postCacheArgumentCaptor;
+    private Long userId;
+    private UserDto userDto;
     private PostDto postDto;
     private Post post;
     private List<Post> draftPosts;
@@ -98,6 +123,10 @@ public class PostServiceTest {
     public void setUp() {
         long firstPostId = 1L;
         long secondPostId = 2L;
+        userId = 3L;
+        userDto = UserDto.builder()
+                .id(userId)
+                .build();
         String firstPostContent = "FirstPostContent";
         String secondPostContent = "SecondPostContent";
 
@@ -111,7 +140,6 @@ public class PostServiceTest {
         );
 
         postDto = new PostDto();
-        post = new Post();
         Post draftPost1 = Post.builder()
                 .id(1L)
                 .content("Draft 1")
@@ -195,6 +223,7 @@ public class PostServiceTest {
                 .projectId(null)
                 .content("New post")
                 .hashtags(hashtags)
+                .likes(new ArrayList<>())
                 .build();
 
         draftPostDtos = Arrays.asList(draftPostDto1, draftPostDto2);
@@ -212,6 +241,9 @@ public class PostServiceTest {
     @Test
     @DisplayName("Test creating a new post")
     public void testCreatePost() {
+        when(userContext.getUserId()).thenReturn(userId);
+        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+
         doNothing().when(postServiceValidator).validateCreatePost(postDto);
         doNothing().when(hashtagServiceClient).saveHashtags(hashtagRequest);
         when(hashtagServiceClient.getHashtagsByNames(hashtagRequest)).thenReturn(new HashtagResponse(hashtags));
@@ -219,6 +251,7 @@ public class PostServiceTest {
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(postMapper.toDto(any(Post.class))).thenReturn(postDto);
         postDto.setHashtagNames(hashtagNames);
+
         PostDto result = postService.createPost(postDto);
 
         verify(postServiceValidator, times(1)).validateCreatePost(postDto);
@@ -227,6 +260,9 @@ public class PostServiceTest {
         verify(elasticsearchService, times(1)).indexPost(postDto);
         assertEquals(postDto, result);
         verify(postEventPublisher, times(1)).publish(any());
+        verify(postCacheRepository, times(1)).save(postCacheArgumentCaptor.capture());
+        verify(userCacheRepository, times(1)).save(any(UserCache.class));
+        verify(kafkaPostEventProducer, times(1)).sendMessage(any(KafkaPostEvent.class));
     }
 
     @Test
@@ -333,8 +369,10 @@ public class PostServiceTest {
     @DisplayName("Test getting a post by its ID when the post is found")
     public void testGetPostByPostIdPostFound() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
         postService.getPostDtoById(1L);
 
+        verify(kafkaPostViewEventProducer, times(1)).sendMessage(any(KafkaPostViewEvent.class));
         verify(postMapper, times(1)).toDto(post);
     }
 

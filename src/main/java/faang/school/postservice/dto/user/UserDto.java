@@ -2,13 +2,13 @@ package faang.school.postservice.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -23,6 +23,7 @@ public class UserDto {
     @Email
     @Size(max = 64)
     private String email;
+    private List<Long> postAuthors;
 
     @NotNull
     @NotBlank

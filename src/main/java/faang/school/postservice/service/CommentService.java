@@ -1,23 +1,27 @@
 package faang.school.postservice.service;
 
 
+import faang.school.postservice.cache.entity.UserCache;
+import faang.school.postservice.cache.repository.UserCacheRepository;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentAchievementEvent;
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.kafka.KafkaCommentEvent;
 import faang.school.postservice.mapper.CommentAchievementMapper;
-import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.producer.KafkaCommentEventProducer;
 import faang.school.postservice.redisPublisher.CommentAchievementEventPublisher;
 import faang.school.postservice.redisPublisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
-
 import jakarta.persistence.EntityNotFoundException;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +31,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CommentService {
+    @Value("${spring.data.redis.cache.user.ttl}")
+    private long userTtl;
+
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final UserContext userContext;
@@ -37,6 +44,10 @@ public class CommentService {
     private final CommentEventPublisher commentEventPublisher;
     private final CommentAchievementEventPublisher commentAchievementEventPublisher;
     private final CommentAchievementMapper commentAchievementMapper;
+    private final UserServiceClient userServiceClient;
+    private final UserCacheRepository userCacheRepository;
+    private final KafkaCommentEventProducer kafkaCommentEventProducer;
+
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto) {
@@ -54,6 +65,19 @@ public class CommentService {
                 .build();
         commentEventPublisher.publish(commentEvent);
         publishCommentAchievementEvent(commentDto);
+
+        UserDto userDto = userServiceClient.getUser(userContext.getUserId());
+        UserCache userCache = UserCache.builder()
+                .id(userDto.getId())
+                .username(userDto.getUsername())
+                .userSubscribedAuthors(userDto.getPostAuthors())
+                .ttl(userTtl)
+                .build();
+        userCacheRepository.save(userCache);
+
+        KafkaCommentEvent kafkaCommentEvent = commentMapper.toKafkaEvent(comment);
+        kafkaCommentEventProducer.sendMessage(kafkaCommentEvent);
+
         return commentMapper.entityToDto(savedComment);
     }
 

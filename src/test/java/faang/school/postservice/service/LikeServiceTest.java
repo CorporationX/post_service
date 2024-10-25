@@ -3,13 +3,12 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.LikeEventMapper;
+import faang.school.postservice.event.kafka.KafkaPostLikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
-import faang.school.postservice.redisPublisher.LikePostPublisher;
+import faang.school.postservice.producer.KafkaPostLikeEventProducer;
 import faang.school.postservice.redisPublisher.PostLikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeServiceValidator;
@@ -27,7 +26,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
@@ -47,13 +52,9 @@ public class LikeServiceTest {
     @Mock
     private LikeMapper likeMapper;
     @Mock
-    private LikeEventPublisher likeEventPublisher;
-    @Mock
-    private LikePostPublisher likePostPublisher;
-    @Mock
-    private LikeEventMapper likeEventMapper;
-    @Mock
     private PostLikeEventPublisher postLikeEventPublisher;
+    @Mock
+    private KafkaPostLikeEventProducer kafkaPostLikeEventProducer;
 
     @InjectMocks
     private LikeService likeService;
@@ -168,7 +169,14 @@ public class LikeServiceTest {
     @DisplayName("Когда метод по добавлению лайка к посту отработал")
     @Test
     public void testAddLikeToPostWhenValid() {
-        UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
+        KafkaPostLikeEvent kafkaPostLikeEvent = new KafkaPostLikeEvent();
+        UserDto userDto = UserDto.builder()
+                .id(1L)
+                .username("name")
+                .email("email@google.com")
+                .phone("")
+                .isActive(true)
+                .build();
         post.setAuthorId(1L);
 
         when(postService.getPost(likeDtoPost.getPostId())).thenReturn(post);
@@ -176,10 +184,9 @@ public class LikeServiceTest {
         when(likeRepository.findByPostIdAndUserId(post.getId(), userDto.getId())).thenReturn(Optional.empty());
         when(likeMapper.toEntity(likeDtoPost)).thenReturn(like);
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
-        doNothing().when(likeEventPublisher).publish(any());
-        doNothing().when(likePostPublisher).publish(any());
         doNothing().when(postLikeEventPublisher).publish(any());
         when(likeRepository.save(any())).thenReturn(like);
+        when(likeMapper.toLikePostEvent(like)).thenReturn(kafkaPostLikeEvent);
 
         likeService.addLikeToPost(likeDtoPost);
 
@@ -189,10 +196,9 @@ public class LikeServiceTest {
         verify(likeRepository, times(1)).findByPostIdAndUserId(post.getId(), userDto.getId());
         verify(likeMapper, times(1)).toEntity(likeDtoPost);
         verify(likeMapper, times(1)).toLikeDto(like);
-        verify(likeEventPublisher, times(1)).publish(any());
-        verify(likePostPublisher, times(1)).publish(any());
         verify(postLikeEventPublisher, times(1)).publish(any());
         verify(likeRepository, times(1)).save(like);
+        verify(kafkaPostLikeEventProducer, times(1)).sendMessage(kafkaPostLikeEvent);
     }
 
     @DisplayName("Когда метод по удалению лайка с поста отработал")
@@ -215,7 +221,13 @@ public class LikeServiceTest {
     @Test
     public void testAddLikeToCommentWhenValid() {
         Like like = new Like();
-        UserDto userDto = new UserDto(1L, "name", "email@google.com", "", true);
+        UserDto userDto = UserDto.builder()
+                .id(1L)
+                .username("name")
+                .email("email@google.com")
+                .phone("")
+                .isActive(true)
+                .build();
 
         when(commentService.getComment(likeDtoComment.getCommentId())).thenReturn(comment);
         when(userServiceClient.getUser(likeDtoComment.getUserId())).thenReturn(userDto);
