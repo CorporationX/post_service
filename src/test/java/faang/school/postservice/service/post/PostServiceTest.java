@@ -1,17 +1,25 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.data.TestData;
-import faang.school.postservice.dto.post.*;
+import faang.school.postservice.dto.post.DraftPostDto;
+import faang.school.postservice.dto.post.GetPostsDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostStatus;
+import faang.school.postservice.dto.post.UpdatablePostDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.exception.post.UnexistentPostException;
-import faang.school.postservice.mapper.post.*;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.post.PostMapperImpl;
+import faang.school.postservice.mapper.post.ResourceMapper;
+import faang.school.postservice.mapper.post.ResourceMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.feed.CacheService;
+import faang.school.postservice.service.feed.FeedEventService;
 import faang.school.postservice.service.post.command.UpdatePostResourceCommand;
 import faang.school.postservice.service.publisher.PostEventPublisher;
-import faang.school.postservice.validator.post.PostServiceValidator;
 import faang.school.postservice.service.resource.ResourceService;
-import org.junit.jupiter.api.BeforeEach;
+import faang.school.postservice.validator.post.PostServiceValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -19,17 +27,26 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -37,23 +54,22 @@ public class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
-
     @Mock
     private ResourceService resourceService;
-
     @Mock
     UpdatePostResourceCommand updatePostResourceCommand;
-
     @Spy
     private PostMapper postMapper = new PostMapperImpl();
-
     @Spy
     private ResourceMapper resourceMapper = new ResourceMapperImpl();
-
     @Mock
     private PostServiceValidator postServiceValidator;
     @Mock
     private PostEventPublisher postEventPublisher;
+    @Mock
+    private FeedEventService feedEventService;
+    @Mock
+    private CacheService cacheService;
 
     @InjectMocks
     private PostService postService;

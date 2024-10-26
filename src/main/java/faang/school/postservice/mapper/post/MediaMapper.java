@@ -10,7 +10,7 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(
         componentModel = "spring",
         injectionStrategy = InjectionStrategy.FIELD,
-        unmappedSourcePolicy = ReportingPolicy.IGNORE
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface MediaMapper {
     @Mapping(target = "key", source = "key")

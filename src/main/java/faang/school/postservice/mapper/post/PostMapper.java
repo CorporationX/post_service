@@ -15,28 +15,13 @@ import java.util.List;
 @Mapper(
         componentModel = "spring",
         injectionStrategy = InjectionStrategy.FIELD,
-        unmappedSourcePolicy = ReportingPolicy.IGNORE
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface PostMapper {
 
-    @Mapping(source = "authorId", target = "authorId")
-    @Mapping(source = "projectId", target = "projectId")
-    @Mapping(source = "content", target = "content")
-    @Mapping(source = "scheduledAt", target = "scheduledAt")
     PostDto fromDraftPostDto(DraftPostDto draftPostDto);
 
-
-    @Mapping(source = "id", target = "id")
-    @Mapping(source = "authorId", target = "authorId")
-    @Mapping(source = "projectId", target = "projectId")
-    @Mapping(source = "content", target = "content")
-    @Mapping(source = "scheduledAt", target = "scheduledAt")
-    @Mapping(source = "publishedAt", target = "publishedAt")
-    @Mapping(source = "createdAt", target = "createdAt")
-    @Mapping(source = "updatedAt", target = "updatedAt")
     @Mapping(source = "resources", target = "resources", qualifiedByName = "mapResources")
-    @Mapping(target = "likesCount", source = "likes", qualifiedByName = "mapLikes")
-    @Mapping(target = "commentsCount", source = "comments", qualifiedByName = "mapComments")
     PostDto toDto(Post post);
 
     @Named("mapResources")
@@ -56,31 +41,6 @@ public interface PostMapper {
                 .toList();
     }
 
-    @Named("mapLikes")
-    default long mapLikes(List<Like> likes) {
-        if (likes == null) {
-            return 0;
-        }
-        return likes.size();
-    }
-
-    @Named("mapComments")
-    default long mapComments(List<Comment> comments) {
-        if (comments == null) {
-            return 0;
-        }
-        return comments.size();
-    }
-
-
-    @Mapping(source = "postDto.id", target = "id")
-    @Mapping(source = "postDto.authorId", target = "authorId")
-    @Mapping(source = "postDto.projectId", target = "projectId")
-    @Mapping(source = "postDto.content", target = "content")
-    @Mapping(source = "postDto.scheduledAt", target = "scheduledAt")
-    @Mapping(source = "postDto.publishedAt", target = "publishedAt")
-    @Mapping(source = "postDto.createdAt", target = "createdAt")
-    @Mapping(source = "postDto.updatedAt", target = "updatedAt")
     @Mapping(source = "postDto.resources", target = "resources", qualifiedByName = "mapPreviewPostResourceDto")
     Post toEntity(PostDto postDto);
 

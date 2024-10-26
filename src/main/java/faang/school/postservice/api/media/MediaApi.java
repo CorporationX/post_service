@@ -3,7 +3,6 @@ package faang.school.postservice.api.media;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 public interface MediaApi<ID, MediaInfo, Media> {
