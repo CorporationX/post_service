@@ -168,20 +168,20 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public List<UserDto> getUsersLikedPost (long postId){
+    public List<UserDto> getUsersLikedPost(long postId) {
         List<Like> likes = likeRepository.findByPostId(postId);
 
         return dividingListIntoGroups(likes);
     }
 
     @Override
-    public List<UserDto> getUsersLikedComment (long commentId){
+    public List<UserDto> getUsersLikedComment(long commentId) {
         List<Like> likes = likeRepository.findByCommentId(commentId);
 
         return dividingListIntoGroups(likes);
     }
 
-    private List<UserDto> dividingListIntoGroups (List<Like> likes) {
+    private List<UserDto> dividingListIntoGroups(List<Like> likes) {
         List<Long> userIds = likes.stream()
                 .map(Like::getUserId)
                 .toList();
@@ -207,12 +207,6 @@ public class LikeServiceImpl implements LikeService {
         likeEvent.setLikingUserId(likeDto.getUserId());
         likeEvent.setLikedUserId(post.getAuthorId());
         likeEvent.setCreatedAt(likeDto.getCreatedAt());
-
-        try {
-            String json = objectMapper.writeValueAsString(likeEvent);
-            likeEventPublisher.publish(json);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        likeEventPublisher.publish(likeEvent);
     }
 }
